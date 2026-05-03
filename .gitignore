@@ -1,0 +1,162 @@
+# LiteEA Project .gitignore
+# Rules from PROJECT_RULES.md (based on AI Agent Rules v1.0.5-global)
+# Last Updated: May 3, 2026
+
+# ============================================================================
+# ARCHIVE FOLDERS (never commit to remote)
+# ============================================================================
+
+# Archive folders across entire project tree
+0.archive/
+**/0.archive/
+**/.archive/
+./0.archive/
+
+# ============================================================================
+# AGENT RULES FILES (configuration, not for version control)
+# ============================================================================
+
+# Agent rules files - project-specific configuration
+*ai-agent-rules*.md
+ai-agent-rules-*.md
+ai-agent-rules.md
+
+# ============================================================================
+# PYTHON & DEVELOPMENT
+# ============================================================================
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================================
+# IDE & EDITOR CONFIGURATION
+# ============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Others
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.log
+*.swp
+
+# ============================================================================
+# GENERATED DIAGRAMS (optional - uncomment if auto-generated)
+# ============================================================================
+
+# Generated PUML/PlantUML diagrams
+# *.puml
+
+# Generated Mermaid diagrams
+# *.mmd
+
+# Generated SVG exports
+# *.svg
+
+# ============================================================================
+# LOCAL CONFIGURATION
+# ============================================================================
+
+# Local environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Local configuration overrides
+local_config.yaml
+personal_rules.md
+
+# ============================================================================
+# BUILD & OUTPUT ARTIFACTS
+# ============================================================================
+
+# Build outputs
+/build/
+/dist/
+/*.egg-info/
+
+# Generated documentation
+/docs/_build/
+/site/
+
+# ============================================================================
+# NOTES
+# ============================================================================
+
+# Keep all .md files (documentation)
+# Keep all .yaml files in elements/ and relations/ (architecture)
+# Keep all templates in .templates/
+# Archive old files in 0.archive/ instead of deleting them
+# Only files explicitly listed above are ignored
+

@@ -1,0 +1,212 @@
+LiteEA: Lite Enterprise Architecture (Architecture-as-Code)
+Multi-Tenant Organization Structure
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 ROOT LEVEL
+──────────────────────────────────────────────────────────────────────────────
+
+LiteEA/
+│
+├── 📄 README.md                          Main project overview & quick start
+├── 📄 PROJECT_INDEX.md                   Navigation guide (where to find things)
+├── 📄 STRUCTURE.txt                      This file - visual structure guide
+├── 🔧 create_organization.sh             Script to create new organization
+├── 📄 .github_workflows_example.yaml     CI/CD pipeline example
+│
+├── 📂 method/                            Methodology documentation
+│   └── 📄 LiteEA Методология...md        Full methodology (Russian)
+│
+└── 📂 organizations/                     ← MAIN WORKING AREA
+    ├── 📄 NEW_ORGANIZATION_TEMPLATE.md   Guide for adding new orgs
+    │
+    ├── 📂 acme_corp/                     Example: ACME Corporation
+    │   │
+    │   ├── 📂 elements/                  Architecture elements by ArchiMate layer
+    │   │   ├── 📂 01_motivation/         Goals, principles, constraints, drivers
+    │   │   ├── 📂 02_business/           Roles, actors, processes, functions
+    │   │   ├── 📂 03_application/        Components, services, interfaces
+    │   │   └── 📂 04_technology/         Infrastructure, nodes, artifacts
+    │   │
+    │   ├── 📂 relations/                 Relationships between elements (ATOMIC)
+    │   │   ├── APP_TO_DB_001.yaml
+    │   │   ├── PROC_TO_APP_001.yaml
+    │   │   └── ROLE_TO_PROC_001.yaml
+    │   │
+    │   ├── 📂 .templates/                Templates for creating new elements
+    │   │   ├── 📂 elements/
+    │   │   │   ├── 01_motivation_template.yaml
+    │   │   │   ├── 02_business_template.yaml
+    │   │   │   ├── 03_application_template.yaml
+    │   │   │   └── 04_technology_template.yaml
+    │   │   ├── 📂 relations/
+    │   │   │   └── relation_template.yaml
+    │   │   ├── 📂 bpmn/
+    │   │   │   └── process_template.bpmn.yaml
+    │   │   └── 📄 EXAMPLES.md            Real-world e-commerce example
+    │   │
+    │   ├── 📂 .validators/               Validation & linting tools
+    │   │   └── 🐍 lint.py                Main validator (checks YAML, atomicity, etc.)
+    │   │
+    │   ├── 📂 views/                     Diagram generation configurations
+    │   │   └── 📄 README.md              How to configure views
+    │   │
+    │   ├── 📂 0.archive/                 Archive (instead of deletion)
+    │   │
+    │   ├── 📄 README.md                  Organization overview
+    │   ├── 📄 GETTING_STARTED.md         Tutorial for team members
+    │   └── 📄 CONVENTIONS.md             Naming standards & best practices
+    │
+    ├── 📂 your_company/                  (Created when you add organization)
+    │   └── [same structure as acme_corp]
+    │
+    └── 📂 another_org/                   (Multiple organizations supported)
+        └── [same structure as acme_corp]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📖 DOCUMENTATION NAVIGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FOR PROJECT MANAGERS / ARCHITECTS
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. START HERE: README.md (root level)                                       │
+│    → Overview of multi-tenant structure                                     │
+│                                                                              │
+│ 2. THEN: method/LiteEA Методология... (in Russian)                          │
+│    → Complete methodology explanation                                        │
+│                                                                              │
+│ 3. REFERENCE: PROJECT_INDEX.md                                              │
+│    → Where to find what in the project                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FOR TEAM MEMBERS (First Time Using)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. START HERE: organizations/[your_org]/README.md                           │
+│    → Organization-specific overview                                          │
+│                                                                              │
+│ 2. TUTORIAL: organizations/[your_org]/GETTING_STARTED.md                    │
+│    → Step-by-step first element creation                                    │
+│                                                                              │
+│ 3. REFERENCE: organizations/[your_org]/CONVENTIONS.md                       │
+│    → Naming standards & best practices                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FOR CREATING ARCHITECTURE ELEMENTS
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. EXAMPLES: organizations/[org]/.templates/EXAMPLES.md                     │
+│    → Real e-commerce example                                                │
+│                                                                              │
+│ 2. TEMPLATES: organizations/[org]/.templates/elements/[layer]_template.yaml │
+│    → Copy and edit                                                          │
+│                                                                              │
+│ 3. VALIDATE: python3 .validators/lint.py                                    │
+│    → Ensure your element meets standards                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 QUICK START
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create New Organization:
+  → ./create_organization.sh my_company
+
+Create First Element:
+  → cd organizations/my_company
+  → cp .templates/elements/03_application_template.yaml \
+       elements/03_application/MY_SERVICE.yaml
+  → vim elements/03_application/MY_SERVICE.yaml
+  → python3 .validators/lint.py
+
+Create Relationship:
+  → cp .templates/relations/relation_template.yaml \
+       relations/SERVICE_TO_DB.yaml
+  → vim relations/SERVICE_TO_DB.yaml
+  → python3 .validators/lint.py
+
+Commit to Git:
+  → git add organizations/my_company/
+  → git commit -m "docs(arch): add service element [APP-XXX-001]"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 KEY PRINCIPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ ATOMICITY
+  └─ Relations are NEVER inside element files
+     All relations go in separate files in relations/ directory
+
+✓ ARCHITECTURE-AS-CODE
+  └─ Everything stored in Git as text files (YAML)
+     Diagramming and reports are auto-generated artifacts
+
+✓ SINGLE SOURCE OF TRUTH
+  └─ Elements describe only themselves
+     Relations are separate documents
+     Git diffs show exactly what changed
+
+✓ ArchiMate 3.2 COMPLIANCE
+  └─ Elements follow ArchiMate layer model:
+     Motivation → Business → Application → Technology
+
+✓ MULTI-TENANT
+  └─ Each organization has complete isolated structure
+     Can share templates and validators across organizations
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each organization includes a linter that validates:
+
+  ✓ YAML Syntax
+    All files must be valid YAML
+
+  ✓ Atomicity
+    No relations section inside element files
+
+  ✓ Referential Integrity
+    All source/target IDs in relations must exist
+
+  ✓ Policy Compliance
+    Active elements must have assigned owner
+
+Run validator:
+  cd organizations/[your_org]
+  python3 .validators/lint.py
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏗️ PROJECT INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Version:            1.0.0
+Created:            May 3, 2026
+Multi-Tenant:       Yes ✓
+Organizations:      1 example (acme_corp), extensible
+Methodology:        ArchiMate 3.2 + Git workflow
+CI/CD Ready:        Yes (example in .github_workflows_example.yaml)
+
+Language Support:
+  - Documentation:  English & Russian
+  - Element IDs:    English (standardized)
+  - Naming:         snake_case (English)
+
+Required Tools:
+  - Git
+  - Text Editor (VS Code recommended)
+  - Python 3.9+ (for validator)
+  - YAML knowledge (basic)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For questions, see:
+  - README.md (main overview)
+  - PROJECT_INDEX.md (detailed navigation)
+  - organizations/[your_org]/GETTING_STARTED.md (tutorial)
+  - organizations/[your_org]/CONVENTIONS.md (standards)
+
+Happy Architecting! 🏗️
