@@ -243,7 +243,7 @@ Thumbs.db
 - [x] Element IDs use uppercase with hyphens
 - [x] YAML templates for all ArchiMate layers
 - [x] Validator linter implemented
-- [ ] `.gitignore` properly configured (TODO)
+- [x] `.gitignore` properly configured
 - [x] Multi-organization structure ready
 
 ---

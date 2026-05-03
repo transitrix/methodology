@@ -130,8 +130,19 @@ Thumbs.db
 
 # Local environment files (never commit secrets)
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
+
+# Credentials, keys, certificates (never commit — especially important for private repos)
+*.pem
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+*.key
 
 # Local configuration overrides
 local_config.yaml
