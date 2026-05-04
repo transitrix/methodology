@@ -1,0 +1,44 @@
+# Single-lane process with an XOR decision and a default branch.
+# Demonstrates: tasks, exclusive gateway, conditions, default flow.
+
+process:
+  id: order-check
+  name: Order Check
+  pools:
+    - id: company
+      name: Company
+      lanes:
+        - id: sales
+          name: Sales
+          elements:
+            - id: start
+              type: startEvent
+            - id: receive-order
+              type: task
+              name: Receive Order
+            - id: check-stock
+              type: exclusiveGateway
+              name: In stock?
+            - id: pick-pack
+              type: task
+              name: Pick and Pack
+            - id: notify-customer
+              type: task
+              name: Notify Customer
+            - id: end
+              type: endEvent
+  flows:
+    - from: start
+      to: receive-order
+    - from: receive-order
+      to: check-stock
+    - from: check-stock
+      to: pick-pack
+      condition: 'in_stock'
+    - from: check-stock
+      to: notify-customer
+      default: true
+    - from: pick-pack
+      to: end
+    - from: notify-customer
+      to: end

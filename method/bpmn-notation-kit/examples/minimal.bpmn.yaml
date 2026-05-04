@@ -1,0 +1,20 @@
+# Minimal valid process: one start, one end, one flow.
+# Demonstrates the absolute minimum BPMN structure the notation accepts.
+
+process:
+  id: minimal
+  name: Minimal Process
+  pools:
+    - id: company
+      name: Company
+      lanes:
+        - id: main
+          name: Main
+          elements:
+            - id: start
+              type: startEvent
+            - id: end
+              type: endEvent
+  flows:
+    - from: start
+      to: end

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://litea.local/schema/bpmn-process-yaml-v1.json",
+  "title": "BPMN Process YAML DSL",
+  "description": "Schema for .bpmn.yaml process definitions. See notation.md for full reference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["process"],
+  "properties": {
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "pools", "flows"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "pools": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": { "$ref": "#/definitions/pool" }
+        },
+        "flows": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/flow" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "lanes"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "lanes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/lane" }
+        }
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "elements"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "elements": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/element" }
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "startEvent",
+            "endEvent",
+            "task",
+            "userTask",
+            "serviceTask",
+            "exclusiveGateway",
+            "parallelGateway"
+          ]
+        },
+        "name": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "enum": ["startEvent", "endEvent"] } }
+          },
+          "then": { "properties": { "name": {} } },
+          "else": {
+            "required": ["name"],
+            "properties": { "name": { "type": "string", "minLength": 1 } }
+          }
+        }
+      ]
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "from": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "condition": { "type": "string", "minLength": 1 },
+        "default": { "type": "boolean" }
+      }
+    }
+  }
+}
