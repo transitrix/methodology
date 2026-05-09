@@ -1,0 +1,197 @@
+# Transitrix Project .gitignore
+# Rules from PROJECT_RULES.md
+# Last Updated: 2026-05-07
+
+# ============================================================================
+# ARCHIVE FOLDERS (never commit to remote)
+# ============================================================================
+
+# Archive folders across entire project tree
+0.archive/
+**/0.archive/
+**/.archive/
+./0.archive/
+0. archive/
+**/0. archive/
+
+# ============================================================================
+# AGENT RULES FILES (configuration, not for version control)
+# ============================================================================
+
+# Agent rules files - project-specific configuration
+*ai-agent-rules*.md
+ai-agent-rules-*.md
+ai-agent-rules.md
+
+# ============================================================================
+# PYTHON & DEVELOPMENT
+# ============================================================================
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================================
+# IDE & EDITOR CONFIGURATION
+# ============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Others
+.DS_Store
+
+# ============================================================================
+# PROJECT SPECIFIC
+# ============================================================================
+
+# Method notations folder (large PDF files)
+method/notations/
+Thumbs.db
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.log
+*.swp
+
+# ============================================================================
+# GENERATED DIAGRAMS (optional - uncomment if auto-generated)
+# ============================================================================
+
+# Generated PUML/PlantUML diagrams
+# *.puml
+
+# Generated Mermaid diagrams
+# *.mmd
+
+# Generated SVG exports
+# *.svg
+
+# ============================================================================
+# LOCAL CONFIGURATION
+# ============================================================================
+
+# Local environment files (never commit secrets)
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+
+# Credentials, keys, certificates (never commit — especially important for private repos)
+*.pem
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+*.key
+
+# Local configuration overrides
+local_config.yaml
+personal_rules.md
+
+# ============================================================================
+# BUILD & OUTPUT ARTIFACTS
+# ============================================================================
+
+# Build outputs
+/build/
+/dist/
+/*.egg-info/
+
+# Generated documentation
+/docs/_build/
+/site/
+
+# ============================================================================
+# MAINTAINER-LOCAL FILES (kept on disk, not part of the published methodology)
+# ============================================================================
+
+STRATEGIC_BRIEF.md
+CLAUDE.md
+roadmap.md
+PROJECT_RULES.md
+
+# Local development tool worktrees
+.claude/
+
+# Local-only working folders
+_pitch*/
+
+# ============================================================================
+# NOTES
+# ============================================================================
+
+# Keep all .md files (documentation) EXCEPT internal-only files listed above
+# Keep all .yaml files in elements/, relations/, views/ (architecture)
+# Keep all templates in .templates/
+# Archive old files in 0.archive/ instead of deleting them
+# Only files explicitly listed above are ignored
+

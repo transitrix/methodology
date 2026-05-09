@@ -1,0 +1,58 @@
+# Transitrix Element Template: Application Layer
+# Purpose: Capture application components, services, and interfaces
+# Location: elements/03_application/
+# Naming Convention: [TYPE]-[SHORT_CODE].yaml (e.g., APP-SRVC-001.yaml, INTFC-API-001.yaml)
+
+id: "APP-XXX-001"
+name: "Application Service / Component Name"
+type: "ApplicationComponent"  # Valid types: ApplicationComponent, ApplicationService, DataObject, ApplicationInterface
+layer: "Application"
+
+metadata:
+  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
+  owner: "firstname.lastname"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  tags: ["microservice", "api"]
+
+properties:
+  description: "Clear and concise description of the application component"
+  criticality: "High"  # Values: Critical, High, Medium, Low
+
+  # Technical stack and implementation details
+  tech_stack: "Technology/Framework (e.g., Python 3.12, FastAPI)"
+  programming_language: "Python"  # e.g., Python, Java, Go, Node.js
+  repository_url: "https://github.com/org/repo"  # Git repository URL
+
+  # Service/API specifics
+  api_type: "REST"  # Values: REST, GraphQL, gRPC, SOAP, Async
+  api_endpoints: []  # e.g., GET /api/v1/products, POST /api/v1/orders
+
+  # Data scope
+  data_classification: "Internal"  # Values: Public, Internal, Confidential, Restricted
+
+  # Operational characteristics
+  deployment_model: "Kubernetes"  # e.g., Kubernetes, EC2, Serverless, On-Premises
+  scaling_strategy: "Horizontal"  # Values: Horizontal, Vertical, Mixed, Fixed
+  sla_availability: "99.9%"
+
+# Version and build information
+versioning:
+  current_version: "1.0.0"
+  release_cycle: "Continuous"  # Values: Continuous, Sprint, Fixed Release, On-Demand
+
+# Dependencies and integrations
+dependencies: []  # IDs of other ApplicationComponents this depends on
+integrations: []  # IDs of external systems or services
+
+# Quality and testing
+quality_attributes:
+  test_coverage: "0%"  # Percentage
+  security_scanning: false
+  performance_tested: false
+
+# Optional governance
+governance:
+  change_control_required: true
+  approval_required: false
+  build_pipeline: "CI/CD Pipeline name"

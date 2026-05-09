@@ -1,0 +1,82 @@
+# Multi-lane release pipeline with cross-lane flows and parallel split/join.
+# Demonstrates: 3 lanes, userTask + serviceTask, XOR with default, parallel gateway split + join.
+
+process:
+  id: release-pipeline
+  name: Release Pipeline
+  pools:
+    - id: pipeline
+      name: Release Pipeline
+      lanes:
+        - id: dev
+          name: Development
+          elements:
+            - id: feature-ready
+              type: startEvent
+            - id: run-tests
+              type: task
+              name: Run Unit Tests
+            - id: tests-pass
+              type: exclusiveGateway
+              name: Tests pass?
+            - id: build
+              type: task
+              name: Build Package
+        - id: qa
+          name: QA
+          elements:
+            - id: manual-test
+              type: userTask
+              name: Manual Testing
+            - id: regression
+              type: task
+              name: Regression Suite
+        - id: ops
+          name: DevOps
+          elements:
+            - id: deploy-start
+              type: parallelGateway
+              name: Deploy Start
+            - id: health-check
+              type: serviceTask
+              name: Health Check
+            - id: deploy-staging
+              type: serviceTask
+              name: Deploy to Staging
+            - id: deploy-complete
+              type: parallelGateway
+              name: Deploy Complete
+            - id: promote
+              type: task
+              name: Promote to Production
+            - id: released
+              type: endEvent
+  flows:
+    - from: feature-ready
+      to: run-tests
+    - from: run-tests
+      to: tests-pass
+    - from: tests-pass
+      to: build
+      condition: 'passed'
+    - from: tests-pass
+      to: released
+      default: true
+    - from: build
+      to: manual-test
+    - from: manual-test
+      to: regression
+    - from: regression
+      to: deploy-start
+    - from: deploy-start
+      to: health-check
+    - from: deploy-start
+      to: deploy-staging
+    - from: health-check
+      to: deploy-complete
+    - from: deploy-staging
+      to: deploy-complete
+    - from: deploy-complete
+      to: promote
+    - from: promote
+      to: released

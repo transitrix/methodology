@@ -1,0 +1,200 @@
+# Transitrix Capability Map Template
+# Purpose: Model enterprise capabilities with maturity levels
+# Complements: Business Layer elements with capability assessment
+# Location: elements/02_business/ (as capability-map.yaml)
+
+enterprise: "Organization Name"
+business_domain: "Business Domain"
+capability_set: "baseline"  # Values: baseline, target, current, roadmap, etc.
+
+capabilities:
+  # ROOT CAPABILITY LEVEL (V1)
+  - id: "V1"
+    name: "Strategic Business Area Name"
+    type: "domain"  # Values: domain, function, capability
+    category: "Strategic"  # Values: Strategic, Planning, Execution, Support, Learning
+    description: "Clear description of what this capability area covers"
+    start_date: "2026-05-03"
+
+    # Maturity assessment
+    maturity_levels:
+      - level: 1  # Initial: ad hoc, unstructured
+        effective_from: "2026-05-03"
+        status: "Current"  # Indicates if this is the current maturity
+
+    # Optional metadata
+    owner: "firstname.lastname"  # Person responsible for this capability
+    owner_role: "ROLE-DIRECTOR-001"  # Reference to BusinessRole element
+    business_process: "PROC-STRATEGY-001"  # Reference to BusinessProcess
+    applications: []  # References to ApplicationComponent elements
+    notes: "Additional context or strategic importance"
+
+  # CHILD CAPABILITY (V1.1)
+  - id: "V1.1"
+    name: "Sub-capability Within V1"
+    type: "domain"
+    category: "Strategic"
+    description: "Describes this sub-domain"
+    start_date: "2026-05-03"
+
+    maturity_levels:
+      - level: 1
+        effective_from: "2026-05-03"
+        status: "Current"
+      - level: 2  # Historical maturity level
+        effective_from: "2027-01-01"
+        status: null
+
+    owner: "firstname.lastname"
+    parent_capability: "V1"  # Links to parent capability
+
+  # GRANULAR FUNCTION (V1.1.1)
+  - id: "V1.1.1"
+    name: "Specific Function or Process"
+    type: "function"
+    category: "Planning"
+    description: "Very specific capability or function"
+    start_date: "2026-05-03"
+
+    maturity_levels:
+      - level: 2
+        effective_from: "2026-05-03"
+        status: "Current"
+
+    owner: "firstname.lastname"
+    owner_role: "ROLE-MANAGER-001"
+    business_process: "PROC-DETAIL-001"
+    parent_capability: "V1.1"
+
+    # Target maturity for roadmap
+    target_maturity: 3
+    target_date: "2026-12-31"
+
+  # HORIZONTAL CAPABILITY (H1)
+  # Cross-cutting capabilities that support multiple domains
+  - id: "H1"
+    name: "Horizontal Capability (Cross-cutting)"
+    type: "domain"
+    category: "Support"  # Usually Support or Learning for horizontal
+    description: "Capability that supports multiple business domains"
+    start_date: "2026-05-03"
+
+    maturity_levels:
+      - level: 2
+        effective_from: "2026-05-03"
+        status: "Current"
+
+    owner: "firstname.lastname"
+    applications: ["APP-SHARED-PLATFORM-001"]  # Often supports shared platforms
+
+# Metadata about the capability map
+metadata:
+  version: "1.0.0"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  created_by: "firstname.lastname"
+  review_date: "2026-08-03"
+  status: "Draft"  # Values: Draft, Active, Deprecated
+
+# Maturity Level Definitions (customize as needed)
+maturity_scale:
+  1:
+    name: "Initial"
+    description: "Processes are unstructured, ad hoc, and often chaotic"
+    characteristics:
+      - "Ad hoc processes"
+      - "No formal documentation"
+      - "Depends on individuals"
+      - "Success unpredictable"
+
+  2:
+    name: "Repeatable"
+    description: "Basic processes exist; may be informal but repeatable"
+    characteristics:
+      - "Some documented processes"
+      - "Similar tasks performed by different people"
+      - "Still individual-dependent"
+      - "Some discipline in process execution"
+
+  3:
+    name: "Defined"
+    description: "Processes are documented, standardized, and communicated"
+    characteristics:
+      - "Documented and communicated processes"
+      - "Tailored from standard templates"
+      - "Institutionalized best practices"
+      - "Process training exists"
+
+  4:
+    name: "Managed"
+    description: "Processes are measured, controlled, and monitored"
+    characteristics:
+      - "Quantitative targets and goals"
+      - "Processes measured and monitored"
+      - "Statistical techniques used"
+      - "Corrective actions when needed"
+
+  5:
+    name: "Optimized"
+    description: "Continuous improvement and optimization of processes"
+    characteristics:
+      - "Continuous optimization"
+      - "Automation where applicable"
+      - "Lessons learned captured"
+      - "Proactive process improvement"
+
+---
+
+## Usage Notes
+
+### ID Conventions
+
+**Vertical Capabilities** - Primary business domains:
+- `V1`, `V2`, `V3` - Root level domains
+- `V1.1`, `V1.2` - Sub-domains of V1
+- `V1.1.1`, `V1.1.2` - Specific functions within sub-domain
+
+**Horizontal Capabilities** - Cross-cutting, enterprise-wide:
+- `H1`, `H2` - Root level horizontal capabilities
+- `H1.1`, `H1.2` - Sub-components
+
+**Backlog** - Capabilities under evaluation or postponed:
+- `V0.1`, `V0.2` - Vertical backlog
+- `H0.1`, `H0.2` - Horizontal backlog
+
+### Maturity Progression
+
+Track capability maturity over time:
+```yaml
+maturity_levels:
+  - level: 1
+    effective_from: "2026-05-03"
+    status: "Current"
+  - level: 2
+    effective_from: "2026-08-01"
+    status: null
+  - level: 3
+    effective_from: "2027-01-01"
+    status: null
+```
+
+### Linking to Architecture
+
+- **owner_role**: Reference to `ROLE-XXX-001` element
+- **business_process**: Reference to `PROC-XXX-001` element
+- **applications**: Array of `APP-XXX-001` element IDs
+
+### Roadmap Integration
+
+Include target maturity for roadmap planning:
+```yaml
+target_maturity: 4
+target_date: "2027-06-30"
+improvement_initiative: "Digital transformation project"
+```
+
+---
+
+**Version:** 1.0.0
+**Created:** May 3, 2026
+**Based on:** Segments project Capability Map concept + Transitrix methodology

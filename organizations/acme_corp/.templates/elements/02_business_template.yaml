@@ -1,0 +1,44 @@
+# Transitrix Element Template: Business Layer
+# Purpose: Capture business roles, actors, processes, and functions
+# Location: elements/02_business/
+# Naming Convention: [TYPE]-[SHORT_CODE].yaml (e.g., ROLE-SALES-001.yaml, PROC-ORD-001.yaml)
+
+id: "ROLE-XXX-001"
+name: "Business Role / Function / Process Name"
+type: "BusinessRole"  # Valid types: BusinessRole, BusinessActor, BusinessProcess, BusinessFunction, Service
+layer: "Business"
+
+metadata:
+  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
+  owner: "firstname.lastname"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  tags: ["business", "core"]
+
+properties:
+  description: "Detailed description of the business element"
+  scope: "Organization unit or process scope"
+  criticality: "Medium"  # Values: Critical, High, Medium, Low
+  responsibility_area: "Explicit domain or function area"
+
+  # For BusinessProcess: define key steps or activities
+  process_steps: []  # Reference to BPMN process or sequential steps
+
+  # For BusinessRole: define competencies and capabilities
+  competencies: []
+
+  # For BusinessFunction: define inputs and outputs
+  inputs: []
+  outputs: []
+
+# Metadata about governance
+governance:
+  approval_required: false
+  compliance_frameworks: []  # e.g., GDPR, SOC2, ISO27001
+  audit_frequency: "Annual"  # e.g., Annual, Quarterly, Continuous
+
+# Optional references to stakeholders or related elements
+references:
+  responsible_parties: []  # IDs of roles/actors
+  related_processes: []
+  parent_function: null  # ID of parent function if hierarchical

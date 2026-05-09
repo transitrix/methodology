@@ -1,0 +1,135 @@
+# Transitrix BPMN Process Template
+# Purpose: Describe business processes in text-first format with automatic layout
+# Location: elements/02_business/ (as .bpmn.transitrix.yaml)
+# Naming Convention: [PROCESS_CODE]_process.bpmn.transitrix.yaml (e.g., ORD_FULFILLMENT_process.bpmn.transitrix.yaml)
+
+id: "PROC-XXX-001"
+name: "Business Process Name"
+type: "BusinessProcess"
+layer: "Business"
+
+metadata:
+  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
+  owner: "firstname.lastname"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  tags: ["core-process", "customer-facing"]
+
+properties:
+  description: "High-level description of what this process accomplishes"
+  scope: "End-to-end process scope"
+  frequency: "Daily"  # Values: Continuous, Hourly, Daily, Weekly, Monthly, Ad-hoc
+  avg_duration_minutes: 120
+  criticality: "High"  # Values: Critical, High, Medium, Low
+
+# BPMN Process Definition in text-first format
+# This structure enables:
+# 1. Human-readable YAML description
+# 2. Automatic BPMN 2.0 XML generation
+# 3. Automatic layout calculation (ELK.js)
+# 4. VS Code interactive preview
+
+bpmn:
+  # Start event
+  start_event:
+    id: "START_001"
+    name: "Process Started"
+    event_type: "None"  # Values: None, Message, Timer, Signal, Error, Escalation, etc.
+
+  # Main flow definition
+  activities:
+    - id: "TASK_001"
+      name: "Task 1: Receive Request"
+      type: "UserTask"  # Values: UserTask, ServiceTask, ManualTask, ScriptTask
+      assigned_role: "ROLE-SALES-001"  # Reference to BusinessRole
+      required_system: null  # Reference to ApplicationComponent if system-supported
+
+    - id: "TASK_002"
+      name: "Task 2: Validate Request"
+      type: "ServiceTask"
+      assigned_role: null
+      required_system: "APP-VALIDATOR-001"
+
+    - id: "GATEWAY_001"
+      name: "Decision: Request Valid?"
+      type: "ExclusiveGateway"  # Values: ExclusiveGateway, ParallelGateway, InclusiveGateway
+
+    - id: "TASK_003"
+      name: "Task 3: Process Approved Request"
+      type: "ServiceTask"
+      assigned_role: null
+      required_system: "APP-PROCESSOR-001"
+
+    - id: "TASK_004"
+      name: "Task 4: Notify Requester - Rejected"
+      type: "ServiceTask"
+      assigned_role: null
+      required_system: "APP-NOTIFICATION-001"
+
+  # Sequence flows (connections between activities)
+  sequences:
+    - id: "FLOW_001"
+      source_id: "START_001"
+      target_id: "TASK_001"
+      name: ""  # Typically empty for default flow
+
+    - id: "FLOW_002"
+      source_id: "TASK_001"
+      target_id: "TASK_002"
+      name: ""
+
+    - id: "FLOW_003"
+      source_id: "TASK_002"
+      target_id: "GATEWAY_001"
+      name: ""
+
+    - id: "FLOW_004"
+      source_id: "GATEWAY_001"
+      target_id: "TASK_003"
+      name: "Valid"  # Condition label
+
+    - id: "FLOW_005"
+      source_id: "GATEWAY_001"
+      target_id: "TASK_004"
+      name: "Invalid"  # Condition label
+
+  # End event
+  end_event:
+    id: "END_001"
+    name: "Process Completed"
+    event_type: "None"
+
+  # Connect activities to end event (this would be defined as additional sequences in actual implementation)
+
+# KPI and metrics
+metrics:
+  sla_completion_hours: 24
+  target_completion_rate_percent: 95
+  average_processing_time_minutes: 120
+  bottleneck_activity: "TASK_002"  # ID of slowest step
+
+# Resource requirements
+resources:
+  required_roles: ["ROLE-SALES-001"]
+  required_systems: ["APP-VALIDATOR-001", "APP-PROCESSOR-001", "APP-NOTIFICATION-001"]
+  required_data: ["Customer Data", "Request Details"]
+
+# Compliance and governance
+governance:
+  audit_required: true
+  audit_frequency: "Monthly"
+  compliance_frameworks: ["GDPR", "ISO27001"]
+  change_control_required: true
+
+# Version and lifecycle
+versioning:
+  current_version: "1.0.0"
+  last_review_date: "2026-05-03"
+  next_review_date: "2026-08-03"
+
+# References to supporting documentation
+references:
+  related_goals: []  # IDs of Goal elements this process supports
+  related_roles: ["ROLE-SALES-001"]  # IDs of BusinessRole elements
+  related_systems: ["APP-VALIDATOR-001"]  # IDs of ApplicationComponent elements
+  documentation_url: null  # Link to detailed SOPs or wiki

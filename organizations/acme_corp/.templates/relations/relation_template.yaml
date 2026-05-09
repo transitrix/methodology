@@ -1,0 +1,60 @@
+# Transitrix Relation Template
+# Purpose: Describe relationships and connections between architecture elements
+# Location: relations/
+# Naming Convention: [SOURCE_TYPE]-[TARGET_TYPE]-[SEQUENCE].yaml (e.g., APP-NODE-001.yaml, PROC-ROLE-001.yaml)
+# Important: Relations are ATOMIC - no relations inside element files, only in this dedicated directory
+
+id: "REL-XXX-001"
+
+# Source and Target MUST reference valid element IDs
+source:
+  id: "APP-SRVC-001"  # ID of source element
+  type: "ApplicationComponent"  # Type helps validate relation logic
+
+target:
+  id: "NODE-DB-001"  # ID of target element
+  type: "Node"  # Type helps validate relation logic
+
+# Relationship type from ArchiMate 3.2 specification
+# Common types: Serving, Assignment, Realization, Access, Composition, Aggregation,
+#             Triggering, Flow, Specialization, Association, Influence, Junction
+type: "Access"  # Must align with ArchiMate semantics
+
+metadata:
+  status: "Draft"  # Values: Draft, Active, Deprecated
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  created_by: "firstname.lastname"
+
+# Relationship specifics
+properties:
+  description: "Detailed description of the relationship and its purpose"
+  criticality: "High"  # Values: Critical, High, Medium, Low
+
+  # Communication and protocol details
+  protocol: "TCP/IP"  # e.g., TCP/IP, HTTP/S, gRPC, AMQP, SQL
+  port: 5432
+  encrypted: true
+
+  # Data flow characteristics
+  data_classification: "Internal"  # Values: Public, Internal, Confidential, Restricted
+  data_volume_per_day_gb: 50
+  synchronous: true  # true = synchronous, false = asynchronous
+
+  # Performance characteristics
+  expected_latency_ms: 100
+  throughput_requests_per_second: 1000
+
+# Governance and risk
+governance:
+  change_control_required: true
+  approval_required: false
+  impact_analysis_required: true
+
+# Optional conditional or temporal information
+conditions: []  # e.g., ["Only during business hours", "For audit purposes"]
+
+# References to related relations or dependencies
+references:
+  depends_on: []  # IDs of other relations that must exist first
+  conflicts_with: []  # IDs of incompatible relations

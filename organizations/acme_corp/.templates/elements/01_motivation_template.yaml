@@ -1,0 +1,30 @@
+# Transitrix Element Template: Motivation Layer
+# Purpose: Capture business drivers, goals, principles, and constraints
+# Location: elements/01_motivation/
+# Naming Convention: [TYPE]-[SHORT_CODE].yaml (e.g., GOAL-PERF-001.yaml)
+
+id: "GOAL-XXX-001"
+name: "Business Goal Name"
+type: "Goal"  # Valid types: Goal, Principle, Constraint, Driver, Outcome, Value
+layer: "Motivation"
+
+metadata:
+  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
+  owner: "firstname.lastname"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  tags: ["strategic", "performance"]
+
+properties:
+  description: "Clear and concise description of the business goal"
+  scope: "Enterprise"  # Values: Enterprise, Department, Team, Project
+  priority: "High"  # Values: Critical, High, Medium, Low
+  timeline: "2026-Q3"
+  success_criteria:
+    - "Measurable metric 1"
+    - "Measurable metric 2"
+
+# Optional references to stakeholders or related elements
+references:
+  stakeholders: []  # List of person/role IDs who are accountable
+  related_goals: []  # IDs of other Goal elements

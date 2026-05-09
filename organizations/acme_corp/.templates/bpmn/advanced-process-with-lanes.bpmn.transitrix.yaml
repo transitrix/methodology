@@ -1,0 +1,315 @@
+# Transitrix Advanced BPMN Process Template with Lanes & Stages
+# Purpose: Model complex business processes with multiple actors/lanes
+# Improvement: Based on segments project, enhanced with Transitrix integration
+# Location: elements/02_business/ (as PROCESS_NAME_process.bpmn.transitrix.yaml)
+
+id: "PROC-XXX-001"
+name: "Process Name with Multiple Actors"
+type: "BusinessProcess"
+layer: "Business"
+
+metadata:
+  status: "Draft"
+  owner: "firstname.lastname"
+  created_at: "2026-05-03"
+  updated_at: "2026-05-03"
+  tags: ["multi-actor", "structured"]
+
+properties:
+  description: "Process description with clear scope and actors involved"
+  scope: "Business area or organization unit"
+  frequency: "Daily"
+  avg_duration_minutes: 480
+  criticality: "High"
+
+# BPMN Process Definition with Lanes and Stages
+bpmn:
+  # Organizational lanes (actors/roles)
+  lanes:
+    - id: "lane_customer"
+      name: "Customer"
+      actor_role: "ROLE-CUSTOMER-001"  # Reference to BusinessRole
+
+    - id: "lane_sales"
+      name: "Sales Team"
+      actor_role: "ROLE-SALES-001"  # Reference to BusinessRole
+      responsible_system: "APP-CRM-001"  # Supporting system
+
+    - id: "lane_warehouse"
+      name: "Warehouse"
+      actor_role: "ROLE-WAREHOUSE-MANAGER-001"
+      responsible_system: "APP-WMS-001"  # Warehouse Management System
+
+    - id: "lane_logistics"
+      name: "Logistics Partner"
+      actor_role: "ROLE-LOGISTICS-PROVIDER-001"
+      responsible_system: "EXT-LOGISTICS-API"  # External system
+
+  # Process stages (logical grouping)
+  stages:
+    # STAGE 1: Initiation
+    - stage_id: "S1"
+      stage_name: "Order Placement & Validation"
+      description: "Customer initiates order, system validates"
+      duration_minutes: 30
+
+      steps:
+        - id: "S1_start"
+          type: "startEvent"
+          label: "Customer Initiates Order"
+          lane: "lane_customer"
+          next: "S1_receive"
+
+        - id: "S1_receive"
+          type: "task"
+          label: "Receive Order"
+          lane: "lane_sales"
+          description: "Order received in CRM system"
+          supporting_system: "APP-CRM-001"
+          required_data: ["CUSTOMER_ID", "ORDER_ITEMS"]
+          output_data: ["ORDER_ID"]
+          next: "S1_validate"
+
+        - id: "S1_validate"
+          type: "serviceTask"
+          label: "Validate Order"
+          lane: "lane_sales"
+          description: "Check inventory, pricing, customer credit"
+          supporting_system: "APP-CRM-001"
+          checks:
+            - "Inventory availability"
+            - "Customer creditworthiness"
+            - "Price accuracy"
+          required_data: ["ORDER_ID", "PRODUCT_IDS"]
+          next: "S1_decision"
+
+        - id: "S1_decision"
+          type: "exclusiveGateway"
+          label: "Order Valid?"
+          decision_logic: "Validation passed all checks"
+          true_path: "S2_start"  # Go to next stage
+          false_path: "S1_reject"  # Rejection path
+
+        - id: "S1_reject"
+          type: "task"
+          label: "Notify Customer - Order Rejected"
+          lane: "lane_sales"
+          supporting_system: "APP-NOTIFICATION-001"
+          next: "S1_end"
+
+        - id: "S1_end"
+          type: "endEvent"
+          label: "Order Rejected"
+          lane: "lane_sales"
+
+    # STAGE 2: Processing & Fulfillment
+    - stage_id: "S2"
+      stage_name: "Order Processing & Fulfillment"
+      description: "Warehouse picks and packs order"
+      duration_minutes: 240
+
+      steps:
+        - id: "S2_start"
+          type: "task"
+          label: "Send Order to Warehouse"
+          lane: "lane_sales"
+          description: "Order routed to fulfillment center"
+          supporting_system: "APP-WMS-001"
+          output_data: ["SHIPMENT_ID"]
+          next: "S2_pick"
+
+        - id: "S2_pick"
+          type: "userTask"
+          label: "Pick Items from Inventory"
+          lane: "lane_warehouse"
+          description: "Warehouse staff picks items"
+          assigned_role: "ROLE-WAREHOUSE-PICKER-001"
+          required_data: ["ORDER_ID", "PRODUCT_LOCATIONS"]
+          output_data: ["PICKED_ITEMS"]
+          next: "S2_pack"
+
+        - id: "S2_pack"
+          type: "userTask"
+          label: "Pack Items"
+          lane: "lane_warehouse"
+          description: "Items packaged for shipment"
+          assigned_role: "ROLE-WAREHOUSE-PACKER-001"
+          quality_checks:
+            - "Item count verification"
+            - "Packaging integrity"
+          output_data: ["PACKAGE_ID", "WEIGHT", "DIMENSIONS"]
+          next: "S2_quality"
+
+        - id: "S2_quality"
+          type: "serviceTask"
+          label: "Quality Check"
+          lane: "lane_warehouse"
+          description: "Verify package meets quality standards"
+          supporting_system: "APP-QMS-001"  # Quality Management System
+          checks: ["Correct items", "Proper packaging", "Label accuracy"]
+          next: "S2_decision"
+
+        - id: "S2_decision"
+          type: "exclusiveGateway"
+          label: "Package Approved?"
+          true_path: "S3_start"
+          false_path: "S2_repack"
+
+        - id: "S2_repack"
+          type: "userTask"
+          label: "Repack Package"
+          lane: "lane_warehouse"
+          assigned_role: "ROLE-WAREHOUSE-PACKER-001"
+          next: "S2_quality"  # Loop back to quality check
+
+    # STAGE 3: Shipping & Delivery
+    - stage_id: "S3"
+      stage_name: "Shipping & Delivery"
+      description: "Package handed to logistics provider"
+      duration_minutes: 1440  # Up to 24+ hours depending on location
+
+      steps:
+        - id: "S3_start"
+          type: "task"
+          label: "Hand Off to Logistics"
+          lane: "lane_warehouse"
+          description: "Package ready for pickup by logistics"
+          supporting_system: "APP-WMS-001"
+          output_data: ["TRACKING_NUMBER"]
+          next: "S3_ship"
+
+        - id: "S3_ship"
+          type: "task"
+          label: "Ship Package"
+          lane: "lane_logistics"
+          description: "Logistics provider ships package"
+          supporting_system: "EXT-LOGISTICS-API"
+          output_data: ["TRACKING_DETAILS"]
+          next: "S3_notify_customer"
+
+        - id: "S3_notify_customer"
+          type: "serviceTask"
+          label: "Notify Customer - Shipment Sent"
+          lane: "lane_sales"
+          supporting_system: "APP-NOTIFICATION-001"
+          notification_type: "Email + SMS"
+          next: "S3_deliver"
+
+        - id: "S3_deliver"
+          type: "task"
+          label: "Deliver Package"
+          lane: "lane_logistics"
+          description: "Package delivered to customer"
+          supporting_system: "EXT-LOGISTICS-API"
+          next: "S3_confirm"
+
+        - id: "S3_confirm"
+          type: "task"
+          label: "Confirm Delivery"
+          lane: "lane_customer"
+          description: "Customer confirms receipt"
+          next: "S3_end"
+
+        - id: "S3_end"
+          type: "endEvent"
+          label: "Order Delivered"
+          lane: "lane_customer"
+
+# Key Performance Indicators
+kpis:
+  - name: "Order-to-Delivery Time"
+    target: "48 hours"
+    measurement_unit: "hours"
+    calculated_from: ["S1_start", "S3_end"]
+
+  - name: "First-Pass Quality Rate"
+    target: "98%"
+    measurement_unit: "percentage"
+    related_step: "S2_decision"
+
+  - name: "Order Acceptance Rate"
+    target: "95%"
+    measurement_unit: "percentage"
+    related_step: "S1_decision"
+
+# Resource Requirements
+resources:
+  required_roles:
+    - "ROLE-SALES-001"
+    - "ROLE-WAREHOUSE-PICKER-001"
+    - "ROLE-WAREHOUSE-PACKER-001"
+
+  required_systems:
+    - "APP-CRM-001"
+    - "APP-WMS-001"
+    - "APP-NOTIFICATION-001"
+    - "EXT-LOGISTICS-API"
+
+  required_data_entities:
+    - "Customer"
+    - "Order"
+    - "Inventory Item"
+    - "Package"
+    - "Shipment"
+
+# Governance
+governance:
+  audit_required: true
+  audit_frequency: "Monthly"
+  change_control_required: true
+  approval_required: false
+
+# References
+references:
+  business_capability: "PROC-ORD-FULFILL"  # Capability this process supports
+  supporting_goals:
+    - "GOAL-DELIVERY-SPEED-001"
+    - "GOAL-CUSTOMER-SATISFACTION-001"
+  related_processes:
+    - "PROC-RETURNS-001"
+    - "PROC-CUSTOMER-SERVICE-001"
+
+# Versioning
+versioning:
+  current_version: "1.0.0"
+  last_review_date: "2026-05-03"
+  next_review_date: "2026-08-03"
+  last_updated_by: "firstname.lastname"
+
+---
+
+## Lane & Stage Guidance
+
+### When to Use Lanes
+- Multiple actors/roles involved
+- Cross-functional process
+- Need clear responsibility assignment
+- Want to show who does what
+
+### When to Use Stages
+- Long processes that naturally divide into phases
+- Want to group related steps logically
+- Need SLA/timing by stage
+- Want to show progression through phases
+
+### Data Flow
+- Each task shows `required_data` (inputs) and `output_data` (outputs)
+- Links tasks in the flow with `next` field
+- Makes data dependencies explicit
+
+### System Integration
+- Every task that uses a system shows `supporting_system`
+- Reference to ApplicationComponent elements (APP-XXX-001)
+- External systems prefixed with EXT-
+
+### Quality & Control
+- Include quality checkpoints (S2_quality example)
+- Show decision gateways
+- Document decision criteria
+- Include loops for rework (S2_repack example)
+
+---
+
+**Template Version:** 1.0.0
+**Created:** May 3, 2026
+**Based On:** Segments project BPMN format + Transitrix ArchiMate integration

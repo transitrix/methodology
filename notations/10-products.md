@@ -1,0 +1,147 @@
+---
+notation: "Products Catalogue"
+version: "0.1"
+author: "Valerii Korobeinikov"
+last_updated: "2026-05-08"
+status: "planned"
+file_extension: "*.products.transitrix.yaml"
+---
+
+# Products Catalogue Notation — Reference
+
+**Scope:** Structured inventory of an organisation's products and services. A text-and-table catalogue — no diagram. Used to register what the organisation offers to its customers.
+**Renderer:** Transitrix Studio (planned)
+
+---
+
+## File header
+
+Every `*.products.transitrix.yaml` file MUST start with the following header:
+
+```yaml
+notation: products      # required; this notation's short name
+spec_version: 0.1       # optional today; reserved field; will be required when this notation reaches v1.0
+# … rest of the document
+```
+
+Validator behaviour:
+- Missing `notation` → hard error.
+- `notation` value not equal to `products` → hard error (the file might be the wrong format for this extension).
+- File extension not equal to `.products.transitrix.yaml` while `notation: products` → hard error (extension/content mismatch).
+- `spec_version` accepted but not enforced until this notation hits v1.0.
+
+---
+
+## 1. Overview
+
+The products catalogue answers the question: **what products and services does the organisation offer?**
+
+It is a catalogue view over Business Product and Business Service elements defined in `elements/02_business/`. It does not replace those element files — it aggregates them into a structured view with additional metadata relevant to portfolio management.
+
+---
+
+## 2. When to use
+
+| Use case | Use products catalogue? |
+|----------|------------------------|
+| Register a product or service offering | Yes |
+| Show how a product is delivered (process) | No — use BPMN |
+| Show which applications support a product | No — use Applications catalogue or ArchiMate |
+| Compare product portfolio across domains | Yes |
+| Track product maturity and ownership | Yes |
+
+---
+
+## 3. File location and naming
+
+```
+views/products/<DOMAIN>.products.transitrix.yaml
+```
+
+Examples:
+- `views/products/ENTERPRISE.products.transitrix.yaml`
+- `views/products/DIGITAL_CHANNEL.products.transitrix.yaml`
+
+---
+
+## 4. Top-level structure
+
+```yaml
+products_catalogue:
+  id: "PROD-CAT-001"
+  name: "Enterprise Products Catalogue"
+  description: "Full inventory of products and services offered by the organisation"
+  version: "1.0"
+  updated_at: "2026-05-08"
+
+  products:
+    - product_id: "PROD-ECOMM-001"
+      name: "E-Commerce Platform"
+      type: "digital_product"          # digital_product | service | platform | bundle
+      domain: "Digital"
+      owner_role: "ROLE-PROD-001"
+      status: "Active"                 # Draft | Active | Deprecated
+      maturity: 3                      # CMM level 1–5
+      description: "Online storefront and order management for end customers"
+      capabilities:
+        - "V1"
+        - "V2"
+      processes:
+        - "PROC-ORD-FULFILL-001"
+      supporting_apps:
+        - "APP-OMS-001"
+        - "APP-CRM-001"
+
+    - product_id: "SVC-SUPPORT-001"
+      name: "Customer Support Service"
+      type: "service"
+      domain: "Operations"
+      owner_role: "ROLE-CS-001"
+      status: "Active"
+      description: "Tier-1 and Tier-2 support for customers via chat, email, and phone"
+```
+
+---
+
+## 5. Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `products_catalogue.id` | Yes | Unique catalogue ID (`PROD-CAT-DOMAIN-SEQ`) |
+| `products_catalogue.name` | Yes | Human-readable name |
+| `products_catalogue.updated_at` | Yes | Last update date (YYYY-MM-DD) |
+| `products[].product_id` | Yes | Unique product ID — references element in `elements/02_business/` |
+| `products[].name` | Yes | Product name (should match the element) |
+| `products[].type` | Yes | `digital_product` / `service` / `platform` / `bundle` |
+| `products[].domain` | No | Business domain this product belongs to |
+| `products[].owner_role` | No | BusinessRole element ID of the product owner |
+| `products[].status` | Yes | `Draft` / `Active` / `Deprecated` |
+| `products[].maturity` | No | CMM level 1–5 |
+| `products[].description` | No | Short product description |
+| `products[].capabilities` | No | List of capability IDs this product realises |
+| `products[].processes` | No | List of BusinessProcess element IDs that deliver this product |
+| `products[].supporting_apps` | No | List of Application element IDs |
+
+---
+
+## 6. Relationship to other notations
+
+```
+Products Catalogue       →  what we offer
+        ↓
+Process Landscape Map    →  how we deliver it
+        ↓
+Applications Catalogue   →  what systems support delivery
+        ↓
+Capabilities Map         →  what capabilities are required
+```
+
+---
+
+## 7. References
+
+- BusinessProduct / BusinessService elements: `elements/02_business/*.yaml`
+- Process landscape map: `notations/07-process-map.md`
+- Applications catalogue: `notations/11-applications.md`
+- Capabilities map: `notations/06-capability-map.md`
+- Methodology section 6: `method/methodology.md`
