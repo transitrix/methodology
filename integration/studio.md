@@ -304,9 +304,7 @@ npm run serve
 
 - **method/** — Complete methodology (English)
 - **README.md** — Project overview
-- **PROJECT_RULES.md** — Naming standards, conventions
-- **glossary.md** — 50+ standardized terms
-- **roadmap.md** — Project implementation phases
+- **glossary.md** — Standardised terminology
 - **integration/tooling.md** — Tools and integration guide
 - **integration/studio.md** — This file (Transitrix + Transitrix Studio)
 
@@ -368,7 +366,7 @@ npm run serve
          effective_from: "2026-12-31"
          status: null  # future target
    ```
-4. **Track in roadmap** (Transitrix roadmap.md or Transitrix Studio roadmap.md)
+4. **Track in roadmap** (Transitrix Studio roadmap.md or your project backlog)
 
 ---
 

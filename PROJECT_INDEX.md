@@ -14,9 +14,7 @@ Complete guide to the Transitrix project structure and where to find everything.
 | **PROJECT_INDEX.md** | This file - navigation guide | Need to find something in the project |
 | **method/** | Methodology documentation | Understanding the core concepts and principles |
 | **TOOLING.md** | Tools & integrations guide | Setting up Transitrix Studio or other tooling |
-| **roadmap.md** | Project status & phases | Tracking implementation progress |
 | **glossary.md** | Project terminology | Looking up standardized terms |
-| **PROJECT_RULES.md** | Standards & conventions | Understanding naming and documentation rules |
 | **organizations/** | All organization directories | Main working area |
 | **create_organization.sh** | Script to add new organizations | Adding a new company/team to the project |
 

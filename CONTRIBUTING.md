@@ -29,7 +29,7 @@ For each issue, include the file path or section reference, what you observed, a
 2. **Branch from `main`.** Use a descriptive branch name (`docs/methodology-bpmn-clarifications`, `feat/validator-rule-policy-archive`).
 3. **Keep pull requests focused.** One concern per PR.
 4. **Run validators locally.** `python3 organizations/<org>/.validators/lint.py` for any organisation you touch.
-5. **Update related docs.** If your change affects naming, layout, or rules, update `methodology.md`, `glossary.md`, `PROJECT_RULES.md`, and `PROJECT_INDEX.md` as needed.
+5. **Update related docs.** If your change affects naming, layout, or rules, update `methodology.md`, `glossary.md`, and `PROJECT_INDEX.md` as needed.
 6. **Open a pull request.** Describe what changed, why, and link the issue.
 
 ## Review process
@@ -47,7 +47,7 @@ Maintainer decisions on methodology-level changes (new notations, schema changes
 - **Language:** English for all canonical content. Other languages live under `translations/<lang>/`, marked clearly as derivatives.
 - **Markdown:** short paragraphs, descriptive headings, lower-case file names except `README.md`, `CONTRIBUTING.md`, `LICENSE`.
 - **YAML:** two-space indentation; lower-case keys; quoted ids; explicit types.
-- **File naming:** see `PROJECT_RULES.md`.
+- **File naming:** see `methodology.md` §9.
 - **Element ids:** `[TYPE]-[DOMAIN]-[SEQUENCE]`. See `methodology.md` §9.
 - **Tags and metadata in repository files: English.**
 

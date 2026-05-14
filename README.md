@@ -14,7 +14,6 @@ Start here:
 
 - **[`method/methodology.md`](method/methodology.md)** — the canonical methodology specification. Read this first.
 - **[`glossary.md`](glossary.md)** — standardised terminology.
-- **[`PROJECT_RULES.md`](PROJECT_RULES.md)** — naming conventions and standards.
 - **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — navigation guide.
 
 Tooling:
@@ -67,7 +66,6 @@ transitrix/methodology/
 │   └── NEW_ORGANIZATION_TEMPLATE.md # How to bootstrap a new organisation
 ├── glossary.md
 ├── PROJECT_INDEX.md
-├── PROJECT_RULES.md
 ├── TOOLING.md
 ├── README.md                        # This file
 ├── LICENSE                          # MIT
