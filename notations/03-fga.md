@@ -139,7 +139,7 @@ When converting FGA to FGCA: identify the implicit change each goal demands and 
 
 ## 7. References
 
-- FGCA notation: `notations/03-fgca.md`
-- Goals tree notation: `notations/05-goals.md`
+- FGCA notation: `notations/02-fgca.md`
+- Goals tree notation: `notations/04-goals.md`
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
 - Methodology section 6.2: `method/methodology.md`
