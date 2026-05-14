@@ -11,8 +11,7 @@ file_extension: "*.bpmn.transitrix.yaml"
 
 **Version:** 1.0
 **Date:** 2026-05-04
-**Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, and the supported subset of BPMN 2.0.
-**Related:** [`rules.md`](rules.md), [`glossary.md`](glossary.md), [`schema/bpmn-dsl.schema.json`](schema/bpmn-dsl.schema.json), [`examples/`](examples/).
+**Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
 ---
 
@@ -38,7 +37,7 @@ Validator behaviour:
 
 A process file describes a BPMN 2.0 process as a structured YAML document. The notation captures one pool, one or more lanes, typed elements inside lanes, and named sequence flows between elements. Coordinates and visual styling are **not** part of the notation — layout is computed deterministically at compile time and embedded as `bpmndi:` blocks in the output XML.
 
-The notation is intentionally minimal. It covers the subset of BPMN 2.0 that maps cleanly to text and produces unambiguous diagrams without manual editing. Element types and structures outside this subset are explicitly out of scope (see Section 12).
+The notation is intentionally minimal. It covers the subset of BPMN 2.0 that maps cleanly to text and produces unambiguous diagrams without manual editing. Element types and structures outside this subset are explicitly out of scope (see §13).
 
 The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Modeler, bpmn.io, Signavio, etc.) without round-tripping; YAML is the single source of truth.
 
@@ -79,7 +78,7 @@ process:
     # ...
 ```
 
-No additional top-level keys are permitted. Validation is enforced by [`schema/bpmn-dsl.schema.json`](schema/bpmn-dsl.schema.json) and rejected by the parser before compilation.
+No additional top-level keys are permitted. The compiler rejects unknown keys before compilation.
 
 ---
 
@@ -96,7 +95,7 @@ The `id` is emitted as the `id` attribute of the root `<process>` element in the
 
 ## 5. Pools
 
-A pool represents a single participant in the process. The notation supports **exactly one pool per document**. This is a deliberate narrowing of the BPMN 2.0 spec, which permits multiple pools per collaboration. Multi-pool support is out of scope (see Section 12).
+A pool represents a single participant in the process. The notation supports **exactly one pool per document**. This is a deliberate narrowing of the BPMN 2.0 spec, which permits multiple pools per collaboration. Multi-pool support is out of scope (see §13).
 
 ```yaml
 pools:
@@ -276,11 +275,11 @@ Violations are caught by the parser before compilation and reported with the col
 
 ## 10. Validation summary
 
-The compiler runs four layers of validation on each input. Each layer can block compilation independently. Full rule catalogue is in [`rules.md`](rules.md).
+The compiler runs four layers of validation on each input. Each layer can block compilation independently. Full rule catalogue is in §11.
 
 | Layer | What is checked |
 |---|---|
-| 1. Schema | YAML structure, allowed element types, required fields, identifier patterns, single-pool constraint (the JSON Schema in [`schema/bpmn-dsl.schema.json`](schema/bpmn-dsl.schema.json)) |
+| 1. Schema | YAML structure, allowed element types, required fields, identifier patterns, single-pool constraint |
 | 2. Structural | Identifier uniqueness, reference resolution, no self-loops, no duplicate flows |
 | 3. Semantic | BPMN 2.0 rules: every process has a start and end event, gateways have correct multiplicity, conditions appear only where allowed, every element is reachable, etc. |
 | 4. XML conformance | Output XML must round-trip through a BPMN 2.0 parser without warnings |
@@ -289,7 +288,95 @@ In addition, anti-pattern checks (warnings, not errors) flag suspicious-but-vali
 
 ---
 
-## 11. Reserved characters and escaping
+## 11. Validation rules
+
+**Governing principle.** Rules must either repeat or **narrow** the OMG BPMN 2.0 specification (`formal/2013-12-09`). Narrowing is allowed. Adding constraints outside the spec is allowed if they do not contradict it. Allowing what BPMN 2.0 forbids, or relaxing its invariants, is not allowed.
+
+### Severity model
+
+- **Error** — blocks compilation; the BPMN XML is not produced. Cannot be downgraded.
+- **Warning** — surfaced to the user; does not block compilation. May be disabled via project configuration on a per-rule basis.
+
+### Errors (block compilation)
+
+**Start events**
+
+| ID | Rule |
+|---|---|
+| **SE-001** | A process must have at least one Start Event. |
+| **SE-003** | A Start Event must have no incoming Sequence Flows. |
+| **SE-004** | A Start Event must have exactly one outgoing Sequence Flow. |
+
+**End events**
+
+| ID | Rule |
+|---|---|
+| **EE-001** | A process must have at least one End Event. |
+| **EE-003** | An End Event must have no outgoing Sequence Flows. |
+| **EE-004** | An End Event must have at least one incoming Sequence Flow. |
+
+**Activities**
+
+| ID | Rule |
+|---|---|
+| **ACT-001** | An Activity must have at least one incoming and one outgoing Sequence Flow (unless it is the sole element of a process). |
+
+**Sequence flows**
+
+| ID | Rule |
+|---|---|
+| **SF-001** | A Sequence Flow must connect two elements within the same pool (no cross-pool flows). |
+| **SF-DUP** | Two Sequence Flows with the same `(from, to)` pair are forbidden. |
+| **SF-005** | Conditional Sequence Flows may originate only from Activities or exclusive gateways. |
+| **SF-006** | Default Sequence Flows may originate only from Activities or exclusive gateways. |
+| **SF-007** | A Default Sequence Flow must not have a `condition` expression. |
+
+**Gateways**
+
+| ID | Rule |
+|---|---|
+| **GW-XOR-01** | An exclusive gateway with one incoming and one outgoing flow is forbidden — use a sequence flow instead. |
+| **GW-XOR-02** | When splitting at an exclusive gateway, at most one outgoing flow may be the default; all others must have a `condition`. |
+| **GW-AND-04** | Outgoing flows from a parallel gateway split must not carry `condition` expressions. |
+
+**Process connectivity**
+
+| ID | Rule |
+|---|---|
+| **CONN-001** | Every element must be connected (directly or transitively) to at least one Start Event and reach at least one End Event. |
+| **CONN-002** | The process graph must be weakly connected — no isolated islands of elements. |
+
+**Pools and lanes**
+
+| ID | Rule |
+|---|---|
+| **POOL-05** | Exactly one pool per document. |
+
+### Warnings (non-blocking)
+
+Anti-patterns: structures that are valid per BPMN 2.0 but suspicious in practice. Each warning may be disabled via project configuration (e.g., a `.transitrixrc` file with `rules: { 'AP-FLOAT': 'off' }`).
+
+| ID | Description |
+|---|---|
+| **AP-FLOAT** | Floating element — has zero incoming AND zero outgoing flows. |
+| **AP-NO-DEFAULT** | XOR split with two or more conditional outgoing flows and no default — if all conditions evaluate to false at runtime, the token is lost. |
+| **AP-IMPLICIT-JOIN** | A Task with two or more incoming flows and no joining gateway — each arriving token independently activates the task per BPMN semantics, often unintended. |
+| **AP-GW-AS-TASK** | A gateway whose `name` starts with an imperative verb ("Validate", "Approve", "Check", etc.) — gateways are routing constructs, not work-performing elements. **Off by default.** |
+
+### Disabling warnings
+
+```yaml
+# .transitrixrc
+rules:
+  AP-FLOAT: off
+  AP-IMPLICIT-JOIN: warn   # explicit warn (default)
+```
+
+Errors cannot be disabled by configuration.
+
+---
+
+## 12. Reserved characters and escaping
 
 YAML rules apply for string fields. In particular:
 
@@ -302,7 +389,7 @@ The compiler emits string content verbatim into XML, escaping XML-reserved chara
 
 ---
 
-## 12. Out of scope (BPMN 2.0 features not in this notation)
+## 13. Out of scope (BPMN 2.0 features not in this notation)
 
 The following BPMN 2.0 features are **not** supported by the current notation. Documents using them either fail schema validation (unknown enum values) or are silently rejected at the parser level.
 
@@ -322,19 +409,212 @@ Adding any of these requires expanding the schema and the surrounding tooling in
 
 ---
 
-## 13. Examples
+## 14. Examples
 
-Three working examples are in [`examples/`](examples/):
+Three working examples follow. Each compiles successfully and passes all validation layers.
 
-- [`examples/minimal.bpmn.transitrix.yaml`](examples/minimal.bpmn.transitrix.yaml) — smallest valid process: one start, one end, one flow.
-- [`examples/approval.bpmn.transitrix.yaml`](examples/approval.bpmn.transitrix.yaml) — single-lane process with XOR decision and a default branch.
-- [`examples/release-pipeline.bpmn.transitrix.yaml`](examples/release-pipeline.bpmn.transitrix.yaml) — multi-lane pipeline with cross-lane flows and parallel split/join.
+### 14.1. Minimal
 
-Each example compiles successfully and passes all validation layers.
+Smallest valid process: one start event, one end event, one flow.
+
+```yaml
+process:
+  id: minimal
+  name: Minimal Process
+  pools:
+    - id: company
+      name: Company
+      lanes:
+        - id: main
+          name: Main
+          elements:
+            - id: start
+              type: startEvent
+            - id: end
+              type: endEvent
+  flows:
+    - from: start
+      to: end
+```
+
+### 14.2. Approval (XOR decision)
+
+Single-lane process with an exclusive gateway, conditions, and a default branch.
+
+```yaml
+process:
+  id: order-check
+  name: Order Check
+  pools:
+    - id: company
+      name: Company
+      lanes:
+        - id: sales
+          name: Sales
+          elements:
+            - id: start
+              type: startEvent
+            - id: receive-order
+              type: task
+              name: Receive Order
+            - id: check-stock
+              type: exclusiveGateway
+              name: In stock?
+            - id: pick-pack
+              type: task
+              name: Pick and Pack
+            - id: notify-customer
+              type: task
+              name: Notify Customer
+            - id: end
+              type: endEvent
+  flows:
+    - from: start
+      to: receive-order
+    - from: receive-order
+      to: check-stock
+    - from: check-stock
+      to: pick-pack
+      condition: 'in_stock'
+    - from: check-stock
+      to: notify-customer
+      default: true
+    - from: pick-pack
+      to: end
+    - from: notify-customer
+      to: end
+```
+
+### 14.3. Release pipeline (multi-lane, parallel gateway)
+
+Three lanes, `userTask` and `serviceTask`, XOR with default, parallel gateway split and join.
+
+```yaml
+process:
+  id: release-pipeline
+  name: Release Pipeline
+  pools:
+    - id: pipeline
+      name: Release Pipeline
+      lanes:
+        - id: dev
+          name: Development
+          elements:
+            - id: feature-ready
+              type: startEvent
+            - id: run-tests
+              type: task
+              name: Run Unit Tests
+            - id: tests-pass
+              type: exclusiveGateway
+              name: Tests pass?
+            - id: build
+              type: task
+              name: Build Package
+        - id: qa
+          name: QA
+          elements:
+            - id: manual-test
+              type: userTask
+              name: Manual Testing
+            - id: regression
+              type: task
+              name: Regression Suite
+        - id: ops
+          name: DevOps
+          elements:
+            - id: deploy-start
+              type: parallelGateway
+              name: Deploy Start
+            - id: health-check
+              type: serviceTask
+              name: Health Check
+            - id: deploy-staging
+              type: serviceTask
+              name: Deploy to Staging
+            - id: deploy-complete
+              type: parallelGateway
+              name: Deploy Complete
+            - id: promote
+              type: task
+              name: Promote to Production
+            - id: released
+              type: endEvent
+  flows:
+    - from: feature-ready
+      to: run-tests
+    - from: run-tests
+      to: tests-pass
+    - from: tests-pass
+      to: build
+      condition: 'passed'
+    - from: tests-pass
+      to: released
+      default: true
+    - from: build
+      to: manual-test
+    - from: manual-test
+      to: regression
+    - from: regression
+      to: deploy-start
+    - from: deploy-start
+      to: health-check
+    - from: deploy-start
+      to: deploy-staging
+    - from: health-check
+      to: deploy-complete
+    - from: deploy-staging
+      to: deploy-complete
+    - from: deploy-complete
+      to: promote
+    - from: promote
+      to: released
+```
 
 ---
 
-## 14. Versioning
+## 15. Glossary
+
+Domain terms used in this notation. Concise definitions focused on what each term means in this context.
+
+| Term | Definition |
+|---|---|
+| **Activity** | A unit of work in the process. In this notation: `task`, `userTask`, or `serviceTask`. The three subtypes differ visually but share the same routing semantics. |
+| **Anti-pattern** | A structure that is technically valid per BPMN 2.0 but suspicious in practice. The validator emits a warning, not an error. |
+| **BPMN** | Business Process Model and Notation — an OMG standard for business process diagrams. This notation produces valid BPMN 2.0 XML output (`formal/2013-12-09`). |
+| **BPMN 2.0 XML** | The standardised XML serialisation of a BPMN diagram. Contains both a semantic section and a `bpmndi:` diagram-interchange section (visual coordinates). The output of compiling a `.bpmn.transitrix.yaml` file. |
+| **bpmndi** | "BPMN Diagram Interchange" — the part of the BPMN 2.0 XML that stores visual layout (shapes, edges, waypoints) in a tool-portable way. Generated automatically by the compiler. |
+| **Compiler** | The tool that reads a `.bpmn.transitrix.yaml` file, validates it, computes layout, and emits BPMN 2.0 XML. |
+| **Condition** | An expression on a sequence flow that determines whether the flow is taken at runtime. A free-form string emitted verbatim into `<conditionExpression>`. The compiler does not interpret the expression language. |
+| **Default flow** | A sequence flow marked with `default: true` that is taken when no other conditional flow leaving the same XOR gateway evaluates to true. At most one default per gateway. |
+| **DSL** | Domain-Specific Language. This YAML notation is a DSL for describing BPMN 2.0 processes as text. |
+| **Element** | A node in the process graph: an event, a task, or a gateway. Each element has a unique `id`, a `type` from a fixed enumeration, and (for tasks and gateways) a `name`. |
+| **End event** | An `endEvent` element marking an exit point of the process. Has at least one incoming flow and no outgoing flows. |
+| **Exclusive gateway** | An `exclusiveGateway` element representing an XOR routing decision. When splitting, exactly one outgoing flow is taken. When joining, the first arriving token activates the outgoing flow. |
+| **Fork / split** | A gateway that has multiple outgoing flows. Runtime behaviour depends on the gateway type (XOR: choose one; AND: take all). |
+| **Gateway** | A diamond-shaped routing element. Two types are supported: `exclusiveGateway` (XOR) and `parallelGateway` (AND). |
+| **Identifier** | A string that uniquely names an element, lane, pool, flow, or process. Must match `^[A-Za-z][A-Za-z0-9_-]*$`. |
+| **Join / merge** | A gateway that has multiple incoming flows. Runtime behaviour depends on type (XOR: pass-through on first token; AND: wait for all tokens). |
+| **Lane (swimlane)** | A horizontal partition of a pool, typically representing a role or responsible system. Every element belongs to exactly one lane. |
+| **OMG** | Object Management Group — the standards body that publishes BPMN 2.0. Reference document: `formal/2013-12-09`. |
+| **Parallel gateway** | A `parallelGateway` element representing an AND fork/join. When splitting, all outgoing flows are activated simultaneously. When joining, waits for all incoming tokens. |
+| **Pool** | A BPMN 2.0 participant. The notation supports exactly one pool per document. |
+| **Process** | The top-level object in a `.bpmn.transitrix.yaml` document. Has an `id`, `name`, one `pool`, and a `flows` array. Compiles to a BPMN 2.0 `<process>` element. |
+| **Round-trip parsing** | Parsing the compiled XML back through a BPMN 2.0 parser to verify it is well-formed. The compiler runs this check on every emit. |
+| **Sequence flow** | A directed edge from one element to another. Declared in the top-level `flows` array. May carry a condition expression and/or a default flag. |
+| **Service task** | A `serviceTask` element — work performed by an automated service or system. |
+| **Start event** | A `startEvent` element marking an entry point of the process. Has no incoming flows and exactly one outgoing flow. |
+| **Subset** | The portion of BPMN 2.0 supported by this notation. See §13 for what is out of scope. |
+| **Swimlane axis** | The horizontal centreline of a lane. The compiler aligns single-column elements to their lane's axis to keep cross-lane flows straight. |
+| **Task** | A `task` element — generic unit of work. The base type; see also `userTask` and `serviceTask`. |
+| **User task** | A `userTask` element — work performed by a human. |
+| **Validation** | The set of layered checks the compiler runs on each input: structural (schema), semantic (BPMN rules), and conformance (round-trip XML). See §11 for the full catalogue. |
+| **Waypoint** | A point on the path of a sequence flow's edge. Computed automatically by the compiler — not part of the source notation. |
+| **YAML DSL** | The full name of this notation: a YAML-based domain-specific language for BPMN 2.0 processes. |
+
+---
+
+## 16. Versioning
 
 The notation is at version **1.0** (frozen 2026-05-04).
 
