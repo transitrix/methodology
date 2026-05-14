@@ -161,7 +161,7 @@ ArchiMate                →  formal model of application layer elements and rel
 ## 7. References
 
 - Application elements: `elements/03_application/*.yaml`
-- Nested block diagrams: `notations/09-blocks.md`
-- ArchiMate notation: `notations/01-archimate.md`
-- Products catalogue: `notations/10-products.md`
+- Nested block diagrams: `notations/08-blocks.md`
+- ArchiMate vocabulary: `method/methodology.md` §3a
+- Products catalogue: `notations/09-products.md`
 - Methodology section 6: `method/methodology.md`

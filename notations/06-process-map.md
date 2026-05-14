@@ -156,6 +156,6 @@ Process Landscape Map    →  lists all processes
 ## 7. References
 
 - BusinessProcess elements: `elements/02_business/*.yaml` (type: BusinessProcess)
-- BPMN notation: `notations/02-bpmn.md`
-- Capabilities map: `notations/06-capability-map.md`
+- BPMN notation: `notations/01-bpmn.md`
+- Capabilities map: `notations/05-capability-map.md`
 - Methodology section 6.4: `method/methodology.md`

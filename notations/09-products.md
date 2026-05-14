@@ -141,7 +141,7 @@ Capabilities Map         →  what capabilities are required
 ## 7. References
 
 - BusinessProduct / BusinessService elements: `elements/02_business/*.yaml`
-- Process landscape map: `notations/07-process-map.md`
-- Applications catalogue: `notations/11-applications.md`
-- Capabilities map: `notations/06-capability-map.md`
+- Process landscape map: `notations/06-process-map.md`
+- Applications catalogue: `notations/10-applications.md`
+- Capabilities map: `notations/05-capability-map.md`
 - Methodology section 6: `method/methodology.md`

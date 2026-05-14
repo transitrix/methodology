@@ -136,8 +136,8 @@ goals_tree:
 ## 8. References
 
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
-- FGCA notation: `notations/03-fgca.md`
-- FGA notation: `notations/04-fga.md`
+- FGCA notation: `notations/02-fgca.md`
+- FGA notation: `notations/03-fga.md`
 - Methodology section 6.1: `method/methodology.md`
 
 ---
@@ -192,4 +192,4 @@ Goals without a valid parent (orphans) live in the **backlog**. They are visible
 
 ### 9.5 Relationship to FGCA
 
-In DSM the Goals Tree is the G layer of FGCA. Goals are linked to Activities via the `goal_id` field on Activity records. The FGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See `notations/03-fgca.md`.
+In DSM the Goals Tree is the G layer of FGCA. Goals are linked to Activities via the `goal_id` field on Activity records. The FGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See `notations/02-fgca.md`.

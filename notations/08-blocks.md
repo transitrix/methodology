@@ -142,5 +142,5 @@ Enterprise
 
 - Svgbob renderer: [https://github.com/ivanceras/svgbob](https://github.com/ivanceras/svgbob)
 - Application elements: `elements/03_application/*.yaml`
-- Applications view: `notations/11-applications.md`
+- Applications view: `notations/10-applications.md`
 - Methodology section 6 (notation #5): `method/methodology.md`

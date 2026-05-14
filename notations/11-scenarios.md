@@ -194,12 +194,12 @@ scenario:
 
 ```
 Scenario
-  └── Goals Tree       (notations/05-goals.md)        — goal tree for this scenario
-  └── FGCA             (notations/03-fgca.md)          — factor–goal–activity chain
-  └── Capabilities Map (notations/06-capability-map.md)— capabilities in this scenario
-  └── Process Map      (notations/07-process-map.md)   — processes in this scenario
-  └── Products         (notations/10-products.md)      — product portfolio
-  └── Applications     (notations/11-applications.md)  — supporting applications
+  └── Goals Tree       (notations/04-goals.md)        — goal tree for this scenario
+  └── FGCA             (notations/02-fgca.md)          — factor–goal–activity chain
+  └── Capabilities Map (notations/05-capability-map.md)— capabilities in this scenario
+  └── Process Map      (notations/06-process-map.md)   — processes in this scenario
+  └── Products         (notations/09-products.md)      — product portfolio
+  └── Applications     (notations/10-applications.md)  — supporting applications
 ```
 
 ---
@@ -213,7 +213,7 @@ A second application of scenarios — **planning the development of a market sit
 ## 12. References
 
 - DSM: `docs/docs/concepts/scenarios.md`
-- Goals tree: `notations/05-goals.md`
-- FGCA: `notations/03-fgca.md`
-- Capabilities map: `notations/06-capability-map.md`
+- Goals tree: `notations/04-goals.md`
+- FGCA: `notations/02-fgca.md`
+- Capabilities map: `notations/05-capability-map.md`
 - Methodology section 6: `method/methodology.md`
