@@ -1,0 +1,104 @@
+notation: applications
+spec_version: "0.1"
+title: Enterprise Applications Portfolio 2026
+description: Inventory of applications and integrations in operation
+version: "1.0"
+date: "2026-05-14"
+
+applications_catalogue:
+  id: APP-CAT-ENTERPRISE-001
+  name: Enterprise Applications Portfolio 2026
+  updated_at: "2026-05-14"
+
+  applications:
+    - app_id: APP-OMS-001
+      name: Order Management System
+      type: application
+      status: Active
+      domain: Operations
+      owner_role: ROLE-ENG-001
+      vendor: Internal
+      maturity: 4
+      description: Core system for end-to-end order lifecycle management.
+      capabilities:
+        - V1.2      # Order Fulfilment — order processing
+        - V2.2      # Inventory Management — inventory tracking
+        - V1.2.1    # Pick & Pack — fulfilment orchestration
+      products:
+        - prod-mobile-app
+        - prod-partner-bundle
+      integrations:
+        - target: APP-CRM-001
+          direction: outbound
+          protocol: REST
+          description: Sends order events to CRM on state change
+        - target: APP-EBS-001
+          direction: outbound
+          protocol: Kafka
+          description: Publishes order domain events to event bus
+
+    - app_id: APP-CRM-001
+      name: CRM System
+      type: application
+      status: Active
+      domain: Sales
+      owner_role: ROLE-SALES-001
+      vendor: Salesforce
+      maturity: 3
+      description: Customer relationship and sales pipeline management.
+      capabilities:
+        - V2.1    # Customer Acquisition — lead management, opportunity tracking
+        - V2      # CRM — customer 360 view
+
+    - app_id: APP-EBS-001
+      name: Enterprise Event Bus
+      type: platform
+      status: Active
+      domain: Engineering
+      owner_role: ROLE-PLATFORM-001
+      vendor: Internal
+      maturity: 5
+      description: Centralised Kafka-based event streaming platform for domain event distribution.
+      integrations:
+        - target: APP-DWH-001
+          direction: outbound
+          protocol: Kafka
+          description: Streams events to data warehouse for analytics
+
+    - app_id: APP-DWH-001
+      name: Data Warehouse
+      type: data_store
+      status: Active
+      domain: Data & Analytics
+      owner_role: ROLE-DATA-001
+      vendor: Snowflake
+      maturity: 4
+      description: Central analytical data store for BI and reporting.
+      capabilities:
+        - V4.1    # Analytics — real-time reporting
+        - V4.2    # Analytics — historical analysis
+        - H1      # Master Data Management — data cataloguing
+
+    - app_id: APP-LEGACY-PORTAL-001
+      name: Legacy Customer Portal
+      type: application
+      status: Deprecated
+      domain: Customer
+      vendor: Internal
+      maturity: 2
+      description: Original web portal for customer self-service. Being replaced by the mobile app.
+
+    - app_id: APP-ERP-LEGACY-001
+      name: Legacy ERP Module
+      type: application
+      status: Decommissioning
+      domain: Finance
+      owner_role: ROLE-FIN-001
+      vendor: SAP
+      maturity: 1
+      description: On-premise ERP module being decommissioned in Q3 2026. Migration to cloud ERP in progress.
+
+    - app_id: INT-OMS-CRM-001
+      name: OMS → CRM Order Events Integration
+      type: integration
+      status: Draft

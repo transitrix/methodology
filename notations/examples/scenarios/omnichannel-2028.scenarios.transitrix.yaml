@@ -1,0 +1,89 @@
+notation: scenarios
+spec_version: "0.1"
+title: NorthBay Retail — Omnichannel 2028
+description: Strategic scenario for unifying in-store, online, and mobile channels into a single customer-centric platform by 2028.
+version: "1.0"
+date: "2026-05-12"
+
+scenario:
+  id: SCN-NB-OMNI-2028
+  name: NorthBay — Omnichannel 2028
+  description: Unify in-store, e-commerce, and mobile into a single customer-centric platform; aggressive build of demand-forecasting and last-mile capabilities.
+  status: Active
+  created_at: "2026-04-01"
+
+  vision: |
+    By Q4 2028 NorthBay Retail operates as a single omnichannel brand:
+    customers move seamlessly between web, mobile, and physical stores
+    with a unified loyalty programme, inventory pool, and identity.
+    Demand forecasting reaches CMMI level 5 (statistical control) and
+    e-commerce reaches level 4. Cybersecurity is hardened to level 4
+    ahead of the new EU regulatory regime taking effect in 2028.
+
+  factors_view:
+    - factor_id: FAC-MARKET-CEE-001
+      relevance: High
+      impact: 30% YoY e-commerce growth in CEE region opens room for two new market entries.
+    - factor_id: FAC-TECH-AI-001
+      relevance: High
+      impact: Mature AI/ML tooling makes SKU-level demand forecasting and personalisation economically viable.
+    - factor_id: FAC-REG-NIS2-2028
+      relevance: High
+      impact: NIS2 directive requires uplift of cyber controls — affects every digital touchpoint and supplier integration.
+    - factor_id: FAC-SUPPLY-DISRUPTION-001
+      relevance: Medium
+      impact: Continued geopolitical instability requires sourcing diversification and inventory buffer reviews.
+    - factor_id: FAC-TALENT-TECH-001
+      relevance: Medium
+      impact: Tech talent shortage in CEE — partnership-based delivery and upskilling preferred over hiring.
+    - factor_id: FAC-ESG-CARBON-001
+      relevance: Low
+      impact: Carbon reporting becomes table stakes by 2028 but does not yet constrain strategic moves.
+
+  goals:
+    - goal_id: GOAL-REVENUE-3X-DIGITAL-2028
+    - goal_id: GOAL-OMNI-LOYALTY-LAUNCH-2027
+    - goal_id: GOAL-MOBILE-30PCT-SALES-2028
+    - goal_id: GOAL-DEMAND-FORECAST-L5-2027
+    - goal_id: GOAL-CYBER-L4-2027
+
+  capabilities:
+    - capability_id: V1.1
+    - capability_id: V1.1.2
+    - capability_id: V1.2.2
+    - capability_id: V1.2.3
+    - capability_id: V1.3.2
+    - capability_id: V2.2.1
+    - capability_id: V2.3.2
+    - capability_id: H1
+    - capability_id: H2
+
+  activities:
+    - activity_id: ACT-UNIFIED-LOYALTY-PLATFORM
+    - activity_id: ACT-NATIVE-MOBILE-APP-V2
+    - activity_id: ACT-DEMAND-FORECAST-AI-ROLLOUT
+    - activity_id: ACT-LAST-MILE-3PL-EXPANSION
+    - activity_id: ACT-NIS2-CYBER-UPLIFT
+    - activity_id: ACT-MDM-CONSOLIDATION
+
+  products:
+    - product_id: prod-mobile-app
+    - product_id: prod-data-platform
+    - product_id: prod-loyalty-cloud
+    - product_id: prod-supplier-portal
+
+  processes:
+    - process_id: PROC-NB-INV-FORECAST-001
+    - process_id: PROC-NB-ORD-FULFILL-001
+    - process_id: PROC-NB-DELIVERY-001
+    - process_id: PROC-NB-LOYALTY-001
+    - process_id: PROC-NB-IT-INCIDENT-001
+    - process_id: PROC-NB-DATA-QUALITY-001
+
+  applications:
+    - app_id: APP-CRM-001
+    - app_id: APP-OMS-001
+    - app_id: APP-WEB-STORE-001
+    - app_id: APP-MARKETING-CLOUD-001
+    - app_id: APP-DATA-WAREHOUSE-001
+    - app_id: APP-LOYALTY-CLOUD-001

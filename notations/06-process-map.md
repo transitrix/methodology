@@ -1,10 +1,10 @@
 ---
 notation: "Process Landscape Map"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-05-19"
 status: "planned"
-file_extension: "*.processmap.transitrix.yaml"
+file_extension: "*.process-map.transitrix.yaml"
 ---
 
 # Process Landscape Map Notation — Reference
