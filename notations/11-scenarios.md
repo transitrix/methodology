@@ -10,10 +10,10 @@ dsm_status: "implemented — Scenarios page; scenario-scoped entities planned in
 
 # Scenario Planning Notation — Reference
 
-**Version:** 0.1
-**Date:** 2026-05-08
+**Version:** 0.2
+**Date:** 2026-05-19
 **Status:** Implemented in Transitrix DSM (core); entity scoping planned in 0.2.4
-**File extension:** `*.scenario.transitrix.yaml`
+**File extension:** `*.scenarios.transitrix.yaml`
 **Scope:** Alternative strategic development paths for an organisation; each scenario carries its own scoped set of goals, capabilities, activities, products, processes, and applications.
 **Renderer:** Transitrix DSM — Scenarios page; Transitrix Studio (planned)
 
@@ -112,12 +112,12 @@ An organisation can maintain multiple development scenarios simultaneously. This
 ## 7. File location and naming
 
 ```
-views/scenarios/<NAME>.scenario.transitrix.yaml
+views/scenarios/<NAME>.scenarios.transitrix.yaml
 ```
 
 Examples:
-- `views/scenarios/OPTIMISTIC_2027.scenario.transitrix.yaml`
-- `views/scenarios/CONSERVATIVE_BASELINE.scenario.transitrix.yaml`
+- `views/scenarios/OPTIMISTIC_2027.scenarios.transitrix.yaml`
+- `views/scenarios/CONSERVATIVE_BASELINE.scenarios.transitrix.yaml`
 
 ---
 
