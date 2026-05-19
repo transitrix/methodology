@@ -1,23 +1,23 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.0"
+version: "1.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-04"
+last_updated: "2026-05-19"
 status: "implemented"
 file_extension: "*.bpmn.transitrix.yaml"
 ---
 
 # BPMN Process YAML Notation — Reference
 
-**Version:** 1.0
-**Date:** 2026-05-04
+**Version:** 1.1
+**Date:** 2026-05-19
 **Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
 ---
 
 ## File header
 
-Every `*.bpmn.transitrix.yaml` file MUST start with the following header:
+Every `*.bpmn.transitrix.yaml` (or `*.bpmn.yaml`) file MUST start with the following header:
 
 ```yaml
 notation: bpmn          # required; this notation's short name
@@ -28,7 +28,7 @@ spec_version: 0.1       # optional today; reserved field; will be required when 
 Validator behaviour:
 - Missing `notation` → hard error.
 - `notation` value not equal to `bpmn` → hard error (the file might be the wrong format for this extension).
-- File extension not equal to `.bpmn.transitrix.yaml` while `notation: bpmn` → hard error (extension/content mismatch).
+- File extension not equal to `.bpmn.transitrix.yaml` or `.bpmn.yaml` while `notation: bpmn` → hard error (extension/content mismatch).
 - `spec_version` accepted but not enforced until this notation hits v1.0.
 
 ---
@@ -45,7 +45,9 @@ The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Mod
 
 ## 2. File extension
 
-The file extension is **`.bpmn.transitrix.yaml`**. Files outside this extension are rejected by the compiler with an explicit error.
+The primary file extension is **`.bpmn.transitrix.yaml`**. The short alias **`.bpmn.yaml`** is also supported for backwards compatibility and convenience — both extensions are accepted by the validator and compiler with identical behaviour.
+
+New files SHOULD use `.bpmn.transitrix.yaml`. Existing `.bpmn.yaml` files do not need to be renamed.
 
 ---
 

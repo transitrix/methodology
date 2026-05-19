@@ -1,0 +1,191 @@
+notation: bpmn
+# CORPUS CELL: L-Hi-C-Hi-4
+# Element count: 22 (10 tasks, 2 events, 10 gateways)
+# Cross-lane flows: 16/21 (76%)
+# Cycles: yes (feedback loop from validator back to processor)
+# Gateway density: 45.5% (10/22 elements)
+# Lanes: 4 (requester, processor, validator, manager)
+# Purpose: Large diagram with cycles and dense gates; tests backward flow handling and U-turn routing
+# Source: synthetic iterative approval workflow with rework loop
+
+process:
+  id: process-large-cyclic-workflow
+  name: Large Cyclic Workflow
+  pools:
+    - id: pool-large-cyclic-workflow
+      name: LargeCyclicWorkflow
+      lanes:
+        - id: lane-requester
+          name: Requester
+          elements:
+            - id: start
+              type: startEvent
+              name: Start
+            - id: initial-request
+              type: task
+              name: Initial Request
+            - id: receive-result
+              type: task
+              name: Receive Result
+            - id: end
+              type: endEvent
+              name: End
+
+        - id: lane-processor
+          name: Processor
+          elements:
+            - id: gw-analyze-split
+              type: parallelGateway
+              name: Analyze
+            - id: analyze-scope
+              type: task
+              name: Analyze Scope
+            - id: analyze-cost
+              type: task
+              name: Analyze Cost
+            - id: gw-analyze-join
+              type: parallelGateway
+              name: Join Analysis
+            - id: create-plan
+              type: task
+              name: Create Plan
+            - id: gw-plan-decision
+              type: exclusiveGateway
+              name: Plan OK?
+            - id: log-issue
+              type: task
+              name: Log Issue
+
+        - id: lane-validator
+          name: Validator
+          elements:
+            - id: gw-validate-split
+              type: parallelGateway
+              name: Validate
+            - id: validate-schedule
+              type: task
+              name: Validate Schedule
+            - id: validate-resources
+              type: task
+              name: Validate Resources
+            - id: gw-validate-join
+              type: parallelGateway
+              name: Join Validation
+            - id: gw-validate-decision
+              type: exclusiveGateway
+              name: Validated?
+            - id: request-rework
+              type: task
+              name: Request Rework
+
+        - id: lane-manager
+          name: Manager
+          elements:
+            - id: review
+              type: task
+              name: Final Review
+            - id: gw-approve
+              type: exclusiveGateway
+              name: Approved?
+            - id: approve-work
+              type: task
+              name: Approve
+            - id: reject-work
+              type: task
+              name: Reject
+
+  flows:
+    # Requester to Processor
+    - id: flow-1
+      from: start
+      to: initial-request
+    - id: flow-2
+      from: initial-request
+      to: gw-analyze-split
+
+    # Processor parallel analysis
+    - id: flow-3
+      from: gw-analyze-split
+      to: analyze-scope
+    - id: flow-4
+      from: gw-analyze-split
+      to: analyze-cost
+    - id: flow-5
+      from: analyze-scope
+      to: gw-analyze-join
+    - id: flow-6
+      from: analyze-cost
+      to: gw-analyze-join
+    - id: flow-7
+      from: gw-analyze-join
+      to: create-plan
+    - id: flow-8
+      from: create-plan
+      to: gw-plan-decision
+    - id: flow-9
+      from: gw-plan-decision
+      to: log-issue
+      condition: failed
+    - id: flow-10
+      from: gw-plan-decision
+      to: gw-validate-split
+      condition: ok
+
+    # Processor rework path (backward, cyclic)
+    - id: flow-11
+      from: log-issue
+      to: request-rework
+
+    # Validator parallel validation
+    - id: flow-12
+      from: gw-validate-split
+      to: validate-schedule
+    - id: flow-13
+      from: gw-validate-split
+      to: validate-resources
+    - id: flow-14
+      from: validate-schedule
+      to: gw-validate-join
+    - id: flow-15
+      from: validate-resources
+      to: gw-validate-join
+    - id: flow-16
+      from: gw-validate-join
+      to: gw-validate-decision
+
+    # Validation decision: pass or rework
+    - id: flow-17
+      from: gw-validate-decision
+      to: review
+      condition: passed
+    - id: flow-18
+      from: gw-validate-decision
+      to: request-rework
+      condition: needs-rework
+
+    # Rework loop back to processor
+    - id: flow-19
+      from: request-rework
+      to: create-plan
+
+    # Manager final decision
+    - id: flow-20
+      from: review
+      to: gw-approve
+    - id: flow-21
+      from: gw-approve
+      to: approve-work
+      condition: "yes"
+    - id: flow-22
+      from: gw-approve
+      to: reject-work
+      condition: "no"
+    - id: flow-23
+      from: approve-work
+      to: receive-result
+    - id: flow-24
+      from: reject-work
+      to: receive-result
+    - id: flow-25
+      from: receive-result
+      to: end

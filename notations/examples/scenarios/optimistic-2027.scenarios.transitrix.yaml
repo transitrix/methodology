@@ -1,0 +1,57 @@
+notation: scenarios
+spec_version: "0.1"
+title: Optimistic Growth 2027
+description: Aggressive expansion scenario assuming 30% market growth
+version: "1.0"
+date: "2026-01-01"
+
+scenario:
+  id: SCN-001
+  name: Optimistic Growth 2027
+  description: Aggressive expansion scenario assuming 30% market growth.
+  status: Active
+  created_at: "2026-01-01"
+
+  vision: |
+    By 2027 the organisation has expanded into three new markets,
+    doubled its digital product portfolio, and achieved CMMI level 3
+    across all core capabilities.
+
+  factors_view:
+    - factor_id: FAC-MARKET-001
+      relevance: High
+      impact: Revenue growth opportunity in CEE region
+    - factor_id: FAC-TECH-001
+      relevance: Medium
+      impact: AI adoption accelerates product differentiation
+    - factor_id: FAC-REG-001
+      relevance: Low
+      impact: Minor compliance friction, manageable in current quarter
+
+  goals:
+    - goal_id: GOAL-REV-001
+    - goal_id: GOAL-MARKET-001
+    - goal_id: GOAL-CUST-001
+
+  capabilities:
+    - capability_id: CAP-ECOMM-001
+    - capability_id: CAP-DATA-001
+    - capability_id: CAP-MARKETING-001
+
+  activities:
+    - activity_id: ACT-EXPAND-CEE-001
+    - activity_id: ACT-DIGITAL-PLATFORM-001
+    - activity_id: ACT-AI-PILOT-001
+
+  products:
+    - product_id: PROD-PLATFORM-001
+    - product_id: PROD-MOBILE-001
+
+  processes:
+    - process_id: PROC-DELIVERY-001
+    - process_id: PROC-CUST-ONBOARD-001
+
+  applications:
+    - app_id: APP-CRM-001
+    - app_id: APP-OMS-001
+    - app_id: APP-DATA-WAREHOUSE-001

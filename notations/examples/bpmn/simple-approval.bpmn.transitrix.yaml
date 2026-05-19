@@ -1,0 +1,69 @@
+notation: bpmn
+# CORPUS CELL: S-Mi-A-Lo-2
+# Element count: 8 (5 tasks, 2 events, 1 XOR gateway)
+# Cross-lane flows: 2/7 (29%)
+# Cycles: none (acyclic)
+# Gateway density: 12.5% (1/8 elements)
+# Lanes: 2 (requester, admin)
+# Purpose: Basic cross-lane routing; tests horizontal port rule and lane alignment
+# Source: synthetic minimal example
+
+process:
+  id: simple-approval
+  name: Simple Approval Process
+  pools:
+    - id: pool-approval
+      name: Approval Process
+      lanes:
+        - id: lane-requester
+          name: Requester
+          elements:
+            - id: start-request
+              type: startEvent
+              name: Request Submitted
+            - id: task-prepare
+              type: task
+              name: Prepare Request
+            - id: end-request
+              type: endEvent
+              name: Done
+        - id: lane-admin
+          name: Admin
+          elements:
+            - id: task-review
+              type: task
+              name: Review Request
+            - id: gw-approve
+              type: exclusiveGateway
+              name: Approved?
+            - id: task-notify-ok
+              type: task
+              name: Send Approval
+            - id: task-notify-reject
+              type: task
+              name: Send Rejection
+
+  flows:
+    - id: flow-1
+      from: start-request
+      to: task-prepare
+    - id: flow-2
+      from: task-prepare
+      to: task-review
+    - id: flow-3
+      from: task-review
+      to: gw-approve
+    - id: flow-4
+      from: gw-approve
+      to: task-notify-ok
+      condition: 'status == "approved"'
+    - id: flow-5
+      from: gw-approve
+      to: task-notify-reject
+      condition: 'status == "rejected"'
+    - id: flow-6
+      from: task-notify-ok
+      to: end-request
+    - id: flow-7
+      from: task-notify-reject
+      to: end-request

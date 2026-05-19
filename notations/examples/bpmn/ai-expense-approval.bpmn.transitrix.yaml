@@ -1,0 +1,75 @@
+notation: bpmn
+process:
+  id: ai-expense-approval
+  name: AI-Assisted Expense Approval
+  pools:
+    - id: pool-expense
+      name: Expense Workflow
+      lanes:
+        - id: lane-employee
+          name: Employee
+          elements:
+            - id: start-submit
+              type: startEvent
+              name: Submit Expense
+        - id: lane-ai
+          name: AI Validator
+          elements:
+            - id: task-classify
+              type: task
+              name: Classify & Extract
+            - id: task-policy-check
+              type: task
+              name: Check Policy
+            - id: gw-route
+              type: exclusiveGateway
+              name: Route?
+            - id: task-auto-approve
+              type: task
+              name: Auto-Approve
+        - id: lane-manager
+          name: Manager
+          elements:
+            - id: task-review
+              type: task
+              name: Manual Review
+            - id: gw-decision
+              type: exclusiveGateway
+              name: Approve?
+            - id: end-rejected
+              type: endEvent
+              name: Expense Rejected
+        - id: lane-finance
+          name: Finance
+          elements:
+            - id: task-pay
+              type: task
+              name: Process Payment
+            - id: end-paid
+              type: endEvent
+              name: Expense Paid
+  flows:
+    - from: start-submit
+      to: task-classify
+    - from: task-classify
+      to: task-policy-check
+    - from: task-policy-check
+      to: gw-route
+    - from: gw-route
+      to: task-auto-approve
+      condition: auto-approved
+    - from: gw-route
+      to: task-review
+      condition: needs review
+    - from: task-auto-approve
+      to: task-pay
+    - from: task-review
+      to: gw-decision
+    - from: gw-decision
+      to: task-pay
+      condition: approved
+    - from: gw-decision
+      to: end-rejected
+      condition: rejected
+    - from: task-pay
+      to: end-paid

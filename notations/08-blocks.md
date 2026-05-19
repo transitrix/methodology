@@ -1,8 +1,8 @@
 ---
 notation: "Nested Block Diagrams"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-05-19"
 status: "implemented"
 file_extension: "*.blocks.transitrix.txt"
 ---
@@ -16,7 +16,7 @@ file_extension: "*.blocks.transitrix.txt"
 
 ## File header
 
-Every `*.blocks.transitrix.yaml` file MUST start with the following header:
+Every `*.blocks.transitrix.txt` file MUST start with the following header:
 
 ```yaml
 notation: blocks        # required; this notation's short name
@@ -27,7 +27,7 @@ spec_version: 0.1       # optional today; reserved field; will be required when 
 Validator behaviour:
 - Missing `notation` → hard error.
 - `notation` value not equal to `blocks` → hard error (the file might be the wrong format for this extension).
-- File extension not equal to `.blocks.transitrix.yaml` while `notation: blocks` → hard error (extension/content mismatch).
+- File extension not equal to `.blocks.transitrix.txt` while `notation: blocks` → hard error (extension/content mismatch).
 - `spec_version` accepted but not enforced until this notation hits v1.0.
 
 ---

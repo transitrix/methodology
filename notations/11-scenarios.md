@@ -1,10 +1,10 @@
 ---
 notation: "Scenario Planning"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-05-19"
 status: "implemented"
-file_extension: "*.scenario.transitrix.yaml"
+file_extension: "*.scenarios.transitrix.yaml"
 dsm_status: "implemented — Scenarios page; scenario-scoped entities planned in release 0.2.4"
 ---
 

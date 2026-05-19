@@ -1,19 +1,19 @@
 ---
 notation: "Capabilities Map"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-05-19"
 status: "implemented"
-file_extension: "*.capmap.transitrix.yaml"
+file_extension: "*.capability-map.transitrix.yaml"
 dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 ---
 
 # Capabilities Map Notation — Reference
 
-**Version:** 0.2
-**Date:** 2026-05-08
+**Version:** 0.3
+**Date:** 2026-05-19
 **Status:** Implemented in Transitrix DSM
-**File extension:** `*.capmap.transitrix.yaml`
+**File extension:** `*.capability-map.transitrix.yaml`
 **Scope:** Capability hierarchy with CMMI V2.0 maturity assessment, addressing system, V/H orientation, lifecycle. Aligned to roles, processes, and applications.
 **Renderer:** Transitrix DSM — Capabilities table, Editor (C), BCM tab; Transitrix Studio (planned)
 
@@ -294,4 +294,4 @@ properties:
 - Capability template: `organizations/acme_corp/.templates/capability-map_template.yaml`
 - Methodology section 6.3: `method/methodology.md`
 - DSM: `docs/docs/concepts/bcm-explained.md` — BCM concept and addressing rules
-- DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation, sets)
+- DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation

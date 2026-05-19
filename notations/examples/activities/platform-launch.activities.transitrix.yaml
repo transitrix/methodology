@@ -1,0 +1,107 @@
+notation: activities
+spec_version: "0.1"
+
+title: Platform Launch 2026
+description: |
+  Critical path through the customer-facing platform launch.
+  Used for Q3 2026 portfolio review. Two parallel implementation paths
+  merge at integration testing before the final release activities.
+version: "0.1"
+date: "2026-05-12"
+author: "Valerii Korobeinikov"
+
+activities:
+  - id: A-001
+    name: Requirements analysis
+    duration: 5
+    sort: 10
+    goals: [GOAL-CUST-001]
+    tags: [q3-priority, discovery]
+    unit: UNIT-PRODUCT
+    description: |
+      Gather and document all requirements for the customer platform.
+      Include both functional and non-functional requirements.
+
+  - id: A-002
+    name: Architecture design
+    duration: 8
+    sort: 20
+    predecessors: [A-001]
+    goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
+    tags: [q3-priority]
+    unit: UNIT-ENGINEERING
+
+  - id: A-003
+    name: Backend implementation
+    duration: 15
+    sort: 30
+    predecessors: [A-002]
+    goals: [GOAL-PLATFORM-002]
+    tags: [q3-priority]
+    unit: UNIT-ENGINEERING
+    delivers_changes: [CHG-PLATFORM-001]
+
+  - id: A-004
+    name: Frontend implementation
+    duration: 12
+    sort: 40
+    predecessors: [A-002]
+    goals: [GOAL-CUST-001]
+    tags: [q3-priority]
+    unit: UNIT-ENGINEERING
+    delivers_changes: [CHG-UX-001]
+
+  - id: A-005
+    name: Infrastructure setup
+    duration: 4
+    sort: 50
+    predecessors: [A-002]
+    goals: [GOAL-PLATFORM-002]
+    tags: [devops]
+    unit: UNIT-INFRA
+
+  - id: A-006
+    name: Integration testing
+    duration: 7
+    sort: 60
+    predecessors: [A-003, A-004, A-005]
+    goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
+    tags: [q3-priority, qa]
+    unit: UNIT-QA
+
+  - id: A-007
+    name: Performance testing
+    duration: 3
+    sort: 70
+    predecessors: [A-006]
+    goals: [GOAL-PLATFORM-002]
+    tags: [qa]
+    unit: UNIT-QA
+
+  - id: A-008
+    name: Security review
+    duration: 4
+    sort: 80
+    predecessors: [A-006]
+    goals: [GOAL-COMPLIANCE-001]
+    tags: [security]
+    unit: UNIT-SECURITY
+
+  - id: A-009
+    name: Stakeholder sign-off
+    duration: 2
+    sort: 90
+    predecessors: [A-007, A-008]
+    goals: [GOAL-CUST-001]
+    tags: [q3-priority]
+    unit: UNIT-PRODUCT
+
+  - id: A-010
+    name: Production deployment
+    duration: 1
+    sort: 100
+    predecessors: [A-009]
+    goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
+    tags: [q3-priority, devops]
+    unit: UNIT-INFRA
+    delivers_changes: [CHG-PLATFORM-001, CHG-UX-001]

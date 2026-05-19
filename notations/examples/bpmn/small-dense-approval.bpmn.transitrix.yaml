@@ -1,0 +1,91 @@
+notation: bpmn
+# CORPUS CELL: S-Hi-A-Hi-2
+# Element count: 9 (4 tasks, 1 event, 4 gateways)
+# Cross-lane flows: 6/8 (75%)
+# Cycles: none (acyclic)
+# Gateway density: 44.4% (4/9 elements)
+# Lanes: 2 (requester, approver)
+# Purpose: Small diagram with dense gates and high cross-lane flows; tests gateway coordination and multi-exit routing
+# Source: synthetic approval workflow with parallel decision paths
+
+process:
+  id: process-small-dense-approval
+  name: Small Dense Approval
+  pools:
+    - id: pool-small-dense-approval
+      name: SmallDenseApproval
+      lanes:
+        - id: lane-requester
+          name: Requester
+          elements:
+            - id: start
+              type: startEvent
+              name: Start
+            - id: request
+              type: task
+              name: Request
+            - id: end
+              type: endEvent
+              name: End
+
+        - id: lane-approver
+          name: Approver
+          elements:
+            - id: gw-split
+              type: parallelGateway
+              name: Split
+            - id: check-budget
+              type: task
+              name: Check Budget
+            - id: check-auth
+              type: task
+              name: Check Auth
+            - id: gw-join
+              type: parallelGateway
+              name: Join
+            - id: gw-decision
+              type: exclusiveGateway
+              name: Decision
+            - id: approve
+              type: task
+              name: Approve
+            - id: reject
+              type: task
+              name: Reject
+
+  flows:
+    - id: flow-1
+      from: start
+      to: request
+    - id: flow-2
+      from: request
+      to: gw-split
+    - id: flow-3
+      from: gw-split
+      to: check-budget
+    - id: flow-4
+      from: gw-split
+      to: check-auth
+    - id: flow-5
+      from: check-budget
+      to: gw-join
+    - id: flow-6
+      from: check-auth
+      to: gw-join
+    - id: flow-7
+      from: gw-join
+      to: gw-decision
+    - id: flow-8
+      from: gw-decision
+      to: approve
+      condition: approved
+    - id: flow-9
+      from: gw-decision
+      to: reject
+      condition: rejected
+    - id: flow-10
+      from: approve
+      to: end
+    - id: flow-11
+      from: reject
+      to: end

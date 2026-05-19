@@ -1,0 +1,30 @@
+notation: fga
+spec_version: "0.1"
+
+fga:
+  id: "FGA-STRATEGY-2026"
+  name: "Strategy 2026"
+  description: "Factor–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
+  period: "2026"
+
+  factors:
+    - id: "FACTOR-MARKET-001"
+      name: "Market growth opportunity in new geographies"
+      type: "external"
+      goals:
+        - id: "GOAL-MARKET-001"
+          name: "Expand market share"
+          activities:
+            - id: "ACT-MARKET-001"
+              name: "Launch in two new regions"
+              owner: "ROLE-BIZ-001"
+              status: "In Progress"
+              due_date: "2026-09-30"
+            - id: "ACT-MARKET-002"
+              name: "Partner channel programme"
+              owner: "ROLE-SALES-001"
+              status: "Planned"
+              due_date: "2026-12-31"
+
+    - id: "FACTOR-REG-001"
+      name: "Increasi

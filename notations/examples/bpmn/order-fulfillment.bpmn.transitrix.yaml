@@ -1,0 +1,48 @@
+notation: bpmn
+process:
+  id: order-fulfillment
+  name: Order Fulfillment
+  pools:
+    - id: pool-fulfillment
+      name: Fulfillment Process
+      lanes:
+        - id: lane-sales
+          name: Sales
+          elements:
+            - id: start-order
+              type: startEvent
+              name: Order Received
+            - id: task-validate
+              type: task
+              name: Validate Order
+            - id: end-confirmed
+              type: endEvent
+              name: Order Confirmed
+        - id: lane-warehouse
+          name: Warehouse
+          elements:
+            - id: task-pick
+              type: task
+              name: Pick Items
+            - id: task-pack
+              type: task
+              name: Pack Order
+            - id: task-ship
+              type: task
+              name: Ship
+            - id: end-shipped
+              type: endEvent
+              name: Order Shipped
+  flows:
+    - from: start-order
+      to: task-validate
+    - from: task-validate
+      to: task-pick
+    - from: task-pick
+      to: task-pack
+    - from: task-pack
+      to: task-ship
+    - from: task-ship
+      to: end-shipped
+    - from: task-validate
+      to: end-confirmed
