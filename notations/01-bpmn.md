@@ -1,16 +1,16 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.0"
+version: "1.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-04"
+last_updated: "2026-05-19"
 status: "implemented"
 file_extension: "*.bpmn.transitrix.yaml"
 ---
 
 # BPMN Process YAML Notation — Reference
 
-**Version:** 1.0
-**Date:** 2026-05-04
+**Version:** 1.1
+**Date:** 2026-05-19
 **Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
 ---

@@ -1,0 +1,17 @@
+notation: goals
+spec_version: "0.1"
+
+goals_tree:
+  id: "GT-STRATEGY-2026"
+  name: "Strategy 2026 — Goals Tree"
+  description: "Goal hierarchy across Strategy → Business Goal → Project levels for the 2026 plan."
+  root:
+    goal_id: "GOAL-REVENUE-001"       # "Triple revenue in 3 years"
+    children:
+      - goal_id: "GOAL-EU-001"        # "Launch in 3 EU markets"
+        children:
+          - goal_id: "GOAL-BERLIN-001"    # "Open Berlin office"
+          - goal_id: "GOAL-EU-REG-001"   # "Obtain EU regulatory approval"
+      - goal_id: "GOAL-MENA-001"      # "Launch in MENA"
+        children:
+          - goal_id: "GOAL-DUBAI-001"    # "Partner with Dubai distributor"

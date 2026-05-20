@@ -52,7 +52,7 @@ Goals trees live in `views/goals/`.
 | Use case | Notation |
 |----------|----------|
 | Show how strategic goals break into tactical ones | Goals tree |
-| Link goals to capabilities or processes | Capabilities map (`*.capmap.transitrix.yaml`) |
+| Link goals to capabilities or processes | Capabilities map (`*.capability-map.transitrix.yaml`) |
 | Show what drives goals | FGCA (`*.fgca.transitrix.yaml`) |
 | Track goal delivery through activities | FGCA or FGA |
 

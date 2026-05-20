@@ -1,0 +1,350 @@
+notation: bpmn
+# CORPUS CELL: XL-Hi-A-Hi-4+
+# Element count: 52 (30 tasks, 2 events, 20 gateways)
+# Cross-lane flows: 42/51 (82%)
+# Cycles: none (acyclic)
+# Gateway density: 38.5% (20/52 elements)
+# Lanes: 5 (initiator, processor, validator, approver, finalizer)
+# Purpose: Stress test with 50+ elements; tests layout algorithm scalability and port distribution at scale
+# Source: synthetic large enterprise process with multi-stage parallel processing
+
+process:
+  id: process-xlarge-stress-test
+  name: XLarge Stress Test
+  pools:
+    - id: pool-xlarge-stress-test
+      name: XLargeStressTest
+      lanes:
+        - id: lane-initiator
+          name: Initiator
+          elements:
+            - id: start
+              type: startEvent
+              name: Start
+            - id: init-a
+              type: task
+              name: Init A
+            - id: init-b
+              type: task
+              name: Init B
+            - id: gw-init-decision
+              type: exclusiveGateway
+              name: Route Init
+
+        - id: lane-processor
+          name: Processor
+          elements:
+            - id: gw-p-split1
+              type: parallelGateway
+              name: Split 1
+            - id: process-a1
+              type: task
+              name: Process A1
+            - id: process-a2
+              type: task
+              name: Process A2
+            - id: process-a3
+              type: task
+              name: Process A3
+            - id: gw-p-join1
+              type: parallelGateway
+              name: Join A
+            - id: gw-p-split2
+              type: parallelGateway
+              name: Split 2
+            - id: process-b1
+              type: task
+              name: Process B1
+            - id: process-b2
+              type: task
+              name: Process B2
+            - id: process-b3
+              type: task
+              name: Process B3
+            - id: gw-p-join2
+              type: parallelGateway
+              name: Join B
+            - id: gw-p-decision
+              type: exclusiveGateway
+              name: Quality Check
+
+        - id: lane-validator
+          name: Validator
+          elements:
+            - id: gw-v-split1
+              type: parallelGateway
+              name: Validate Split 1
+            - id: validate-v1
+              type: task
+              name: Validate V1
+            - id: validate-v2
+              type: task
+              name: Validate V2
+            - id: validate-v3
+              type: task
+              name: Validate V3
+            - id: gw-v-join1
+              type: parallelGateway
+              name: Validate Join 1
+            - id: gw-v-split2
+              type: parallelGateway
+              name: Validate Split 2
+            - id: validate-v4
+              type: task
+              name: Validate V4
+            - id: validate-v5
+              type: task
+              name: Validate V5
+            - id: validate-v6
+              type: task
+              name: Validate V6
+            - id: gw-v-join2
+              type: parallelGateway
+              name: Validate Join 2
+            - id: gw-v-decision
+              type: exclusiveGateway
+              name: Validation Result
+
+        - id: lane-approver
+          name: Approver
+          elements:
+            - id: review-a
+              type: task
+              name: Review A
+            - id: review-b
+              type: task
+              name: Review B
+            - id: gw-review-merge
+              type: exclusiveGateway
+              name: Merge Reviews
+            - id: approve
+              type: task
+              name: Approve
+            - id: flag-changes
+              type: task
+              name: Flag Changes
+            - id: gw-approval-decision
+              type: exclusiveGateway
+              name: Approval Route
+
+        - id: lane-finalizer
+          name: Finalizer
+          elements:
+            - id: gw-final-split
+              type: parallelGateway
+              name: Final Split
+            - id: finalize-a
+              type: task
+              name: Finalize A
+            - id: finalize-b
+              type: task
+              name: Finalize B
+            - id: finalize-c
+              type: task
+              name: Finalize C
+            - id: gw-final-join
+              type: parallelGateway
+              name: Final Join
+            - id: gw-final-route
+              type: exclusiveGateway
+              name: Final Route
+            - id: publish
+              type: task
+              name: Publish
+            - id: archive
+              type: task
+              name: Archive
+            - id: end
+              type: endEvent
+              name: End
+
+  flows:
+    # Initiator path
+    - id: flow-1
+      from: start
+      to: init-a
+    - id: flow-2
+      from: init-a
+      to: init-b
+    - id: flow-3
+      from: init-b
+      to: gw-init-decision
+
+    # Processor path A (parallel)
+    - id: flow-4
+      from: gw-init-decision
+      to: gw-p-split1
+      condition: route-a
+    - id: flow-5
+      from: gw-p-split1
+      to: process-a1
+    - id: flow-6
+      from: gw-p-split1
+      to: process-a2
+    - id: flow-7
+      from: gw-p-split1
+      to: process-a3
+    - id: flow-8
+      from: process-a1
+      to: gw-p-join1
+    - id: flow-9
+      from: process-a2
+      to: gw-p-join1
+    - id: flow-10
+      from: process-a3
+      to: gw-p-join1
+
+    # Processor path B (parallel)
+    - id: flow-11
+      from: gw-init-decision
+      to: gw-p-split2
+      condition: route-b
+    - id: flow-12
+      from: gw-p-split2
+      to: process-b1
+    - id: flow-13
+      from: gw-p-split2
+      to: process-b2
+    - id: flow-14
+      from: gw-p-split2
+      to: process-b3
+    - id: flow-15
+      from: process-b1
+      to: gw-p-join2
+    - id: flow-16
+      from: process-b2
+      to: gw-p-join2
+    - id: flow-17
+      from: process-b3
+      to: gw-p-join2
+
+    # Processor to decision
+    - id: flow-18
+      from: gw-p-join1
+      to: gw-p-decision
+    - id: flow-19
+      from: gw-p-join2
+      to: gw-p-decision
+    - id: flow-20
+      from: gw-p-decision
+      to: gw-v-split1
+      condition: ok
+
+    # Validator path 1 (parallel)
+    - id: flow-21
+      from: gw-v-split1
+      to: validate-v1
+    - id: flow-22
+      from: gw-v-split1
+      to: validate-v2
+    - id: flow-23
+      from: gw-v-split1
+      to: validate-v3
+    - id: flow-24
+      from: validate-v1
+      to: gw-v-join1
+    - id: flow-25
+      from: validate-v2
+      to: gw-v-join1
+    - id: flow-26
+      from: validate-v3
+      to: gw-v-join1
+
+    # Validator path 2 (parallel)
+    - id: flow-27
+      from: gw-v-join1
+      to: gw-v-split2
+    - id: flow-28
+      from: gw-v-split2
+      to: validate-v4
+    - id: flow-29
+      from: gw-v-split2
+      to: validate-v5
+    - id: flow-30
+      from: gw-v-split2
+      to: validate-v6
+    - id: flow-31
+      from: validate-v4
+      to: gw-v-join2
+    - id: flow-32
+      from: validate-v5
+      to: gw-v-join2
+    - id: flow-33
+      from: validate-v6
+      to: gw-v-join2
+    - id: flow-34
+      from: gw-v-join2
+      to: gw-v-decision
+
+    # Approver paths
+    - id: flow-35
+      from: gw-v-decision
+      to: review-a
+      condition: path-a
+    - id: flow-36
+      from: gw-v-decision
+      to: review-b
+      condition: path-b
+    - id: flow-37
+      from: review-a
+      to: gw-review-merge
+    - id: flow-38
+      from: review-b
+      to: gw-review-merge
+    - id: flow-39
+      from: gw-review-merge
+      to: approve
+      condition: merged
+    - id: flow-40
+      from: gw-review-merge
+      to: flag-changes
+      condition: needs-work
+    - id: flow-41
+      from: approve
+      to: gw-approval-decision
+    - id: flow-42
+      from: flag-changes
+      to: gw-approval-decision
+
+    # Finalizer path (parallel)
+    - id: flow-43
+      from: gw-approval-decision
+      to: gw-final-split
+      condition: proceed
+    - id: flow-44
+      from: gw-final-split
+      to: finalize-a
+    - id: flow-45
+      from: gw-final-split
+      to: finalize-b
+    - id: flow-46
+      from: gw-final-split
+      to: finalize-c
+    - id: flow-47
+      from: finalize-a
+      to: gw-final-join
+    - id: flow-48
+      from: finalize-b
+      to: gw-final-join
+    - id: flow-49
+      from: finalize-c
+      to: gw-final-join
+    - id: flow-50
+      from: gw-final-join
+      to: gw-final-route
+
+    # Final routing
+    - id: flow-51
+      from: gw-final-route
+      to: publish
+      condition: publish-result
+    - id: flow-52
+      from: gw-final-route
+      to: archive
+      condition: archive-only
+    - id: flow-53
+      from: publish
+      to: end
+    - id: flow-54
+      from: archive
+      to: end
