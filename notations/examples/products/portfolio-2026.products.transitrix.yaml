@@ -76,4 +76,19 @@ products_catalogue:
       type: bundle
       status: Draft
       domain: Partnerships
-      owner_role
+      owner_role: ROLE-PARTNER-001
+      maturity: 1
+      description: Bundled APIs and support package for strategic partners.
+      capabilities:
+        - V6.2    # Digital — partner API access
+        - V6.3    # Digital — co-branded portal
+      processes:
+        - PROC-PARTNER-ONBOARD-001    # Partner onboarding
+
+    - product_id: prod-legacy-portal
+      name: Legacy Customer Portal
+      type: digital_product
+      status: Deprecated
+      domain: Customer
+      maturity: 2
+      description: Original web portal scheduled for retirement in Q3 2026.
