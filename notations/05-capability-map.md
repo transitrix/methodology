@@ -1,19 +1,19 @@
 ---
 notation: "Capabilities Map"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-05-19"
 status: "implemented"
-file_extension: "*.capmap.transitrix.yaml"
+file_extension: "*.capability-map.transitrix.yaml"
 dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 ---
 
 # Capabilities Map Notation — Reference
 
-**Version:** 0.2
-**Date:** 2026-05-08
+**Version:** 0.3
+**Date:** 2026-05-19
 **Status:** Implemented in Transitrix DSM
-**File extension:** `*.capmap.transitrix.yaml`
+**File extension:** `*.capability-map.transitrix.yaml`
 **Scope:** Capability hierarchy with CMMI V2.0 maturity assessment, addressing system, V/H orientation, lifecycle. Aligned to roles, processes, and applications.
 **Renderer:** Transitrix DSM — Capabilities table, Editor (C), BCM tab; Transitrix Studio (planned)
 
@@ -196,12 +196,12 @@ Each organisation gets a `default` capability set created automatically. The BCM
 ## 11. File location and naming (YAML)
 
 ```
-views/capabilities/<DOMAIN>.capmap.transitrix.yaml
+views/capabilities/<DOMAIN>.capability-map.transitrix.yaml
 ```
 
 Examples:
-- `views/capabilities/BUSINESS.capmap.transitrix.yaml`
-- `views/capabilities/TECHNOLOGY.capmap.transitrix.yaml`
+- `views/capabilities/BUSINESS.capability-map.transitrix.yaml`
+- `views/capabilities/TECHNOLOGY.capability-map.transitrix.yaml`
 
 ---
 

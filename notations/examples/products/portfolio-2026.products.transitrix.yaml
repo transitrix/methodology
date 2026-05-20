@@ -1,0 +1,94 @@
+notation: products
+spec_version: "1.0"
+title: Digital Products Portfolio 2026
+description: Product offerings for the current strategic cycle
+version: "1.0"
+date: "2026-05-13"
+
+products_catalogue:
+  id: portfolio-2026
+  name: Digital Products Portfolio 2026
+  updated_at: "2026-05-13"
+
+  products:
+    - product_id: prod-data-platform
+      name: Analytics Platform
+      type: platform
+      status: Active
+      domain: Data & Analytics
+      owner_role: ROLE-DATA-001
+      maturity: 4
+      description: Self-service analytics and reporting platform for business teams.
+      capabilities:
+        - V4.1    # Analytics & Reporting — real-time dashboards
+        - V4.2    # Analytics & Reporting — predictive analytics
+        - H1      # Master Data Management — data cataloguing
+      processes:
+        - PROC-RPT-001        # Reporting
+        - PROC-DATGOV-001     # Data governance
+      supporting_apps:
+        - APP-DBT-001         # dbt
+        - APP-METABASE-001    # Metabase
+
+    - product_id: prod-hr-service
+      name: Employee Onboarding Service
+      type: service
+      status: Active
+      domain: HR
+      owner_role: ROLE-HR-001
+      maturity: 3
+      description: End-to-end digital onboarding for new hires.
+      capabilities:
+        - V5.1    # HR — document collection
+        - V5.2    # HR — IT provisioning
+        - V5.3    # HR — training assignment
+      processes:
+        - PROC-HR-ONBOARD-001     # Employee onboarding
+        - PROC-HR-OFFBOARD-001    # Employee offboarding
+
+    - product_id: prod-api-gateway
+      name: API Gateway
+      type: platform
+      status: Active
+      domain: Engineering
+      owner_role: ROLE-PLATFORM-001
+      maturity: 5
+      description: Centralised API management, rate limiting, and developer portal.
+      supporting_apps:
+        - APP-KONG-001       # Kong API Gateway
+        - APP-SWAGGER-001    # Swagger UI / Developer Portal
+
+    - product_id: prod-mobile-app
+      name: Customer Mobile App
+      type: digital_product
+      status: Active
+      domain: Customer
+      owner_role: ROLE-PRODUCT-001
+      maturity: 3
+      description: iOS and Android app for customer self-service and account management.
+      capabilities:
+        - V2.1    # Customer Acquisition — account management
+        - V1.2    # Order Fulfilment — order tracking
+        - V6.1    # Digital — push notifications
+
+    - product_id: prod-partner-bundle
+      name: Partner Integration Bundle
+      type: bundle
+      status: Draft
+      domain: Partnerships
+      owner_role: ROLE-PARTNER-001
+      maturity: 1
+      description: Bundled APIs and support package for strategic partners.
+      capabilities:
+        - V6.2    # Digital — partner API access
+        - V6.3    # Digital — co-branded portal
+      processes:
+        - PROC-PARTNER-ONBOARD-001    # Partner onboarding
+
+    - product_id: prod-legacy-portal
+      name: Legacy Customer Portal
+      type: digital_product
+      status: Deprecated
+      domain: Customer
+      maturity: 2
+      description: Original web portal scheduled for retirement in Q3 2026.

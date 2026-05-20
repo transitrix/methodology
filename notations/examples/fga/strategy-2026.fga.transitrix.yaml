@@ -1,0 +1,71 @@
+notation: fga
+spec_version: "0.1"
+
+fga:
+  id: "FGA-STRATEGY-2026"
+  name: "Strategy 2026"
+  description: "Factor–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
+  period: "2026"
+
+  factors:
+    - id: "FACTOR-MARKET-001"
+      name: "Market growth opportunity in new geographies"
+      type: "external"
+      goals:
+        - id: "GOAL-MARKET-001"
+          name: "Expand market share"
+          activities:
+            - id: "ACT-MARKET-001"
+              name: "Launch in two new regions"
+              owner: "ROLE-BIZ-001"
+              status: "In Progress"
+              due_date: "2026-09-30"
+            - id: "ACT-MARKET-002"
+              name: "Partner channel programme"
+              owner: "ROLE-SALES-001"
+              status: "Planned"
+              due_date: "2026-12-31"
+
+    - id: "FACTOR-REG-001"
+      name: "Increasing regulatory pressure (GDPR, data residency)"
+      type: "external"
+      goals:
+        - id: "GOAL-COMPLIANCE-001"
+          name: "Achieve full regulatory compliance"
+          activities:
+            - id: "ACT-COMPLIANCE-001"
+              name: "GDPR gap assessment"
+              owner: "ROLE-LEGAL-001"
+              status: "Done"
+              due_date: "2026-03-31"
+            - id: "ACT-COMPLIANCE-002"
+              name: "Policy and training rollout"
+              owner: "ROLE-HR-001"
+              status: "In Progress"
+              due_date: "2026-06-30"
+
+    - id: "FACTOR-TECH-001"
+      name: "Internal shift to cloud-native architecture"
+      type: "internal"
+      goals:
+        - id: "GOAL-PLATFORM-001"
+          name: "Modernise platform"
+          activities:
+            - id: "ACT-PLATFORM-001"
+              name: "Migrate to cloud-native stack"
+              owner: "ROLE-ENG-001"
+              status: "In Progress"
+              due_date: "2026-10-31"
+            - id: "ACT-PLATFORM-002"
+              name: "API gateway rollout"
+              owner: "ROLE-ENG-001"
+              status: "Planned"
+              due_date: "2026-12-31"
+        - id: "GOAL-MARKET-001"
+          name: "Expand market share"
+          activities:
+            - id: "ACT-MARKET-003"
+              name: "Launch self-serve onboarding"
+              owner: "ROLE-PRODUCT-001"
+              status: "Planned"
+              due_date: "2026-11-30"

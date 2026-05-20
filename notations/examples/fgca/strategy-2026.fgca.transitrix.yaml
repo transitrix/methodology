@@ -1,0 +1,55 @@
+notation: fgca
+spec_version: "0.1"
+title: Strategy 2026 — FGCA chain
+description: Factor → Goal → Change → Activity decomposition for the 2026 plan.
+version: "0.1"
+date: "2026-05-11"
+author: Transitrix
+
+factors:
+  - id: 1
+    name: "Competitive market pressure"
+  - id: 2
+    name: "Digital adoption acceleration"
+
+goals:
+  - id: 1
+    name: "Grow revenue by 20%"
+    factor: [{id: 1}, {id: 2}]
+  - id: 2
+    name: "Reduce operational costs"
+    factor: [{id: 2}]
+  - id: 3
+    name: "Improve customer retention"
+    factor: [{id: 1}]
+
+changes:
+  - id: 1
+    name: "Launch new product line"
+    goal_id: 1
+    activity_ids: [1, 2]
+  - id: 2
+    name: "Automate manual processes"
+    goal_id: 2
+    activity_ids: [3, 4]
+  - id: 3
+    name: "Enhance support platform"
+    goal_id: 3
+    activity_ids: [5]
+
+activities:
+  - id: 1
+    name: "Market research"
+    goal_id: 1
+  - id: 2
+    name: "MVP development"
+    goal_id: 1
+  - id: 3
+    name: "Process audit"
+    goal_id: 2
+  - id: 4
+    name: "RPA tooling rollout"
+    goal_id: 2
+  - id: 5
+    name: "CRM implementation"
+    goal_id: 3

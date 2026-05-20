@@ -1,0 +1,55 @@
+notation: bpmn
+# CORPUS CELL: S-Lo-A-Lo-1
+# Element count: 6 (4 tasks, 2 events, 0 gateways)
+# Cross-lane flows: 0/5 (0%)
+# Cycles: none (acyclic)
+# Gateway density: 0% (0/6 elements)
+# Lanes: 1 (linear process)
+# Purpose: Minimal baseline diagram; pure same-lane, no gateways, acyclic
+# Source: synthetic minimal example
+
+process:
+  id: simple-linear-process
+  name: Simple Linear Process
+  pools:
+    - id: pool-main
+      name: Main
+      lanes:
+        - id: lane-process
+          name: Process
+          elements:
+            - id: start
+              type: startEvent
+              name: Start
+            - id: task1
+              type: task
+              name: Task A
+            - id: task2
+              type: task
+              name: Task B
+            - id: task3
+              type: task
+              name: Task C
+            - id: task4
+              type: task
+              name: Task D
+            - id: end
+              type: endEvent
+              name: End
+
+  flows:
+    - id: flow-1
+      from: start
+      to: task1
+    - id: flow-2
+      from: task1
+      to: task2
+    - id: flow-3
+      from: task2
+      to: task3
+    - id: flow-4
+      from: task3
+      to: task4
+    - id: flow-5
+      from: task4
+      to: end

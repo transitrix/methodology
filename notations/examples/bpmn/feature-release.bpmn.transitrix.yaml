@@ -1,0 +1,82 @@
+notation: bpmn
+process:
+  id: feature-release
+  name: Feature Release Process
+  pools:
+    - id: pool-release
+      name: Release Pipeline
+      lanes:
+        - id: lane-dev
+          name: Development
+          elements:
+            - id: start-feature
+              type: startEvent
+              name: Feature Ready
+            - id: task-unit-tests
+              type: task
+              name: Run Unit Tests
+            - id: gw-quality-check
+              type: exclusiveGateway
+              name: Tests Pass?
+            - id: task-build
+              type: task
+              name: Build Package
+        - id: lane-qa
+          name: QA
+          elements:
+            - id: task-manual-qa
+              type: task
+              name: Manual Testing
+            - id: task-regression
+              type: task
+              name: Regression Suite
+        - id: lane-infra
+          name: DevOps
+          elements:
+            - id: gw-deploy-split
+              type: parallelGateway
+              name: Deploy Start
+            - id: task-staging
+              type: task
+              name: Deploy to Staging
+            - id: task-health
+              type: task
+              name: Health Check
+            - id: gw-deploy-join
+              type: parallelGateway
+              name: Deploy Complete
+            - id: task-prod-deploy
+              type: task
+              name: Promote to Production
+            - id: end-released
+              type: endEvent
+              name: Released
+  flows:
+    - from: start-feature
+      to: task-unit-tests
+    - from: task-unit-tests
+      to: gw-quality-check
+    - from: gw-quality-check
+      to: task-build
+      condition: passed
+    - from: gw-quality-check
+      to: end-released
+      condition: failed
+    - from: task-build
+      to: task-manual-qa
+    - from: task-manual-qa
+      to: task-regression
+    - from: task-regression
+      to: gw-deploy-split
+    - from: gw-deploy-split
+      to: task-staging
+    - from: gw-deploy-split
+      to: task-health
+    - from: task-staging
+      to: gw-deploy-join
+    - from: task-health
+      to: gw-deploy-join
+    - from: gw-deploy-join
+      to: task-prod-deploy
+    - from: task-prod-deploy
+      to: end-released
