@@ -1,0 +1,58 @@
+name: Commit author check
+
+# Rejects commits whose author or committer email is a maintainer's personal
+# address. This is a DENYLIST, not an allowlist: external contributors commit
+# under their own email freely — only the specific addresses below are blocked.
+# Purpose: keep maintainer personal emails out of the public git history.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check-commit-emails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject denylisted maintainer emails on commits
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Maintainer personal emails that must never appear on a commit.
+          # Add or remove addresses here as needed.
+          DENYLIST="vkgeorgia@icloud.com vk.thinkspace@gmail.com"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+            emails=$(git log --format='%ae%n%ce' "$range")
+          else
+            # push: read the introduced commits straight from the event payload
+            emails=$(jq -r '.commits[]? | .author.email, .committer.email' "$GITHUB_EVENT_PATH")
+          fi
+
+          emails=$(printf '%s\n' "$emails" | sed '/^$/d' | sort -u)
+          echo "Commit emails introduced by this event:"
+          echo "${emails:-<none>}"
+
+          fail=0
+          for bad in $DENYLIST; do
+            if printf '%s\n' "$emails" | grep -qxF "$bad"; then
+              echo "::error::Denylisted maintainer personal email on a commit: $bad"
+              fail=1
+            fi
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo ""
+            echo "A commit carries a maintainer personal email."
+            echo "Rewrite the offending commit(s) with the canonical identity:"
+            echo "  transitrix@users.noreply.github.com"
+            echo "e.g.  git rebase <base> --exec 'git commit --amend --reset-author --no-edit'"
+            exit 1
+          fi
+          echo "OK - no denylisted emails on commits introduced by this event."
