@@ -196,12 +196,12 @@ Each organisation gets a `default` capability set created automatically. The BCM
 ## 11. File location and naming (YAML)
 
 ```
-views/capabilities/<DOMAIN>.capmap.transitrix.yaml
+views/capabilities/<DOMAIN>.capability-map.transitrix.yaml
 ```
 
 Examples:
-- `views/capabilities/BUSINESS.capmap.transitrix.yaml`
-- `views/capabilities/TECHNOLOGY.capmap.transitrix.yaml`
+- `views/capabilities/BUSINESS.capability-map.transitrix.yaml`
+- `views/capabilities/TECHNOLOGY.capability-map.transitrix.yaml`
 
 ---
 

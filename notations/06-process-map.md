@@ -42,7 +42,7 @@ The two notations are complementary:
 
 | Notation | Answers | Extension |
 |----------|---------|-----------|
-| Process landscape map | What processes exist? How are they grouped? | `*.processmap.transitrix.yaml` |
+| Process landscape map | What processes exist? How are they grouped? | `*.process-map.transitrix.yaml` |
 | BPMN process diagram | How does a single process flow? | `*.bpmn.transitrix.yaml` |
 
 ---
@@ -62,12 +62,12 @@ The standard grouping follows the APQC-inspired three-category model:
 ## 3. File location and naming
 
 ```
-views/processmap/<DOMAIN>.processmap.transitrix.yaml
+views/processmap/<DOMAIN>.process-map.transitrix.yaml
 ```
 
 Examples:
-- `views/processmap/ENTERPRISE.processmap.transitrix.yaml`
-- `views/processmap/OPERATIONS.processmap.transitrix.yaml`
+- `views/processmap/ENTERPRISE.process-map.transitrix.yaml`
+- `views/processmap/OPERATIONS.process-map.transitrix.yaml`
 
 ---
 
