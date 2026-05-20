@@ -102,3 +102,9 @@ applications_catalogue:
       name: OMS → CRM Order Events Integration
       type: integration
       status: Draft
+      domain: Operations
+      owner_role: ROLE-INTARCH-001
+      description: Event-driven integration forwarding order state changes from OMS to CRM.
+      source: APP-OMS-001
+      target: APP-CRM-001
+      protocol: Kafka
