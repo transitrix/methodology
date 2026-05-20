@@ -294,4 +294,4 @@ properties:
 - Capability template: `organizations/acme_corp/.templates/capability-map_template.yaml`
 - Methodology section 6.3: `method/methodology.md`
 - DSM: `docs/docs/concepts/bcm-explained.md` — BCM concept and addressing rules
-- DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation
+- DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation, sets)
