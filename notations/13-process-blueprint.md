@@ -77,7 +77,7 @@ This shape matches the blueprint's semantic graph: a single system or actor typi
 
 ```yaml
 notation: process-blueprint
-spec_version: 0.1
+spec_version: "0.1"
 
 process_blueprint:
   id: PROCESS_BLUEPRINT-FULFIL-1
