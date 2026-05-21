@@ -71,7 +71,7 @@ Activities defined here MAY reference other elements by ID (goals, changes, scen
 
 ```yaml
 notation: activities
-spec_version: 0.1
+spec_version: "0.1"
 
 title: Platform Launch 2026
 description: |

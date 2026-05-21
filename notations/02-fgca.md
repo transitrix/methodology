@@ -121,7 +121,7 @@ For comparison: FGA and the Goals tree are tree-shaped (each child has a single 
 
 ```yaml
 notation: fgca
-spec_version: 0.1
+spec_version: "0.1"
 
 fgca:
   id: FGCA-STRAT-1
