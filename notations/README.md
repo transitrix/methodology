@@ -32,9 +32,38 @@ The `status:` field in each spec's front-matter describes the **spec's maturity*
 
 The vocabulary is intentionally small. A future `deprecated` value will be added when a notation is retired.
 
-## Picking between FGCA, FGA, Goals, Activities
+## Family selection
 
-Four notations sit on the same strategy-to-execution spectrum and differ in which layers they carry: **FGCA** is the full Factor → Goal → Change → Activity chain (use when the transformation steps between goals and activities are non-trivial); **FGA** is the same chain with the Changes layer collapsed (use when changes need not be tracked as first-class objects); the **Goals tree** carries only Goals (use when the work is about hierarchy and decomposition, not about what drives or executes the goals); the **Activities network** carries only Activities in AoN form (use for delivery planning where the strategic context is already settled). A dedicated selection matrix — mapping each input situation to the recommended notation — will be added to this index as a separate section.
+Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit on the same strategy-to-execution spectrum. They differ in which layers they carry; the right one for a given task is the one that names exactly the layers you need to talk about, no more.
+
+### Layer composition
+
+| Notation | Factor | Goal | Change | Activity |
+|---|:---:|:---:|:---:|:---:|
+| **FGCA** ([02-fgca.md](02-fgca.md)) | ✓ | ✓ | ✓ | ✓ |
+| **FGA** ([03-fga.md](03-fga.md)) | ✓ | ✓ | — | ✓ |
+| **Goals tree** ([04-goals.md](04-goals.md)) | — | ✓ | — | — |
+| **Activities network** ([07-activities.md](07-activities.md)) | — | — | — | ✓ |
+
+### Selection matrix
+
+| Situation | Recommended notation |
+|---|---|
+| You need to trace strategic drivers through goals and explicit transformation steps to deliverable initiatives. | **FGCA** |
+| You need the same chain, but the transformation step between goals and activities is implicit or trivial. | **FGA** |
+| You need to decompose goals hierarchically (strategy → tactical → operational) without naming factors or activities. | **Goals tree** |
+| You need to plan delivery — activities, dependencies, durations, Gantt — and the strategic context is already settled elsewhere. | **Activities** |
+| You need a quarterly goals review with no factor or activity context. | **Goals tree** |
+| You're explaining why a goal-action gap exists and what transformation closes it. | **FGCA** |
+
+### Form rule — nested for trees, flat for DAGs
+
+The four notations split into two structural shapes:
+
+- **Tree-shaped, nested form.** FGA and the Goals tree are trees — each child has exactly one parent. The document nests children under parents directly; the YAML structure carries the hierarchy and no id-references are needed inside the document.
+- **DAG-shaped, flat form.** FGCA and the Activities network are DAGs — one Change can deliver many Goals; one Activity can deliver many Changes; activity predecessors fan out the same way. Nesting would require duplicating nodes for every cross-layer link. These notations use a single root key (`fgca:` for FGCA, the top-level `activities:` array for Activities) with parallel layer arrays and id-references between layers.
+
+**Rule of thumb:** if a child element can have multiple parents in the semantic graph, the notation uses the flat form. The rule was set on 2026-05-20 alongside the FGCA schema; see [02-fgca.md](02-fgca.md) "Top-level structure — flat form" for the worked-out FGCA shape and [07-activities.md](07-activities.md) §4 for the Activities shape.
 
 ## Examples
 
