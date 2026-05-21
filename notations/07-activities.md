@@ -471,3 +471,4 @@ activities:
 - Transitrix FGCA notation: `notations/02-fgca.md` (for Factor → Goal → Change → Activity decomposition; this notation's `delivers_changes` field links into FGCA)
 - Transitrix Goals notation: `notations/04-goals.md` (this notation's `goals` field references Goal IDs)
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
+- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
