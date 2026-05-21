@@ -3,7 +3,7 @@ notation: "FGA Strategy-to-Execution Chain"
 version: "0.1"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-08"
-status: "planned"
+status: "draft"
 file_extension: "*.fga.transitrix.yaml"
 ---
 
