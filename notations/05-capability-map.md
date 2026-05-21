@@ -3,7 +3,7 @@ notation: "Capabilities Map"
 version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-19"
-status: "implemented"
+status: "documented"
 file_extension: "*.capability-map.transitrix.yaml"
 dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 ---

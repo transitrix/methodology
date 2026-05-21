@@ -3,7 +3,7 @@ notation: "Process Landscape Map"
 version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-19"
-status: "planned"
+status: "draft"
 file_extension: "*.process-map.transitrix.yaml"
 ---
 
