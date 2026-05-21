@@ -1,7 +1,7 @@
 ---
 title: Transitrix — Methodology for Enterprise Architecture as Code
 status: v1.0_draft
-last_reviewed: 2026-05-07
+last_reviewed: 2026-05-21
 audience: public
 license: MIT
 tags: [transitrix, methodology, enterprise_architecture, architecture_as_code, archimate, bpmn]
@@ -199,7 +199,7 @@ organizations/
 │   │   ├── fgca/                  # Factor → Goal → Change → Activity chains
 │   │   ├── fga/                   # Factor → Goal → Activity chains
 │   │   ├── blocks/                # Nested block diagrams (ASCII / Svgbob)
-│   │   ├── activities/            # Mermaid activity diagrams
+│   │   ├── activities/            # Activity schedule networks
 │   │   ├── products/              # Filtered views over Product elements
 │   │   └── applications/          # Filtered views over Application elements
 │   ├── .templates/                # Copy-and-fill templates for elements / relations / views
@@ -253,24 +253,30 @@ A relation is a typed edge between two elements. The methodology refuses to mix 
 
 ## 6. Notation kit
 
-Transitrix supports several **notations** for describing different aspects of an enterprise. Each notation has a canonical text-native format (YAML or, for the block diagrams, ASCII), a defined consumer (Transitrix Studio for renderable formats; element catalogue conventions for catalogues), and a place in the repository.
+Transitrix supports a set of **notations** for describing different aspects of an enterprise. Each notation has a canonical text-native format — YAML for most, Svgbob ASCII for the nested block diagrams — a defined renderer, and a place in the repository.
 
-The list below is the canonical Transitrix notation set. Some notations are implemented today; others are planned. For each, the file extension follows the per-format convention: `*.<format>.transitrix.yaml` for renderable Transitrix-specific YAML formats, plain YAML element files for catalogues, and `*.transitrix.txt` for ASCII inputs (block diagrams).
+Every notation is specified in its own file under `notations/`. The file-header rules common to all of them — the required `notation:` field, the reserved `spec_version:` field, validator behaviour, and the extension/content match guarantee — are defined once in `notations/CONTRACT.md`. The cross-notation ID grammar and TYPE registry live in `notations/IDS_AND_REFERENCES.md`.
 
-| # | Notation | Format / extension | Purpose | Renderer | Status |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Goals tree** | `*.goals.transitrix.yaml` | Hierarchy of strategic and tactical goals; mono-type tree of goals | Transitrix Studio | Planned |
-| 2 | **Capabilities map** | `*.capmap.transitrix.yaml` | Capability hierarchy with maturity (CMM 1–5), aligned to roles, processes, and applications | Transitrix Studio | Planned |
-| 3 | **Activities** | Mermaid (`*.mmd` or inline in Markdown) | Quick activity, sequence, or flow diagrams; uses the Mermaid standard | Mermaid (external) | Standard |
-| 4 | **Process landscape map** | `*.processmap.transitrix.yaml` | Top-level catalogue of an organisation's processes — Operating / Supporting / Management groups; the inventory above process diagrams | Transitrix Studio | Planned |
-| 5 | **Nested block diagrams** | `*.blocks.transitrix.txt` | Multi-level container layouts beyond the depth limits of Mermaid / PlantUML / D2 | Transitrix Studio (Svgbob backend) | Implemented |
-| 6 | **Process diagram** | `*.bpmn.transitrix.yaml` | BPMN 2.0 process flow with lanes, stages, gateways, and KPIs | Transitrix Studio (BPMN compiler) | Implemented |
-| 7 | **Products** | YAML element catalogue (no diagram) | Product / service inventory; one element per file under `elements/02_business/` | None (renders as text and tables) | Planned |
-| 8 | **FGCA** | `*.fgca.transitrix.yaml` | Strategy-to-execution chain in four layers: Factor → Goal → Change → Activity | Transitrix Studio | Documented (see §6.2) |
-| 9 | **FGA** | `*.fga.transitrix.yaml` | Simplified strategy-to-execution chain in three layers: Factor → Goal → Activity (skips the Changes layer) | Transitrix Studio | Planned |
-| 10 | **Applications** | YAML element catalogue (no diagram) | Application portfolio; one element per file under `elements/03_application/` | None (renders as text and tables) | Planned |
+The table below is the canonical Transitrix notation set. Every notation file follows the extension convention `*.<short-name>.transitrix.<ext>` — `yaml` for every notation except `blocks`, which uses `txt` — and begins with a `notation: <short-name>` header. The `Status` column reflects the maturity of the notation **specification** (`draft`, `documented`, or `stable`), not whether a tool implements it; tool support is tracked per spec in its `dsm_status:` field.
 
-Notations 7 and 10 are catalogue forms — they live as standard YAML element files in the appropriate ArchiMate layer folder, and render as text or tables (not as a custom diagram). All other notations are diagrams that Transitrix Studio renders directly.
+| # | Notation | File extension | Purpose | Status |
+| --- | --- | --- | --- | --- |
+| 01 | **BPMN process diagram** | `*.bpmn.transitrix.yaml` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | documented |
+| 02 | **FGCA** | `*.fgca.transitrix.yaml` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | documented |
+| 03 | **FGA** | `*.fga.transitrix.yaml` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | draft |
+| 04 | **Goals tree** | `*.goals.transitrix.yaml` | Hierarchy of strategic and tactical goals as a tree. | documented |
+| 05 | **Capabilities map** | `*.capability-map.transitrix.yaml` | Capability hierarchy with CMMI V2.0 maturity, addressing, and vertical / horizontal orientation. | documented |
+| 06 | **Process landscape map** | `*.process-map.transitrix.yaml` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | draft |
+| 07 | **Activities** | `*.activities.transitrix.yaml` | Project schedule as an Activity-on-Node network, with an optional Gantt timeline projection. | documented |
+| 08 | **Nested block diagrams** | `*.blocks.transitrix.txt` | Multi-level container layouts for deep architectural overviews, rendered via Svgbob. | documented |
+| 09 | **Products** | `*.products.transitrix.yaml` | Inventory of products and services — text-and-table catalogue, no diagram. | draft |
+| 10 | **Applications** | `*.applications.transitrix.yaml` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | draft |
+| 11 | **Scenarios** | `*.scenarios.transitrix.yaml` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, and applications. | documented |
+| 13 | **Process Blueprint** | `*.process-blueprint.transitrix.yaml` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | draft |
+
+The number `12` is intentionally reserved for a forthcoming **Gantt** notation; the gap between `11` and `13` is deliberate. Until that notation lands, the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
+
+Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram: notation 08 is rendered through Transitrix Studio's Svgbob backend, the rest through Studio's shared diagram engine.
 
 ### 6.1 Where each notation lives in the repository
 
@@ -278,16 +284,18 @@ Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live un
 
 | Notation | Typical location | What it is |
 | --- | --- | --- |
-| Goals tree | `views/goals/<DOMAIN>.goals.transitrix.yaml` | Hierarchy referencing Goal elements |
+| BPMN process diagram | `views/bpmn/<PROCESS_CODE>_process.bpmn.transitrix.yaml` | Detailed flow describing one BusinessProcess element |
 | FGCA | `views/fgca/<DOMAIN>.fgca.transitrix.yaml` | Chain referencing Factor + Goal + Change + Activity elements |
 | FGA | `views/fga/<DOMAIN>.fga.transitrix.yaml` | Chain referencing Factor + Goal + Activity elements |
-| Capabilities map | `views/capabilities/<DOMAIN>.capmap.transitrix.yaml` | Hierarchy referencing Capability elements + maturity overlay |
-| Process landscape map | `views/processmap/<DOMAIN>.processmap.transitrix.yaml` | Catalogue referencing BusinessProcess elements |
-| Process diagram (BPMN) | `views/bpmn/<PROCESS_CODE>_process.bpmn.transitrix.yaml` | Detailed flow describing one BusinessProcess element |
-| Activities (Mermaid) | `views/activities/<NAME>.mmd`, or inline `mermaid` blocks in `.md` documents | Quick activity / sequence / flow diagrams |
+| Goals tree | `views/goals/<DOMAIN>.goals.transitrix.yaml` | Hierarchy referencing Goal elements |
+| Capabilities map | `views/capabilities/<DOMAIN>.capability-map.transitrix.yaml` | Hierarchy referencing Capability elements + maturity overlay |
+| Process landscape map | `views/processmap/<DOMAIN>.process-map.transitrix.yaml` | Catalogue referencing BusinessProcess elements |
+| Activities | `views/activities/<NAME>.activities.transitrix.yaml` | Activity-on-Node schedule network referencing Activity, Goal, and Change elements |
 | Nested block diagrams | `views/blocks/<NAME>.blocks.transitrix.txt`, or inline alongside markdown documentation | Multi-level block layouts (Svgbob) |
-| Products view | `views/products/<NAME>.products.transitrix.yaml` | Filtered view over Product elements |
-| Applications view | `views/applications/<NAME>.applications.transitrix.yaml` | Filtered view over Application elements |
+| Products view | `views/products/<DOMAIN>.products.transitrix.yaml` | Filtered view over Product elements |
+| Applications view | `views/applications/<DOMAIN>.applications.transitrix.yaml` | Filtered view over Application elements |
+| Scenarios | `views/scenarios/<NAME>.scenarios.transitrix.yaml` | Alternative strategic development paths, each scoping its own goals, capabilities, activities, products, processes, and applications |
+| Process Blueprint | `views/process-blueprint/<DOMAIN>.process-blueprint.transitrix.yaml` | Wide value-chain blueprint referencing stage aspects (systems, actors, equipment, information entities) |
 
 Individual product and application instances are still stored as **atomic elements** in their respective ArchiMate-layer folders — `elements/02_business/<PRODUCT_ID>.yaml` (with `type: Product`) and `elements/03_application/<APP_ID>.yaml` (with `type: ApplicationComponent`). The "view" file in `views/products/` or `views/applications/` defines how to filter, group, and present those elements (e.g., "all active Products grouped by category").
 
@@ -329,7 +337,7 @@ Each capability carries a 5-level CMM maturity score over time — historical as
 
 Process diagrams (BPMN, `.bpmn.transitrix.yaml`) describe **how** a single process flows: tasks, gateways, lanes, KPIs, data flow.
 
-Process landscape maps (`.processmap.transitrix.yaml`) describe **what** processes exist in the organisation: the catalogue, grouped by Operating / Supporting / Management, with hierarchical decomposition. The landscape map is the inventory; process diagrams are the detailed views.
+Process landscape maps (`.process-map.transitrix.yaml`) describe **what** processes exist in the organisation: the catalogue, grouped by Operating / Supporting / Management, with hierarchical decomposition. The landscape map is the inventory; process diagrams are the detailed views.
 
 The two notations are complementary — most organisations need both.
 
