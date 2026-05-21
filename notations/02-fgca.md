@@ -243,4 +243,5 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 - Goals tree notation: [`04-goals.md`](04-goals.md)
 - Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the FGCA chain
 - Canonical ID grammar and TYPE registry: forthcoming `IDS_AND_REFERENCES.md` appendix
+- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`
