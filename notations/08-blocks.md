@@ -3,7 +3,7 @@ notation: "Nested Block Diagrams"
 version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-19"
-status: "implemented"
+status: "documented"
 file_extension: "*.blocks.transitrix.txt"
 ---
 

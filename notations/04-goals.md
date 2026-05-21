@@ -3,7 +3,7 @@ notation: "Goals Tree"
 version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-08"
-status: "implemented"
+status: "documented"
 file_extension: "*.goals.transitrix.yaml"
 dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 ---
