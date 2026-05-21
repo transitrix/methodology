@@ -138,6 +138,7 @@ goals_tree:
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
 - FGCA notation: `notations/02-fgca.md`
 - FGA notation: `notations/03-fga.md`
+- ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology section 6.1: `method/methodology.md`
 
 ---
