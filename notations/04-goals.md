@@ -132,6 +132,7 @@ goals_tree:
 - FGCA notation: `notations/02-fgca.md`
 - FGA notation: `notations/03-fga.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
+- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.1: `method/methodology.md`
 
 ---
