@@ -12,19 +12,12 @@ dsm_status: "implemented — F, G, C, A layers active; column selection via loca
 
 ## File header
 
-Every `*.fgca.transitrix.yaml` file MUST start with the following header:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
 
-```yaml
-notation: fgca          # required; this notation's short name
-spec_version: 0.1       # optional today; reserved field; will be required when this notation reaches v1.0
-# … rest of the document
-```
-
-Validator behaviour:
-- Missing `notation` → hard error.
-- `notation` value not equal to `fgca` → hard error (the file might be the wrong format for this extension).
-- File extension not equal to `.fgca.transitrix.yaml` while `notation: fgca` → hard error (extension/content mismatch).
-- `spec_version` accepted but not enforced until this notation hits v1.0.
+| Field | Value |
+|---|---|
+| `notation:` value | `fgca` |
+| File extension | `*.fgca.transitrix.yaml` |
 
 ---
 
