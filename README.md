@@ -104,7 +104,7 @@ git commit -m "docs(arch): add MY_SERVICE for your_company"
 
 ## Notations supported
 
-Transitrix defines text-native notations for the most common enterprise-architecture artefacts. Each has a per-format extension. See [methodology.md §6](method/methodology.md#6-notation-kit) for the full catalogue and rationale.
+Transitrix defines text-native notations for the most common enterprise-architecture artefacts. Each has a per-format extension. See [`notations/README.md`](notations/README.md) for the canonical index of all eleven notations and [methodology.md §6](method/methodology.md#6-notation-kit) for the rationale.
 
 | Notation | Extension | Purpose | Status |
 | --- | --- | --- | --- |
