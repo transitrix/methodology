@@ -144,4 +144,5 @@ Capabilities Map         →  what capabilities are required
 - Process landscape map: `notations/06-process-map.md`
 - Applications catalogue: `notations/10-applications.md`
 - Capabilities map: `notations/05-capability-map.md`
+- ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology section 6: `method/methodology.md`

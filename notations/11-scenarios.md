@@ -216,4 +216,5 @@ A second application of scenarios — **planning the development of a market sit
 - Goals tree: `notations/04-goals.md`
 - FGCA: `notations/02-fgca.md`
 - Capabilities map: `notations/05-capability-map.md`
+- ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology section 6: `method/methodology.md`
