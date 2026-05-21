@@ -136,4 +136,5 @@ When converting FGA to FGCA: identify the implicit change each goal demands and 
 - Goals tree notation: `notations/04-goals.md`
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
+- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`
