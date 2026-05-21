@@ -3,7 +3,7 @@ notation: "Activities — Project Schedule"
 version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-21"
-status: "standard"
+status: "documented"
 file_extension: "*.activities.transitrix.yaml"
 dsm_status: "partially implemented — Activities page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
 ---

@@ -3,7 +3,7 @@ notation: "BPMN Process Diagram"
 version: "1.1"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-19"
-status: "implemented"
+status: "documented"
 file_extension: "*.bpmn.transitrix.yaml"
 ---
 
