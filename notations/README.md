@@ -22,7 +22,7 @@ All notations share the same file-extension convention `.<short-name>.transitrix
 
 ## Picking between FGCA, FGA, Goals, Activities
 
-Four notations sit on the same strategy-to-execution spectrum and differ in which layers they carry: **FGCA** is the full Factor → Goal → Change → Activity chain (use when the transformation steps between goals and activities are non-trivial); **FGA** is the same chain with the Changes layer collapsed (use when changes need not be tracked as first-class objects); the **Goals tree** carries only Goals (use when the work is about hierarchy and decomposition, not about what drives or executes the goals); the **Activities network** carries only Activities in AoN form (use for delivery planning where the strategic context is already settled). For the full selection matrix mapping input situation to recommended notation, see strategy task [#17](https://github.com/vkgeorgia/strategy/issues/17).
+Four notations sit on the same strategy-to-execution spectrum and differ in which layers they carry: **FGCA** is the full Factor → Goal → Change → Activity chain (use when the transformation steps between goals and activities are non-trivial); **FGA** is the same chain with the Changes layer collapsed (use when changes need not be tracked as first-class objects); the **Goals tree** carries only Goals (use when the work is about hierarchy and decomposition, not about what drives or executes the goals); the **Activities network** carries only Activities in AoN form (use for delivery planning where the strategic context is already settled). A dedicated selection matrix — mapping each input situation to the recommended notation — will be added to this index as a separate section.
 
 ## Examples
 
