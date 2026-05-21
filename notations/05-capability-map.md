@@ -21,19 +21,12 @@ dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 
 ## File header
 
-Every `*.capability-map.transitrix.yaml` file MUST start with the following header:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
 
-```yaml
-notation: capability-map    # required; this notation's short name
-spec_version: 0.1           # optional today; reserved field; will be required when this notation reaches v1.0
-# … rest of the document
-```
-
-Validator behaviour:
-- Missing `notation` → hard error.
-- `notation` value not equal to `capability-map` → hard error (the file might be the wrong format for this extension).
-- File extension not equal to `.capability-map.transitrix.yaml` while `notation: capability-map` → hard error (extension/content mismatch).
-- `spec_version` accepted but not enforced until this notation hits v1.0.
+| Field | Value |
+|---|---|
+| `notation:` value | `capability-map` |
+| File extension | `*.capability-map.transitrix.yaml` |
 
 ---
 

@@ -21,19 +21,12 @@ dsm_status: "implemented — Scenarios page; scenario-scoped entities planned in
 
 ## File header
 
-Every `*.scenarios.transitrix.yaml` file MUST start with the following header:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
 
-```yaml
-notation: scenarios     # required; this notation's short name
-spec_version: 0.1       # optional today; reserved field; will be required when this notation reaches v1.0
-# … rest of the document
-```
-
-Validator behaviour:
-- Missing `notation` → hard error.
-- `notation` value not equal to `scenarios` → hard error (the file might be the wrong format for this extension).
-- File extension not equal to `.scenarios.transitrix.yaml` while `notation: scenarios` → hard error (extension/content mismatch).
-- `spec_version` accepted but not enforced until this notation hits v1.0.
+| Field | Value |
+|---|---|
+| `notation:` value | `scenarios` |
+| File extension | `*.scenarios.transitrix.yaml` |
 
 ---
 
