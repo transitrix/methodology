@@ -208,7 +208,6 @@ For `equipment[]` and `information_entities[]`, no canonical TYPE prefix exists 
 | `BP-009` | error | if an aspect entry has an `id`, the ID must match the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. |
 | `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. |
 | `BP-011` | warn | a stage with no aspect entries pointing at it from any of the four aspect arrays is structurally empty and SHOULD be reviewed. |
-| `BP-012` | warn | an aspect entry whose `stages: [...]` is a singleton MAY be a candidate for inlining into the stage's description — informational only. |
 
 ---
 
