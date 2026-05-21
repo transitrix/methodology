@@ -1,17 +1,17 @@
 ---
-notation: "Activities (PSND / AoN)"
-version: "0.2"
+notation: "Activities — Project Schedule"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-11"
+last_updated: "2026-05-21"
 status: "standard"
 file_extension: "*.activities.transitrix.yaml"
-dsm_status: "partially implemented — Activities page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x"
+dsm_status: "partially implemented — Activities page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
 ---
 
-# Activities Notation — Project Schedule Network Diagram (PSND / AoN)
+# Activities Notation — Project Schedule (Network and Timeline)
 
-**Scope:** Text-native form of a Project Schedule Network Diagram in Activity-on-Node (AoN) representation. Each activity is a node carrying its name and duration; dependencies between activities are directed edges. The PMBoK / Primavera / MS Project standard for activity networks.
-**Renderer:** Transitrix DSM — Activities page (graphical AoN today; multi-value field reform in progress); Transitrix Studio — preview planned in v0.5.0.
+**Scope:** Text-native form of a project schedule. Activities are nodes carrying optional duration, dependencies, and dates; the same document renders as a Project Schedule Network Diagram (PSND / AoN) for the dependency view and as a Gantt chart for the timeline view. The two views are projections of one schedule, in the MS Project / Primavera tradition. All timing data is optional: a document without dates renders only as a network; with sufficient timing data, it also renders as a Gantt.
+**Renderer:** Transitrix DSM — Activities page (graphical AoN today; Gantt view planned in 0.4.x); Transitrix Studio — preview planned in v0.5.0.
 
 ---
 
@@ -35,11 +35,14 @@ Validator behaviour:
 
 ## 1. Overview
 
-An **Activities** document describes a directed acyclic graph (DAG) of activities and the dependencies between them. It is the text-native form of a Project Schedule Network Diagram in Activity-on-Node (AoN) representation: each activity is a node, and predecessor relationships are directed edges from predecessor to successor.
+An **Activities** document describes a directed acyclic graph (DAG) of activities and the dependencies between them, optionally placed in calendar time. It is the text-native form of a project schedule with two coexisting renderings:
 
-The notation captures **what work is planned** (activities, durations, dependencies), **for what purpose** (goals served), **by whom** (owner / unit / employee), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — that is the job of an execution / tracking system.
+- **Network view** — Project Schedule Network Diagram in Activity-on-Node (AoN) representation: each activity is a node, predecessor relationships are directed edges from predecessor to successor. Always renderable from `activities[]` + `predecessors[]`.
+- **Gantt view** — horizontal-bar timeline: each activity is a bar positioned by computed or pinned dates. Renderable when the schedule is *computable* (durations + predecessors + a project `start_date`) or *pinned* (explicit per-activity dates).
 
-Critical-path values (early start / early finish / late start / late finish / slack) are **not stored** in the document. They are derived at render time by a forward and backward pass over the network. Renderers MUST compute them and SHOULD highlight the critical path visually.
+The notation captures **what work is planned** (activities, durations, dependencies), **for what purpose** (goals served), **by whom** (owner / unit / employee), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — no `progress` / `% complete` field is part of this notation. Execution tracking is the job of an execution system.
+
+Critical-path values (early start / early finish / late start / late finish / slack) and computed Gantt dates are **not stored** in the document. They are derived at render time by a forward and backward pass over the network (CPM) and by projecting CPM offsets onto the working calendar (Gantt). Renderers MUST compute them and SHOULD highlight the critical path visually.
 
 ---
 
@@ -47,10 +50,13 @@ Critical-path values (early start / early finish / late start / late finish / sl
 
 | Need | Use |
 |---|---|
-| Plan a project as a network of activities with dependencies | Activities (PSND / AoN) |
-| Identify critical path and float | Activities (PSND / AoN), with CPM render mode |
-| Bind activities to strategic goals | Activities (PSND / AoN) — `goals: []` |
-| Show what changes activities deliver (BDN linkage) | Activities (PSND / AoN) — `delivers_changes: []` |
+| Plan a project as a network of activities with dependencies | Activities — network view |
+| Identify critical path and float | Activities — network view, with CPM render mode |
+| Place the same project on a calendar timeline | Activities — Gantt view (requires `project.start_date` and durations, or pinned per-activity dates) |
+| Mark a deliverable date with no work attached | Activities — milestone (zero-duration activity) |
+| Group activities into phases / summary bars | Activities — parent activities (WBS-style via `parent`) |
+| Bind activities to strategic goals | Activities — `goals: []` |
+| Show what changes activities deliver (BDN linkage) | Activities — `delivers_changes: []` |
 | Document the procedural flow of a business process | BPMN (`*.bpmn.transitrix.yaml`) |
 | Decompose strategic factors → goals → changes → activities | FGCA (`*.fgca.transitrix.yaml`) |
 
@@ -82,10 +88,24 @@ version: "0.1"
 date: "2026-05-11"
 author: "Valerii Korobeinikov"
 
+project:                              # optional; enables Gantt rendering
+  start_date: 2026-06-01              # optional; project zero-time for computed Gantt
+  calendar:                           # optional; working calendar (see §5.8)
+    working_days: [mon, tue, wed, thu, fri]
+    hours_per_day: 8
+    holidays:
+      - "2026-07-04"
+      - "2026-12-25"
+
 activities:
+  - id: PHASE-DESIGN
+    name: Design phase
+    # parent (summary) activity — see §5.10. No duration of its own; dates roll up from children.
+
   - id: A-001
     name: Requirements analysis
-    duration: 5                       # required for CPM; integer or float in time units (see §5.4)
+    parent: PHASE-DESIGN              # optional; WBS-style parent
+    duration: 5                       # optional; integer or float in time units (see §5.4). Required for CPM; recommended for Gantt.
     activity_type: ANTYPE-ANALYSIS    # optional, reference to ActivityType element
     goals: [GOAL-CUST-001]            # optional, array of Goal IDs (an activity can serve multiple goals)
     scenario: SCEN-2026-OPT           # optional, reference to a Scenario element
@@ -110,6 +130,7 @@ activities:
 
   - id: A-002
     name: Architecture design
+    parent: PHASE-DESIGN
     duration: 8
     predecessors: [A-001]
     goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
@@ -131,6 +152,11 @@ activities:
     duration: 7
     predecessors: [A-003, A-004]      # successor of both backend and frontend
     goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
+
+  - id: M-LAUNCH
+    name: Public launch
+    duration: 0                       # zero-duration → milestone (see §5.9)
+    predecessors: [A-005]
 ```
 
 ---
@@ -148,6 +174,7 @@ activities:
 | `version` | no | string | document version (semantic versioning recommended) |
 | `date` | no | ISO 8601 date | document date |
 | `author` | no | string | document author |
+| `project` | no | object | optional schedule anchor for Gantt rendering — `start_date` and `calendar`; see §5.8 |
 | `activities` | yes | array | one or more activity entries; see §5.2 |
 
 ### 5.2 Per-activity fields
@@ -156,7 +183,7 @@ activities:
 |---|---|---|---|
 | `id` | yes | string | unique within the document; follows organisation naming convention (typically `A-NNN`) |
 | `name` | yes | string | activity name |
-| `duration` | no | number (≥ 0) | duration in time units; see §5.4. Recommended for any activity participating in CPM analysis. |
+| `duration` | no | number (≥ 0) | duration in time units; see §5.4. Required for CPM analysis and recommended for Gantt rendering. `0` is the milestone marker — see §5.9. |
 | `activity_type` | no | string (ID ref) | reference to an ActivityType element |
 | `goals` | no | array of string (ID refs) | array of Goal IDs (M:M) — an activity may serve multiple goals |
 | `scenario` | no | string (ID ref) | reference to a Scenario element |
@@ -212,6 +239,76 @@ An activity MAY populate any combination. The free-text `owner` is the default s
 
 `delivers_changes: []` references Changes from BDN (Benefits Dependency Network) — see notation 03-fgca. This is the same M:M relation that exists today in DSM's `activity_change` join. It allows reading an FGCA chain end-to-end from text: a Factor leads to Goals; Goals motivate Changes; Activities deliver Changes.
 
+### 5.8 Project block — `start_date` and `calendar`
+
+The optional `project:` block anchors the schedule on a calendar for Gantt rendering. Both child fields are optional; an absent block means no Gantt anchor (the document still renders as a network).
+
+```yaml
+project:
+  start_date: 2026-06-01              # optional; project zero-time
+  calendar:                           # optional; defaults: 7-day week, 24-h day, no holidays
+    working_days: [mon, tue, wed, thu, fri]
+    hours_per_day: 8
+    holidays:
+      - "2026-07-04"
+```
+
+| Field | Required | Type | Notes |
+|---|---|---|---|
+| `project.start_date` | no | ISO 8601 date | project zero-time. CPM offsets (early start / early finish) are projected from this date when rendering the Gantt view. |
+| `project.calendar` | no | object | working calendar; without it the renderer assumes a 7-day week. |
+| `project.calendar.working_days` | no | array of weekday names (`mon`–`sun`) | days the work happens. Defaults to all seven. |
+| `project.calendar.hours_per_day` | no | number (> 0) | working hours per working day; used only when `duration` units are hours. Defaults to 8 when applicable. |
+| `project.calendar.holidays` | no | array of ISO 8601 dates | non-working dates that fall on otherwise-working days. |
+
+The project block does **not** define the duration unit — that lives in `CONVENTIONS.md` per §5.4. The calendar describes when work happens, not how `duration` is measured.
+
+### 5.9 Milestones — zero-duration activities
+
+A **milestone** is an activity with `duration: 0`. It marks a deliverable, gate, or significant date with no work attached. No new entity is introduced; milestones are first-class activities that happen to be instantaneous.
+
+```yaml
+- id: M-LAUNCH
+  name: Public launch
+  duration: 0
+  predecessors: [A-005]
+```
+
+Renderer behaviour:
+- Network view: milestones render as diamonds (or a distinct shape) rather than rectangles.
+- Gantt view: milestones render as a point marker (typically a diamond on the timeline) rather than a bar.
+- CPM: milestones participate normally — `EF == ES`, slack and critical-path membership follow the standard rules.
+
+Milestones MAY have `start_date` / `end_date` pinned; if both are present they MUST be equal (validator MAY enforce — see §6).
+
+### 5.10 Phases / summary activities — `parent`
+
+A **phase** (also called a summary activity in MS Project terminology) groups child activities under one heading. It is an activity that other activities reference via `parent: <PHASE-ID>`. The phase itself MAY omit `duration`, `predecessors`, and dates — those values are derived from its children at render time (earliest start of any child, latest finish of any child).
+
+```yaml
+- id: PHASE-DESIGN
+  name: Design phase
+  # no own duration / dates — rolled up from children
+
+- id: A-001
+  name: Requirements analysis
+  parent: PHASE-DESIGN
+  duration: 5
+
+- id: A-002
+  name: Architecture design
+  parent: PHASE-DESIGN
+  duration: 8
+  predecessors: [A-001]
+```
+
+Renderer behaviour:
+- Network view: phases MAY render as collapsible groups or visual containers around their children (see §7 render contract for details).
+- Gantt view: phases render as a summary bar spanning from earliest child start to latest child finish, visually distinct from leaf bars.
+- The `parent` relation is **single-valued** (an activity has at most one parent), aligning with WBS conventions.
+
+A phase with no children is structurally orphan (validator MAY warn).
+
 ---
 
 ## 6. Validation rules
@@ -231,12 +328,20 @@ An activity MAY populate any combination. The free-text `owner` is the default s
 | `ACT-011` | warn | activity with no `duration` cannot participate in CPM analysis; renderer SHOULD highlight it |
 | `ACT-012` | warn | activity with `start_date` AND `end_date` AND `duration` whose values are inconsistent |
 | `ACT-013` | warn | an activity that is not a predecessor of any other and is not referenced as a goal-supporting activity is structurally orphan |
+| `ACT-014` | error | `project.calendar.working_days` values must be from the set `{mon, tue, wed, thu, fri, sat, sun}` (case-insensitive) and unique |
+| `ACT-015` | error | `project.calendar.holidays` entries must be valid ISO 8601 dates |
+| `ACT-016` | error | a milestone (`duration: 0`) with both `start_date` and `end_date` MUST have `start_date == end_date` |
+| `ACT-017` | warn | a phase (an activity referenced as `parent` by at least one child) SHOULD omit its own `duration` and dates — those values roll up from children |
+| `ACT-018` | warn | a phase with no children is structurally orphan |
+| `ACT-019` | warn | `project.start_date` absent AND no activity has pinned dates → Gantt view will not render; the network view still does |
 
 ---
 
-## 7. Render contract
+## 7. Network view — render contract
 
-A renderer that consumes this notation MUST:
+The network view (Project Schedule Network Diagram) is always renderable from `activities[]` and their `predecessors[]`. Timing data is irrelevant for the network view; an activity without a `duration` simply renders without one.
+
+A renderer that consumes this notation for the network view MUST:
 
 - Draw each activity as a rectangular node containing at minimum `id`, `name`, and `duration` (if present).
 - Draw a directed edge from each `predecessor` to its successor.
@@ -283,7 +388,67 @@ ES / EF / LS / LF / slack are **not stored** in the document — they are render
 
 ---
 
-## 9. Example file shape (minimal)
+## 9. Gantt view — render contract and renderability
+
+The Gantt view projects the same activities onto a calendar timeline as horizontal bars. The network view and the Gantt view always coexist; they are two projections of one schedule. What varies between documents is whether the Gantt view has enough data to draw.
+
+### 9.1 When the Gantt view renders
+
+The Gantt view is renderable in either of two modes:
+
+1. **Computed.** Every leaf activity (i.e. non-phase) has a `duration`, predecessors form a DAG, and `project.start_date` is present. The renderer projects CPM offsets (ES / EF) onto the calendar starting at `project.start_date`, advancing only on working days per `project.calendar` if provided. This is the typical mode.
+2. **Pinned.** Every leaf activity has both `start_date` and `end_date` filled in. The renderer places bars at the pinned positions and ignores CPM offsets. Useful for plans imported from external scheduling tools or for fixed-date commitments.
+
+A document MAY mix both modes: pinned dates on some activities override computed positions for those activities. Where both are present and consistent, the computed view and the pinned view agree (validator MAY check — `ACT-012`).
+
+When neither mode applies (e.g. no `project.start_date` and no pinned dates), the Gantt view does not render. The network view is unaffected. Renderers SHOULD surface a non-blocking notice explaining what is missing.
+
+### 9.2 Bar placement and calendar projection
+
+For a computed Gantt:
+
+- The start of the timeline is `project.start_date` (working-day-aligned per `project.calendar.working_days` if present).
+- Each activity bar starts at `project.start_date + ES[a]` working units and spans `duration[a]` working units, advancing only on working days and skipping `project.calendar.holidays`.
+- When `duration` units are hours, the renderer uses `project.calendar.hours_per_day` to convert hours into calendar time.
+- Without a `project.calendar`, the renderer assumes a 7-day week, 24-hour day, no holidays.
+
+For a pinned Gantt:
+
+- Bars use `start_date` and `end_date` directly. The calendar is irrelevant for bar placement (it MAY still be drawn as a visual reference).
+
+### 9.3 Renderer contract for Gantt
+
+A Gantt-capable renderer MUST:
+
+- Draw one horizontal bar per leaf activity at its computed or pinned position, labelled with `id` and `name`.
+- Draw milestones (`duration: 0`) as point markers, not bars (see §5.9).
+- Draw phases (parent activities — see §5.10) as summary bars spanning from earliest child start to latest child finish, visually distinct from leaf bars.
+- Render predecessor relationships as link lines between bars (Finish-to-Start with zero lag per §5.5).
+- Highlight critical-path bars consistently with the network view (Transitrix Studio uses `--ts-brand-orange` for critical, neutral for non-critical).
+- Render a non-blocking notice when the Gantt cannot draw because timing data is insufficient.
+
+A Gantt-capable renderer SHOULD:
+
+- Show today's date as a vertical "now" line when the project's date range straddles the current date.
+- Support a zoom / time-scale control (day / week / month / quarter).
+- Expose CPM details (ES / EF / LS / LF / slack) on hover, consistently with the network view.
+
+A Gantt-capable renderer MAY:
+
+- Filter bars by `tags`, `goals`, `scenario`, or `parent` — the same filters the network view exposes.
+- Group bars by `parent` into collapsible WBS rows.
+- Export the Gantt to image formats (SVG / PNG).
+
+### 9.4 View renderability — summary rule
+
+- **Network view:** always renderable from `activities[]` + `predecessors[]`.
+- **Gantt view:** renderable when the schedule is *computable* (durations + DAG + `project.start_date`) or *pinned* (per-activity `start_date` and `end_date`). Both modes MAY coexist within one document.
+
+Both views are projections of the same underlying schedule. A document never "becomes" a network or a Gantt — it is both, with the Gantt simply unrendered when timing data is insufficient.
+
+---
+
+## 10. Example file shape (minimal)
 
 ```yaml
 notation: activities
@@ -304,10 +469,11 @@ activities:
 
 ---
 
-## 10. References
+## 11. References
 
 - PMBoK Guide — Project Schedule Network Diagram, Activity-on-Node representation
 - Critical Path Method (CPM) — forward / backward pass standard reference
+- Henry L. Gantt — Gantt chart conventions (summary bars, milestones, calendar projection) as carried forward by MS Project and Primavera P6
 - Transitrix BPMN notation: `notations/01-bpmn.md` (for procedural-flow processes)
 - Transitrix FGCA notation: `notations/02-fgca.md` (for Factor → Goal → Change → Activity decomposition; this notation's `delivers_changes` field links into FGCA)
 - Transitrix Goals notation: `notations/04-goals.md` (this notation's `goals` field references Goal IDs)
