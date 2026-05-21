@@ -1,0 +1,93 @@
+notation: process-blueprint
+spec_version: "0.1"
+
+process_blueprint:
+  id: PROCESS_BLUEPRINT-FULFIL-1
+  name: "Order fulfilment — operational blueprint"
+  description: |
+    End-to-end operational blueprint of the order fulfilment value chain.
+    Each stage column lists its goal, result, and the supporting systems,
+    actors, equipment, and information entities involved.
+  period: "2026"
+  version: "0.1"
+  date: "2026-05-21"
+  author: "Valerii Korobeinikov"
+  process: PROCESS-ORD-FULFIL-1
+  scenario: SCENARIO-2026-BASE-1
+
+  stages:
+    - id: STAGE-1
+      name: "Receive order"
+      goal: "Capture a validated customer order."
+      result: "Validated order record in OMS with payment pre-authorised."
+
+    - id: STAGE-2
+      name: "Allocate inventory"
+      goal: "Reserve stock to satisfy the order from the optimal warehouse."
+      result: "Reservation lines linked to the order across one or more warehouses."
+
+    - id: STAGE-3
+      name: "Pick & pack"
+      goal: "Assemble the physical order from the reserved inventory."
+      result: "Packed shipment scanned out of the warehouse and ready for carrier handover."
+
+    - id: STAGE-4
+      name: "Ship"
+      goal: "Hand the shipment to the carrier and notify the customer."
+      result: "In-transit shipment with tracking number sent to the customer."
+
+    - id: STAGE-5
+      name: "Confirm delivery & close"
+      goal: "Confirm delivery, settle payment, and close the order."
+      result: "Closed order; payment captured; post-purchase feedback request queued."
+
+  systems:
+    - id: APPLICATION-OMS-1
+      name: "Order Management System"
+      stages: [STAGE-1, STAGE-2, STAGE-3, STAGE-4, STAGE-5]
+    - id: APPLICATION-WMS-1
+      name: "Warehouse Management System"
+      stages: [STAGE-2, STAGE-3]
+    - id: APPLICATION-TMS-1
+      name: "Transportation Management System"
+      stages: [STAGE-4, STAGE-5]
+    - id: APPLICATION-PAYMENT-1
+      name: "Payment gateway"
+      stages: [STAGE-1, STAGE-5]
+    - name: "Carrier tracking webhook"
+      description: "External carrier webhook delivering tracking events; not yet promoted to the applications catalogue."
+      stages: [STAGE-4, STAGE-5]
+
+  actors:
+    - id: ROLE-CUSTOMER-SVC-1
+      name: "Customer service representative"
+      stages: [STAGE-1, STAGE-5]
+    - id: ROLE-INVENTORY-PLANNER-1
+      name: "Inventory planner"
+      stages: [STAGE-2]
+    - id: ROLE-WAREHOUSE-OP-1
+      name: "Warehouse operator"
+      stages: [STAGE-3, STAGE-4]
+    - id: ROLE-FINANCE-OP-1
+      name: "Finance operations"
+      stages: [STAGE-5]
+
+  equipment:
+    - name: "Barcode scanner"
+      stages: [STAGE-3, STAGE-4]
+    - name: "Packing station"
+      stages: [STAGE-3]
+    - name: "Label printer"
+      stages: [STAGE-4]
+
+  information_entities:
+    - name: "Customer order"
+      stages: [STAGE-1, STAGE-2, STAGE-3, STAGE-4, STAGE-5]
+    - name: "Inventory reservation"
+      stages: [STAGE-2, STAGE-3]
+    - name: "Pick list"
+      stages: [STAGE-3]
+    - name: "Shipment manifest"
+      stages: [STAGE-4, STAGE-5]
+    - name: "Payment record"
+      stages: [STAGE-1, STAGE-5]
