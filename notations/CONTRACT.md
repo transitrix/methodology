@@ -12,7 +12,7 @@ Every Transitrix notation file MUST start with a header that declares which nota
 
 ```yaml
 notation: <short-name>      # required; this notation's short name
-spec_version: 0.1           # optional today; reserved field; will be required when this notation reaches v1.0
+spec_version: "0.1"         # optional today; reserved field; will be required when this notation reaches v1.0
 # … rest of the document
 ```
 
