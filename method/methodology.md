@@ -1,7 +1,7 @@
 ---
 title: Transitrix — Methodology for Enterprise Architecture as Code
 status: v1.0_draft
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-22
 audience: public
 license: MIT
 tags: [transitrix, methodology, enterprise_architecture, architecture_as_code, archimate, bpmn]
@@ -272,9 +272,7 @@ The table below is the canonical Transitrix notation set. Every notation file fo
 | 09 | **Products** | `*.products.transitrix.yaml` | Inventory of products and services — text-and-table catalogue, no diagram. | draft |
 | 10 | **Applications** | `*.applications.transitrix.yaml` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | draft |
 | 11 | **Scenarios** | `*.scenarios.transitrix.yaml` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, and applications. | documented |
-| 13 | **Process Blueprint** | `*.process-blueprint.transitrix.yaml` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | draft |
-
-The number `12` is intentionally reserved for a forthcoming **Gantt** notation; the gap between `11` and `13` is deliberate. Until that notation lands, the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
+| 12 | **Process Blueprint** | `*.process-blueprint.transitrix.yaml` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | draft |
 
 Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram: notation 08 is rendered through Transitrix Studio's Svgbob backend, the rest through Studio's shared diagram engine.
 
