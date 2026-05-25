@@ -1,0 +1,55 @@
+notation: issues
+spec_version: "0.1"
+
+issues_catalogue:
+  id: ISSUES-CAT-1
+  name: "Platform Launch 2026 — Issue Register"
+  description: "Open issues, defects, and questions tracked during the 2026 customer-facing platform launch."
+  version: "0.1"
+  updated_at: "2026-05-25"
+
+  issues:
+    - issue_id: ISSUE-1
+      name: "Checkout latency above target under load"
+      status: in_progress
+      description: |
+        p95 checkout response exceeds the 800 ms target above 2,000 concurrent users.
+        Umbrella issue for the launch-blocking performance work.
+      relates_to: [ACTIVITY-5, GOAL-CUST-1]
+      owner_role: ROLE-PLATFORM-1
+
+    - issue_id: ISSUE-2
+      name: "Payment retry storms on gateway timeout"
+      status: blocked
+      parent: ISSUE-1
+      description: "Client retries amplify load when the payment gateway times out; needs a backoff policy."
+      relates_to: [ACTIVITY-5]
+
+    - issue_id: ISSUE-3
+      name: "Confirm idempotency-key TTL with the payments vendor"
+      status: open
+      parent: ISSUE-2
+      description: "The vendor has not confirmed how long idempotency keys are retained."
+
+    - issue_id: ISSUE-4
+      name: "Catalogue search slow on a cold cache"
+      status: in_progress
+      parent: ISSUE-1
+      relates_to: [ACTIVITY-3]
+      owner_role: ROLE-PLATFORM-1
+
+    - issue_id: ISSUE-5
+      name: "Onboarding email links break in the staging environment"
+      status: resolved
+      description: "Links pointed at the production host; fixed by templating the environment base URL."
+      relates_to: [ACTIVITY-4]
+
+    - issue_id: ISSUE-6
+      name: "Decide whether to keep the legacy promo-code path"
+      status: open
+      relates_to: [GOAL-CUST-1]
+
+    - issue_id: ISSUE-7
+      name: "Duplicate analytics events on the launch dashboard"
+      status: closed
+      description: "Reported as a defect; turned out to be expected dual-tag behaviour. Closed without change."
