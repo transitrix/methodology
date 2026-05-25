@@ -12,7 +12,7 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 <TYPE>-[<middle segment(s)>-]<INTEGER>
 ```
 
-- **TYPE** — uppercase entity-type prefix from the registry in §3. The prefix names *what kind of thing* the ID refers to.
+- **TYPE** — uppercase entity-type prefix from the registry in §3. The prefix names *what kind of thing* the ID refers to. The TYPE segment is composed of uppercase letters `A`–`Z`, digits `0`–`9`, and the underscore `_`; it MUST start with a letter. The underscore allows multi-word TYPE names — `PROCESS_BLUEPRINT` (the first registered TYPE to use one, decided 2026-05-21) and `INFORMATION_ENTITY` (registered alongside it).
 - **Middle segments** — optional, notation-specific. Add for disambiguation (a domain code, a period, a programme name). The grammar fixes only the start and the end of an ID; a notation MAY define one or more middle segments where needed.
 - **INTEGER** — terminal positive integer, ≥ 1, **no leading zeros**. Sorting and comparison MUST parse it numerically, never lexically. There is no fixed width and no upper bound.
 
@@ -26,6 +26,8 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 | `FACTOR-CHURN-001` | — | — | — | **invalid** — leading zero. Use `FACTOR-CHURN-1`. |
 | `factor-1` | — | — | — | **invalid** — TYPE must be uppercase. |
 | `FACTOR-` | — | — | — | **invalid** — missing terminal integer. |
+| `PROCESS_BLUEPRINT-FULFIL-1` | PROCESS_BLUEPRINT | FULFIL | 1 | underscore in TYPE — permitted |
+| `INFORMATION_ENTITY-ORDER-3` | INFORMATION_ENTITY | ORDER | 3 | underscore in TYPE — permitted |
 
 ---
 
@@ -79,6 +81,8 @@ Elements that get referenced across documents.
 | `EMPLOYEE` | named employee | Activities |
 | `SCENARIO` | strategic scenario | Scenarios |
 | `ISSUE` | issue — problem, defect, or open question | Issues register |
+| `EQUIPMENT` | physical instrument, device, or facility a process stage depends on | Process Blueprint |
+| `INFORMATION_ENTITY` | data, document, or record produced or consumed by a process stage | Process Blueprint |
 
 ### 3.2 Document-level types
 
@@ -97,6 +101,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
 | `BLOCKS` | `*.blocks.transitrix.txt` |
 | `ISSUES_CAT` | `*.issues.transitrix.yaml` |
+| `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
@@ -119,6 +124,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `ISSUE` | within the issues catalogue document. |
 | `ROLE`, `UNIT`, `EMPLOYEE` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation. |
+| `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
 
 Document-level IDs (`FGCA-…`, `FGA-…`, etc.) are unique within the organisation.
 
