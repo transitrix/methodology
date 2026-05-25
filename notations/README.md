@@ -1,6 +1,6 @@
 # Notations
 
-Transitrix is a text-native methodology: every architecture artefact lives in a YAML (or Svgbob) file whose syntax is governed by one of the notations below. This index lists the twelve notations, what each is for, and how the strategy-chain family fits together.
+Transitrix is a text-native methodology: every architecture artefact lives in a YAML (or Svgbob) file whose syntax is governed by one of the notations below. This index lists the thirteen notations, what each is for, and how the strategy-chain family fits together.
 
 ## Catalogue
 
@@ -17,6 +17,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 | [09-products.md](09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
 | [10-applications.md](10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [11-scenarios.md](11-scenarios.md) | `scenarios` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, applications. | `*.scenarios.transitrix.yaml` | documented |
+| [12-issues.md](12-issues.md) | `issues` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | `*.issues.transitrix.yaml` | draft |
 | [13-process-blueprint.md](13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 
 All notations share the same file-extension convention `.<short-name>.transitrix.<ext>` (`yaml` for everything except `blocks`, which uses `txt`), and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
