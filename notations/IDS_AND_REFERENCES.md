@@ -78,6 +78,7 @@ Elements that get referenced across documents.
 | `UNIT` | organisational unit | Activities |
 | `EMPLOYEE` | named employee | Activities |
 | `SCENARIO` | strategic scenario | Scenarios |
+| `ISSUE` | issue — problem, defect, or open question | Issues register |
 
 ### 3.2 Document-level types
 
@@ -95,6 +96,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
 | `BLOCKS` | `*.blocks.transitrix.txt` |
+| `ISSUES_CAT` | `*.issues.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
@@ -114,6 +116,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `PRODUCT`, `APPLICATION`, `INTEGRATION` | within the catalogue document. |
+| `ISSUE` | within the issues catalogue document. |
 | `ROLE`, `UNIT`, `EMPLOYEE` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation. |
 
