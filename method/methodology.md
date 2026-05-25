@@ -257,7 +257,7 @@ Transitrix supports a set of **notations** for describing different aspects of a
 
 Every notation is specified in its own file under `notations/`. The file-header rules common to all of them — the required `notation:` field, the reserved `spec_version:` field, validator behaviour, and the extension/content match guarantee — are defined once in `notations/CONTRACT.md`. The cross-notation ID grammar and TYPE registry live in `notations/IDS_AND_REFERENCES.md`.
 
-The table below is the canonical Transitrix notation set. Every notation file follows the extension convention `*.<short-name>.transitrix.<ext>` — `yaml` for every notation except `blocks`, which uses `txt` — and begins with a `notation: <short-name>` header. The `Status` column reflects the maturity of the notation **specification** (`draft`, `documented`, or `stable`), not whether a tool implements it; tool support is tracked per spec in its `dsm_status:` field.
+The table below is the canonical Transitrix notation set. Every notation file follows the extension convention `*.<short-name>.transitrix.yaml` and begins with a `notation: <short-name>` header. The `Status` column reflects the maturity of the notation **specification** (`draft`, `documented`, or `stable`), not whether a tool implements it; tool support is tracked per spec in its `dsm_status:` field.
 
 | # | Notation | File extension | Purpose | Status |
 | --- | --- | --- | --- | --- |
@@ -268,7 +268,7 @@ The table below is the canonical Transitrix notation set. Every notation file fo
 | 05 | **Capabilities map** | `*.capability-map.transitrix.yaml` | Capability hierarchy with CMMI V2.0 maturity, addressing, and vertical / horizontal orientation. | documented |
 | 06 | **Process landscape map** | `*.process-map.transitrix.yaml` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | draft |
 | 07 | **Activities** | `*.activities.transitrix.yaml` | Project schedule as an Activity-on-Node network, with an optional Gantt timeline projection. | documented |
-| 08 | **Nested block diagrams** | `*.blocks.transitrix.txt` | Multi-level container layouts for deep architectural overviews, rendered via Svgbob. | documented |
+| 08 | **Nested block diagrams** | `*.blocks.transitrix.yaml` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | documented |
 | 09 | **Products** | `*.products.transitrix.yaml` | Inventory of products and services — text-and-table catalogue, no diagram. | draft |
 | 10 | **Applications** | `*.applications.transitrix.yaml` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | draft |
 | 11 | **Scenarios** | `*.scenarios.transitrix.yaml` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, and applications. | documented |
@@ -276,7 +276,7 @@ The table below is the canonical Transitrix notation set. Every notation file fo
 
 The number `12` is intentionally reserved for a forthcoming **Gantt** notation; the gap between `11` and `13` is deliberate. Until that notation lands, the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
 
-Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram: notation 08 is rendered through Transitrix Studio's Svgbob backend, the rest through Studio's shared diagram engine.
+Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram, rendered through Transitrix Studio's shared diagram engine.
 
 ### 6.1 Where each notation lives in the repository
 
@@ -291,7 +291,7 @@ Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live un
 | Capabilities map | `views/capabilities/<DOMAIN>.capability-map.transitrix.yaml` | Hierarchy referencing Capability elements + maturity overlay |
 | Process landscape map | `views/processmap/<DOMAIN>.process-map.transitrix.yaml` | Catalogue referencing BusinessProcess elements |
 | Activities | `views/activities/<NAME>.activities.transitrix.yaml` | Activity-on-Node schedule network referencing Activity, Goal, and Change elements |
-| Nested block diagrams | `views/blocks/<NAME>.blocks.transitrix.txt`, or inline alongside markdown documentation | Multi-level block layouts (Svgbob) |
+| Nested block diagrams | `views/blocks/<NAME>.blocks.transitrix.yaml` | Multi-level block layouts — recursive `block` tree |
 | Products view | `views/products/<DOMAIN>.products.transitrix.yaml` | Filtered view over Product elements |
 | Applications view | `views/applications/<DOMAIN>.applications.transitrix.yaml` | Filtered view over Application elements |
 | Scenarios | `views/scenarios/<NAME>.scenarios.transitrix.yaml` | Alternative strategic development paths, each scoping its own goals, capabilities, activities, products, processes, and applications |

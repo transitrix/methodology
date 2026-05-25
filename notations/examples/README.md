@@ -9,7 +9,7 @@ One subfolder per diagram format. Open any example file in VS Code with the Tran
 | [`fgca/`](fgca/) | `*.fgca.transitrix.yaml` | FGCA | Factor → Goal → Change → Activity chain |
 | [`fga/`](fga/) | `*.fga.transitrix.yaml` | FGA | Factor → Goal → Activity (FGCA without Changes) |
 | [`activities/`](activities/) | `*.activities.transitrix.yaml` | Activity network | AoN / PSND precedence diagram with critical path |
-| [`blocks/`](blocks/) | `*.blocks.transitrix.txt` | Nested block diagrams | ASCII art architecture maps rendered via svgbob |
+| [`blocks/`](blocks/) | `*.blocks.transitrix.yaml` | Nested block diagrams | Recursive `block` tree rendered as nested boxes |
 | [`capability-map/`](capability-map/) | `*.capability-map.transitrix.yaml` | Capabilities map | Capability hierarchy with CMMI maturity assessment |
 | [`process-map/`](process-map/) | `*.process-map.transitrix.yaml` | Process landscape map | Top-level catalogue of operating, supporting, and management processes |
 | [`products/`](products/) | `*.products.transitrix.yaml` | Products catalogue | Portfolio of digital products, services, platforms, and bundles |
