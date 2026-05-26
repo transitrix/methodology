@@ -21,7 +21,7 @@ date: "2026-05-26"
 author: "Valerii Korobeinikov"
 
 project:
-  start_date: 2026-06-01
+  start_date: "2026-06-01"
   calendar:
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
@@ -32,8 +32,8 @@ activities:
   - id: A-101
     name: Requirements gathering
     duration: 10
-    start_date: 2026-06-01
-    end_date: 2026-06-12
+    start_date: "2026-06-01"
+    end_date: "2026-06-12"
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
     tags: [planning]
@@ -41,8 +41,8 @@ activities:
   - id: A-102
     name: Site selection
     duration: 15
-    start_date: 2026-06-15
-    end_date: 2026-07-03
+    start_date: "2026-06-15"
+    end_date: "2026-07-03"
     predecessors: [A-101]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -51,8 +51,8 @@ activities:
   - id: A-103
     name: Lease negotiation
     duration: 10
-    start_date: 2026-07-06
-    end_date: 2026-07-17
+    start_date: "2026-07-06"
+    end_date: "2026-07-17"
     predecessors: [A-102]
     goals: [GOAL-RELOC-001]
     unit: UNIT-LEGAL
@@ -61,8 +61,8 @@ activities:
   - id: M-LEASE-SIGNED
     name: Lease signed
     duration: 0                       # milestone (see §5.9)
-    start_date: 2026-07-17
-    end_date: 2026-07-17
+    start_date: "2026-07-17"
+    end_date: "2026-07-17"
     predecessors: [A-103]
     goals: [GOAL-RELOC-001]
     tags: [milestone]
@@ -70,8 +70,8 @@ activities:
   - id: A-201
     name: Construction permits
     duration: 20
-    start_date: 2026-07-20
-    end_date: 2026-08-14
+    start_date: "2026-07-20"
+    end_date: "2026-08-14"
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-001]
     unit: UNIT-LEGAL
@@ -80,8 +80,8 @@ activities:
   - id: A-202
     name: Interior design
     duration: 15
-    start_date: 2026-07-20
-    end_date: 2026-08-07
+    start_date: "2026-07-20"
+    end_date: "2026-08-07"
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-002]
     unit: UNIT-FACILITIES
@@ -90,8 +90,8 @@ activities:
   - id: A-203
     name: Construction work
     duration: 30
-    start_date: 2026-08-17
-    end_date: 2026-09-25
+    start_date: "2026-08-17"
+    end_date: "2026-09-25"
     predecessors: [A-201, A-202]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -101,8 +101,8 @@ activities:
   - id: A-204
     name: IT infrastructure install
     duration: 12
-    start_date: 2026-09-28
-    end_date: 2026-10-13
+    start_date: "2026-09-28"
+    end_date: "2026-10-13"
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
     unit: UNIT-IT
@@ -112,8 +112,8 @@ activities:
   - id: A-205
     name: Furniture delivery
     duration: 5
-    start_date: 2026-09-28
-    end_date: 2026-10-02
+    start_date: "2026-09-28"
+    end_date: "2026-10-02"
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
     unit: UNIT-FACILITIES
@@ -122,8 +122,8 @@ activities:
   - id: A-301
     name: Pack-up
     duration: 3
-    start_date: 2026-10-14
-    end_date: 2026-10-16
+    start_date: "2026-10-14"
+    end_date: "2026-10-16"
     predecessors: [A-204, A-205]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -132,8 +132,8 @@ activities:
   - id: A-302
     name: Physical move
     duration: 2
-    start_date: 2026-10-19
-    end_date: 2026-10-20
+    start_date: "2026-10-19"
+    end_date: "2026-10-20"
     predecessors: [A-301]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -142,8 +142,8 @@ activities:
   - id: A-303
     name: Unpacking and setup
     duration: 3
-    start_date: 2026-10-21
-    end_date: 2026-10-23
+    start_date: "2026-10-21"
+    end_date: "2026-10-23"
     predecessors: [A-302]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -152,8 +152,8 @@ activities:
   - id: M-OPEN-DAY
     name: New HQ opens
     duration: 0                       # milestone (see §5.9)
-    start_date: 2026-10-23
-    end_date: 2026-10-23
+    start_date: "2026-10-23"
+    end_date: "2026-10-23"
     predecessors: [A-303]
     goals: [GOAL-RELOC-001]
     tags: [milestone, public]
