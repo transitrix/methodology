@@ -1,0 +1,46 @@
+notation: process-blueprint
+spec_version: "0.1"
+
+# Process Blueprint — wide value-chain blueprint. Spec:
+# notations/13-process-blueprint.md
+# Stages laid out left-to-right; per-stage aspects (systems, actors,
+# equipment, information entities) reference the stages they touch.
+
+process_blueprint:
+  id: PROCESS_BLUEPRINT-FILL-ME-1
+  name: "FILL-ME process blueprint"
+  description: "FILL-ME — value chain scope"
+  period: "FILL-ME"                    # e.g. "2026"
+  version: "0.1"
+  date: "2026-05-26"
+  author: "FILL-ME"
+
+  stages:
+    - id: STAGE-1
+      name: "FILL-ME — first stage"
+      goal: "FILL-ME — what this stage should achieve"
+      result: "FILL-ME — what exits this stage"
+    - id: STAGE-2
+      name: "FILL-ME — second stage"
+      goal: "FILL-ME — goal"
+      result: "FILL-ME — deliverable"
+
+  systems:
+    - id: APPLICATION-FILL-ME-1
+      name: "FILL-ME — system used in these stages"
+      stages: [STAGE-1, STAGE-2]
+
+  actors:
+    - id: ROLE-FILL-ME-1
+      name: "FILL-ME — role responsible"
+      stages: [STAGE-1]
+
+  equipment:
+    - id: EQUIPMENT-FILL-ME-1
+      name: "FILL-ME — physical instrument / facility"
+      stages: [STAGE-2]
+
+  information_entities:
+    - id: INFORMATION_ENTITY-FILL-ME-1
+      name: "FILL-ME — data / document produced or consumed"
+      stages: [STAGE-1, STAGE-2]

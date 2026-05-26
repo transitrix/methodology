@@ -1,0 +1,27 @@
+notation: capability-map
+spec_version: "0.1"
+
+# Capability map. Spec: notations/05-capability-map.md
+# Capability IDs use the V/H sub-grammar (CAPABILITY-V1.2, CAPABILITY-H1.2.3).
+# Maturity uses the CMMI 1–5 scale.
+
+capability_map:
+  id: CAPABILITY_MAP-FILL-ME-1
+  name: "FILL-ME capability map"
+  description: "FILL-ME — domain / scope"
+  assessment_date: "2026-05-26"
+
+  capabilities:
+    - id: CAPABILITY-V1
+      name: "FILL-ME top-level capability"
+      type: domain                  # domain | supporting
+      current_maturity: 2           # CMM 1..5
+      target_maturity: 4
+      target_date: "2026-12-31"
+      owner_role: ROLE-1
+      children:
+        - id: CAPABILITY-V1.1
+          name: "FILL-ME sub-capability"
+          type: domain
+          current_maturity: 2
+          target_maturity: 3
