@@ -1,16 +1,16 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.1"
+version: "1.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-19"
+last_updated: "2026-05-26"
 status: "documented"
 file_extension: "*.bpmn.transitrix.yaml"
 ---
 
 # BPMN Process YAML Notation — Reference
 
-**Version:** 1.1
-**Date:** 2026-05-19
+**Version:** 1.2
+**Date:** 2026-05-26
 **Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
 ---
@@ -39,6 +39,8 @@ The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Mod
 ## 2. File extension
 
 The file extension is **`.bpmn.transitrix.yaml`**. Files outside this extension are rejected by the compiler with an explicit error.
+
+Until 2026-05-20 the short form `.bpmn.yaml` was also accepted as an alias. Per the family-consistency decision recorded that day, the long form is now the sole canonical extension — every Transitrix notation uses the `*.<short-name>.transitrix.<ext>` form per [`CONTRACT.md`](CONTRACT.md), and BPMN is no longer an exception.
 
 ---
 
