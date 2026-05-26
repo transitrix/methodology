@@ -1,0 +1,23 @@
+id: CONSTRAINT-GDPR-RESIDENCY-1
+name: "EU customer personal data must be stored within EU/EEA jurisdictions"
+type: constraint
+statement: >
+  Personal data of EU customers MUST NOT be persisted, processed, or backed up
+  outside EU / EEA jurisdictions unless an adequacy decision or an approved
+  data-transfer mechanism (SCC, BCR, or derogation under Art. 49) is in
+  effect for the destination jurisdiction.
+status: active
+
+applies_to:
+  - APPLICATION-OMS-1
+  - APPLICATION-CRM-1
+  - PROCESS-ORDER-FULFILMENT-1
+
+source: "GDPR (Regulation (EU) 2016/679) Art. 44–49"
+owner_role: ROLE-DPO-1
+severity: mandatory
+rationale: >
+  EU data-protection law restricts the transfer of personal data to third
+  countries. Non-compliance carries administrative fines under Art. 83 (up
+  to 4% of global annual turnover) and reputational risk; storage decisions
+  for any system holding EU customer PII MUST reflect this constraint.

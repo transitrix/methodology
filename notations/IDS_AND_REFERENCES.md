@@ -83,6 +83,8 @@ Elements that get referenced across documents.
 | `ISSUE` | issue — problem, defect, or open question | Issues register |
 | `EQUIPMENT` | physical instrument, device, or facility a process stage depends on | Process Blueprint |
 | `INFORMATION_ENTITY` | data, document, or record produced or consumed by a process stage | Process Blueprint |
+| `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
+| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
 
 ### 3.2 Document-level types
 
@@ -125,6 +127,8 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `ROLE`, `UNIT`, `EMPLOYEE` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation. |
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
+| `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
+| `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
 
 Document-level IDs (`FGCA-…`, `FGA-…`, etc.) are unique within the organisation.
 
