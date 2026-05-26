@@ -2,7 +2,7 @@
 notation: "Issues Register"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-25"
+last_updated: "2026-05-26"
 status: "draft"
 file_extension: "*.issues.transitrix.yaml"
 ---
@@ -153,10 +153,11 @@ The `issues` array is **flat**. A child issue declares its parent with `parent: 
 
 ## 7. Validation rules
 
-Shared header rules `HDR-001`…`HDR-004` apply (see [CONTRACT.md](CONTRACT.md)). A structurally malformed document — `issues_catalogue` missing, or `issues` not an array — is a schema error. Notation-specific rules:
+Shared header rules `HDR-001`…`HDR-004` apply (see [CONTRACT.md](CONTRACT.md)). Notation-specific rules:
 
 | Rule | Severity | Description |
 |---|---|---|
+| `ISS-000` | error | Structural / header problem — input is not an object, the `notation` value is not `issues`, the `issues_catalogue` root key is missing, or a required catalogue field (`id` / `name` / `updated_at`) is missing. |
 | `ISS-001` | error | Duplicate `issue_id` within the catalogue. |
 | `ISS-002` | error | `status` is not one of the §5.3 vocabulary values. |
 | `ISS-003` | error | `issue_id` or `name` is missing or empty. |
