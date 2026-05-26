@@ -184,12 +184,14 @@ All four aspect arrays share the same entry shape. Each entry is an object with 
 |---|---|---|
 | `systems[]` | `APPLICATION-…` | applications catalogue (`*.applications.transitrix.yaml`) |
 | `actors[]` | `ROLE-…` | roles in the organisation's element catalogue |
-| `equipment[]` | *(none registered today)* | — entries are notation-local labels for v0.1 |
-| `information_entities[]` | *(none registered today)* | — entries are notation-local labels for v0.1 |
+| `equipment[]` | `EQUIPMENT-…` | notation-local in v0.1; promotable to a catalogue (see below) |
+| `information_entities[]` | `INFORMATION_ENTITY-…` | notation-local in v0.1; promotable to a catalogue (see below) |
 
-For `systems[]` and `actors[]`, an entry with an `id` MUST use the TYPE prefix listed above (and the validator MUST resolve the reference against the relevant catalogue once cross-document linking is wired up). An entry without an `id` is a free-form label — useful for sketches and for elements that have not yet been promoted into a catalogue.
+For every aspect category, an entry with an `id` MUST use the TYPE prefix listed above. An entry without an `id` is a free-form label — useful for sketches and for elements that have not yet been promoted into a catalogue.
 
-For `equipment[]` and `information_entities[]`, no canonical TYPE prefix exists yet — the corresponding registry entries (e.g. `EQUIPMENT`, `INFORMATION_ENTITY`) require a separate decision and are tracked as a follow-up to [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1. In v0.1, entries in these two arrays are notation-local labels with optional, unenforced `id` values.
+`systems[]` and `actors[]` cross-reference established catalogues: `APPLICATION-…` resolves into the applications catalogue (`*.applications.transitrix.yaml`); `ROLE-…` resolves into the organisation's roles list. A validator MUST resolve these references against the relevant catalogue once cross-document linking is wired up.
+
+`EQUIPMENT` and `INFORMATION_ENTITY` were registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for these element TYPEs in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
 
 ---
 
@@ -206,7 +208,7 @@ For `equipment[]` and `information_entities[]`, no canonical TYPE prefix exists 
 | `BP-007` | error | every aspect entry (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`) must have a non-empty `name` and a non-empty `stages: [STAGE-…]` array. |
 | `BP-008` | error | every ID in any aspect entry's `stages: [...]` must reference a stage declared in `stages[]`. |
 | `BP-009` | error | if an aspect entry has an `id`, the ID must match the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. |
-| `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. |
+| `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. For `equipment[]`, the prefix MUST be `EQUIPMENT-`. For `information_entities[]`, the prefix MUST be `INFORMATION_ENTITY-`. |
 | `BP-011` | warn | a stage with no aspect entries pointing at it from any of the four aspect arrays is structurally empty and SHOULD be reviewed. |
 
 ---
@@ -254,7 +256,7 @@ What the renderer MUST NOT do:
 ## 9. References
 
 - File header contract: [`CONTRACT.md`](CONTRACT.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) — note: the `PROCESS_BLUEPRINT` document-level TYPE and any future `EQUIPMENT` / `INFORMATION_ENTITY` element TYPEs are follow-ups to that appendix.
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) — registers `PROCESS_BLUEPRINT` (§3.2) and the aspect element TYPEs `EQUIPMENT` and `INFORMATION_ENTITY` (§3.1).
 - Goals notation (uses the same diagram engine): [`04-goals.md`](04-goals.md)
 - BPMN notation (procedural flow of one process): [`01-bpmn.md`](01-bpmn.md)
 - Process landscape map (catalogue of all processes): [`06-process-map.md`](06-process-map.md)
