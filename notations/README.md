@@ -13,14 +13,14 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 | [05-capability-map.md](05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
 | [06-process-map.md](06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
 | [07-activities.md](07-activities.md) | `activities` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — activities and dependencies. | `*.activities.transitrix.yaml` | documented |
-| [08-blocks.md](08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews, rendered via Svgbob. | `*.blocks.transitrix.txt` | documented |
+| [08-blocks.md](08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | `*.blocks.transitrix.yaml` | documented |
 | [09-products.md](09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
 | [10-applications.md](10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [11-scenarios.md](11-scenarios.md) | `scenarios` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, applications. | `*.scenarios.transitrix.yaml` | documented |
 | [12-issues.md](12-issues.md) | `issues` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | `*.issues.transitrix.yaml` | draft |
 | [13-process-blueprint.md](13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 
-All notations share the same file-extension convention `.<short-name>.transitrix.<ext>` (`yaml` for everything except `blocks`, which uses `txt`), and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
+All notations share the same file-extension convention `.<short-name>.transitrix.yaml`, and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
 
 ## Status vocabulary
 

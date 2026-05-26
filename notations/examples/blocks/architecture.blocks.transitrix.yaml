@@ -1,0 +1,47 @@
+notation: blocks
+spec_version: "0.1"
+
+nested_blocks:
+  id: BLOCKS-ARCH-1
+  name: "Software architecture"
+  description: "Two-tier overview of the application and data layers of a typical SaaS product."
+  version: "0.1"
+  date: "2026-05-25"
+  author: "Valerii Korobeinikov"
+
+  blocks:
+    - id: APPLICATION_LAYER
+      name: "Application Layer"
+      children:
+        - id: FRONTEND
+          name: "Frontend"
+          children:
+            - id: REACT_APP
+              name: "React App"
+            - id: REDUX_STORE
+              name: "Redux Store"
+        - id: BACKEND
+          name: "Backend"
+          children:
+            - id: REST_API
+              name: "REST API"
+            - id: BUSINESS_LOGIC
+              name: "Business Logic"
+
+    - id: DATA_LAYER
+      name: "Data Layer"
+      children:
+        - id: POSTGRESQL
+          name: "PostgreSQL"
+          children:
+            - id: USERS_TABLE
+              name: "Users"
+            - id: ORDERS_TABLE
+              name: "Orders"
+        - id: REDIS_CACHE
+          name: "Redis Cache"
+          children:
+            - id: SESSIONS_CACHE
+              name: "Sessions"
+            - id: RATE_LIMITS_CACHE
+              name: "Rate Limits"

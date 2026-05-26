@@ -109,7 +109,7 @@ Transitrix defines text-native notations for the most common enterprise-architec
 | Notation | Extension | Purpose | Status |
 | --- | --- | --- | --- |
 | Process diagram (BPMN 2.0) | `*.bpmn.transitrix.yaml` | Process flow with lanes, KPIs | Implemented |
-| Nested block diagrams | `*.blocks.transitrix.txt` | Multi-level container layouts (Svgbob) | Implemented |
+| Nested block diagrams | `*.blocks.transitrix.yaml` | Multi-level container layouts — recursive `block` tree | Documented |
 | Goals tree | `*.goals.transitrix.yaml` | Hierarchical goals | Planned |
 | Capabilities map | `*.capmap.transitrix.yaml` | Capabilities + maturity | Planned |
 | Process landscape map | `*.processmap.transitrix.yaml` | Top-level process catalogue | Planned |
