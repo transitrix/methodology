@@ -1,0 +1,47 @@
+notation: fgca
+spec_version: "0.1"
+
+id: FGCA-DATA-RESIDENCY-1
+name: "EU data-residency FGCA chain"
+description: >
+  Worked example showing FACTOR.references_constraint — a factor that
+  reflects a binding regulatory constraint (GDPR data residency), and the
+  goals / changes / activities the organisation runs to comply.
+period: "2026"
+version: "0.1"
+date: "2026-05-26"
+author: Transitrix
+
+factors:
+  - id: FACTOR-DATA-RESIDENCY-1
+    name: "EU customer personal-data residency obligation"
+    type: external
+    references_constraint:
+      - CONSTRAINT-GDPR-RESIDENCY-1
+
+goals:
+  - id: GOAL-COMPLY-RESIDENCY-1
+    name: "Persist EU customer personal data only within EU/EEA"
+    factors: [FACTOR-DATA-RESIDENCY-1]
+
+changes:
+  - id: CHANGE-EU-REGION-1
+    name: "Move EU-customer data store to an EU-resident region"
+    goals: [GOAL-COMPLY-RESIDENCY-1]
+  - id: CHANGE-DATA-FLOW-AUDIT-1
+    name: "Audit and document every cross-border data flow"
+    goals: [GOAL-COMPLY-RESIDENCY-1]
+
+activities:
+  - id: ACTIVITY-MIGRATE-CRM-1
+    name: "Migrate CRM datastore from us-east-1 to eu-central-1"
+    changes: [CHANGE-EU-REGION-1]
+  - id: ACTIVITY-MIGRATE-OMS-1
+    name: "Migrate OMS datastore from us-east-1 to eu-central-1"
+    changes: [CHANGE-EU-REGION-1]
+  - id: ACTIVITY-FLOW-INVENTORY-1
+    name: "Catalogue every PII data flow that crosses jurisdictions"
+    changes: [CHANGE-DATA-FLOW-AUDIT-1]
+  - id: ACTIVITY-SCC-REVIEW-1
+    name: "Review Standard Contractual Clauses for remaining cross-border flows"
+    changes: [CHANGE-DATA-FLOW-AUDIT-1]
