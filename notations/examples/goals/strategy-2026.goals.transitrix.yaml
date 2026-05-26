@@ -1,17 +1,53 @@
 notation: goals
 spec_version: "0.1"
 
-goals_tree:
-  id: "GT-STRATEGY-2026"
-  name: "Strategy 2026 — Goals Tree"
-  description: "Goal hierarchy across Strategy → Business Goal → Project levels for the 2026 plan."
-  root:
-    goal_id: "GOAL-REVENUE-001"       # "Triple revenue in 3 years"
-    children:
-      - goal_id: "GOAL-EU-001"        # "Launch in 3 EU markets"
-        children:
-          - goal_id: "GOAL-BERLIN-001"    # "Open Berlin office"
-          - goal_id: "GOAL-EU-REG-001"   # "Obtain EU regulatory approval"
-      - goal_id: "GOAL-MENA-001"      # "Launch in MENA"
-        children:
-          - goal_id: "GOAL-DUBAI-001"    # "Partner with Dubai distributor"
+id: GOALS-STRATEGY-2026
+name: "Strategy 2026 — Goals Tree"
+description: "Goal hierarchy across Strategy → Strategic Goal → Project Goal levels for the 2026 plan."
+period: "2026"
+version: "0.1"
+date: "2026-05-26"
+author: Transitrix
+
+goal_types:
+  - { name: "Strategy",         level: 0 }
+  - { name: "Strategic Intention", level: 1 }
+  - { name: "Strategic Goal",   level: 2 }
+  - { name: "Project Goal",     level: 4 }
+
+goals:
+  - id: GOAL-REVENUE-1
+    name: "Triple revenue in 3 years"
+    type: "Strategy"
+    level: 0
+    # No parent — single root.
+
+  - id: GOAL-EU-1
+    name: "Launch in 3 EU markets"
+    type: "Strategic Goal"
+    level: 2
+    parent: GOAL-REVENUE-1
+
+  - id: GOAL-BERLIN-1
+    name: "Open Berlin office"
+    type: "Project Goal"
+    level: 4
+    parent: GOAL-EU-1
+
+  - id: GOAL-EU-REG-1
+    name: "Obtain EU regulatory approval"
+    type: "Project Goal"
+    level: 4
+    parent: GOAL-EU-1
+
+  - id: GOAL-MENA-1
+    name: "Launch in MENA"
+    type: "Strategic Goal"
+    level: 2
+    parent: GOAL-REVENUE-1
+
+  - id: GOAL-DUBAI-1
+    name: "Partner with Dubai distributor"
+    type: "Project Goal"
+    level: 4
+    parent: GOAL-MENA-1

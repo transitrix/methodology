@@ -1,9 +1,9 @@
 ---
 notation: "FGA Strategy-to-Execution Chain"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
-status: "draft"
+last_updated: "2026-05-26"
+status: "documented"
 file_extension: "*.fga.transitrix.yaml"
 ---
 
@@ -16,7 +16,7 @@ file_extension: "*.fga.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -66,58 +66,116 @@ Examples:
 
 ---
 
-## 4. Top-level structure
+## 4. Top-level structure — flat form
+
+FGA uses the **flat form**: document metadata and the three layers (`factors`, `goals`, `activities`) live at the document root as parallel arrays. There is no wrapper key. Links between layers are id-references on each item, not nesting.
+
+The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](README.md) § Family selection for the family-wide rule (decided 2026-05-26).
 
 ```yaml
-fga:
-  id: "FGA-OPS-001"
-  name: "Q3 Operational Initiatives"
-  description: "Direct mapping of Q3 activities to strategic goals"
-  period: "2026-Q3"
+notation: fga
+spec_version: "0.1"
 
-  factors:
-    - id: "FACTOR-CHURN-001"
-      name: "Rising customer churn in SMB segment"
-      type: "external"               # external | internal
-      goals:
-        - id: "GOAL-RET-001"
-          name: "Improve SMB retention to 90%"
-          activities:
-            - id: "ACT-ONBOARD-001"
-              name: "Redesign onboarding flow"
-              owner: "ROLE-PRODUCT-001"
-              status: "In Progress"
-              due_date: "2026-09-30"
-            - id: "ACT-SUPPORT-001"
-              name: "Launch dedicated SMB support tier"
-              owner: "ROLE-CS-001"
-              status: "Planned"
-              due_date: "2026-08-31"
+id: FGA-STRAT-1
+name: "Strategy 2026 — FGA chain"
+description: "Factor → Goal → Activity decomposition for the 2026 plan."
+period: "2026"
+version: "0.1"
+date: "2026-05-26"
+author: Transitrix
+
+factors:
+  - id: FACTOR-1
+    name: "Competitive market pressure"
+    type: external          # external | internal
+
+goals:
+  - id: GOAL-1
+    name: "Grow revenue by 20%"
+    factors: [FACTOR-1]     # id-references to factors[]
+
+activities:
+  - id: ACTIVITY-1
+    name: "Launch new product line"
+    goals: [GOAL-1]         # id-references to goals[]
 ```
+
+A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](examples/fga/strategy-2026.fga.transitrix.yaml).
 
 ---
 
 ## 5. Fields
 
+### Document root
+
 | Field | Required | Description |
-|-------|----------|-------------|
-| `fga.id` | Yes | Unique ID for this view (`FGA-DOMAIN-SEQ`) |
-| `fga.name` | Yes | Human-readable name |
-| `fga.period` | No | Time period this FGA covers |
-| `factors[].id` | Yes | Unique factor ID |
-| `factors[].name` | Yes | Description of the driving factor |
-| `factors[].type` | Yes | `external` or `internal` |
-| `goals[].id` | Yes | References an existing Goal element ID |
-| `goals[].name` | Yes | Goal name (should match the element) |
-| `activities[].id` | Yes | Unique activity ID |
-| `activities[].name` | Yes | Activity description |
-| `activities[].owner` | No | Reference to BusinessRole element ID |
-| `activities[].status` | No | `Planned` / `In Progress` / `Done` |
-| `activities[].due_date` | No | Target completion date (YYYY-MM-DD) |
+|---|---|---|
+| `notation` | yes | MUST equal `fga` (per [CONTRACT.md](CONTRACT.md)) |
+| `spec_version` | no | reserved field per the shared contract |
+| `id` | yes | document ID — `FGA-[<middle>-]<INTEGER>` per the canonical grammar |
+| `name` | yes | human-readable name |
+| `description` | no | one-paragraph context |
+| `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
+| `version` | no | document version |
+| `date` | no | document date (YYYY-MM-DD) |
+| `author` | no | document author |
+| `factors` | yes | array of factor entries — see below |
+| `goals` | yes | array of goal entries — see below |
+| `activities` | yes | array of activity entries — see below |
+
+### `factors[]`
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
+| `name` | yes | what the factor is |
+| `type` | no | `external` or `internal` |
+| `description` | no | one-paragraph elaboration |
+
+### `goals[]`
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | yes | `GOAL-[<middle>-]<INTEGER>` |
+| `name` | yes | what the goal is |
+| `factors` | no | array of `FACTOR-…` IDs this goal is driven by |
+| `description` | no | one-paragraph elaboration |
+
+### `activities[]`
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | yes | `ACTIVITY-[<middle>-]<INTEGER>` |
+| `name` | yes | what the activity is |
+| `goals` | no | array of `GOAL-…` IDs the activity supports |
+| `owner` | no | `ROLE-…` ID of the accountable role |
+| `status` | no | `Planned` / `In Progress` / `Done` |
+| `due_date` | no | target completion date (YYYY-MM-DD) |
+| `description` | no | one-paragraph elaboration |
+
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
 
 ---
 
-## 6. Difference from FGCA
+## 6. Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `FGA-001` | error | document root is not an object, or `notation` field missing / does not equal `fga`. |
+| `FGA-002` | error | `id` missing or does not match `FGA-[<middle>-]<INTEGER>`. |
+| `FGA-003` | error | `name` missing or empty. |
+| `FGA-004` | error | any of `factors` / `goals` / `activities` missing or empty. |
+| `FGA-005` | error | every entry in the three arrays must have a non-empty `id` and `name`. |
+| `FGA-006` | error | IDs unique within their layer (and SHOULD be unique across all three layers within a document). |
+| `FGA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
+| `FGA-008` | error | `goals[].factors[]` IDs must reference defined factors. |
+| `FGA-009` | error | `activities[].goals[]` IDs must reference defined goals. |
+| `FGA-010` | warn | a factor with no goal referencing it is orphan. |
+| `FGA-011` | warn | a goal with no activity referencing it is orphan. |
+
+---
+
+## 7. Difference from FGCA
 
 FGCA adds a `changes` layer between goals and activities:
 
@@ -128,13 +186,15 @@ FGA:  Factor → Goal →          Activity
 
 When converting FGA to FGCA: identify the implicit change each goal demands and make it explicit. This is the right move when a goal requires organisational transformation, not just execution.
 
+Both notations use the same flat-with-references shape — FGA is FGCA minus the `changes[]` array, with `activities[].goals` taking the place of `activities[].changes`.
+
 ---
 
-## 7. References
+## 8. References
 
-- FGCA notation: `notations/02-fgca.md`
-- Goals tree notation: `notations/04-goals.md`
+- FGCA notation: [`02-fgca.md`](02-fgca.md)
+- Goals tree notation: [`04-goals.md`](04-goals.md)
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
-- ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)
+- Family selection across FGCA / FGA / Goals / Activities: `README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`

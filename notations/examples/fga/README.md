@@ -5,49 +5,56 @@ Use this format when you want a direct mapping from goals to activities without 
 
 **File extension:** `*.fga.transitrix.yaml`
 
+See the canonical spec: [`../../03-fga.md`](../../03-fga.md).
+
 ## Minimal structure
 
 ```yaml
 notation: fga
+spec_version: "0.1"
+
+id: FGA-SAMPLE-1
+name: "Sample FGA chain"
 
 factors:
-  - id: 1
-    name: "Market growth"
+  - id: FACTOR-MARKET-1
+    name: "Market growth opportunity"
+    type: external
 
 goals:
-  - id: 1
+  - id: GOAL-EXPAND-1
     name: "Expand market share"
-    factor: [{ id: 1 }]      # one or more factor IDs
+    factors: [FACTOR-MARKET-1]   # one or more FACTOR-… IDs
 
 activities:
-  - id: 1
+  - id: ACTIVITY-LAUNCH-1
     name: "Launch in two new regions"
-    goal_id: 1               # which goal this activity delivers
+    goals: [GOAL-EXPAND-1]       # one or more GOAL-… IDs the activity supports
 ```
 
-## Optional header fields
+## Optional document-root fields
 
 ```yaml
-title: "My FGA"
 description: "Short description"
+period: "2026"
 version: "0.1"
-date: "2026-05-12"
+date: "2026-05-26"
 author: "Your Name"
 ```
 
 ## Difference from FGCA
 
-FGA omits the `changes` section entirely. Activities link directly to goals via `goal_id`.
+FGA omits the `changes` section entirely. Activities link directly to goals via `activity.goals: [GOAL-…]`.
 Use FGCA (`.fgca.transitrix.yaml`) when you need to track discrete change packages between goals and activities.
 
 ## Rules
 
-- All IDs must be unique integers within their section.
-- A goal can reference multiple factors: `factor: [{ id: 1 }, { id: 2 }]`.
-- Each activity belongs to exactly one goal.
+- All IDs follow the canonical `<TYPE>-[<middle>-]<INTEGER>` grammar per [`../../IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md). IDs are unique within their layer.
+- A goal MAY reference multiple factors via `factors: [FACTOR-…, FACTOR-…]`.
+- An activity MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `strategy-2026.fga.transitrix.yaml` | FGA chain (3 factors, 3 goals, 6 activities) |
+| `strategy-2026.fga.transitrix.yaml` | FGA chain (3 factors, 3 goals, 7 activities) |

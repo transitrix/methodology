@@ -5,52 +5,58 @@ Shows how external factors drive goals, which require changes, which are deliver
 
 **File extension:** `*.fgca.transitrix.yaml`
 
+See the canonical spec: [`../../02-fgca.md`](../../02-fgca.md).
+
 ## Minimal structure
 
 ```yaml
 notation: fgca
 spec_version: "0.1"
 
+id: FGCA-SAMPLE-1
+name: "Sample FGCA chain"
+
 factors:
-  - id: 1
+  - id: FACTOR-1
     name: "External factor driving change"
+    type: external
 
 goals:
-  - id: 1
+  - id: GOAL-1
     name: "Strategic goal"
-    factor: [{ id: 1 }]      # one or more factor IDs
+    factors: [FACTOR-1]            # one or more FACTOR-… IDs
 
 changes:
-  - id: 1
+  - id: CHANGE-1
     name: "Transformation programme"
-    goal_id: 1               # which goal this change addresses
-    activity_ids: [1, 2]     # activities that deliver this change
+    goals: [GOAL-1]                # one or more GOAL-… IDs this change delivers
 
 activities:
-  - id: 1
+  - id: ACTIVITY-1
     name: "Research phase"
-    goal_id: 1
-  - id: 2
+    changes: [CHANGE-1]            # one or more CHANGE-… IDs this activity delivers
+  - id: ACTIVITY-2
     name: "Rollout phase"
-    goal_id: 1
+    changes: [CHANGE-1]
 ```
 
-## Optional header fields
+## Optional document-root fields
 
 ```yaml
-title: "My FGCA Chain"
 description: "Short description"
+period: "2026"
 version: "0.1"
-date: "2026-05-12"
+date: "2026-05-26"
 author: "Your Name"
 ```
 
 ## Rules
 
-- All IDs (`factors`, `goals`, `changes`, `activities`) must be unique integers within their section.
-- A goal can reference multiple factors: `factor: [{ id: 1 }, { id: 2 }]`.
-- A change belongs to exactly one goal (`goal_id`) but can list multiple delivering activities.
-- An activity belongs to exactly one goal (`goal_id`).
+- All IDs follow the canonical `<TYPE>-[<middle>-]<INTEGER>` grammar per [`../../IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md). IDs are unique within their layer.
+- A goal MAY reference multiple factors via `factors: [FACTOR-…, FACTOR-…]`.
+- A change MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
+- An activity MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
+- For degenerate paths where a change layer adds no information, an activity MAY link directly via `goals: [GOAL-…]` — see [`../../02-fgca.md`](../../02-fgca.md) §Fields.
 
 ## Examples in this folder
 
