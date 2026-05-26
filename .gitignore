@@ -176,6 +176,8 @@ personal_rules.md
 
 STRATEGIC_BRIEF.md
 CLAUDE.md
+# Exception: ship CLAUDE.md as part of the adopter-repo template (e.g. organizations/acme_corp/).
+!organizations/*/CLAUDE.md
 roadmap.md
 PROJECT_RULES.md
 NOTATIONS_VALIDATION.md
