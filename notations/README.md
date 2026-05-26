@@ -58,14 +58,18 @@ Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit
 | You need a quarterly goals review with no factor or activity context. | **Goals tree** |
 | You're explaining why a goal-action gap exists and what transformation closes it. | **FGCA** |
 
-### Form rule — nested for trees, flat for DAGs
+### Form rule — flat top-level arrays with reference-based hierarchy
 
-The four notations split into two structural shapes:
+**All four strategy-chain notations — FGCA, FGA, Goals, Activities — use the flat form.** Document metadata and the layer arrays live at the document root as parallel top-level arrays. There is no wrapper root key. Where a notation is tree-shaped (Goals, Activities), hierarchy is expressed by `parent` references on each element inside the flat array. Where a notation is DAG-shaped (FGCA, FGA), cross-layer links are id-references on each element in the canonical downstream direction.
 
-- **Tree-shaped, nested form.** FGA and the Goals tree are trees — each child has exactly one parent. The document nests children under parents directly; the YAML structure carries the hierarchy and no id-references are needed inside the document.
-- **DAG-shaped, flat form.** FGCA and the Activities network are DAGs — one Change can deliver many Goals; one Activity can deliver many Changes; activity predecessors fan out the same way. Nesting would require duplicating nodes for every cross-layer link. These notations use a single root key (`fgca:` for FGCA, the top-level `activities:` array for Activities) with parallel layer arrays and id-references between layers.
+| Notation | Top-level arrays | Hierarchy / cross-link |
+|---|---|---|
+| **Goals** | `goal_types[]`, `goals[]` | `goal.parent: GOAL-…` (omitted at root) |
+| **FGA** | `factors[]`, `goals[]`, `activities[]` | `goal.factors: [FACTOR-…]`; `activity.goals: [GOAL-…]` |
+| **FGCA** | `factors[]`, `goals[]`, `changes[]`, `activities[]` | `goal.factors: [FACTOR-…]`; `change.goals: [GOAL-…]`; `activity.changes: [CHANGE-…]` |
+| **Activities** | `activities[]` | `activity.predecessors: [ACTIVITY-…]`; optional `parent: ACTIVITY-…` for WBS groupings |
 
-**Rule of thumb:** if a child element can have multiple parents in the semantic graph, the notation uses the flat form. The rule was set on 2026-05-20 alongside the FGCA schema; see [02-fgca.md](02-fgca.md) "Top-level structure — flat form" for the worked-out FGCA shape and [07-activities.md](07-activities.md) §4 for the Activities shape.
+**Decision (2026-05-26)** — this supersedes the earlier "nested for trees, flat for DAGs" heuristic. Reasoning: a single shape across the family removes the spec-vs-implementation gap that the heuristic produced (downstream tools have to handle both forms), and tree-shape semantics survive perfectly well as `parent`-references inside a flat array. The earlier rule was a 2026-05-20 working position alongside the original FGCA schema decision; this entry replaces it.
 
 ## Examples
 

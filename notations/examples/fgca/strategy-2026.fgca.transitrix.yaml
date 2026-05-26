@@ -1,58 +1,57 @@
 notation: fgca
 spec_version: "0.1"
 
-fgca:
-  id: FGCA-STRAT-1
-  name: "Strategy 2026 — FGCA chain"
-  description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
-  period: "2026"
-  version: "0.1"
-  date: "2026-05-21"
-  author: Transitrix
+id: FGCA-STRAT-1
+name: "Strategy 2026 — FGCA chain"
+description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
+period: "2026"
+version: "0.1"
+date: "2026-05-26"
+author: Transitrix
 
-  factors:
-    - id: FACTOR-1
-      name: "Competitive market pressure"
-      type: external
-    - id: FACTOR-2
-      name: "Digital adoption acceleration"
-      type: external
+factors:
+  - id: FACTOR-1
+    name: "Competitive market pressure"
+    type: external
+  - id: FACTOR-2
+    name: "Digital adoption acceleration"
+    type: external
 
-  goals:
-    - id: GOAL-1
-      name: "Grow revenue by 20%"
-      factors: [FACTOR-1, FACTOR-2]
-    - id: GOAL-2
-      name: "Reduce operational costs"
-      factors: [FACTOR-2]
-    - id: GOAL-3
-      name: "Improve customer retention"
-      factors: [FACTOR-1]
+goals:
+  - id: GOAL-1
+    name: "Grow revenue by 20%"
+    factors: [FACTOR-1, FACTOR-2]
+  - id: GOAL-2
+    name: "Reduce operational costs"
+    factors: [FACTOR-2]
+  - id: GOAL-3
+    name: "Improve customer retention"
+    factors: [FACTOR-1]
 
-  changes:
-    - id: CHANGE-1
-      name: "Launch new product line"
-      goals: [GOAL-1]
-    - id: CHANGE-2
-      name: "Automate manual processes"
-      goals: [GOAL-2]
-    - id: CHANGE-3
-      name: "Enhance support platform"
-      goals: [GOAL-3]
+changes:
+  - id: CHANGE-1
+    name: "Launch new product line"
+    goals: [GOAL-1]
+  - id: CHANGE-2
+    name: "Automate manual processes"
+    goals: [GOAL-2]
+  - id: CHANGE-3
+    name: "Enhance support platform"
+    goals: [GOAL-3]
 
-  activities:
-    - id: ACTIVITY-1
-      name: "Market research"
-      changes: [CHANGE-1]
-    - id: ACTIVITY-2
-      name: "MVP development"
-      changes: [CHANGE-1]
-    - id: ACTIVITY-3
-      name: "Process audit"
-      changes: [CHANGE-2]
-    - id: ACTIVITY-4
-      name: "RPA tooling rollout"
-      changes: [CHANGE-2]
-    - id: ACTIVITY-5
-      name: "CRM implementation"
-      changes: [CHANGE-3]
+activities:
+  - id: ACTIVITY-1
+    name: "Market research"
+    changes: [CHANGE-1]
+  - id: ACTIVITY-2
+    name: "MVP development"
+    changes: [CHANGE-1]
+  - id: ACTIVITY-3
+    name: "Process audit"
+    changes: [CHANGE-2]
+  - id: ACTIVITY-4
+    name: "RPA tooling rollout"
+    changes: [CHANGE-2]
+  - id: ACTIVITY-5
+    name: "CRM implementation"
+    changes: [CHANGE-3]
