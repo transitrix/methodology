@@ -51,7 +51,7 @@ The blueprint is a **view**, not a flow. It does not describe procedural sequenc
 | Describe the procedural flow inside a single process (lanes, gateways, sequence flows) | BPMN (`*.bpmn.transitrix.yaml`) |
 | Catalogue the full set of processes in the organisation | Process landscape map (`*.process-map.transitrix.yaml`) |
 | Decompose strategy into factors, goals, changes, and activities | FGCA (`*.fgca.transitrix.yaml`) |
-| Produce a hand-drawn architectural overview as ASCII art | Nested blocks (`*.blocks.transitrix.txt`) |
+| Show a multi-level architectural overview as nested containers (what contains what) | Nested blocks (`*.blocks.transitrix.yaml`) |
 
 A blueprint complements BPMN and the process landscape map. BPMN renders one process's internal flow; the landscape map lists all processes; the blueprint shows, for one value chain, the cross-cutting operational context behind each stage.
 
@@ -213,7 +213,7 @@ For `equipment[]` and `information_entities[]`, no canonical TYPE prefix exists 
 
 ## 7. Render contract — diagram engine, not Svgbob
 
-The blueprint renders to a wide grid of nested boxes via the **shared diagram engine** that also renders the Goals notation. This is a deliberate architectural decision: blueprints of meaningful size proved too labour-intensive to author as ASCII art, and the Svgbob renderer used by the [`08-blocks.md`](08-blocks.md) notation produces character-rendering glitches at blueprint scale. Process Blueprint therefore does **not** use Svgbob — the stack converges on one diagram renderer for both the Goals tree and the blueprint.
+The blueprint renders to a wide grid of nested boxes via the **shared diagram engine** that also renders the Goals tree and Nested Block Diagrams. This is a deliberate architectural decision: the stack converges on one diagram renderer for the whole structured-tree family (Goals, blocks, blueprint) so the artefacts share typography, colour ramp, and container chrome.
 
 A renderer that consumes this notation MUST:
 
@@ -238,7 +238,7 @@ A renderer MAY:
 
 What the renderer MUST NOT do:
 
-- Reach for Svgbob / ASCII rendering. The choice to use the YAML + shared-engine path over the `08-blocks.md` Svgbob path is deliberate; see §7 opening paragraph.
+- Reach for Svgbob / ASCII rendering. The structured-tree family (Goals, blocks, blueprint) all renders through the same shared diagram engine; see §7 opening paragraph.
 
 ---
 
@@ -259,5 +259,5 @@ What the renderer MUST NOT do:
 - BPMN notation (procedural flow of one process): [`01-bpmn.md`](01-bpmn.md)
 - Process landscape map (catalogue of all processes): [`06-process-map.md`](06-process-map.md)
 - Applications catalogue (source for `systems[].id`): [`10-applications.md`](10-applications.md)
-- Nested blocks (the Svgbob path the blueprint does **not** use): [`08-blocks.md`](08-blocks.md)
+- Nested blocks (uses the same diagram engine): [`08-blocks.md`](08-blocks.md)
 - Methodology: `method/methodology.md`

@@ -95,7 +95,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `PRODUCTS_CAT` | `*.products.transitrix.yaml` |
 | `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
-| `BLOCKS` | `*.blocks.transitrix.txt` |
+| `BLOCKS` | `*.blocks.transitrix.yaml` |
 | `ISSUES_CAT` | `*.issues.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.

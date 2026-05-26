@@ -8,7 +8,7 @@ A change to the rules below applies to all eleven notations simultaneously — t
 
 ## 1. Required header
 
-Every Transitrix notation file MUST start with a header that declares which notation the file follows. The header is YAML key/value syntax at the top of the file — for YAML notations it is the document itself; for the `.blocks.transitrix.txt` notation it is the leading YAML-fenced block before the ASCII art.
+Every Transitrix notation file MUST start with a header that declares which notation the file follows. The header is YAML key/value syntax at the top of the file — for every notation in the family, the file itself is YAML and the header is the document's leading keys.
 
 ```yaml
 notation: <short-name>      # required; this notation's short name
@@ -42,6 +42,6 @@ Additional notation-specific rules (per-field, semantic, structural) live in the
 
 ## 3. Extension / content match
 
-Each notation has exactly one canonical file extension, of the form `.<short-name>.transitrix.<ext>` where `<ext>` is `yaml` for YAML notations and `txt` for `blocks` (Svgbob ASCII). The validator rejects any file whose extension and `notation:` value disagree (rule `HDR-003`).
+Each notation has exactly one canonical file extension, of the form `.<short-name>.transitrix.yaml`. The validator rejects any file whose extension and `notation:` value disagree (rule `HDR-003`).
 
 No aliases are accepted: one notation has exactly one extension. The full per-notation mapping lives in [README.md](README.md).

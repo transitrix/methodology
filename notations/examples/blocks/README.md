@@ -1,60 +1,44 @@
 # Nested block diagrams
 
-ASCII art block diagrams converted to styled SVG via [svgbob_cli](https://github.com/ivanceras/svgbob).
-Best for architecture landscapes, application maps, and any diagram that needs precise spatial containment.
+Structured YAML model of a multi-level container layout — a recursive tree of named blocks rendered as nested boxes by the shared diagram engine.
 
-**File extension:** `*.blocks.transitrix.txt`
+**File extension:** `*.blocks.transitrix.yaml`
 
-## How to create a diagram
+See [`../../08-blocks.md`](../../08-blocks.md) for the full notation reference.
 
-Draw nested rectangles using `+`, `-`, and `|`. Text on the first line inside a box becomes its label.
-Boxes can be nested to any depth; colour fill is assigned automatically by nesting level (outermost = lightest).
+## How to model a diagram
 
+Author the diagram as a recursive tree under a `nested_blocks:` root key. Each block has an `id` and a `name`; nest children directly under their parent via `children:`. Containment in the YAML maps one-to-one to spatial containment in the rendered diagram.
+
+```yaml
+notation: blocks
+spec_version: "0.1"
+
+nested_blocks:
+  id: BLOCKS-SAMPLE-1
+  name: "Sample"
+  blocks:
+    - id: OUTER
+      name: "Outer Group"
+      children:
+        - id: INNER_A
+          name: "Inner Box A"
+        - id: INNER_B
+          name: "Inner Box B"
 ```
-+--------------------------------------------------+
-|  Outer Group                                     |
-|                                                  |
-|  +---------------------+  +------------------+  |
-|  |  Inner Box A        |  |  Inner Box B     |  |
-|  +---------------------+  +------------------+  |
-|                                                  |
-+--------------------------------------------------+
-```
 
-Multiple independent top-level blocks in one file are each rendered as a separate diagram section.
+Multiple independent top-level entries in `nested_blocks.blocks[]` are rendered as separate diagram sections.
 
 ## Nesting depth
 
-Up to 5 levels render well. Deeper nesting may produce very small inner boxes.
+Recommended maximum: **5 levels** (root = level 1). Deeper nesting is permitted but produces inner boxes too small to read; the validator emits `BL-008` at depth 6+.
 
-## Known issue: hyphens in label text
+## Colour fill
 
-**Do not use hyphen-minus (`-`, U+002D) inside box label text.**
-Svgbob interprets sequences of `-` as horizontal line segments, which corrupts the text.
-
-Use a non-breaking hyphen (`‐`, U+2010) or an en-dash (`–`, U+2013) as a substitute:
-
-| Instead of | Use |
-|---|---|
-| `APP-WEB-001` | `APP–WEB–001` |
-| `back-end service` | `back‐end service` |
-
-This only affects text *content* inside boxes. The `-` characters that form the box borders themselves are fine.
-
-## Dependencies
-
-Both tools must be installed to use the preview:
-
-1. **Python 3** — used by the backend to invoke svgbob and post-process the SVG.
-   Use `python3` from PATH, or set `transitrix.pythonPath` in VS Code settings to the full executable path.
-2. **svgbob_cli** — converts ASCII art to SVG. Install with:
-   ```
-   cargo install svgbob_cli
-   ```
-   Requires [Rust](https://rustup.rs/). Set `transitrix.svgbobPath` in VS Code settings if installed to a non-standard path.
+The renderer assigns colour fill by nesting depth: the outermost block is the lightest, each deeper level progressively darker — drawn from the family's brand colour ramp. Authors do not need to set colours by hand.
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `architecture.blocks.transitrix.txt` | 2-tier software architecture (Application Layer + Data Layer) |
+| `architecture.blocks.transitrix.yaml` | 2-tier software architecture (Application Layer + Data Layer) |

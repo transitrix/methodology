@@ -31,7 +31,7 @@ The applications catalogue answers the question: **what applications and integra
 
 It is a catalogue view over Application elements defined in `elements/03_application/`. It aggregates them into a portfolio view with metadata relevant to application lifecycle management and integration governance.
 
-For visual containment and platform groupings, use the Nested Block Diagrams notation (`*.blocks.transitrix.txt`).
+For visual containment and platform groupings, use the Nested Block Diagrams notation (`*.blocks.transitrix.yaml`).
 
 ---
 
