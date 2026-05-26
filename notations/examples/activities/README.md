@@ -76,11 +76,11 @@ project:
       - "2026-07-04"
 ```
 
-`parent:` groups activities into phases (WBS summary bars); `duration: 0` marks a milestone (point on the timeline, not a bar). Both are spec features; the `office-relocation` example below uses them.
+`parent:` groups activities into phases (WBS summary bars); `duration: 0` marks a milestone (point on the timeline, not a bar). Both are spec features; `office-relocation` below uses milestones today (phase rendering pending Studio support).
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `platform-launch.activities.transitrix.yaml` | 10-activity platform launch; two parallel paths merge at integration testing; 3-activity critical path tail. Network view only — no `project:` block, so the Gantt view does not render. |
-| `office-relocation.activities.transitrix.yaml` | 16-activity HQ relocation across three phases (`PHASE-PLANNING`, `PHASE-FITOUT`, `PHASE-MOVE`) with two milestones (`M-LEASE-SIGNED`, `M-OPEN-DAY`) and a `project.start_date` + working-day calendar. Renders in both network and Gantt views; 105 working-day critical path. |
+| `platform-launch.activities.transitrix.yaml` | 10-activity platform launch; two parallel paths merge at integration testing; 3-activity critical path tail. Network view only — no `project:` block and no pinned dates, so the Gantt view does not render. |
+| `office-relocation.activities.transitrix.yaml` | 13-activity HQ relocation with two milestones (`M-LEASE-SIGNED`, `M-OPEN-DAY`) and pinned `start_date` / `end_date` on every leaf activity (pinned-mode Gantt per §9.1). Renders in both network and Gantt views; 105 working-day critical path (2026-06-01 → 2026-10-23). |

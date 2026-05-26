@@ -3,17 +3,19 @@ spec_version: "0.1"
 
 title: Office Relocation — HQ Move 2026
 description: |
-  HQ move from Building A to Building B. Three phases (planning, fit-out,
-  move) grouped via `parent`; two milestones (lease signed, new HQ opens)
-  modelled as zero-duration activities per §5.9. The `project:` block
-  anchors the schedule for Gantt projection (working-day calendar with
-  one holiday), making this example renderable in both the network view
-  and the Gantt view.
+  HQ move from Building A to Building B. Pinned-mode schedule per
+  [07-activities.md §9.1](../../07-activities.md): every leaf activity
+  carries both `start_date` and `end_date`, so the Gantt view renders
+  directly without computing CPM offsets. `duration` is kept for
+  CPM analysis and stays consistent with the pinned date range.
 
-  Critical path runs through site selection → lease → construction
-  permits → construction work → IT install → pack-up → physical move →
-  unpack → opening day. Interior design and furniture delivery sit on
-  parallel sub-paths and carry slack.
+  Two milestones — `M-LEASE-SIGNED` and `M-OPEN-DAY` — are modelled
+  as zero-duration activities per §5.9. `A-202` (interior design) and
+  `A-205` (furniture delivery) sit on parallel paths with positive
+  slack; the critical path runs through site selection → lease →
+  construction permits → construction work → IT install → pack-up
+  → physical move → unpack → opening day (105 working days, 2026-06-01
+  → 2026-10-23).
 version: "0.1"
 date: "2026-05-26"
 author: "Valerii Korobeinikov"
@@ -24,28 +26,23 @@ project:
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
     holidays:
-      - "2026-07-04"
+      - "2026-12-25"
 
 activities:
-  # ---------------------------------------------------------------------
-  # Phase 1 — Planning
-  # ---------------------------------------------------------------------
-  - id: PHASE-PLANNING
-    name: Planning phase
-    # No own duration / dates — rolled up from children (see §5.10).
-
   - id: A-101
     name: Requirements gathering
-    parent: PHASE-PLANNING
     duration: 10
+    start_date: 2026-06-01
+    end_date: 2026-06-12
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
     tags: [planning]
 
   - id: A-102
     name: Site selection
-    parent: PHASE-PLANNING
     duration: 15
+    start_date: 2026-06-15
+    end_date: 2026-07-03
     predecessors: [A-101]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -53,8 +50,9 @@ activities:
 
   - id: A-103
     name: Lease negotiation
-    parent: PHASE-PLANNING
     duration: 10
+    start_date: 2026-07-06
+    end_date: 2026-07-17
     predecessors: [A-102]
     goals: [GOAL-RELOC-001]
     unit: UNIT-LEGAL
@@ -63,20 +61,17 @@ activities:
   - id: M-LEASE-SIGNED
     name: Lease signed
     duration: 0                       # milestone (see §5.9)
+    start_date: 2026-07-17
+    end_date: 2026-07-17
     predecessors: [A-103]
     goals: [GOAL-RELOC-001]
     tags: [milestone]
 
-  # ---------------------------------------------------------------------
-  # Phase 2 — Fit-out
-  # ---------------------------------------------------------------------
-  - id: PHASE-FITOUT
-    name: Fit-out phase
-
   - id: A-201
     name: Construction permits
-    parent: PHASE-FITOUT
     duration: 20
+    start_date: 2026-07-20
+    end_date: 2026-08-14
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-001]
     unit: UNIT-LEGAL
@@ -84,8 +79,9 @@ activities:
 
   - id: A-202
     name: Interior design
-    parent: PHASE-FITOUT
     duration: 15
+    start_date: 2026-07-20
+    end_date: 2026-08-07
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-002]
     unit: UNIT-FACILITIES
@@ -93,8 +89,9 @@ activities:
 
   - id: A-203
     name: Construction work
-    parent: PHASE-FITOUT
     duration: 30
+    start_date: 2026-08-17
+    end_date: 2026-09-25
     predecessors: [A-201, A-202]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -103,8 +100,9 @@ activities:
 
   - id: A-204
     name: IT infrastructure install
-    parent: PHASE-FITOUT
     duration: 12
+    start_date: 2026-09-28
+    end_date: 2026-10-13
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
     unit: UNIT-IT
@@ -113,23 +111,19 @@ activities:
 
   - id: A-205
     name: Furniture delivery
-    parent: PHASE-FITOUT
     duration: 5
+    start_date: 2026-09-28
+    end_date: 2026-10-02
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
     unit: UNIT-FACILITIES
     tags: [fit-out]
 
-  # ---------------------------------------------------------------------
-  # Phase 3 — Move
-  # ---------------------------------------------------------------------
-  - id: PHASE-MOVE
-    name: Move phase
-
   - id: A-301
     name: Pack-up
-    parent: PHASE-MOVE
     duration: 3
+    start_date: 2026-10-14
+    end_date: 2026-10-16
     predecessors: [A-204, A-205]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -137,8 +131,9 @@ activities:
 
   - id: A-302
     name: Physical move
-    parent: PHASE-MOVE
     duration: 2
+    start_date: 2026-10-19
+    end_date: 2026-10-20
     predecessors: [A-301]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -146,8 +141,9 @@ activities:
 
   - id: A-303
     name: Unpacking and setup
-    parent: PHASE-MOVE
     duration: 3
+    start_date: 2026-10-21
+    end_date: 2026-10-23
     predecessors: [A-302]
     goals: [GOAL-RELOC-001]
     unit: UNIT-FACILITIES
@@ -156,6 +152,8 @@ activities:
   - id: M-OPEN-DAY
     name: New HQ opens
     duration: 0                       # milestone (see §5.9)
+    start_date: 2026-10-23
+    end_date: 2026-10-23
     predecessors: [A-303]
     goals: [GOAL-RELOC-001]
     tags: [milestone, public]
