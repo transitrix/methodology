@@ -4,7 +4,7 @@ Capability maps — hierarchical view of capabilities with CMM maturity overlay.
 
 ## File convention
 
-`*.capmap.transitrix.yaml`
+`*.capability-map.transitrix.yaml`
 
 ## Skeleton
 
