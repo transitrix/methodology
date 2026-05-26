@@ -4,7 +4,7 @@ Process landscape maps — top-level catalogues of an organisation's processes, 
 
 ## File convention
 
-`*.processmap.transitrix.yaml`
+`*.process-map.transitrix.yaml`
 
 ## Skeleton
 
