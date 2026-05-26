@@ -1,7 +1,7 @@
 ---
 title: Transitrix — Methodology for Enterprise Architecture as Code
 status: v1.0_draft
-last_reviewed: 2026-05-21
+last_reviewed: 2026-05-26
 audience: public
 license: MIT
 tags: [transitrix, methodology, enterprise_architecture, architecture_as_code, archimate, bpmn]
@@ -272,9 +272,10 @@ The table below is the canonical Transitrix notation set. Every notation file fo
 | 09 | **Products** | `*.products.transitrix.yaml` | Inventory of products and services — text-and-table catalogue, no diagram. | draft |
 | 10 | **Applications** | `*.applications.transitrix.yaml` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | draft |
 | 11 | **Scenarios** | `*.scenarios.transitrix.yaml` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, and applications. | documented |
+| 12 | **Issues register** | `*.issues.transitrix.yaml` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | draft |
 | 13 | **Process Blueprint** | `*.process-blueprint.transitrix.yaml` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | draft |
 
-The number `12` is intentionally reserved for a forthcoming **Gantt** notation; the gap between `11` and `13` is deliberate. Until that notation lands, the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
+Gantt is not a separate notation — the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
 
 Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram, rendered through Transitrix Studio's shared diagram engine.
 
@@ -295,6 +296,7 @@ Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live un
 | Products view | `views/products/<DOMAIN>.products.transitrix.yaml` | Filtered view over Product elements |
 | Applications view | `views/applications/<DOMAIN>.applications.transitrix.yaml` | Filtered view over Application elements |
 | Scenarios | `views/scenarios/<NAME>.scenarios.transitrix.yaml` | Alternative strategic development paths, each scoping its own goals, capabilities, activities, products, processes, and applications |
+| Issues register | `views/issues/<NAME>.issues.transitrix.yaml` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan |
 | Process Blueprint | `views/process-blueprint/<DOMAIN>.process-blueprint.transitrix.yaml` | Wide value-chain blueprint referencing stage aspects (systems, actors, equipment, information entities) |
 
 Individual product and application instances are still stored as **atomic elements** in their respective ArchiMate-layer folders — `elements/02_business/<PRODUCT_ID>.yaml` (with `type: Product`) and `elements/03_application/<APP_ID>.yaml` (with `type: ApplicationComponent`). The "view" file in `views/products/` or `views/applications/` defines how to filter, group, and present those elements (e.g., "all active Products grouped by category").
