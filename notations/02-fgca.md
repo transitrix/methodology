@@ -1,8 +1,8 @@
 ---
 notation: "FGCA Strategy-to-Execution Chain"
-version: "1.2"
+version: "1.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-21"
+last_updated: "2026-05-26"
 status: "documented"
 file_extension: "*.fgca.transitrix.yaml"
 dsm_status: "implemented — F, G, C, A layers active; column selection via localStorage"
@@ -113,44 +113,43 @@ Examples:
 
 ## Top-level structure — flat form
 
-FGCA uses the **flat form**: a single `fgca:` root key carries document metadata, and the four layers (`factors`, `goals`, `changes`, `activities`) are parallel arrays under that key. Links between layers are id-references on each item, not nesting.
+FGCA uses the **flat form**: document metadata and the four layers (`factors`, `goals`, `changes`, `activities`) live at the document root as parallel arrays. There is no wrapper key. Links between layers are id-references on each item, not nesting.
 
-This shape matches the FGCA semantic graph: one Change can deliver many Goals, one Activity can deliver many Changes (the `activity_change` join in DSM). A nested form would require duplicating nodes for every cross-layer link. The flat form expresses the DAG directly.
+This shape matches the FGCA semantic graph: one Change can deliver many Goals, one Activity can deliver many Changes. A nested form would require duplicating nodes for every cross-layer link. The flat form expresses the DAG directly.
 
-For comparison: FGA and the Goals tree are tree-shaped (each child has a single parent) and use a nested form — see [`03-fga.md`](03-fga.md) and [`04-goals.md`](04-goals.md). The flat-vs-nested choice across the family follows the rule "nested for trees, flat for DAGs" — the family-selection guide will document this once the cross-notation relationship doc lands.
+The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
 
 ```yaml
 notation: fgca
 spec_version: "0.1"
 
-fgca:
-  id: FGCA-STRAT-1
-  name: "Strategy 2026 — FGCA chain"
-  description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
-  period: "2026"
-  version: "0.1"
-  date: "2026-05-21"
-  author: Transitrix
+id: FGCA-STRAT-1
+name: "Strategy 2026 — FGCA chain"
+description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
+period: "2026"
+version: "0.1"
+date: "2026-05-21"
+author: Transitrix
 
-  factors:
-    - id: FACTOR-1
-      name: "Competitive market pressure"
-      type: external          # external | internal
+factors:
+  - id: FACTOR-1
+    name: "Competitive market pressure"
+    type: external          # external | internal
 
-  goals:
-    - id: GOAL-1
-      name: "Grow revenue by 20%"
-      factors: [FACTOR-1]     # id-references to factors[]
+goals:
+  - id: GOAL-1
+    name: "Grow revenue by 20%"
+    factors: [FACTOR-1]     # id-references to factors[]
 
-  changes:
-    - id: CHANGE-1
-      name: "Launch new product line"
-      goals: [GOAL-1]         # id-references to goals[]
+changes:
+  - id: CHANGE-1
+    name: "Launch new product line"
+    goals: [GOAL-1]         # id-references to goals[]
 
-  activities:
-    - id: ACTIVITY-1
-      name: "Market research"
-      changes: [CHANGE-1]     # id-references to changes[]
+activities:
+  - id: ACTIVITY-1
+    name: "Market research"
+    changes: [CHANGE-1]     # id-references to changes[]
 ```
 
 A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](examples/fgca/strategy-2026.fgca.transitrix.yaml).
@@ -159,21 +158,23 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](example
 
 ## Fields
 
-### `fgca` root
+### Document root
 
 | Field | Required | Description |
 |---|---|---|
-| `fgca.id` | yes | document ID — `FGCA-[<middle>-]<INTEGER>` per the canonical grammar |
-| `fgca.name` | yes | human-readable name |
-| `fgca.description` | no | one-paragraph context |
-| `fgca.period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
-| `fgca.version` | no | document version |
-| `fgca.date` | no | document date (YYYY-MM-DD) |
-| `fgca.author` | no | document author |
-| `fgca.factors` | yes | array of factor entries — see below |
-| `fgca.goals` | yes | array of goal entries — see below |
-| `fgca.changes` | yes | array of change entries — see below |
-| `fgca.activities` | yes | array of activity entries — see below |
+| `notation` | yes | MUST equal `fgca` (per [CONTRACT.md](CONTRACT.md)) |
+| `spec_version` | no | reserved field per the shared contract |
+| `id` | yes | document ID — `FGCA-[<middle>-]<INTEGER>` per the canonical grammar |
+| `name` | yes | human-readable name |
+| `description` | no | one-paragraph context |
+| `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
+| `version` | no | document version |
+| `date` | no | document date (YYYY-MM-DD) |
+| `author` | no | document author |
+| `factors` | yes | array of factor entries — see below |
+| `goals` | yes | array of goal entries — see below |
+| `changes` | yes | array of change entries — see below |
+| `activities` | yes | array of activity entries — see below |
 
 ### `factors[]`
 
@@ -212,7 +213,7 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](example
 | `goals` | no | array of `GOAL-…` IDs the activity supports directly (degenerate FGA-style link, used when the Change layer adds no information for that activity) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the FGCA change-layer prefix. The full grammar and TYPE registry will live in a forthcoming `IDS_AND_REFERENCES.md` appendix.
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the FGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
 
 ---
 
@@ -220,10 +221,10 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 
 | Rule | Severity | Description |
 |---|---|---|
-| `FGCA-001` | error | `fgca` root key missing. |
-| `FGCA-002` | error | `fgca.id` missing or empty. |
-| `FGCA-003` | error | `fgca.name` missing or empty. |
-| `FGCA-004` | error | any of `fgca.factors` / `fgca.goals` / `fgca.changes` / `fgca.activities` missing or empty. |
+| `FGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `fgca`. |
+| `FGCA-002` | error | `id` missing or empty. |
+| `FGCA-003` | error | `name` missing or empty. |
+| `FGCA-004` | error | any of `factors` / `goals` / `changes` / `activities` missing or empty. |
 | `FGCA-005` | error | every entry in the four arrays must have a non-empty `id` and `name`. |
 | `FGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all four layers within a document). |
 | `FGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
@@ -239,9 +240,9 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 
 ## References
 
-- FGA notation (3-layer simplified variant, nested form): [`03-fga.md`](03-fga.md)
+- FGA notation (3-layer simplified variant, same flat form): [`03-fga.md`](03-fga.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
 - Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the FGCA chain
-- Canonical ID grammar and TYPE registry: forthcoming `IDS_AND_REFERENCES.md` appendix
+- Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)
 - Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`
