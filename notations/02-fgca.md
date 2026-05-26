@@ -1,6 +1,6 @@
 ---
 notation: "FGCA Strategy-to-Execution Chain"
-version: "1.3"
+version: "1.4"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-26"
 status: "documented"
@@ -183,6 +183,7 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](example
 | `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
 | `name` | yes | what the factor is |
 | `type` | no | `external` or `internal` |
+| `references_constraint` | no | array of `CONSTRAINT-…` IDs the factor reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a factor for the organisation that acts on it — the factor is the FGCA driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
 | `description` | no | one-paragraph elaboration |
 
 ### `goals[]`
@@ -235,6 +236,7 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 | `FGCA-012` | warn | a factor with no goal referencing it is orphan. |
 | `FGCA-013` | warn | a goal with no change (and no direct activity) referencing it is orphan. |
 | `FGCA-014` | warn | a change with no activity referencing it is orphan. |
+| `FGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
 
 ---
 
