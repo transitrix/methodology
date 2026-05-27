@@ -111,6 +111,28 @@ BPMN diagrams use their `process.id` as the document identifier; that field is a
 
 BPMN element IDs inside a single file (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) are local labels, not cross-document references. They identify nodes within one BPMN document and are not part of the TYPE registry above. Each BPMN file may use its own labelling convention.
 
+### 3.4 Field artefact types
+
+Raw, unprocessed material in the **Field** zone (see [CONTRACT.md](CONTRACT.md) §5). Field artefacts are not authoritative; their value is provenance. A Canon record cites the Field material behind it via `derived_from:` ([CONTRACT.md](CONTRACT.md) §6).
+
+| TYPE | What it is |
+|---|---|
+| `INTERVIEW` | a recorded interview or its notes |
+| `SURVEY` | a survey instrument and/or its responses |
+| `OBSERVATION` | a direct observation of work, a system, or an event |
+| `DRAFT` | a working draft not yet admitted to canon |
+
+### 3.5 Codex artefact types
+
+External constraints and internal authority documents in the **Codex** zone — *given to* the organisation, not authored by it. See [CONTRACT.md](CONTRACT.md) §5 and [14-codex.md](14-codex.md).
+
+| TYPE | Sub-zone | What it is |
+|---|---|---|
+| `LAW` | codex / external | a statute or act binding the organisation |
+| `REGULATION` | codex / external | a regulation issued under a law |
+| `POLICY` | codex / internal | an internal policy the organisation issues |
+| `INTERNAL_STANDARD` | codex / internal | an internal standard or convention |
+
 ---
 
 ## 4. Uniqueness scope
@@ -129,6 +151,9 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
 | `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
 | `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
+| `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
+| `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
+| `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
 
 Document-level IDs (`FGCA-…`, `FGA-…`, etc.) are unique within the organisation.
 
