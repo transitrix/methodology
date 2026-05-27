@@ -1,0 +1,28 @@
+notation: applications
+spec_version: "0.1"
+
+# Applications catalogue. Spec: notations/10-applications.md
+# Inventory of APPLICATION-… elements + INTEGRATION-… entries.
+
+applications_catalogue:
+  id: APPLICATIONS_CAT-FILL-ME-1
+  name: "FILL-ME applications portfolio"
+  description: "FILL-ME — scope of the inventory"
+  updated_at: "2026-05-26"
+
+  applications:
+    - id: APPLICATION-FILL-ME-1
+      name: "FILL-ME application name"
+      type: "application"                # application | platform | data_store
+      criticality: "high"                # critical | high | medium | low
+      status: "active"                   # active | planned | retired
+      owner_role: ROLE-1
+      capabilities: [CAPABILITY-V1]      # capabilities this app supports
+
+  integrations:
+    - id: INTEGRATION-FILL-ME-1
+      name: "FILL-ME integration name"
+      source: APPLICATION-FILL-ME-1
+      target: APPLICATION-FILL-ME-2
+      protocol: "REST"
+      data_flow: "outbound"

@@ -1,0 +1,31 @@
+notation: fga
+spec_version: "0.1"
+
+# FGA chain — FGCA minus the Changes layer. Spec: notations/03-fga.md
+# Activities link directly to goals via activity.goals.
+
+id: FGA-FILL-ME-1
+name: "FILL-ME FGA chain"
+description: "FILL-ME — one-paragraph context"
+period: "FILL-ME"
+version: "0.1"
+date: "2026-05-26"
+author: "FILL-ME"
+
+factors:
+  - id: FACTOR-1
+    name: "FILL-ME factor"
+    type: external           # external | internal
+
+goals:
+  - id: GOAL-1
+    name: "FILL-ME goal"
+    factors: [FACTOR-1]
+
+activities:
+  - id: ACTIVITY-1
+    name: "FILL-ME activity"
+    goals: [GOAL-1]
+    owner: ROLE-1            # optional — ROLE element ID
+    status: "Planned"        # Planned | In Progress | Done
+    due_date: "2026-12-31"   # optional — YYYY-MM-DD

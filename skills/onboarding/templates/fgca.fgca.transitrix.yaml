@@ -1,0 +1,34 @@
+notation: fgca
+spec_version: "0.1"
+
+# FGCA chain. Spec: notations/02-fgca.md
+# Replace FILL-ME placeholders. IDs use the canonical grammar:
+# FACTOR-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
+
+id: FGCA-FILL-ME-1
+name: "FILL-ME FGCA chain"
+description: "FILL-ME — one-paragraph context"
+period: "FILL-ME"            # e.g. "2026" or "2026-Q3"
+version: "0.1"
+date: "2026-05-26"
+author: "FILL-ME"
+
+factors:
+  - id: FACTOR-1
+    name: "FILL-ME factor — strategic driver"
+    type: external           # external | internal
+
+goals:
+  - id: GOAL-1
+    name: "FILL-ME goal"
+    factors: [FACTOR-1]      # which factors drove this goal
+
+changes:
+  - id: CHANGE-1
+    name: "FILL-ME change — transformation that delivers the goal"
+    goals: [GOAL-1]
+
+activities:
+  - id: ACTIVITY-1
+    name: "FILL-ME activity — initiative that delivers the change"
+    changes: [CHANGE-1]

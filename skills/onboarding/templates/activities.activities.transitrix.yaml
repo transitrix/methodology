@@ -1,0 +1,39 @@
+notation: activities
+spec_version: "0.1"
+
+# Activity-on-Node project schedule. Spec: notations/07-activities.md
+# Activities have string IDs and reference predecessors / goals / changes.
+# The compiler computes Early Start / Late Finish / slack and marks
+# the critical path. Optional `project.start_date` + per-activity
+# `duration_days` enable a Gantt projection.
+
+title: "FILL-ME activities network"
+description: "FILL-ME — what this schedule covers"
+version: "0.1"
+date: "2026-05-26"
+author: "FILL-ME"
+
+project:
+  start_date: "2026-06-01"
+  calendar:
+    working_days: [mon, tue, wed, thu, fri]
+    hours_per_day: 8
+
+activities:
+  - id: ACTIVITY-DISCOVERY-1
+    name: "FILL-ME — first activity"
+    duration_days: 10
+    predecessors: []
+    goals: [GOAL-1]               # optional cross-ref to a goal
+
+  - id: ACTIVITY-DESIGN-1
+    name: "FILL-ME — second activity"
+    duration_days: 14
+    predecessors: [ACTIVITY-DISCOVERY-1]
+    goals: [GOAL-1]
+
+  - id: ACTIVITY-BUILD-1
+    name: "FILL-ME — third activity"
+    duration_days: 30
+    predecessors: [ACTIVITY-DESIGN-1]
+    delivers_changes: [CHANGE-1]  # optional cross-ref to an FGCA change

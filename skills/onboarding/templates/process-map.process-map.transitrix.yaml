@@ -1,0 +1,23 @@
+notation: process-map
+spec_version: "0.1"
+
+# Process landscape map. Spec: notations/06-process-map.md
+# Groups: operating (revenue-generating), supporting (enabling),
+# management (governance / oversight). Each entry references a
+# BusinessProcess element by its PROCESS-… ID.
+
+process_map:
+  id: PROCESS_MAP-FILL-ME-1
+  name: "FILL-ME process landscape"
+  description: "FILL-ME — organisation scope"
+
+  groups:
+    operating:
+      - id: PROCESS-FILL-ME-1
+        name: "FILL-ME operating process"
+    supporting:
+      - id: PROCESS-FILL-ME-2
+        name: "FILL-ME supporting process"
+    management:
+      - id: PROCESS-FILL-ME-3
+        name: "FILL-ME management process"

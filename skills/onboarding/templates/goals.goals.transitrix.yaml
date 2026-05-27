@@ -1,0 +1,37 @@
+notation: goals
+spec_version: "0.1"
+
+# Goals tree. Spec: notations/04-goals.md
+# Flat top-level arrays. Hierarchy via `parent: GOAL-…`; omit for root.
+
+id: GOALS-FILL-ME-1
+name: "FILL-ME goals tree"
+description: "FILL-ME — what this tree covers"
+period: "FILL-ME"
+version: "0.1"
+date: "2026-05-26"
+author: "FILL-ME"
+
+goal_types:
+  - { name: "Strategy",       level: 0 }
+  - { name: "Strategic Goal", level: 1 }
+  - { name: "Project",        level: 2 }
+
+goals:
+  - id: GOAL-ROOT-1
+    name: "FILL-ME — the organisation's overall vision"
+    type: "Strategy"
+    level: 0
+    # No parent — single root.
+
+  - id: GOAL-FILL-ME-1
+    name: "FILL-ME strategic goal"
+    type: "Strategic Goal"
+    level: 1
+    parent: GOAL-ROOT-1
+
+  - id: GOAL-FILL-ME-2
+    name: "FILL-ME project goal"
+    type: "Project"
+    level: 2
+    parent: GOAL-FILL-ME-1

@@ -1,0 +1,29 @@
+notation: blocks
+spec_version: "0.1"
+
+# Nested block diagram. Spec: notations/08-blocks.md
+# Recursive `block` tree under `nested_blocks:`. Containment in the
+# YAML maps to spatial containment in the rendered diagram. A block's
+# id may match the canonical grammar (cross-ref into a catalogue, e.g.
+# APPLICATION-OMS-1) or be a free-form local label (e.g. FRONTEND).
+# Recommended max depth: 5 levels.
+
+nested_blocks:
+  id: BLOCKS-FILL-ME-1
+  name: "FILL-ME architecture overview"
+  description: "FILL-ME — what this diagram shows"
+
+  blocks:
+    - id: OUTER_GROUP_1
+      name: "FILL-ME — outer container"
+      children:
+        - id: INNER_BLOCK_A
+          name: "FILL-ME — inner block A"
+        - id: INNER_BLOCK_B
+          name: "FILL-ME — inner block B"
+
+    - id: OUTER_GROUP_2
+      name: "FILL-ME — second outer container"
+      children:
+        - id: APPLICATION-FILL-ME-1
+          name: "FILL-ME — cross-ref into the applications catalogue"
