@@ -1,0 +1,21 @@
+notation: products
+spec_version: "0.1"
+
+# Products catalogue. Spec: notations/09-products.md
+# Inventory of digital products / services. Each PRODUCT-… is a
+# canonical element ID; categories group products by domain.
+
+products_catalogue:
+  id: PRODUCTS_CAT-FILL-ME-1
+  name: "FILL-ME products catalogue"
+  description: "FILL-ME — portfolio scope"
+  updated_at: "2026-05-26"
+
+  products:
+    - id: PRODUCT-FILL-ME-1
+      name: "FILL-ME product name"
+      category: "FILL-ME"               # e.g. "Platform", "Bundle"
+      status: "active"                  # active | planned | retired
+      owner_role: ROLE-1
+      capabilities: [CAPABILITY-V1]     # capabilities this product enables
+      supporting_apps: [APPLICATION-FILL-ME-1]

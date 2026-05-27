@@ -1,0 +1,34 @@
+notation: bpmn
+spec_version: "0.1"
+
+# BPMN process. Spec: notations/01-bpmn.md
+# Fill the FILL-ME values. Element types: startEvent, endEvent, task,
+# exclusiveGateway, parallelGateway, inclusiveGateway. Flows connect
+# element IDs across lanes.
+
+process:
+  id: FILL-ME-process-id          # kebab-case slug, e.g. order-fulfilment
+  name: "FILL-ME process name"
+  pools:
+    - id: pool-1
+      name: "FILL-ME pool / organisation"
+      lanes:
+        - id: lane-1
+          name: "FILL-ME lane / role"
+          elements:
+            - id: start-1
+              type: startEvent
+              name: "Start"
+            - id: task-1
+              type: task
+              name: "FILL-ME task"
+            - id: end-1
+              type: endEvent
+              name: "End"
+  flows:
+    - id: f1
+      from: start-1
+      to: task-1
+    - id: f2
+      from: task-1
+      to: end-1

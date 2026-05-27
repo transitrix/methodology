@@ -1,0 +1,29 @@
+notation: scenarios
+spec_version: "0.1"
+
+# Scenarios. Spec: notations/11-scenarios.md
+# Alternative strategic development paths. Each scenario scopes its
+# own goals, capabilities, activities, products, processes, and
+# applications.
+
+title: "FILL-ME scenario set"
+description: "FILL-ME — what range of futures this set spans"
+date: "2026-05-26"
+author: "FILL-ME"
+
+scenarios:
+  - id: SCENARIO-FILL-ME-1
+    name: "FILL-ME scenario name"
+    description: "FILL-ME — one-paragraph rationale"
+    likelihood: "medium"                # low | medium | high
+    horizon: "2030"
+    factors:
+      - id: FACTOR-FILL-ME-1
+        name: "FILL-ME driving factor"
+        type: external
+    goals:
+      - id: GOAL-FILL-ME-1
+        name: "FILL-ME scenario-scoped goal"
+    activities:
+      - id: ACTIVITY-FILL-ME-1
+        name: "FILL-ME activity unique to this scenario"
