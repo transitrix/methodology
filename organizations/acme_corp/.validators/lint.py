@@ -74,8 +74,8 @@ class TransitrixLinter:
 
     def _validate_yaml_syntax(self):
         """Check all YAML files for syntax errors."""
-        yaml_files = glob.glob(str(self.repo_root / "elements/**/*.yaml"), recursive=True)
-        yaml_files += glob.glob(str(self.repo_root / "relations/**/*.yaml"), recursive=True)
+        yaml_files = glob.glob(str(self.repo_root / "canon/elements/**/*.yaml"), recursive=True)
+        yaml_files += glob.glob(str(self.repo_root / "canon/relations/**/*.yaml"), recursive=True)
 
         for file_path in yaml_files:
             if "/.templates/" in file_path or "/.validators/" in file_path:
@@ -100,7 +100,7 @@ class TransitrixLinter:
 
     def _load_elements(self):
         """Load all element files."""
-        element_files = glob.glob(str(self.repo_root / "elements/**/*.yaml"), recursive=True)
+        element_files = glob.glob(str(self.repo_root / "canon/elements/**/*.yaml"), recursive=True)
         element_files = [f for f in element_files if "/.templates/" not in f]
 
         for file_path in element_files:
@@ -114,7 +114,7 @@ class TransitrixLinter:
 
     def _load_relations(self):
         """Load all relation files."""
-        relation_files = glob.glob(str(self.repo_root / "relations/**/*.yaml"), recursive=True)
+        relation_files = glob.glob(str(self.repo_root / "canon/relations/**/*.yaml"), recursive=True)
         relation_files = [f for f in relation_files if "/.templates/" not in f]
 
         for file_path in relation_files:
@@ -131,10 +131,10 @@ class TransitrixLinter:
         for element_id, element_data in self.elements.items():
             if 'relations' in element_data:
                 self.errors.append(LintError(
-                    file="elements/*",
+                    file="canon/elements/*",
                     line=0,
                     message=f"ATOMICITY VIOLATION: Element '{element_id}' contains 'relations' section. "
-                            f"Move relations to separate files in relations/ directory.",
+                            f"Move relations to separate files in canon/relations/ directory.",
                     severity="error"
                 ))
 
@@ -146,7 +146,7 @@ class TransitrixLinter:
 
             if source_id and source_id not in self.elements:
                 self.warnings.append(LintError(
-                    file=f"relations/{rel_id}.yaml",
+                    file=f"canon/relations/{rel_id}.yaml",
                     line=0,
                     message=f"Referential integrity: Source element '{source_id}' not found",
                     severity="warning"
@@ -154,7 +154,7 @@ class TransitrixLinter:
 
             if target_id and target_id not in self.elements:
                 self.warnings.append(LintError(
-                    file=f"relations/{rel_id}.yaml",
+                    file=f"canon/relations/{rel_id}.yaml",
                     line=0,
                     message=f"Referential integrity: Target element '{target_id}' not found",
                     severity="warning"
@@ -174,7 +174,7 @@ class TransitrixLinter:
 
             if status in ['Active', 'Production'] and not owner:
                 self.warnings.append(LintError(
-                    file=f"elements/*/{element_id}.yaml",
+                    file=f"canon/elements/*/{element_id}.yaml",
                     line=0,
                     message=f"POLICY: Element '{element_id}' has status '{status}' but no owner assigned",
                     severity="warning"

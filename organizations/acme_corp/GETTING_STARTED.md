@@ -20,8 +20,8 @@ pip install pyyaml
 ## Step 2: Understand the Structure
 
 Review the main directories:
-- **elements/** - All architecture elements organized by layer
-- **relations/** - All relationships between elements
+- **canon/elements/** - All architecture elements organized by layer
+- **canon/relations/** - All relationships between elements
 - **.templates/** - Templates to copy when creating new elements
 - **.validators/** - Linting tools to ensure consistency
 
@@ -36,15 +36,15 @@ Let's add a simple business role.
 ```bash
 # Copy the template
 cp .templates/elements/02_business_template.yaml \
-   elements/02_business/SALES_MANAGER.yaml
+   canon/elements/02_business/SALES_MANAGER.yaml
 
 # Open and edit (use your editor)
-vim elements/02_business/SALES_MANAGER.yaml
+vim canon/elements/02_business/SALES_MANAGER.yaml
 ```
 
 ### Option B: Manual Steps
 
-1. Go to `elements/02_business/`
+1. Go to `canon/elements/02_business/`
 2. Create new file: `SALES_MANAGER.yaml`
 3. Copy this content:
 
@@ -84,10 +84,10 @@ Now let's connect the Sales Manager to a business process.
 
 ```bash
 cp .templates/relations/relation_template.yaml \
-   relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml
+   canon/relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml
 ```
 
-Edit `relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml`:
+Edit `canon/relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml`:
 
 ```yaml
 id: "REL-SALES-001"
@@ -112,7 +112,7 @@ properties:
   criticality: "High"
 ```
 
-**Note:** Make sure the target ID (`PROC-ORD-001`) exists in `elements/02_business/`. For now, you can reference a process you'll create next, or use an existing element ID.
+**Note:** Make sure the target ID (`PROC-ORD-001`) exists in `canon/elements/02_business/`. For now, you can reference a process you'll create next, or use an existing element ID.
 
 ## Step 5: Validate Your Changes
 
@@ -158,7 +158,7 @@ The warning about `PROC-ORD-001` is expected if you haven't created that process
 
 ```bash
 cp .templates/bpmn/process_template.bpmn.transitrix.yaml \
-   elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
+   canon/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
 ```
 
 Edit the file to define your process steps, roles, and systems involved.
@@ -170,8 +170,8 @@ Edit the file to define your process steps, roles, and systems involved.
 git status
 
 # Stage your changes
-git add elements/
-git add relations/
+git add canon/elements/
+git add canon/relations/
 
 # Commit with meaningful message
 git commit -m "docs(architecture): add Sales Manager role and order assignment
@@ -208,7 +208,7 @@ When reviewing an architecture PR, check:
 ```bash
 # Create application component
 cp .templates/elements/03_application_template.yaml \
-   elements/03_application/ORDER_API.yaml
+   canon/elements/03_application/ORDER_API.yaml
 
 # Edit and fill in:
 # - id: APP-ORD-API-001
@@ -219,13 +219,13 @@ cp .templates/elements/03_application_template.yaml \
 
 # Create relation to database
 cp .templates/relations/relation_template.yaml \
-   relations/ORDER_API_TO_POSTGRES.yaml
+   canon/relations/ORDER_API_TO_POSTGRES.yaml
 
 # Edit with source=APP-ORD-API-001, target=NODE-DB-001, type=Access
 
 # Validate and commit
 python3 .validators/lint.py
-git add elements/ relations/
+git add canon/elements/ canon/relations/
 git commit -m "feat: add Order API microservice"
 git push
 ```
@@ -235,7 +235,7 @@ git push
 ```bash
 # Create node (database, server, etc.)
 cp .templates/elements/04_technology_template.yaml \
-   elements/04_technology/POSTGRES_PROD.yaml
+   canon/elements/04_technology/POSTGRES_PROD.yaml
 
 # Fill in infrastructure details:
 # - id: NODE-DB-001
@@ -245,7 +245,7 @@ cp .templates/elements/04_technology_template.yaml \
 # - cpu_cores: 8
 
 python3 .validators/lint.py
-git add elements/
+git add canon/elements/
 git commit -m "docs: add PostgreSQL production cluster to infrastructure"
 git push
 ```
@@ -254,24 +254,24 @@ git push
 
 ### Search for an element
 ```bash
-grep -r "Order API" elements/ --include="*.yaml"
+grep -r "Order API" canon/elements/ --include="*.yaml"
 ```
 
 ### Find all relations pointing to a component
 ```bash
-grep -r "APP-ORD-API-001" relations/ --include="*.yaml"
+grep -r "APP-ORD-API-001" canon/relations/ --include="*.yaml"
 ```
 
 ### View YAML structure
 ```bash
-cat elements/03_application/ORDER_API.yaml | head -20
+cat canon/elements/03_application/ORDER_API.yaml | head -20
 ```
 
 ### Validate only one file
 ```bash
 python3 -c "
 import yaml
-with open('elements/03_application/ORDER_API.yaml') as f:
+with open('canon/elements/03_application/ORDER_API.yaml') as f:
     data = yaml.safe_load(f)
     print('✓ Valid YAML:', data.get('id'))
 "
@@ -324,7 +324,7 @@ The element ID in your relation doesn't exist. Check:
 3. Whether the element file has the correct `id:` field
 
 ### "ATOMICITY VIOLATION: Element contains 'relations' section"
-You defined relations inside an element file. Move them to a separate file in `relations/`.
+You defined relations inside an element file. Move them to a separate file in `canon/relations/`.
 
 ### Linter passes but I think something is wrong
 Edit `.validators/lint.py` and add your custom validation rule. See the Development section in README.md.
