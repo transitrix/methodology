@@ -10,10 +10,9 @@ date: "2026-05-26"
 author: Transitrix
 
 goal_types:
-  - { name: "Strategy",         level: 0 }
-  - { name: "Strategic Intention", level: 1 }
-  - { name: "Strategic Goal",   level: 2 }
-  - { name: "Project Goal",     level: 4 }
+  - { name: "Strategy",       level: 0 }
+  - { name: "Strategic Goal", level: 1 }
+  - { name: "Project Goal",   level: 2 }
 
 goals:
   - id: GOAL-REVENUE-1
@@ -25,29 +24,29 @@ goals:
   - id: GOAL-EU-1
     name: "Launch in 3 EU markets"
     type: "Strategic Goal"
-    level: 2
+    level: 1
     parent: GOAL-REVENUE-1
 
   - id: GOAL-BERLIN-1
     name: "Open Berlin office"
     type: "Project Goal"
-    level: 4
+    level: 2
     parent: GOAL-EU-1
 
   - id: GOAL-EU-REG-1
     name: "Obtain EU regulatory approval"
     type: "Project Goal"
-    level: 4
+    level: 2
     parent: GOAL-EU-1
 
   - id: GOAL-MENA-1
     name: "Launch in MENA"
     type: "Strategic Goal"
-    level: 2
+    level: 1
     parent: GOAL-REVENUE-1
 
   - id: GOAL-DUBAI-1
     name: "Partner with Dubai distributor"
     type: "Project Goal"
-    level: 4
+    level: 2
     parent: GOAL-MENA-1
