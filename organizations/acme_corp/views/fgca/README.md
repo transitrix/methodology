@@ -9,26 +9,36 @@ Factor → Goal → Change → Activity chains. Strategy-to-execution scaffold: 
 ## Skeleton
 
 ```yaml
-title: "EU Expansion 2026"
+notation: fgca
+spec_version: "0.1"
+
+id: FGCA-EU-1
+name: "EU Expansion 2026"
+description: "Factor → Goal → Change → Activity chain for EU market entry."
+period: "2026"
+date: "2026-05-26"
+author: "Acme Strategy Office"
 
 factors:
-  - id: "FACTOR-EU-001"
-    description: "EU regulatory window closing in Q3"
+  - id: FACTOR-EU-REG-1           # → elements/01_motivation/factors/FACTOR-EU-REG-1.yaml
+    name: "EU regulatory window closing in Q3"
+    type: external
+    references_constraint: [CONSTRAINT-GDPR-RESIDENCY-1]   # → elements/01_motivation/constraints/
 
 goals:
-  - id: "GOAL-EU-001"
-    factors: ["FACTOR-EU-001"]
-    description: "Operational presence in 3 EU markets by Q4"
+  - id: GOAL-EU-1
+    name: "Operational presence in 3 EU markets by Q4"
+    factors: [FACTOR-EU-REG-1]
 
 changes:
-  - id: "CHANGE-EU-001"
-    goals: ["GOAL-EU-001"]
-    description: "Stand up EU-localised CRM and payment processing"
+  - id: CHANGE-EU-CRM-1
+    name: "Stand up EU-localised CRM and payment processing"
+    goals: [GOAL-EU-1]
 
 activities:
-  - id: "ACT-CRM-EU-001"
-    changes: ["CHANGE-EU-001"]
-    description: "Implement EU-localised CRM rollout"
+  - id: ACTIVITY-CRM-EU-1
+    name: "Implement EU-localised CRM rollout"
+    changes: [CHANGE-EU-CRM-1]
 ```
 
 ## See also

@@ -5,9 +5,9 @@ Welcome to the Transitrix Architecture-as-Code methodology! This guide will walk
 ## Prerequisites
 
 - Git client
-- Text editor (VS Code recommended)
-- Python 3.9+ (for running validators)
+- VS Code with the Transitrix extension — live diagram preview and inline validation as you edit (recommended)
 - Basic understanding of YAML format
+- *Optional:* Python 3.9+ — only if you want to run the local linter (`.validators/lint.py`) outside the editor
 
 ## Step 1: Clone and Setup
 
@@ -25,7 +25,7 @@ Review the main directories:
 - **.templates/** - Templates to copy when creating new elements
 - **.validators/** - Linting tools to ensure consistency
 
-Read `method/Transitrix Методология управления архитектурой предприятия.md` for complete methodology details.
+Read `method/methodology.md` for complete methodology details.
 
 ## Step 3: Create Your First Element
 
@@ -115,6 +115,8 @@ properties:
 **Note:** Make sure the target ID (`PROC-ORD-001`) exists in `elements/02_business/`. For now, you can reference a process you'll create next, or use an existing element ID.
 
 ## Step 5: Validate Your Changes
+
+The Transitrix VS Code extension validates and previews as you edit. To run the local linter as an optional extra check:
 
 ```bash
 python3 .validators/lint.py
@@ -338,7 +340,7 @@ Edit `.validators/lint.py` and add your custom validation rule. See the Developm
 
 ## Getting Help
 
-- Read the full methodology: `method/Transitrix Методология управления архитектурой предприятия.md`
+- Read the full methodology: `method/methodology.md`
 - Review templates in `.templates/` for detailed examples
 - Check the linter output for specific validation issues
 - Ask your architecture team - they can help you understand your organization's structure
