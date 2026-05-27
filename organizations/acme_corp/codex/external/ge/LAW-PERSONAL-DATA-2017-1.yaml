@@ -1,0 +1,22 @@
+# Codex external artefact — given to the org by an outside authority; faithful to source.
+# Schema: notations/14-codex.md §3 + admission record (CONTRACT.md §6). Worked example.
+id: LAW-PERSONAL-DATA-2017-1
+name: "Law of Georgia on Personal Data Protection"
+type: LAW
+description: "Governs the processing of personal data of individuals in Georgia."
+
+# Admission record (CONTRACT.md §6)
+zone: codex
+admitted_at: "2026-05-27"
+admitted_by: "legal.counsel"
+gate_checks:
+  source_authority: "Legislative Herald of Georgia (matsne.gov.ge)"
+
+# External-codex frontmatter (14-codex.md §3)
+jurisdiction: ge                 # MUST match the parent folder codex/external/ge/ (CODEX-001)
+effective_date: "2017-05-01"
+applies_to:
+  entities:
+    - APP-CRM-1                  # CRM stores customer personal data
+  processes:
+    - PROC-CUST-ONBOARD-1        # onboarding collects personal data
