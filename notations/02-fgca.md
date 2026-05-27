@@ -82,7 +82,7 @@ It creates a shared language for planning, prioritization, and accountability, r
 
 ## DSM Implementation Status
 
-Transitrix DSM implements the full 4-layer FGCA chain as of release 0.2.2:
+This section is **non-normative**: it records what Transitrix DSM enforces and renders today and introduces no validation rules of its own — the conformance rules live in the §"Validation rules" table above. Transitrix DSM implements the full 4-layer FGCA chain as of release 0.2.2:
 
 | Layer | Status | Notes |
 |-------|--------|-------|

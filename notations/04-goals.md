@@ -78,11 +78,9 @@ date: "2026-05-26"
 author: Transitrix
 
 goal_types:
-  - { name: "Strategy",         level: 0 }
-  - { name: "Strategic Intention", level: 1 }
-  - { name: "Strategic Goal",   level: 2 }
-  - { name: "Business Goal",    level: 3 }
-  - { name: "Project Goal",     level: 4 }
+  - { name: "Strategy",       level: 0 }
+  - { name: "Strategic Goal", level: 1 }
+  - { name: "Project Goal",   level: 2 }
 
 goals:
   - id: GOAL-REVENUE-1
@@ -94,13 +92,13 @@ goals:
   - id: GOAL-EU-1
     name: "Launch in 3 EU markets"
     type: "Strategic Goal"
-    level: 2
+    level: 1
     parent: GOAL-REVENUE-1
 
   - id: GOAL-BERLIN-1
     name: "Open Berlin office"
     type: "Project Goal"
-    level: 4
+    level: 2
     parent: GOAL-EU-1
 ```
 
@@ -133,7 +131,7 @@ A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](examp
 | `name` | yes | human-readable level name (`"Strategy"`, `"Strategic Goal"`, …) |
 | `level` | yes | non-negative integer; `0` is the root level |
 
-Organisations choose their own level vocabulary; the canonical 8-level default is listed in §9.1.
+Organisations choose their own level vocabulary; the canonical 8-level default is listed in §8.1.
 
 ### 5.2 `goals[]`
 
@@ -167,6 +165,8 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 | `GOALS-009` | warn | `goals[].parent` references an `id` not defined in `goals[]` — the goal is treated as an orphan / backlog item. |
 | `GOALS-010` | error | the `parent` chain contains a cycle (a goal is its own ancestor). |
 | `GOALS-011` | warn | a non-root goal (`level ≥ 1`) has no `parent` set; either declare it as a root by promoting it to `level: 0`, or attach it to a parent. |
+| `GOALS-012` | error | `goals[].parent` MUST reference an existing goal whose `level` equals `goals[].level - 1` (strict N+1 hierarchy). A parent that resolves but sits more than one level above the child is rejected; an unresolved `parent` is the orphan case (`GOALS-009`). |
+| `GOALS-013` | error | `goal_types[].level` values MUST be contiguous integers starting at `0` (no gaps in the declared vocabulary). Contiguity is what makes `GOALS-012` enforceable against a document's custom level vocabulary. |
 
 ---
 
@@ -181,9 +181,9 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 
 ---
 
-## 8. DSM Implementation Rules
+## 8. DSM rendering & editor behaviour (non-normative)
 
-This section describes how Transitrix DSM implements the Goals Tree. These rules govern the API, Visual Editor (G), and table view.
+This section describes how Transitrix DSM renders and edits the Goals Tree. It is **non-normative**: the conformance rules for the notation live in §6 (including strict N+1 hierarchy, `GOALS-012`, and contiguous level vocabulary, `GOALS-013`). The behaviour below is DSM-specific and is not required of other conforming renderers.
 
 ### 8.1 Hierarchy depth
 
@@ -202,19 +202,12 @@ The hierarchy depth is **not hardcoded** — it is configured in the `goal_types
 
 All validation and visualisation logic adapts dynamically to the currently active `goal_types` configuration — organisations can rename or resize the hierarchy.
 
-### 8.2 Structural constraints
+### 8.2 Editor constraints
 
-**Rule 1 — Strict N+1 hierarchy:** A child goal must always be exactly one level deeper than its parent.
+Strict N+1 hierarchy is normative — see `GOALS-012` in §6. Beyond that, DSM's editor maintains two conventions:
 
-```
-Constraint: child.level = parent.level + 1
-```
-
-Attaching a Level 4 goal directly to a Level 2 parent is rejected.
-
-**Rule 2 — Single parent:** Every goal (except the root) must have exactly one parent. Goals with a missing or invalid `parent` are treated as **Orphans** (backlog) and are not shown in the main tree until attached.
-
-**Rule 3 — Single root:** Only one goal with `level = 0` (type = Strategy) may exist. The API rejects creation of a second root.
+- **Single parent:** `parent` is a single reference, so every non-root goal has exactly one parent. A goal with a missing or unresolved `parent` is treated as an **Orphan** (backlog, §8.4) and is not shown in the main tree until attached.
+- **Single root:** DSM keeps one root (`level: 0`, type Strategy) per tree and will not create a second. This is an editor convention, not a §6 validation rule.
 
 ### 8.3 Editing and cascade updates
 
