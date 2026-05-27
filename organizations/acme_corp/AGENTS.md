@@ -1,8 +1,16 @@
-# CLAUDE.md — adopter-repo agent guide
+# AGENTS.md — adopter-repo agent guide
 
 > **Draft.** This file is shipped as part of the `acme_corp` template, so every adopter starts with sensible agent guidance out of the box. After you clone `acme_corp` into your own repo, edit the placeholders marked `ADOPTER-FILL-ME` to fit your situation. Treat this draft as a starting point, not a finished policy.
 
-This file tells an AI agent (Claude Code, or any other) operating inside an **adopter's** Transitrix repository how to behave. It does **not** apply to agents working on the methodology canon itself — that's a different repository with its own `CLAUDE.md`.
+This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copilot, Windsurf, Gemini CLI, or another — operating inside an **adopter's** Transitrix repository how to behave. It is intentionally tool-neutral. It does **not** apply to assistants working on the methodology canon itself — that's a different repository with its own agent guide.
+
+## Using this guide with your assistant
+
+`AGENTS.md` is the single, canonical, assistant-neutral guide for this repository — there is one source of truth, regardless of which assistant you use. Point your assistant at it:
+
+- **Assistants that read `AGENTS.md` natively** — use this file directly, no setup.
+- **GitHub Copilot** — a pointer at [`.github/copilot-instructions.md`](.github/copilot-instructions.md) redirects here; it ships with the template.
+- **Other assistants** (Claude Code → `CLAUDE.md`, Cursor → `.cursor/rules/`, …) — add a one-line pointer file in that tool's location that says *"Read `AGENTS.md` in the repo root and follow it."* Keep the guidance here; the per-tool file is only a redirect.
 
 ---
 
@@ -12,8 +20,10 @@ This repository is a **text-native enterprise architecture model** authored in t
 
 What lives here:
 
-- `canon/views/<notation>/` — model files in the canonical Transitrix notations (BPMN, FGCA, FGA, Goals, Capability map, Process landscape map, Activities, Nested blocks, Scenarios, Applications, Products, Issues, Process Blueprint).
-- `canon/elements/` — reusable architecture elements grouped by ArchiMate layer (`01_motivation/`, `02_business/`, `03_application/`, `04_technology/`).
+- `canon/` — the **validated model** (the authoritative zone): `views/<notation>/` (model files in the canonical Transitrix notations) and `elements/` (reusable architecture elements by ArchiMate layer `01_motivation/` … `04_technology/`).
+- `field/` — **raw, unprocessed inputs**: interviews, surveys, observations, drafts.
+- `codex/` — **external constraints** (laws, regulations) and **internal authority documents** (policies, standards).
+- `transitrix.yaml` — the adopter manifest: which methodology version, notations, and zones this repo uses.
 - `.templates/` — starter files the adopter copies when creating new elements / views.
 - `README.md`, `GETTING_STARTED.md`, `CONVENTIONS.md` — adopter-facing onboarding docs.
 
@@ -49,7 +59,9 @@ The canonical layout an adopter inherits from the `acme_corp` template:
 ```
 <repo-root>/
 ├── transitrix.yaml                 # adopter manifest — methodology version, notations, zones
-├── CLAUDE.md                       # this file
+├── AGENTS.md                       # this file — assistant-neutral agent guide
+├── .github/
+│   └── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
 ├── README.md
 ├── GETTING_STARTED.md
 ├── CONVENTIONS.md
@@ -76,6 +88,42 @@ The canonical layout an adopter inherits from the `acme_corp` template:
 The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention and is documented in `canon/views/README.md`.
 
 The agent does **not** change this layout without a deliberate decision recorded in the adopter's PR. Adopter-specific top-level additions (e.g. a `decisions/` ADR folder, a `glossary/` directory) are fine; renaming or removing the canonical folders is not.
+
+### 3.1 Zones
+
+This repo separates three kinds of knowledge, each with its own trust contract (defined in the canon, `notations/CONTRACT.md` §5):
+
+- **`canon/`** — validated truth the organisation asserts about itself. Internally consistent and unique; the authoritative model. `elements/` and `views/` live here.
+- **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point; **not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, never a migration.
+- **`codex/`** — external constraints (laws, regulations, under `external/<jurisdiction>/`) and internal authority documents (policies, standards, under `internal/`), *given to* the organisation rather than authored by it.
+
+Every artefact carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) — see `notations/CONTRACT.md` §6. The agent does not move artefacts between zones; it admits a new artefact to the correct zone.
+
+### 3.2 Single-entity vs holding layout
+
+- **Single legal entity** — the repo root *is* the organisation: `canon/`, `field/`, `codex/`, and `transitrix.yaml` sit at the root (the `acme_corp` shape above).
+- **Holding (multiple entities)** — the repo root holds one folder per entity, each with its own `canon/` / `field/` / `codex/`, plus a `_shared/` folder for group-level codex/field that binds several entities:
+
+  ```
+  <repo-root>/
+  ├── transitrix.yaml
+  ├── acme_retail/      canon/  field/  codex/
+  ├── acme_logistics/   canon/  field/  codex/
+  └── _shared/          codex/  field/
+  ```
+
+  The agent keeps each entity's zones self-contained and puts only genuinely group-wide artefacts in `_shared/`.
+
+### 3.3 The `transitrix.yaml` manifest
+
+The root `transitrix.yaml` pins which methodology release this repo conforms to and what it uses. Adopters do **not** vendor a copy of `notations/` — they follow the published specs at the pinned version. Schema: `notations/MANIFEST.md`.
+
+```yaml
+transitrix: 1
+methodology_version: "0.4.x"
+notations: [fgca, goals, activities, issues, capability-map, codex]
+zones: [canon, field, codex]
+```
 
 ---
 
@@ -211,9 +259,8 @@ Trivial changes (typo fixes inside a description string, README polish) may be c
 
 ## Reconciliation note
 
-This draft is the first cut of the adopter-repo agent guide. Two upcoming changes will revisit it:
+This guide is assistant-neutral and reflects the zoned (`canon/` / `field/` / `codex/`) layout. One open item:
 
-- The **onboarding Skill** (`/transitrix-onboard`) defines its own agent-side rules. Some sections here may be subsumed by or harmonised with the Skill's `SKILL.md` once both have settled.
-- The **acme_corp template refresh** (waves 1+2 + wave 3) is in flight. Layout and surface-doc references in this file may need updating after that refresh lands.
+- The **onboarding Skill** (`/transitrix-onboard`, a Claude Code skill) still scaffolds a flat, Claude-specific layout and references `CLAUDE.md`. It will be reconciled to this assistant-neutral, zoned shape in a follow-up.
 
 The agent treats this file as **provisional**. If it conflicts with the canon, the canon wins. If it conflicts with a later adopter-supplied policy, the adopter wins.
