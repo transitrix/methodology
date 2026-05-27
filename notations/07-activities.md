@@ -82,7 +82,7 @@ date: "2026-05-11"
 author: "Valerii Korobeinikov"
 
 project:                              # optional; enables Gantt rendering
-  start_date: 2026-06-01              # optional; project zero-time for computed Gantt
+  start_date: "2026-06-01"            # optional; project zero-time for computed Gantt
   calendar:                           # optional; working calendar (see §5.8)
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
@@ -110,8 +110,8 @@ activities:
     score: 5                          # optional, integer — local prioritisation signal
     sort: 10                          # optional, integer — manual display ordering
     tags: [q3-priority, customer]     # optional, array of free-text tags
-    start_date: 2026-06-01            # optional, planned start (ISO 8601 date)
-    end_date: 2026-06-15              # optional, planned end (ISO 8601 date)
+    start_date: "2026-06-01"          # optional, planned start (ISO 8601 date)
+    end_date: "2026-06-15"            # optional, planned end (ISO 8601 date)
     labor_cost: 5000.00               # optional, decimal — labour cost (currency in metadata or implicit org-default)
     resources_cost: 2000.00           # optional, decimal — non-labour resource cost
     effort: 80                        # optional, decimal — effort in person-hours (or org-defined unit)
@@ -238,7 +238,7 @@ The optional `project:` block anchors the schedule on a calendar for Gantt rende
 
 ```yaml
 project:
-  start_date: 2026-06-01              # optional; project zero-time
+  start_date: "2026-06-01"            # optional; project zero-time
   calendar:                           # optional; defaults: 7-day week, 24-h day, no holidays
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
