@@ -1,0 +1,26 @@
+# Field artefact — raw, unprocessed input. Not authoritative; provenance is the point.
+# Schema: admission record per the methodology's CONTRACT.md §6; TYPE per IDS_AND_REFERENCES.md §3.4.
+id: INTERVIEW-cfo-onboarding-2026-04-15-1
+name: "CFO onboarding interview — finance operations"
+type: INTERVIEW
+
+# Admission record (CONTRACT.md §6)
+zone: field
+admitted_at: "2026-04-16"
+admitted_by: "a.analyst"
+gate_checks:
+  provenance: "recorded with consent; notes transcribed same day"
+
+# Provenance — who/when/in what setting (the point of a Field artefact)
+interviewer: "a.analyst"
+interviewee_role: "Chief Financial Officer"   # descriptive role, not a named person (no PII)
+interview_date: "2026-04-15"
+setting: "onboarding session, video call, ~45 min"
+
+# Raw notes — contradictions allowed; nothing here is canon until separately admitted.
+notes: |
+  The CFO called the monthly close "about three days too slow" and put it down to manual
+  reconciliation between the CRM and the order system. Wants to halve close time within the
+  year, and worries EU expansion will add a second ledger. Unverified — to be corroborated
+  before any of it informs a Canon record (which would then cite this artefact via
+  `derived_from: [INTERVIEW-cfo-onboarding-2026-04-15-1]`).
