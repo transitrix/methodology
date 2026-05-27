@@ -68,7 +68,7 @@ Without one of these, the network view still renders but the Gantt view is skipp
 
 ```yaml
 project:
-  start_date: 2026-06-01
+  start_date: "2026-06-01"
   calendar:
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
