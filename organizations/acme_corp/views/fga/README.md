@@ -9,21 +9,30 @@ Factor → Goal → Activity chains. Simplified 3-layer variant of FGCA — used
 ## Skeleton
 
 ```yaml
-title: "Q2 Operational Improvements"
+notation: fga
+spec_version: "0.1"
+
+id: FGA-OPS-1
+name: "Q2 Operational Improvements"
+description: "Factor → Goal → Activity chain for support operations."
+period: "2026-Q2"
+date: "2026-05-26"
+author: "Acme Ops"
 
 factors:
-  - id: "FACTOR-OPS-001"
-    description: "Customer-support response time degraded over Q1"
+  - id: FACTOR-COMP-1              # → elements/01_motivation/factors/FACTOR-COMP-1.yaml
+    name: "Support response time degraded over Q1"
+    type: internal
 
 goals:
-  - id: "GOAL-OPS-001"
-    factors: ["FACTOR-OPS-001"]
-    description: "Restore P50 response time to under 2 hours by end of Q2"
+  - id: GOAL-OPS-1
+    name: "Restore P50 response time to under 2 hours by end of Q2"
+    factors: [FACTOR-COMP-1]
 
 activities:
-  - id: "ACT-OPS-001"
-    goals: ["GOAL-OPS-001"]
-    description: "Add second-shift coverage in EU timezone"
+  - id: ACTIVITY-SUPPORT-1
+    name: "Add second-shift coverage in EU timezone"
+    goals: [GOAL-OPS-1]
 ```
 
 ## See also

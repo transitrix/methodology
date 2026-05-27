@@ -1,6 +1,6 @@
 # `views/products/`
 
-Filtered views over Product elements. Each Product is stored atomically as one file under `elements/02_business/<PRODUCT_ID>.yaml` (with `type: Product`). A view here defines how to filter, group, and present a subset of those products — for example, "active retail products grouped by category" or "products by maturity stage".
+Products catalogue — a curated catalogue of the products and services the organisation offers. Each entry references a Product element under `elements/02_business/products/` and carries the display attributes used to render the catalogue.
 
 ## File convention
 
@@ -9,28 +9,41 @@ Filtered views over Product elements. Each Product is stored atomically as one f
 ## Skeleton
 
 ```yaml
-title: "Active Retail Portfolio"
-description: "Products currently in market, grouped by category"
+notation: products
+spec_version: "0.1"
 
-filter:
-  type: "Product"
-  status: ["Active", "Production"]
-  tags: ["retail"]
+products_catalogue:
+  id: "PROD-CAT-1"
+  name: "Acme Corp Products Catalogue"
+  description: "Products and services offered by Acme Corp"
+  version: "1.0"
+  updated_at: "2026-05-26"
 
-group_by: "category"               # field on the Product element
+  products:
+    - product_id: "PROD-ECOMM-1"        # → elements/02_business/products/PROD-ECOMM-1.yaml
+      name: "E-Commerce Platform"
+      type: "digital_product"           # digital_product | service | platform | bundle
+      domain: "Digital"
+      owner_role: "ROLE-PROD-1"
+      status: "Active"                  # Draft | Active | Deprecated
+      maturity: 3
+      description: "Online storefront and order management for end customers"
+      capabilities: ["V1", "V2"]
+      processes: ["PROC-ORD-FULFILL-1"]
+      supporting_apps: ["APP-OMS-1", "APP-CRM-1"]
 
-columns:
-  - "name"
-  - "owner"
-  - "launched_at"
-  - "stage"
+    - product_id: "SVC-SUPPORT-1"
+      name: "Customer Support Service"
+      type: "service"
+      domain: "Operations"
+      owner_role: "ROLE-CS-1"
+      status: "Active"
+      description: "Tier-1 and Tier-2 support for customers via chat, email, and phone"
 ```
 
-## What the view does NOT do
-
-It does not store product data. The Product elements live in `elements/02_business/`. A view describes how to render a slice of them — the data stays in the elements.
+`capabilities`, `processes`, and `supporting_apps` hold **element IDs** (`V1`, `PROC-…`, `APP-…`), not display names — the catalogue references the elements, it does not duplicate them.
 
 ## See also
 
-- `method/methodology.md` §4 — elements vs views
-- `elements/02_business/` — individual Product element files
+- `notations/09-products.md` — products-catalogue notation reference (full field table)
+- `elements/02_business/products/` — where individual Product elements live

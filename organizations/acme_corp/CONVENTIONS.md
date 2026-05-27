@@ -6,31 +6,53 @@
 
 Element IDs uniquely identify architecture elements and must follow a strict format for consistency and searchability.
 
-**Format:** `[TYPE]-[DOMAIN]-[SEQUENCE]`
+**Format:** `<TYPE>-[<middle segment(s)>-]<INTEGER>` — the canonical ID grammar defined in [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md). The terminal integer is a positive number ≥ 1 with **no leading zeros**; middle segments (a domain code, period, or programme name) are optional.
 
-#### Type Prefixes
+#### Type prefixes (canonical registry)
 
-| Layer | Type | Prefix |
-|-------|------|--------|
-| **Motivation** | Goal | `GOAL` |
-| | Principle | `PRIN` |
-| | Constraint | `CONS` |
-| | Driver | `DRIV` |
-| | Outcome | `OUTC` |
-| **Business** | Role | `ROLE` |
-| | Actor | `ACTR` |
-| | Process | `PROC` |
-| | Function | `FUNC` |
-| | Service | `SRVC` |
-| **Application** | Component | `APP` |
-| | Service | `SRVC` |
-| | Data Object | `DATA` |
-| | Interface | `INTF` |
-| **Technology** | Node | `NODE` |
-| | System Software | `SYS` |
-| | Artifact | `ARTF` |
-| | Device | `DEV` |
-| | Network Path | `NET` |
+Use exactly these prefixes; the abbreviated forms `ACT`, `CHG`, `FAC`, `CAP`, `SCN` are deprecated. The authoritative list lives in `IDS_AND_REFERENCES.md` §3.
+
+**Element types**
+
+| TYPE | What it is |
+|---|---|
+| `FACTOR` | strategic driver (external / internal) |
+| `GOAL` | strategic or tactical goal |
+| `CHANGE` | business transformation (BDN change layer) |
+| `ACTIVITY` | initiative / workstream |
+| `CAPABILITY` | capability — V/H address, e.g. `CAPABILITY-V1.2` (see appendix §2) |
+| `PROCESS` | business process |
+| `PRODUCT` | product or service |
+| `APPLICATION` | application |
+| `INTEGRATION` | integration between applications |
+| `ROLE` | business role |
+| `UNIT` | organisational unit |
+| `EMPLOYEE` | named employee |
+| `SCENARIO` | strategic scenario |
+| `ISSUE` | issue — problem, defect, or open question |
+| `EQUIPMENT` | physical instrument / device / facility a process stage depends on |
+| `INFORMATION_ENTITY` | data / document / record produced or consumed by a process stage |
+| `RULE` | business rule (`elements/02_business/rules/`) |
+| `CONSTRAINT` | design / operating constraint (`elements/01_motivation/constraints/`) |
+
+**Document-level types** — the file's own ID; the TYPE names the notation
+
+| TYPE | Notation file |
+|---|---|
+| `FGCA` | `*.fgca.transitrix.yaml` |
+| `FGA` | `*.fga.transitrix.yaml` |
+| `GOALS_TREE` | `*.goals.transitrix.yaml` |
+| `CAPABILITY_MAP` | `*.capability-map.transitrix.yaml` |
+| `PROCESS_MAP` | `*.process-map.transitrix.yaml` |
+| `ACTIVITIES_NET` | `*.activities.transitrix.yaml` |
+| `PRODUCTS_CAT` | `*.products.transitrix.yaml` |
+| `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
+| `SCENARIOS` | `*.scenarios.transitrix.yaml` |
+| `BLOCKS` | `*.blocks.transitrix.yaml` |
+| `ISSUES_CAT` | `*.issues.transitrix.yaml` |
+| `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
+
+> **Drift note.** Some current catalogue specs and example files still use abbreviated cross-reference prefixes (`APP-`, `PROC-`, `PROD-`) and zero-padded sequences (`-001`). These are tracked migrations (IDS_AND_REFERENCES.md §6) and will converge on the canonical forms above; follow each notation spec's own examples until its migration lands.
 
 #### Domain Codes
 
@@ -49,15 +71,15 @@ AUT   = Authentication
 BIL   = Billing
 ```
 
-#### Sequence Numbers
+#### Sequence numbers
 
-Use zero-padded numbers starting from 001:
+Use plain positive integers starting from `1` — **no leading zeros** (sorting and comparison are numeric, not lexical):
 
 ```
-GOAL-REV-001      (First revenue goal)
-GOAL-REV-002      (Second revenue goal)
-ROLE-SALES-001    (First sales role)
-APP-ORD-API-001   (First order API component)
+GOAL-REV-1        (First revenue goal)
+GOAL-REV-2        (Second revenue goal)
+ROLE-SALES-1      (First sales role)
+APPLICATION-ORD-API-1  (First order API component)
 ```
 
 ### Element ID Examples

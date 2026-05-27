@@ -1,6 +1,6 @@
 # `views/applications/`
 
-Filtered views over Application elements (ArchiMate `ApplicationComponent`, `ApplicationService`). Each application is stored atomically as one file under `elements/03_application/<APP_ID>.yaml`. A view here defines how to filter, group, and present a subset.
+Applications catalogue — a curated catalogue of the applications and integrations in operation. Each entry references an Application element under `elements/03_application/applications/` and carries the display attributes used to render the catalogue.
 
 ## File convention
 
@@ -9,28 +9,47 @@ Filtered views over Application elements (ArchiMate `ApplicationComponent`, `App
 ## Skeleton
 
 ```yaml
-title: "Production Application Portfolio"
-description: "All Active applications, grouped by criticality"
+notation: applications
+spec_version: "0.1"
 
-filter:
-  type: ["ApplicationComponent", "ApplicationService"]
-  status: ["Active", "Production"]
+applications_catalogue:
+  id: "APP-CAT-1"
+  name: "Acme Corp Applications Catalogue"
+  description: "Applications and integrations in operation at Acme Corp"
+  version: "1.0"
+  updated_at: "2026-05-26"
 
-group_by: "properties.criticality"
+  applications:
+    - app_id: "APP-OMS-1"               # → elements/03_application/applications/APP-OMS-1.yaml
+      name: "Order Management System"
+      type: "application"               # application | integration | platform | data_store
+      domain: "Operations"
+      owner_role: "ROLE-TECH-1"
+      vendor: "Internal"
+      status: "Active"                  # Draft | Active | Deprecated | Decommissioning
+      maturity: 3
+      description: "Core system for order lifecycle management"
+      capabilities: ["V1"]
+      products: ["PROD-ECOMM-1"]
+      integrations:
+        - target: "APP-CRM-1"
+          direction: "outbound"
+          protocol: "REST"
+          description: "Sends order events to CRM"
 
-columns:
-  - "name"
-  - "owner"
-  - "tech_stack"
-  - "criticality"
-  - "updated_at"
+    - app_id: "APP-CRM-1"
+      name: "CRM System"
+      type: "application"
+      domain: "Sales"
+      owner_role: "ROLE-SALES-1"
+      vendor: "Salesforce"
+      status: "Active"
+      description: "Customer relationship and sales pipeline management"
 ```
 
-## What the view does NOT do
-
-It does not store application data. The application elements live in `elements/03_application/`. A view describes how to render a slice of them — the data stays in the elements.
+`capabilities` and `products` hold **element IDs**, not display names. Integrations may be inlined (as above) or modelled as their own `type: integration` entries.
 
 ## See also
 
-- `method/methodology.md` §4 — elements vs views
-- `elements/03_application/` — individual Application element files
+- `notations/10-applications.md` — applications-catalogue notation reference (full field table)
+- `elements/03_application/applications/` — where individual Application elements live

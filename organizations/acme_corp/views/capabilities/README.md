@@ -1,6 +1,6 @@
 # `views/capabilities/`
 
-Capability maps — hierarchical view of capabilities with CMM maturity overlay. Each capability referenced here is a Capability element under `elements/02_business/`.
+Capability maps — a hierarchical view of business capabilities with a CMM maturity overlay. Each capability addressed here resolves to a Capability element under `elements/02_business/capabilities/`.
 
 ## File convention
 
@@ -9,22 +9,53 @@ Capability maps — hierarchical view of capabilities with CMM maturity overlay.
 ## Skeleton
 
 ```yaml
-title: "Customer-Domain Capabilities"
-set_id: "v1.0"
-organisation: "Acme Corp"
+notation: capability-map
+spec_version: "0.1"
 
-capabilities:
-  - id: "CAP-CRM-001"             # references elements/02_business/CAP-CRM-001.yaml
-    address: "1.0.0"              # L1
-    maturity:
-      - { date: "2026-01-01", level: 2 }
-      - { date: "2026-04-01", level: 3 }
-  - id: "CAP-CRM-002"
-    address: "1.1.0"              # L2 under L1=1
+capability_map:
+  id: "CM-CUSTOMER-1"
+  name: "Customer-Domain Capabilities"
+  description: "Customer-facing capabilities with current and target maturity"
+  assessment_date: "2026-05-26"
+
+  capabilities:
+    - id: "V1"                          # → elements/02_business/capabilities/V1.yaml
+      name: "Order Management"
+      type: "domain"                    # domain | supporting
+      current_maturity: 2
+      target_maturity: 3
+      target_date: "2026-12-31"
+      owner_role: "ROLE-OPS-1"
+      business_process: "PROC-ORD-FULFILL-1"
+      applications:
+        - "APP-OMS-1"
+        - "APP-CRM-1"
+      children:
+        - id: "V1.1"
+          name: "Order Intake"
+          type: "domain"
+          current_maturity: 3
+          target_maturity: 3
+        - id: "V1.2"
+          name: "Order Fulfilment"
+          type: "domain"
+          current_maturity: 2
+          target_maturity: 3
+          target_date: "2026-09-30"
+    - id: "V2"
+      name: "Customer Relationship"
+      type: "domain"
+      current_maturity: 2
+      target_maturity: 3
+      owner_role: "ROLE-SALES-1"
+      applications:
+        - "APP-CRM-1"
 ```
+
+`V1` / `V1.1` are vertical-capability addresses; **every** capability, including children, carries `type` (required). The maturity history of an individual capability lives on its element file, not here.
 
 ## See also
 
-- `method/methodology.md` §6.2 / §6.3 — capabilities and maturity model
+- `notations/05-capability-map.md` — capability-map notation reference (CMM maturity, V/H addressing, full field table)
 - `.templates/capability-map_template.yaml` — copy-and-fill template
-- `elements/02_business/` — where individual Capability elements live
+- `elements/02_business/capabilities/` — where individual Capability elements live
