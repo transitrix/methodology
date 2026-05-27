@@ -6,19 +6,23 @@ A lightweight, Git-based enterprise architecture methodology that combines Archi
 
 ```
 Transitrix/
-├── elements/                    # Architecture elements organized by layer
-│   ├── 01_motivation/          # Goals, principles, constraints, drivers
-│   ├── 02_business/            # Roles, actors, processes, functions
-│   ├── 03_application/         # Components, services, interfaces
-│   └── 04_technology/          # Infrastructure, nodes, artifacts
-├── relations/                   # Relationship definitions (ATOMIC)
+├── transitrix.yaml              # adopter manifest (methodology version, notations, zones)
+├── canon/                       # validated model — the authoritative zone
+│   ├── elements/                # architecture elements organized by layer
+│   │   ├── 01_motivation/       # Goals, principles, constraints, drivers
+│   │   ├── 02_business/         # Roles, actors, processes, functions
+│   │   ├── 03_application/      # Components, services, interfaces
+│   │   └── 04_technology/       # Infrastructure, nodes, artifacts
+│   ├── relations/               # Relationship definitions (ATOMIC)
+│   └── views/                   # View configurations for diagrams
+├── field/                       # raw inputs (interviews, surveys, observations, drafts)
+├── codex/                       # external constraints + internal authority docs
 ├── .templates/                  # Templates for new elements and relations
-│   ├── elements/               # Element templates by layer
-│   ├── relations/              # Relation template
-│   └── bpmn/                   # BPMN process template
+│   ├── elements/                # Element templates by layer
+│   ├── relations/               # Relation template
+│   └── bpmn/                    # BPMN process template
 ├── .validators/                 # Linting and validation scripts
-│   └── lint.py                 # Architecture model validator
-├── views/                       # View configurations for diagrams
+│   └── lint.py                  # Architecture model validator
 ├── method/                      # Methodology documentation
 └── README.md                    # This file
 ```
@@ -30,10 +34,10 @@ Transitrix/
 ```bash
 # Copy template from .templates/
 cp .templates/elements/03_application_template.yaml \
-   elements/03_application/MY_SERVICE.yaml
+   canon/elements/03_application/MY_SERVICE.yaml
 
 # Edit the file with your specifics
-editor elements/03_application/MY_SERVICE.yaml
+editor canon/elements/03_application/MY_SERVICE.yaml
 ```
 
 ### 2. Define a Relationship
@@ -41,10 +45,10 @@ editor elements/03_application/MY_SERVICE.yaml
 ```bash
 # Copy relation template
 cp .templates/relations/relation_template.yaml \
-   relations/MY_SERVICE_TO_DB.yaml
+   canon/relations/MY_SERVICE_TO_DB.yaml
 
 # Edit with source and target element IDs
-editor relations/MY_SERVICE_TO_DB.yaml
+editor canon/relations/MY_SERVICE_TO_DB.yaml
 ```
 
 ### 3. Validate Your Changes
@@ -65,7 +69,7 @@ python3 .validators/lint.py
 ```bash
 # Git workflow - same as code development
 git checkout -b feature/new-service
-git add elements/ relations/
+git add canon/elements/ canon/relations/
 git commit -m "docs: add OrderProcessor service and DB relations"
 git push origin feature/new-service
 
@@ -123,7 +127,7 @@ git push origin feature/new-service
 - All files must be valid YAML
 
 ### Atomicity
-- **NO relations inside element files** - must be separate files in `relations/`
+- **NO relations inside element files** - must be separate files in `canon/relations/`
 - Each element describes only itself (id, name, type, properties, metadata)
 
 ### Referential Integrity
@@ -160,7 +164,7 @@ Architecture views are generated automatically in CI/CD and stored as:
 - Mermaid (.mmd) - for flowcharts and sequences
 - SVG - for web embedding and documentation
 
-View configurations are in `views/` - edit these to customize what gets visualized.
+View configurations are in `canon/views/` - edit these to customize what gets visualized.
 
 ## 🔄 Git Workflow
 
@@ -186,7 +190,7 @@ docs(architecture): add OrderProcessor service [APP-ORD-001]
 
 - See `method/Transitrix Методология управления архитектурой предприятия (Architecture-as-Code).md` for full methodology
 - See `.templates/` directory for detailed examples of each element and relation type
-- See `views/README.md` for diagram generation configuration
+- See `canon/views/README.md` for diagram generation configuration
 
 ## 🛠️ Development
 
@@ -199,7 +203,7 @@ def _check_custom_rule(self):
     for element_id, element_data in self.elements.items():
         if some_condition:
             self.errors.append(LintError(
-                file=f"elements/*/{element_id}.yaml",
+                file=f"canon/elements/*/{element_id}.yaml",
                 line=0,
                 message="Your error message",
                 severity="error"
@@ -208,14 +212,14 @@ def _check_custom_rule(self):
 
 ### To add a new element type:
 1. Create template in `.templates/elements/` (e.g., `05_new_layer_template.yaml`)
-2. Create directory in `elements/` if new layer (e.g., `elements/05_new_layer/`)
+2. Create directory in `canon/elements/` if new layer (e.g., `canon/elements/05_new_layer/`)
 3. Document new type in this README
 4. Update linter semantic rules if needed
 
 ## 🤝 Contributing
 
 1. **Create elements** by copying templates
-2. **Define relations** atomically in `relations/`
+2. **Define relations** atomically in `canon/relations/`
 3. **Run linter** before committing
 4. **Create PR** for team review
 5. **Merge** after approval (automatic diagram generation occurs)

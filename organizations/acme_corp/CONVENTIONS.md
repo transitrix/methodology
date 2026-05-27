@@ -32,8 +32,8 @@ Use exactly these prefixes; the abbreviated forms `ACT`, `CHG`, `FAC`, `CAP`, `S
 | `ISSUE` | issue — problem, defect, or open question |
 | `EQUIPMENT` | physical instrument / device / facility a process stage depends on |
 | `INFORMATION_ENTITY` | data / document / record produced or consumed by a process stage |
-| `RULE` | business rule (`elements/02_business/rules/`) |
-| `CONSTRAINT` | design / operating constraint (`elements/01_motivation/constraints/`) |
+| `RULE` | business rule (`canon/elements/02_business/rules/`) |
+| `CONSTRAINT` | design / operating constraint (`canon/elements/01_motivation/constraints/`) |
 
 **Document-level types** — the file's own ID; the TYPE names the notation
 
@@ -131,28 +131,30 @@ REL-DATA-NODE-001        (Data to Infrastructure)
 ### Directory Organization
 
 ```
-elements/
-  01_motivation/
-    GOAL_REVENUE_GROWTH.yaml
-    PRIN_SCALABILITY.yaml
-    CONS_REGULATORY_COMPLIANCE.yaml
-  02_business/
-    SALES_MANAGER.yaml
-    ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
-    CUSTOMER_SERVICE_FUNCTION.yaml
-  03_application/
-    ORDER_API.yaml
-    PAYMENT_SERVICE.yaml
-    CUSTOMER_DATABASE.yaml
-  04_technology/
-    POSTGRES_PRIMARY.yaml
-    KUBERNETES_CLUSTER.yaml
-    REDIS_CACHE.yaml
-
-relations/
-  APP_TO_DB_001.yaml
-  PROC_TO_APP_001.yaml
-  ROLE_TO_PROC_001.yaml
+canon/                       # validated model — the authoritative zone
+  elements/
+    01_motivation/
+      GOAL_REVENUE_GROWTH.yaml
+      PRIN_SCALABILITY.yaml
+      CONS_REGULATORY_COMPLIANCE.yaml
+    02_business/
+      SALES_MANAGER.yaml
+      ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
+      CUSTOMER_SERVICE_FUNCTION.yaml
+    03_application/
+      ORDER_API.yaml
+      PAYMENT_SERVICE.yaml
+      CUSTOMER_DATABASE.yaml
+    04_technology/
+      POSTGRES_PRIMARY.yaml
+      KUBERNETES_CLUSTER.yaml
+      REDIS_CACHE.yaml
+  relations/
+    APP_TO_DB_001.yaml
+    PROC_TO_APP_001.yaml
+    ROLE_TO_PROC_001.yaml
+field/                       # raw inputs (interviews, surveys, observations, drafts)
+codex/                       # external constraints + internal authority docs
 ```
 
 ---
@@ -184,9 +186,9 @@ description: "Order API"
 
 **GOOD - Relations in separate file:**
 ```
-elements/03_application/ORDER_API.yaml
-relations/APP_ORDER_API_TO_DB.yaml
-relations/APP_ORDER_API_TO_CACHE.yaml
+canon/elements/03_application/ORDER_API.yaml
+canon/relations/APP_ORDER_API_TO_DB.yaml
+canon/relations/APP_ORDER_API_TO_CACHE.yaml
 ```
 
 **BAD - Relations in element file:**

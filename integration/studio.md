@@ -48,7 +48,7 @@ Transitrix + Transitrix Studio = Complete Architecture-as-Code Stack
 ### 1. Modelling Processes in Transitrix Studio
 
 ```yaml
-# organizations/acme_corp/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
+# organizations/acme_corp/canon/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
 
 id: "PROC-ORD-FULFILL-001"
 name: "Order Fulfillment Process"
@@ -70,7 +70,7 @@ bpmn:
 ### 2. Defining Capabilities in Transitrix
 
 ```yaml
-# organizations/acme_corp/elements/02_business/ORGANIZATION_CAPABILITIES.yaml
+# organizations/acme_corp/canon/elements/02_business/ORGANIZATION_CAPABILITIES.yaml
 
 capabilities:
   - id: "V1"
@@ -93,7 +93,7 @@ capabilities:
 ### 3. Defining Architectural Elements
 
 ```yaml
-# organizations/acme_corp/elements/03_application/CRM_SYSTEM.yaml
+# organizations/acme_corp/canon/elements/03_application/CRM_SYSTEM.yaml
 
 id: "APP-CRM-001"
 name: "Customer Relationship Management System"
@@ -152,7 +152,7 @@ Capabilities (V1.1: Order Management)
 
 Open in VS Code with the Transitrix Studio extension:
 ```
-organizations/acme_corp/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
+organizations/acme_corp/canon/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
 ```
 
 Define:
@@ -242,7 +242,7 @@ npm run serve
 ```bash
 # Compile to BPMN 2.0 XML
 node /path/to/transitrix-studio/dist/cli.js compile \
-  organizations/acme_corp/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml \
+  organizations/acme_corp/canon/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml \
   /tmp/ORDER_FULFILLMENT.bpmn
 
 # Run Transitrix validators
@@ -332,7 +332,7 @@ npm run serve
 1. **In Transitrix:**
    ```bash
    cp organizations/acme_corp/.templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml \
-      organizations/acme_corp/elements/02_business/NEW_PROCESS_process.bpmn.transitrix.yaml
+      organizations/acme_corp/canon/elements/02_business/NEW_PROCESS_process.bpmn.transitrix.yaml
    ```
 
 2. **In VS Code + Transitrix Studio:**
@@ -405,7 +405,7 @@ npm run serve
 **Problem:** Transitrix Studio or lint.py reports that ROLE-SALES-001 doesn't exist.
 
 **Solution:**
-1. Check if ROLE exists: `grep -r "ROLE-SALES-001" organizations/acme_corp/elements/`
+1. Check if ROLE exists: `grep -r "ROLE-SALES-001" organizations/acme_corp/canon/elements/`
 2. If missing, create it: `cp .templates/elements/02_business_template.yaml elements/02_business/SALES_ROLE.yaml`
 3. Update with ID `ROLE-SALES-001`
 4. Run `lint.py` again

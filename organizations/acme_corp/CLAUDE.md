@@ -12,8 +12,8 @@ This repository is a **text-native enterprise architecture model** authored in t
 
 What lives here:
 
-- `views/<notation>/` — model files in the canonical Transitrix notations (BPMN, FGCA, FGA, Goals, Capability map, Process landscape map, Activities, Nested blocks, Scenarios, Applications, Products, Issues, Process Blueprint).
-- `elements/` — reusable architecture elements grouped by ArchiMate layer (`01_motivation/`, `02_business/`, `03_application/`, `04_technology/`).
+- `canon/views/<notation>/` — model files in the canonical Transitrix notations (BPMN, FGCA, FGA, Goals, Capability map, Process landscape map, Activities, Nested blocks, Scenarios, Applications, Products, Issues, Process Blueprint).
+- `canon/elements/` — reusable architecture elements grouped by ArchiMate layer (`01_motivation/`, `02_business/`, `03_application/`, `04_technology/`).
 - `.templates/` — starter files the adopter copies when creating new elements / views.
 - `README.md`, `GETTING_STARTED.md`, `CONVENTIONS.md` — adopter-facing onboarding docs.
 
@@ -48,37 +48,32 @@ The canonical layout an adopter inherits from the `acme_corp` template:
 
 ```
 <repo-root>/
-├── CLAUDE.md                              # this file
+├── transitrix.yaml                 # adopter manifest — methodology version, notations, zones
+├── CLAUDE.md                       # this file
 ├── README.md
 ├── GETTING_STARTED.md
 ├── CONVENTIONS.md
-├── elements/
-│   ├── 01_motivation/                     # GOAL, PRINCIPLE, CONSTRAINT, DRIVER, OUTCOME, VALUE
-│   ├── 02_business/                       # ROLE, ACTOR, PROCESS, FUNCTION, SERVICE
-│   ├── 03_application/                    # APPLICATION, SERVICE, INTERFACE, DATA_OBJECT
-│   └── 04_technology/                     # NODE, ARTIFACT, DEVICE, …
-├── .templates/
+├── .templates/                     # starter files to copy (not zoned)
 │   ├── elements/
 │   ├── relations/
 │   └── bpmn/
-└── views/
-    ├── README.md                          # extension table
-    ├── bpmn/                              # *.bpmn.transitrix.yaml
-    ├── fgca/                              # *.fgca.transitrix.yaml
-    ├── fga/                               # *.fga.transitrix.yaml
-    ├── goals/                             # *.goals.transitrix.yaml
-    ├── capabilities/                      # *.capability-map.transitrix.yaml
-    ├── processmap/                        # *.process-map.transitrix.yaml
-    ├── activities/                        # *.activities.transitrix.yaml
-    ├── blocks/                            # *.blocks.transitrix.yaml
-    ├── scenarios/                         # *.scenarios.transitrix.yaml
-    ├── applications/                      # *.applications.transitrix.yaml
-    ├── products/                          # *.products.transitrix.yaml
-    ├── issues/                            # *.issues.transitrix.yaml
-    └── process-blueprint/                 # *.process-blueprint.transitrix.yaml
+├── canon/                          # validated model — the authoritative zone
+│   ├── elements/                   # elements by ArchiMate layer
+│   │   ├── 01_motivation/          # GOAL, PRINCIPLE, CONSTRAINT, DRIVER, OUTCOME, VALUE
+│   │   ├── 02_business/            # ROLE, ACTOR, PROCESS, FUNCTION, SERVICE
+│   │   ├── 03_application/         # APPLICATION, SERVICE, INTERFACE, DATA_OBJECT
+│   │   └── 04_technology/          # NODE, ARTIFACT, DEVICE, …
+│   └── views/                      # one subfolder per notation (extensions in canon/views/README.md)
+│       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
+│       ├── activities/   blocks/   scenarios/
+│       └── applications/   products/   issues/   process-blueprint/
+├── field/                          # raw inputs — interviews, surveys, observations, drafts
+└── codex/                          # external laws/regulations + internal policies/standards
+    ├── external/<jurisdiction>/    # ge/  de/  eu/  …
+    └── internal/
 ```
 
-The `views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention and is documented in `views/README.md`.
+The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention and is documented in `canon/views/README.md`.
 
 The agent does **not** change this layout without a deliberate decision recorded in the adopter's PR. Adopter-specific top-level additions (e.g. a `decisions/` ADR folder, a `glossary/` directory) are fine; renaming or removing the canonical folders is not.
 
@@ -162,9 +157,9 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 
 - **GitHub Issues on this repo.** Tasks live as issues on the adopter's repo; the agent reads them via `gh issue list -R <owner>/<repo>` and reports back via `gh issue comment`.
 - **Linear / Jira / Asana.** Tasks live in a project management tool; the agent reads tickets via the tool's API or pasted-in URLs; PRs link back via the tool's convention.
-- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `views/issues/` per `notations/12-issues.md`. The agent reads and updates the YAML directly.
+- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `canon/views/issues/` per `notations/12-issues.md`. The agent reads and updates the YAML directly.
 
-**Example — self-hosted issues register.** Place a file at `views/issues/<DOMAIN>.issues.transitrix.yaml`:
+**Example — self-hosted issues register.** Place a file at `canon/views/issues/<DOMAIN>.issues.transitrix.yaml`:
 
 ```yaml
 notation: issues
@@ -192,7 +187,7 @@ The agent reads, edits, and validates this file the same way as any other notati
 
 - Does **not** edit files under the methodology canon at `transitrix/methodology` from inside this repo.
 - Does **not** invent new notations, new TYPE prefixes, or new validation rules. Those decisions happen upstream.
-- Does **not** change the canonical repository layout — `views/<notation>/`, `elements/<NN>_<layer>/`, `.templates/` — without an explicit adopter decision recorded in the PR.
+- Does **not** change the canonical repository layout — `canon/views/<notation>/`, `canon/elements/<NN>_<layer>/`, `.templates/` — without an explicit adopter decision recorded in the PR.
 - Does **not** strip the `notation:` / `spec_version:` headers, rename canonical extensions, or rewrite files into alias formats (`*.bpmn.yaml`, `*.fgca.yml`).
 - Does **not** auto-merge PRs. All PRs go through the gating in §11.
 - Does **not** push to `main` directly. Use a feature branch + PR every time.
