@@ -12,11 +12,8 @@ admitted_by: "vp.engineering"
 gate_checks:
   source_authority: "VP Engineering (internal standards board)"
 
-# Internal-codex frontmatter (14-codex.md §4)
+# Internal-codex frontmatter (14-codex.md §4) — codex stores the issued document only;
+# bindings now live on REQUIREMENT.derived_from (canon/elements/01_motivation/requirements/)
+# and on ASSERTION (canon/assertions/). See 14-codex.md §8 Migration.
 issuing_authority: "VP Engineering"
 effective_date: "2026-01-01"
-applies_to:
-  entities:
-    - APP-OMS-1
-    - APP-CRM-1
-  processes: []

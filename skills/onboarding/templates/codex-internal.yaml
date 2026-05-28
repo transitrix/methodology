@@ -15,10 +15,9 @@ admitted_by: "FILL-ME-handle"
 gate_checks:
   source_authority: "FILL-ME — name of the internal issuing body or role"
 
-# Internal-codex frontmatter (14-codex.md §4)
+# Internal-codex frontmatter (14-codex.md §4) — codex stores the issued document only.
+# Bindings to canonical entities and processes live on REQUIREMENT.derived_from
+# (canon/elements/01_motivation/requirements/) and on ASSERTION (canon/assertions/);
+# do NOT add an applies_to block here. See 14-codex.md §8 Migration.
 issuing_authority: "FILL-ME — internal body / role that issued the artefact"
 effective_date: "2026-01-01"        # quoted ISO 8601 date the artefact takes effect
-applies_to:
-  entities:                         # typed canonical IDs the artefact binds (may be empty list)
-    - APPLICATION-FILL-ME-1
-  processes: []

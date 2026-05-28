@@ -12,11 +12,8 @@ admitted_by: "legal.counsel"
 gate_checks:
   source_authority: "Legislative Herald of Georgia (matsne.gov.ge)"
 
-# External-codex frontmatter (14-codex.md §3)
+# External-codex frontmatter (14-codex.md §3) — codex stores the source document only;
+# bindings now live on REQUIREMENT.derived_from (canon/elements/01_motivation/requirements/)
+# and on ASSERTION (canon/assertions/). See 14-codex.md §8 Migration.
 jurisdiction: ge                 # MUST match the parent folder codex/external/ge/ (CODEX-001)
 effective_date: "2017-05-01"
-applies_to:
-  entities:
-    - APP-CRM-1                  # CRM stores customer personal data
-  processes:
-    - PROC-CUST-ONBOARD-1        # onboarding collects personal data

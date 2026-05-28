@@ -17,11 +17,9 @@ admitted_by: "FILL-ME-handle"
 gate_checks:
   source_authority: "FILL-ME — name of the issuing legislative body / official source"
 
-# External-codex frontmatter (14-codex.md §3)
+# External-codex frontmatter (14-codex.md §3) — codex stores the source document only.
+# Bindings to canonical entities and processes live on REQUIREMENT.derived_from
+# (canon/elements/01_motivation/requirements/) and on ASSERTION (canon/assertions/);
+# do NOT add an applies_to block here. See 14-codex.md §8 Migration.
 jurisdiction: ge                    # MUST match parent folder codex/external/<jurisdiction>/
 effective_date: "2017-01-01"        # quoted ISO 8601 date the artefact takes effect
-applies_to:
-  entities:                         # typed canonical IDs of org entities the artefact binds
-    - APPLICATION-FILL-ME-1
-  processes:                        # typed canonical IDs of processes the artefact binds
-    - PROCESS-FILL-ME-1
