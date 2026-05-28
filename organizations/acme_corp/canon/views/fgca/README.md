@@ -24,22 +24,32 @@ factors:
     name: "EU regulatory window closing in Q3"
     type: external
     references_constraint: [CONSTRAINT-GDPR-RESIDENCY-1]   # → canon/elements/01_motivation/constraints/
+    valid_from: "2026-05-26"      # CONTRACT.md §7 — required on every inline element
+    valid_to: null
 
 goals:
   - id: GOAL-EU-1
     name: "Operational presence in 3 EU markets by Q4"
     factors: [FACTOR-EU-REG-1]
+    valid_from: "2026-05-26"
+    valid_to: null
 
 changes:
   - id: CHANGE-EU-CRM-1
     name: "Stand up EU-localised CRM and payment processing"
     goals: [GOAL-EU-1]
+    valid_from: "2026-05-26"
+    valid_to: null
 
 activities:
   - id: ACTIVITY-CRM-EU-1
     name: "Implement EU-localised CRM rollout"
     changes: [CHANGE-EU-CRM-1]
+    valid_from: "2026-05-26"
+    valid_to: null
 ```
+
+`valid_from` / `valid_to` are required on every inline element per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The FGCA document itself does not carry a lifecycle field — it is a view, not an element.
 
 ## See also
 
