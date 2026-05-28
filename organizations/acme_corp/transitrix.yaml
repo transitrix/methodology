@@ -1,5 +1,23 @@
 # Adopter manifest — schema defined in the methodology's notations/MANIFEST.md
 transitrix: 1
-methodology_version: "0.4.x"
-notations: [bpmn, fgca, fga, goals, capability-map, process-map, activities, blocks, scenarios, applications, products, issues, process-blueprint, codex]
+methodology_version: "0.5.0"
+notations:
+  - bpmn
+  - fgca
+  - fga
+  - goals
+  - capability-map
+  - process-map
+  - activities
+  - blocks
+  - scenarios
+  - applications
+  - products
+  - issues
+  - process-blueprint
+  - codex
+  - requirement
+  - assertion
+  - relation
+  - project-card
 zones: [canon, field, codex]
