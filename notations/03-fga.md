@@ -25,6 +25,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline element this notation defines — entries in `factors[]`, `goals[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGA document itself does not carry a lifecycle field.
+
+---
+
 ## 1. Overview
 
 FGA is the simplified variant of FGCA. It is used when the transformation step between goals and activities is implicit or trivial — when activities directly and obviously serve goals without needing an intermediate change layer.
