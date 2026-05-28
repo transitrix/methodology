@@ -18,3 +18,8 @@ rationale: >
   workflows. Dual approval above the materiality threshold reduces the risk
   of fraud, simple error, and single-point-of-failure on high-value
   payments.
+
+# Primitive lifecycle (CONTRACT.md §7) — Board decision 2026-01-15
+# (per source above) is the date this rule took effect.
+valid_from: "2026-01-15"
+valid_to: null
