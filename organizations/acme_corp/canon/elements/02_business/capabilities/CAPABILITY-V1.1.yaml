@@ -1,0 +1,34 @@
+# Worked example — Capability element primitive (stable fields only).
+# Schema: notations/05-capability-map.md §13 + admission record
+# (CONTRACT.md §6) + primitive lifecycle (CONTRACT.md §7).
+#
+# Time-varying attributes live in the sidecar CAPABILITY-V1.1.history.yaml
+# per CONTRACT.md §9 (not provided for this minimal example).
+# Parent relationship lives in REL files under canon/relations/ — see
+# REL-CAP-V11-PARENT-1.yaml (initial; ended 2026-04-01) and
+# REL-CAP-V11-PARENT-2.yaml (current). The re-parenting demonstrates
+# 17-relations.md §3.
+
+notation: capability
+id: CAPABILITY-V1.1
+name: "Order Intake"
+type: domain                            # domain | supporting
+description: >
+  Capture and validate customer order requests across all channels.
+  Sits at the very top of the order-management value chain — touches
+  the customer first, then hands off to the fulfilment side.
+
+target_maturity: 4
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2024-01-01"
+valid_to: null
