@@ -2,7 +2,7 @@
 
 All eleven Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines three organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), and the **primitive lifecycle** (§7) that every organisation artefact carries.
+This document also defines three organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), and the **primitive lifecycle** (§7) that every organisation artefact carries. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves.
 
 A change to the rules below applies to all eleven notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -157,3 +157,29 @@ The lifecycle fields are required on every canonical primitive once a notation s
 - **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/11-scenarios.md`), not of the primitive lifecycle.
 - **Sub-day precision.** ISO 8601 date precision only; no timestamps, no timezones in canon. "Today" is the date of the query or render.
 - **First-class time-aware relations.** Promoting relations like `parent` / `applies_to` / activity→goal to first-class lifecycle-bearing files is planned for Wave 3 of the temporal model. In v1 such relations remain inline and timeless on their host primitive.
+
+---
+
+## 8. Compliance-domain rules
+
+The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](16-assertion.md)). For discoverability, the validation rules for both are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
+
+| Rule | Severity | Notation | Short description | Authoritative spec |
+|---|---|---|---|---|
+| `REQ-001` | error | REQUIREMENT | `id` grammar invalid, or any required field missing | [15-requirement.md](15-requirement.md) §4 |
+| `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](15-requirement.md) §4 |
+| `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](15-requirement.md) §4 |
+| `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](15-requirement.md) §4 |
+| `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-002` | error | ASSERTION | `about` is missing, malformed, or resolves to a non-REQUIREMENT | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-003` | error | ASSERTION | `subject` does not resolve, or TYPE not in `{PRODUCT, PROCESS, CAPABILITY}` | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-004` | error | ASSERTION | a `realised_via` entry does not resolve | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-005` | error | ASSERTION | an `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-006` | error | ASSERTION | `status` not in the enum (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-007` | warning | ASSERTION | `evidence` is empty AND `status` is `compliant` or `partial` — undefended positive claim | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-008` | warning | ASSERTION | `next_review_at` is set and is in the past — assertion is stale | [16-assertion.md](16-assertion.md) §5 |
+| `ASSERT-DEAD-LINK-001` | warning | ASSERTION (cross-cutting) | `subject` or `realised_via` references a primitive whose `valid_to` is in the past — bound to a currently-retired element | [16-assertion.md](16-assertion.md) §5 |
+
+In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT and ASSERTION files as they do to every other canonical artefact.
+
+The two `*-COVERAGE-001` / `*-DEAD-LINK-001` rules are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue.

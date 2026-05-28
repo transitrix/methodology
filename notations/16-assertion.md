@@ -144,8 +144,9 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-006` | error | `status` is not one of `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. |
 | `ASSERT-007` | warning | `evidence` is empty AND `status` is `compliant` or `partial`. A positive status without evidence is undefended. |
 | `ASSERT-008` | warning | `next_review_at` is set and is in the past relative to today. The assertion is stale and due for re-review. |
+| `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
 
-The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above.
+The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](CONTRACT.md) §8.
 
 ---
 

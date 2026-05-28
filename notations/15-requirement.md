@@ -110,8 +110,9 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 | `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `title`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
 | `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
+| `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 
-The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) rules apply to REQUIREMENT files in addition to the REQ-* rules above.
+The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](CONTRACT.md) §8.
 
 ---
 
