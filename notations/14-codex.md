@@ -1,8 +1,8 @@
 ---
 title: "Codex — external & internal authority artefacts"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-27"
+last_updated: "2026-05-28"
 status: "draft"
 ---
 
@@ -57,7 +57,7 @@ Registered in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.5; IDs follow t
 
 ## 3. Frontmatter — external codex artefacts
 
-Carries the admission record ([CONTRACT.md](CONTRACT.md) §6, `zone: codex`, `gate_checks.source_authority`) plus:
+Carries the admission record ([CONTRACT.md](CONTRACT.md) §6, `zone: codex`, `gate_checks.source_authority`) plus the codex-specific fields below. A codex artefact stores the **source document only** — it does NOT carry bindings to the entities and processes the source affects. Bindings live on `REQUIREMENT.derived_from` (the requirements drawn from the source) and on `ASSERTION` (linking those requirements to subjects). See [§8 Migration](#8-migration) for the rationale.
 
 ```yaml
 id: LAW-PERSONAL-DATA-2017-1
@@ -70,18 +70,12 @@ gate_checks:
   source_authority: "Legislative Herald of Georgia"
 jurisdiction: ge                # MUST match the parent folder (CODEX-001)
 effective_date: "2017-05-01"
-applies_to:
-  entities:                     # typed IDs of org entities the artefact binds
-    - APPLICATION-CRM-1
-  processes:                    # typed IDs of processes the artefact binds
-    - PROCESS-CUST-ONBOARD-1
 ```
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
-| `applies_to` | yes | map | Sub-map with `entities:` and `processes:` — lists of typed IDs the artefact binds. A single artefact MAY apply to many entities and many processes; that is how one law's effect across different processes (and, via several artefacts, different countries) is encoded. |
 
 ---
 
@@ -98,19 +92,14 @@ gate_checks:
   source_authority: "VP Engineering"
 issuing_authority: "VP Engineering"
 effective_date: "2026-01-01"
-applies_to:
-  entities:
-    - APPLICATION-CRM-1
-  processes: []
 ```
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `issuing_authority` | yes | string | The internal body or role that issued the artefact. |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601. |
-| `applies_to` | yes | map | `entities:` and `processes:` lists of typed IDs the artefact binds. |
 
-Internal artefacts have no `jurisdiction` and are not foldered by country.
+Internal artefacts have no `jurisdiction` and are not foldered by country. As with external codex, internal artefacts carry no bindings to entities or processes; those live on `REQUIREMENT` and `ASSERTION` (see [§8 Migration](#8-migration)).
 
 ---
 
@@ -134,8 +123,10 @@ One artefact per file, named by its canonical ID. Examples:
 | Rule | Severity | Description |
 |---|---|---|
 | `CODEX-001` | error | An external artefact's `jurisdiction:` does not match its parent folder name under `codex/external/<jurisdiction>/`. |
-| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date` + `applies_to`; internal needs `issuing_authority` + `effective_date` + `applies_to`. All codex artefacts also carry the admission record ([CONTRACT.md](CONTRACT.md) §6). |
-| `CODEX-003` | error | An `applies_to.entities[]` or `applies_to.processes[]` value is not a well-formed typed ID, or — when the validator has the canon catalogue loaded — does not resolve to a defined element. Codex binds canon, so resolution against canon is in scope here (unlike the strategy-chain notations, which defer cross-document existence checks). |
+| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal needs `issuing_authority` + `effective_date`. All codex artefacts also carry the admission record ([CONTRACT.md](CONTRACT.md) §6). |
+| `CODEX-004` | warning | An `applies_to:` field is present on a codex artefact. The field was retired in this revision (see [§8 Migration](#8-migration)); bindings now live on `REQUIREMENT.derived_from` ([15-requirement.md](15-requirement.md)) and on `ASSERTION` ([16-assertion.md](16-assertion.md)). |
+
+Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved and is not reassigned.
 
 ---
 
@@ -143,4 +134,47 @@ One artefact per file, named by its canonical ID. Examples:
 
 - Zone model and admission record: [CONTRACT.md](CONTRACT.md) §5–6.
 - Codex TYPE registry and uniqueness scope: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.5, §4.
+- The REQUIREMENT element that holds bindings drawn from codex sources: [15-requirement.md](15-requirement.md).
+- The ASSERTION notation that links requirements to subjects: [16-assertion.md](16-assertion.md).
 - Which zones and notations an adopter uses is declared in the `transitrix.yaml` manifest.
+
+---
+
+## 8. Migration
+
+This revision (v0.2) retires the `applies_to.{entities, processes}` block from codex frontmatter. In the v0.1 design, every codex artefact (`LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`) carried direct bindings to the canonical entities and processes it affected. In v0.2 a codex artefact stores the **source document only**; bindings live downstream:
+
+```
+v0.1 layout:                              v0.2 layout:
+  codex LAW          ──applies_to──►       codex LAW
+                                                │ (no bindings stored here)
+  codex LAW                                     ▼
+                                       REQUIREMENT (motivation/requirements/)
+                                                │  derived_from: [LAW-…]
+                                                ▼
+                                       ASSERTION (canon/assertions/)
+                                                │  about: REQUIREMENT-…
+                                                │  subject: PRODUCT-… | PROCESS-… | CAPABILITY-…
+                                                ▼
+                                       (the entity / process the law affects)
+```
+
+**Why the move.** A single law typically yields many obligations, and each obligation may bind a different set of entities and processes. Encoding the law-to-entity matrix on the codex artefact forced a flat list that lost the per-obligation structure. The new layout puts atomic obligations on `REQUIREMENT` (each citing its source via `derived_from:`) and per-subject claims on `ASSERTION` (each citing the requirement via `about:`). The codex artefact is freed to be a faithful copy of the source document, with no model-internal cross-references.
+
+### 8.1 Migrating an existing codex artefact
+
+For each existing codex YAML carrying `applies_to`:
+
+1. **Remove the `applies_to` block** from the codex YAML. No other fields change.
+2. **For each entry that used to live under `applies_to.entities[]` or `applies_to.processes[]`** — identify the obligation it implicitly encoded ("law X binds entity Y because Y must do Z" — Z is the obligation). Create a `REQUIREMENT-…` artefact under `canon/elements/01_motivation/requirements/` that names Z, with `derived_from: [<codex artefact ID>]`. (One requirement per distinct obligation; one requirement may cite multiple codex sources.)
+3. **For each (subject, requirement) pair** the org wants to make a positive claim about, create an `ASSERTION-…` under `canon/assertions/` with `about: REQUIREMENT-…` and `subject: <ENTITY or PROCESS ID>`. Status and evidence fields capture whether the subject satisfies the requirement.
+
+The migration is data-shape-only — no semantics are lost; the same matrix is just expressed in a normalised form that scales to many laws × many obligations × many subjects.
+
+### 8.2 Validator behaviour during migration
+
+- `CODEX-004` (warning, new in v0.2) fires whenever `applies_to` is present on a codex artefact. Adopters in mid-migration will see this warning until they remove the field. The warning does not block validation; it surfaces the field as deprecated.
+- `CODEX-003` (error, retired in v0.2) was the typed-ID-resolution check inside `applies_to`. The code is reserved (not reassigned).
+- `CODEX-002` (error, updated in v0.2) no longer lists `applies_to` among the required fields.
+
+Post-migration, when adopters have removed `applies_to` from all codex artefacts and the warning ceases firing, `CODEX-004` is a candidate for promotion to `error` (or removal). That decision happens in the broader methodology-upgrade-path workstream, not on a per-revision basis here.
