@@ -32,6 +32,18 @@ Every inline element this notation defines — entries in `goals[]` — carries 
 
 ---
 
+## Time-aware relations
+
+A goal's **`parent`** relationship — its position under another goal in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a goal-to-goal parent link is a `REL-…` file under `canon/relations/` with `type: goal_parent` (see [17-relations.md](17-relations.md) §3 for the closed enum). A goal re-parented mid-stream — a tactical goal moved under a different strategic goal during a planning cycle — produces a new REL file; the old REL ends with `valid_to` set.
+
+**Inline `parent: GOAL-…` — v0.x transitional.** The inline `parent` field on goal entries (§5.2) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `parent` once an adopter's validator is configured to enforce post-migration.
+
+The `goal_types[]` array is a **static vocabulary** and carries no time-awareness — it is not a relation between primitives but a per-document type declaration.
+
+The Activity → Goal cross-reference (`activity.goals: [GOAL-…]`) is documented as **time-aware** in [07-activities.md](07-activities.md); its canonical REL home uses `type: activity_goal`.
+
+---
+
 ## 1. Overview
 
 A goals tree is a hierarchical view that arranges Goal elements from `elements/01_motivation/` into a top-down tree — from broad strategic ambitions down to specific tactical objectives.

@@ -32,6 +32,18 @@ Every inline element this notation defines — entries in `activities[]` — car
 
 ---
 
+## Time-aware relations
+
+An activity's **`goals: [GOAL-…]`** cross-reference — the goals an activity serves — is declared **time-aware** per the temporal model. An activity re-aimed mid-stream (a build activity originally serving GOAL-A pivoted to serve GOAL-B as priorities shift) is a temporal event that loses information when inlined. The canonical home for an Activity → Goal link is a `REL-…` file under `canon/relations/` with `type: activity_goal` (see [17-relations.md](17-relations.md) §3).
+
+**Inline `goals: [GOAL-…]` — v0.x transitional.** The inline `goals` array on activity entries (§5.2 Per-activity fields) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `goals` once an adopter's validator is configured to enforce post-migration. Adopters extracting links to REL files use `valid_from = activity.valid_from` as a sensible epoch for the initial relation.
+
+**`predecessors: [ACTIVITY-…]` stays timeless.** The predecessor DAG within a project plan is a structural property of the plan as a whole, not a temporal event — re-jiggering predecessors mid-stream is a new plan version, not a re-aiming of a single relation. `predecessors` is **not** declared time-aware; it stays inline.
+
+**`delivers_changes: [CHANGE-…]`** (BDN linkage) stays inline in v1 (timeless within the activity's lifecycle).
+
+---
+
 ## 1. Overview
 
 An **Activities** document describes a directed acyclic graph (DAG) of activities and the dependencies between them, optionally placed in calendar time. It is the text-native form of a project schedule with two coexisting renderings:
