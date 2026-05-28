@@ -1,0 +1,39 @@
+# Worked example — Capability element primitive (stable fields only).
+# Schema: notations/05-capability-map.md §13 + admission record
+# (CONTRACT.md §6) + primitive lifecycle (CONTRACT.md §7).
+#
+# Time-varying attributes (current_maturity, owner_role, target_date)
+# live in the sidecar CAPABILITY-V1.history.yaml per CONTRACT.md §9 —
+# NOT inline here. Inline placement would trigger VERSIONED-004.
+
+notation: capability
+id: CAPABILITY-V1
+name: "Order Management"
+type: domain                            # domain | supporting
+description: >
+  End-to-end management of customer orders, from intake through
+  fulfilment. The capability spans receiving, validating, routing, and
+  closing out customer purchase requests across all channels.
+
+# Stable forward-looking aspiration — not time-varying
+target_maturity: 3
+
+# Relations — stay inline in v1 (Wave 3 may promote to first-class
+# time-aware relation files)
+business_process: PROC-ORD-FULFILL-1
+applications:
+  - APP-OMS-1
+  - APP-CRM-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2024-01-01"
+valid_to: null
