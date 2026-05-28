@@ -2,7 +2,7 @@
 
 All eleven Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines three organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), and the **primitive lifecycle** (§7) that every organisation artefact carries. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves.
 
 A change to the rules below applies to all eleven notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -132,9 +132,9 @@ The lifecycle contract applies to every **canonical element** — each individua
 
 Each notation spec lists which of its top-level entries are elements (and therefore lifecycle-bearing) versus document-level metadata (and therefore not). Per-notation specs reference this section rather than restating the rule.
 
-### 7.2 Versioned attributes — not in v1
+### 7.2 Versioned attributes — see §9
 
-Attributes that *change over time within* a primitive's lifecycle (a capability's maturity level, a unit's headcount) are a separate concern, handled by the **versioned-attribute sidecar** planned for Wave 2 of the temporal model. v1 covers only the primitive's overall `valid_from` / `valid_to`; the inline form of time-varying attributes is unchanged until Wave 2 lands.
+Attributes that *change over time within* a primitive's lifecycle (a capability's maturity level, an application's vendor) are a separate concern, handled by the **versioned-attribute sidecar** defined in [§9](#9-versioned-attributes). The primitive's own `valid_from` / `valid_to` mark the window the element is in effect; values that move inside that window live in `<primitive_id>.history.yaml`. A notation spec declares which of its fields are `time_varying` and therefore sidecar-bound.
 
 ### 7.3 Validation rules
 
@@ -183,3 +183,84 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT and ASSERTION files as they do to every other canonical artefact.
 
 The two `*-COVERAGE-001` / `*-DEAD-LINK-001` rules are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue.
+
+---
+
+## 9. Versioned attributes
+
+The primitive lifecycle (§7) records *when an element is in effect*. Some of an element's attributes change *within* its lifecycle — a capability's maturity level grows over years; a unit's headcount drifts month to month; an application's lifecycle stage moves planned → active → sunset. These time-varying attributes are NOT stored inline on the primitive — inlining loses the history. They live in a **sidecar file** dedicated to the primitive's history.
+
+### 9.1 Sidecar file shape
+
+For a primitive whose canonical file is `<primitive_id>.yaml`, time-varying attributes are recorded in a co-located sidecar:
+
+```
+<primitive_id>.yaml            # the primitive — stable fields only
+<primitive_id>.history.yaml    # versioned attributes for the same primitive
+```
+
+The sidecar is a YAML document with this shape:
+
+```yaml
+target: CAPABILITY-V1.2         # required — canonical ID of the primitive this sidecar belongs to
+attribute_versions:
+  maturity_level:
+    - { valid_from: "2024-01-01", value: 1 }
+    - { valid_from: "2025-06-01", value: 2 }
+    - { valid_from: "2026-09-15", value: 3 }
+  responsible_role:
+    - { valid_from: "2024-01-01", value: ROLE-OPS-1 }
+    - { valid_from: "2026-04-01", value: null }     # gap marker — attribute unset from 2026-04-01 until next entry
+    - { valid_from: "2026-07-01", value: ROLE-OPS-2 }
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `target` | yes | string | Canonical ID of the primitive this sidecar versions. MUST resolve to an admitted primitive in canon (`VERSIONED-001`). |
+| `attribute_versions` | yes | map | Sub-map keyed by attribute name; each value is an ordered list of version entries. An attribute name MUST match a `time_varying` field declared in the primitive's notation spec (see §9.4). |
+| `attribute_versions.<name>[].valid_from` | yes | string | Quoted ISO 8601 date per §4 — when this attribute value took effect. Within an attribute's array, every `valid_from` MUST be unique (`VERSIONED-002`); the array SHOULD be sorted ascending (`VERSIONED-003`). |
+| `attribute_versions.<name>[].value` | yes | scalar \| null | The value at this date. `null` is a **gap marker** — the attribute is unset from this date until the next entry's `valid_from`. |
+
+The sidecar does not carry an admission record of its own — it follows its target primitive. It does not carry its own `valid_from` / `valid_to` either — its temporal window is governed by `target.valid_from` and `target.valid_to`.
+
+### 9.2 Current value resolution
+
+For an attribute `<name>` on the primitive at the time of a query:
+
+1. Filter `attribute_versions.<name>[]` to entries where `valid_from <= today` (or the query date).
+2. Pick the entry with the **largest** `valid_from`.
+3. If that entry's `value` is `null`, the attribute is currently unset; otherwise it is the entry's `value`.
+4. If no entries satisfy `valid_from <= today`, the attribute has not yet taken its first value — treat as unset.
+
+This rule means a gap marker (`value: null` row) makes the attribute *currently unset* until a later non-null entry's `valid_from` is reached.
+
+### 9.3 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `VERSIONED-001` | error | Sidecar `target` does not resolve to an admitted primitive in canon. |
+| `VERSIONED-002` | error | Two or more entries within one attribute's array carry the same `valid_from`. The current-value resolution rule (§9.2) is ambiguous in this case. |
+| `VERSIONED-003` | warning | An attribute's array is not sorted by `valid_from` ascending. Resolution (§9.2) does not require sortedness, but the convention does — the validator MAY auto-sort and emit this warning. |
+| `VERSIONED-004` | error | A field declared `time_varying` in its notation spec is present inline on the primitive (it MUST be in the sidecar instead). The primitive may keep the field name reserved for documentation but MUST NOT carry an inline value. |
+| `VERSIONED-005` | error | A version entry's `valid_from` falls outside `[target.valid_from, target.valid_to]`. A versioned attribute cannot take a value before the primitive existed or after it retired. |
+
+The shared header (`HDR-001..004`, §2) and primitive-lifecycle (`LIFECYCLE-001..004`, §7.3) rules do **not** apply to sidecar files — sidecars are not notation documents and carry no `notation:` header. Their structural correctness is governed entirely by `VERSIONED-001..005`.
+
+### 9.4 Declaring `time_varying` attributes per notation
+
+A notation spec MAY declare specific attributes as `time_varying`. v1 candidate attributes (each landed in a subsequent Wave 2 PR per notation family):
+
+| Notation | Candidate `time_varying` attributes |
+|---|---|
+| Capability map ([05-capability-map.md](05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
+| Applications catalogue ([10-applications.md](10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life) |
+| Organisational unit (future) | `headcount`, `head_role` |
+
+Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR, mark its `time_varying` attributes and remove inline syntax for them. Adopters with existing inline values migrate by moving the value into a single-entry sidecar with `valid_from` set to the primitive's `valid_from`.
+
+### 9.5 Out of scope (v1)
+
+- **Sub-day precision.** Same as §7.5 — ISO 8601 date only; no timestamps.
+- **Versioning relations, not attributes.** The sidecar is a shape for *attributes* (scalar fields of an element). Versioning relations (`parent`, cross-references) is the concern of Wave 3 — first-class time-aware relation files — not Wave 2.
+- **Versioning the lifecycle itself.** `valid_from` / `valid_to` on the primitive are not versionable. To change a primitive's lifecycle, rewrite the file via git; the git history is the audit trail.
+- **Auto-derived rollups.** Cross-attribute computations (e.g. "average maturity over Q3 2026") are query-time concerns of the renderer / DSM, not of the sidecar schema.
