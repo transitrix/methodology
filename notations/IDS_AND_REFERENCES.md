@@ -87,6 +87,7 @@ Elements that get referenced across documents.
 | `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
 | `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](15-requirement.md). |
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](17-relations.md). |
+| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in a Project Card's narrative. Distinct from a "schedule milestone" (a zero-duration activity inside an Activities document, see [07-activities.md](07-activities.md) §5.9), which exists for critical-path computation. | Defined inside a Project Card document (`*.project-card.transitrix.yaml`); scope is the parent card document. Schema: [18-project-card.md](18-project-card.md). |
 
 ### 3.2 Document-level types
 
@@ -106,6 +107,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `BLOCKS` | `*.blocks.transitrix.yaml` |
 | `ISSUES_CAT` | `*.issues.transitrix.yaml` |
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
+| `PROJECT_CARD` | `*.project-card.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
@@ -163,6 +165,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
 | `REQUIREMENT` | within the organisation's element catalogue (`elements/01_motivation/requirements/`), one file per REQUIREMENT. |
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
+| `MILESTONE` | within the project-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
