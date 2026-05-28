@@ -259,6 +259,38 @@ capability_map:
 
 ---
 
+## 13a. Time-aware relations
+
+A capability's **`parent`** relationship — its position under another capability in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a parent link is a `REL-…` file under `canon/relations/` with `type: parent`; see [17-relations.md](17-relations.md) §3 for the enum and §2 for the file shape.
+
+```
+canon/relations/REL-CAP-V11-PARENT-1.yaml   # links CAPABILITY-V1.1 → CAPABILITY-V1
+```
+
+Sample REL file:
+
+```yaml
+notation: relation
+id: REL-CAP-V11-PARENT-1
+type: parent
+from: CAPABILITY-V1.1
+to: CAPABILITY-V1
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks: { uniqueness: pass, consistency: pass, completeness: pass }
+valid_from: "2024-01-01"
+valid_to: null
+```
+
+A re-parenting event — a capability moved under a different parent in a re-org — produces **two** REL files: the old relation ends (`valid_to` set), and a new one starts (`valid_from` set to the same date, `to:` the new parent). The two REL files together capture the temporal event.
+
+**Inline `children[]` — v0.x transitional.** The existing inline `children[]` field on capability entries (§12, §13) is the timeless inverse of `parent`. v0.x adopters MAY continue using `children[]` for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `children[]` once an adopter's validator is configured to enforce post-migration. Adopters extracting hierarchy to REL files use `valid_from = capability.valid_from` as a sensible epoch for the initial relation.
+
+A `relates_to` field on capabilities — if any adopter has added one — stays **timeless** in v1.
+
+---
+
 ## 14. Time-varying attributes — sidecar history
 
 A capability's `current_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
