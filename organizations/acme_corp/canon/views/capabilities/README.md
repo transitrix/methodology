@@ -30,18 +30,24 @@ capability_map:
       applications:
         - "APP-OMS-1"
         - "APP-CRM-1"
+      valid_from: "2026-05-26"          # CONTRACT.md §7 — required on every inline capability, recursively
+      valid_to: null
       children:
         - id: "CAPABILITY-V1.1"
           name: "Order Intake"
           type: "domain"
           current_maturity: 3
           target_maturity: 3
+          valid_from: "2026-05-26"
+          valid_to: null
         - id: "CAPABILITY-V1.2"
           name: "Order Fulfilment"
           type: "domain"
           current_maturity: 2
           target_maturity: 3
           target_date: "2026-09-30"
+          valid_from: "2026-05-26"
+          valid_to: null
     - id: "CAPABILITY-V2"
       name: "Customer Relationship"
       type: "domain"
@@ -50,9 +56,13 @@ capability_map:
       owner_role: "ROLE-SALES-1"
       applications:
         - "APP-CRM-1"
+      valid_from: "2026-05-26"
+      valid_to: null
 ```
 
 `CAPABILITY-V1` / `CAPABILITY-V1.1` are canonical capability IDs (V/H sub-grammar per [`notations/IDS_AND_REFERENCES.md`](../../../../notations/IDS_AND_REFERENCES.md) §2); **every** capability, including children, carries `type` (required). The maturity history of an individual capability lives on its element file, not here.
+
+`valid_from` / `valid_to` are required on every inline capability (recursively, including nested `children[]`) per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The capability-map document itself does not carry a lifecycle field. The notation-spec's "Planned" / "Active" / "Retired" state vocabulary ([`notations/05-capability-map.md`](../../../../notations/05-capability-map.md) §7) is a *derived view* over `valid_from` / `valid_to` + today's date — not a separate stored mechanism.
 
 ## See also
 
