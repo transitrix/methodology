@@ -1,0 +1,46 @@
+# Worked example — partial-status assertion with mixed evidence.
+# Schema: notations/16-assertion.md §2.
+# Demonstrates: subject = PROCESS, status = partial, evidence with two kinds
+# (external_doc + note) and a documented gap.
+
+notation: assertion
+id: ASSERTION-ONBOARD-DATA-ERASURE-1
+about: REQUIREMENT-DATA-ERASURE-1                      # same requirement as the mobile assertion
+subject: PROCESS-CUST-ONBOARD-1                        # PROCESS TYPE; the customer-onboarding process
+
+realised_via:
+  - CAPABILITY-V2                                       # Customer Relationship Management
+  - PROCESS-USER-DATA-PURGE-1                           # same downstream purge — but not yet wired into onboarding rollback
+
+status: partial
+
+evidence:
+  - kind: external_doc
+    title: "Onboarding-system DPIA addendum — erasure paths"
+    url: "https://internal.acme.example/dpia/onboarding-erasure-2026-04.pdf"
+  - kind: note
+    text: >
+      Onboarding correctly forwards verified erasure requests to the central
+      purge workflow within the 30-day window for the happy path. KNOWN GAP:
+      requests received during onboarding ROLLBACK (account creation aborted
+      mid-flow before activation) are not yet routed to purge — the data is
+      retained in the transient onboarding store until the 7-day TTL clears
+      it. Remediation tracked as ISSUE-ONBOARD-ROLLBACK-ERASURE-1; target
+      close 2026-Q3. Status will be re-evaluated at next review.
+
+assessed_at: "2026-04-20"
+assessed_by: ROLE-DPO-1
+next_review_at: "2026-07-20"                            # quarterly cadence until partial is closed
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-04-20"
+valid_to: null
