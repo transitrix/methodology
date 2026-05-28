@@ -1,0 +1,36 @@
+# Worked example — versioned-attribute sidecar.
+# Schema: notations/CONTRACT.md §9.1.
+#
+# Target: the CAPABILITY-V1.yaml primitive in this folder. Time-varying
+# attributes (current_maturity, owner_role, target_date) live here, not
+# inline on the primitive. Three patterns demonstrated:
+#   1. current_maturity — monotonic progression over three years.
+#   2. owner_role       — handover from one role to another.
+#   3. target_date      — re-aiming the planning target (moved earlier).
+#
+# Current-value resolution: pick the entry with the largest
+# valid_from <= today (CONTRACT.md §9.2). Validation rules
+# VERSIONED-001..005 apply.
+
+target: CAPABILITY-V1
+
+attribute_versions:
+
+  # Maturity progression: the organisation lifted Order Management from
+  # CMM 1 in 2024 to CMM 3 by late 2026 through sustained investment.
+  current_maturity:
+    - { valid_from: "2024-01-01", value: 1 }
+    - { valid_from: "2025-06-01", value: 2 }
+    - { valid_from: "2026-09-15", value: 3 }
+
+  # Owner-role handover when the Order Management team split out of
+  # Operations into its own product unit.
+  owner_role:
+    - { valid_from: "2024-01-01", value: ROLE-OPS-1 }
+    - { valid_from: "2026-07-01", value: ROLE-OPS-2 }
+
+  # Planning target date — initially the org committed to CMM 3 by mid-
+  # 2027; performance accelerated and the target was moved earlier.
+  target_date:
+    - { valid_from: "2024-01-01", value: "2027-06-30" }
+    - { valid_from: "2026-04-01", value: "2026-12-31" }
