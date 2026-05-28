@@ -84,7 +84,8 @@ Elements that get referenced across documents.
 | `EQUIPMENT` | physical instrument, device, or facility a process stage depends on | Process Blueprint |
 | `INFORMATION_ENTITY` | data, document, or record produced or consumed by a process stage | Process Blueprint |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
-| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
+| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
+| `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](15-requirement.md). |
 
 ### 3.2 Document-level types
 
@@ -151,6 +152,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
 | `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
 | `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
+| `REQUIREMENT` | within the organisation's element catalogue (`elements/01_motivation/requirements/`), one file per REQUIREMENT. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
