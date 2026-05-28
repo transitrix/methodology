@@ -1,0 +1,80 @@
+# Smoke-test fixture for the extraction prompts.
+# Schema: a Field-zone INTERVIEW artefact per CONTRACT.md §6 + IDS §3.4.
+#
+# Use: feed this artefact alongside 01_motivation.md / 02_business.md /
+# 03_application.md and check that each prompt produces sensible drafts
+# in its layer + uses cross_layer_hints to flag material that belongs
+# to siblings. The fixture is illustrative — the names and details are
+# fabricated.
+
+id: INTERVIEW-fixture-cfo-2026-04-15-1
+name: "Fixture interview — CFO strategy framing, Q2 2026"
+type: INTERVIEW
+
+# Admission record (CONTRACT.md §6) — this artefact is admitted to the
+# Field zone with provenance recorded.
+zone: field
+admitted_at: "2026-04-16"
+admitted_by: "extraction-fixture-author"
+gate_checks:
+  provenance: "fixture; not a real interview"
+
+# Provenance — who, when, in what setting
+interviewer: "extraction-fixture-author"
+interviewee_role: "Chief Financial Officer"   # role, not a named person — fixture is generic
+interview_date: "2026-04-15"
+setting: "fixture interview, ~30 min, illustrative content for the extraction smoke test"
+
+# Raw notes — the body the extraction prompts read.
+notes: |
+  The CFO opened by framing 2026 as "the year we have to get serious
+  about EU compliance." Their language:
+
+  "The EU regulatory window for our medical-device manufacturers is
+  closing in Q3 2027. We have to obtain conformity-assessment
+  certification for every product line by Q1 2027 — six months ahead
+  of the deadline — or we lose market access. That's the goal."
+
+  When asked what gets in the way: "Personal data of EU customers
+  must not be persisted outside EU/EEA jurisdictions. That's a hard
+  restriction, not negotiable. Our current CRM stores backups in a
+  US region — we have to move them or lose the customer base."
+
+  On obligations the org has to fulfil: "For each product line, we
+  must submit a conformity-assessment dossier to a notified body and
+  obtain certification before continuing to sell. That's a positive
+  obligation under MDR Article 52."
+
+  On the operations side: "The Data Protection Officer role reports
+  to the General Counsel and chairs the quarterly data-protection
+  review. Anna Petrov has been the DPO since 2024-Q3 — she joined
+  from a Series B logistics startup and led the warehouse-management
+  overhaul last year."
+
+  On structure: "The Platform Engineering team — about 18 people,
+  reports to the CTO — runs the shared developer platform: CI/CD,
+  observability, infra-as-code. They're cross-cutting; every product
+  team depends on them."
+
+  On finance discipline: "Expense claims above 5 000 EUR require dual
+  approval — both the requester's direct manager and the finance
+  lead, before any payment instruction. Board decision from 2026-01-15."
+
+  On the product side: "Our E-Commerce Platform is the primary
+  direct-to-consumer sales channel — digital product, online
+  storefront with order management, payment processing, and post-sale
+  support. Live since mid-2022."
+
+  On systems: "We run the OMS internally — built for us in 2023 —
+  and the CRM is Salesforce, in production since 2023-01. They're
+  integrated via Kafka: OMS sends order events to CRM in near-real
+  time, outbound from OMS's perspective. That's been live since
+  2024-08."
+
+  On data: "The customer master record is the canonical record of
+  customer identity, contacts, account status. CRM is the system of
+  record; OMS and the data warehouse replicate it read-only."
+
+  Closing framing: "Our 2026 goal is to triple revenue in three
+  years. The EU compliance work has to happen in parallel with that
+  growth, not after."
