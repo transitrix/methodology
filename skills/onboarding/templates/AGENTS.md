@@ -1,6 +1,6 @@
 # AGENTS.md — adopter-repo agent guide
 
-> **Draft.** This file is shipped as part of the `acme_corp` template, so every adopter starts with sensible agent guidance out of the box. After you clone `acme_corp` into your own repo, edit the placeholders marked `ADOPTER-FILL-ME` to fit your situation. Treat this draft as a starting point, not a finished policy.
+> **Draft.** This file is scaffolded by the Transitrix onboarding Skill so every adopter starts with sensible agent guidance out of the box. After scaffolding, edit the placeholders marked `ADOPTER-FILL-ME` to fit your situation. Treat this draft as a starting point, not a finished policy.
 
 This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copilot, Windsurf, Gemini CLI, or another — operating inside an **adopter's** Transitrix repository how to behave. It is intentionally tool-neutral. It does **not** apply to assistants working on the methodology canon itself — that's a different repository with its own agent guide.
 
@@ -24,8 +24,8 @@ What lives here:
 - `field/` — **raw, unprocessed inputs**: interviews, surveys, observations, drafts.
 - `codex/` — **external constraints** (laws, regulations) and **internal authority documents** (policies, standards).
 - `transitrix.yaml` — the adopter manifest: which methodology version, notations, and zones this repo uses.
-- `.templates/` — starter files the adopter copies when creating new elements / views.
-- `README.md`, `GETTING_STARTED.md`, `CONVENTIONS.md` — adopter-facing onboarding docs.
+- `.templates/` *(optional)* — starter files the adopter copies when creating new elements / views.
+- `README.md` — adopter-facing overview (purpose, layout, how to contribute).
 
 The agent's job is to **maintain the model** — validate, refactor, extend, and explain it. The agent does not invent the methodology; it consults the canon at [github.com/transitrix/methodology](https://github.com/transitrix/methodology) when in doubt.
 
@@ -38,6 +38,7 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 - Notation schemas (`notations/<NN>-<name>.md`).
 - Shared header contract (`notations/CONTRACT.md`).
 - ID grammar and TYPE registry (`notations/IDS_AND_REFERENCES.md`).
+- Adopter manifest schema (`notations/MANIFEST.md`).
 - Notation index (`notations/README.md`).
 
 **Resolution order when a local file and the canon disagree:**
@@ -54,7 +55,7 @@ If the Transitrix onboarding Skill (`/transitrix-onboard`) is available, the age
 
 ## 3. Repository layout
 
-The canonical layout an adopter inherits from the `acme_corp` template:
+The canonical layout an adopter inherits when scaffolded by `/transitrix-onboard`:
 
 ```
 <repo-root>/
@@ -63,29 +64,24 @@ The canonical layout an adopter inherits from the `acme_corp` template:
 ├── .github/
 │   └── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
 ├── README.md
-├── GETTING_STARTED.md
-├── CONVENTIONS.md
-├── .templates/                     # starter files to copy (not zoned)
-│   ├── elements/
-│   ├── relations/
-│   └── bpmn/
 ├── canon/                          # validated model — the authoritative zone
 │   ├── elements/                   # elements by ArchiMate layer
-│   │   ├── 01_motivation/          # GOAL, PRINCIPLE, CONSTRAINT, DRIVER, OUTCOME, VALUE
-│   │   ├── 02_business/            # ROLE, ACTOR, PROCESS, FUNCTION, SERVICE
-│   │   ├── 03_application/         # APPLICATION, SERVICE, INTERFACE, DATA_OBJECT
-│   │   └── 04_technology/          # NODE, ARTIFACT, DEVICE, …
-│   └── views/                      # one subfolder per notation (extensions in canon/views/README.md)
+│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, FACTOR, …
+│   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
+│   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
+│   │   └── 04_technology/          # NODE, ARTIFACT, …
+│   └── views/                      # one subfolder per notation
 │       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
 │       ├── activities/   blocks/   scenarios/
 │       └── applications/   products/   issues/   process-blueprint/
 ├── field/                          # raw inputs — interviews, surveys, observations, drafts
+│   ├── interviews/   surveys/   observations/   drafts/
 └── codex/                          # external laws/regulations + internal policies/standards
-    ├── external/<jurisdiction>/    # ge/  de/  eu/  …
+    ├── external/<jurisdiction>/    # ge/  de/  eu/  … (ISO 3166-1 alpha-2, or `eu` / `intl`)
     └── internal/
 ```
 
-The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention and is documented in `canon/views/README.md`.
+The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
 
 The agent does **not** change this layout without a deliberate decision recorded in the adopter's PR. Adopter-specific top-level additions (e.g. a `decisions/` ADR folder, a `glossary/` directory) are fine; renaming or removing the canonical folders is not.
 
@@ -101,7 +97,7 @@ Every artefact carries an **admission record** (`zone`, `admitted_at`, `admitted
 
 ### 3.2 Single-entity vs holding layout
 
-- **Single legal entity** — the repo root *is* the organisation: `canon/`, `field/`, `codex/`, and `transitrix.yaml` sit at the root (the `acme_corp` shape above).
+- **Single legal entity** — the repo root *is* the organisation: `canon/`, `field/`, `codex/`, and `transitrix.yaml` sit at the root (the shape above).
 - **Holding (multiple entities)** — the repo root holds one folder per entity, each with its own `canon/` / `field/` / `codex/`, plus a `_shared/` folder for group-level codex/field that binds several entities:
 
   ```
@@ -141,7 +137,9 @@ The file extension is always `*.<short-name>.transitrix.yaml`. The validator rej
 
 Naming convention for view files: `<DOMAIN>.<short-name>.transitrix.yaml`, where `<DOMAIN>` is a short kebab-case or upper-snake-case label for the area (e.g. `order-fulfilment.bpmn.transitrix.yaml`, `RETENTION-2026.fgca.transitrix.yaml`). One canonical instance per notation per domain.
 
-The agent never strips the `notation:` and `spec_version:` headers, and never introduces alias extensions (`*.bpmn.yaml`, `*.fgca.yml`) — they fail validation.
+Codex artefacts are an exception: they are zone primitives, not view documents. They live at `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`, named by their canonical ID, and carry no `notation:` header. Schema: `notations/14-codex.md`.
+
+The agent never strips the `notation:` and `spec_version:` headers from view files, and never introduces alias extensions (`*.bpmn.yaml`, `*.fgca.yml`) — they fail validation.
 
 ---
 
@@ -173,7 +171,7 @@ Every notation file is validated before commit. Two sanctioned paths:
 
 The agent does **not** commit files with `error`-level validation findings. `warning`-level findings are surfaced to the adopter and committed only with explicit acknowledgement. The agent does not auto-suppress validation rules.
 
-Every notation spec carries its own validation-codes table (e.g. `FGCA-001..015`, `GOALS-001..013`, `BL-001..009`, `ISS-001..006`). When surfacing a validation error to the adopter, the agent includes the canonical code so the rule is traceable to the spec.
+Every notation spec carries its own validation-codes table (e.g. `FGCA-001..015`, `GOALS-001..013`, `BL-001..009`, `ISS-001..006`, `CODEX-001..003`). When surfacing a validation error to the adopter, the agent includes the canonical code so the rule is traceable to the spec.
 
 ---
 
@@ -207,35 +205,13 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 - **Linear / Jira / Asana.** Tasks live in a project management tool; the agent reads tickets via the tool's API or pasted-in URLs; PRs link back via the tool's convention.
 - **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `canon/views/issues/` per `notations/12-issues.md`. The agent reads and updates the YAML directly.
 
-**Example — self-hosted issues register.** Place a file at `canon/views/issues/<DOMAIN>.issues.transitrix.yaml`:
-
-```yaml
-notation: issues
-spec_version: "0.1"
-
-issues_catalogue:
-  id: ISSUES_CAT-OPS-1
-  name: "Architecture issues — operations"
-  updated_at: "2026-05-26"
-
-  issues:
-    - issue_id: ISSUE-1
-      name: "Order-fulfilment SLA gap"
-      status: open                          # open | in_progress | blocked | resolved | closed
-      description: "p95 latency regressed after the new payment-routing release."
-      relates_to: [ACTIVITY-1, GOAL-1]
-      owner_role: ROLE-1
-```
-
-The agent reads, edits, and validates this file the same way as any other notation file.
-
 ---
 
 ## 10. What the agent does NOT do
 
 - Does **not** edit files under the methodology canon at `transitrix/methodology` from inside this repo.
 - Does **not** invent new notations, new TYPE prefixes, or new validation rules. Those decisions happen upstream.
-- Does **not** change the canonical repository layout — `canon/views/<notation>/`, `canon/elements/<NN>_<layer>/`, `.templates/` — without an explicit adopter decision recorded in the PR.
+- Does **not** change the canonical repository layout — `canon/views/<notation>/`, `canon/elements/<NN>_<layer>/`, `codex/external/<jurisdiction>/`, `codex/internal/`, `field/<sub>/` — without an explicit adopter decision recorded in the PR.
 - Does **not** strip the `notation:` / `spec_version:` headers, rename canonical extensions, or rewrite files into alias formats (`*.bpmn.yaml`, `*.fgca.yml`).
 - Does **not** auto-merge PRs. All PRs go through the gating in §11.
 - Does **not** push to `main` directly. Use a feature branch + PR every time.
@@ -254,11 +230,3 @@ Every non-trivial change goes through PR review by the adopter:
 5. The adopter — or a reviewer the adopter designates — merges. The agent does **not** merge its own PRs, even when permissions allow it.
 
 Trivial changes (typo fixes inside a description string, README polish) may be committed directly to `main` if the adopter has explicitly opted into a direct-commit workflow. Default: PR every time.
-
----
-
-## Reconciliation note
-
-This guide is assistant-neutral and reflects the zoned (`canon/` / `field/` / `codex/`) layout. The onboarding Skill (`/transitrix-onboard`, a Claude Code skill) scaffolds the same shape — `AGENTS.md` as the agent guide, `transitrix.yaml` as the manifest, `canon/` + `field/` + `codex/` zones — by copying templates from its bundle.
-
-The agent treats this file as **provisional**. If it conflicts with the canon, the canon wins. If it conflicts with a later adopter-supplied policy, the adopter wins.

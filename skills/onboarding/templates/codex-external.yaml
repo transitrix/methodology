@@ -1,0 +1,27 @@
+# Codex external artefact — a law or regulation given to the org by an outside authority.
+# Schema: notations/14-codex.md §3 + admission record (notations/CONTRACT.md §6).
+# File location: codex/external/<jurisdiction>/<ID>.yaml
+#   <jurisdiction> = ISO 3166-1 alpha-2 (ge, de, ru, …), `eu`, or `intl` — MUST match
+#   the `jurisdiction:` field below (validator rule CODEX-001).
+# File name: the artefact's canonical ID + .yaml — one artefact per file.
+
+id: LAW-FILL-ME-1                   # canonical ID per IDS_AND_REFERENCES.md (LAW | REGULATION)
+name: "FILL-ME law or regulation name"
+type: LAW                           # LAW | REGULATION
+description: "FILL-ME — what the artefact governs"
+
+# Admission record (CONTRACT.md §6)
+zone: codex
+admitted_at: "2026-01-01"           # quoted ISO 8601 date
+admitted_by: "FILL-ME-handle"
+gate_checks:
+  source_authority: "FILL-ME — name of the issuing legislative body / official source"
+
+# External-codex frontmatter (14-codex.md §3)
+jurisdiction: ge                    # MUST match parent folder codex/external/<jurisdiction>/
+effective_date: "2017-01-01"        # quoted ISO 8601 date the artefact takes effect
+applies_to:
+  entities:                         # typed canonical IDs of org entities the artefact binds
+    - APPLICATION-FILL-ME-1
+  processes:                        # typed canonical IDs of processes the artefact binds
+    - PROCESS-FILL-ME-1

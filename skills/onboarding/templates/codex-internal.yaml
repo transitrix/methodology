@@ -1,0 +1,24 @@
+# Codex internal artefact — a policy or internal standard the org issues to itself.
+# Schema: notations/14-codex.md §4 + admission record (notations/CONTRACT.md §6).
+# File location: codex/internal/<ID>.yaml — internal artefacts are NOT foldered by jurisdiction.
+# File name: the artefact's canonical ID + .yaml — one artefact per file.
+
+id: POLICY-FILL-ME-1                # canonical ID per IDS_AND_REFERENCES.md (POLICY | INTERNAL_STANDARD)
+name: "FILL-ME policy or standard name"
+type: POLICY                        # POLICY | INTERNAL_STANDARD
+description: "FILL-ME — what the artefact governs"
+
+# Admission record (CONTRACT.md §6)
+zone: codex
+admitted_at: "2026-01-01"           # quoted ISO 8601 date
+admitted_by: "FILL-ME-handle"
+gate_checks:
+  source_authority: "FILL-ME — name of the internal issuing body or role"
+
+# Internal-codex frontmatter (14-codex.md §4)
+issuing_authority: "FILL-ME — internal body / role that issued the artefact"
+effective_date: "2026-01-01"        # quoted ISO 8601 date the artefact takes effect
+applies_to:
+  entities:                         # typed canonical IDs the artefact binds (may be empty list)
+    - APPLICATION-FILL-ME-1
+  processes: []
