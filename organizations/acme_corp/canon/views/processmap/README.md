@@ -19,7 +19,7 @@ process_map:
   version: "1.0"
   updated_at: "2026-05-26"
 
-  groups:
+  groups:                               # groups are organisational containers, not elements — no lifecycle on the group itself
     - id: "GRP-OPERATING"
       name: "Operating Processes"
       type: "operating"                 # operating | supporting | management
@@ -29,14 +29,18 @@ process_map:
           owner_role: "ROLE-OPS-1"
           capability: "CAPABILITY-V1"
           maturity: 2
-          status: "Active"                    # Draft | Active | Deprecated
+          status: "Active"                    # operational state: Draft | Active | Deprecated
           bpmn_file: "canon/views/bpmn/order-fulfilment.bpmn.transitrix.yaml"
+          valid_from: "2026-05-26"            # CONTRACT.md §7 — required on every inline process; distinct from operational `status`
+          valid_to: null
         - process_id: "PROC-CUST-ONBOARD-1"
           name: "Customer Onboarding"
           owner_role: "ROLE-SALES-1"
           capability: "CAPABILITY-V2"
           maturity: 1
           status: "Draft"
+          valid_from: "2026-05-26"
+          valid_to: null
 
     - id: "GRP-SUPPORTING"
       name: "Supporting Processes"
@@ -46,6 +50,8 @@ process_map:
           name: "Customer Support Resolution"
           owner_role: "ROLE-CS-1"
           status: "Active"
+          valid_from: "2026-05-26"
+          valid_to: null
 
     - id: "GRP-MANAGEMENT"
       name: "Management Processes"
@@ -55,9 +61,13 @@ process_map:
           name: "Annual Strategy Planning"
           owner_role: "ROLE-EXEC-1"
           status: "Active"
+          valid_from: "2026-05-26"
+          valid_to: null
 ```
 
 `process_id`, `owner_role`, and `capability` hold **element / capability IDs**, not display names.
+
+`valid_from` / `valid_to` are required on every inline process entry per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7 and are distinct from the per-process `status` (`Draft` / `Active` / `Deprecated`) which is an operational state. Process groups (`groups[]`) are organisational containers, not elements, and carry no lifecycle of their own; the process-map document itself carries none either.
 
 ## See also
 
