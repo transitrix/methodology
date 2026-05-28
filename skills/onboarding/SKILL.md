@@ -1,6 +1,6 @@
 ---
 name: Transitrix Onboarding
-description: Scaffold a new Transitrix architecture-as-text repository and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, issues, products, applications). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
+description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, issues, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
 when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -32,40 +32,61 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 
 ## Step 2 — Scaffold the repo
 
-Create the canonical Transitrix directory tree in the user's chosen target directory:
+Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen target directory. The shape mirrors the worked example at [`organizations/acme_corp/`](https://github.com/transitrix/methodology/tree/main/organizations/acme_corp) in the methodology repo and is defined for adopters in [`organizations/acme_corp/AGENTS.md`](https://github.com/transitrix/methodology/blob/main/organizations/acme_corp/AGENTS.md) §3.
 
 ```
 <repo-root>/
-├── organizations/
-│   └── <org_name>/
-│       ├── README.md
-│       ├── elements/
-│       │   ├── 01_motivation/
-│       │   │   └── constraints/       # CONSTRAINT-... yaml files (one per file)
-│       │   ├── 02_business/
-│       │   │   └── rules/             # RULE-... yaml files (one per file)
-│       │   ├── 03_application/
-│       │   └── 04_technology/
-│       └── views/
-│           ├── bpmn/
-│           ├── fgca/                  # Factor → Goal → Change → Activity
-│           ├── fga/                   # Factor → Goal → Activity (no Changes)
-│           ├── goals/
-│           ├── capabilities/          # capability-map files
-│           ├── processmap/            # process-map files
-│           ├── activities/
-│           ├── blocks/
-│           ├── scenarios/
-│           ├── issues/
-│           ├── process-blueprint/
-│           ├── products/
-│           └── applications/
-└── .gitignore
+├── transitrix.yaml                 # adopter manifest — methodology version, notations, zones
+├── AGENTS.md                       # assistant-neutral agent guide (canonical for all assistants)
+├── .github/
+│   └── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
+├── README.md                       # one-paragraph org stub + pointer to the methodology canon
+├── .gitignore
+├── canon/                          # validated model — the authoritative zone
+│   ├── elements/
+│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, FACTOR, …
+│   │   │   └── constraints/        # CONSTRAINT-…-N.yaml (one per file)
+│   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
+│   │   │   └── rules/              # RULE-…-N.yaml (one per file)
+│   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
+│   │   └── 04_technology/          # NODE, ARTIFACT, …
+│   └── views/                      # one subfolder per notation
+│       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
+│       ├── activities/   blocks/   scenarios/
+│       └── applications/   products/   issues/   process-blueprint/
+├── field/                          # raw inputs — not authoritative; provenance is the point
+│   └── interviews/   surveys/   observations/   drafts/
+└── codex/                          # constraints given to the org, faithful to source
+    ├── external/                   # laws & regulations, sub-foldered by jurisdiction
+    │   └── <jurisdiction>/         # ISO 3166-1 alpha-2 (ge, de, …), or `eu` / `intl` reserved
+    └── internal/                   # policies & internal standards the org issues
 ```
 
 Use the org name from step 1 (or ask: "What's the organisation name? — lowercase, hyphens for spaces"). If the directory already exists and isn't empty, **don't overwrite** — confirm with the user before proceeding.
 
-The `views/*` subfolders correspond one-to-one with Transitrix notations. The `views/` folder name is intentionally shorter than the canonical short name in places (`capabilities/`, `processmap/`) — this is the org-side convention and matches the spec's path examples.
+The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
+
+### Drop in the canonical root files
+
+After the directory tree exists, copy the three canonical root files from the skill bundle's `templates/` directory into the repo root:
+
+- `templates/AGENTS.md` → `<repo-root>/AGENTS.md` — the assistant-neutral agent guide. It carries `ADOPTER-FILL-ME` placeholders the user should fill in later (language, confidentiality policy, task source — see its §7–9).
+- `templates/copilot-instructions.md` → `<repo-root>/.github/copilot-instructions.md` — the GitHub Copilot pointer that redirects to `AGENTS.md`.
+- `templates/transitrix.yaml` → `<repo-root>/transitrix.yaml` — the adopter manifest (schema: `notations/MANIFEST.md`). After copying, edit `notations:` to list only the notations the user picked in step 1 (plus `codex` if they will use the codex zone), and `zones:` to the subset of `canon, field, codex` they will maintain.
+
+**Do not scaffold a Claude-specific `CLAUDE.md` agent guide.** The canonical guide for every assistant is `AGENTS.md`. If the user is on a tool that doesn't read `AGENTS.md` natively (e.g. Claude Code looks for `CLAUDE.md`, Cursor looks for `.cursor/rules/`), drop a one-line pointer file in that tool's location that reads *"Read `AGENTS.md` in the repo root and follow it."* The guidance itself stays in `AGENTS.md` only — see `AGENTS.md` §"Using this guide with your assistant".
+
+### Three zones — what gets scaffolded
+
+The adopter manifest's `zones:` field selects which of `canon` / `field` / `codex` the repo maintains. Scaffold all three folders by default unless the user explicitly opts out — empty zones cost nothing and keep the layout consistent.
+
+- **`canon/`** — validated truth the organisation asserts. Authoritative; internally consistent. View notation files live in `canon/views/<notation>/`; reusable elements live in `canon/elements/<NN>_<layer>/`.
+- **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point. **Not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, not a migration.
+- **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/14-codex.md` and Step 3 below for how to seed a first codex artefact.
+
+Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. The codex and field templates ship with this record pre-filled with placeholders.
+
+### .gitignore
 
 Initialise `.gitignore`:
 
@@ -75,22 +96,33 @@ node_modules/
 .transitrix-cache/
 ```
 
-Initialise `organizations/<org>/README.md` with a one-paragraph stub naming the org and pointing at `github.com/transitrix/methodology` for the methodology canon.
-
 Don't run `git init` unless the user asked for it.
 
 ---
 
 ## Step 3 — Create the starter notation file from a template
 
-Take the user's chosen notation from step 1. Copy the matching template from `${CLAUDE_SKILL_DIR}/templates/` into the right `views/<notation>/` subfolder of the new repo. The 13 templates are listed in § Templates below.
+Take the user's chosen notation from step 1. Copy the matching template from `${CLAUDE_SKILL_DIR}/templates/` into the right zone of the new repo. The templates are listed in § Templates below.
 
-Naming convention for view files: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
+### View notations (canon zone)
+
+For any of the 13 view notations (FGCA / FGA / Goals / Capability map / Process map / BPMN / Activities / Blocks / Scenarios / Applications / Products / Issues / Process Blueprint), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
 - Point at the placeholder values they need to fill in — they all carry `FILL-ME` markers.
 - The template carries the canonical `notation:` and `spec_version:` headers, the canonical root key, and one minimal placeholder element per layer. **Do not strip the headers** — the canonical header is required by `notations/CONTRACT.md`.
+
+### Codex artefacts (codex zone)
+
+Codex artefacts are **zone primitives**, not view documents — they are individual `<ID>.yaml` files, one artefact per file, named by their canonical ID. They carry **no** `notation:` header (different shape from view notations; schema in `notations/14-codex.md`).
+
+If the user wants to seed a first codex artefact:
+
+- **External** (law / regulation given to the org by outside authority) — copy `templates/codex-external.yaml` to `codex/external/<jurisdiction>/<ID>.yaml`. Rename the file to the artefact's canonical ID (e.g. `LAW-PERSONAL-DATA-2017-1.yaml`, `REGULATION-GDPR-2016-1.yaml`). The `<jurisdiction>` folder MUST match the `jurisdiction:` field inside the file (rule `CODEX-001`) — use ISO 3166-1 alpha-2 (`ge`, `de`, …), `eu` for EU-wide, or `intl` (reserved).
+- **Internal** (policy / standard the org issues to itself) — copy `templates/codex-internal.yaml` to `codex/internal/<ID>.yaml`. Internal artefacts are not foldered by jurisdiction. Rename the file to the artefact's canonical ID (e.g. `POLICY-DATA-RETENTION-1.yaml`, `INTERNAL_STANDARD-coding-conventions-1.yaml`).
+
+Update the `id:`, `name:`, `description:`, the admission record (`admitted_at`, `admitted_by`, `gate_checks.source_authority`), the codex-specific fields (`jurisdiction` + `effective_date` + `applies_to` for external; `issuing_authority` + `effective_date` + `applies_to` for internal), and the cross-references in `applies_to.entities[]` / `applies_to.processes[]` so they point at real canonical IDs in `canon/elements/`.
 
 ---
 
@@ -166,6 +198,18 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 
 **Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Activities) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
 
+### Zone primitives — not view documents
+
+A separate set of artefacts lives in the `field/` and `codex/` zones as one-file-per-record YAML, **not** as `.transitrix.yaml` view documents. They carry no `notation:` header. Use these when the situation is:
+
+| Situation | Zone | Location | TYPE |
+|---|---|---|---|
+| External law or regulation binding the org | **codex** | `codex/external/<jurisdiction>/<ID>.yaml` | `LAW` / `REGULATION` |
+| Internal policy or standard the org issues to itself | **codex** | `codex/internal/<ID>.yaml` | `POLICY` / `INTERNAL_STANDARD` |
+| Recorded interview / survey / observation / draft | **field** | `field/<sub>/<ID>.yaml` | `INTERVIEW` / `SURVEY` / `OBSERVATION` / `DRAFT` |
+
+Schema: `notations/14-codex.md` for codex; `notations/CONTRACT.md` §5–6 for the zone model and admission record shared across all three zones; `notations/IDS_AND_REFERENCES.md` §3.4 + §3.5 for the codex / field TYPE registry.
+
 ### One-paragraph summary per notation
 
 - **BPMN** — `notation: bpmn`. One root `process:` with `pools[].lanes[].elements[]` and `flows[]`. Elements typed (`startEvent`, `task`, `exclusiveGateway`, …); flows directed. Compiles to BPMN 2.0 XML.
@@ -181,6 +225,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
 - **Issues register** — `notation: issues`. Root key `issues_catalogue:` with `issues[]`. Each issue: `issue_id`, `name`, `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), optional `parent`, `description`, `relates_to`, `owner_role`. Hierarchy via `parent`.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
+- **Codex** *(zone primitives, not a view document)* — each artefact is a single `<ID>.yaml` file under `codex/external/<jurisdiction>/` (external: `LAW` / `REGULATION`) or `codex/internal/` (internal: `POLICY` / `INTERNAL_STANDARD`). No `notation:` header; carries the admission record (`CONTRACT.md` §6, `zone: codex`, `gate_checks.source_authority`) plus codex frontmatter (external: `jurisdiction`, `effective_date`, `applies_to`; internal: `issuing_authority`, `effective_date`, `applies_to`).
 
 ### ID grammar — canon
 
@@ -197,12 +242,19 @@ When in doubt, fetch the registry: `WebFetch https://raw.githubusercontent.com/t
 
 ## Templates
 
-The `${CLAUDE_SKILL_DIR}/templates/` directory contains one starter file per notation. Each template:
+The `${CLAUDE_SKILL_DIR}/templates/` directory contains starter files in three groups: **root scaffolding** (manifest + agent guide + Copilot pointer), **view notations** (one per `.transitrix.yaml` notation, placed in `canon/views/<notation>/`), and **codex zone primitives** (placed in `codex/external/<jurisdiction>/` or `codex/internal/`).
 
-- Carries the canonical `notation:` and `spec_version:` headers (per `notations/CONTRACT.md`).
-- Uses the canonical root key (or flat top-level arrays for the strategy-chain four).
-- Has placeholder values labelled `FILL-ME` so the user can find them.
-- Includes minimal cross-references so the placeholder file parses cleanly under the canonical validator.
+Each notation template carries the canonical `notation:` and `spec_version:` headers (per `notations/CONTRACT.md`), uses the canonical root key (or flat top-level arrays for the strategy-chain four), has placeholders labelled `FILL-ME`, and parses cleanly under the canonical validator.
+
+### Root scaffolding (drop into repo root in Step 2)
+
+| File | Template | Destination |
+|---|---|---|
+| Adopter manifest | `templates/transitrix.yaml` | `<repo-root>/transitrix.yaml` |
+| Agent guide (assistant-neutral) | `templates/AGENTS.md` | `<repo-root>/AGENTS.md` |
+| GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
+
+### View notations (drop into `canon/views/<notation-folder>/` in Step 3)
 
 | Notation | Template file |
 |---|---|
@@ -220,6 +272,15 @@ The `${CLAUDE_SKILL_DIR}/templates/` directory contains one starter file per not
 | Issues | `templates/issues.issues.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
 
+### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
+
+| Sub-zone | Template file | Destination |
+|---|---|---|
+| External (laws, regulations) | `templates/codex-external.yaml` | `codex/external/<jurisdiction>/<ID>.yaml` |
+| Internal (policies, standards) | `templates/codex-internal.yaml` | `codex/internal/<ID>.yaml` |
+
+Codex artefacts carry no `notation:` header (they are zone primitives, not view documents). Schema: `notations/14-codex.md`.
+
 ---
 
 ## Reference reads on demand
@@ -227,9 +288,11 @@ The `${CLAUDE_SKILL_DIR}/templates/` directory contains one starter file per not
 When the user goes deeper than this cheat sheet covers, fetch the canonical spec:
 
 - ID grammar / TYPE registry: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md`
-- Shared file-header contract: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md`
+- Shared file-header contract + zone model + admission record: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md`
+- Adopter manifest schema (`transitrix.yaml`): `https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md`
 - Notation index + family selection: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/README.md`
-- Per-notation full specs: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<short-name>.md`
+- Per-notation full specs: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<short-name>.md` (including `14-codex.md` for the codex zone)
+- Worked adopter example (the shape this skill scaffolds): `https://raw.githubusercontent.com/transitrix/methodology/main/organizations/acme_corp/AGENTS.md`
 
 Read sparingly — the cheat sheet above is enough for 80% of cases. Pull the full spec only when the user hits a validation rule they want to understand, or asks for a field's semantics that the summary doesn't cover.
 

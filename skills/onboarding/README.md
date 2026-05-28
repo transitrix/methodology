@@ -1,11 +1,13 @@
 # Transitrix Onboarding Skill
 
-A Claude Code [Skill](https://docs.claude.com/en/docs/claude-code/skills) that drives a newcomer from zero to a working Transitrix enterprise-as-text repo. After it is installed, the user invokes it with `/transitrix-onboard` (or by describing the goal in plain language), and the agent walks them through scaffolding a repo, picking a starter notation, and authoring their first file with inline canonical validation.
+A Claude Code [Skill](https://docs.claude.com/en/docs/claude-code/skills) that drives a newcomer from zero to a working Transitrix enterprise-as-text repo. After it is installed, the user invokes it with `/transitrix-onboard` (or by describing the goal in plain language), and the agent walks them through scaffolding the canonical zoned (`canon/` + `field/` + `codex/`) adopter shape, picking a starter notation, and authoring their first file with inline canonical validation.
 
-This directory is the **source bundle** for that skill. The bundle ships:
+The skill itself runs in Claude Code. What it **scaffolds** for the adopter is assistant-neutral: the agent guide it drops in is `AGENTS.md` (read by any tool that supports the AGENTS.md convention), plus a `.github/copilot-instructions.md` pointer for GitHub Copilot. Adopters on Cursor / Claude Code / other tools add a one-line pointer in their tool's location.
 
-- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 13 notations).
-- [`templates/`](templates/) — one starter `.transitrix.yaml` per notation. Each template carries the canonical `notation:` and `spec_version:` headers, the canonical root shape, and `FILL-ME` placeholders.
+This directory is the **source bundle** for the skill. The bundle ships:
+
+- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 13 view notations + codex zone primitives).
+- [`templates/`](templates/) — starter files in three groups: **root scaffolding** (`transitrix.yaml` manifest + assistant-neutral `AGENTS.md` + GitHub Copilot pointer), **view notations** (one `.transitrix.yaml` per view notation), and **codex zone primitives** (external + internal).
 
 The skill is **read-only** against the methodology repo. It does not ship the canon — when the user goes deeper than the embedded cheat sheet, the skill fetches the full spec from `github.com/transitrix/methodology` via `WebFetch`.
 
@@ -53,9 +55,9 @@ Once installed, invoke the skill in three ways:
 Once invoked, the agent runs the six-step flow documented in [`SKILL.md`](SKILL.md):
 
 1. **Confirm intent and surface area.** Asks which notation you want to start with (showing the family-selection matrix), and how deep an explanation you want.
-2. **Scaffold the repo.** Creates the canonical `organizations/<org>/{elements,views}/...` tree plus `.gitignore` and a README stub.
-3. **Create the starter notation file from a template.** Copies the right template from [`templates/`](templates/) into the matching `views/<notation>/` subfolder. Renames it to `<DOMAIN>.<short-name>.transitrix.yaml`.
-4. **Interactive authoring with inline validation.** Walks the user through the placeholders one at a time and validates after each meaningful edit. Validation errors are surfaced by their canonical code (e.g. `FGCA-009 — change references unknown goal`).
+2. **Scaffold the repo.** Creates the canonical zoned tree (`canon/{elements,views}`, `field/{interviews,surveys,observations,drafts}`, `codex/{external/<jurisdiction>,internal}`), drops the `transitrix.yaml` manifest at the root, drops the assistant-neutral `AGENTS.md` agent guide and the `.github/copilot-instructions.md` pointer, and initialises `.gitignore` + a README stub.
+3. **Create the starter notation file from a template.** For view notations, copies the matching template from [`templates/`](templates/) into the right `canon/views/<notation>/` subfolder and renames it to `<DOMAIN>.<short-name>.transitrix.yaml`. For codex artefacts, copies a codex-external or codex-internal template into `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`.
+4. **Interactive authoring with inline validation.** Walks the user through the placeholders one at a time and validates after each meaningful edit. Validation errors are surfaced by their canonical code (e.g. `FGCA-009 — change references unknown goal`, `CODEX-001 — jurisdiction folder mismatch`).
 5. **Hand off to Transitrix Studio.** Points the user at the VS Code extension for live preview, or at `npx @transitrix/cli validate` for CLI-only workflows.
 6. **Suggest next steps.** Proposes one — and only one — adjacent artefact in the family (e.g. "you built a Goals tree, the natural next step is an FGCA").
 
@@ -65,7 +67,19 @@ The agent never silently rewrites the user's content. If a validation rule fails
 
 ## What's in `templates/`
 
-One starter YAML per notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 13 templates are:
+Three groups: root scaffolding, view notations, and codex zone primitives.
+
+### Root scaffolding (dropped into repo root in Step 2)
+
+| Purpose | Template | Destination in adopter repo |
+|---|---|---|
+| Adopter manifest (methodology version + notations + zones) | [`transitrix.yaml`](templates/transitrix.yaml) | `<repo-root>/transitrix.yaml` |
+| Assistant-neutral agent guide | [`AGENTS.md`](templates/AGENTS.md) | `<repo-root>/AGENTS.md` |
+| GitHub Copilot pointer → `AGENTS.md` | [`copilot-instructions.md`](templates/copilot-instructions.md) | `<repo-root>/.github/copilot-instructions.md` |
+
+### View notations (dropped into `canon/views/<notation>/` in Step 3)
+
+One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 13 view templates are:
 
 | Notation | Template |
 |---|---|
@@ -82,6 +96,15 @@ One starter YAML per notation, named `<notation>.<short-name>.transitrix.yaml` s
 | Products | [`products.products.transitrix.yaml`](templates/products.products.transitrix.yaml) |
 | Issues | [`issues.issues.transitrix.yaml`](templates/issues.issues.transitrix.yaml) |
 | Process Blueprint | [`process-blueprint.process-blueprint.transitrix.yaml`](templates/process-blueprint.process-blueprint.transitrix.yaml) |
+
+### Codex zone primitives (dropped into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
+
+Codex artefacts are zone primitives, not view documents — each is a single `<ID>.yaml` named by its canonical ID, carrying no `notation:` header. Schema: `notations/14-codex.md`.
+
+| Sub-zone | Template | Destination in adopter repo |
+|---|---|---|
+| External (laws, regulations) | [`codex-external.yaml`](templates/codex-external.yaml) | `codex/external/<jurisdiction>/<ID>.yaml` |
+| Internal (policies, standards) | [`codex-internal.yaml`](templates/codex-internal.yaml) | `codex/internal/<ID>.yaml` |
 
 Each template parses cleanly under its canonical validator out of the box — the user just replaces the `FILL-ME` markers.
 
