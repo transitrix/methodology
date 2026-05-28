@@ -2,7 +2,7 @@
 
 All eleven Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases.
 
 A change to the rules below applies to all eleven notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -264,3 +264,52 @@ Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR,
 - **Versioning relations, not attributes.** The sidecar is a shape for *attributes* (scalar fields of an element). Versioning relations (`parent`, cross-references) is the concern of Wave 3 — first-class time-aware relation files — not Wave 2.
 - **Versioning the lifecycle itself.** `valid_from` / `valid_to` on the primitive are not versionable. To change a primitive's lifecycle, rewrite the file via git; the git history is the audit trail.
 - **Auto-derived rollups.** Cross-attribute computations (e.g. "average maturity over Q3 2026") are query-time concerns of the renderer / DSM, not of the sidecar schema.
+
+---
+
+## 10. Versioning and compatibility
+
+The methodology evolves. Each release changes the contract this document defines, the per-notation specs, or both. Adopters need to know what kind of change a release brings — does it break their existing files, or can they upgrade transparently? This section defines the compatibility policy.
+
+### 10.1 Where versions live
+
+Two version slots exist:
+
+| Slot | Lives in | Records |
+|---|---|---|
+| `transitrix.yaml` `methodology_version` | adopter repository root (see [`MANIFEST.md`](MANIFEST.md)) | The methodology release the **whole repo** conforms to. Single source of truth for the repo. |
+| `spec_version` on each notation file (§1) | every notation file's header | The notation-spec version the **individual file** declares. Informational; the manifest decides what version the repo is on. |
+
+**Mixed-version repositories are not supported in v1.** Every artefact in an adopter repo conforms to the `methodology_version` declared in `transitrix.yaml`. No per-folder override; no per-notation override.
+
+### 10.2 SemVer with explicit semantics
+
+Methodology releases use [SemVer](https://semver.org) (`MAJOR.MINOR.PATCH`) with the semantics below. Each kind of release commits to a different compatibility promise.
+
+| Bump | Kinds of change | Adopter action |
+|---|---|---|
+| **`MAJOR`** | Breaking schema change: renamed field, removed field, new required field, changed validation severity (warning → error), changed enum membership in a closed enum, etc. | **Migration required.** Adopter follows the migration recipe shipped with the release (defined in a subsequent epic) and updates `methodology_version` in `transitrix.yaml`. |
+| **`MINOR`** | Additive only: new optional field, new notation, new validation code at `info` / `warning`, new TYPE in the registry, new section in a spec. Existing files validate cleanly against the new release. | None required. Adopter MAY adopt new fields when convenient. May update `methodology_version` in `transitrix.yaml` to make the upgrade explicit. |
+| **`PATCH`** | Clarifications, doc fixes, example fixes, no schema change. | None. |
+
+### 10.3 Pre-1.0 disclaimer
+
+> **The methodology is pre-1.0.** Until the methodology reaches `v1.0.0`, `MINOR` bumps **may carry breaking changes** — standard SemVer pre-1.0 rules apply. Adopters pinning a pre-1.0 version with a caret range (`^0.4.x`) may be broken by a subsequent `0.5.0`. **Pin exactly** (`0.4.2`) in production adopter repos until the 1.0 cut.
+
+Once the methodology hits `v1.0.0`, MINOR bumps will be additive only — the policy in §10.2 holds without the pre-1.0 exception.
+
+### 10.4 The release promise
+
+A released version of the methodology, once tagged, is **immutable**. Subsequent fixes to that version branch happen as a new `PATCH` bump; the old tag is not retroactively edited.
+
+A `MINOR` or `PATCH` release (post-1.0) MUST NOT break any adopter repo that was valid against the previous release of the same `MAJOR` line. The validator's `error`-level rules added in a `MINOR` or `PATCH` release apply only to files authored against that release or later, not to files already in adopters' canon.
+
+A `MAJOR` release SHOULD ship with a migration recipe under `migrations/<from>-to-<to>/` defining the codemod and manual steps an adopter follows to upgrade. The recipe format is the concern of Phase 2 of this epic.
+
+### 10.5 What this section does NOT cover
+
+- **Migration recipe on-disk format.** Phase 2 of this epic.
+- **Migration CLI** (`transitrix migrate`). Phase 3 of this epic.
+- **The 1.0 cut decision.** Phase 4 of this epic — gated on the in-flight schema epics landing.
+- **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
+- **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
