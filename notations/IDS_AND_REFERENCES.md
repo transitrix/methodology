@@ -86,6 +86,7 @@ Elements that get referenced across documents.
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
 | `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
 | `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](15-requirement.md). |
+| `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](17-relations.md). |
 
 ### 3.2 Document-level types
 
@@ -161,6 +162,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
 | `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
 | `REQUIREMENT` | within the organisation's element catalogue (`elements/01_motivation/requirements/`), one file per REQUIREMENT. |
+| `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
