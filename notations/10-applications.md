@@ -80,10 +80,7 @@ applications_catalogue:
       name: "Order Management System"
       type: "application"              # application | integration | platform | data_store
       domain: "Operations"
-      owner_role: "ROLE-TECH-001"
-      vendor: "Internal"
-      status: "Active"                 # Draft | Active | Deprecated | Decommissioning
-      maturity: 3                      # CMM level 1–5
+      status: "Active"                 # operational state inline: Draft | Active | Deprecated | Decommissioning
       description: "Core system for order lifecycle management"
       capabilities:
         - "CAPABILITY-V1"
@@ -94,13 +91,13 @@ applications_catalogue:
           direction: "outbound"
           protocol: "REST"
           description: "Sends order events to CRM"
+      # owner_role, vendor, maturity are time-varying — they live in
+      # APP-OMS-001.history.yaml (CONTRACT.md §9), not inline.
 
     - app_id: "APP-CRM-001"
       name: "CRM System"
       type: "application"
       domain: "Sales"
-      owner_role: "ROLE-SALES-001"
-      vendor: "Salesforce"
       status: "Active"
       description: "Customer relationship and sales pipeline management"
 
@@ -108,7 +105,6 @@ applications_catalogue:
       name: "OMS → CRM Order Events Integration"
       type: "integration"
       domain: "Operations"
-      owner_role: "ROLE-TECH-001"
       status: "Active"
       description: "Event-driven integration forwarding order state changes from OMS to CRM"
       source: "APP-OMS-001"
@@ -129,17 +125,50 @@ applications_catalogue:
 | `applications[].name` | Yes | Application name (should match the element) |
 | `applications[].type` | Yes | `application` / `integration` / `platform` / `data_store` |
 | `applications[].domain` | No | Business domain this application belongs to |
-| `applications[].owner_role` | No | BusinessRole element ID of the technical owner |
-| `applications[].vendor` | No | Vendor name or `Internal` |
-| `applications[].status` | Yes | `Draft` / `Active` / `Deprecated` / `Decommissioning` |
-| `applications[].maturity` | No | CMM level 1–5 |
-| `applications[].description` | No | Short description of the application's purpose |
-| `applications[].capabilities` | No | List of capability IDs this application enables |
-| `applications[].products` | No | List of Product element IDs this application supports |
-| `applications[].integrations` | No | List of outbound integration descriptors |
+| `applications[].owner_role` | No | BusinessRole element ID of the technical owner. **Time-varying** — lives in the sidecar `<app_id>.history.yaml` ([CONTRACT.md](CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `applications[].vendor` | No | Vendor name or `Internal`. **Time-varying** — sidecar, not inline (an organisation may switch vendors mid-life). |
+| `applications[].status` | Yes | `Draft` / `Active` / `Deprecated` / `Decommissioning`. Operational state — stays inline; teams wanting status history MAY promote to sidecar voluntarily. |
+| `applications[].maturity` | No | CMM level 1–5. **Time-varying** — sidecar, not inline. |
+| `applications[].description` | No | Short description of the application's purpose. |
+| `applications[].capabilities` | No | List of capability IDs this application enables. Stays inline in v1 (relations are Wave 3 territory). |
+| `applications[].products` | No | List of Product element IDs this application supports. Stays inline in v1 (relations are Wave 3 territory). |
+| `applications[].integrations` | No | List of outbound integration descriptors. Stays inline (a relation list scoped to the parent application). |
 | `integrations[].target` | No | Target application element ID |
 | `integrations[].direction` | No | `inbound` / `outbound` / `bidirectional` |
 | `integrations[].protocol` | No | Integration protocol (REST, Kafka, gRPC, etc.) |
+
+---
+
+## 5a. Time-varying attributes — sidecar history
+
+An application's `owner_role`, `vendor`, and `maturity` evolve within the application's overall lifetime. Per [CONTRACT.md](CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the application's element file, **not inline** on the catalogue view or on the element file:
+
+```
+canon/elements/03_application/applications/APP-OMS-1.yaml          # stable fields
+canon/elements/03_application/applications/APP-OMS-1.history.yaml  # time-varying fields
+```
+
+Sidecar shape:
+
+```yaml
+target: APP-OMS-1
+attribute_versions:
+  owner_role:
+    - { valid_from: "2024-01-01", value: ROLE-TECH-1 }
+    - { valid_from: "2026-04-01", value: ROLE-PLATFORM-1 }
+  vendor:
+    - { valid_from: "2024-01-01", value: "Internal" }
+    - { valid_from: "2026-06-01", value: "Acme Cloud Inc" }
+  maturity:
+    - { valid_from: "2024-01-01", value: 2 }
+    - { valid_from: "2025-09-01", value: 3 }
+```
+
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](CONTRACT.md) §9.2.
+
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = application.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](CONTRACT.md) §9.3).
+
+`status`, `type`, `domain`, `description` are **not** time-varying in v1 and stay inline. Cross-reference lists (`capabilities`, `products`, `integrations`) are relations — Wave 3 territory.
 
 ---
 
