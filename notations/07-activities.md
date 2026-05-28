@@ -26,6 +26,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline element this notation defines — entries in `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the activities document itself does not carry a lifecycle field. Per-activity scheduling fields (`start_date`, `end_date`) describe *when work is planned to happen*, distinct from `valid_from`/`valid_to` which describe *when the activity element itself is considered in effect*; both coexist.
+
+---
+
 ## 1. Overview
 
 An **Activities** document describes a directed acyclic graph (DAG) of activities and the dependencies between them, optionally placed in calendar time. It is the text-native form of a project schedule with two coexisting renderings:

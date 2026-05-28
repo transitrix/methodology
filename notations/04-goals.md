@@ -26,6 +26,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline element this notation defines — entries in `goals[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the goals-tree document itself does not carry a lifecycle field. The `goal_types[]` entries are a static vocabulary, not elements, and carry no lifecycle.
+
+---
+
 ## 1. Overview
 
 A goals tree is a hierarchical view that arranges Goal elements from `elements/01_motivation/` into a top-down tree — from broad strategic ambitions down to specific tactical objectives.
