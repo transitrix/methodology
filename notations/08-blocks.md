@@ -26,6 +26,14 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+A `block.id` MAY follow the canonical `<TYPE>-…-<INTEGER>` grammar to cross-link into an organisational catalogue element (e.g. `CAPABILITY-V1.2`, `APPLICATION-OMS-1`), OR it MAY be a document-local label that the block diagram authors solely for layout purposes. The canonical primitive lifecycle ([CONTRACT.md](CONTRACT.md) §7) is borne by the **target element's own file** when a block cross-links — the block here is a layout placement, not a separate element. When `block.id` is a document-local label there is no canonical element to bear lifecycle, and none is required.
+
+The nested_blocks document itself does not carry a `valid_from` / `valid_to` field — it is a view, not an element ([CONTRACT.md](CONTRACT.md) §7.1).
+
+---
+
 ## 1. Overview
 
 A nested block diagram answers the question **what contains what?** It is a tree of named blocks; each block may contain child blocks; the rendered diagram shows containment as spatial nesting (a child block is drawn *inside* its parent's box).
