@@ -1,0 +1,29 @@
+# Worked example — REQUIREMENT derived from an external codex source.
+# Schema: notations/15-requirement.md §2.
+# Assertion(s) about this requirement live in canon/assertions/.
+
+notation: requirement
+id: REQUIREMENT-DATA-ERASURE-1
+title: "Personal-data erasure on request within 30 days"
+description: >
+  On a verified request from a data subject, the controller must erase the
+  subject's personal data within 30 days. The window starts at the time the
+  request is received and verified. Applies across every system that stores
+  personal data of natural persons resident in Georgia.
+
+severity: high
+derived_from:
+  - LAW-PERSONAL-DATA-2017-1     # codex/external/ge/
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2017-05-01"           # date the source law took effect
+valid_to: null

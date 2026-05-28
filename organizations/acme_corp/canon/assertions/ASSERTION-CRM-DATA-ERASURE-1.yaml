@@ -1,0 +1,37 @@
+# Worked example — under-review assertion with empty evidence.
+# Schema: notations/16-assertion.md §2.
+# Demonstrates: subject = CAPABILITY, status = under_review, evidence empty.
+# Status `under_review` deliberately has no evidence yet — the prior judgement
+# no longer holds and the new one has not been determined. The planned
+# ASSERT-007 warning ("positive status with empty evidence") does NOT fire
+# here because under_review is not a positive status.
+
+notation: assertion
+id: ASSERTION-CRM-DATA-ERASURE-1
+about: REQUIREMENT-DATA-ERASURE-1                      # same requirement as the other two
+subject: CAPABILITY-V2                                  # CAPABILITY TYPE; Customer Relationship Management
+
+# realised_via is empty during the review — the team is auditing whether the
+# existing realisation set still holds after a CRM platform change.
+realised_via: []
+
+status: under_review
+
+evidence: []
+
+assessed_at: "2026-05-20"
+assessed_by: ROLE-DPO-1
+next_review_at: "2026-06-30"                            # review scheduled within ~6 weeks
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-20"
+valid_to: null
