@@ -221,24 +221,20 @@ capability_map:
     - id: "CAPABILITY-V1"
       name: "Order Management"
       type: "domain"                       # domain | supporting
-      current_maturity: 2
-      target_maturity: 3
-      target_date: "2026-12-31"
-      owner_role: "ROLE-OPS-001"
+      target_maturity: 3                   # stable planning aspiration (forward-looking)
       business_process: "PROC-ORD-FULFILL-001"
       applications:
         - "APP-OMS-001"
         - "APP-CRM-001"
+      # current_maturity, owner_role, target_date are time-varying — they
+      # live in CAPABILITY-V1.history.yaml (CONTRACT.md §9), not inline.
       children:
         - id: "CAPABILITY-V1.1"
           name: "Order Intake"
-          current_maturity: 3
           target_maturity: 3
         - id: "CAPABILITY-V1.2"
           name: "Order Fulfilment"
-          current_maturity: 2
           target_maturity: 3
-          target_date: "2026-09-30"
 ```
 
 ---
@@ -253,40 +249,47 @@ capability_map:
 | `id` | Yes | Capability ID — canonical form `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-H1` (see [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §2) |
 | `name` | Yes | Capability name |
 | `type` | Yes | `domain` or `supporting` |
-| `current_maturity` | Yes | Current CMM level (1–5) |
-| `target_maturity` | No | Target CMM level |
-| `target_date` | No | When the target should be reached (YYYY-MM-DD) |
-| `owner_role` | No | Reference to BusinessRole element ID |
-| `business_process` | No | Reference to BusinessProcess element ID |
-| `applications` | No | List of ApplicationComponent element IDs |
-| `children` | No | List of child capabilities |
+| `current_maturity` | Yes | Current CMM level (1–5). **Time-varying** — lives in the sidecar `<capability_id>.history.yaml` ([CONTRACT.md](CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `target_maturity` | No | Target CMM level. Stable forward-looking aspiration; stays inline. |
+| `target_date` | No | When the target should be reached (YYYY-MM-DD). **Time-varying** — sidecar, not inline. |
+| `owner_role` | No | Reference to BusinessRole element ID. **Time-varying** — sidecar, not inline. |
+| `business_process` | No | Reference to BusinessProcess element ID. Stays inline in v1 (relations are Wave 3 territory). |
+| `applications` | No | List of ApplicationComponent element IDs. Stays inline in v1 (relations are Wave 3 territory). |
+| `children` | No | List of child capabilities. |
 
 ---
 
-## 14. Maturity history on the element
+## 14. Time-varying attributes — sidecar history
 
-Individual capability elements in `elements/02_business/` carry the full maturity history:
+A capability's `current_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
+
+```
+canon/elements/02_business/capabilities/CAPABILITY-V1.yaml          # stable fields
+canon/elements/02_business/capabilities/CAPABILITY-V1.history.yaml  # time-varying fields
+```
+
+Sidecar shape:
 
 ```yaml
-id: "CAPABILITY-V1"
-name: "Order Management"
-type: "Capability"
-layer: "Business"
-metadata:
-  status: "Active"
-  owner: "firstname.lastname"
-  updated_at: "2026-05-08"
-properties:
-  capability_id: "CAPABILITY-V1"
-  maturity_levels:
-    - level: 1
-      effective_from: "2024-01-01"
-    - level: 2
-      effective_from: "2025-06-01"
-      status: "Current"
-  target_maturity: 3
-  target_date: "2026-12-31"
+target: CAPABILITY-V1
+attribute_versions:
+  current_maturity:
+    - { valid_from: "2024-01-01", value: 1 }
+    - { valid_from: "2025-06-01", value: 2 }
+    - { valid_from: "2026-09-15", value: 3 }
+  owner_role:
+    - { valid_from: "2024-01-01", value: ROLE-OPS-1 }
+    - { valid_from: "2026-07-01", value: ROLE-OPS-2 }
+  target_date:
+    - { valid_from: "2024-01-01", value: "2027-06-30" }
+    - { valid_from: "2026-04-01", value: "2026-12-31" }
 ```
+
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](CONTRACT.md) §9.2.
+
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = capability.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](CONTRACT.md) §9.3).
+
+`target_maturity` is **not** time-varying — it is a stable forward-looking planning aspiration and stays inline on the capability.
 
 ---
 
