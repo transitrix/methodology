@@ -1,0 +1,30 @@
+# Worked example — first-class time-aware relation (the FIRST half of a
+# re-parenting event). Schema: notations/17-relations.md §2.
+#
+# Narrative: CAPABILITY-V1.1 (Order Intake) was originally introduced
+# under CAPABILITY-V2 (Customer Relationship Management) in 2024 —
+# the org modelled order intake as a customer-facing capability. In
+# 2026-04, after an operational review, it was re-parented to V1
+# (Order Management) where it fits better operationally. This REL
+# file captures the OLD parent relationship; the new one is in
+# REL-CAP-V11-PARENT-2.yaml.
+
+notation: relation
+id: REL-CAP-V11-PARENT-1
+type: parent
+from: CAPABILITY-V1.1
+to: CAPABILITY-V2
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — this relation was in effect
+# from V1.1's birth until the 2026-04 re-org closed it.
+valid_from: "2024-01-01"
+valid_to: "2026-04-01"
