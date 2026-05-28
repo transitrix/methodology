@@ -26,6 +26,17 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+This notation's inline arrays split into two groups for lifecycle purposes:
+
+- **Canonical-TYPE arrays** — `equipment[]` (`EQUIPMENT`) and `information_entities[]` (`INFORMATION_ENTITY`), both registered in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1. Each entry carries the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](CONTRACT.md) §7.
+- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`. These use document-local identifiers (e.g. `STAGE-1`, `STAGE-2`) that are not registered as canonical TYPEs in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; they are scoped to the blueprint document and do not carry their own lifecycle. When a `systems[]` or `actors[]` entry is intended to reference a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
+
+The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7. Per [CONTRACT.md](CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
+
+---
+
 ## 1. Overview
 
 A **process blueprint** answers the question: **for each stage of a value chain, what does it take to operate that stage?**
