@@ -25,6 +25,14 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline issue entry under `issues[]` (`ISSUE` canonical TYPE per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1) carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline issues in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each issue entry; the issues-catalogue document itself does not carry a lifecycle field.
+
+The issue's `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), `created_at`, and `resolved_at` fields describe the **issue-handling timeline** — when the issue was opened, where it currently stands, when it was closed. These are operational state, distinct from `valid_from` / `valid_to` which mark the period the issue artefact itself is admitted to canon and considered in effect. In typical practice the two coincide for `open` issues (`valid_from ≈ created_at`, `valid_to: null`); closing an issue may or may not retire the artefact depending on the organisation's archive policy.
+
+---
+
 ## 1. Overview
 
 An **Issues** document is a register of issues an organisation is tracking. Each issue carries a lifecycle `status` and an optional `parent`, so the register is also a hierarchy: a broad issue decomposes into sub-issues, which decompose further.

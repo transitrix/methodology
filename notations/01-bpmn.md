@@ -26,6 +26,14 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+BPMN files use **file-local labels** for the nodes they describe (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`). Per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 these labels are not canonical elements — they identify nodes within one BPMN document only, not artefacts that the organisation registers in its element catalogue. Accordingly, neither the BPMN nodes nor the BPMN document itself carry the canonical primitive lifecycle (`valid_from` / `valid_to`) defined in [CONTRACT.md](CONTRACT.md) §7.
+
+The lifecycle of the **process** this BPMN file describes lives on the corresponding `PROCESS-…` element registered in the process landscape map ([06-process-map.md](06-process-map.md)); the BPMN file is the detailed flow representation of that process, not the lifecycle bearer.
+
+---
+
 ## 1. Overview
 
 A process file describes a BPMN 2.0 process as a structured YAML document. The notation captures one pool, one or more lanes, typed elements inside lanes, and named sequence flows between elements. Coordinates and visual styling are **not** part of the notation — layout is computed deterministically at compile time and embedded as `bpmndi:` blocks in the output XML.
