@@ -30,6 +30,14 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline element this notation defines — entries in `capabilities[]`, recursively including nested `children[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each capability entry; the capability-map document itself does not carry a lifecycle field.
+
+The capability-specific state vocabulary (`Planned` / `Active` / `Retired`) in §7 below is a **derived view** computed by comparing `valid_from` / `valid_to` against today's date — not a separate stored mechanism. The legacy "Start Date" / "End Date" framing in §7 refers to the same canonical `valid_from` / `valid_to` fields; subsequent revisions will unify the field naming.
+
+---
+
 ## 1. Overview
 
 A capabilities map is a hierarchical view that shows what the organisation **can do** and how well it does it. It answers two questions in one artefact:
