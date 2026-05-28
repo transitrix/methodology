@@ -2,7 +2,7 @@
 
 All eleven Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines two organisation-level contracts shared across all notations: the **zone model** (§5) and the **admission record** (§6) that every organisation artefact carries.
+This document also defines three organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), and the **primitive lifecycle** (§7) that every organisation artefact carries.
 
 A change to the rules below applies to all eleven notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -107,3 +107,53 @@ derived_from:               # optional; typed IDs of the artefacts this one deri
 | `codex` | `source_authority` | The issuing or authoritative source is identified and the artefact is faithful to it. |
 
 A zone MAY record additional checks beyond its standard set; codex artefacts additionally carry zone-specific frontmatter defined in the codex notation spec.
+
+---
+
+## 7. Primitive lifecycle
+
+Transitrix shows the organisation *in motion* — what existed when, what changed, what's gone. Every canonical element therefore carries a lifecycle in its frontmatter: when it became valid, and when it stopped (or `null` if still in effect).
+
+```yaml
+valid_from: "2026-05-27"    # quoted ISO 8601 date (§4) — when the element took effect
+valid_to: null              # quoted ISO 8601 date or null — when the element ended (null = still in effect)
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `valid_from` | yes | string | Date the element took effect — quoted ISO 8601 per §4. |
+| `valid_to` | yes | string \| null | Date the element ceased to be in effect — quoted ISO 8601 per §4, or `null`. `null` means the element is currently in effect. |
+
+The lifecycle frontmatter sits alongside the admission record (§6); the two are distinct. Admission records *when an artefact entered its zone* (a one-time gate event); lifecycle records *when the element it represents is in effect* (a temporal property of the modelled thing, independent of when it was admitted). An artefact admitted today may legitimately carry `valid_from` years in the past — the organisation is recording history.
+
+### 7.1 Where it applies
+
+The lifecycle contract applies to every **canonical element** — each individual primitive the organisation asserts. For element-primitive files (one element per file, under `canon/elements/<NN>_<layer>/`), the lifecycle fields sit in the file's frontmatter. For view documents that define elements inline (capability-map, FGCA, applications catalogue, …), each inline element entry carries its own `valid_from` / `valid_to`. The view document itself does not carry a lifecycle — it is a view, not an element.
+
+Each notation spec lists which of its top-level entries are elements (and therefore lifecycle-bearing) versus document-level metadata (and therefore not). Per-notation specs reference this section rather than restating the rule.
+
+### 7.2 Versioned attributes — not in v1
+
+Attributes that *change over time within* a primitive's lifecycle (a capability's maturity level, a unit's headcount) are a separate concern, handled by the **versioned-attribute sidecar** planned for Wave 2 of the temporal model. v1 covers only the primitive's overall `valid_from` / `valid_to`; the inline form of time-varying attributes is unchanged until Wave 2 lands.
+
+### 7.3 Validation rules
+
+Every notation's validator enforces the same four lifecycle rules:
+
+| Rule | Severity | Description |
+|---|---|---|
+| `LIFECYCLE-001` | error | `valid_from` missing or not a parseable quoted ISO 8601 date. |
+| `LIFECYCLE-002` | error | `valid_to` is present, is not `null`, and is not a parseable quoted ISO 8601 date. |
+| `LIFECYCLE-003` | error | `valid_to` is a date earlier than `valid_from`. |
+| `LIFECYCLE-004` | warning | A cross-reference resolves to a primitive whose `valid_to` is earlier than the referring primitive's `valid_from` — the referenced primitive had already ended before the referrer began (a dangling temporal reference). A per-notation spec MAY downgrade this to `info` for relation kinds where a stale reference is expected (e.g. an Issue that explicitly references a retired component). |
+
+### 7.4 Migration
+
+The lifecycle fields are required on every canonical primitive once a notation spec is updated to reference this section. Existing canonical files in adopter repositories backfill: `valid_from` = the file's `last_updated` (or, if absent, a sensible organisation-chosen epoch); `valid_to: null`. A mechanical sweep — no manual decision per file is needed.
+
+### 7.5 Out of scope (v1)
+
+- **Bitemporality.** No separate `transaction_time` vs `valid_time`. v1 records what is true *now* about what was true *then*; back-dating corrections rewrite the file via git, and the git history is the audit trail.
+- **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/11-scenarios.md`), not of the primitive lifecycle.
+- **Sub-day precision.** ISO 8601 date precision only; no timestamps, no timezones in canon. "Today" is the date of the query or render.
+- **First-class time-aware relations.** Promoting relations like `parent` / `applies_to` / activity→goal to first-class lifecycle-bearing files is planned for Wave 3 of the temporal model. In v1 such relations remain inline and timeless on their host primitive.
