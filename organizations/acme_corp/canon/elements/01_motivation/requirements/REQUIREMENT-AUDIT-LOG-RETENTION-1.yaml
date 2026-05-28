@@ -1,0 +1,32 @@
+# Worked example — internal-only REQUIREMENT with no codex source.
+# Schema: notations/15-requirement.md §2.
+#
+# This requirement intentionally has no assertion targeting it, to demonstrate
+# the planned REQ-COVERAGE-001 cross-cutting warning (a REQUIREMENT with no
+# ASSERTION about it). See notations/16-assertion.md §7 Evolution.
+
+notation: requirement
+id: REQUIREMENT-AUDIT-LOG-RETENTION-1
+title: "Retain operational audit logs for at least 12 months"
+description: >
+  All systems producing operational audit logs must retain those logs for
+  at least 12 months from creation. The obligation is an internal Acme
+  practice; no external codex source binds it. If a future internal
+  standard formalises it, this requirement should be updated to cite that
+  standard via derived_from.
+
+severity: medium
+# derived_from: absent — purely internal obligation
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-01"
+valid_to: null

@@ -1,0 +1,45 @@
+# Worked example — full-evidence compliant assertion.
+# Schema: notations/16-assertion.md §2.
+# Demonstrates: subject = PRODUCT, status = compliant, evidence with all three
+# kinds (canonical_ref + external_doc + note).
+
+notation: assertion
+id: ASSERTION-MOBILE-DATA-ERASURE-1
+about: REQUIREMENT-DATA-ERASURE-1                      # → canon/elements/01_motivation/requirements/
+subject: PRODUCT-MOBILE-1                              # PRODUCT TYPE; resolves to a product element
+
+realised_via:
+  - CAPABILITY-V2                                       # Customer Relationship Management capability
+  - PROCESS-USER-DATA-PURGE-1                           # operational purge workflow
+  - INTERNAL_STANDARD-coding-conventions-1              # development discipline that bakes erasure into the codebase
+
+status: compliant
+
+evidence:
+  - kind: canonical_ref
+    ref: PROCESS-USER-DATA-PURGE-1                      # the documented purge process is itself the artefact-of-record
+  - kind: external_doc
+    title: "Q1 2026 data-erasure SLA report — Acme Mobile"
+    url: "https://internal.acme.example/reports/2026-Q1-mobile-erasure-sla.pdf"
+  - kind: note
+    text: >
+      DPO review on 2026-03-15 confirmed 100% of in-period erasure requests
+      were completed within the 30-day window. Sample audit of 50 requests
+      across Q1 showed median completion of 4.2 days. No exceptions raised.
+
+assessed_at: "2026-03-15"
+assessed_by: ROLE-DPO-1
+next_review_at: "2026-09-15"                            # twice-yearly cadence
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-03-15"
+valid_to: null
