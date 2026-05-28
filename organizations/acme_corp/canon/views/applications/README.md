@@ -29,7 +29,7 @@ applications_catalogue:
       status: "Active"                  # Draft | Active | Deprecated | Decommissioning
       maturity: 3
       description: "Core system for order lifecycle management"
-      capabilities: ["V1"]
+      capabilities: ["CAPABILITY-V1"]
       products: ["PROD-ECOMM-1"]
       integrations:
         - target: "APP-CRM-1"

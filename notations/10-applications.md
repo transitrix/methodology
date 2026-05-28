@@ -80,7 +80,7 @@ applications_catalogue:
       maturity: 3                      # CMM level 1–5
       description: "Core system for order lifecycle management"
       capabilities:
-        - "V1"
+        - "CAPABILITY-V1"
       products:
         - "PROD-ECOMM-001"
       integrations:

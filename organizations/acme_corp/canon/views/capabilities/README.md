@@ -13,13 +13,13 @@ notation: capability-map
 spec_version: "0.1"
 
 capability_map:
-  id: "CM-CUSTOMER-1"
+  id: "CAPABILITY_MAP-CUSTOMER-1"
   name: "Customer-Domain Capabilities"
   description: "Customer-facing capabilities with current and target maturity"
   assessment_date: "2026-05-26"
 
   capabilities:
-    - id: "V1"                          # → canon/elements/02_business/capabilities/V1.yaml
+    - id: "CAPABILITY-V1"               # → canon/elements/02_business/capabilities/CAPABILITY-V1.yaml
       name: "Order Management"
       type: "domain"                    # domain | supporting
       current_maturity: 2
@@ -31,18 +31,18 @@ capability_map:
         - "APP-OMS-1"
         - "APP-CRM-1"
       children:
-        - id: "V1.1"
+        - id: "CAPABILITY-V1.1"
           name: "Order Intake"
           type: "domain"
           current_maturity: 3
           target_maturity: 3
-        - id: "V1.2"
+        - id: "CAPABILITY-V1.2"
           name: "Order Fulfilment"
           type: "domain"
           current_maturity: 2
           target_maturity: 3
           target_date: "2026-09-30"
-    - id: "V2"
+    - id: "CAPABILITY-V2"
       name: "Customer Relationship"
       type: "domain"
       current_maturity: 2
@@ -52,7 +52,7 @@ capability_map:
         - "APP-CRM-1"
 ```
 
-`V1` / `V1.1` are vertical-capability addresses; **every** capability, including children, carries `type` (required). The maturity history of an individual capability lives on its element file, not here.
+`CAPABILITY-V1` / `CAPABILITY-V1.1` are canonical capability IDs (V/H sub-grammar per [`notations/IDS_AND_REFERENCES.md`](../../../../notations/IDS_AND_REFERENCES.md) §2); **every** capability, including children, carries `type` (required). The maturity history of an individual capability lives on its element file, not here.
 
 ## See also
 

@@ -21,9 +21,9 @@ applications_catalogue:
       maturity: 4
       description: Core system for end-to-end order lifecycle management.
       capabilities:
-        - V1.2      # Order Fulfilment — order processing
-        - V2.2      # Inventory Management — inventory tracking
-        - V1.2.1    # Pick & Pack — fulfilment orchestration
+        - CAPABILITY-V1.2      # Order Fulfilment — order processing
+        - CAPABILITY-V2.2      # Inventory Management — inventory tracking
+        - CAPABILITY-V1.2.1    # Pick & Pack — fulfilment orchestration
       products:
         - prod-mobile-app
         - prod-partner-bundle
@@ -47,8 +47,8 @@ applications_catalogue:
       maturity: 3
       description: Customer relationship and sales pipeline management.
       capabilities:
-        - V2.1    # Customer Acquisition — lead management, opportunity tracking
-        - V2      # CRM — customer 360 view
+        - CAPABILITY-V2.1    # Customer Acquisition — lead management, opportunity tracking
+        - CAPABILITY-V2      # CRM — customer 360 view
 
     - app_id: APP-EBS-001
       name: Enterprise Event Bus
@@ -75,9 +75,9 @@ applications_catalogue:
       maturity: 4
       description: Central analytical data store for BI and reporting.
       capabilities:
-        - V4.1    # Analytics — real-time reporting
-        - V4.2    # Analytics — historical analysis
-        - H1      # Master Data Management — data cataloguing
+        - CAPABILITY-V4.1    # Analytics — real-time reporting
+        - CAPABILITY-V4.2    # Analytics — historical analysis
+        - CAPABILITY-H1      # Master Data Management — data cataloguing
 
     - app_id: APP-LEGACY-PORTAL-001
       name: Legacy Customer Portal

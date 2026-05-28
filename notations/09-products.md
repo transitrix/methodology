@@ -77,8 +77,8 @@ products_catalogue:
       maturity: 3                      # CMM level 1–5
       description: "Online storefront and order management for end customers"
       capabilities:
-        - "V1"
-        - "V2"
+        - "CAPABILITY-V1"
+        - "CAPABILITY-V2"
       processes:
         - "PROC-ORD-FULFILL-001"
       supporting_apps:

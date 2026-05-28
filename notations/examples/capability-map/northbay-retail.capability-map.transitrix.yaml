@@ -6,13 +6,13 @@ version: "2.0"
 date: "2026-05-12"
 
 capability_map:
-  id: CM-NB-RETAIL-001
+  id: CAPABILITY_MAP-NB-RETAIL-1
   name: NorthBay Retail — Business Capabilities Map
   description: Three core verticals (Customer Engagement, Supply Chain, Financial Management) plus three cross-cutting horizontals (MDM, Cybersecurity, ESG).
   assessment_date: "2026-05-12"
 
   capabilities:
-    - id: V1
+    - id: CAPABILITY-V1
       name: Customer Engagement
       type: domain
       description: All capabilities involved in attracting, retaining, and servicing the customer.
@@ -24,44 +24,44 @@ capability_map:
         - APP-CRM-001
         - APP-MARKETING-CLOUD-001
       children:
-        - id: V1.1
+        - id: CAPABILITY-V1.1
           name: Marketing
           type: domain
           current_maturity: 2
           target_maturity: 4
           target_date: "2027-06-30"
           children:
-            - id: V1.1.1
+            - id: CAPABILITY-V1.1.1
               name: Campaign Management
               type: domain
               current_maturity: 2
               target_maturity: 4
               owner_role: ROLE-MKTG-001
-            - id: V1.1.2
+            - id: CAPABILITY-V1.1.2
               name: Loyalty Programmes
               type: domain
               current_maturity: 3
               target_maturity: 4
               owner_role: ROLE-LOYALTY-001
-            - id: V1.1.3
+            - id: CAPABILITY-V1.1.3
               name: Brand & Content
               type: domain
               current_maturity: 2
               target_maturity: 3
-        - id: V1.2
+        - id: CAPABILITY-V1.2
           name: Sales Channels
           type: domain
           current_maturity: 2
           target_maturity: 4
           target_date: "2027-12-31"
           children:
-            - id: V1.2.1
+            - id: CAPABILITY-V1.2.1
               name: In-store Retail
               type: domain
               current_maturity: 3
               target_maturity: 4
               owner_role: Director of Retail Operations
-            - id: V1.2.2
+            - id: CAPABILITY-V1.2.2
               name: E-commerce
               type: domain
               current_maturity: 2
@@ -70,35 +70,35 @@ capability_map:
               applications:
                 - APP-OMS-001
                 - APP-WEB-STORE-001
-            - id: V1.2.3
+            - id: CAPABILITY-V1.2.3
               name: Mobile App Commerce
               type: domain
               current_maturity: 1
               target_maturity: 3
               target_date: "2026-12-31"
-        - id: V1.3
+        - id: CAPABILITY-V1.3
           name: Customer Service
           type: domain
           current_maturity: 2
           target_maturity: 4
           children:
-            - id: V1.3.1
+            - id: CAPABILITY-V1.3.1
               name: Pre-sale Support
               type: domain
               current_maturity: 2
               target_maturity: 3
-            - id: V1.3.2
+            - id: CAPABILITY-V1.3.2
               name: Post-sale Service
               type: domain
               current_maturity: 2
               target_maturity: 4
-            - id: V1.3.3
+            - id: CAPABILITY-V1.3.3
               name: Returns & Refunds
               type: domain
               current_maturity: 3
               target_maturity: 4
 
-    - id: V2
+    - id: CAPABILITY-V2
       name: Supply Chain Management
       type: domain
       description: From supplier selection through inbound logistics to last-mile delivery.
@@ -107,64 +107,64 @@ capability_map:
       target_date: "2027-09-30"
       owner_role: ROLE-CSCO-001
       children:
-        - id: V2.1
+        - id: CAPABILITY-V2.1
           name: Sourcing & Procurement
           type: domain
           current_maturity: 3
           target_maturity: 4
           children:
-            - id: V2.1.1
+            - id: CAPABILITY-V2.1.1
               name: Supplier Management
               type: domain
               current_maturity: 3
               target_maturity: 4
-            - id: V2.1.2
+            - id: CAPABILITY-V2.1.2
               name: Contract Negotiation
               type: domain
               current_maturity: 2
               target_maturity: 4
-        - id: V2.2
+        - id: CAPABILITY-V2.2
           name: Inventory Management
           type: domain
           current_maturity: 3
           target_maturity: 5
           target_date: "2027-12-31"
           children:
-            - id: V2.2.1
+            - id: CAPABILITY-V2.2.1
               name: Demand Forecasting
               type: domain
               current_maturity: 2
               target_maturity: 5
               target_date: "2027-06-30"
-            - id: V2.2.2
+            - id: CAPABILITY-V2.2.2
               name: Replenishment
               type: domain
               current_maturity: 3
               target_maturity: 5
-            - id: V2.2.3
+            - id: CAPABILITY-V2.2.3
               name: Allocation & Assortment
               type: domain
               current_maturity: 3
               target_maturity: 4
-        - id: V2.3
+        - id: CAPABILITY-V2.3
           name: Logistics
           type: domain
           current_maturity: 3
           target_maturity: 4
           children:
-            - id: V2.3.1
+            - id: CAPABILITY-V2.3.1
               name: Inbound Logistics
               type: domain
               current_maturity: 4
               target_maturity: 4
-            - id: V2.3.2
+            - id: CAPABILITY-V2.3.2
               name: Outbound Logistics & Last-mile
               type: domain
               current_maturity: 2
               target_maturity: 4
               target_date: "2027-09-30"
 
-    - id: V3
+    - id: CAPABILITY-V3
       name: Financial Management
       type: domain
       description: Treasury, accounting, controlling, tax.
@@ -172,24 +172,24 @@ capability_map:
       target_maturity: 5
       owner_role: ROLE-FIN-001
       children:
-        - id: V3.1
+        - id: CAPABILITY-V3.1
           name: Treasury & Cash Management
           type: domain
           current_maturity: 4
           target_maturity: 5
-        - id: V3.2
+        - id: CAPABILITY-V3.2
           name: Accounting & Reporting
           type: domain
           current_maturity: 4
           target_maturity: 5
           target_date: "2026-12-31"
-        - id: V3.3
+        - id: CAPABILITY-V3.3
           name: Controlling & Planning
           type: domain
           current_maturity: 3
           target_maturity: 5
 
-    - id: H1
+    - id: CAPABILITY-H1
       name: Master Data Management
       type: supporting
       description: Cross-cutting capability ensuring product, customer, and supplier data quality across all domains.
@@ -198,7 +198,7 @@ capability_map:
       target_date: "2027-12-31"
       owner_role: ROLE-DATAGOV-001
 
-    - id: H2
+    - id: CAPABILITY-H2
       name: Cybersecurity
       type: supporting
       description: Information security, identity & access management, incident response.
@@ -207,7 +207,7 @@ capability_map:
       target_date: "2027-06-30"
       owner_role: ROLE-CISO-001
 
-    - id: H3
+    - id: CAPABILITY-H3
       name: ESG & Compliance
       type: supporting
       description: Environmental reporting, social responsibility, regulatory compliance across all markets.
