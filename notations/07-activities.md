@@ -274,9 +274,9 @@ project:
 
 The project block does **not** define the duration unit — that lives in `CONVENTIONS.md` per §5.4. The calendar describes when work happens, not how `duration` is measured.
 
-### 5.9 Milestones — zero-duration activities
+### 5.9 Schedule milestones — zero-duration activities
 
-A **milestone** is an activity with `duration: 0`. It marks a deliverable, gate, or significant date with no work attached. No new entity is introduced; milestones are first-class activities that happen to be instantaneous.
+A **schedule milestone** is an activity with `duration: 0`. It marks a deliverable, gate, or significant date on the project's timeline with no work attached. No new entity is introduced *for scheduling*; schedule milestones are first-class activities that happen to be instantaneous.
 
 ```yaml
 - id: M-LAUNCH
@@ -286,11 +286,13 @@ A **milestone** is an activity with `duration: 0`. It marks a deliverable, gate,
 ```
 
 Renderer behaviour:
-- Network view: milestones render as diamonds (or a distinct shape) rather than rectangles.
-- Gantt view: milestones render as a point marker (typically a diamond on the timeline) rather than a bar.
-- CPM: milestones participate normally — `EF == ES`, slack and critical-path membership follow the standard rules.
+- Network view: schedule milestones render as diamonds (or a distinct shape) rather than rectangles.
+- Gantt view: schedule milestones render as a point marker (typically a diamond on the timeline) rather than a bar.
+- CPM: schedule milestones participate normally — `EF == ES`, slack and critical-path membership follow the standard rules.
 
-Milestones MAY have `start_date` / `end_date` pinned; if both are present they MUST be equal (validator MAY enforce — see §6).
+Schedule milestones MAY have `start_date` / `end_date` pinned; if both are present they MUST be equal (validator MAY enforce — see §6).
+
+**Distinct from project-card milestones.** The Project Card notation ([18-project-card.md](18-project-card.md)) introduces a separate `MILESTONE` element type for **project-narrative** milestones — decision gates, certification dates, programme-level markers that belong in the card's narrative but are not part of the schedule's critical-path computation. The two coexist: a `MILESTONE-…` element in a project card may *also* reference a zero-duration activity here when the same date appears on both the card and the schedule. Use a schedule milestone (zero-duration activity, this section) for timeline computation; use a project-card milestone ([18-project-card.md](18-project-card.md) §3) for narrative gates.
 
 ### 5.10 Phases / summary activities — `parent`
 
