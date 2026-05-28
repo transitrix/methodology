@@ -25,6 +25,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline entry under `applications[]` — whether `type: application`, `integration`, `platform`, or `data_store` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each catalogue entry; the applications-catalogue document itself does not carry a lifecycle field. Per-application `integrations[]` sub-entries (outbound integration descriptors nested inside an application) share their parent application's lifecycle and do not carry their own `valid_from` / `valid_to`. The catalogue's own `status` field (`Active` / `Draft` / `Deprecated` / `Decommissioning`) is a notation-specific operational state, distinct from `valid_from` / `valid_to` which mark the period the application element is asserted to exist.
+
+---
+
 ## 1. Overview
 
 The applications catalogue answers the question: **what applications and integrations does the organisation operate?**

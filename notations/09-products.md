@@ -25,6 +25,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Element lifecycle
+
+Every inline product or service entry under `products[]` carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each `products[]` entry; the products-catalogue document itself does not carry a lifecycle field. The catalogue's own `status` field (e.g. `active` / `deprecated`) is a notation-specific operational state, distinct from `valid_from` / `valid_to` which mark the period the product element is asserted to exist.
+
+---
+
 ## 1. Overview
 
 The products catalogue answers the question: **what products and services does the organisation offer?**
