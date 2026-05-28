@@ -21,3 +21,9 @@ rationale: >
   countries. Non-compliance carries administrative fines under Art. 83 (up
   to 4% of global annual turnover) and reputational risk; storage decisions
   for any system holding EU customer PII MUST reflect this constraint.
+
+# Primitive lifecycle (CONTRACT.md §7) — GDPR Art. 44–49 effective since
+# 2018-05-25 (GDPR enforcement date); the org's adoption of this constraint
+# takes effect from the same date in the model.
+valid_from: "2018-05-25"
+valid_to: null
