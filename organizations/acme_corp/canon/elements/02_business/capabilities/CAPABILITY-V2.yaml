@@ -1,0 +1,32 @@
+# Worked example — Capability element primitive (stable fields only).
+# Schema: notations/05-capability-map.md §13 + admission record
+# (CONTRACT.md §6) + primitive lifecycle (CONTRACT.md §7).
+#
+# This capability is the previous parent of CAPABILITY-V1.1 — see
+# REL-CAP-V11-PARENT-1.yaml. It is now Order Intake's ex-parent after
+# the 2026-04 re-org; the canonical Order Intake parent today is V1
+# (Order Management), captured in REL-CAP-V11-PARENT-2.yaml.
+
+notation: capability
+id: CAPABILITY-V2
+name: "Customer Relationship Management"
+type: domain                            # domain | supporting
+description: >
+  Manage long-term relationships with customers — segmentation,
+  loyalty, communications, lifetime value. Sits parallel to Order
+  Management (V1) in the post-2026-04 hierarchy.
+
+target_maturity: 4
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2024-01-01"
+valid_to: null

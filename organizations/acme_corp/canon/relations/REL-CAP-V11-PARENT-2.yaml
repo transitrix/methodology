@@ -1,0 +1,29 @@
+# Worked example — first-class time-aware relation (the SECOND half of
+# a re-parenting event). Schema: notations/17-relations.md §2.
+#
+# Narrative: after the 2026-04 operational review, CAPABILITY-V1.1
+# (Order Intake) was re-parented from V2 (Customer Relationship
+# Management) to V1 (Order Management). This REL file captures the
+# NEW parent relationship. The previous relation is in
+# REL-CAP-V11-PARENT-1.yaml (ended 2026-04-01).
+
+notation: relation
+id: REL-CAP-V11-PARENT-2
+type: parent
+from: CAPABILITY-V1.1
+to: CAPABILITY-V1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — this relation took effect on
+# the same date the prior parent relation ended. valid_to: null means
+# the relation is currently in effect.
+valid_from: "2026-04-01"
+valid_to: null
