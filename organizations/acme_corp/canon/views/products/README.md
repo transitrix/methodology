@@ -28,7 +28,7 @@ products_catalogue:
       status: "Active"                  # Draft | Active | Deprecated
       maturity: 3
       description: "Online storefront and order management for end customers"
-      capabilities: ["V1", "V2"]
+      capabilities: ["CAPABILITY-V1", "CAPABILITY-V2"]
       processes: ["PROC-ORD-FULFILL-1"]
       supporting_apps: ["APP-OMS-1", "APP-CRM-1"]
 
@@ -41,7 +41,7 @@ products_catalogue:
       description: "Tier-1 and Tier-2 support for customers via chat, email, and phone"
 ```
 
-`capabilities`, `processes`, and `supporting_apps` hold **element IDs** (`V1`, `PROC-…`, `APP-…`), not display names — the catalogue references the elements, it does not duplicate them.
+`capabilities`, `processes`, and `supporting_apps` hold **element IDs** (`CAPABILITY-V1`, `PROC-…`, `APP-…`), not display names — the catalogue references the elements, it does not duplicate them.
 
 ## See also
 

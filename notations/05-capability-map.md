@@ -78,12 +78,14 @@ Transitrix applies the **CMMI V2.0** standard to measure capability maturity.
 
 ## 4. Capability ID conventions (Transitrix Studio — YAML files)
 
+Capability IDs follow the canonical `CAPABILITY-<V/H sub-grammar>` form defined in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §2.
+
 | Axis | Format | Examples |
 |------|--------|---------|
-| Vertical (domain) | `V[N]`, `V[N].[N]`, `V[N].[N].[N]` | `V1`, `V1.1`, `V1.1.2` |
-| Horizontal (cross-cutting) | `H[N]`, `H[N].[N]` | `H1`, `H1.2` |
+| Vertical (domain) | `CAPABILITY-V[N]`, `CAPABILITY-V[N].[N]`, `CAPABILITY-V[N].[N].[N]` | `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-V1.1.2` |
+| Horizontal (cross-cutting) | `CAPABILITY-H[N]`, `CAPABILITY-H[N].[N]` | `CAPABILITY-H1`, `CAPABILITY-H1.2` |
 
-Vertical capabilities are primary business domains. Horizontal capabilities cut across domains (security, compliance, data governance).
+Vertical capabilities are primary business domains. Horizontal capabilities cut across domains (security, compliance, data governance). The bare V/H component (`V1`, `H1.2`) without the `CAPABILITY-` prefix still appears as the address inside the DSM addressing system in §5 (`set_name.b.o.L1.L2.L3`) — the canonical ID prefixes that address with `CAPABILITY-`.
 
 ---
 
@@ -202,13 +204,13 @@ Examples:
 
 ```yaml
 capability_map:
-  id: "CM-BUSINESS-001"
+  id: "CAPABILITY_MAP-BUSINESS-1"
   name: "Business Capabilities Map"
   description: "Core business capabilities with current and target maturity"
   assessment_date: "2026-05-08"
 
   capabilities:
-    - id: "V1"
+    - id: "CAPABILITY-V1"
       name: "Order Management"
       type: "domain"                       # domain | supporting
       current_maturity: 2
@@ -220,11 +222,11 @@ capability_map:
         - "APP-OMS-001"
         - "APP-CRM-001"
       children:
-        - id: "V1.1"
+        - id: "CAPABILITY-V1.1"
           name: "Order Intake"
           current_maturity: 3
           target_maturity: 3
-        - id: "V1.2"
+        - id: "CAPABILITY-V1.2"
           name: "Order Fulfilment"
           current_maturity: 2
           target_maturity: 3
@@ -237,10 +239,10 @@ capability_map:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `capability_map.id` | Yes | Unique ID for this map view (`CM-DOMAIN-SEQ`) |
+| `capability_map.id` | Yes | Unique ID for this map view, canonical TYPE `CAPABILITY_MAP` (`CAPABILITY_MAP-<DOMAIN>-<SEQ>`) |
 | `capability_map.name` | Yes | Human-readable name |
 | `capability_map.assessment_date` | Yes | Date of the maturity assessment (YYYY-MM-DD) |
-| `id` | Yes | Capability ID (V1, V1.1, H1 format) |
+| `id` | Yes | Capability ID — canonical form `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-H1` (see [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §2) |
 | `name` | Yes | Capability name |
 | `type` | Yes | `domain` or `supporting` |
 | `current_maturity` | Yes | Current CMM level (1–5) |
@@ -258,7 +260,7 @@ capability_map:
 Individual capability elements in `elements/02_business/` carry the full maturity history:
 
 ```yaml
-id: "CAP-ORD-001"
+id: "CAPABILITY-V1"
 name: "Order Management"
 type: "Capability"
 layer: "Business"
@@ -267,7 +269,7 @@ metadata:
   owner: "firstname.lastname"
   updated_at: "2026-05-08"
 properties:
-  capability_id: "V1"
+  capability_id: "CAPABILITY-V1"
   maturity_levels:
     - level: 1
       effective_from: "2024-01-01"

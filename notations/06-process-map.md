@@ -82,7 +82,7 @@ process_map:
         - process_id: "PROC-ORD-FULFILL-001"
           name: "Order Fulfilment"
           owner_role: "ROLE-OPS-001"
-          capability: "V1"
+          capability: "CAPABILITY-V1"
           maturity: 2
           status: "Active"
           bpmn_file: "views/bpmn/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml"
@@ -90,7 +90,7 @@ process_map:
         - process_id: "PROC-CUST-ONBOARD-001"
           name: "Customer Onboarding"
           owner_role: "ROLE-SALES-001"
-          capability: "V2"
+          capability: "CAPABILITY-V2"
           maturity: 1
           status: "Draft"
 

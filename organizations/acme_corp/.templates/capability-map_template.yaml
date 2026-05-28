@@ -12,13 +12,13 @@ notation: capability-map
 spec_version: "0.1"
 
 capability_map:
-  id: "CM-DOMAIN-1"                    # CM-<DOMAIN>-<SEQ>
+  id: "CAPABILITY_MAP-DOMAIN-1"        # CAPABILITY_MAP-<DOMAIN>-<SEQ>
   name: "<Domain> Capabilities"
   description: "Capabilities with current and target maturity"
   assessment_date: "2026-01-01"        # YYYY-MM-DD, quoted (CONTRACT.md §4)
 
   capabilities:
-    - id: "V1"                         # vertical address: V1, V1.1, V1.1.1, or H1 …
+    - id: "CAPABILITY-V1"              # canonical capability ID, V/H sub-grammar (see IDS §2)
       name: "<Capability name>"
       type: "domain"                   # domain | supporting   (REQUIRED — also on children)
       current_maturity: 2              # CMM level 1–5 (REQUIRED)
@@ -29,13 +29,13 @@ capability_map:
       applications:                    # optional — ApplicationComponent element IDs
         - "APP-XXX-1"
       children:                        # optional — nested capabilities (same fields)
-        - id: "V1.1"
+        - id: "CAPABILITY-V1.1"
           name: "<Child capability>"
           type: "domain"
           current_maturity: 3
           target_maturity: 3
 
-    - id: "H1"                         # horizontal (cross-cutting) capability
+    - id: "CAPABILITY-H1"              # horizontal (cross-cutting) capability
       name: "<Shared capability>"
       type: "supporting"
       current_maturity: 2

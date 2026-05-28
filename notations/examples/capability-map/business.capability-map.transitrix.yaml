@@ -6,13 +6,13 @@ version: "1.0"
 date: "2026-05-08"
 
 capability_map:
-  id: CM-BUSINESS-001
+  id: CAPABILITY_MAP-BUSINESS-1
   name: Business Capabilities Map
   description: Core business capabilities with current and target maturity.
   assessment_date: "2026-05-08"
 
   capabilities:
-    - id: V1
+    - id: CAPABILITY-V1
       name: Order Management
       type: domain
       current_maturity: 2
@@ -24,30 +24,30 @@ capability_map:
         - APP-OMS-001
         - APP-CRM-001
       children:
-        - id: V1.1
+        - id: CAPABILITY-V1.1
           name: Order Intake
           type: domain
           current_maturity: 3
           target_maturity: 3
-        - id: V1.2
+        - id: CAPABILITY-V1.2
           name: Order Fulfilment
           type: domain
           current_maturity: 2
           target_maturity: 3
           target_date: "2026-09-30"
           children:
-            - id: V1.2.1
+            - id: CAPABILITY-V1.2.1
               name: Pick & Pack
               type: domain
               current_maturity: 2
               target_maturity: 3
-            - id: V1.2.2
+            - id: CAPABILITY-V1.2.2
               name: Last-mile Delivery
               type: domain
               current_maturity: 1
               target_maturity: 3
 
-    - id: V2
+    - id: CAPABILITY-V2
       name: Customer Relationship Management
       type: domain
       current_maturity: 3
@@ -57,25 +57,25 @@ capability_map:
       applications:
         - APP-CRM-001
       children:
-        - id: V2.1
+        - id: CAPABILITY-V2.1
           name: Customer Acquisition
           type: domain
           current_maturity: 2
           target_maturity: 4
-        - id: V2.2
+        - id: CAPABILITY-V2.2
           name: Customer Service
           type: domain
           current_maturity: 3
           target_maturity: 4
 
-    - id: V3
+    - id: CAPABILITY-V3
       name: Financial Management
       type: domain
       current_maturity: 4
       target_maturity: 5
       owner_role: ROLE-FIN-001
 
-    - id: H1
+    - id: CAPABILITY-H1
       name: Master Data Management
       type: supporting
       description: Cross-cutting capability ensuring data quality across domains.
@@ -83,7 +83,7 @@ capability_map:
       target_maturity: 3
       target_date: "2027-12-31"
 
-    - id: H2
+    - id: CAPABILITY-H2
       name: ESG & Compliance
       type: supporting
       description: Environmental, social, governance, and regulatory compliance.
