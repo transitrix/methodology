@@ -132,3 +132,41 @@ The bundle is part of the methodology repo (`github.com/transitrix/methodology`,
 - There is no auto-update — the bundle is plain files.
 
 If a notation's canonical shape changes, the template under `templates/` and the corresponding row in `SKILL.md`'s cheat sheet must be updated in the same commit.
+
+---
+
+## Cheat-sheet conformance check
+
+The embedded cheat sheet in [`SKILL.md`](SKILL.md) is downstream of [`notations/README.md`](../../notations/README.md). When the canon catalogue changes — a notation added, renamed, retired, or its file extension changed — the Skill must follow. CI guards this:
+
+- **Script:** [`scripts/check-skill-cheatsheet.mjs`](../../scripts/check-skill-cheatsheet.mjs) — pure Node, no dependencies.
+- **Workflow:** [`.github/workflows/skill-cheatsheet-conformance.yml`](../../.github/workflows/skill-cheatsheet-conformance.yml) — runs on every PR and weekly Monday 09:00 UTC.
+
+### What the script checks
+
+Ground truth = the catalogue table in [`notations/README.md`](../../notations/README.md). The script verifies:
+
+| Check | Rule |
+|---|---|
+| A | Every notation in the canon catalogue has a row in `SKILL.md` §"Family selection" carrying its canonical file extension. |
+| B | Every notation in the canon catalogue has a view-template at `templates/<short>.<short>.transitrix.yaml` in the Skill's templates table. |
+| C | Every file extension in the family-selection matrix corresponds to a notation in the canon. |
+| D | Every view-template path in the templates table corresponds to a notation in the canon. |
+
+The script exits `1` on drift (CI red) with a per-finding list naming the specific notation and where to fix it. Exit `2` is a script-internal error (file missing, parser broke).
+
+### What the script does NOT check
+
+- The codex zone-primitives section in the cheat sheet — codex isn't in the catalogue table; it's a parallel zone-primitive notation with a separate spec ([`notations/14-codex.md`](../../notations/14-codex.md)).
+- Root-scaffolding templates (`transitrix.yaml`, `AGENTS.md`, `copilot-instructions.md`) — adopter-shape concerns, not notation-shape concerns.
+- Intra-spec drift (each spec's front-matter `file_extension` vs its "File header" section) — a separate known issue, not the Skill's fault.
+- The free-text "Situation" prose in the family-selection matrix.
+
+### When CI fails
+
+Read the per-finding output. For each finding:
+
+- **Check A / B failure** — the canon added or renamed a notation; update the Skill cheat sheet and add/rename the view-template under `skills/onboarding/templates/` in the same PR.
+- **Check C / D failure** — the Skill has a stray row or template that doesn't match the canon; either the catalogue is missing the notation (update the catalogue) or the Skill has a typo (fix the Skill).
+
+The script runs on every PR, so a drift introduced anywhere — Skill side or canon side — surfaces in the PR conversation, not in the Actions tab as a warning.
