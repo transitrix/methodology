@@ -21,20 +21,20 @@ process_map:
         - process_id: PROC-NB-SOURCE-001
           name: Strategic Sourcing
           owner_role: ROLE-SOURCING-001
-          capability: V2.1.1
+          capability: CAPABILITY-V2.1.1
           maturity: 3
           status: Active
           description: Identify, evaluate, and onboard strategic suppliers.
         - process_id: PROC-NB-PURCHASE-001
           name: Purchase Order Processing
           owner_role: ROLE-PROC-001
-          capability: V2.1
+          capability: CAPABILITY-V2.1
           maturity: 4
           status: Active
         - process_id: PROC-NB-INV-FORECAST-001
           name: Demand Forecasting
           owner_role: ROLE-SUPPLY-001
-          capability: V2.2.1
+          capability: CAPABILITY-V2.2.1
           maturity: 2
           status: Active
           bpmn_file: views/bpmn/DEMAND_FORECAST_process.bpmn.transitrix.yaml
@@ -42,45 +42,45 @@ process_map:
         - process_id: PROC-NB-INV-REPLEN-001
           name: Store Replenishment
           owner_role: ROLE-INV-001
-          capability: V2.2.2
+          capability: CAPABILITY-V2.2.2
           maturity: 3
           status: Active
         - process_id: PROC-NB-RECEIVE-001
           name: Inbound Receiving
           owner_role: ROLE-WH-001
-          capability: V2.3.1
+          capability: CAPABILITY-V2.3.1
           maturity: 4
           status: Active
         - process_id: PROC-NB-ORD-FULFILL-001
           name: Online Order Fulfilment
           owner_role: ROLE-FULFILL-001
-          capability: V1.2.2
+          capability: CAPABILITY-V1.2.2
           maturity: 3
           status: Active
           bpmn_file: views/bpmn/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
         - process_id: PROC-NB-DELIVERY-001
           name: Last-mile Delivery
           owner_role: ROLE-LOG-001
-          capability: V2.3.2
+          capability: CAPABILITY-V2.3.2
           maturity: 2
           status: Active
           description: Self-operated and 3PL hybrid delivery to home and pickup points.
         - process_id: PROC-NB-CUST-ONBOARD-001
           name: Customer Onboarding & Account Creation
           owner_role: ROLE-DIGITAL-001
-          capability: V1.2
+          capability: CAPABILITY-V1.2
           maturity: 2
           status: Active
         - process_id: PROC-NB-RETURNS-001
           name: Returns & Refunds Processing
           owner_role: ROLE-CS-001
-          capability: V1.3.3
+          capability: CAPABILITY-V1.3.3
           maturity: 3
           status: Active
         - process_id: PROC-NB-LOYALTY-001
           name: Loyalty Programme Operations
           owner_role: ROLE-LOYALTY-001
-          capability: V1.1.2
+          capability: CAPABILITY-V1.1.2
           maturity: 3
           status: Active
 
@@ -102,20 +102,20 @@ process_map:
         - process_id: PROC-NB-FIN-CLOSE-001
           name: Monthly Financial Close
           owner_role: ROLE-CONTROLLER-001
-          capability: V3.2
+          capability: CAPABILITY-V3.2
           maturity: 4
           status: Active
         - process_id: PROC-NB-IT-INCIDENT-001
           name: IT Incident Response
           owner_role: ROLE-IT-001
-          capability: H2
+          capability: CAPABILITY-H2
           maturity: 2
           status: Active
           description: 24/7 incident response with severity-based escalation.
         - process_id: PROC-NB-MKT-CAMPAIGN-001
           name: Marketing Campaign Management
           owner_role: ROLE-MKTG-001
-          capability: V1.1.1
+          capability: CAPABILITY-V1.1.1
           maturity: 2
           status: Active
         - process_id: PROC-NB-LEGAL-REVIEW-001
@@ -126,13 +126,13 @@ process_map:
         - process_id: PROC-NB-VENDOR-MGT-001
           name: Vendor Management
           owner_role: ROLE-VENDOR-001
-          capability: V2.1.1
+          capability: CAPABILITY-V2.1.1
           maturity: 3
           status: Active
         - process_id: PROC-NB-DATA-QUALITY-001
           name: Master Data Quality Reviews
           owner_role: ROLE-DATAGOV-001
-          capability: H1
+          capability: CAPABILITY-H1
           maturity: 1
           status: Draft
           description: Quarterly product, customer, and supplier MDM audits.
@@ -150,7 +150,7 @@ process_map:
         - process_id: PROC-NB-BUDGET-001
           name: Annual Budget Cycle
           owner_role: ROLE-FIN-001
-          capability: V3.3
+          capability: CAPABILITY-V3.3
           maturity: 4
           status: Active
         - process_id: PROC-NB-RISK-001
@@ -161,7 +161,7 @@ process_map:
         - process_id: PROC-NB-COMPLIANCE-001
           name: Compliance Audit
           owner_role: ROLE-LEGAL-001
-          capability: H3
+          capability: CAPABILITY-H3
           maturity: 2
           status: Active
         - process_id: PROC-NB-PERF-REVIEW-001

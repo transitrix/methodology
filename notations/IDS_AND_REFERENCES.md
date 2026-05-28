@@ -180,10 +180,10 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 | `ACT-…` | `ACTIVITY-…` | examples under `examples/fga/`, `examples/fgca/`, `examples/activities/`; spec example in `03-fga.md` §4; `07-activities.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
 | `CHG-…` | `CHANGE-…` | spec example in `07-activities.md` §4; FGCA when its schema lands | follow-up |
 | `FAC-…` | `FACTOR-…` | scenarios examples (`FAC-MARKET-001`, etc.); some FGA references | follow-up |
-| `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | products and applications examples (cross-refs into capabilities); process-map examples | follow-up |
+| `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | residual: `11-scenarios.md` spec example + `examples/scenarios/optimistic-2027.scenarios.transitrix.yaml` | capability-map / products / applications / process-map portion **executed 2026-05-28**; scenarios remains as a follow-up |
 | `SCN-…` / `SCEN-…` | `SCENARIO-…` | `11-scenarios.md`; scenarios examples; `07-activities.md` (`scenario: SCEN-2026-OPT`) | follow-up — variant `SCEN` vs `SCN` also needs unifying |
 | Integer-only IDs (`1`, `2`, …) | typed string IDs (`GOAL-1`, `FACTOR-1`, …) | originally the FGCA example | covered in the in-flight FGCA schema PR — see [transitrix/methodology#7](https://github.com/transitrix/methodology/pull/7) |
-| `V1`, `V1.2`, `H1.2` (no `CAPABILITY-` prefix) | `CAPABILITY-V1`, `CAPABILITY-V1.2`, `CAPABILITY-H1.2` | capability-map examples (own IDs); products / applications / process-map examples (cross-refs into capabilities) | follow-up |
+| `V1`, `V1.2`, `H1.2` (no `CAPABILITY-` prefix) | `CAPABILITY-V1`, `CAPABILITY-V1.2`, `CAPABILITY-H1.2` | residual: `examples/scenarios/omnichannel-2028.scenarios.transitrix.yaml`; prose mentions in `method/methodology.md`; `integration/studio.md` | capability-map / products / applications / process-map portion **executed 2026-05-28** (capability-map examples + cross-refs in products / applications / process-map specs, examples, and `acme_corp` views); scenarios + supporting docs remain |
 | Zero-padded sequences (`001`, `002`, …) | no-leading-zero integers (`1`, `2`, …) | most example files | follow-up — purely a string-form change; sort order is unaffected because comparison is numeric |
 
 **Migration policy:** one follow-up issue per notation (spec + its examples). Do not bundle migrations into a single mega-PR — they touch different files and benefit from independent review.

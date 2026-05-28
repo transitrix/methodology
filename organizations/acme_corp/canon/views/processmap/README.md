@@ -27,14 +27,14 @@ process_map:
         - process_id: "PROC-ORD-FULFILL-1"   # → canon/elements/02_business/processes/PROC-ORD-FULFILL-1.yaml
           name: "Order Fulfilment"
           owner_role: "ROLE-OPS-1"
-          capability: "V1"
+          capability: "CAPABILITY-V1"
           maturity: 2
           status: "Active"                    # Draft | Active | Deprecated
           bpmn_file: "canon/views/bpmn/order-fulfilment.bpmn.transitrix.yaml"
         - process_id: "PROC-CUST-ONBOARD-1"
           name: "Customer Onboarding"
           owner_role: "ROLE-SALES-1"
-          capability: "V2"
+          capability: "CAPABILITY-V2"
           maturity: 1
           status: "Draft"
 
