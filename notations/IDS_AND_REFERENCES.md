@@ -134,6 +134,14 @@ External constraints and internal authority documents in the **Codex** zone — 
 | `POLICY` | codex / internal | an internal policy the organisation issues |
 | `INTERNAL_STANDARD` | codex / internal | an internal standard or convention |
 
+### 3.6 Assertion type
+
+Compliance claims linking a `REQUIREMENT` to the elements that realise it. Assertions are canonical (canon zone) but live **outside** the `elements/` tree, under `canon/assertions/`. Schema: [16-assertion.md](16-assertion.md).
+
+| TYPE | What it is |
+|---|---|
+| `ASSERTION` | a claim that a subject (`PRODUCT` / `PROCESS` / `CAPABILITY`) satisfies a `REQUIREMENT`, with status and evidence |
+
 ---
 
 ## 4. Uniqueness scope
@@ -153,6 +161,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
 | `CONSTRAINT` | within the organisation's element catalogue (`elements/01_motivation/constraints/`), one file per CONSTRAINT. |
 | `REQUIREMENT` | within the organisation's element catalogue (`elements/01_motivation/requirements/`), one file per REQUIREMENT. |
+| `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
