@@ -46,6 +46,10 @@ Recommended maximum: **5 levels** (root = level 1). The validator warns at depth
 
 A block's `id` MAY use the canonical `<TYPE>-…-<INTEGER>` form to cross-link into an organisational catalogue (`APPLICATION-OMS-1`, `CAPABILITY-V1.2`). Otherwise it is a document-local label and is accepted as-is. See [`notations/IDS_AND_REFERENCES.md`](../../../../notations/IDS_AND_REFERENCES.md).
 
+## Lifecycle
+
+When `block.id` cross-links into the catalogue (canonical `<TYPE>-…-<INTEGER>` form), the primitive lifecycle ([`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7) is borne by the target element's own file — the block here is a layout placement, not a separate element. When `block.id` is a document-local label, there is no canonical element to bear lifecycle and the block carries none. The nested_blocks document itself carries no lifecycle either — it is a view.
+
 ## Tooling
 
 Rendered natively by Transitrix Studio — no external binaries required. The previous Python + `svgbob_cli` pipeline was retired in Studio 1.1.0.
