@@ -24,10 +24,10 @@ capability_map:
       current_maturity: 2              # CMM level 1–5 (REQUIRED)
       target_maturity: 3               # optional
       target_date: "2026-12-31"        # optional, YYYY-MM-DD
-      owner_role: "ROLE-XXX-1"         # optional — BusinessRole element ID
-      business_process: "PROC-XXX-1"   # optional — BusinessProcess element ID
-      applications:                    # optional — ApplicationComponent element IDs
-        - "APP-XXX-1"
+      owner_role: "ROLE-XXX-1"         # optional — ROLE element ID
+      business_process: "PROCESS-XXX-1" # optional — PROCESS element ID
+      applications:                    # optional — APPLICATION element IDs
+        - "APPLICATION-XXX-1"
       children:                        # optional — nested capabilities (same fields)
         - id: "CAPABILITY-V1.1"
           name: "<Child capability>"

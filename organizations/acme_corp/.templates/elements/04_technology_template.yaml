@@ -1,75 +1,32 @@
-# Transitrix Element Template: Technology Layer
-# Purpose: Capture infrastructure nodes, systems software, and artifacts
-# Location: elements/04_technology/
-# Naming Convention: [TYPE]-[SHORT_CODE].yaml (e.g., NODE-DB-001.yaml, ARTIFACT-IMG-001.yaml)
+# Transitrix element-primitive template — Technology layer (04_technology)
+#
+# NOTE: the TYPE registry (notations/IDS_AND_REFERENCES.md §3.1) does not yet
+# register any element TYPE for the technology layer. The layer folder exists
+# for forward compatibility; when a technology-layer TYPE is registered it will
+# follow the common envelope below (ELEMENT_PRIMITIVES.md §3), one element per
+# file at canon/elements/04_technology/<plural-type>/<ID>.yaml.
+#
+# Until then, do not author technology-layer element files — there is no
+# canonical TYPE prefix to use. (The legacy ArchiMate Node / SystemSoftware /
+# Artifact shape this template previously carried has been removed; it predated
+# the canonical schema and is not part of the registry.)
 
-id: "NODE-XXX-001"
-name: "Infrastructure Node / System / Artifact Name"
-type: "Node"  # Valid types: Node, SystemSoftware, Artifact, Device, CommunicationPath
-layer: "Technology"
-
-metadata:
-  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
-  owner: "firstname.lastname"
-  created_at: "2026-05-03"
-  updated_at: "2026-05-03"
-  tags: ["infrastructure", "database"]
-
-properties:
-  description: "Detailed description of the technology element"
-  criticality: "High"  # Values: Critical, High, Medium, Low
-
-  # Infrastructure specifics
-  infrastructure_type: "Compute"  # Values: Compute, Storage, Database, Network, Security, Monitoring
-  deployment_location: "AWS us-east-1"  # Cloud region or data center
-  environment: "Production"  # Values: Development, Staging, Production
-  instance_count: 3
-
-  # Capacity and performance
-  cpu_cores: 8
-  memory_gb: 32
-  storage_gb: 500
-  network_throughput_mbps: 1000
-
-  # Vendor and licensing
-  vendor: "AWS / Azure / GCP / On-Premises"
-  product_name: "RDS PostgreSQL 15.x"
-  license_type: "Commercial"  # Values: Commercial, Open Source, Proprietary, Trial
-  license_expiry: "2027-12-31"
-
-  # Maintenance and support
-  support_level: "Premium"  # Values: Standard, Premium, Enterprise, Community
-  maintenance_window: "Sunday 02:00-06:00 UTC"
-  end_of_life: "2028-12-31"
-
-  # Security and compliance
-  encryption_at_rest: true
-  encryption_in_transit: true
-  security_certifications: ["ISO27001", "SOC2"]
-  backup_strategy: "Daily incremental, weekly full"
-  disaster_recovery_plan: "RTO: 4h, RPO: 1h"
-
-# Capacity planning
-capacity:
-  current_utilization_percent: 0
-  max_capacity_threshold_percent: 80
-  growth_projection_percent_per_year: 15
-
-# Operational metadata
-operations:
-  monitoring_tool: "Datadog / Prometheus / CloudWatch"
-  log_retention_days: 90
-  metrics_retention_days: 365
-  alerting_enabled: true
-
-# Cost allocation
-cost_allocation:
-  monthly_cost_usd: 0
-  cost_center: "Infrastructure"
-  chargeback_model: "Shared"  # Values: Shared, Direct, Tiered, Free
-
-# Related elements
-references:
-  parent_node: null  # ID of parent node if hierarchical
-  connected_nodes: []  # IDs of other nodes
-  hosted_applications: []  # IDs of ApplicationComponents running on this node
+# Common envelope to use once a technology TYPE is registered:
+#
+# notation: <type>                     # lowercased registry TYPE
+# id: <TYPE>-EXAMPLE-1                  # canonical ID — IDS_AND_REFERENCES.md §1
+# name: "Human-readable label"
+# description: >
+#   One-paragraph elaboration.
+#
+# # per-TYPE fields per ELEMENT_PRIMITIVES.md §7
+#
+# # Admission record (CONTRACT.md §6)
+# zone: canon
+# admitted_at: "2026-01-01"
+# admitted_by: "firstname.lastname"
+# gate_checks: { uniqueness: pass, consistency: pass, completeness: pass }
+#
+# # Primitive lifecycle (CONTRACT.md §7)
+# valid_from: "2026-01-01"
+# valid_to: null

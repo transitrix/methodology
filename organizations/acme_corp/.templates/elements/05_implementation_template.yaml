@@ -1,0 +1,36 @@
+# Transitrix element-primitive template — Implementation & Migration layer (05_implementation)
+# Canonical schema: notations/ELEMENT_PRIMITIVES.md §3 (common envelope) + §6.1
+# (layer rationale) + the per-TYPE field sets in §7. One element per file, at
+#   canon/elements/05_implementation/<plural-type>/<ID>.yaml
+#
+# TYPEs in this layer:
+#   ACTIVITY  notation: activity  folder activities/  fields: ELEMENT_PRIMITIVES.md §7.4  (ArchiMate Work Package; recursive via parent)
+#   CHANGE    notation: change    folder changes/     fields: §7.3                       (ArchiMate Gap; multi-scale via parent)
+#   MILESTONE folder milestones/ reserved (§6.2) — standalone registration owned by the MILESTONE TYPE task
+#
+# Worked examples: organizations/acme_corp/canon/elements/05_implementation/.
+
+notation: activity                     # element TYPE short name (lowercased TYPE)
+id: ACTIVITY-EXAMPLE-1                  # canonical ID — IDS_AND_REFERENCES.md §1
+name: "Human-readable label"
+description: >
+  One-paragraph elaboration.
+
+# ── per-TYPE fields (ELEMENT_PRIMITIVES.md §7) ──
+# ACTIVITY:  duration_days ; goals: [GOAL-…] ; delivers_changes: [CHANGE-…] ;
+#            predecessors: [ACTIVITY-…] (inline/timeless) ; parent: ACTIVITY-… ;
+#            start_date / end_date (schedule — distinct from valid_from/valid_to)
+# CHANGE:    goals: [GOAL-…] ; parent: CHANGE-… (multi-scale decomposition)
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-01-01"              # quoted ISO 8601 (CONTRACT.md §4)
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-01"
+valid_to: null
