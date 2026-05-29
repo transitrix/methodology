@@ -8,9 +8,9 @@ status: "draft"
 
 # Relations — Reference
 
-**Scope:** The `REL` element type — first-class **time-aware relations** between two canonical primitives. A relation file records that *primitive A is in relation X with primitive B during a defined window*. The shared header / zone / admission / lifecycle / sidecar contracts are defined in [CONTRACT.md](CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1.
+**Scope:** The `REL` element type — first-class **time-aware relations** between two canonical primitives. A relation file records that *primitive A is in relation X with primitive B during a defined window*. The shared header / zone / admission / lifecycle / sidecar contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
 
-Relations are canon-zone artefacts that live in a **flat folder** at the canon-zone root: `canon/relations/`. Each relation is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](CONTRACT.md) §6, `zone: canon`), the primitive lifecycle ([CONTRACT.md](CONTRACT.md) §7), and the relation-specific frontmatter below.
+Relations are canon-zone artefacts that live in a **flat folder** at the canon-zone root: `canon/relations/`. Each relation is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`), the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7), and the relation-specific frontmatter below.
 
 ---
 
@@ -50,16 +50,16 @@ valid_to: null
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `relation`. |
-| `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1: `REL-[<middle>-]<INTEGER>`. |
+| `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REL-[<middle>-]<INTEGER>`. |
 | `type` | yes | string | One of the closed enum values in §3. The enum is fixed in this spec; adding a new relation kind requires a methodology revision. |
 | `from` | yes | string | Typed canonical ID of the relation's source / dependent / child primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
 | `to` | yes | string | Typed canonical ID of the relation's target / parent / destination primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
-| `zone` | yes | string | Always `canon` for REL — see [CONTRACT.md](CONTRACT.md) §6. |
-| `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](CONTRACT.md) §4. |
+| `zone` | yes | string | Always `canon` for REL — see [CONTRACT.md](../CONTRACT.md) §6. |
+| `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `admitted_by` | yes | string | Person handle or tool ID that ran the admission gate. |
 | `gate_checks` | yes | map | Standard canon checks (`uniqueness`, `consistency`, `completeness`). |
-| `valid_from` | yes | string | Date the relation took effect — quoted ISO 8601 per [CONTRACT.md](CONTRACT.md) §7. |
-| `valid_to` | yes | string \| null | Date the relation ceased to be in effect, or `null` if still in effect — see [CONTRACT.md](CONTRACT.md) §7. |
+| `valid_from` | yes | string | Date the relation took effect — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §7. |
+| `valid_to` | yes | string \| null | Date the relation ceased to be in effect, or `null` if still in effect — see [CONTRACT.md](../CONTRACT.md) §7. |
 
 ---
 
@@ -108,7 +108,7 @@ A typical naming convention encodes the endpoints and kind in the middle segment
 | `REL-003` | error | The relation's `[valid_from, valid_to]` window falls outside the lifecycle of either endpoint — i.e. `valid_from` predates the endpoint's `valid_from`, or `valid_to` postdates the endpoint's `valid_to`. A relation cannot be in effect before either of its endpoints existed or after either retired. |
 | `REL-004` | error | A relation kind declared time-aware in its host notation spec is used inline (as an inline cross-reference field) instead of as a first-class REL file. The host notation's spec is the source of truth for which kinds are time-aware. |
 
-The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) rules apply to REL files in addition to the REL-* rules above. The sidecar rules (`VERSIONED-001..005`, [CONTRACT.md](CONTRACT.md) §9.3) do not apply to relations — a relation's own state is its endpoints + lifecycle window; if the relation's attributes need versioning, the relation is its own primitive and gets its own sidecar.
+The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to REL files in addition to the REL-* rules above. The sidecar rules (`VERSIONED-001..005`, [CONTRACT.md](../CONTRACT.md) §9.3) do not apply to relations — a relation's own state is its endpoints + lifecycle window; if the relation's attributes need versioning, the relation is its own primitive and gets its own sidecar.
 
 ---
 
@@ -116,12 +116,12 @@ The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) and primitive
 
 Each notation spec declares its relation kinds as either **inline (timeless)** or **first-class (time-aware)** in a follow-up PR per family. v1 first-class candidates (from the temporal-model epic body):
 
-- Capability map ([05-capability-map.md](05-capability-map.md)) — `parent` on capabilities.
-- Goals tree ([04-goals.md](04-goals.md)) — `parent` on goals (re-parenting goals); `activity_goal` link from activities to goals.
+- Capability map ([05-capability-map.md](../views/05-capability-map.md)) — `parent` on capabilities.
+- Goals tree ([04-goals.md](../views/04-goals.md)) — `parent` on goals (re-parenting goals); `activity_goal` link from activities to goals.
 
 Inline relations that stay timeless in v1 (per the same per-notation declarations):
 
-- BPMN sequence flows ([01-bpmn.md](01-bpmn.md)) — within one process flow document.
+- BPMN sequence flows ([01-bpmn.md](../views/01-bpmn.md)) — within one process flow document.
 - FGCA / FGA / Activities cross-layer references (`factor.references_constraint`, etc.) where the model captures *what holds today* rather than the history of changes.
 
 Each notation that adopts a first-class relation kind:
@@ -144,7 +144,7 @@ Pending design work (separate Wave 3 PRs):
 
 Out of scope for v1:
 
-- **Relation-attribute versioning.** Relations have lifecycle but no attributes that vary within their window. If a relation needs versioned attributes (a weight that drifts over time), it gets its own sidecar via [CONTRACT.md](CONTRACT.md) §9 — same pattern as any other primitive.
+- **Relation-attribute versioning.** Relations have lifecycle but no attributes that vary within their window. If a relation needs versioned attributes (a weight that drifts over time), it gets its own sidecar via [CONTRACT.md](../CONTRACT.md) §9 — same pattern as any other primitive.
 - **Many-way relations.** Each REL file has exactly one `from` and one `to`. Many-way relationships are modelled as multiple binary REL files sharing one endpoint.
 - **Relation transitivity / inference.** If A `parent` B and B `parent` C, the validator does not infer A `parent` C. Transitive views are query-time renderer concerns.
 
@@ -152,7 +152,7 @@ Out of scope for v1:
 
 ## 8. References
 
-- TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1 (entry), §1 (grammar), §4 (uniqueness scope).
-- Zone model, admission record, primitive lifecycle: [CONTRACT.md](CONTRACT.md) §5, §6, §7.
-- Versioned-attribute sidecar (the Wave 2 pattern that REL files do *not* use): [CONTRACT.md](CONTRACT.md) §9.
+- TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (entry), §1 (grammar), §4 (uniqueness scope).
+- Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
+- Versioned-attribute sidecar (the Wave 2 pattern that REL files do *not* use): [CONTRACT.md](../CONTRACT.md) §9.
 - Codex `applies_to` retirement (why it is not in the §3 enum): [14-codex.md](14-codex.md) §8.

@@ -17,7 +17,7 @@ file_extension: "*.bpmn.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,7 +28,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-BPMN files use **file-local labels** for the nodes they describe (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`). Per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 these labels are not canonical elements — they identify nodes within one BPMN document only, not artefacts that the organisation registers in its element catalogue. Accordingly, neither the BPMN nodes nor the BPMN document itself carry the canonical primitive lifecycle (`valid_from` / `valid_to`) defined in [CONTRACT.md](CONTRACT.md) §7.
+BPMN files use **file-local labels** for the nodes they describe (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`). Per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3 these labels are not canonical elements — they identify nodes within one BPMN document only, not artefacts that the organisation registers in its element catalogue. Accordingly, neither the BPMN nodes nor the BPMN document itself carry the canonical primitive lifecycle (`valid_from` / `valid_to`) defined in [CONTRACT.md](../CONTRACT.md) §7.
 
 The lifecycle of the **process** this BPMN file describes lives on the corresponding `PROCESS-…` element registered in the process landscape map ([06-process-map.md](06-process-map.md)); the BPMN file is the detailed flow representation of that process, not the lifecycle bearer.
 
@@ -48,7 +48,7 @@ The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Mod
 
 The file extension is **`.bpmn.transitrix.yaml`**. Files outside this extension are rejected by the compiler with an explicit error.
 
-Until 2026-05-20 the short form `.bpmn.yaml` was also accepted as an alias. Per the family-consistency decision recorded that day, the long form is now the sole canonical extension — every Transitrix notation uses the `*.<short-name>.transitrix.<ext>` form per [`CONTRACT.md`](CONTRACT.md), and BPMN is no longer an exception.
+Until 2026-05-20 the short form `.bpmn.yaml` was also accepted as an alias. Per the family-consistency decision recorded that day, the long form is now the sole canonical extension — every Transitrix notation uses the `*.<short-name>.transitrix.<ext>` form per [`CONTRACT.md`](../CONTRACT.md), and BPMN is no longer an exception.
 
 ---
 

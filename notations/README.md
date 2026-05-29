@@ -1,26 +1,42 @@
 # Notations
 
-Transitrix is a text-native methodology: every architecture artefact lives in a YAML (or Svgbob) file whose syntax is governed by one of the notations below. This index lists the thirteen notations, what each is for, and how the strategy-chain family fits together.
+Transitrix is a text-native methodology: every architecture artefact lives in a YAML (or Svgbob) file whose syntax is governed by one of the notations below. The folder splits the notations by kind: **view notations** describe render-able diagrams (`*.transitrix.yaml` files that a tool can lay out into a picture); **element notations** describe canon-zone primitives (standalone elements that other notations reference). This index lists both, what each is for, and how the strategy-chain family fits together.
 
-## Catalogue
+## Views
+
+The 14 view notations live under [`views/`](views/) — each describes a render-able artefact with its own YAML schema and file extension.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
-| [01-bpmn.md](01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
-| [02-fgca.md](02-fgca.md) | `fgca` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | `*.fgca.transitrix.yaml` | documented |
-| [03-fga.md](03-fga.md) | `fga` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | `*.fga.transitrix.yaml` | draft |
-| [04-goals.md](04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
-| [05-capability-map.md](05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
-| [06-process-map.md](06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
-| [07-activities.md](07-activities.md) | `activities` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — activities and dependencies. | `*.activities.transitrix.yaml` | documented |
-| [08-blocks.md](08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | `*.blocks.transitrix.yaml` | documented |
-| [09-products.md](09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
-| [10-applications.md](10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
-| [11-scenarios.md](11-scenarios.md) | `scenarios` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, applications. | `*.scenarios.transitrix.yaml` | documented |
-| [12-issues.md](12-issues.md) | `issues` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | `*.issues.transitrix.yaml` | draft |
-| [13-process-blueprint.md](13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
+| [01-bpmn.md](views/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
+| [02-fgca.md](views/02-fgca.md) | `fgca` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | `*.fgca.transitrix.yaml` | documented |
+| [03-fga.md](views/03-fga.md) | `fga` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | `*.fga.transitrix.yaml` | draft |
+| [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
+| [05-capability-map.md](views/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
+| [06-process-map.md](views/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
+| [07-activities.md](views/07-activities.md) | `activities` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — activities and dependencies. | `*.activities.transitrix.yaml` | documented |
+| [08-blocks.md](views/08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | `*.blocks.transitrix.yaml` | documented |
+| [09-products.md](views/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
+| [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
+| [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, applications. | `*.scenarios.transitrix.yaml` | documented |
+| [12-issues.md](views/12-issues.md) | `issues` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | `*.issues.transitrix.yaml` | draft |
+| [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
+| [18-project-card.md](views/18-project-card.md) | `project-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.project-card.transitrix.yaml` | documented |
 
-All notations share the same file-extension convention `.<short-name>.transitrix.yaml`, and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
+All view notations share the same file-extension convention `.<short-name>.transitrix.yaml`, and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
+
+## Elements
+
+The 4 element notations live under [`elements/`](elements/) — each defines a canon-zone primitive: standalone YAML files admitted to canon and referenced (by ID) from views and other elements. Element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7.
+
+| Spec | Short name | Purpose | File location | Status |
+|---|---|---|---|---|
+| [14-codex.md](elements/14-codex.md) | `codex` | External laws / regulations and internal policies / standards in the codex zone. | `codex/external/<jurisdiction>/<ID>.yaml`, `codex/internal/<ID>.yaml` | documented |
+| [15-requirement.md](elements/15-requirement.md) | `requirement` | Motivation-layer element capturing a positive obligation derived from a codex source. | `canon/elements/01_motivation/requirements/REQUIREMENT-<…>.yaml` | documented |
+| [16-assertion.md](elements/16-assertion.md) | `assertion` | Canon-zone primitive linking a REQUIREMENT to a subject (PRODUCT / PROCESS / CAPABILITY). | `canon/assertions/ASSERTION-<…>.yaml` | documented |
+| [17-relations.md](elements/17-relations.md) | `relation` | First-class, time-aware relation between two canonical primitives — `parent` / `goal_parent` / `activity_goal` / `unit_parent`. | `canon/relations/REL-<…>.yaml` | documented |
+
+Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 
 ## Status vocabulary
 
@@ -42,10 +58,10 @@ Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit
 
 | Notation | Factor | Goal | Change | Activity |
 |---|:---:|:---:|:---:|:---:|
-| **FGCA** ([02-fgca.md](02-fgca.md)) | ✓ | ✓ | ✓ | ✓ |
-| **FGA** ([03-fga.md](03-fga.md)) | ✓ | ✓ | — | ✓ |
-| **Goals tree** ([04-goals.md](04-goals.md)) | — | ✓ | — | — |
-| **Activities network** ([07-activities.md](07-activities.md)) | — | — | — | ✓ |
+| **FGCA** ([02-fgca.md](views/02-fgca.md)) | ✓ | ✓ | ✓ | ✓ |
+| **FGA** ([03-fga.md](views/03-fga.md)) | ✓ | ✓ | — | ✓ |
+| **Goals tree** ([04-goals.md](views/04-goals.md)) | — | ✓ | — | — |
+| **Activities network** ([07-activities.md](views/07-activities.md)) | — | — | — | ✓ |
 
 ### Selection matrix
 

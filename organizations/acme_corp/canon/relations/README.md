@@ -2,7 +2,7 @@
 
 First-class time-aware relations between canonical primitives — each file is one `REL` artefact recording that *primitive A is in relation X with primitive B during a defined window*. The folder is **flat**: relations are organised by their canonical IDs, not by `type` or by endpoint TYPE.
 
-Schema and validation rules are defined in [`notations/17-relations.md`](../../../notations/17-relations.md). TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../notations/IDS_AND_REFERENCES.md) §3.1 (`REL`), §4 (uniqueness scope).
+Schema and validation rules are defined in [`notations/elements/17-relations.md`](../../../notations/elements/17-relations.md). TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../notations/IDS_AND_REFERENCES.md) §3.1 (`REL`), §4 (uniqueness scope).
 
 ## File convention
 
@@ -10,7 +10,7 @@ Schema and validation rules are defined in [`notations/17-relations.md`](../../.
 
 ## The (`type`, `from`, `to`) triple
 
-Every relation declares its kind via `type` (drawn from the closed enum in [`17-relations.md`](../../../notations/17-relations.md) §3) and its endpoints via `from` / `to`. The relation has its **own lifecycle** (`valid_from` / `valid_to`) — distinct from the lifecycles of either endpoint. A re-parenting / re-aiming event is captured as **two** REL files: the old relation ends (`valid_to` set), and a new one starts (`valid_from` = same date) pointing at the new endpoint.
+Every relation declares its kind via `type` (drawn from the closed enum in [`17-relations.md`](../../../notations/elements/17-relations.md) §3) and its endpoints via `from` / `to`. The relation has its **own lifecycle** (`valid_from` / `valid_to`) — distinct from the lifecycles of either endpoint. A re-parenting / re-aiming event is captured as **two** REL files: the old relation ends (`valid_to` set), and a new one starts (`valid_from` = same date) pointing at the new endpoint.
 
 ## Examples in this folder
 
@@ -23,7 +23,7 @@ The two together encode the **re-parenting event**: Order Intake moved from Cust
 
 ## See also
 
-- Relations spec: [`notations/17-relations.md`](../../../notations/17-relations.md).
-- Per-notation time-aware declarations: [`notations/05-capability-map.md`](../../../notations/05-capability-map.md) §13a (capability `parent`); [`notations/04-goals.md`](../../../notations/04-goals.md) (goal `parent`); [`notations/07-activities.md`](../../../notations/07-activities.md) (activity `goals`).
+- Relations spec: [`notations/elements/17-relations.md`](../../../notations/elements/17-relations.md).
+- Per-notation time-aware declarations: [`notations/views/05-capability-map.md`](../../../notations/views/05-capability-map.md) §13a (capability `parent`); [`notations/views/04-goals.md`](../../../notations/views/04-goals.md) (goal `parent`); [`notations/views/07-activities.md`](../../../notations/views/07-activities.md) (activity `goals`).
 - Endpoints in this example: [`../elements/02_business/capabilities/`](../elements/02_business/capabilities/).
 - Sidecar contract (versioned attributes — distinct from REL): [`notations/CONTRACT.md`](../../../notations/CONTRACT.md) §9.

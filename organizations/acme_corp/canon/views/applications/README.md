@@ -57,5 +57,5 @@ applications_catalogue:
 
 ## See also
 
-- `notations/10-applications.md` — applications-catalogue notation reference (full field table)
+- `notations/views/10-applications.md` — applications-catalogue notation reference (full field table)
 - `canon/elements/03_application/applications/` — where individual Application elements live

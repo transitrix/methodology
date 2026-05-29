@@ -1,9 +1,9 @@
 # Worked example — internal-only REQUIREMENT with no codex source.
-# Schema: notations/15-requirement.md §2.
+# Schema: notations/elements/15-requirement.md §2.
 #
 # This requirement intentionally has no assertion targeting it, to demonstrate
 # the planned REQ-COVERAGE-001 cross-cutting warning (a REQUIREMENT with no
-# ASSERTION about it). See notations/16-assertion.md §7 Evolution.
+# ASSERTION about it). See notations/elements/16-assertion.md §7 Evolution.
 
 notation: requirement
 id: REQUIREMENT-AUDIT-LOG-RETENTION-1

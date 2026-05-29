@@ -1,5 +1,5 @@
 # Transitrix Capability Map — copy-and-fill template
-# Spec:      notations/05-capability-map.md
+# Spec:      notations/views/05-capability-map.md
 # Extension: *.capability-map.transitrix.yaml
 # Location:  views/capabilities/   (the map references Capability elements in
 #            elements/02_business/capabilities/)

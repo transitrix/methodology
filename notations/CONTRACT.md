@@ -154,7 +154,7 @@ The lifecycle fields are required on every canonical primitive once a notation s
 ### 7.5 Out of scope (v1)
 
 - **Bitemporality.** No separate `transaction_time` vs `valid_time`. v1 records what is true *now* about what was true *then*; back-dating corrections rewrite the file via git, and the git history is the audit trail.
-- **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/11-scenarios.md`), not of the primitive lifecycle.
+- **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/views/11-scenarios.md`), not of the primitive lifecycle.
 - **Sub-day precision.** ISO 8601 date precision only; no timestamps, no timezones in canon. "Today" is the date of the query or render.
 - **First-class time-aware relations.** Promoting relations like `parent` / `applies_to` / activity→goal to first-class lifecycle-bearing files is planned for Wave 3 of the temporal model. In v1 such relations remain inline and timeless on their host primitive.
 

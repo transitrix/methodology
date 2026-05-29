@@ -16,7 +16,7 @@ file_extension: "*.issues.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across the Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across the Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -27,7 +27,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline issue entry under `issues[]` (`ISSUE` canonical TYPE per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1) carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline issues in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each issue entry; the issues-catalogue document itself does not carry a lifecycle field.
+Every inline issue entry under `issues[]` (`ISSUE` canonical TYPE per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1) carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline issues in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each issue entry; the issues-catalogue document itself does not carry a lifecycle field.
 
 The issue's `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), `created_at`, and `resolved_at` fields describe the **issue-handling timeline** — when the issue was opened, where it currently stands, when it was closed. These are operational state, distinct from `valid_from` / `valid_to` which mark the period the issue artefact itself is admitted to canon and considered in effect. In typical practice the two coincide for `open` issues (`valid_from ≈ created_at`, `valid_to: null`); closing an issue may or may not retire the artefact depending on the organisation's archive policy.
 
@@ -115,7 +115,7 @@ A document is a single `issues_catalogue` object holding catalogue metadata and 
 |---|---|---|---|
 | `notation` | yes | string | MUST equal `issues` |
 | `spec_version` | no | string | reserved, see file header |
-| `issues_catalogue.id` | yes | string | catalogue ID — `ISSUES-CAT-<integer>` per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) |
+| `issues_catalogue.id` | yes | string | catalogue ID — `ISSUES-CAT-<integer>` per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) |
 | `issues_catalogue.name` | yes | string | human-readable register name |
 | `issues_catalogue.description` | no | string | optional register description |
 | `issues_catalogue.version` | no | string | document version (semantic versioning recommended) |
@@ -161,7 +161,7 @@ The `issues` array is **flat**. A child issue declares its parent with `parent: 
 
 ## 7. Validation rules
 
-Shared header rules `HDR-001`…`HDR-004` apply (see [CONTRACT.md](CONTRACT.md)). Notation-specific rules:
+Shared header rules `HDR-001`…`HDR-004` apply (see [CONTRACT.md](../CONTRACT.md)). Notation-specific rules:
 
 | Rule | Severity | Description |
 |---|---|---|
@@ -204,8 +204,8 @@ An issue's `relates_to` points at the `ACTIVITY` or `GOAL` it concerns; `activit
 
 ## 10. References
 
-- Shared header contract: [CONTRACT.md](CONTRACT.md)
-- ID grammar and TYPE registry (`ISSUE`, `ISSUES_CAT`): [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md)
+- Shared header contract: [CONTRACT.md](../CONTRACT.md)
+- ID grammar and TYPE registry (`ISSUE`, `ISSUES_CAT`): [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md)
 - Activities notation: [07-activities.md](07-activities.md)
 - Goals notation: [04-goals.md](04-goals.md)
-- Worked example: [`examples/issues/`](examples/issues/)
+- Worked example: [`examples/issues/`](../examples/issues/)

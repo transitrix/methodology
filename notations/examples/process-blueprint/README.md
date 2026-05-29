@@ -3,7 +3,7 @@
 A wide, single-page blueprint of a value chain. Each stage is a column carrying its goal, its result, and the supporting **systems**, **actors**, **equipment**, and **information entities**. Rendered as a horizontal grid of nested boxes via the shared diagram engine (the same one that renders the Goals tree) — **not** via Svgbob.
 
 **File extension:** `*.process-blueprint.transitrix.yaml`
-**Spec:** [`notations/13-process-blueprint.md`](../../13-process-blueprint.md)
+**Spec:** [`notations/views/13-process-blueprint.md`](../../views/13-process-blueprint.md)
 
 ## Minimal structure
 

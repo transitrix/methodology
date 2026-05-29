@@ -16,7 +16,7 @@ file_extension: "*.process-map.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -27,7 +27,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline process entry under `groups[].processes[]` carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each process entry; neither the process-map document nor the process groups carry a lifecycle field — groups are organisational containers, not elements.
+Every inline process entry under `groups[].processes[]` carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each process entry; neither the process-map document nor the process groups carry a lifecycle field — groups are organisational containers, not elements.
 
 ---
 

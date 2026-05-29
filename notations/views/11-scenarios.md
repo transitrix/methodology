@@ -21,7 +21,7 @@ dsm_status: "implemented — Scenarios page; scenario-scoped entities planned in
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -32,7 +32,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline scenario entry (`SCENARIO` canonical TYPE per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1) carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline scenarios in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each scenario entry; the scenarios document itself does not carry a lifecycle field.
+Every inline scenario entry (`SCENARIO` canonical TYPE per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1) carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline scenarios in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each scenario entry; the scenarios document itself does not carry a lifecycle field.
 
 The entities scoped *within* a scenario (its goals, capabilities, activities, products, processes, applications) are references to other canonical elements — those references inherit lifecycle from their own canonical element files, not from the scenario. A scenario's `valid_from` / `valid_to` marks the period the scenario itself is admitted as a planning consideration; it is distinct from any time horizon the scenario's narrative may describe (e.g. "scenario for 2027").
 

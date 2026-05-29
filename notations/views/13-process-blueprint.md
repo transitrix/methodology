@@ -17,7 +17,7 @@ dsm_status: "not implemented — render module planned in Transitrix Studio (sib
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all twelve Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all twelve Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -30,10 +30,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 This notation's inline arrays split into two groups for lifecycle purposes:
 
-- **Canonical-TYPE arrays** — `equipment[]` (`EQUIPMENT`) and `information_entities[]` (`INFORMATION_ENTITY`), both registered in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1. Each entry carries the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](CONTRACT.md) §7.
-- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`. These use document-local identifiers (e.g. `STAGE-1`, `STAGE-2`) that are not registered as canonical TYPEs in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; they are scoped to the blueprint document and do not carry their own lifecycle. When a `systems[]` or `actors[]` entry is intended to reference a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
+- **Canonical-TYPE arrays** — `equipment[]` (`EQUIPMENT`) and `information_entities[]` (`INFORMATION_ENTITY`), both registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1. Each entry carries the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../CONTRACT.md) §7.
+- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`. These use document-local identifiers (e.g. `STAGE-1`, `STAGE-2`) that are not registered as canonical TYPEs in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1; they are scoped to the blueprint document and do not carry their own lifecycle. When a `systems[]` or `actors[]` entry is intended to reference a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
 
-The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7. Per [CONTRACT.md](CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
+The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. Per [CONTRACT.md](../CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
 
 ---
 
@@ -84,7 +84,7 @@ Examples:
 
 Process Blueprint uses the **flat form**. The document carries a single `process_blueprint:` root key with parallel arrays: `stages[]` and one array per aspect category (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`). Each aspect entry references the stages it appears in via a `stages: [STAGE-…]` cross-reference field.
 
-This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the FGCA schema — places Process Blueprint on the flat side. See [README.md](README.md) § Family selection.
+This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the FGCA schema — places Process Blueprint on the flat side. See [README.md](../README.md) § Family selection.
 
 ```yaml
 notation: process-blueprint
@@ -139,7 +139,7 @@ process_blueprint:
       stages: [STAGE-3]
 ```
 
-A complete example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml).
+A complete example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](../examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml).
 
 ---
 
@@ -202,7 +202,7 @@ For every aspect category, an entry with an `id` MUST use the TYPE prefix listed
 
 `systems[]` and `actors[]` cross-reference established catalogues: `APPLICATION-…` resolves into the applications catalogue (`*.applications.transitrix.yaml`); `ROLE-…` resolves into the organisation's roles list. A validator MUST resolve these references against the relevant catalogue once cross-document linking is wired up.
 
-`EQUIPMENT` and `INFORMATION_ENTITY` were registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for these element TYPEs in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
+`EQUIPMENT` and `INFORMATION_ENTITY` were registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for these element TYPEs in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
 
 ---
 
@@ -266,8 +266,8 @@ What the renderer MUST NOT do:
 
 ## 9. References
 
-- File header contract: [`CONTRACT.md`](CONTRACT.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) — registers `PROCESS_BLUEPRINT` (§3.2) and the aspect element TYPEs `EQUIPMENT` and `INFORMATION_ENTITY` (§3.1).
+- File header contract: [`CONTRACT.md`](../CONTRACT.md)
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) — registers `PROCESS_BLUEPRINT` (§3.2) and the aspect element TYPEs `EQUIPMENT` and `INFORMATION_ENTITY` (§3.1).
 - Goals notation (uses the same diagram engine): [`04-goals.md`](04-goals.md)
 - BPMN notation (procedural flow of one process): [`01-bpmn.md`](01-bpmn.md)
 - Process landscape map (catalogue of all processes): [`06-process-map.md`](06-process-map.md)

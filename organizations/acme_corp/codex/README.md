@@ -1,6 +1,6 @@
 # `codex/` — Codex zone
 
-External constraints (laws, regulations) and internal authority documents (policies, standards) — *given to* the organisation rather than authored by it. Zone model: the methodology's `notations/CONTRACT.md` §5; artefact schema: `notations/14-codex.md`.
+External constraints (laws, regulations) and internal authority documents (policies, standards) — *given to* the organisation rather than authored by it. Zone model: the methodology's `notations/CONTRACT.md` §5; artefact schema: `notations/elements/14-codex.md`.
 
 **Trust contract:** faithful to an external or issuing source; not edited to fit the model. Each artefact carries the admission record (`zone: codex`, `gate_checks: { source_authority: … }`) plus the codex frontmatter, and is one `<ID>.yaml` per file.
 

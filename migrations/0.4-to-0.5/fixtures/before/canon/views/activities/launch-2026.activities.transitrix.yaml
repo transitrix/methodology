@@ -2,7 +2,7 @@
 # Uses inline `goals: [GOAL-…]` on activity entries (the v0.x transitional form).
 # The codemod drops each inline goals: array and emits one
 # `REL-…activity_goal…` file per goal link under canon/relations/
-# per notations/17-relations.md §6.
+# per notations/elements/17-relations.md §6.
 
 notation: activities
 spec_version: "0.1"

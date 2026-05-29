@@ -2,7 +2,7 @@ notation: process-blueprint
 spec_version: "0.1"
 
 # Process Blueprint — wide value-chain blueprint. Spec:
-# notations/13-process-blueprint.md
+# notations/views/13-process-blueprint.md
 # Stages laid out left-to-right; per-stage aspects (systems, actors,
 # equipment, information entities) reference the stages they touch.
 

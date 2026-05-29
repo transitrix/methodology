@@ -205,7 +205,7 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 
 - **GitHub Issues on this repo.** Tasks live as issues on the adopter's repo; the agent reads them via `gh issue list -R <owner>/<repo>` and reports back via `gh issue comment`.
 - **Linear / Jira / Asana.** Tasks live in a project management tool; the agent reads tickets via the tool's API or pasted-in URLs; PRs link back via the tool's convention.
-- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `canon/views/issues/` per `notations/12-issues.md`. The agent reads and updates the YAML directly.
+- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `canon/views/issues/` per `notations/views/12-issues.md`. The agent reads and updates the YAML directly.
 
 **Example — self-hosted issues register.** Place a file at `canon/views/issues/<DOMAIN>.issues.transitrix.yaml`:
 

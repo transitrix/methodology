@@ -1,7 +1,7 @@
 notation: activities
 spec_version: "0.1"
 
-# Activity-on-Node project schedule. Spec: notations/07-activities.md
+# Activity-on-Node project schedule. Spec: notations/views/07-activities.md
 # Activities have string IDs and reference predecessors / goals / changes.
 # The compiler computes Early Start / Late Finish / slack and marks
 # the critical path. Optional `project.start_date` + per-activity

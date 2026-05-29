@@ -2,8 +2,9 @@
 // Cheat-sheet conformance check — diffs the onboarding Skill's embedded
 // cheat sheet against the canonical notation catalogue.
 //
-// Ground truth: notations/README.md §"Catalogue" — the canonical index of the
-// 13 view notations (short name + file extension + status).
+// Ground truth: notations/README.md §"Views" — the canonical index of the
+// view notations (short name + file extension + status). Element notations
+// live under §"Elements" and are out of scope for the cheat sheet check.
 //
 // What we check:
 //   A. Every notation in the canon catalogue has a row in the Skill's
@@ -47,9 +48,9 @@ async function parseCatalogue() {
   const lines = text.split('\n');
 
   // Locate the section heading then the first markdown table after it.
-  const headingIdx = lines.findIndex(l => /^##\s+Catalogue\s*$/.test(l));
+  const headingIdx = lines.findIndex(l => /^##\s+Views\s*$/.test(l));
   if (headingIdx < 0) {
-    throw new Error(`notations/README.md: "## Catalogue" section not found`);
+    throw new Error(`notations/README.md: "## Views" section not found`);
   }
 
   // Find the table header row after the heading.

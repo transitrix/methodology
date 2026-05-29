@@ -6,7 +6,7 @@ Register of issues — problems, defects, open questions — in a parent/child t
 
 `*.issues.transitrix.yaml`
 
-See [`notations/12-issues.md`](../../../../notations/12-issues.md) for the full spec.
+See [`notations/views/12-issues.md`](../../../../notations/views/12-issues.md) for the full spec.
 
 ## Lifecycle
 

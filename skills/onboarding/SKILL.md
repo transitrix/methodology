@@ -82,7 +82,7 @@ The adopter manifest's `zones:` field selects which of `canon` / `field` / `code
 
 - **`canon/`** — validated truth the organisation asserts. Authoritative; internally consistent. View notation files live in `canon/views/<notation>/`; reusable elements live in `canon/elements/<NN>_<layer>/`.
 - **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point. **Not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, not a migration.
-- **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/14-codex.md` and Step 3 below for how to seed a first codex artefact.
+- **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/elements/14-codex.md` and Step 3 below for how to seed a first codex artefact.
 
 Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. The codex and field templates ship with this record pre-filled with placeholders.
 
@@ -115,14 +115,14 @@ After the copy:
 
 ### Codex artefacts (codex zone)
 
-Codex artefacts are **zone primitives**, not view documents — they are individual `<ID>.yaml` files, one artefact per file, named by their canonical ID. They carry **no** `notation:` header (different shape from view notations; schema in `notations/14-codex.md`).
+Codex artefacts are **zone primitives**, not view documents — they are individual `<ID>.yaml` files, one artefact per file, named by their canonical ID. They carry **no** `notation:` header (different shape from view notations; schema in `notations/elements/14-codex.md`).
 
 If the user wants to seed a first codex artefact:
 
 - **External** (law / regulation given to the org by outside authority) — copy `templates/codex-external.yaml` to `codex/external/<jurisdiction>/<ID>.yaml`. Rename the file to the artefact's canonical ID (e.g. `LAW-PERSONAL-DATA-2017-1.yaml`, `REGULATION-GDPR-2016-1.yaml`). The `<jurisdiction>` folder MUST match the `jurisdiction:` field inside the file (rule `CODEX-001`) — use ISO 3166-1 alpha-2 (`ge`, `de`, …), `eu` for EU-wide, or `intl` (reserved).
 - **Internal** (policy / standard the org issues to itself) — copy `templates/codex-internal.yaml` to `codex/internal/<ID>.yaml`. Internal artefacts are not foldered by jurisdiction. Rename the file to the artefact's canonical ID (e.g. `POLICY-DATA-RETENTION-1.yaml`, `INTERNAL_STANDARD-coding-conventions-1.yaml`).
 
-Update the `id:`, `name:`, `description:`, the admission record (`admitted_at`, `admitted_by`, `gate_checks.source_authority`), and the codex-specific fields (`jurisdiction` + `effective_date` for external; `issuing_authority` + `effective_date` for internal). A codex artefact stores the **source document only** — do not add bindings to canonical entities or processes on the artefact itself. Those bindings live downstream on `REQUIREMENT.derived_from` (which cites the codex source) and on `ASSERTION` (which links each requirement to its subject). See `notations/14-codex.md` §8 Migration for the rationale; `notations/15-requirement.md` and `notations/16-assertion.md` for the downstream shapes.
+Update the `id:`, `name:`, `description:`, the admission record (`admitted_at`, `admitted_by`, `gate_checks.source_authority`), and the codex-specific fields (`jurisdiction` + `effective_date` for external; `issuing_authority` + `effective_date` for internal). A codex artefact stores the **source document only** — do not add bindings to canonical entities or processes on the artefact itself. Those bindings live downstream on `REQUIREMENT.derived_from` (which cites the codex source) and on `ASSERTION` (which links each requirement to its subject). See `notations/elements/14-codex.md` §8 Migration for the rationale; `notations/elements/15-requirement.md` and `notations/elements/16-assertion.md` for the downstream shapes.
 
 ---
 
@@ -195,6 +195,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Catalogue of applications + integrations | **Applications** | `*.applications.transitrix.yaml` |
 | Catalogue of products + services | **Products** | `*.products.transitrix.yaml` |
 | Register of issues — problems, defects, open questions | **Issues** | `*.issues.transitrix.yaml` |
+| Single-project narrative view — FGCA chain, dates, milestones, gate decisions | **Project Card** | `*.project-card.transitrix.yaml` |
 
 **Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Activities) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
 
@@ -208,7 +209,7 @@ A separate set of artefacts lives in the `field/` and `codex/` zones as one-file
 | Internal policy or standard the org issues to itself | **codex** | `codex/internal/<ID>.yaml` | `POLICY` / `INTERNAL_STANDARD` |
 | Recorded interview / survey / observation / draft | **field** | `field/<sub>/<ID>.yaml` | `INTERVIEW` / `SURVEY` / `OBSERVATION` / `DRAFT` |
 
-Schema: `notations/14-codex.md` for codex; `notations/CONTRACT.md` §5–6 for the zone model and admission record shared across all three zones; `notations/IDS_AND_REFERENCES.md` §3.4 + §3.5 for the codex / field TYPE registry.
+Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5–6 for the zone model and admission record shared across all three zones; `notations/IDS_AND_REFERENCES.md` §3.4 + §3.5 for the codex / field TYPE registry.
 
 ### One-paragraph summary per notation
 
@@ -224,8 +225,9 @@ Schema: `notations/14-codex.md` for codex; `notations/CONTRACT.md` §5–6 for t
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
 - **Issues register** — `notation: issues`. Root key `issues_catalogue:` with `issues[]`. Each issue: `issue_id`, `name`, `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), optional `parent`, `description`, `relates_to`, `owner_role`. Hierarchy via `parent`.
+- **Project Card** — `notation: project-card`. Root key `project_card:` carrying a single project's narrative — the FGCA chain it implements (`factor`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
-- **Codex** *(zone primitives, not a view document)* — each artefact is a single `<ID>.yaml` file under `codex/external/<jurisdiction>/` (external: `LAW` / `REGULATION`) or `codex/internal/` (internal: `POLICY` / `INTERNAL_STANDARD`). No `notation:` header; carries the admission record (`CONTRACT.md` §6, `zone: codex`, `gate_checks.source_authority`) plus codex frontmatter (external: `jurisdiction` + `effective_date`; internal: `issuing_authority` + `effective_date`). A codex artefact stores the **source document only** — bindings to entities and processes live on `REQUIREMENT.derived_from` (`notations/15-requirement.md`) and on `ASSERTION` (`notations/16-assertion.md`), not on the codex artefact itself.
+- **Codex** *(zone primitives, not a view document)* — each artefact is a single `<ID>.yaml` file under `codex/external/<jurisdiction>/` (external: `LAW` / `REGULATION`) or `codex/internal/` (internal: `POLICY` / `INTERNAL_STANDARD`). No `notation:` header; carries the admission record (`CONTRACT.md` §6, `zone: codex`, `gate_checks.source_authority`) plus codex frontmatter (external: `jurisdiction` + `effective_date`; internal: `issuing_authority` + `effective_date`). A codex artefact stores the **source document only** — bindings to entities and processes live on `REQUIREMENT.derived_from` (`notations/elements/15-requirement.md`) and on `ASSERTION` (`notations/elements/16-assertion.md`), not on the codex artefact itself.
 
 ### ID grammar — canon
 
@@ -271,6 +273,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Products | `templates/products.products.transitrix.yaml` |
 | Issues | `templates/issues.issues.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
+| Project Card | `templates/project-card.project-card.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
@@ -279,7 +282,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | External (laws, regulations) | `templates/codex-external.yaml` | `codex/external/<jurisdiction>/<ID>.yaml` |
 | Internal (policies, standards) | `templates/codex-internal.yaml` | `codex/internal/<ID>.yaml` |
 
-Codex artefacts carry no `notation:` header (they are zone primitives, not view documents). Schema: `notations/14-codex.md`.
+Codex artefacts carry no `notation:` header (they are zone primitives, not view documents). Schema: `notations/elements/14-codex.md`.
 
 ---
 

@@ -1,7 +1,7 @@
 notation: goals
 spec_version: "0.1"
 
-# Goals tree. Spec: notations/04-goals.md
+# Goals tree. Spec: notations/views/04-goals.md
 # Flat top-level arrays. Hierarchy via `parent: GOAL-…`; omit for root.
 
 id: GOALS-FILL-ME-1

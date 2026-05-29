@@ -14,7 +14,7 @@ For each capability, an optional sidecar `<id>.history.yaml` carries the time-va
 
 ## Schema
 
-Stable fields live on the element file. Defined in [`notations/05-capability-map.md`](../../../../../notations/05-capability-map.md) §13 (fields table) with the inline/sidecar split annotated. Each capability element carries:
+Stable fields live on the element file. Defined in [`notations/views/05-capability-map.md`](../../../../../notations/views/05-capability-map.md) §13 (fields table) with the inline/sidecar split annotated. Each capability element carries:
 
 - The capability-specific stable fields: `notation: capability`, `id`, `name`, `type`, `description`, optional `target_maturity`, `business_process`, `applications`, `children`.
 - The admission record per [`CONTRACT.md`](../../../../../notations/CONTRACT.md) §6: `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks`.
@@ -31,6 +31,6 @@ Time-varying fields (`current_maturity`, `owner_role`, `target_date`) live in th
 
 ## See also
 
-- Capability-map view notation: [`notations/05-capability-map.md`](../../../../../notations/05-capability-map.md) — full field-table schema (incl. inline/sidecar split) and §14 sidecar reference.
+- Capability-map view notation: [`notations/views/05-capability-map.md`](../../../../../notations/views/05-capability-map.md) — full field-table schema (incl. inline/sidecar split) and §14 sidecar reference.
 - Sidecar contract: [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §9.
 - Capability-map views over these elements: [`../../../views/capabilities/`](../../../views/capabilities/).

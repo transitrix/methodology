@@ -324,7 +324,7 @@ Used in three views:
 
 FGA is the same chain without the Changes layer — used when the transformation step is implicit or trivial. Both notations render as visual chains in Transitrix Studio.
 
-See `notations/02-fgca.md` for the full FGCA notation reference (file format, fields, examples, DSM implementation status). See `notations/03-fga.md` for the FGA variant.
+See `notations/views/02-fgca.md` for the full FGCA notation reference (file format, fields, examples, DSM implementation status). See `notations/views/03-fga.md` for the FGA variant.
 
 ### 6.3 Capabilities and maturity
 

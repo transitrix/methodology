@@ -1,7 +1,7 @@
 notation: issues
 spec_version: "0.1"
 
-# Issues register. Spec: notations/12-issues.md
+# Issues register. Spec: notations/views/12-issues.md
 # Flat `issues[]` array under `issues_catalogue:`. Hierarchy via
 # `parent: ISSUE-…`. Status vocabulary: open / in_progress / blocked /
 # resolved / closed. Cross-ref into the activities plan via
