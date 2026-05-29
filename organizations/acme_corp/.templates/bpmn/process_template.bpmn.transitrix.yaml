@@ -1,144 +1,61 @@
-# Transitrix BPMN Process Template
-# Purpose: Describe business processes in text-first format with automatic layout
-# Location: canon/views/bpmn/ (as <DOMAIN>.bpmn.transitrix.yaml)
+# Transitrix BPMN process template — copy-and-fill
+# Spec:      notations/views/01-bpmn.md
+# Extension: *.bpmn.transitrix.yaml
+# Location:  canon/views/bpmn/   (one pool per document; file-local node labels)
 #
-# ⚠ PENDING STRUCTURAL RECONCILIATION. This template predates the canonical BPMN
-# notation and uses an old shape (activities[] with UserTask/ServiceTask,
-# assigned_role/required_system). The canonical notation (notations/views/01-bpmn.md)
-# is process -> pools -> lanes -> elements + flows, with file-local node labels
-# (POOL-/LANE-/TASK-/GW-/SF-…, IDS_AND_REFERENCES.md §3.3) and no notation lifecycle.
-# Legacy element-reference IDs here have been canonicalised (APPLICATION-/PROCESS-/ROLE-),
-# but the document STRUCTURE is still the old shape and will not validate against
-# 01-bpmn.md until rewritten. Tracked as a dedicated bpmn-template rewrite task; use
-# notations/examples/bpmn/ for canonical-shape worked examples in the meantime.
+# Role / system association is expressed with the optional cross-reference fields
+# performed_by_role: ROLE-… and supported_by_application: APPLICATION-… — set them
+# at the lane level as a default, override per task where it differs (01-bpmn.md §7.2).
+# They reference canon primitives and are validated by BPMN-XREF-001.
 
-id: "PROCESS-XXX-1"
-name: "Business Process Name"
-type: "BusinessProcess"
-layer: "Business"
+notation: bpmn
+spec_version: "0.1"
 
-metadata:
-  status: "Draft"  # Values: Draft, Active, Deprecated, Archived
-  owner: "firstname.lastname"
-  created_at: "2026-05-03"
-  updated_at: "2026-05-03"
-  tags: ["core-process", "customer-facing"]
+process:
+  id: process-template
+  name: "Business Process Name"
+  pools:
+    - id: company
+      name: "Company"
+      lanes:
+        - id: handling-team
+          name: "Handling Team"
+          performed_by_role: ROLE-SALES-1        # lane default — the role for every task below
+          elements:
+            - id: start
+              type: startEvent
 
-properties:
-  description: "High-level description of what this process accomplishes"
-  scope: "End-to-end process scope"
-  frequency: "Daily"  # Values: Continuous, Hourly, Daily, Weekly, Monthly, Ad-hoc
-  avg_duration_minutes: 120
-  criticality: "High"  # Values: Critical, High, Medium, Low
+            - id: receive-request
+              type: userTask
+              name: "Receive request"
 
-# BPMN Process Definition in text-first format
-# This structure enables:
-# 1. Human-readable YAML description
-# 2. Automatic BPMN 2.0 XML generation
-# 3. Automatic layout calculation (ELK.js)
-# 4. VS Code interactive preview
+            - id: validate-request
+              type: serviceTask
+              name: "Validate request"
+              supported_by_application: APPLICATION-VALIDATOR-1   # task override: a system, not the lane role
 
-bpmn:
-  # Start event
-  start_event:
-    id: "START_001"
-    name: "Process Started"
-    event_type: "None"  # Values: None, Message, Timer, Signal, Error, Escalation, etc.
+            - id: request-valid
+              type: exclusiveGateway
+              name: "Request valid?"
 
-  # Main flow definition
-  activities:
-    - id: "TASK_001"
-      name: "Task 1: Receive Request"
-      type: "UserTask"  # Values: UserTask, ServiceTask, ManualTask, ScriptTask
-      assigned_role: "ROLE-SALES-1"  # Reference to BusinessRole
-      required_system: null  # Reference to ApplicationComponent if system-supported
+            - id: process-request
+              type: serviceTask
+              name: "Process approved request"
+              supported_by_application: APPLICATION-PROCESSOR-1
 
-    - id: "TASK_002"
-      name: "Task 2: Validate Request"
-      type: "ServiceTask"
-      assigned_role: null
-      required_system: "APPLICATION-VALIDATOR-1"
+            - id: notify-rejected
+              type: serviceTask
+              name: "Notify requester — rejected"
+              supported_by_application: APPLICATION-NOTIFICATION-1
 
-    - id: "GATEWAY_001"
-      name: "Decision: Request Valid?"
-      type: "ExclusiveGateway"  # Values: ExclusiveGateway, ParallelGateway, InclusiveGateway
+            - id: end
+              type: endEvent
 
-    - id: "TASK_003"
-      name: "Task 3: Process Approved Request"
-      type: "ServiceTask"
-      assigned_role: null
-      required_system: "APPLICATION-PROCESSOR-1"
-
-    - id: "TASK_004"
-      name: "Task 4: Notify Requester - Rejected"
-      type: "ServiceTask"
-      assigned_role: null
-      required_system: "APPLICATION-NOTIFICATION-1"
-
-  # Sequence flows (connections between activities)
-  sequences:
-    - id: "FLOW_001"
-      source_id: "START_001"
-      target_id: "TASK_001"
-      name: ""  # Typically empty for default flow
-
-    - id: "FLOW_002"
-      source_id: "TASK_001"
-      target_id: "TASK_002"
-      name: ""
-
-    - id: "FLOW_003"
-      source_id: "TASK_002"
-      target_id: "GATEWAY_001"
-      name: ""
-
-    - id: "FLOW_004"
-      source_id: "GATEWAY_001"
-      target_id: "TASK_003"
-      name: "Valid"  # Condition label
-
-    - id: "FLOW_005"
-      source_id: "GATEWAY_001"
-      target_id: "TASK_004"
-      name: "Invalid"  # Condition label
-
-  # End event
-  end_event:
-    id: "END_001"
-    name: "Process Completed"
-    event_type: "None"
-
-  # Connect activities to end event (this would be defined as additional sequences in actual implementation)
-
-# KPI and metrics
-metrics:
-  sla_completion_hours: 24
-  target_completion_rate_percent: 95
-  average_processing_time_minutes: 120
-  bottleneck_activity: "TASK_002"  # ID of slowest step
-
-# Resource requirements
-resources:
-  required_roles: ["ROLE-SALES-1"]
-  required_systems: ["APPLICATION-VALIDATOR-1", "APPLICATION-PROCESSOR-1", "APPLICATION-NOTIFICATION-1"]
-  required_data: ["Customer Data", "Request Details"]
-
-# Compliance and governance
-governance:
-  audit_required: true
-  audit_frequency: "Monthly"
-  compliance_frameworks: ["GDPR", "ISO27001"]
-  change_control_required: true
-
-# Version and lifecycle
-versioning:
-  current_version: "1.0.0"
-  last_review_date: "2026-05-03"
-  next_review_date: "2026-08-03"
-
-# References to supporting documentation
-references:
-  related_goals: []  # IDs of Goal elements this process supports
-  related_roles: ["ROLE-SALES-1"]  # IDs of BusinessRole elements
-  related_systems: ["APPLICATION-VALIDATOR-1"]  # IDs of ApplicationComponent elements
-  documentation_url: null  # Link to detailed SOPs or wiki
+  flows:
+    - { from: start, to: receive-request }
+    - { from: receive-request, to: validate-request }
+    - { from: validate-request, to: request-valid }
+    - { from: request-valid, to: process-request, condition: "valid == true" }
+    - { from: request-valid, to: notify-rejected, default: true }
+    - { from: process-request, to: end }
+    - { from: notify-rejected, to: end }
