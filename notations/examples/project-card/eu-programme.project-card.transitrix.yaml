@@ -1,0 +1,41 @@
+notation: project-card
+spec_version: "0.1"
+
+# Worked example — EU regulatory-conformity programme.
+# Single-project narrative view per notations/views/18-project-card.md.
+# The card binds to an existing project Activity (ACTIVITY-EU-PROGRAMME-1)
+# and adds two narrative milestones for the certification gate and the
+# market-launch follow-on. The motivation chain, child activities, and
+# remaining metadata are pulled by reference from sibling FGCA and
+# Activities documents — they are not duplicated here.
+
+project_card:
+  id: PROJECT_CARD-EU-PROGRAMME-1
+  project: ACTIVITY-EU-PROGRAMME-1
+
+  description: >
+    Programme of work bringing the company's first product line into
+    compliance with the EU Medical Device Regulation, certified by a
+    notified body, and live in EU markets under the new regime.
+    Spans 2026-Q2 through 2027-Q1.
+
+  milestones:
+    - id: MILESTONE-EU-CONFORMITY-CERT-1
+      name: "EU MDR conformity-assessment certification obtained"
+      date: "2027-01-31"
+      description: >
+        First product line certified by a notified body under the EU
+        Medical Device Regulation. The certification is a hard gate
+        for EU market access — no sales until this date clears.
+      delivers_changes:
+        - CHANGE-EU-COMPLIANCE-1
+
+    - id: MILESTONE-EU-MARKET-LAUNCH-1
+      name: "First product line live in EU post-certification"
+      date: "2027-03-15"
+      description: >
+        Sales channel opens to EU customers under the new compliance
+        regime. Marketing, support, and supply-chain handovers are
+        complete by this date.
+      delivers_changes:
+        - CHANGE-EU-COMPLIANCE-1
