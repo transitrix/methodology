@@ -100,13 +100,28 @@ The codemod refuses to overwrite a REL file at the same `canon/relations/REL-…
 
 ## What this recipe deliberately does NOT yet cover
 
-Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANGELOG.md) under the 0.5.0 entry. Adding them to this recipe is straightforward — each is its own transform inside the same `codemod.mjs` + `validate.mjs` + per-pattern fixture:
+Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANGELOG.md) under the 0.5.0 entry. Three remain — they share one family-wide convention (see the next section) and are queued as the next transforms on this recipe:
 
-- Inline `children[]` on capability-map view documents → REL `parent` files.
-- Inline `current_maturity` / `owner_role` / `target_date` on capability-map → sidecar.
-- Inline `owner_role` / `vendor` / `maturity` on applications → sidecar.
+- Inline `children[]` on capability-map view documents → REL `parent` files **plus** per-element file materialization.
+- Inline `current_maturity` / `owner_role` / `target_date` on capability-map → sidecar **plus** per-element file materialization.
+- Inline `owner_role` / `vendor` / `maturity` on applications → sidecar **plus** per-element file materialization.
 
-Each transform follows the same conventions (idempotent, dry-run-supporting, diff-summary-printing, unsafe-ambiguity-bailing) and ships its own fixture pair. The order and packaging of those subsequent transforms is a separate task.
+Each transform will follow the same conventions (idempotent, dry-run-supporting, diff-summary-printing, unsafe-ambiguity-bailing) and ship its own fixture pair. The order and packaging of those subsequent transforms is a separate task.
+
+## Family-wide convention for the remaining transforms
+
+When the recipe takes on the three remaining inline → first-class transforms above, all three follow the **elements-first** convention decided in the upstream strategy hub: no inline-declared primitives survive the 0.4 → 0.5 migration; view documents become layout-only; primitive data lives in `canon/elements/`; sidecars co-locate with their primitive.
+
+Concretely:
+
+1. For each inline primitive in a view document (capabilities in capability-map, applications in applications catalogue, recursively including nested `children[]`), the codemod materialises a per-element file under `canon/elements/<zone>/<type>/<id>.yaml` carrying the stable fields, an admission record, and the primitive lifecycle.
+2. Time-varying fields on the materialised primitive (`current_maturity` / `owner_role` / `target_date` for capabilities; `owner_role` / `vendor` / `maturity` for applications) move into a co-located `<id>.history.yaml` sidecar per [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §9.1.
+3. Hierarchy declared via inline `children[]` becomes one REL `parent` file per child under `canon/relations/`, following the REL emission conventions already established for `goal_parent` and `activity_goal`.
+4. The source view document is rewritten to layout-only — view-level metadata plus a flat reference list (capability IDs in canvas order; application IDs in catalogue order) — with no inline primitive data.
+
+This convention is **family-wide**: any future first-class TYPE whose 0.x form embedded data inline (not just IDs) follows the same rule. Flat in the view, full object in `canon/elements/`, REL files for hierarchy.
+
+The convention is the resolution of three shape questions raised against this recipe — capability `children[]` flatten-vs-coexist, capability sidecar target location, applications sidecar target location — closed against this recipe by the upstream call referenced in the recipe's task issue.
 
 ## See also
 
