@@ -1,0 +1,20 @@
+# Fixture — activities view already in 0.5 form (no inline goals[] arrays;
+# activity → goal links live as REL files under canon/relations/).
+# The codemod must leave it untouched.
+
+notation: activities
+spec_version: "0.1"
+
+title: Clean Activities Document
+date: "2026-05-29"
+author: "Valerii Korobeinikov"
+
+activities:
+  - id: A-CLEAN-1
+    name: Activity with no inline goals
+    duration: 3
+
+  - id: A-CLEAN-2
+    name: Activity whose goal link is already in REL form
+    duration: 5
+    predecessors: [A-CLEAN-1]
