@@ -26,10 +26,10 @@ capability_map:
       target_maturity: 3
       target_date: "2026-12-31"
       owner_role: "ROLE-OPS-1"
-      business_process: "PROC-ORD-FULFILL-1"
+      business_process: "PROCESS-ORD-FULFILL-1"
       applications:
-        - "APP-OMS-1"
-        - "APP-CRM-1"
+        - "APPLICATION-OMS-1"
+        - "APPLICATION-CRM-1"
       valid_from: "2026-05-26"          # CONTRACT.md §7 — required on every inline capability, recursively
       valid_to: null
       children:
@@ -55,7 +55,7 @@ capability_map:
       target_maturity: 3
       owner_role: "ROLE-SALES-1"
       applications:
-        - "APP-CRM-1"
+        - "APPLICATION-CRM-1"
       valid_from: "2026-05-26"
       valid_to: null
 ```

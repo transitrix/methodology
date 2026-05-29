@@ -1,0 +1,31 @@
+# Worked example — Capability element primitive (stable fields only).
+# Schema: notations/views/05-capability-map.md §13 + admission record
+# (CONTRACT.md §6) + primitive lifecycle (CONTRACT.md §7).
+#
+# Time-varying attributes (current_maturity, owner_role, target_date) live
+# in the sidecar CAPABILITY-V1.2.history.yaml per CONTRACT.md §9 (not
+# provided for this minimal example). Parent (CAPABILITY-V1.2 -> CAPABILITY-V1)
+# is carried inline by the capability-map view's children[] in v0.x.
+
+notation: capability
+id: CAPABILITY-V1.2
+name: "Order Fulfilment"
+type: domain                            # domain | supporting
+description: >
+  Pick, pack, route, and close out customer orders. Sits beneath Order
+  Management alongside Order Intake (CAPABILITY-V1.1).
+
+target_maturity: 3
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

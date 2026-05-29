@@ -1,0 +1,35 @@
+# Worked example — APPLICATION element primitive (stable fields only).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.7 + envelope §3.
+# Arranged by the applications-catalogue view (canon/views/applications/).
+#
+# Time-varying fields (owner_role, vendor, lifecycle_stage, maturity) are
+# sidecar-bound per CONTRACT.md §9 — kept out of this file (inline placement
+# would trigger VERSIONED-004). No sidecar is provided for this minimal
+# example; the catalogue view shows their current values.
+
+notation: application
+id: APPLICATION-OMS-1
+name: "Order Management System"
+type: application                       # application | integration | platform | data_store
+domain: "Operations"
+description: >
+  Core system for the order lifecycle — intake, validation, routing, and
+  fulfilment hand-off. Integrates outbound to the CRM (see the catalogue
+  view's nested integration descriptor).
+capabilities:
+  - CAPABILITY-V1
+products:
+  - PRODUCT-ECOMM-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

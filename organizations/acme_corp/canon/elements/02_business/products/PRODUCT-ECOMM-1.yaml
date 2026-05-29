@@ -1,0 +1,34 @@
+# Worked example — PRODUCT element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.6 + envelope §3.
+# Arranged by the products-catalogue view (canon/views/products/).
+
+notation: product
+id: PRODUCT-ECOMM-1
+name: "E-Commerce Platform"
+type: digital_product                   # digital_product | service | platform | bundle
+domain: "Digital"
+owner_role: ROLE-PROD-1
+maturity: 3
+description: >
+  Online storefront and order management for end customers.
+capabilities:
+  - CAPABILITY-V1
+  - CAPABILITY-V2
+processes:
+  - PROCESS-ORD-FULFILL-1
+supporting_apps:
+  - APPLICATION-OMS-1
+  - APPLICATION-CRM-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

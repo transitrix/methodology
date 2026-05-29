@@ -1,0 +1,25 @@
+# Worked example — PRODUCT element primitive (a service).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.6 + envelope §3.
+# `type: service` — a PRODUCT in the catalogue, not a separate SVC TYPE.
+
+notation: product
+id: PRODUCT-SUPPORT-1
+name: "Customer Support Service"
+type: service                           # digital_product | service | platform | bundle
+domain: "Operations"
+owner_role: ROLE-CS-1
+description: >
+  Tier-1 and Tier-2 support for customers via chat, email, and phone.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

@@ -1,0 +1,26 @@
+# Worked example — ACTIVITY element primitive (Work Package).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.4 + envelope §3.
+
+notation: activity
+id: ACTIVITY-LAUNCH-1
+name: "Launch"
+duration_days: 5
+predecessors:
+  - ACTIVITY-BUILD-1
+delivers_changes:
+  - CHANGE-ONBOARD-1
+description: >
+  Launch phase; closes out the onboarding-rework change.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null
