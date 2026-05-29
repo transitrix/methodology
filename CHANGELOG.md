@@ -8,6 +8,26 @@ The methodology is **pre-1.0**. MINOR releases (`0.x` → `0.(x+1)`) may carry b
 
 ---
 
+## [0.6.0] — Unreleased
+
+The Actors / Stakeholders identity model (epics #98 / #99). Unifies active-structure identity under one `ACTOR` TYPE and adds the `STAKEHOLDER` interest primitive; retires `UNIT` / `EMPLOYEE`. One pre-1.0 breaking change, called out below.
+
+### Added
+
+- **`notations/elements/19-actors.md`** — `ACTOR` element TYPE: the active-structure identity primitive with `type ∈ {person, business_unit, system}`. Identity only; engagement and hierarchy are relations. Validation codes `ACTOR-001..003`. (#98)
+- **`notations/elements/20-stakeholders.md`** — `STAKEHOLDER` element TYPE (motivation layer): `internal` / `external`, carries the stake profile and **references an `ACTOR` for identity** (`actor:` required). Validation codes `STAKE-001..003`. (#99)
+- **Engagement + stakeholding relations** in `notations/elements/17-relations.md` §3: `employment`, `candidacy`, `alumni_membership`, `community_membership`, `contracting` (person ↔ org), and `stakeholding` (`STAKEHOLDER → GOAL | ACTIVITY | CAPABILITY`). `unit_parent` re-typed to `ACTOR(business_unit)`.
+- **New canonical TYPEs in `notations/IDS_AND_REFERENCES.md` §3.1:** `ACTOR`, `STAKEHOLDER`. New folders `canon/elements/02_business/actors/` and `canon/elements/01_motivation/stakeholders/`.
+- **acme_corp worked examples** — `ACTOR` (business_unit / external regulator / person), `STAKEHOLDER` (internal + external), and `stakeholding` / `employment` RELs, with folder READMEs. (#98/#99)
+- **`migrations/0.5-to-0.6/`** migration recipe — codemod + validate + fixtures for the UNIT/EMPLOYEE retirement.
+
+### Changed
+
+- **BREAKING: `UNIT` and `EMPLOYEE` element TYPEs removed.** `UNIT` → `ACTOR(type: business_unit)`; `EMPLOYEE` → `ACTOR(type: person)` + an `employment` REL. Both were registered schema-only on 2026-05-29 and removed the same day before any population; the `0.5 → 0.6` migration recipe records the mapping. (#98)
+- **BREAKING: activity ownership collapses to one field.** The parallel `owner` (free-text) / `unit` / `employee` fields on activities become a single `owner: ACTOR-…` (`notations/views/07-activities.md` §5.6). `ROLE.unit` now references an `ACTOR(business_unit)`. (#98)
+
+---
+
 ## [0.5.0] — 2026-05-28
 
 A large release covering three completed epics (Compliance & regulation tracking, Temporal model, Per-layer extraction prompts) plus the methodology-upgrade-path policy and the Project Card notation. Adds three shared contracts (primitive lifecycle, compliance-domain rule index, versioned-attribute sidecar) plus a versioning policy. Adds five new notations and seven new element / document TYPEs. Several pre-1.0 breaking changes are called out under Changed.
