@@ -1,0 +1,8 @@
+notation: activity-card
+spec_version: "0.1"
+
+activity_card:
+  id: ACTIVITY_CARD-EU-1
+  project: ACTIVITY-EU-1
+  description: "EU programme card."
+  milestones: []

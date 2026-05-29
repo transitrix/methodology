@@ -81,7 +81,7 @@ A stakeholder's stake in a specific canonical object is a first-class relation (
 
 | Relation `type` | From → To | What it records |
 |---|---|---|
-| `stakeholding` | `STAKEHOLDER` → `GOAL` \| `ACTIVITY` \| `CAPABILITY` | This stakeholder has a stake in the target object. Optional per-stake `concern` / `influence` on the relation. The stakeholder→project link (`ACTIVITY`) drives the Project Card stakeholders block; the stakeholder→goal link is the methodology form of DSM's existing `goal_stakeholder`. |
+| `stakeholding` | `STAKEHOLDER` → `GOAL` \| `ACTIVITY` \| `CAPABILITY` | This stakeholder has a stake in the target object. Optional per-stake `concern` / `influence` on the relation. The stakeholder→project link (`ACTIVITY`) drives the Activity Card stakeholders block; the stakeholder→goal link is the methodology form of DSM's existing `goal_stakeholder`. |
 
 v0.1 covers `GOAL`, `ACTIVITY` (project), and `CAPABILITY` targets; stakeholder→change and stakeholder→factor are deferred until a concrete need surfaces.
 
@@ -113,7 +113,7 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 
 - **Concern as a separate primitive.** ArchiMate models a stakeholder's *concern* as its own element. v0.1 inlines `concern` as free text; a `CONCERN` primitive is deferred until needed.
 - **External-organisation reference.** An external stakeholder often *is* an organisation; v0.1 models it as an `ACTOR(business_unit)` with `external_ref`. A dedicated external-org entity is out of scope.
-- **Project Card stakeholders block.** Once this notation lands, Project Card v0.2 (#97 follow-up) renders a stakeholders panel from the `stakeholding` relations whose target is the project's activity.
+- **Activity Card stakeholders block.** Once this notation lands, Activity Card v0.2 (#97 follow-up) renders a stakeholders panel from the `stakeholding` relations whose target is the project's activity.
 - DSM formalisation (the `stakeholder.type` enum + `activity_stakeholder` join) is a `proj:transitrix-dsm` track; this spec defines only the methodology side.
 
 ---

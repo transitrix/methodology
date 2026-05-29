@@ -19,5 +19,5 @@ notations:
   - requirement
   - assertion
   - relation
-  - project-card
+  - activity-card
 zones: [canon, field, codex]
