@@ -1,0 +1,25 @@
+# Worked example — ACTOR element primitive (business_unit).
+# Schema: notations/elements/19-actors.md + ELEMENT_PRIMITIVES.md §7.10.
+# Identity only — engagement and org hierarchy are REL records, not fields here.
+
+notation: actor
+id: ACTOR-OPS-1
+name: "Operations"
+type: business_unit                     # person | business_unit | system
+description: >
+  The operations organisation — owns order-fulfilment operations and the
+  related processes / capabilities.
+contact: "ops@acme.example"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2024-01-01"
+valid_to: null

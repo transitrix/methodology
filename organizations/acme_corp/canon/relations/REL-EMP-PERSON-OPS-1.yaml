@@ -1,0 +1,30 @@
+# Worked example — employment REL (ACTOR(person) → ACTOR(business_unit)).
+# Schema: notations/elements/17-relations.md §2–3.
+# Demonstrates identity-vs-engagement: the person (ACTOR-PERSON-1) exists as one
+# identity; this relation records that they are employed by Operations and hold
+# the Operations Lead role — replacing the old EMPLOYEE primitive.
+
+notation: relation
+id: REL-EMP-PERSON-OPS-1
+type: employment
+from: ACTOR-PERSON-1
+to: ACTOR-OPS-1
+
+# Per-engagement attributes (employment)
+contract_type: permanent
+roles:
+  - ROLE-OPS-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — the employment window; within both
+# endpoints' lifecycles (REL-003). The person identity took effect 2025-03-01.
+valid_from: "2025-03-01"
+valid_to: null
