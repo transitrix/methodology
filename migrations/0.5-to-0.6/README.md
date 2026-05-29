@@ -19,6 +19,7 @@ The on-disk migration recipe an adopter follows when upgrading from methodology 
 
 - **Transform A — activity ownership collapse.** In `notation: activities | activity` files, rewrites `unit: UNIT-X` and `employee: EMPLOYEE-X | EMP-X` to `owner: ACTOR-<tail>`. Skips (and flags) an entry that already has a sibling `owner:` — that collapse is manual to avoid a duplicate key.
 - **Transform B — `ROLE.unit` retarget.** In `notation: role` files, rewrites `unit: UNIT-X` → `unit: ACTOR-X`.
+- **Transform D — `PROJECT_CARD` → `ACTIVITY_CARD` rename** (spec-level, no data migration). In `notation: project-card` files, rewrites the notation header → `activity-card`, root key `project_card:` → `activity_card:`, and doc-id prefix `PROJECT_CARD-` → `ACTIVITY_CARD-`, and renames the file `*.project-card.transitrix.yaml` → `*.activity-card.transitrix.yaml`. (Aligns the view name with the ACTIVITY-as-umbrella model; #112.)
 
 ## What is manual (the codemod flags, does not auto-apply)
 

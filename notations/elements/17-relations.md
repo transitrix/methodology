@@ -78,7 +78,7 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `alumni_membership` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A former employee's continuing relationship; may reference the prior `employment`. |
 | `community_membership` | person → community | `ACTOR(person)` → `ACTOR(business_unit)` | Membership of a community modelled as a `business_unit` actor (e.g. an open-source community, a user group). |
 | `contracting` | contractor → org | `ACTOR(person\|business_unit)` → `ACTOR(business_unit)` | A contracting relationship; carries `contract_terms`. |
-| `stakeholding` | stakeholder → object | `STAKEHOLDER` → `GOAL` \| `ACTIVITY` \| `CAPABILITY` | A stakeholder's stake in a specific object. Optional per-stake `concern` / `influence` on the relation. The `→ ACTIVITY` form drives the Project Card stakeholders block; `→ GOAL` is the methodology form of DSM's `goal_stakeholder`. v0.1 targets `GOAL` / `ACTIVITY` / `CAPABILITY` only. |
+| `stakeholding` | stakeholder → object | `STAKEHOLDER` → `GOAL` \| `ACTIVITY` \| `CAPABILITY` | A stakeholder's stake in a specific object. Optional per-stake `concern` / `influence` on the relation. The `→ ACTIVITY` form drives the Activity Card stakeholders block; `→ GOAL` is the methodology form of DSM's `goal_stakeholder`. v0.1 targets `GOAL` / `ACTIVITY` / `CAPABILITY` only. |
 
 Adding a new `type` value is a non-backwards-compatible methodology revision — adopters' validators built against an older enum will reject newer relations.
 

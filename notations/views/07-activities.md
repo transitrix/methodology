@@ -285,7 +285,7 @@ Renderer behaviour:
 
 Schedule milestones MAY have `start_date` / `end_date` pinned; if both are present they MUST be equal (validator MAY enforce — see §6).
 
-**Distinct from project-card milestones.** The Project Card notation ([18-project-card.md](18-project-card.md)) introduces a separate `MILESTONE` element type for **project-narrative** milestones — decision gates, certification dates, programme-level markers that belong in the card's narrative but are not part of the schedule's critical-path computation. The two coexist: a `MILESTONE-…` element in a project card may *also* reference a zero-duration activity here when the same date appears on both the card and the schedule. Use a schedule milestone (zero-duration activity, this section) for timeline computation; use a project-card milestone ([18-project-card.md](18-project-card.md) §3) for narrative gates.
+**Distinct from activity-card milestones.** The Activity Card notation ([18-activity-card.md](18-activity-card.md)) introduces a separate `MILESTONE` element type for **project-narrative** milestones — decision gates, certification dates, programme-level markers that belong in the card's narrative but are not part of the schedule's critical-path computation. The two coexist: a `MILESTONE-…` element in a activity card may *also* reference a zero-duration activity here when the same date appears on both the card and the schedule. Use a schedule milestone (zero-duration activity, this section) for timeline computation; use a activity-card milestone ([18-activity-card.md](18-activity-card.md) §3) for narrative gates.
 
 ### 5.10 Phases / summary activities — `parent`
 

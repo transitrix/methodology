@@ -1,13 +1,13 @@
-notation: project-card
+notation: activity-card
 spec_version: "0.1"
 
-# Single-project narrative view. Spec: notations/views/18-project-card.md
+# Single-project narrative view. Spec: notations/views/18-activity-card.md
 # One project per document, identified by the `project:` ref into an
 # existing project Activity (must resolve; activity_type must be Project).
 # Document-scoped MILESTONE elements in milestones[] for narrative gates.
 
-project_card:
-  id: PROJECT_CARD-FILL-ME-1
+activity_card:
+  id: ACTIVITY_CARD-FILL-ME-1
   project: ACTIVITY-FILL-ME-1                  # existing project Activity ID; must resolve
 
   description: >

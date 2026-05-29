@@ -195,7 +195,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Catalogue of applications + integrations | **Applications** | `*.applications.transitrix.yaml` |
 | Catalogue of products + services | **Products** | `*.products.transitrix.yaml` |
 | Register of issues — problems, defects, open questions | **Issues** | `*.issues.transitrix.yaml` |
-| Single-project narrative view — FGCA chain, dates, milestones, gate decisions | **Project Card** | `*.project-card.transitrix.yaml` |
+| Single-project narrative view — FGCA chain, dates, milestones, gate decisions | **Activity Card** | `*.activity-card.transitrix.yaml` |
 
 **Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Activities) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
 
@@ -225,7 +225,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
 - **Issues register** — `notation: issues`. Root key `issues_catalogue:` with `issues[]`. Each issue: `issue_id`, `name`, `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), optional `parent`, `description`, `relates_to`, `owner_role`. Hierarchy via `parent`.
-- **Project Card** — `notation: project-card`. Root key `project_card:` carrying a single project's narrative — the FGCA chain it implements (`factor`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
+- **Activity Card** — `notation: activity-card`. Root key `activity_card:` carrying a single project's narrative — the FGCA chain it implements (`factor`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
 - **Codex** *(zone primitives, not a view document)* — each artefact is a single `<ID>.yaml` file under `codex/external/<jurisdiction>/` (external: `LAW` / `REGULATION`) or `codex/internal/` (internal: `POLICY` / `INTERNAL_STANDARD`). No `notation:` header; carries the admission record (`CONTRACT.md` §6, `zone: codex`, `gate_checks.source_authority`) plus codex frontmatter (external: `jurisdiction` + `effective_date`; internal: `issuing_authority` + `effective_date`). A codex artefact stores the **source document only** — bindings to entities and processes live on `REQUIREMENT.derived_from` (`notations/elements/15-requirement.md`) and on `ASSERTION` (`notations/elements/16-assertion.md`), not on the codex artefact itself.
 
@@ -273,7 +273,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Products | `templates/products.products.transitrix.yaml` |
 | Issues | `templates/issues.issues.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
-| Project Card | `templates/project-card.project-card.transitrix.yaml` |
+| Activity Card | `templates/activity-card.activity-card.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
