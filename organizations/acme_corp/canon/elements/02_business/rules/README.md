@@ -4,7 +4,7 @@ Rule elements — business rules an organisation enforces. Each rule is one file
 
 Rules describe operational policy (approval thresholds, segregation of duties, eligibility criteria, …). They may be referenced from any other notation via `applies_to:` once a register-view notation lands; v1 ships the elements only. Rules contrast with **constraints** (`canon/elements/01_motivation/constraints/`) — constraints are binding rules imposed from outside or above (regulation, contract); rules are the organisation's own operating policy.
 
-TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`).
+TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`).
 
 ## File convention
 
@@ -61,5 +61,5 @@ rationale: "Why this rule exists."
 
 ## See also
 
-- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`), §4 (uniqueness scope).
+- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`), §4 (uniqueness scope).
 - Sibling constraints catalogue: [`../../01_motivation/constraints/`](../../01_motivation/constraints/).

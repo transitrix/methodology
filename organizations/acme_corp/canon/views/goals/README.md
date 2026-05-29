@@ -47,7 +47,7 @@ goals:
     valid_to: null
 ```
 
-`valid_from` / `valid_to` are required on every inline goal entry per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The `goal_types[]` entries are a static vocabulary, not elements, and do not carry lifecycle. The goals-tree document itself carries no lifecycle either — it is a view, not an element.
+`valid_from` / `valid_to` are required on every inline goal entry per [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §7. The `goal_types[]` entries are a static vocabulary, not elements, and do not carry lifecycle. The goals-tree document itself carries no lifecycle either — it is a view, not an element.
 
 ## See also
 

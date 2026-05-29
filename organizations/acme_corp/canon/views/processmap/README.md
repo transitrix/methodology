@@ -67,7 +67,7 @@ process_map:
 
 `process_id`, `owner_role`, and `capability` hold **element / capability IDs**, not display names.
 
-`valid_from` / `valid_to` are required on every inline process entry per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7 and are distinct from the per-process `status` (`Draft` / `Active` / `Deprecated`) which is an operational state. Process groups (`groups[]`) are organisational containers, not elements, and carry no lifecycle of their own; the process-map document itself carries none either.
+`valid_from` / `valid_to` are required on every inline process entry per [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §7 and are distinct from the per-process `status` (`Draft` / `Active` / `Deprecated`) which is an operational state. Process groups (`groups[]`) are organisational containers, not elements, and carry no lifecycle of their own; the process-map document itself carries none either.
 
 ## See also
 
