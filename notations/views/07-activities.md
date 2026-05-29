@@ -51,7 +51,7 @@ An **Activities** document describes a directed acyclic graph (DAG) of activitie
 - **Network view** — Project Schedule Network Diagram in Activity-on-Node (AoN) representation: each activity is a node, predecessor relationships are directed edges from predecessor to successor. Always renderable from `activities[]` + `predecessors[]`.
 - **Gantt view** — horizontal-bar timeline: each activity is a bar positioned by computed or pinned dates. Renderable when the schedule is *computable* (durations + predecessors + a project `start_date`) or *pinned* (explicit per-activity dates).
 
-The notation captures **what work is planned** (activities, durations, dependencies), **for what purpose** (goals served), **by whom** (owner / unit / employee), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — no `progress` / `% complete` field is part of this notation. Execution tracking is the job of an execution system.
+The notation captures **what work is planned** (activities, durations, dependencies), **for what purpose** (goals served), **by whom** (owner — an `ACTOR`), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — no `progress` / `% complete` field is part of this notation. Execution tracking is the job of an execution system.
 
 Critical-path values (early start / early finish / late start / late finish / slack) and computed Gantt dates are **not stored** in the document. They are derived at render time by a forward and backward pass over the network (CPM) and by projecting CPM offsets onto the working calendar (Gantt). Renderers MUST compute them and SHOULD highlight the critical path visually.
 
@@ -81,7 +81,7 @@ Stand-alone activity documents live in:
 organizations/<org>/views/activities/<NAME>.activities.transitrix.yaml
 ```
 
-Activities defined here MAY reference other elements by ID (goals, changes, scenarios, units, employees, activity types) declared elsewhere in the organisation's repository.
+Activities defined here MAY reference other elements by ID (goals, changes, scenarios, actors, activity types) declared elsewhere in the organisation's repository.
 
 ---
 
@@ -122,9 +122,7 @@ activities:
     scenario: SCEN-2026-OPT           # optional, reference to a Scenario element
     parent: A-000                     # optional, hierarchical parent activity (WBS-style)
     predecessors: []                  # optional, array of activity IDs that must complete first
-    owner: alice                      # optional, free-text or reference (see §5.6)
-    unit: UNIT-PRODUCT                # optional, reference to a Unit element
-    employee: EMP-001                 # optional, reference to an Employee element
+    owner: ACTOR-PRODUCT-TEAM-1       # optional, reference to the accountable ACTOR (see §5.6)
     score: 5                          # optional, integer — local prioritisation signal
     sort: 10                          # optional, integer — manual display ordering
     tags: [q3-priority, customer]     # optional, array of free-text tags
@@ -200,9 +198,7 @@ activities:
 | `scenario` | no | string (ID ref) | reference to a Scenario element |
 | `parent` | no | string (ID ref to activity) | hierarchical parent activity (WBS-style, **single** parent only) |
 | `predecessors` | no | array of string (ID refs to activities) | activities that must complete before this one can start |
-| `owner` | no | string | free-text owner identifier (see §5.6) |
-| `unit` | no | string (ID ref) | reference to a Unit element |
-| `employee` | no | string (ID ref) | reference to an Employee element |
+| `owner` | no | string (ID ref) | reference to the accountable `ACTOR-…` (`person` / `business_unit` / `system`); see §5.6 |
 | `score` | no | integer | local prioritisation signal |
 | `sort` | no | integer | manual display ordering |
 | `tags` | no | array of string | free-text tags (M:M) |
@@ -237,14 +233,11 @@ Activities with `start_date` AND `end_date` AND `duration` MUST have `duration` 
 
 All dependencies are interpreted as **Finish-to-Start with zero lag** by renderers and CPM computation. Typed dependencies and lag are reserved for a future version and will be additive (existing documents without these fields will remain valid).
 
-### 5.6 Owner — three optional fields
+### 5.6 Owner — a single Actor reference
 
-DSM today exposes three parallel ownership fields, all optional:
-- `owner` — free-text label (most permissive)
-- `unit` — reference to an organisational unit
-- `employee` — reference to a named employee
+`owner` is an optional reference to the `ACTOR` accountable for the activity — `ACTOR-…` of `type` `person`, `business_unit`, or `system` (see [elements/19-actors.md](../elements/19-actors.md)).
 
-An activity MAY populate any combination. The free-text `owner` is the default surface; `unit` and `employee` are structured alternatives for organisations that want enforced references.
+This collapses the three parallel ownership fields DSM historically exposed (`owner` free-text, `unit` → org unit, `employee` → named employee) into one typed reference, per the 2026-05-29 Actors decision: identity lives in a single `ACTOR` catalogue, so a unit-owner and a person-owner are both just `ACTOR-…` IDs distinguished by the actor's `type`. Legacy free-text `owner` values migrate to an `ACTOR(type: person)` (or `system`) record; the `unit` / `employee` fields are removed (mapping in the `0.5 → 0.6` migration recipe).
 
 ### 5.7 BDN linkage
 

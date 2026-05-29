@@ -27,18 +27,19 @@ All view notations share the same file-extension convention `.<short-name>.trans
 
 ## Elements
 
-The 4 element notations live under [`elements/`](elements/) — each defines a canon-zone primitive: standalone YAML files admitted to canon and referenced (by ID) from views and other elements. Element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7.
+The 5 element notations live under [`elements/`](elements/) — each defines a canon-zone primitive: standalone YAML files admitted to canon and referenced (by ID) from views and other elements. Element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7.
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
 | [14-codex.md](elements/14-codex.md) | `codex` | External laws / regulations and internal policies / standards in the codex zone. | `codex/external/<jurisdiction>/<ID>.yaml`, `codex/internal/<ID>.yaml` | documented |
 | [15-requirement.md](elements/15-requirement.md) | `requirement` | Motivation-layer element capturing a positive obligation derived from a codex source. | `canon/elements/01_motivation/requirements/REQUIREMENT-<…>.yaml` | documented |
 | [16-assertion.md](elements/16-assertion.md) | `assertion` | Canon-zone primitive linking a REQUIREMENT to a subject (PRODUCT / PROCESS / CAPABILITY). | `canon/assertions/ASSERTION-<…>.yaml` | documented |
-| [17-relations.md](elements/17-relations.md) | `relation` | First-class, time-aware relation between two canonical primitives — `parent` / `goal_parent` / `activity_goal` / `unit_parent`. | `canon/relations/REL-<…>.yaml` | documented |
+| [17-relations.md](elements/17-relations.md) | `relation` | First-class, time-aware relation between two canonical primitives — `parent` / `goal_parent` / `activity_goal` / `unit_parent` / engagement kinds. | `canon/relations/REL-<…>.yaml` | documented |
+| [19-actors.md](elements/19-actors.md) | `actor` | Active-structure identity primitive — `person` / `business_unit` / `system` (replaces the former UNIT / EMPLOYEE TYPEs). | `canon/elements/02_business/actors/ACTOR-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 
-The cross-cutting **element-primitive file schema** — the common envelope every standalone element file carries, which TYPEs get a standalone file vs. live only inline in a view, and where each lives on disk — is defined once in [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md). The four element notations above are specialised instances of that envelope.
+The cross-cutting **element-primitive file schema** — the common envelope every standalone element file carries, which TYPEs get a standalone file vs. live only inline in a view, and where each lives on disk — is defined once in [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md). The element notations above are specialised instances of that envelope.
 
 ## Status vocabulary
 

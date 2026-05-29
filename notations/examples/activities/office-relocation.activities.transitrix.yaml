@@ -35,7 +35,7 @@ activities:
     start_date: "2026-06-01"
     end_date: "2026-06-12"
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [planning]
 
   - id: A-102
@@ -45,7 +45,7 @@ activities:
     end_date: "2026-07-03"
     predecessors: [A-101]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [planning]
 
   - id: A-103
@@ -55,7 +55,7 @@ activities:
     end_date: "2026-07-17"
     predecessors: [A-102]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-LEGAL
+    owner: ACTOR-LEGAL-1
     tags: [planning, legal]
 
   - id: M-LEASE-SIGNED
@@ -74,7 +74,7 @@ activities:
     end_date: "2026-08-14"
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-LEGAL
+    owner: ACTOR-LEGAL-1
     tags: [fit-out, legal]
 
   - id: A-202
@@ -84,7 +84,7 @@ activities:
     end_date: "2026-08-07"
     predecessors: [M-LEASE-SIGNED]
     goals: [GOAL-RELOC-002]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [fit-out, design]
 
   - id: A-203
@@ -94,7 +94,7 @@ activities:
     end_date: "2026-09-25"
     predecessors: [A-201, A-202]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [fit-out]
     delivers_changes: [CHG-WORKSPACE-001]
 
@@ -105,7 +105,7 @@ activities:
     end_date: "2026-10-13"
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
-    unit: UNIT-IT
+    owner: ACTOR-IT-1
     tags: [fit-out, it]
     delivers_changes: [CHG-WORKSPACE-001]
 
@@ -116,7 +116,7 @@ activities:
     end_date: "2026-10-02"
     predecessors: [A-203]
     goals: [GOAL-RELOC-002]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [fit-out]
 
   - id: A-301
@@ -126,7 +126,7 @@ activities:
     end_date: "2026-10-16"
     predecessors: [A-204, A-205]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [move]
 
   - id: A-302
@@ -136,7 +136,7 @@ activities:
     end_date: "2026-10-20"
     predecessors: [A-301]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [move]
 
   - id: A-303
@@ -146,7 +146,7 @@ activities:
     end_date: "2026-10-23"
     predecessors: [A-302]
     goals: [GOAL-RELOC-001]
-    unit: UNIT-FACILITIES
+    owner: ACTOR-FACILITIES-1
     tags: [move]
 
   - id: M-OPEN-DAY

@@ -72,9 +72,16 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `parent` | child → parent | `CAPABILITY` → `CAPABILITY` (V/H sub-grammar applies) | Child capability sits under its parent in the capability hierarchy. Re-parenting a capability — a re-org or a capability split — produces a new relation with its own window. |
 | `goal_parent` | child → parent | `GOAL` → `GOAL` | A goal's place under another goal in the Goals tree. A goal re-parented mid-stream (a tactical goal moved to a different strategic goal) produces a new relation. |
 | `activity_goal` | activity → goal | `ACTIVITY` → `GOAL` | An activity serves a goal. An activity re-aimed mid-stream produces a new relation. |
-| `unit_parent` *(reserved)* | child → parent | `UNIT` → `UNIT` | Organisational re-parenting. Reserved; no OrgUnit primitives ship in v1. |
+| `unit_parent` | child → parent | `ACTOR(business_unit)` → `ACTOR(business_unit)` | Organisational re-parenting — a business-unit actor moved under a different parent unit. (Was `UNIT → UNIT` before the 2026-05-29 Actors decision folded `UNIT` into `ACTOR`.) |
+| `employment` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | Employment of a person by a unit / organisation. Time-aware (the employment window); carries the most attributes of the engagement kinds — `contract_type`, role assignments (`roles: [ROLE-…]`). |
+| `candidacy` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A person under evaluation (pre-hire). Carries `stage`, `source`. |
+| `alumni_membership` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A former employee's continuing relationship; may reference the prior `employment`. |
+| `community_membership` | person → community | `ACTOR(person)` → `ACTOR(business_unit)` | Membership of a community modelled as a `business_unit` actor (e.g. an open-source community, a user group). |
+| `contracting` | contractor → org | `ACTOR(person\|business_unit)` → `ACTOR(business_unit)` | A contracting relationship; carries `contract_terms`. |
 
 Adding a new `type` value is a non-backwards-compatible methodology revision — adopters' validators built against an older enum will reject newer relations.
+
+**Engagement relations (`employment` / `candidacy` / `alumni_membership` / `community_membership` / `contracting`).** Decided 2026-05-29 (Actors): a `person` actor records *identity only*; every kind of engagement with the organisation is its own first-class, time-aware relation, so the same person can be a candidate, then an employee, then an alumnus over time without losing history, and can hold several engagements at once. Each engagement kind carries only the attributes that kind needs; the relation's own `valid_from`/`valid_to` is the engagement window.
 
 **Out of the enum in v1, by deliberate decision:**
 
