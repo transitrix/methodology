@@ -1,234 +1,98 @@
-# Transitrix: Lite Enterprise Architecture (Architecture-as-Code)
+# acme_corp — worked Transitrix adopter repository
 
-A lightweight, Git-based enterprise architecture methodology that combines ArchiMate 3.2 semantics with modern development workflows.
+A worked example of a Transitrix **architecture-as-text** repository: the canonical zoned layout (`canon/` + `field/` + `codex/`), populated with example element primitives and view documents that conform to the published methodology. Clone it to see both *how a view looks* and *what an element-primitive file looks like*.
 
-## 📁 Project Structure
+The methodology canon lives at `github.com/transitrix/methodology` under [`notations/`](../../notations/). This repo **follows** the published specs at the version pinned in [`transitrix.yaml`](transitrix.yaml); it does not vendor a copy of `notations/`.
+
+## 📁 Repository structure
 
 ```
-Transitrix/
-├── transitrix.yaml              # adopter manifest (methodology version, notations, zones)
+acme_corp/
+├── transitrix.yaml              # adopter manifest — methodology version, notations, zones (notations/MANIFEST.md)
+├── AGENTS.md                    # assistant-neutral agent guide (canonical for all assistants)
 ├── canon/                       # validated model — the authoritative zone
-│   ├── elements/                # architecture elements organized by layer
-│   │   ├── 01_motivation/       # Goals, principles, constraints, drivers
-│   │   ├── 02_business/         # Roles, actors, processes, functions
-│   │   ├── 03_application/      # Components, services, interfaces
-│   │   └── 04_technology/       # Infrastructure, nodes, artifacts
-│   ├── relations/               # Relationship definitions (ATOMIC)
-│   └── views/                   # View configurations for diagrams
-├── field/                       # raw inputs (interviews, surveys, observations, drafts)
-├── codex/                       # external constraints + internal authority docs
-├── .templates/                  # Templates for new elements and relations
-│   ├── elements/                # Element templates by layer
-│   ├── relations/               # Relation template
-│   └── bpmn/                    # BPMN process template
-├── .validators/                 # Linting and validation scripts
-│   └── lint.py                  # Architecture model validator
-├── method/                      # Methodology documentation
-└── README.md                    # This file
+│   ├── elements/                # element primitives, one file per element, by ArchiMate layer
+│   │   ├── 01_motivation/       # FACTOR, GOAL, CONSTRAINT, REQUIREMENT
+│   │   ├── 02_business/         # CAPABILITY, PROCESS, PRODUCT, ROLE, UNIT, EMPLOYEE, RULE
+│   │   ├── 03_application/      # APPLICATION, INTEGRATION
+│   │   ├── 04_technology/       # (no registry element TYPE yet)
+│   │   └── 05_implementation/   # CHANGE, ACTIVITY
+│   ├── relations/               # first-class time-aware relations (REL) — notations/elements/17-relations.md
+│   ├── assertions/              # compliance assertions (ASSERTION) — notations/elements/16-assertion.md
+│   └── views/                   # render-able view documents, one subfolder per notation
+├── field/                       # raw inputs (interviews, surveys, observations, drafts) — not authoritative
+├── codex/                       # external laws/regulations + internal policies/standards, faithful to source
+│   ├── external/<jurisdiction>/ # LAW, REGULATION
+│   └── internal/                # POLICY, INTERNAL_STANDARD
+└── .templates/                  # copy-and-fill templates for new elements / views / relations
 ```
 
-## 🚀 Quick Start
+The three **zones** (`canon` / `field` / `codex`) are parallel, not stacked — see [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §5.
 
-### 1. Create a New Element
+## 🚀 Quick start
+
+### 1. Create an element primitive
 
 ```bash
-# Copy template from .templates/
-cp .templates/elements/03_application_template.yaml \
-   canon/elements/03_application/MY_SERVICE.yaml
-
-# Edit the file with your specifics
-editor canon/elements/03_application/MY_SERVICE.yaml
+cp .templates/elements/02_business_template.yaml \
+   canon/elements/02_business/processes/PROCESS-MY-1.yaml
+# Edit: set notation/id/name, the per-TYPE fields, the admission record, and valid_from/valid_to.
 ```
 
-### 2. Define a Relationship
+Every element file carries the common envelope — `notation:` header, identity, **admission record** (`zone`/`admitted_at`/`admitted_by`/`gate_checks`, [`CONTRACT.md`](../../notations/CONTRACT.md) §6) and **primitive lifecycle** (`valid_from`/`valid_to`, §7). The per-TYPE field sets are defined in [`notations/ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §7.
+
+### 2. Author a view
 
 ```bash
-# Copy relation template
-cp .templates/relations/relation_template.yaml \
-   canon/relations/MY_SERVICE_TO_DB.yaml
-
-# Edit with source and target element IDs
-editor canon/relations/MY_SERVICE_TO_DB.yaml
+cp .templates/goals.goals.transitrix.yaml \
+   canon/views/goals/strategy-2026.goals.transitrix.yaml
+# Fill the FILL-ME placeholders; keep the notation: / spec_version: header.
 ```
 
-### 3. Validate Your Changes
+Views reference elements by **canonical ID** (`GOAL-…`, `CAPABILITY-V1`, `PROCESS-…`); they don't duplicate them.
 
-```bash
-# Run the linter
-python3 .validators/lint.py
+### 3. Validate
 
-# Output:
-# ✓ YAML syntax valid
-# ✓ Atomicity check passed
-# ✓ Referential integrity OK
-# ✓ Policies compliant
-```
+Each notation has a "Validation rules" table in its spec ([`notations/views/`](../../notations/views/), [`notations/elements/`](../../notations/elements/)); the shared header (`HDR-001..004`), lifecycle (`LIFECYCLE-001..004`), and element-placement (`ELEM-001..005`) rules are in [`CONTRACT.md`](../../notations/CONTRACT.md) and [`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §9. Transitrix Studio (VS Code) and `npx @transitrix/cli validate <file>` surface these.
 
-### 4. Create a Pull Request
+### 4. Open a PR
 
-```bash
-# Git workflow - same as code development
-git checkout -b feature/new-service
-git add canon/elements/ canon/relations/
-git commit -m "docs: add OrderProcessor service and DB relations"
-git push origin feature/new-service
+Architecture changes review as a diff, same as code — branch, commit, PR, gated merge.
 
-# Create PR - your team reviews the architecture changes as a diff
-```
+## 📋 Element TYPEs by layer
 
-## 📋 Element Types by Layer
+The canonical TYPE registry is [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §3.1. Element primitives placed in `canon/elements/<NN>_<layer>/`:
 
-### Motivation Layer (01_motivation/)
-- **Goal**: Strategic business objectives
-- **Principle**: Core design principles
-- **Constraint**: Boundaries and limitations
-- **Driver**: External business drivers
-- **Outcome**: Measurable results
-- **Value**: Business value propositions
+| Layer | TYPEs |
+|---|---|
+| **01_motivation** | `FACTOR`, `GOAL`, `CONSTRAINT`, `REQUIREMENT` |
+| **02_business** | `CAPABILITY` (V/H sub-grammar), `PROCESS`, `PRODUCT`, `ROLE`, `UNIT`, `EMPLOYEE`, `RULE` |
+| **03_application** | `APPLICATION`, `INTEGRATION` |
+| **04_technology** | *(no registry element TYPE yet)* |
+| **05_implementation** | `CHANGE`, `ACTIVITY` |
 
-### Business Layer (02_business/)
-- **BusinessRole**: Organizational roles and responsibilities
-- **BusinessActor**: Entities that perform business functions
-- **BusinessProcess**: End-to-end processes (often .bpmn.transitrix.yaml)
-- **BusinessFunction**: Reusable business capabilities
-- **Service**: Business services offered
+Other registry TYPEs live outside the layered element tree: `REL` (`canon/relations/`), `ASSERTION` (`canon/assertions/`), codex artefacts (`LAW`/`REGULATION`/`POLICY`/`INTERNAL_STANDARD`, in `codex/`), and field artefacts (`INTERVIEW`/`SURVEY`/`OBSERVATION`/`DRAFT`, in `field/`).
 
-### Application Layer (03_application/)
-- **ApplicationComponent**: Microservices, modules, components
-- **ApplicationService**: High-level service interfaces
-- **DataObject**: Data structures and schemas
-- **ApplicationInterface**: APIs and integration points
+## 🔗 Relationships
 
-### Technology Layer (04_technology/)
-- **Node**: Physical/virtual infrastructure (servers, containers)
-- **SystemSoftware**: Operating systems, middleware, databases
-- **Artifact**: Deployable packages (containers, JARs, binaries)
-- **Device**: Hardware devices
-- **CommunicationPath**: Network connections and protocols
+Transitrix models links two ways (see [`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §3 and [`elements/17-relations.md`](../../notations/elements/17-relations.md)):
 
-## 🔗 Relationship Types (ArchiMate)
+- **Inline cross-references** — a typed-ID field on an element or view entry (`owner_role: ROLE-…`, `goals: [GOAL-…]`, `applies_to: [PROCESS-…]`). Plural field → array, singular → one ID ([`IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §5). Timeless within the host file.
+- **First-class time-aware relations (`REL`)** — a `canon/relations/REL-…yaml` file with its own `valid_from`/`valid_to`, for links where the temporal dimension matters. The `type` enum is **closed**: `parent`, `goal_parent`, `activity_goal`, `unit_parent` ([`17-relations.md`](../../notations/elements/17-relations.md) §3). A re-parenting is two REL files (one ended, one new).
 
-- **Serving**: Provides or supports (A serves B)
-- **Assignment**: Allocates or assigns (role assigns activity)
-- **Realization**: Implements or fulfills (component realizes service)
-- **Access**: Consumes or accesses data (component accesses data object)
-- **Composition**: Made up of components
-- **Aggregation**: Collections of elements
-- **Triggering**: Initiates or causes (activity triggers another activity)
-- **Flow**: Transfers or exchanges (data, resources)
-- **Specialization**: Is a subtype of
-- **Association**: Related to
-- **Influence**: Impacts or affects
-- **Junction**: Logical connections
+## ✅ Validation model
 
-## ✅ Validation Rules
-
-### Syntax
-- All files must be valid YAML
-
-### Atomicity
-- **NO relations inside element files** - must be separate files in `canon/relations/`
-- Each element describes only itself (id, name, type, properties, metadata)
-
-### Referential Integrity
-- All `source` and `target` IDs in relations must point to existing elements
-- Forward references are tracked as warnings during validation
-
-### Semantic Compliance
-- Relations must follow ArchiMate layer rules
-- Example: ApplicationComponent should not directly "Serve" BusinessRole without an Interface
-
-### Policies
-- **Active/Production status** requires `metadata.owner` to be assigned
-- Critical elements require approval before changes
-- All relations with high criticality require documentation
-
-## 🔍 Using the Linter
-
-```bash
-# Basic validation
-python3 .validators/lint.py
-
-# Exit codes:
-# 0 = All checks passed
-# 1 = Errors found (blocks commit/merge)
-
-# Environment variable for custom root
-REPO_ROOT=. python3 .validators/lint.py
-```
-
-## 📊 Viewing Diagrams
-
-Architecture views are generated automatically in CI/CD and stored as:
-- PlantUML (.puml) - for C4 and entity diagrams
-- Mermaid (.mmd) - for flowcharts and sequences
-- SVG - for web embedding and documentation
-
-View configurations are in `canon/views/` - edit these to customize what gets visualized.
-
-## 🔄 Git Workflow
-
-### Typical commit message format:
-```
-docs(architecture): add OrderProcessor service [APP-ORD-001]
-
-- New microservice for order orchestration
-- Created ApplicationComponent element
-- Added relations to OrderDB and NotificationService
-- Validates against lint rules
-```
-
-### Review checklist for architecture PRs:
-- [ ] YAML syntax is valid (linter passed)
-- [ ] All element IDs are unique
-- [ ] Relations reference valid source/target IDs
-- [ ] Status and owner fields are correct
-- [ ] Description clearly explains the "why"
-- [ ] No relations inside element files (atomicity)
+- **Header** — every notation file starts with `notation: <short-name>` ([`CONTRACT.md`](../../notations/CONTRACT.md) §1–2, `HDR-001..004`).
+- **Admission record** — every canon artefact records the gate that admitted it (`CONTRACT.md` §6).
+- **Primitive lifecycle** — every element carries `valid_from`/`valid_to` (`CONTRACT.md` §7); the model shows the organisation *in motion*.
+- **IDs & cross-references** — canonical grammar `<TYPE>-[<middle>-]<INTEGER>`, no leading zeros; cross-references resolve to a defined element of the correct TYPE ([`IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §1, §5).
 
 ## 📚 Documentation
 
-- See `method/Transitrix Методология управления архитектурой предприятия (Architecture-as-Code).md` for full methodology
-- See `.templates/` directory for detailed examples of each element and relation type
-- See `canon/views/README.md` for diagram generation configuration
-
-## 🛠️ Development
-
-### To add a validator rule:
-Edit `.validators/lint.py` and add a method to the `TransitrixLinter` class:
-
-```python
-def _check_custom_rule(self):
-    """Your custom validation logic"""
-    for element_id, element_data in self.elements.items():
-        if some_condition:
-            self.errors.append(LintError(
-                file=f"canon/elements/*/{element_id}.yaml",
-                line=0,
-                message="Your error message",
-                severity="error"
-            ))
-```
-
-### To add a new element type:
-1. Create template in `.templates/elements/` (e.g., `05_new_layer_template.yaml`)
-2. Create directory in `canon/elements/` if new layer (e.g., `canon/elements/05_new_layer/`)
-3. Document new type in this README
-4. Update linter semantic rules if needed
-
-## 🤝 Contributing
-
-1. **Create elements** by copying templates
-2. **Define relations** atomically in `canon/relations/`
-3. **Run linter** before committing
-4. **Create PR** for team review
-5. **Merge** after approval (automatic diagram generation occurs)
-
-## 📝 License
-
-This methodology and templates are part of the Transitrix project.
+- Methodology canon: [`notations/`](../../notations/) — start at [`README.md`](../../notations/README.md) (notation index + family selection).
+- Element-primitive schema: [`notations/ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md).
+- This repo's agent guide: [`AGENTS.md`](AGENTS.md). Onboarding walkthrough: [`GETTING_STARTED.md`](GETTING_STARTED.md). ID/naming conventions: [`CONVENTIONS.md`](CONVENTIONS.md).
 
 ---
 
-**Last Updated:** May 3, 2026  
-**Methodology Version:** 1.0.0
+**Methodology version:** pinned in [`transitrix.yaml`](transitrix.yaml) (`methodology_version`).
