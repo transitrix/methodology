@@ -33,7 +33,7 @@ SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VIEW_NOTATIONS = [
     "bpmn", "fgca", "fga", "goals", "capability-map", "process-map",
     "activities", "blocks", "scenarios", "applications", "products",
-    "issues", "process-blueprint", "project-card",
+    "issues", "process-blueprint", "activity-card",
 ]
 ROOT_TEMPLATES = ["transitrix.yaml", "AGENTS.md", "copilot-instructions.md"]
 CODEX_TEMPLATES = ["codex-external.yaml", "codex-internal.yaml"]
