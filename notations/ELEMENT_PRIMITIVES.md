@@ -2,7 +2,7 @@
 
 This appendix defines the **element-primitive file schema**: what a standalone canon-zone element file looks like, which element TYPEs get one, where each lives on disk, and how the per-TYPE field sets are defined. It is the cross-cutting companion to the view specs (`notations/views/`), the four element notations (`notations/elements/`), the ID grammar ([`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)), and the shared contracts ([`CONTRACT.md`](CONTRACT.md)).
 
-Recorded 2026-05-29 as the canonical decision for the methodology. Status: **draft** — the standalone-vs-view-only assignments in §4 and the new `05_implementation` layer in §6 are the gated decisions in this document.
+Recorded 2026-05-29 as the canonical decision for the methodology. Status: **documented** — the three decisions this document carries (standalone-vs-view-only mode assignment §4, the new `05_implementation` layer §6, and `name` as the single label field §3) were ratified by canon on 2026-05-29.
 
 A view spec describes a *render-able artefact* (a diagram, a catalogue, a tree). An **element primitive** is the *thing* a view arranges and points at — a Factor, a Goal, a Capability, an Application. The same primitive can be referenced from many views; the view is a projection, the primitive is the record. This document defines the record.
 
@@ -20,6 +20,8 @@ Every element TYPE in the registry ([`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES
 **The promotion rule (already canon).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 already states that the strategy-chain TYPEs (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`) are unique "within the FGCA / FGA / Goals / Activities document that defines them" **and**, "when referenced from across documents, … also be unique within the organisation's element catalogue." This document formalises that clause: a `standalone` TYPE has a defined element-file schema (§7) so that any element of that TYPE *can* be materialised in the catalogue. A view document remains a valid authoring surface; when an element is shared across documents it is **promoted** to its standalone catalogue file (its definition home), and the views reference it by ID rather than re-defining it.
 
 A `standalone` mode therefore does not forbid inline authoring inside a single view — it fixes *where the canonical record lives once the element is shared*, and guarantees the element file shape is defined so promotion is mechanical, not a redesign. This is what unblocks the elements-population work that surfaced this task (`FACTOR` / `CHANGE` / `ACTIVITY` had no element-file shape to promote into).
+
+**Promotion trigger — when (and only when) referenced from another document.** Canon ratified `standalone`-with-promotion over an always-standalone alternative on the grounds that the flat FGCA / FGA / Goals / Activities documents are *narrative artefacts*, not catalogue layouts: fragmenting an FGCA into per-element files from day one would harm the very authoring ergonomics those notations exist for. So an element stays inline in its authoring document until a *second* document references it; at that point it is promoted to its catalogue file and both documents reference it by ID. The supporting tool work — detecting a cross-document reference, enforcing promotion at that point, and flagging an inline reference that should already have been promoted — is a validator / codemod concern tracked separately (it does not change the file schema this document defines).
 
 A `view-defined` TYPE has **no** standalone element-file schema in v1: its only definition home is the view/document that declares it (§4 lists which, and why).
 
@@ -48,8 +50,10 @@ canon/
       integrations/   INTEGRATION-*.yaml      # promotable; nested-in-view in v1 (§4)
     04_technology/    (no registry element TYPEs yet — see IDS_AND_REFERENCES.md)
     05_implementation/                        # new layer, this document §6
-      changes/        CHANGE-*.yaml
-      activities/     ACTIVITY-*.yaml
+      activities/     ACTIVITY-*.yaml          # Work Package (recursive)
+      changes/        CHANGE-*.yaml            # Gap (multi-scale)
+      milestones/     MILESTONE-*.yaml         # Implementation Event — registration owned by the MILESTONE TYPE task; folder reserved here
+      # room reserved for DELIVERABLE / PLATEAU if either becomes a first-class TYPE
   relations/          REL-*.yaml              # elements/17-relations.md (flat, not under elements/)
   assertions/         ASSERTION-*.yaml        # elements/16-assertion.md (flat, not under elements/)
   views/              *.<short>.transitrix.yaml   # the render-able projections
@@ -97,7 +101,7 @@ valid_to: null
 |---|---|---|---|
 | `notation` | yes | string | The element TYPE's short name — the lowercased registry TYPE (`factor`, `goal`, `change`, `activity`, `capability`, `process`, `product`, `application`, `integration`, `role`, `unit`, `employee`, `rule`, `constraint`; `requirement` per [elements/15](elements/15-requirement.md)). Machine-readable type tag; redundant with the ID prefix but read by tooling that does not parse IDs. Drives `HDR-002`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1 (and §2 for `CAPABILITY`). The prefix MUST be the element's registry TYPE. |
-| `name` | yes | string | Human-readable label. **Variance:** [elements/15-requirement.md](elements/15-requirement.md) uses `title` for the same role; that is a documented per-TYPE alias, reconciled in §9. |
+| `name` | yes | string | Human-readable label. **Canonical across every element TYPE — no TYPE-specific aliases.** [elements/15-requirement.md](elements/15-requirement.md) historically used `title` (inherited from IEEE/ISO requirements templates — stylistic, not functional); REQUIREMENT migrates `title` → `name` (follow-up F-3, §10). A richer naming structure (e.g. `short_title` + `long_description`) is a separate additive enhancement via *additional fields*, never via an alias for `name`. |
 | `type` | per-TYPE | string | Subtype value from the TYPE's controlled vocabulary (e.g. `external` / `internal` for FACTOR; `domain` / `supporting` for CAPABILITY). Required where §7 defines a subtype vocabulary; omitted where it does not. **`type` carries the *subtype*, never the element TYPE itself** — the element TYPE is carried by `notation` + the ID prefix. |
 | `layer` | no | string | One of `motivation` / `business` / `application` / `technology` / `implementation`. Redundant with folder placement (§6); kept for documentation and tooling that reads a file out of its folder context. Not required; the folder is authoritative (`ELEM-003`). |
 | `description` | recommended | string | One-paragraph elaboration. Some TYPEs use `statement` instead for a normative sentence (RULE, CONSTRAINT — §7). |
@@ -120,7 +124,7 @@ valid_to: null
 
 ## 4. Materialisation decision per TYPE
 
-This is the gated table. For each registry element TYPE: its mode (§1), its `notation` short name, its layer + folder (§6), and the spec that owns its per-element fields.
+The mode table. For each registry element TYPE: its mode (§1), its `notation` short name, its layer + folder (§6), and the spec that owns its per-element fields.
 
 | TYPE | Mode | `notation` | Layer | Folder | Per-element fields owned by |
 |---|---|---|---|---|---|
@@ -193,16 +197,22 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `UNIT` (`units/`), `EMPLOYEE` (`employees/`), `RULE` (`rules/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
-| `05_implementation/` | Implementation & Migration | `CHANGE` (`changes/`), `ACTIVITY` (`activities/`) |
+| `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `MILESTONE` (`milestones/` — see 6.2) |
 
 ### 6.1 New layer — `05_implementation`
 
-This document **adds an `05_implementation/` layer**, the ArchiMate 3.2 *Implementation & Migration* layer, to settle the open "`changes` / `activities` → ?" placement in the task. Rationale:
+This document **adds an `05_implementation/` layer**, the ArchiMate 3.2 *Implementation & Migration* layer, settling the open "`changes` / `activities` → ?" placement in the task (ratified by canon 2026-05-29). Rationale:
 
-- An `ACTIVITY` ("initiative / workstream") is an ArchiMate **work package** — a unit of transformation work, not a steady-state business element. A `CHANGE` (the BDN change layer) is a one-time business transformation, not a standing business function. Both belong to the *execution* half of the strategy chain, distinct from the *intent* half (`FACTOR` / `GOAL`) in `01_motivation` and from the *steady-state* business elements (`CAPABILITY` / `PROCESS` / `ROLE` / …) in `02_business`.
-- Placing them in `02_business` would conflate "what the organisation is and does" with "the programme that changes it." A dedicated Implementation & Migration layer keeps the BDN execution layers together and ArchiMate-aligned, and matches the existing numbered-layer convention (`01_motivation` … `04_technology`).
+- An `ACTIVITY` ("initiative / workstream") is an ArchiMate **Work Package** — a unit of transformation work, not a steady-state business element. A `CHANGE` (the BDN change layer) is a **Gap** — a required delta to reach the target state. Both belong to the *execution* half of the strategy chain, distinct from the *intent* half (`FACTOR` / `GOAL`) in `01_motivation` and from the *steady-state* business elements (`CAPABILITY` / `PROCESS` / `ROLE` / …) in `02_business`.
+- Placing them in `02_business` would conflate "what the organisation is and does" with "the programme that changes it." A dedicated Implementation & Migration layer keeps the BDN execution layers together and ArchiMate-aligned, and matches the existing numbered-layer convention (`01_motivation` … `04_technology`). (The rejected alternative was to fold both into `02_business`.)
 
-This is the second gated decision in this document (alongside the §4 mode assignments). The alternative — folding `CHANGE` and `ACTIVITY` into `02_business` and not introducing a fifth layer — is recorded here so the reviewer can choose. If the alternative is gated in, the §4 and §6 rows for `CHANGE` / `ACTIVITY` move to `02_business/changes/` and `02_business/activities/`; nothing else in the schema changes.
+**ArchiMate 5 → Transitrix 3.** The Transitrix model intentionally collapses ArchiMate's five Implementation & Migration concepts into three TYPEs: **ACTIVITY** covers *Work Package + Deliverable*; **CHANGE** covers *Gap*; **MILESTONE** covers *Implementation Event*. *Plateau* is expressed via time-aware attributes on primitives rather than as a standalone TYPE. `DELIVERABLE` and `PLATEAU` folders are reserved should either ever become a first-class TYPE.
+
+Both `ACTIVITY` and `CHANGE` are **recursive / multi-scale**: a strategic initiative aggregates programmes → projects → tasks (all one `ACTIVITY` TYPE), and a capability-level `CHANGE` decomposes into process-level and step-level `CHANGE`s — in both cases via a `parent` relation between same-TYPE elements (see §7.3, §7.4). This matches the DSM model.
+
+### 6.2 `MILESTONE` placement note
+
+`MILESTONE` (= Implementation Event) belongs to this layer conceptually and the `05_implementation/milestones/` folder is reserved for it here. Its registration in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.1 currently scopes it to a Project Card document ([views/18-project-card.md](views/18-project-card.md)); whether and how it is also materialised as a standalone element file is **owned by the MILESTONE TYPE task**, not decided by this document. This appendix reserves the folder and the layer assignment; it does not register a standalone MILESTONE schema (no MILESTONE row in §4 or §7).
 
 ---
 
@@ -234,9 +244,12 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.2.
 
 ### 7.3 `CHANGE` — `05_implementation/changes/`
 
+A `CHANGE` is an ArchiMate **Gap**: a required delta to reach the target state, at any granularity — capability-level, process-level, or step-level. Higher-level changes decompose into lower-level changes via a `parent` relation between `CHANGE`s (multi-scale, §6.1).
+
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `goals` | no | list | `GOAL-…` IDs this change delivers. |
+| `parent` | no | string | `CHANGE-…` — the higher-scale change this one decomposes from (capability → process → step). |
 | `description` | recommended | string | One-paragraph elaboration of the transformation. |
 
 Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
@@ -250,7 +263,7 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary
 | `goals` | no | list | `GOAL-…` IDs the activity serves. **Time-aware** — first-class via `REL` `type: activity_goal` ([elements/17](elements/17-relations.md) §3); inline `goals` is v0.x transitional. |
 | `delivers_changes` | no | list | `CHANGE-…` IDs (BDN linkage). |
 | `predecessors` | no | list | `ACTIVITY-…` IDs that must complete first. **Stays inline/timeless.** |
-| `parent` | no | string | `ACTIVITY-…` — WBS grouping. |
+| `parent` | no | string | `ACTIVITY-…` — the aggregating work package (recursive: initiative → programme → project → task, all one TYPE; §6.1). Subsumes WBS grouping. |
 | `scenario` | no | string | `SCENARIO-…` this activity belongs to. |
 | `unit` | no | string | `UNIT-…` responsible. |
 | `employee` | no | string | `EMPLOYEE-…` responsible. |
@@ -405,7 +418,7 @@ Backfill for existing canon files and downstream tasks. Each is a **separate PR*
 
 - **F-1 — reconcile `.templates/elements/*_template.yaml`** to the §3 envelope: canonical IDs, `notation:` headers, admission + lifecycle blocks, `type:` for subtype only, dropped `metadata`/`properties` wrappers, one template per element TYPE (or one annotated template per layer). Touches `organizations/acme_corp/`. (§5.)
 - **F-2 — backfill `notation:` + `type:`-as-subtype on the `CONSTRAINT` / `RULE` worked examples.** `CONSTRAINT-GDPR-RESIDENCY-1` and `RULE-DUAL-APPROVAL-1` currently carry `type: constraint` / `type: rule` (TYPE repeated) and no `notation:` header — they pre-date the header contract. Add `notation: constraint` / `notation: rule` and drop or re-purpose `type:`. (§3, §7.12–7.13.)
-- **F-3 — `name` vs `title` reconciliation.** [elements/15-requirement.md](elements/15-requirement.md) uses `title`; the envelope uses `name`. Decide one canonical field name across all element notations and migrate, or formally bless `title` as REQUIREMENT's documented alias. (§3.)
+- **F-3 — migrate REQUIREMENT `title` → `name`.** Decided: `name` is the single canonical label field, no aliases (§3). [elements/15-requirement.md](elements/15-requirement.md) and the worked-example requirement files migrate via a trivial codemod (`s/^title:/name:/` over `canon/elements/01_motivation/requirements/*.yaml`, plus the field row in the spec). The transform lands in a methodology migration recipe (0.5 → 0.6, or pulled forward into 0.4 → 0.5 if that recipe is still open before tag).
 - **F-4 — acme_corp worked examples** for the newly-schema'd TYPEs (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`, `PROCESS`, `PRODUCT`, `APPLICATION`, `ROLE`, `UNIT`, `EMPLOYEE`) plus per-folder READMEs, created alongside the elements-population wave that surfaced this task.
 - **F-5 — declare `time_varying` fields per notation** (capability `current_maturity`/`owner_role`/`target_date`; application `lifecycle_stage`/`vendor`/`owner_role`/`maturity`; unit `headcount`/`head_role`) in the respective specs, completing the [CONTRACT.md](CONTRACT.md) §9.4 candidate list.
 
