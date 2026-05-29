@@ -13,14 +13,14 @@ notation: applications
 spec_version: "0.1"
 
 applications_catalogue:
-  id: "APP-CAT-1"
+  id: "APPLICATIONS_CAT-1"
   name: "Acme Corp Applications Catalogue"
   description: "Applications and integrations in operation at Acme Corp"
   version: "1.0"
   updated_at: "2026-05-26"
 
   applications:
-    - app_id: "APP-OMS-1"               # → canon/elements/03_application/applications/APP-OMS-1.yaml
+    - app_id: "APPLICATION-OMS-1"               # → canon/elements/03_application/applications/APPLICATION-OMS-1.yaml
       name: "Order Management System"
       type: "application"               # application | integration | platform | data_store
       domain: "Operations"
@@ -30,16 +30,16 @@ applications_catalogue:
       maturity: 3
       description: "Core system for order lifecycle management"
       capabilities: ["CAPABILITY-V1"]
-      products: ["PROD-ECOMM-1"]
+      products: ["PRODUCT-ECOMM-1"]
       integrations:                     # nested integration descriptors share the parent app's lifecycle — no own valid_from/valid_to
-        - target: "APP-CRM-1"
+        - target: "APPLICATION-CRM-1"
           direction: "outbound"
           protocol: "REST"
           description: "Sends order events to CRM"
       valid_from: "2026-05-26"          # CONTRACT.md §7 — required on every inline applications-catalogue entry, regardless of `type`; distinct from operational `status`
       valid_to: null
 
-    - app_id: "APP-CRM-1"
+    - app_id: "APPLICATION-CRM-1"
       name: "CRM System"
       type: "application"
       domain: "Sales"

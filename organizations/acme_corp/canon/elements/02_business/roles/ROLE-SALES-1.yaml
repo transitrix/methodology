@@ -1,0 +1,23 @@
+# Worked example — ROLE element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.9 + envelope §3.
+
+notation: role
+id: ROLE-SALES-1
+name: "Sales Lead"
+responsibility_area: "Sales"
+description: >
+  Accountable for the sales pipeline, the CRM application, and customer
+  onboarding.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

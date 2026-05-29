@@ -1,0 +1,25 @@
+# Worked example — FACTOR element primitive (internal driver).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.1 + envelope §3.
+# Referenced inline from the FGA view (canon/views/fga/).
+
+notation: factor
+id: FACTOR-COMP-1
+name: "Support response time degraded over Q1"
+type: internal
+description: >
+  Internal support response time (P50) drifted upward through Q1 2026.
+  The performance gap is the internal driver behind the operational-
+  improvement goal chain.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

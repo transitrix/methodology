@@ -1,0 +1,22 @@
+# Worked example — PROCESS element primitive (supporting process).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.5 + envelope §3.
+
+notation: process
+id: PROCESS-CS-RESOLVE-1
+name: "Customer Support Resolution"
+owner_role: ROLE-CS-1
+description: >
+  Receive, triage, and resolve customer support requests across channels.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

@@ -1,0 +1,24 @@
+# Worked example — ROLE element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.9 + envelope §3.
+# ROLEs are the accountable parties referenced as owner_role across notations.
+
+notation: role
+id: ROLE-OPS-1
+name: "Operations Lead"
+responsibility_area: "Operations"
+description: >
+  Accountable for order-fulfilment operations and operational capability
+  maturity.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

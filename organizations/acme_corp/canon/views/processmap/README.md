@@ -24,7 +24,7 @@ process_map:
       name: "Operating Processes"
       type: "operating"                 # operating | supporting | management
       processes:
-        - process_id: "PROC-ORD-FULFILL-1"   # → canon/elements/02_business/processes/PROC-ORD-FULFILL-1.yaml
+        - process_id: "PROCESS-ORD-FULFILL-1"   # → canon/elements/02_business/processes/PROCESS-ORD-FULFILL-1.yaml
           name: "Order Fulfilment"
           owner_role: "ROLE-OPS-1"
           capability: "CAPABILITY-V1"
@@ -33,7 +33,7 @@ process_map:
           bpmn_file: "canon/views/bpmn/order-fulfilment.bpmn.transitrix.yaml"
           valid_from: "2026-05-26"            # CONTRACT.md §7 — required on every inline process; distinct from operational `status`
           valid_to: null
-        - process_id: "PROC-CUST-ONBOARD-1"
+        - process_id: "PROCESS-CUST-ONBOARD-1"
           name: "Customer Onboarding"
           owner_role: "ROLE-SALES-1"
           capability: "CAPABILITY-V2"
@@ -46,7 +46,7 @@ process_map:
       name: "Supporting Processes"
       type: "supporting"
       processes:
-        - process_id: "PROC-CS-RESOLVE-1"
+        - process_id: "PROCESS-CS-RESOLVE-1"
           name: "Customer Support Resolution"
           owner_role: "ROLE-CS-1"
           status: "Active"
@@ -57,7 +57,7 @@ process_map:
       name: "Management Processes"
       type: "management"
       processes:
-        - process_id: "PROC-STRAT-PLAN-1"
+        - process_id: "PROCESS-STRAT-PLAN-1"
           name: "Annual Strategy Planning"
           owner_role: "ROLE-EXEC-1"
           status: "Active"

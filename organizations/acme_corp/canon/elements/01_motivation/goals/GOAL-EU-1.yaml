@@ -1,0 +1,30 @@
+# Worked example — GOAL element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.2 + envelope §3.
+# Shared element: defined here, referenced from the goals-tree and FGCA views.
+# The goal's parent (GOAL-REVENUE-1) is a time-aware relation (goal_parent)
+# carried inline by the goals-tree view in v0.x; not stored on this element
+# file. See ELEMENT_PRIMITIVES.md §7.2 + notations/elements/17-relations.md §3.
+
+notation: goal
+id: GOAL-EU-1
+name: "Launch in 3 EU markets"
+type: "Strategic Goal"
+level: 1
+factors:
+  - FACTOR-EU-REG-1
+description: >
+  Establish operational presence in three EU markets within the 2026 plan
+  horizon. Driven by the closing EU regulatory window.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

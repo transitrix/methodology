@@ -1,0 +1,25 @@
+# Worked example — GOAL element primitive (root strategy).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.2 + envelope §3.
+# Definition home; arranged by the goals-tree view (canon/views/goals/).
+
+notation: goal
+id: GOAL-REVENUE-1
+name: "Triple revenue in 3 years"
+type: "Strategy"
+level: 0
+description: >
+  Root strategic ambition for the 2026 plan. All strategic goals in the
+  tree decompose from this one.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null
