@@ -1,0 +1,10 @@
+notation: role
+id: ROLE-OPS-1
+name: "Operations Lead"
+unit: UNIT-OPS
+zone: canon
+admitted_at: "2026-01-01"
+admitted_by: "x"
+gate_checks: { uniqueness: pass, consistency: pass, completeness: pass }
+valid_from: "2026-01-01"
+valid_to: null
