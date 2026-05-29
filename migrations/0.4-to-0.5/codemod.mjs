@@ -13,6 +13,14 @@
 //      the file's last_updated: when present, otherwise the sensible
 //      epoch "2024-01-01" per the §7.4 recipe.
 //
+//   3. capability ID canonical form (notations/IDS_AND_REFERENCES.md §6)
+//      Walks <target>/canon/views/**/*.yaml and rewrites bare capability
+//      IDs (V1 / V1.2 / H1) to canonical form (CAPABILITY-V1 etc.) plus
+//      capability-map document IDs (CM-…) to CAPABILITY_MAP-…. Per-file
+//      notation: header gate keeps the transform context-safe: only
+//      capability-map / process-map / products / applications /
+//      scenarios documents are touched.
+//
 // Conventions (canonical for every migration recipe):
 //   - Pure-Node. Runs on a stock Node ≥ 20 with no native deps.
 //   - Idempotent. Running twice on the same input produces identical
@@ -74,7 +82,6 @@ function stripAppliesTo(content) {
       continue;
     }
 
-    // Inline-array form: `applies_to: [X, Y]` — strip the single line.
     const hasInlineValue = line.match(/^\s*applies_to\s*:\s*\S/);
     if (hasInlineValue) {
       removedBlockCount++;
@@ -82,10 +89,6 @@ function stripAppliesTo(content) {
       continue;
     }
 
-    // Block form: strip the line plus subsequent lines indented strictly
-    // deeper than applies_to's own indent. Blanks INSIDE the block are
-    // consumed; the first blank or sibling-indented line after the block
-    // is preserved (and not consumed by this transform).
     const ownIndent = m[1].length;
     removedBlockCount++;
     i++;
@@ -96,8 +99,6 @@ function stripAppliesTo(content) {
       const nextIndent = next.match(/^(\s*)/)[1].length;
 
       if (trimmedEmpty) {
-        // Peek ahead: if the next non-blank line is still strictly deeper
-        // than applies_to's indent, this blank belongs to the block — skip.
         let j = i + 1;
         while (j < lines.length && lines[j].trim() === '') j++;
         if (j < lines.length) {
@@ -126,16 +127,10 @@ function stripAppliesTo(content) {
 // --- Transform 2: lifecycle backfill ----------------------------------------
 
 function backfillLifecycle(content) {
-  // Idempotency: if `valid_from:` appears anywhere at any indent, treat
-  // the file as already migrated and leave it alone. A partial-state
-  // file (has valid_from but not valid_to) is flagged for manual review;
-  // we do not auto-correct it.
   if (/^\s*valid_from\s*:/m.test(content)) {
     return { content, modified: 0, bailed: false };
   }
 
-  // Pick a valid_from value. Prefer the file's last_updated: when
-  // present; else the §7.4 epoch fallback.
   const lu = content.match(/^\s*last_updated\s*:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m);
   const validFrom = (lu ? lu[1].trim() : '2024-01-01');
 
@@ -146,6 +141,107 @@ function backfillLifecycle(content) {
 
   const result = (content.endsWith('\n') ? content : content + '\n') + block;
   return { content: result, modified: 1, bailed: false };
+}
+
+// --- Transform 3: capability ID canonical form ------------------------------
+
+const CAPABILITY_NOTATIONS = new Set([
+  'capability-map',
+  'process-map',
+  'products',
+  'applications',
+  'scenarios',
+]);
+
+function capabilityIdCanonical(content) {
+  // Per-file gate: only act on view documents that reference capabilities.
+  // Outside these notations the bare V/H pattern would be a false positive.
+  const notationMatch = content.match(/^notation\s*:\s*(\S+)/m);
+  if (!notationMatch) return { content, modified: 0, bailed: false };
+  if (!CAPABILITY_NOTATIONS.has(notationMatch[1])) return { content, modified: 0, bailed: false };
+
+  const lines = content.split('\n');
+  const out = [];
+  let modified = 0;
+  let inCapabilitiesBlock = null; // indent of the `capabilities:` line, or null
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const lineIndent = line.match(/^(\s*)/)[1].length;
+
+    // Exit capabilities: block when indent returns to <= block-line indent.
+    if (inCapabilitiesBlock !== null && line.trim() !== '' && lineIndent <= inCapabilitiesBlock) {
+      inCapabilitiesBlock = null;
+    }
+
+    // Inside capabilities: block — rewrite bare V/H array entries.
+    if (inCapabilitiesBlock !== null) {
+      const arrEntry = line.match(/^(\s*-\s*)(["']?)([VH]\d+(?:\.\d+)*)\2(\s*(?:#.*)?)$/);
+      if (arrEntry) {
+        out.push(`${arrEntry[1]}${arrEntry[2]}CAPABILITY-${arrEntry[3]}${arrEntry[2]}${arrEntry[4]}`);
+        modified++;
+        continue;
+      }
+    }
+
+    // Enter block-form `capabilities:` block.
+    const capArrayHead = line.match(/^(\s*)capabilities\s*:\s*(?:#.*)?$/);
+    if (capArrayHead) {
+      inCapabilitiesBlock = capArrayHead[1].length;
+      out.push(line);
+      continue;
+    }
+
+    // Inline-array form: `capabilities: ["V1", "V2"]` → rewrite scalars inside.
+    const capInlineArray = line.match(/^(\s*capabilities\s*:\s*\[)([^\]]*)(\]\s*(?:#.*)?)$/);
+    if (capInlineArray) {
+      const items = capInlineArray[2].split(',').map(s => s.trim()).filter(Boolean);
+      let lineModified = 0;
+      const rewritten = items.map(item => {
+        const qm = item.match(/^(["']?)([VH]\d+(?:\.\d+)*)\1$/);
+        if (qm) {
+          lineModified++;
+          return `${qm[1]}CAPABILITY-${qm[2]}${qm[1]}`;
+        }
+        return item;
+      });
+      if (lineModified > 0) {
+        out.push(`${capInlineArray[1]}${rewritten.join(', ')}${capInlineArray[3]}`);
+        modified += lineModified;
+        continue;
+      }
+    }
+
+    // Single-value: `id: V1` / `id: H1.2` / `id: "V1"` → CAPABILITY-…
+    const idCH = line.match(/^(\s*-?\s*id\s*:\s*)(["']?)([VH]\d+(?:\.\d+)*)\2(\s*(?:#.*)?)$/);
+    if (idCH) {
+      out.push(`${idCH[1]}${idCH[2]}CAPABILITY-${idCH[3]}${idCH[2]}${idCH[4]}`);
+      modified++;
+      continue;
+    }
+
+    // Single-value: `id: CM-DOMAIN-NNN` → `CAPABILITY_MAP-DOMAIN-N`
+    // The non-greedy middle capture pulls in multi-segment domains
+    // (NB-RETAIL); the `-0*(\d+)` tail drops any zero-padding per IDS §1.
+    const idCM = line.match(/^(\s*-?\s*id\s*:\s*)(["']?)CM-([A-Z][A-Z0-9_-]*?)-0*(\d+)\2(\s*(?:#.*)?)$/);
+    if (idCM) {
+      out.push(`${idCM[1]}${idCM[2]}CAPABILITY_MAP-${idCM[3]}-${idCM[4]}${idCM[2]}${idCM[5]}`);
+      modified++;
+      continue;
+    }
+
+    // Single-value: `capability: V1` (process-map cross-reference)
+    const capCH = line.match(/^(\s*capability\s*:\s*)(["']?)([VH]\d+(?:\.\d+)*)\2(\s*(?:#.*)?)$/);
+    if (capCH) {
+      out.push(`${capCH[1]}${capCH[2]}CAPABILITY-${capCH[3]}${capCH[2]}${capCH[4]}`);
+      modified++;
+      continue;
+    }
+
+    out.push(line);
+  }
+
+  return { content: out.join('\n'), modified, bailed: false };
 }
 
 // --- Transform registry -----------------------------------------------------
@@ -164,6 +260,13 @@ const transforms = [
     fn: backfillLifecycle,
     unit: 'lifecycle block appended',
     units: 'lifecycle blocks appended',
+  },
+  {
+    name: 'capability ID canonical form',
+    rootName: 'canon/views',
+    fn: capabilityIdCanonical,
+    unit: 'capability id rewritten',
+    units: 'capability ids rewritten',
   },
 ];
 
