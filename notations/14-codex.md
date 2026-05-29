@@ -70,6 +70,7 @@ gate_checks:
   source_authority: "Legislative Herald of Georgia"
 jurisdiction: ge                # MUST match the parent folder (CODEX-001)
 effective_date: "2017-05-01"
+source_url: "https://matsne.gov.ge/en/document/view/3137391"   # optional; the canonical online location
 
 # Optional — local snapshot of the source document for audit trail.
 snapshot_file: "sources/snapshot_LAW-PERSONAL-DATA-2017-1_2026-05-27.pdf"
@@ -83,24 +84,35 @@ related_documents:
     name: "Medical Devices; LDTs (NPRM)"
     url: "https://www.federalregister.gov/d/2023-21662"
 
-# Required on REGULATION (CODEX-005) — does this artefact change over
-# time? false = static (published once, never amended); true = live.
-monitoring_needed: false
-monitor_instead:                              # only meaningful when monitoring_needed: false
-  - id: "REGULATION-CFR-21-PART-809-1"
-    name: "21 CFR Part 809 — In Vitro Diagnostic Products"
-    url: "https://www.ecfr.gov/current/title-21/part-809"
+# Required on REGULATION (CODEX-005); optional on LAW. false = static
+# (published once, never amended); true = live (receives amendments).
+# Personal-data laws receive periodic amendments, so this one is live.
+monitoring_needed: true
+
+# Scanner-agent metadata — only meaningful when monitoring_needed: true.
+# See §3.5 for the field semantics and agent workflow.
+scan:
+  last_scanned_at: "2026-05-28"
+  next_scan_due: "2026-06-28"
+  scan_frequency: monthly
+  change_detected: false
+  change_description: null
+  review_needed: false
 ```
+
+A static artefact (Final Rule, published once) omits the `scan` block and instead lists live counterparts in `monitor_instead[]` — see §3.4 for the static-form example.
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
+| `source_url` | no | string | Canonical online location of the source document. Informational for static artefacts; the fetch target for the scanner agent (see §3.5) on live artefacts. |
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
 | `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Required-together with `snapshot_file`. |
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
 | `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
 | `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
+| `scan` | no | map | Scanner-agent metadata — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. See §3.5. |
 
 ### 3.1 Snapshots
 
@@ -178,9 +190,40 @@ monitoring_needed: true
 
 A `monitor_instead[]` entry duplicating the artefact's own `source_url` is a configuration error: the field is for *other* live documents, not the same one.
 
-### 3.5 Scanner-agent metadata
+### 3.5 Scanner-agent metadata — `scan` block
 
-When `monitoring_needed: true`, an automated scanner agent typically maintains additional state on the artefact — when it was last scanned, when the next scan is due, whether change was detected on the latest scan. The scan-state field set is defined in a follow-up revision; this spec section is reserved.
+When `monitoring_needed: true`, an automated scanner agent maintains a `scan` block on the artefact recording when the source was last fetched, when the next check is due, and whether human review is needed. Embedding the schedule and scan state in the artefact itself (rather than an external scheduler database) keeps the scan history auditable via git and allows per-artefact frequency tuning.
+
+```yaml
+scan:
+  last_scanned_at: "2026-05-28"      # quoted ISO 8601 — when the agent last fetched the source
+  next_scan_due: "2026-06-28"        # quoted ISO 8601 — agent sets this after each scan
+  scan_frequency: monthly             # closed enum: daily | weekly | monthly | quarterly
+  change_detected: false              # set true by the agent when the latest fetch differs from the prior one
+  change_description: null            # free text — what the agent noticed when change_detected: true; null otherwise
+  review_needed: false                # true = a human must review before the change is reflected in canon
+```
+
+| Subfield | Required | Type | Semantics |
+|---|---|---|---|
+| `last_scanned_at` | yes | string | Quoted ISO 8601 date the agent last fetched the source. |
+| `next_scan_due` | yes | string | Quoted ISO 8601 date the next scan SHOULD run. The agent computes this from `last_scanned_at + scan_frequency`. |
+| `scan_frequency` | yes | string | One of `daily` / `weekly` / `monthly` / `quarterly`. Closed enum; per-artefact tuning based on how often the source changes in practice. |
+| `change_detected` | yes | boolean | `true` when the latest fetched content differs from the prior snapshot; `false` otherwise. |
+| `change_description` | no | string \| null | Free-text summary of what the agent observed when `change_detected: true`. `null` (or omitted) when no change. |
+| `review_needed` | yes | boolean | `true` when a change has been detected but not yet adjudicated by a human. Resets to `false` once the human creates the new / amended artefact. |
+
+**Agent workflow.** A scanner agent operating against a `monitoring_needed: true` artefact:
+
+1. Fetches the content at `source_url` (or, when the artefact opts to monitor counterparts, the URLs in `monitor_instead[].url`).
+2. Compares the freshly-fetched content to the previously-captured `snapshot_file` (or the agent's prior fetch if no snapshot exists yet).
+3. If content has changed: sets `change_detected: true`, populates `change_description`, sets `review_needed: true`.
+4. Updates `last_scanned_at` to today and `next_scan_due` to today + `scan_frequency`.
+5. The human review step creates the new or amended codex artefact (typically a fresh ID for a re-issued source, or an in-place update for a minor amendment), then resets `review_needed: false` on the artefact the agent flagged.
+
+**Consistency rules.** A `scan` block is only meaningful on a `monitoring_needed: true` artefact. Declaring `scan:` alongside `monitoring_needed: false` is a configuration error — the artefact is static; the scanner has nothing to do. A future revision MAY wire this into an explicit `CODEX-*` rule code; for now the convention is documented here.
+
+The `scan` block is optional — a brand-new live artefact that no scanner has touched yet legitimately has no `scan` block. Once a scanner runs against it the block appears and is maintained on subsequent scans.
 
 ---
 
