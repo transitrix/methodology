@@ -8,6 +8,7 @@ This recipe ships incrementally — each transform in the 0.4 → 0.5 cycle (see
 
 - **Codex `applies_to.{entities, processes}` retirement.** In 0.5.0, external and internal codex artefacts no longer carry an `applies_to` block (see [`notations/14-codex.md`](../../notations/14-codex.md) §8 — Migration). Bindings move to `REQUIREMENT.derived_from` plus `ASSERTION`. Codex artefacts that still carry `applies_to` produce a `CODEX-004` deprecation warning; the recipe removes the field.
 - **Primitive lifecycle backfill.** In 0.5.0, every canonical element MUST carry `valid_from` and `valid_to` ([`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7). Adopters with element primitives under `canon/elements/` missing those fields get them backfilled: `valid_from` adopts the file's `last_updated:` value when present, otherwise falls back to the sensible epoch `"2024-01-01"` per the §7.4 migration recipe. `valid_to` defaults to `null` (currently in effect).
+- **Capability ID canonical form.** In 0.5.0, capability identifiers in view documents take the canonical `CAPABILITY-V…` / `CAPABILITY-H…` form, and capability-map document IDs take `CAPABILITY_MAP-…` (no zero-padding) per [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §2 (rule) and §6 (migration checklist). The recipe gates on the file's `notation:` header — only `capability-map`, `process-map`, `products`, `applications`, `scenarios` — and rewrites bare `V…` / `H…` IDs in `id:`, `capability:`, inline-array `capabilities: [V1, V2]`, and block-form `capabilities:\n  - V1` positions. CM- document IDs are normalised to `CAPABILITY_MAP-…` and stripped of leading zeros.
 
 ## Folder shape (canonical for all migration recipes)
 
@@ -94,7 +95,6 @@ Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANG
 - Inline `goals: [GOAL-…]` on activity entries → REL `activity_goal` files.
 - Inline `current_maturity` / `owner_role` / `target_date` on capability-map → sidecar.
 - Inline `owner_role` / `vendor` / `maturity` on applications → sidecar.
-- Capability ID canonical form residual (`scenarios` + supporting docs).
 
 Each transform follows the same conventions (idempotent, dry-run-supporting, diff-summary-printing, unsafe-ambiguity-bailing) and ships its own fixture pair. The order and packaging of those subsequent transforms is a separate task.
 
@@ -106,3 +106,4 @@ Each transform follows the same conventions (idempotent, dry-run-supporting, dif
 - Spec sources for the transforms shipped:
   - Codex `applies_to` retirement — [`notations/14-codex.md`](../../notations/14-codex.md) §8.
   - Lifecycle backfill — [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7 (rule) and §7.4 (migration recipe).
+  - Capability ID canonical form — [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §2 and §6.

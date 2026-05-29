@@ -10,6 +10,12 @@
 //      Every .yaml under <target>/canon/elements/** must carry both
 //      valid_from: and valid_to: keys.
 //
+//   3. capability ID canonical form
+//      No .yaml under <target>/canon/views/** (whose notation: is one of
+//      capability-map / process-map / products / applications / scenarios)
+//      may carry bare V/H capability IDs, CM- document IDs, or bare
+//      V/H entries inside a capabilities[] cross-reference.
+//
 // Run AFTER the codemod. Exits 0 if clean, 1 if any check fails,
 // 2 on script-internal error.
 //
@@ -39,6 +45,14 @@ function walkYaml(dir, out = []) {
   return out;
 }
 
+const CAPABILITY_NOTATIONS = new Set([
+  'capability-map',
+  'process-map',
+  'products',
+  'applications',
+  'scenarios',
+]);
+
 const checks = [
   {
     name: 'codex applies_to retirement',
@@ -54,6 +68,51 @@ const checks = [
       if (!hasFrom && !hasTo) return 'missing valid_from and valid_to';
       if (!hasFrom) return 'missing valid_from';
       if (!hasTo) return 'missing valid_to';
+      return null;
+    },
+  },
+  {
+    name: 'capability ID canonical form',
+    rootName: 'canon/views',
+    fn: (text) => {
+      // Per-file gate — only inspect view documents that reference capabilities.
+      const nm = text.match(/^notation\s*:\s*(\S+)/m);
+      if (!nm || !CAPABILITY_NOTATIONS.has(nm[1])) return null;
+
+      // Single-value bare V/H in id: position.
+      if (/^\s*-?\s*id\s*:\s*["']?[VH]\d+(?:\.\d+)*["']?\s*(?:#.*)?$/m.test(text)) {
+        return 'has bare V/H capability id (should be CAPABILITY-V/H)';
+      }
+      // Single-value bare V/H in capability: position.
+      if (/^\s*capability\s*:\s*["']?[VH]\d+(?:\.\d+)*["']?\s*(?:#.*)?$/m.test(text)) {
+        return 'has bare V/H capability cross-reference';
+      }
+      // CM- document id.
+      if (/^\s*-?\s*id\s*:\s*["']?CM-/m.test(text)) {
+        return 'has CM- document id (should be CAPABILITY_MAP-)';
+      }
+      // Inline-array form: capabilities: [V1, V2]. Parse the line to test each
+      // item — a naive `\b[VH]\d` regex false-positives on `CAPABILITY-V1`
+      // because `-` is a word boundary.
+      const inlineArr = text.match(/^\s*capabilities\s*:\s*\[([^\]]*)\]/m);
+      if (inlineArr) {
+        const items = inlineArr[1].split(',').map((s) => s.trim()).filter(Boolean);
+        if (items.some((it) => /^["']?[VH]\d+(?:\.\d+)*["']?$/.test(it))) {
+          return 'has bare V/H in capabilities inline array';
+        }
+      }
+      // Block-form: scan for `- V1` style entries under a capabilities: parent.
+      const lines = text.split('\n');
+      let inCap = null;
+      for (const line of lines) {
+        const indent = line.match(/^(\s*)/)[1].length;
+        if (inCap !== null && line.trim() !== '' && indent <= inCap) inCap = null;
+        if (inCap !== null && /^\s*-\s*["']?[VH]\d+(?:\.\d+)*["']?\s*(?:#.*)?$/.test(line)) {
+          return 'has bare V/H in capabilities block array';
+        }
+        const h = line.match(/^(\s*)capabilities\s*:\s*(?:#.*)?$/);
+        if (h) inCap = h[1].length;
+      }
       return null;
     },
   },

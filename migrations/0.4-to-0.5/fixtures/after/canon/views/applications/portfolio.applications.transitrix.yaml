@@ -1,0 +1,22 @@
+# Fixture — applications view BEFORE the 0.4 → 0.5 migration.
+# Uses block-form `capabilities:` arrays. The codemod tracks the parent
+# block by indent and rewrites each `- V…` array entry.
+
+notation: applications
+spec_version: "0.1"
+
+applications_catalogue:
+  id: "APP-CAT-1"
+  name: "Demo Applications"
+
+  applications:
+    - app_id: "APP-DEMO-1"
+      name: "Demo App A"
+      capabilities:
+        - CAPABILITY-V1.2
+        - CAPABILITY-V2.1
+        - CAPABILITY-H1
+    - app_id: "APP-DEMO-2"
+      name: "Demo App B"
+      capabilities:
+        - "CAPABILITY-V1"

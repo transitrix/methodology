@@ -1,0 +1,25 @@
+# Fixture — process-map view BEFORE the 0.4 → 0.5 migration.
+# Uses bare V/H capability cross-references; the codemod rewrites the
+# `capability:` single-value fields.
+
+notation: process-map
+spec_version: "0.1"
+
+process_map:
+  id: PM-DEMO-1
+  name: "Demo Process Landscape"
+
+  groups:
+    - id: GRP-OPERATING
+      name: "Operating"
+      type: operating
+      processes:
+        - process_id: PROC-DEMO-1
+          name: "Demo process A"
+          capability: "CAPABILITY-V1"
+        - process_id: PROC-DEMO-2
+          name: "Demo process B"
+          capability: CAPABILITY-V1.2
+        - process_id: PROC-DEMO-3
+          name: "Demo process C"
+          capability: CAPABILITY-H1
