@@ -1,0 +1,14 @@
+notation: activities
+spec_version: "0.1"
+
+activities:
+  - id: ACTIVITY-BUILD-1
+    name: "Build"
+    owner: ACTOR-PRODUCT # owned by a unit
+    valid_from: "2026-01-01"
+    valid_to: null
+  - id: ACTIVITY-SHIP-1
+    name: "Ship"
+    owner: ACTOR-001
+    valid_from: "2026-01-01"
+    valid_to: null
