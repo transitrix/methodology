@@ -1,9 +1,18 @@
 # Transitrix BPMN Process Template
 # Purpose: Describe business processes in text-first format with automatic layout
-# Location: elements/02_business/ (as .bpmn.transitrix.yaml)
-# Naming Convention: [PROCESS_CODE]_process.bpmn.transitrix.yaml (e.g., ORD_FULFILLMENT_process.bpmn.transitrix.yaml)
+# Location: canon/views/bpmn/ (as <DOMAIN>.bpmn.transitrix.yaml)
+#
+# ⚠ PENDING STRUCTURAL RECONCILIATION. This template predates the canonical BPMN
+# notation and uses an old shape (activities[] with UserTask/ServiceTask,
+# assigned_role/required_system). The canonical notation (notations/views/01-bpmn.md)
+# is process -> pools -> lanes -> elements + flows, with file-local node labels
+# (POOL-/LANE-/TASK-/GW-/SF-…, IDS_AND_REFERENCES.md §3.3) and no notation lifecycle.
+# Legacy element-reference IDs here have been canonicalised (APPLICATION-/PROCESS-/ROLE-),
+# but the document STRUCTURE is still the old shape and will not validate against
+# 01-bpmn.md until rewritten. Tracked as a dedicated bpmn-template rewrite task; use
+# notations/examples/bpmn/ for canonical-shape worked examples in the meantime.
 
-id: "PROC-XXX-001"
+id: "PROCESS-XXX-1"
 name: "Business Process Name"
 type: "BusinessProcess"
 layer: "Business"
@@ -41,14 +50,14 @@ bpmn:
     - id: "TASK_001"
       name: "Task 1: Receive Request"
       type: "UserTask"  # Values: UserTask, ServiceTask, ManualTask, ScriptTask
-      assigned_role: "ROLE-SALES-001"  # Reference to BusinessRole
+      assigned_role: "ROLE-SALES-1"  # Reference to BusinessRole
       required_system: null  # Reference to ApplicationComponent if system-supported
 
     - id: "TASK_002"
       name: "Task 2: Validate Request"
       type: "ServiceTask"
       assigned_role: null
-      required_system: "APP-VALIDATOR-001"
+      required_system: "APPLICATION-VALIDATOR-1"
 
     - id: "GATEWAY_001"
       name: "Decision: Request Valid?"
@@ -58,13 +67,13 @@ bpmn:
       name: "Task 3: Process Approved Request"
       type: "ServiceTask"
       assigned_role: null
-      required_system: "APP-PROCESSOR-001"
+      required_system: "APPLICATION-PROCESSOR-1"
 
     - id: "TASK_004"
       name: "Task 4: Notify Requester - Rejected"
       type: "ServiceTask"
       assigned_role: null
-      required_system: "APP-NOTIFICATION-001"
+      required_system: "APPLICATION-NOTIFICATION-1"
 
   # Sequence flows (connections between activities)
   sequences:
@@ -110,8 +119,8 @@ metrics:
 
 # Resource requirements
 resources:
-  required_roles: ["ROLE-SALES-001"]
-  required_systems: ["APP-VALIDATOR-001", "APP-PROCESSOR-001", "APP-NOTIFICATION-001"]
+  required_roles: ["ROLE-SALES-1"]
+  required_systems: ["APPLICATION-VALIDATOR-1", "APPLICATION-PROCESSOR-1", "APPLICATION-NOTIFICATION-1"]
   required_data: ["Customer Data", "Request Details"]
 
 # Compliance and governance
@@ -130,6 +139,6 @@ versioning:
 # References to supporting documentation
 references:
   related_goals: []  # IDs of Goal elements this process supports
-  related_roles: ["ROLE-SALES-001"]  # IDs of BusinessRole elements
-  related_systems: ["APP-VALIDATOR-001"]  # IDs of ApplicationComponent elements
+  related_roles: ["ROLE-SALES-1"]  # IDs of BusinessRole elements
+  related_systems: ["APPLICATION-VALIDATOR-1"]  # IDs of ApplicationComponent elements
   documentation_url: null  # Link to detailed SOPs or wiki
