@@ -21,6 +21,14 @@
 //      capability-map / process-map / products / applications /
 //      scenarios documents are touched.
 //
+//   4. goal `parent` → REL goal_parent extraction (notations/17-relations.md §6,
+//      notations/04-goals.md "Time-aware relations")
+//      Walks <target>/canon/views/**/*.yaml with notation: goals, finds
+//      inline `parent: GOAL-…` on goal entries, drops the inline line,
+//      and emits a `canon/relations/REL-GOAL-<from-hint>-PARENT-1.yaml`
+//      REL primitive per dropped parent. valid_from / admitted_at on the
+//      emitted REL inherit the host doc's date: (fallback "2024-01-01").
+//
 // Conventions (canonical for every migration recipe):
 //   - Pure-Node. Runs on a stock Node ≥ 20 with no native deps.
 //   - Idempotent. Running twice on the same input produces identical
@@ -35,8 +43,8 @@
 // every line we don't touch. js-yaml dump would normalise comments and
 // keys away.
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 
 // --- CLI --------------------------------------------------------------------
 
@@ -244,6 +252,103 @@ function capabilityIdCanonical(content) {
   return { content: out.join('\n'), modified, bailed: false };
 }
 
+// --- Transform 4: goal `parent` → REL goal_parent extraction ----------------
+
+const GOALS_NOTATIONS = new Set(['goals']);
+
+function relGoalParentBody(relId, fromId, toId, validFrom) {
+  return [
+    'notation: relation',
+    `id: ${relId}`,
+    'type: goal_parent',
+    `from: ${fromId}`,
+    `to: ${toId}`,
+    '',
+    '# Admission record (CONTRACT.md §6) — emitted by 0.4 → 0.5 migration codemod.',
+    '# admitted_by is a placeholder marker — adopters should replace with the',
+    '# operator handle once the REL has been reviewed in their canon.',
+    'zone: canon',
+    `admitted_at: "${validFrom}"`,
+    'admitted_by: "migration-codemod-0.4-to-0.5"',
+    'gate_checks:',
+    '  uniqueness: pass',
+    '  consistency: pass',
+    '  completeness: pass',
+    '',
+    '# Primitive lifecycle (CONTRACT.md §7) — inherits the host doc date as a',
+    '# sensible epoch. Adopters should adjust if the parent link in fact took',
+    '# effect on a different date than the host doc.',
+    `valid_from: "${validFrom}"`,
+    'valid_to: null',
+    '',
+  ].join('\n');
+}
+
+function goalParentToRel(content) {
+  const notationMatch = content.match(/^notation\s*:\s*(\S+)/m);
+  if (!notationMatch) return { content, modified: 0, bailed: false };
+  if (!GOALS_NOTATIONS.has(notationMatch[1])) return { content, modified: 0, bailed: false };
+
+  // Host doc's date: drives the emitted REL's valid_from / admitted_at.
+  // Falls back to the same epoch as Transform 2 when the doc has no date.
+  const dateMatch = content.match(/^date\s*:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m);
+  const validFrom = dateMatch ? dateMatch[1].trim() : '2024-01-01';
+
+  const lines = content.split('\n');
+  const out = [];
+  const emits = [];
+  let modified = 0;
+  let inGoalsBlock = null;     // indent of the document-root `goals:` line, or null
+  let currentGoalId = null;    // most recently seen goal entry id inside the block
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const indent = line.match(/^(\s*)/)[1].length;
+
+    // Exit the goals: block when indent returns to <= block-line indent.
+    if (inGoalsBlock !== null && trimmed !== '' && indent <= inGoalsBlock) {
+      inGoalsBlock = null;
+      currentGoalId = null;
+    }
+
+    // Outside any goals: block — only watch for the head and pass everything through.
+    if (inGoalsBlock === null) {
+      const head = line.match(/^(\s*)goals\s*:\s*(?:#.*)?$/);
+      if (head) inGoalsBlock = head[1].length;
+      out.push(line);
+      continue;
+    }
+
+    // Inside the goals: block. A new entry starts with `- id: GOAL-…`.
+    const dashId = line.match(/^\s*-\s+id\s*:\s*["']?(GOAL-\S+?)["']?\s*(?:#.*)?$/);
+    if (dashId) {
+      currentGoalId = dashId[1];
+      out.push(line);
+      continue;
+    }
+
+    // Inline parent on the current goal entry — drop the line, queue a REL emit.
+    if (currentGoalId !== null) {
+      const parentMatch = line.match(/^\s*parent\s*:\s*["']?(GOAL-\S+?)["']?\s*(?:#.*)?$/);
+      if (parentMatch) {
+        const fromId = currentGoalId;
+        const toId = parentMatch[1];
+        const fromHint = fromId.replace(/^GOAL-/, '');
+        const relId = `REL-GOAL-${fromHint}-PARENT-1`;
+        const relPath = `canon/relations/${relId}.yaml`;
+        emits.push({ path: relPath, content: relGoalParentBody(relId, fromId, toId, validFrom) });
+        modified++;
+        continue; // drop the inline parent: line
+      }
+    }
+
+    out.push(line);
+  }
+
+  return { content: out.join('\n'), modified, bailed: false, emits };
+}
+
 // --- Transform registry -----------------------------------------------------
 
 const transforms = [
@@ -268,12 +373,20 @@ const transforms = [
     unit: 'capability id rewritten',
     units: 'capability ids rewritten',
   },
+  {
+    name: 'goal parent → REL goal_parent extraction',
+    rootName: 'canon/views',
+    fn: goalParentToRel,
+    unit: 'inline parent extracted',
+    units: 'inline parents extracted',
+  },
 ];
 
 // --- Run --------------------------------------------------------------------
 
 let totalScanned = 0;
 let totalModified = 0;
+let totalEmitted = 0;
 let totalUnits = 0;
 let totalFailed = 0;
 
@@ -291,6 +404,7 @@ for (const t of transforms) {
   console.log(`  scanning ${files.length} .yaml file(s) under ${t.rootName}/`);
 
   let modified = 0;
+  let emitted = 0;
   let units = 0;
   let failed = 0;
 
@@ -314,18 +428,48 @@ for (const t of transforms) {
 
     if (result.modified === 0) continue;
 
-    if (!dryRun) writeFileSync(file, result.content);
+    // Emit any auxiliary files the transform produced (e.g. REL primitives).
+    // Skip silently on byte-equal existing files (idempotency); bail loudly
+    // on byte-different existing files (adopter manually edited — codemod
+    // refuses to overwrite).
+    const emits = result.emits ?? [];
+    let conflict = false;
+    for (const e of emits) {
+      const abs = join(target, e.path);
+      if (existsSync(abs)) {
+        const existing = readFileSync(abs, 'utf8');
+        if (existing !== e.content) {
+          console.error(`  ! ${relative(target, file)}: would emit ${e.path} but a different version already exists — bailing`);
+          conflict = true;
+          break;
+        }
+      }
+    }
+    if (conflict) { failed++; continue; }
+
+    if (!dryRun) {
+      writeFileSync(file, result.content);
+      for (const e of emits) {
+        const abs = join(target, e.path);
+        if (!existsSync(dirname(abs))) mkdirSync(dirname(abs), { recursive: true });
+        writeFileSync(abs, e.content);
+      }
+    }
     modified++;
+    emitted += emits.length;
     units += result.modified;
     const u = result.modified === 1 ? t.unit : t.units;
-    console.log(`  ${dryRun ? '[dry-run] ' : ''}~ ${relative(target, file)}: ${result.modified} ${u}`);
+    const emitNote = emits.length > 0 ? `, emitted ${emits.length} file(s)` : '';
+    console.log(`  ${dryRun ? '[dry-run] ' : ''}~ ${relative(target, file)}: ${result.modified} ${u}${emitNote}`);
   }
 
-  console.log(`  → ${modified} file(s) modified, ${units} ${units === 1 ? t.unit : t.units}${dryRun ? ' (dry-run; no files written)' : ''}`);
+  const emitSummary = emitted > 0 ? `, ${emitted} file(s) emitted` : '';
+  console.log(`  → ${modified} file(s) modified${emitSummary}, ${units} ${units === 1 ? t.unit : t.units}${dryRun ? ' (dry-run; no files written)' : ''}`);
   console.log('');
 
   totalScanned += files.length;
   totalModified += modified;
+  totalEmitted += emitted;
   totalUnits += units;
   totalFailed += failed;
 }
@@ -335,6 +479,7 @@ for (const t of transforms) {
 console.log(`Summary across ${transforms.length} transform(s):`);
 console.log(`  files scanned     ${totalScanned}`);
 console.log(`  files modified    ${totalModified}${dryRun ? ' (dry-run)' : ''}`);
+if (totalEmitted > 0) console.log(`  files emitted     ${totalEmitted}${dryRun ? ' (dry-run)' : ''}`);
 console.log(`  units applied     ${totalUnits}`);
 if (totalFailed > 0) {
   console.error(`  files skipped     ${totalFailed}`);

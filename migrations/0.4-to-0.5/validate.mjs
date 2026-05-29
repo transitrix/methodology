@@ -16,6 +16,12 @@
 //      may carry bare V/H capability IDs, CM- document IDs, or bare
 //      V/H entries inside a capabilities[] cross-reference.
 //
+//   4. goal parent first-class form
+//      No .yaml under <target>/canon/views/** (whose notation: is goals)
+//      may carry an inline `parent: GOAL-…` line inside its goals[] block.
+//      The canonical home is a `REL-…` file with `type: goal_parent`
+//      under canon/relations/.
+//
 // Run AFTER the codemod. Exits 0 if clean, 1 if any check fails,
 // 2 on script-internal error.
 //
@@ -112,6 +118,27 @@ const checks = [
         }
         const h = line.match(/^(\s*)capabilities\s*:\s*(?:#.*)?$/);
         if (h) inCap = h[1].length;
+      }
+      return null;
+    },
+  },
+  {
+    name: 'goal parent first-class form',
+    rootName: 'canon/views',
+    fn: (text) => {
+      const nm = text.match(/^notation\s*:\s*(\S+)/m);
+      if (!nm || nm[1] !== 'goals') return null;
+      const lines = text.split('\n');
+      let inGoals = null;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const indent = line.match(/^(\s*)/)[1].length;
+        if (inGoals !== null && trimmed !== '' && indent <= inGoals) inGoals = null;
+        if (inGoals !== null && /^\s*parent\s*:\s*["']?GOAL-\S+/.test(line)) {
+          return 'has inline parent: GOAL-… on goal entry (use REL goal_parent instead)';
+        }
+        const h = line.match(/^(\s*)goals\s*:\s*(?:#.*)?$/);
+        if (h) inGoals = h[1].length;
       }
       return null;
     },

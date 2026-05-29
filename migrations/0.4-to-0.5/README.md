@@ -9,6 +9,7 @@ This recipe ships incrementally — each transform in the 0.4 → 0.5 cycle (see
 - **Codex `applies_to.{entities, processes}` retirement.** In 0.5.0, external and internal codex artefacts no longer carry an `applies_to` block (see [`notations/14-codex.md`](../../notations/14-codex.md) §8 — Migration). Bindings move to `REQUIREMENT.derived_from` plus `ASSERTION`. Codex artefacts that still carry `applies_to` produce a `CODEX-004` deprecation warning; the recipe removes the field.
 - **Primitive lifecycle backfill.** In 0.5.0, every canonical element MUST carry `valid_from` and `valid_to` ([`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7). Adopters with element primitives under `canon/elements/` missing those fields get them backfilled: `valid_from` adopts the file's `last_updated:` value when present, otherwise falls back to the sensible epoch `"2024-01-01"` per the §7.4 migration recipe. `valid_to` defaults to `null` (currently in effect).
 - **Capability ID canonical form.** In 0.5.0, capability identifiers in view documents take the canonical `CAPABILITY-V…` / `CAPABILITY-H…` form, and capability-map document IDs take `CAPABILITY_MAP-…` (no zero-padding) per [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §2 (rule) and §6 (migration checklist). The recipe gates on the file's `notation:` header — only `capability-map`, `process-map`, `products`, `applications`, `scenarios` — and rewrites bare `V…` / `H…` IDs in `id:`, `capability:`, inline-array `capabilities: [V1, V2]`, and block-form `capabilities:\n  - V1` positions. CM- document IDs are normalised to `CAPABILITY_MAP-…` and stripped of leading zeros.
+- **Goal `parent` → REL `goal_parent` extraction.** In 0.5.0, the goal-to-goal parent link is declared **time-aware** per [`notations/04-goals.md`](../../notations/04-goals.md) "Time-aware relations" — its canonical home is a `REL-…` file under `canon/relations/` with `type: goal_parent` per [`notations/17-relations.md`](../../notations/17-relations.md) §3. The inline `parent: GOAL-…` form on goal entries stays available transitionally; the recipe migrates each inline link to a first-class REL file. The codemod gates on `notation: goals`, drops each inline `parent:` line, and emits `canon/relations/REL-GOAL-<from-id>-PARENT-1.yaml` per dropped link. The REL's `valid_from` and `admitted_at` inherit the host goals doc's `date:` (fallback `"2024-01-01"`); `admitted_by` is the placeholder `"migration-codemod-0.4-to-0.5"`.
 
 ## Folder shape (canonical for all migration recipes)
 
@@ -86,12 +87,21 @@ After the new REQUIREMENT / ASSERTION primitives are admitted, the original code
 
 The lifecycle backfill picks `valid_from` mechanically — `last_updated:` when present, otherwise `"2024-01-01"`. After running the codemod, the adopter SHOULD spot-check the backfilled `valid_from` values and adjust any that don't reflect the actual date the element took effect. The codemod's value is a safe default, not a historically-accurate claim.
 
+### REL `goal_parent` admission review
+
+Each emitted `REL-…goal_parent…` file inherits the host goals doc's `date:` for both `valid_from` and `admitted_at`, and uses the placeholder marker `admitted_by: "migration-codemod-0.4-to-0.5"`. After running the codemod the adopter SHOULD:
+
+- replace `admitted_by` with the real operator handle once each REL has been reviewed in their canon (`grep -r migration-codemod-0.4-to-0.5 canon/relations/` lists the migration-generated files);
+- adjust `valid_from` if the parent link in fact took effect on a date other than the host doc's `date:`;
+- re-run the codemod and `validate.mjs` after the manual review — they remain idempotent.
+
+The codemod refuses to overwrite a REL file at the same `canon/relations/REL-….yaml` path if its content differs from what the codemod would emit, so manual edits to a REL file made between two codemod runs are preserved — the second run bails on that file with an explicit message instead of clobbering.
+
 ## What this recipe deliberately does NOT yet cover
 
 Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANGELOG.md) under the 0.5.0 entry. Adding them to this recipe is straightforward — each is its own transform inside the same `codemod.mjs` + `validate.mjs` + per-pattern fixture:
 
 - Inline `children[]` on capability-map view documents → REL `parent` files.
-- Inline `parent: GOAL-…` on goal entries → REL `goal_parent` files.
 - Inline `goals: [GOAL-…]` on activity entries → REL `activity_goal` files.
 - Inline `current_maturity` / `owner_role` / `target_date` on capability-map → sidecar.
 - Inline `owner_role` / `vendor` / `maturity` on applications → sidecar.
@@ -107,3 +117,4 @@ Each transform follows the same conventions (idempotent, dry-run-supporting, dif
   - Codex `applies_to` retirement — [`notations/14-codex.md`](../../notations/14-codex.md) §8.
   - Lifecycle backfill — [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7 (rule) and §7.4 (migration recipe).
   - Capability ID canonical form — [`notations/IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §2 and §6.
+  - Goal `parent` → REL `goal_parent` — [`notations/04-goals.md`](../../notations/04-goals.md) "Time-aware relations" + [`notations/17-relations.md`](../../notations/17-relations.md) §3 (enum) and §6 (migration).
