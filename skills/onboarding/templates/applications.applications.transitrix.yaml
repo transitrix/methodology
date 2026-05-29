@@ -1,7 +1,7 @@
 notation: applications
 spec_version: "0.1"
 
-# Applications catalogue. Spec: notations/10-applications.md
+# Applications catalogue. Spec: notations/views/10-applications.md
 # Inventory of APPLICATION-… elements + INTEGRATION-… entries.
 
 applications_catalogue:

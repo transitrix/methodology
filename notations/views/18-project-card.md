@@ -19,7 +19,7 @@ file_extension: "*.project-card.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -112,7 +112,7 @@ Each entry in `milestones[]` is a MILESTONE element. Per IDS §3.1 + §4, MILEST
 |---|---|---|
 | `id` | Yes | Document-scoped MILESTONE ID per IDS §1 (`MILESTONE-<MIDDLE>-<INTEGER>`). |
 | `name` | Yes | One-line milestone label. |
-| `date` | Yes | Date the milestone is reached — quoted ISO 8601 per [CONTRACT.md](CONTRACT.md) §4. |
+| `date` | Yes | Date the milestone is reached — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | No | Longer-form context for the milestone. |
 | `delivers_changes` | No | Array of `CHANGE-…` IDs the milestone delivers. Each entry MUST resolve to a CHANGE that appears in the project Activity's `delivers_changes:` (`PC-003`). |
 
@@ -125,7 +125,7 @@ The renderer assembles the card from references — it does not pull the data fr
 | Card section | Source |
 |---|---|
 | **Project name** | `Activity.name` (from the referenced project Activity) |
-| **Dates: initiation** | `Activity.valid_from` ([CONTRACT.md](CONTRACT.md) §7 — the decision-to-initiate date) |
+| **Dates: initiation** | `Activity.valid_from` ([CONTRACT.md](../CONTRACT.md) §7 — the decision-to-initiate date) |
 | **Dates: planned work** | `Activity.start_date` / `Activity.end_date` (the scheduled work window, distinct from `valid_from` per [07-activities.md](07-activities.md) Element lifecycle) |
 | **Milestones (timeline)** | `project_card.milestones[]` in this document |
 | **Motivation chain — Factors** | FGCA documents in the same view directory; included when the Factor's downstream goals include any goal the project activity references via `Activity.goals` |
@@ -156,7 +156,7 @@ One card per file. The card lives alongside the FGCA / Activities documents it d
 | `PC-003` | error | A `milestone.delivers_changes[]` entry references a `CHANGE-…` that is not in the project Activity's own `delivers_changes:`. The milestone cannot deliver a change the project isn't committed to. |
 | `PC-004` | warning | A `milestone.date` falls outside `[Activity.valid_from, Activity.valid_to]`. A milestone before the project initiated or after it ended is suspicious. |
 
-The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) rules apply to project-card files in addition to PC-001..004. The card document itself carries `valid_from` / `valid_to` per the lifecycle contract — the card's window is when the narrative artefact is in effect; the project Activity has its own independent lifecycle.
+The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to project-card files in addition to PC-001..004. The card document itself carries `valid_from` / `valid_to` per the lifecycle contract — the card's window is when the narrative artefact is in effect; the project Activity has its own independent lifecycle.
 
 ---
 
@@ -189,8 +189,8 @@ Pending design work (separate epics):
 
 ## 10. References
 
-- TYPE registry: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`PROJECT_CARD` document type), §4 (uniqueness scope — both document-scoped).
+- TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`PROJECT_CARD` document type), §4 (uniqueness scope — both document-scoped).
 - The project Activity TYPE this card binds: [07-activities.md](07-activities.md) §5.2 (`activity_type: Project`).
 - Schedule milestones — distinct from project-card milestones: [07-activities.md](07-activities.md) §5.9.
 - Motivation chain the card pulls: [02-fgca.md](02-fgca.md) (FGCA).
-- Zone model, admission record, primitive lifecycle: [CONTRACT.md](CONTRACT.md) §5–7.
+- Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5–7.

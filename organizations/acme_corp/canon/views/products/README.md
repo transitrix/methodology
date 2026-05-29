@@ -51,5 +51,5 @@ products_catalogue:
 
 ## See also
 
-- `notations/09-products.md` — products-catalogue notation reference (full field table)
+- `notations/views/09-products.md` — products-catalogue notation reference (full field table)
 - `canon/elements/02_business/products/` — where individual Product elements live

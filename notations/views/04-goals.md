@@ -17,7 +17,7 @@ dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,13 +28,13 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `goals[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the goals-tree document itself does not carry a lifecycle field. The `goal_types[]` entries are a static vocabulary, not elements, and carry no lifecycle.
+Every inline element this notation defines — entries in `goals[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the goals-tree document itself does not carry a lifecycle field. The `goal_types[]` entries are a static vocabulary, not elements, and carry no lifecycle.
 
 ---
 
 ## Time-aware relations
 
-A goal's **`parent`** relationship — its position under another goal in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a goal-to-goal parent link is a `REL-…` file under `canon/relations/` with `type: goal_parent` (see [17-relations.md](17-relations.md) §3 for the closed enum). A goal re-parented mid-stream — a tactical goal moved under a different strategic goal during a planning cycle — produces a new REL file; the old REL ends with `valid_to` set.
+A goal's **`parent`** relationship — its position under another goal in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a goal-to-goal parent link is a `REL-…` file under `canon/relations/` with `type: goal_parent` (see [17-relations.md](../elements/17-relations.md) §3 for the closed enum). A goal re-parented mid-stream — a tactical goal moved under a different strategic goal during a planning cycle — produces a new REL file; the old REL ends with `valid_to` set.
 
 **Inline `parent: GOAL-…` — v0.x transitional.** The inline `parent` field on goal entries (§5.2) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `parent` once an adopter's validator is configured to enforce post-migration.
 
@@ -81,7 +81,7 @@ Examples:
 
 The document carries document metadata, a `goal_types[]` array that defines the level vocabulary, and a flat `goals[]` array at the document root. There is no wrapper key. The tree shape is derived from the `parent` field on each goal.
 
-The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
+The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](../README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
 
 ```yaml
 notation: goals
@@ -120,7 +120,7 @@ goals:
     parent: GOAL-EU-1
 ```
 
-A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](examples/goals/strategy-2026.goals.transitrix.yaml).
+A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
 
 ---
 
@@ -130,9 +130,9 @@ A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](examp
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `goals` (per [CONTRACT.md](CONTRACT.md)) |
+| `notation` | yes | MUST equal `goals` (per [CONTRACT.md](../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
-| `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar (the document-level TYPE `GOALS_TREE` in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.2 is the historical label; document IDs use the short `GOALS-…` form for filenames and references) |
+| `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar (the document-level TYPE `GOALS_TREE` in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2 is the historical label; document IDs use the short `GOALS-…` form for filenames and references) |
 | `name` | yes | human-readable name |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the tree covers |
@@ -164,7 +164,7 @@ Organisations choose their own level vocabulary; the canonical 8-level default i
 | `link` | no | URL pointing at supplementary documentation |
 | `tag` | no | free-form classifier string |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
 
 ---
 
@@ -193,8 +193,8 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
 - FGCA notation: [`02-fgca.md`](02-fgca.md)
 - FGA notation: [`03-fga.md`](03-fga.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)
-- Family selection across FGCA / FGA / Goals / Activities: [`README.md`](README.md) § Family selection
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
+- Family selection across FGCA / FGA / Goals / Activities: [`README.md`](../README.md) § Family selection
 - Methodology section 6.1: `method/methodology.md`
 
 ---

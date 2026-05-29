@@ -17,7 +17,7 @@ dsm_status: "partially implemented — Activities page; multi-value fields (pred
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,13 +28,13 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the activities document itself does not carry a lifecycle field. Per-activity scheduling fields (`start_date`, `end_date`) describe *when work is planned to happen*, distinct from `valid_from`/`valid_to` which describe *when the activity element itself is considered in effect*; both coexist.
+Every inline element this notation defines — entries in `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the activities document itself does not carry a lifecycle field. Per-activity scheduling fields (`start_date`, `end_date`) describe *when work is planned to happen*, distinct from `valid_from`/`valid_to` which describe *when the activity element itself is considered in effect*; both coexist.
 
 ---
 
 ## Time-aware relations
 
-An activity's **`goals: [GOAL-…]`** cross-reference — the goals an activity serves — is declared **time-aware** per the temporal model. An activity re-aimed mid-stream (a build activity originally serving GOAL-A pivoted to serve GOAL-B as priorities shift) is a temporal event that loses information when inlined. The canonical home for an Activity → Goal link is a `REL-…` file under `canon/relations/` with `type: activity_goal` (see [17-relations.md](17-relations.md) §3).
+An activity's **`goals: [GOAL-…]`** cross-reference — the goals an activity serves — is declared **time-aware** per the temporal model. An activity re-aimed mid-stream (a build activity originally serving GOAL-A pivoted to serve GOAL-B as priorities shift) is a temporal event that loses information when inlined. The canonical home for an Activity → Goal link is a `REL-…` file under `canon/relations/` with `type: activity_goal` (see [17-relations.md](../elements/17-relations.md) §3).
 
 **Inline `goals: [GOAL-…]` — v0.x transitional.** The inline `goals` array on activity entries (§5.2 Per-activity fields) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `goals` once an adopter's validator is configured to enforce post-migration. Adopters extracting links to REL files use `valid_from = activity.valid_from` as a sensible epoch for the initial relation.
 

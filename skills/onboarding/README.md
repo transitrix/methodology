@@ -99,7 +99,7 @@ One starter YAML per view notation, named `<notation>.<short-name>.transitrix.ya
 
 ### Codex zone primitives (dropped into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
-Codex artefacts are zone primitives, not view documents — each is a single `<ID>.yaml` named by its canonical ID, carrying no `notation:` header. Schema: `notations/14-codex.md`.
+Codex artefacts are zone primitives, not view documents — each is a single `<ID>.yaml` named by its canonical ID, carrying no `notation:` header. Schema: `notations/elements/14-codex.md`.
 
 | Sub-zone | Template | Destination in adopter repo |
 |---|---|---|
@@ -157,7 +157,7 @@ The script exits `1` on drift (CI red) with a per-finding list naming the specif
 
 ### What the script does NOT check
 
-- The codex zone-primitives section in the cheat sheet — codex isn't in the catalogue table; it's a parallel zone-primitive notation with a separate spec ([`notations/14-codex.md`](../../notations/14-codex.md)).
+- The codex zone-primitives section in the cheat sheet — codex isn't in the catalogue table; it's a parallel zone-primitive notation with a separate spec ([`notations/elements/14-codex.md`](../../notations/elements/14-codex.md)).
 - Root-scaffolding templates (`transitrix.yaml`, `AGENTS.md`, `copilot-instructions.md`) — adopter-shape concerns, not notation-shape concerns.
 - Intra-spec drift (each spec's front-matter `file_extension` vs its "File header" section) — a separate known issue, not the Skill's fault.
 - The free-text "Situation" prose in the family-selection matrix.

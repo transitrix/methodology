@@ -260,6 +260,6 @@ Same handling as sibling prompts: emit **both** candidates with `confidence: low
 - Three-zone model and the admission record: [CONTRACT.md](../../../notations/CONTRACT.md) §5–6.
 - Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../notations/CONTRACT.md) §7.
 - Time-varying attributes for applications (`vendor`, `owner_role`, `maturity`) — sidecar contract: [CONTRACT.md](../../../notations/CONTRACT.md) §9. Extraction emits the stable fields only; sidecar admission is a separate step.
-- Applications catalogue notation: [10-applications.md](../../../notations/10-applications.md).
+- Applications catalogue notation: [10-applications.md](../../../notations/views/10-applications.md).
 - Field TYPE registry: [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.4.
 - Sibling prompts: [`01_motivation.md`](01_motivation.md) (motivation layer) and [`02_business.md`](02_business.md) (business layer).

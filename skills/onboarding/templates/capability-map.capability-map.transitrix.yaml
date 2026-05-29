@@ -1,7 +1,7 @@
 notation: capability-map
 spec_version: "0.1"
 
-# Capability map. Spec: notations/05-capability-map.md
+# Capability map. Spec: notations/views/05-capability-map.md
 # Capability IDs use the V/H sub-grammar (CAPABILITY-V1.2, CAPABILITY-H1.2.3).
 # Maturity uses the CMMI 1–5 scale.
 

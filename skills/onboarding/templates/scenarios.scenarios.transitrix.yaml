@@ -1,7 +1,7 @@
 notation: scenarios
 spec_version: "0.1"
 
-# Scenarios. Spec: notations/11-scenarios.md
+# Scenarios. Spec: notations/views/11-scenarios.md
 # Alternative strategic development paths. Each scenario scopes its
 # own goals, capabilities, activities, products, processes, and
 # applications.

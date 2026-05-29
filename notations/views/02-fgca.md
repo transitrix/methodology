@@ -12,7 +12,7 @@ dsm_status: "implemented — F, G, C, A layers active; column selection via loca
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -23,7 +23,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `factors[]`, `goals[]`, `changes[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGCA document itself does not carry a lifecycle field.
+Every inline element this notation defines — entries in `factors[]`, `goals[]`, `changes[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGCA document itself does not carry a lifecycle field.
 
 ---
 
@@ -123,7 +123,7 @@ FGCA uses the **flat form**: document metadata and the four layers (`factors`, `
 
 This shape matches the FGCA semantic graph: one Change can deliver many Goals, one Activity can deliver many Changes. A nested form would require duplicating nodes for every cross-layer link. The flat form expresses the DAG directly.
 
-The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
+The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](../README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
 
 ```yaml
 notation: fgca
@@ -158,7 +158,7 @@ activities:
     changes: [CHANGE-1]     # id-references to changes[]
 ```
 
-A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](examples/fgca/strategy-2026.fgca.transitrix.yaml).
+A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](../examples/fgca/strategy-2026.fgca.transitrix.yaml).
 
 ---
 
@@ -168,7 +168,7 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](example
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `fgca` (per [CONTRACT.md](CONTRACT.md)) |
+| `notation` | yes | MUST equal `fgca` (per [CONTRACT.md](../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `FGCA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
@@ -220,7 +220,7 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](example
 | `goals` | no | array of `GOAL-…` IDs the activity supports directly (degenerate FGA-style link, used when the Change layer adds no information for that activity) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the FGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the FGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
 
 ---
 
@@ -251,6 +251,6 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 - FGA notation (3-layer simplified variant, same flat form): [`03-fga.md`](03-fga.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
 - Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the FGCA chain
-- Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)
+- Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`

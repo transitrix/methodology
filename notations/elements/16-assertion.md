@@ -8,9 +8,9 @@ status: "draft"
 
 # Assertion — Reference
 
-**Scope:** The `ASSERTION` type — the canonical compliance claim that a **subject** (`PRODUCT` / `PROCESS` / `CAPABILITY`) satisfies a **`REQUIREMENT`**, with an explicit status and supporting evidence. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.6.
+**Scope:** The `ASSERTION` type — the canonical compliance claim that a **subject** (`PRODUCT` / `PROCESS` / `CAPABILITY`) satisfies a **`REQUIREMENT`**, with an explicit status and supporting evidence. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.6.
 
-Assertions are canon-zone artefacts that live **outside** the `elements/` tree, under `canon/assertions/`. Each assertion is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](CONTRACT.md) §7) and the assertion-specific frontmatter below.
+Assertions are canon-zone artefacts that live **outside** the `elements/` tree, under `canon/assertions/`. Each assertion is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the assertion-specific frontmatter below.
 
 ---
 
@@ -80,20 +80,20 @@ valid_to: null
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `assertion`. Machine-readable type tag (redundant with the ID prefix, useful for tooling that reads files without parsing IDs). |
-| `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1: `ASSERTION-[<middle>-]<INTEGER>`. |
+| `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `ASSERTION-[<middle>-]<INTEGER>`. |
 | `about` | yes | string | Typed ID of the REQUIREMENT this assertion is about. The validator resolves it (`ASSERT-002`). |
 | `subject` | yes | string | Exactly one typed ID of the element that owns the claim. TYPE MUST be one of `PRODUCT`, `PROCESS`, `CAPABILITY` (`ASSERT-003`). |
 | `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. |
 | `status` | yes | string | One of: `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. See §3 below. |
 | `evidence` | no | list | Hybrid array of evidence entries; each carries a `kind` and kind-specific fields. See §4. |
-| `assessed_at` | no | string | Date the current status was determined — quoted ISO 8601 per [CONTRACT.md](CONTRACT.md) §4. |
+| `assessed_at` | no | string | Date the current status was determined — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `assessed_by` | no | string | A `ROLE-…` typed ID, or a free-text handle in quotes. |
 | `next_review_at` | no | string | Date by which the assertion should be re-reviewed — quoted ISO 8601. Drives the `ASSERT-008` staleness warning. |
-| `zone` | yes | string | Always `canon` for ASSERTION — see [CONTRACT.md](CONTRACT.md) §6. |
+| `zone` | yes | string | Always `canon` for ASSERTION — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon. |
 | `admitted_by` | yes | string | Person handle or tool ID that ran the admission gate. |
 | `gate_checks` | yes | map | Standard canon checks (`uniqueness`, `consistency`, `completeness`). |
-| `valid_from` | yes | string | Date the assertion took effect — see [CONTRACT.md](CONTRACT.md) §7. |
+| `valid_from` | yes | string | Date the assertion took effect — see [CONTRACT.md](../CONTRACT.md) §7. |
 | `valid_to` | yes | string \| null | Date the assertion ceased to be in effect, or `null` if still in effect. |
 
 ---
@@ -136,7 +136,7 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 
 | Rule | Severity | Description |
 |---|---|---|
-| `ASSERT-001` | error | A required field from §2 is missing, or `id` does not match the canonical grammar `ASSERTION-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1). |
+| `ASSERT-001` | error | A required field from §2 is missing, or `id` does not match the canonical grammar `ASSERTION-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1). |
 | `ASSERT-002` | error | `about` is missing, malformed, or resolves to an artefact whose TYPE is not `REQUIREMENT`. |
 | `ASSERT-003` | error | `subject` is missing, does not resolve, or resolves to an artefact whose TYPE is not in `{PRODUCT, PROCESS, CAPABILITY}`. |
 | `ASSERT-004` | error | A value in `realised_via` does not resolve to any admitted canonical element. |
@@ -144,9 +144,9 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-006` | error | `status` is not one of `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. |
 | `ASSERT-007` | warning | `evidence` is empty AND `status` is `compliant` or `partial`. A positive status without evidence is undefended. |
 | `ASSERT-008` | warning | `next_review_at` is set and is in the past relative to today. The assertion is stale and due for re-review. |
-| `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
+| `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](../CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
 
-The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](CONTRACT.md) §8.
+The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 
 ---
 
@@ -179,7 +179,7 @@ Out of scope for this initial schema:
 
 ## 8. References
 
-- TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.6 (entry), §1 (grammar), §4 (uniqueness scope).
-- Zone model, admission record, primitive lifecycle: [CONTRACT.md](CONTRACT.md) §5, §6, §7.
+- TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.6 (entry), §1 (grammar), §4 (uniqueness scope).
+- Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - The REQUIREMENT element type assertions are about: [15-requirement.md](15-requirement.md).
 - Codex source documents requirements derive from: [14-codex.md](14-codex.md).

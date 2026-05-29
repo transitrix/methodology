@@ -1,5 +1,5 @@
 # Worked example — Capability element primitive (stable fields only).
-# Schema: notations/05-capability-map.md §13 + admission record
+# Schema: notations/views/05-capability-map.md §13 + admission record
 # (CONTRACT.md §6) + primitive lifecycle (CONTRACT.md §7).
 #
 # Time-varying attributes live in the sidecar CAPABILITY-V1.1.history.yaml

@@ -3,7 +3,7 @@
 //
 // TRANSFORMS (extensible; each entry in `transforms` below is independent):
 //
-//   1. codex applies_to retirement (notations/14-codex.md §8 Migration)
+//   1. codex applies_to retirement (notations/elements/14-codex.md §8 Migration)
 //      Walks <target>/codex/**/*.yaml and strips applies_to: blocks
 //      (both indented-children and inline-array forms).
 //
@@ -21,8 +21,8 @@
 //      capability-map / process-map / products / applications /
 //      scenarios documents are touched.
 //
-//   4. goal `parent` → REL goal_parent extraction (notations/17-relations.md §6,
-//      notations/04-goals.md "Time-aware relations")
+//   4. goal `parent` → REL goal_parent extraction (notations/elements/17-relations.md §6,
+//      notations/views/04-goals.md "Time-aware relations")
 //      Walks <target>/canon/views/**/*.yaml with notation: goals, finds
 //      inline `parent: GOAL-…` on goal entries, drops the inline line,
 //      and emits a `canon/relations/REL-GOAL-<from-hint>-PARENT-1.yaml`
@@ -30,7 +30,7 @@
 //      emitted REL inherit the host doc's date: (fallback "2024-01-01").
 //
 //   5. activity `goals: [GOAL-…]` → REL activity_goal extraction
-//      (notations/17-relations.md §6, notations/07-activities.md "Time-aware
+//      (notations/elements/17-relations.md §6, notations/views/07-activities.md "Time-aware
 //      relations") Walks <target>/canon/views/**/*.yaml with notation:
 //      activities, finds inline `goals: [GOAL-A, GOAL-B]` arrays on activity
 //      entries, drops the inline line, and emits N REL files (one per goal)

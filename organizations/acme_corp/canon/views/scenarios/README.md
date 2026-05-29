@@ -6,7 +6,7 @@ Alternative strategic development paths — each scenario scopes its own goals, 
 
 `*.scenarios.transitrix.yaml`
 
-See [`notations/11-scenarios.md`](../../../../notations/11-scenarios.md) for the full spec.
+See [`notations/views/11-scenarios.md`](../../../../notations/views/11-scenarios.md) for the full spec.
 
 ## Lifecycle
 

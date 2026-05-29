@@ -16,7 +16,7 @@ file_extension: "*.fga.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -27,7 +27,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `factors[]`, `goals[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGA document itself does not carry a lifecycle field.
+Every inline element this notation defines — entries in `factors[]`, `goals[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGA document itself does not carry a lifecycle field.
 
 ---
 
@@ -76,7 +76,7 @@ Examples:
 
 FGA uses the **flat form**: document metadata and the three layers (`factors`, `goals`, `activities`) live at the document root as parallel arrays. There is no wrapper key. Links between layers are id-references on each item, not nesting.
 
-The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](README.md) § Family selection for the family-wide rule (decided 2026-05-26).
+The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](../README.md) § Family selection for the family-wide rule (decided 2026-05-26).
 
 ```yaml
 notation: fga
@@ -106,7 +106,7 @@ activities:
     goals: [GOAL-1]         # id-references to goals[]
 ```
 
-A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](examples/fga/strategy-2026.fga.transitrix.yaml).
+A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](../examples/fga/strategy-2026.fga.transitrix.yaml).
 
 ---
 
@@ -116,7 +116,7 @@ A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](examples/
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `fga` (per [CONTRACT.md](CONTRACT.md)) |
+| `notation` | yes | MUST equal `fga` (per [CONTRACT.md](../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `FGA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
@@ -159,7 +159,7 @@ A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](examples/
 | `due_date` | no | target completion date (YYYY-MM-DD) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
 
 ---
 
@@ -201,6 +201,6 @@ Both notations use the same flat-with-references shape — FGA is FGCA minus the
 - FGCA notation: [`02-fgca.md`](02-fgca.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across FGCA / FGA / Goals / Activities: `README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`
