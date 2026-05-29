@@ -17,7 +17,7 @@ activities:
     sort: 10
     goals: [GOAL-CUST-001]
     tags: [q3-priority, discovery]
-    unit: UNIT-PRODUCT
+    owner: ACTOR-PRODUCT-1
     description: |
       Gather and document all requirements for the customer platform.
       Include both functional and non-functional requirements.
@@ -29,8 +29,7 @@ activities:
     predecessors: [A-001]
     goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
     tags: [q3-priority]
-    unit: UNIT-ENGINEERING
-
+    owner: ACTOR-ENGINEERING-1
   - id: A-003
     name: Backend implementation
     duration: 15
@@ -38,7 +37,7 @@ activities:
     predecessors: [A-002]
     goals: [GOAL-PLATFORM-002]
     tags: [q3-priority]
-    unit: UNIT-ENGINEERING
+    owner: ACTOR-ENGINEERING-1
     delivers_changes: [CHG-PLATFORM-001]
 
   - id: A-004
@@ -48,7 +47,7 @@ activities:
     predecessors: [A-002]
     goals: [GOAL-CUST-001]
     tags: [q3-priority]
-    unit: UNIT-ENGINEERING
+    owner: ACTOR-ENGINEERING-1
     delivers_changes: [CHG-UX-001]
 
   - id: A-005
@@ -58,8 +57,7 @@ activities:
     predecessors: [A-002]
     goals: [GOAL-PLATFORM-002]
     tags: [devops]
-    unit: UNIT-INFRA
-
+    owner: ACTOR-INFRA-1
   - id: A-006
     name: Integration testing
     duration: 7
@@ -67,8 +65,7 @@ activities:
     predecessors: [A-003, A-004, A-005]
     goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
     tags: [q3-priority, qa]
-    unit: UNIT-QA
-
+    owner: ACTOR-QA-1
   - id: A-007
     name: Performance testing
     duration: 3
@@ -76,8 +73,7 @@ activities:
     predecessors: [A-006]
     goals: [GOAL-PLATFORM-002]
     tags: [qa]
-    unit: UNIT-QA
-
+    owner: ACTOR-QA-1
   - id: A-008
     name: Security review
     duration: 4
@@ -85,8 +81,7 @@ activities:
     predecessors: [A-006]
     goals: [GOAL-COMPLIANCE-001]
     tags: [security]
-    unit: UNIT-SECURITY
-
+    owner: ACTOR-SECURITY-1
   - id: A-009
     name: Stakeholder sign-off
     duration: 2
@@ -94,8 +89,7 @@ activities:
     predecessors: [A-007, A-008]
     goals: [GOAL-CUST-001]
     tags: [q3-priority]
-    unit: UNIT-PRODUCT
-
+    owner: ACTOR-PRODUCT-1
   - id: A-010
     name: Production deployment
     duration: 1
@@ -103,5 +97,5 @@ activities:
     predecessors: [A-009]
     goals: [GOAL-CUST-001, GOAL-PLATFORM-002]
     tags: [q3-priority, devops]
-    unit: UNIT-INFRA
+    owner: ACTOR-INFRA-1
     delivers_changes: [CHG-PLATFORM-001, CHG-UX-001]
