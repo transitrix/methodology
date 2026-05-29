@@ -136,4 +136,4 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 - Common element-primitive envelope + `ACTOR` field set: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3, §7.10.
 - Engagement / hierarchy relations: [17-relations.md](17-relations.md) §3.
 - Activity ownership (`owner: ACTOR-…`): [07-activities.md](../views/07-activities.md) §5.6.
-- Stakeholder identity binding (`STAKEHOLDER.actor`): the Stakeholders notation (forthcoming, strategy#99).
+- Stakeholder identity binding (`STAKEHOLDER.actor`): [20-stakeholders.md](20-stakeholders.md).
