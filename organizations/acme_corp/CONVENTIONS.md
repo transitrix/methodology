@@ -50,7 +50,7 @@ Use exactly these prefixes; the abbreviated forms `ACT`, `CHG`, `FAC`, `CAP`, `S
 | `BLOCKS` | `*.blocks.transitrix.yaml` |
 | `ISSUES_CAT` | `*.issues.transitrix.yaml` |
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
-| `PROJECT_CARD` | `*.project-card.transitrix.yaml` |
+| `ACTIVITY_CARD` | `*.activity-card.transitrix.yaml` |
 
 #### Domain codes
 

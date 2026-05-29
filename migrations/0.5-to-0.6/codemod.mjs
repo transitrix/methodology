@@ -37,8 +37,8 @@
 // Line-based transformation (not js-yaml roundtrip) to preserve comments,
 // key order, and formatting on untouched lines.
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, renameSync } from 'node:fs';
+import { join, relative, resolve, basename, dirname } from 'node:path';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
@@ -137,6 +137,21 @@ function isRemovedTypeElement(content) {
   return m ? m[1] : null;
 }
 
+// --- Transform D: PROJECT_CARD → ACTIVITY_CARD rename -----------------------
+// Spec-level rename (no data migration). Rewrites a project-card document's
+// notation header, root key, and doc-id prefix, and renames the file
+// .project-card.transitrix.yaml → .activity-card.transitrix.yaml.
+
+function renameActivityCard(content) {
+  if (notationOf(content) !== 'project-card') return { content, modified: 0 };
+  let n = 0;
+  let c = content
+    .replace(/^notation\s*:\s*project-card\b/m, m => (n++, 'notation: activity-card'))
+    .replace(/^(\s*)project_card\s*:/m, (m, s) => (n++, `${s}activity_card:`))
+    .replace(/\bPROJECT_CARD-/g, m => (n++, 'ACTIVITY_CARD-'));
+  return { content: c, modified: n };
+}
+
 // --- Run --------------------------------------------------------------------
 
 const transforms = [
@@ -169,9 +184,37 @@ for (const t of transforms) {
   totalModified += modified; totalFailed += failed;
 }
 
+// Transform D — PROJECT_CARD → ACTIVITY_CARD (content rewrite + file rename)
+{
+  let modified = 0;
+  const touched = [];
+  for (const f of files) {
+    const original = readFileSync(f, 'utf8');
+    const r = renameActivityCard(original);
+    if (r.modified === 0) continue;
+    modified += r.modified;
+    let dest = f;
+    if (basename(f).includes('project-card')) {
+      dest = join(dirname(f), basename(f).replace('project-card', 'activity-card'));
+    }
+    touched.push(`${relative(target, f)}${dest !== f ? ` → ${relative(target, dest)}` : ''} (${r.modified})`);
+    if (!dryRun) {
+      writeFileSync(f, r.content);
+      if (dest !== f) renameSync(f, dest);
+    }
+  }
+  console.log('Transform D — PROJECT_CARD → ACTIVITY_CARD');
+  touched.forEach(x => console.log(`  ~ ${x}`));
+  console.log(`  → ${modified} change(s)${dryRun ? ' (dry-run; no files written)' : ''}`);
+  console.log('');
+  totalModified += modified;
+}
+
 // Detection C — UNIT / EMPLOYEE element files (manual)
 for (const f of files) {
-  const kind = isRemovedTypeElement(readFileSync(f, 'utf8'));
+  let content;
+  try { content = readFileSync(f, 'utf8'); } catch { continue; } // may have been renamed by D
+  const kind = isRemovedTypeElement(content);
   if (kind) manualFiles.push({ f: relative(target, f), kind });
 }
 

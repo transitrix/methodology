@@ -25,6 +25,7 @@ The Actors / Stakeholders identity model (epics #98 / #99). Unifies active-struc
 
 - **BREAKING: `UNIT` and `EMPLOYEE` element TYPEs removed.** `UNIT` → `ACTOR(type: business_unit)`; `EMPLOYEE` → `ACTOR(type: person)` + an `employment` REL. Both were registered schema-only on 2026-05-29 and removed the same day before any population; the `0.5 → 0.6` migration recipe records the mapping. (#98)
 - **BREAKING: activity ownership collapses to one field.** The parallel `owner` (free-text) / `unit` / `employee` fields on activities become a single `owner: ACTOR-…` (`notations/views/07-activities.md` §5.6). `ROLE.unit` now references an `ACTOR(business_unit)`. (#98)
+- **BREAKING: `PROJECT_CARD` view renamed to `ACTIVITY_CARD`.** Spec `notations/views/18-project-card.md` → `18-activity-card.md`; TYPE `PROJECT_CARD` → `ACTIVITY_CARD`; extension `*.project-card.transitrix.yaml` → `*.activity-card.transitrix.yaml`; root key `project_card:` → `activity_card:`. Aligns the view name with the ACTIVITY-as-umbrella model (a card renders any execution level — initiative / programme / project / task). Adds an ArchiMate-class rendering convention (`ACTIVITY` → Work Package, `MILESTONE` → Implementation Event). `MILESTONE` TYPE name unchanged. (#112)
 
 ---
 

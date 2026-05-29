@@ -1,16 +1,16 @@
-notation: project-card
+notation: activity-card
 spec_version: "0.1"
 
 # Worked example — EU regulatory-conformity programme.
-# Single-project narrative view per notations/views/18-project-card.md.
+# Single-project narrative view per notations/views/18-activity-card.md.
 # The card binds to an existing project Activity (ACTIVITY-EU-PROGRAMME-1)
 # and adds two narrative milestones for the certification gate and the
 # market-launch follow-on. The motivation chain, child activities, and
 # remaining metadata are pulled by reference from sibling FGCA and
 # Activities documents — they are not duplicated here.
 
-project_card:
-  id: PROJECT_CARD-EU-PROGRAMME-1
+activity_card:
+  id: ACTIVITY_CARD-EU-PROGRAMME-1
   project: ACTIVITY-EU-PROGRAMME-1
 
   description: >

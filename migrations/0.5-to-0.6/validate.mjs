@@ -39,6 +39,8 @@ for (const f of walk(target)) {
   }
   if (notation === 'role' && /^\s*unit\s*:\s*["']?UNIT-/m.test(c))
     problems.push(`${rel}: ROLE.unit still references a UNIT-… (should be ACTOR-…)`);
+  if (notation === 'project-card' || /\bPROJECT_CARD-/.test(c) || /^\s*project_card\s*:/m.test(c))
+    problems.push(`${rel}: PROJECT_CARD residue — rename to ACTIVITY_CARD / activity_card / activity-card`);
 }
 
 if (problems.length) {

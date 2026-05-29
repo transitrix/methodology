@@ -1,18 +1,18 @@
-# Project Card
+# Activity Card
 
 Single-project narrative view. One document per project, naming the project Activity it summarises plus a list of narrative milestones (decision gates, certifications, programme-level markers). The card pulls the rest of its content — name, dates, motivation chain, child activities — by reference from sibling FGCA and Activities documents.
 
-**File extension:** `*.project-card.transitrix.yaml`
-**Spec:** [`notations/views/18-project-card.md`](../../views/18-project-card.md)
+**File extension:** `*.activity-card.transitrix.yaml`
+**Spec:** [`notations/views/18-activity-card.md`](../../views/18-activity-card.md)
 
 ## Minimal structure
 
 ```yaml
-notation: project-card
+notation: activity-card
 spec_version: "0.1"
 
-project_card:
-  id: PROJECT_CARD-<DOMAIN>-<N>
+activity_card:
+  id: ACTIVITY_CARD-<DOMAIN>-<N>
   project: ACTIVITY-<DOMAIN>-<N>            # existing project Activity; must resolve
 
   description: >
@@ -31,13 +31,13 @@ project_card:
 
 ## Rules
 
-- One project per card document. The `project_card.project:` field MUST resolve to an Activity whose `activity_type:` is `Project` (`PC-001` / `PC-002`).
+- One project per card document. The `activity_card.project:` field MUST resolve to an Activity whose `activity_type:` is `Project` (`PC-001` / `PC-002`).
 - `MILESTONE-…` IDs are **document-scoped** — uniqueness is enforced within the card, not across the organisation ([IDS_AND_REFERENCES.md §4](../../IDS_AND_REFERENCES.md)).
 - Each `milestones[].delivers_changes[]` entry MUST resolve to a `CHANGE-…` that is also listed in the project Activity's `delivers_changes:` (`PC-003`) — the milestone delivers a strict subset of the project's overall changes.
-- Project-card milestones are **distinct** from the zero-duration "schedule milestones" defined in [`07-activities.md`](../../views/07-activities.md) §5.9. The two coexist by design: schedule milestones drive critical-path computation; project-card milestones anchor narrative gates. The reconciliation is documented in [18-project-card.md §8](../../views/18-project-card.md).
+- Activity-card milestones are **distinct** from the zero-duration "schedule milestones" defined in [`07-activities.md`](../../views/07-activities.md) §5.9. The two coexist by design: schedule milestones drive critical-path computation; activity-card milestones anchor narrative gates. The reconciliation is documented in [18-activity-card.md §8](../../views/18-activity-card.md).
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `eu-programme.project-card.transitrix.yaml` | EU regulatory-conformity programme — one project Activity, two narrative milestones (certification gate + market launch). Mirrors the running example in the spec. |
+| `eu-programme.activity-card.transitrix.yaml` | EU regulatory-conformity programme — one project Activity, two narrative milestones (certification gate + market launch). Mirrors the running example in the spec. |
