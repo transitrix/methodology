@@ -38,6 +38,8 @@ The 4 element notations live under [`elements/`](elements/) — each defines a c
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 
+The cross-cutting **element-primitive file schema** — the common envelope every standalone element file carries, which TYPEs get a standalone file vs. live only inline in a view, and where each lives on disk — is defined once in [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md). The four element notations above are specialised instances of that envelope.
+
 ## Status vocabulary
 
 The `status:` field in each spec's front-matter describes the **spec's maturity** — how stable and complete the notation specification is. It does **not** describe whether a tool implements the notation; tool implementation is tracked separately in the `dsm_status:` field on the same spec.
