@@ -1,5 +1,5 @@
 # Codex internal artefact — a policy or internal standard the org issues to itself.
-# Schema: notations/14-codex.md §4 + admission record (notations/CONTRACT.md §6).
+# Schema: notations/elements/14-codex.md §4 + admission record (notations/CONTRACT.md §6).
 # File location: codex/internal/<ID>.yaml — internal artefacts are NOT foldered by jurisdiction.
 # File name: the artefact's canonical ID + .yaml — one artefact per file.
 

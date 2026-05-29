@@ -6,7 +6,7 @@ Nested block diagrams — multi-level container layouts where you want to show *
 
 `*.blocks.transitrix.yaml`
 
-The notation is structured YAML: a `nested_blocks:` root with a recursive `block` tree (`id`, `name`, optional `description`, optional `children[]`). See [`notations/08-blocks.md`](../../../../notations/08-blocks.md) for the full spec.
+The notation is structured YAML: a `nested_blocks:` root with a recursive `block` tree (`id`, `name`, optional `description`, optional `children[]`). See [`notations/views/08-blocks.md`](../../../../notations/views/08-blocks.md) for the full spec.
 
 ## Skeleton
 
@@ -56,6 +56,6 @@ Rendered natively by Transitrix Studio — no external binaries required. The pr
 
 ## See also
 
-- [`notations/08-blocks.md`](../../../../notations/08-blocks.md) — the notation spec
+- [`notations/views/08-blocks.md`](../../../../notations/views/08-blocks.md) — the notation spec
 - [`notations/examples/blocks/architecture.blocks.transitrix.yaml`](../../../../notations/examples/blocks/architecture.blocks.transitrix.yaml) — worked example
 - `method/methodology.md` §6 — notation kit

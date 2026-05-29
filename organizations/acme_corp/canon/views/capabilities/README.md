@@ -62,10 +62,10 @@ capability_map:
 
 `CAPABILITY-V1` / `CAPABILITY-V1.1` are canonical capability IDs (V/H sub-grammar per [`notations/IDS_AND_REFERENCES.md`](../../../../notations/IDS_AND_REFERENCES.md) §2); **every** capability, including children, carries `type` (required). The maturity history of an individual capability lives on its element file, not here.
 
-`valid_from` / `valid_to` are required on every inline capability (recursively, including nested `children[]`) per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The capability-map document itself does not carry a lifecycle field. The notation-spec's "Planned" / "Active" / "Retired" state vocabulary ([`notations/05-capability-map.md`](../../../../notations/05-capability-map.md) §7) is a *derived view* over `valid_from` / `valid_to` + today's date — not a separate stored mechanism.
+`valid_from` / `valid_to` are required on every inline capability (recursively, including nested `children[]`) per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The capability-map document itself does not carry a lifecycle field. The notation-spec's "Planned" / "Active" / "Retired" state vocabulary ([`notations/views/05-capability-map.md`](../../../../notations/views/05-capability-map.md) §7) is a *derived view* over `valid_from` / `valid_to` + today's date — not a separate stored mechanism.
 
 ## See also
 
-- `notations/05-capability-map.md` — capability-map notation reference (CMM maturity, V/H addressing, full field table)
+- `notations/views/05-capability-map.md` — capability-map notation reference (CMM maturity, V/H addressing, full field table)
 - `.templates/capability-map_template.yaml` — copy-and-fill template
 - `canon/elements/02_business/capabilities/` — where individual Capability elements live

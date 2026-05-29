@@ -71,6 +71,6 @@ process_map:
 
 ## See also
 
-- `notations/06-process-map.md` — process-map notation reference (full field table)
+- `notations/views/06-process-map.md` — process-map notation reference (full field table)
 - `canon/views/bpmn/` — detailed flow diagrams for individual processes
 - `canon/elements/02_business/processes/` — where individual BusinessProcess elements live

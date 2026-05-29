@@ -49,9 +49,9 @@ You produce draft primitives of these TYPEs:
 | `FACTOR` | Strategic driver — external or internal — that shapes the organisation's direction | The source names an environmental pressure ("EU regulatory window closing"), a market shift ("customer demand growing 30% YoY"), an internal pressure ("support response time degrading"), or any cause the organisation acts on |
 | `GOAL` | Strategic or tactical objective the organisation commits to | The source names a desired outcome, a target the organisation is aiming at, or an explicit objective for a period |
 | `CONSTRAINT` | Restriction or prohibition the organisation must not cross | The source names a boundary using "must not", "cannot exceed", "is limited to", "is classified as" — the form of the obligation is a restriction |
-| `REQUIREMENT` | Positive obligation the organisation must fulfil | The source names an obligation using "must", "shall", "must submit", "must register", "must obtain" — the form is a positive action ([15-requirement.md](../../../notations/15-requirement.md) §1) |
+| `REQUIREMENT` | Positive obligation the organisation must fulfil | The source names an obligation using "must", "shall", "must submit", "must register", "must obtain" — the form is a positive action ([15-requirement.md](../../../notations/elements/15-requirement.md) §1) |
 
-**`REQUIREMENT` vs `CONSTRAINT` boundary:** form of the obligation. Positive action ("must do X") → REQUIREMENT. Restriction ("must not do X" / "X cannot exceed Y") → CONSTRAINT. The same regulatory source may produce both; emit both when both forms appear ([15-requirement.md](../../../notations/15-requirement.md) §1 has worked boundary examples).
+**`REQUIREMENT` vs `CONSTRAINT` boundary:** form of the obligation. Positive action ("must do X") → REQUIREMENT. Restriction ("must not do X" / "X cannot exceed Y") → CONSTRAINT. The same regulatory source may produce both; emit both when both forms appear ([15-requirement.md](../../../notations/elements/15-requirement.md) §1 has worked boundary examples).
 
 `derived_from` on a REQUIREMENT cites the Field artefact ID, **not** a codex source. Codex sources are admitted separately; the connection between REQUIREMENT and its codex source (`LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`) is established at admission time, after this prompt has run.
 
@@ -260,5 +260,5 @@ A human resolves the contradiction at admission.
 - Three-zone model (Canon / Field / Codex) and the admission record: [CONTRACT.md](../../../notations/CONTRACT.md) §5–6.
 - Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../notations/CONTRACT.md) §7.
 - Field TYPE registry: [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.4.
-- REQUIREMENT vs CONSTRAINT distinction: [15-requirement.md](../../../notations/15-requirement.md) §1.
+- REQUIREMENT vs CONSTRAINT distinction: [15-requirement.md](../../../notations/elements/15-requirement.md) §1.
 - Sibling prompts: `02_business.md` (business layer — actors, roles, processes, services, rules) and `03_application.md` (application layer — applications, services, integrations).

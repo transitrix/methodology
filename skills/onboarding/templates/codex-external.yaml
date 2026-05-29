@@ -1,5 +1,5 @@
 # Codex external artefact — a law or regulation given to the org by an outside authority.
-# Schema: notations/14-codex.md §3 + admission record (notations/CONTRACT.md §6).
+# Schema: notations/elements/14-codex.md §3 + admission record (notations/CONTRACT.md §6).
 # File location: codex/external/<jurisdiction>/<ID>.yaml
 #   <jurisdiction> = ISO 3166-1 alpha-2 (ge, de, ru, …), `eu`, or `intl` — MUST match
 #   the `jurisdiction:` field below (validator rule CODEX-001).

@@ -8,9 +8,9 @@ status: "draft"
 
 # Codex Notation — Reference
 
-**Scope:** The **Codex** zone — external constraints (laws, regulations) and internal authority documents (policies, standards) that are *given to* the organisation rather than authored by it. The three-zone model and the shared admission record are defined in [CONTRACT.md](CONTRACT.md) §5–6.
+**Scope:** The **Codex** zone — external constraints (laws, regulations) and internal authority documents (policies, standards) that are *given to* the organisation rather than authored by it. The three-zone model and the shared admission record are defined in [CONTRACT.md](../CONTRACT.md) §5–6.
 
-Codex artefacts are **zone primitives**, not view documents: each artefact is a single YAML file named by its ID (`<TYPE>-…-<INTEGER>.yaml`, per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md)). They are not `.transitrix.yaml` notation files and carry no `notation:` header; instead they carry the shared admission record ([CONTRACT.md](CONTRACT.md) §6, with `zone: codex`) plus the codex-specific frontmatter below.
+Codex artefacts are **zone primitives**, not view documents: each artefact is a single YAML file named by its ID (`<TYPE>-…-<INTEGER>.yaml`, per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md)). They are not `.transitrix.yaml` notation files and carry no `notation:` header; instead they carry the shared admission record ([CONTRACT.md](../CONTRACT.md) §6, with `zone: codex`) plus the codex-specific frontmatter below.
 
 ---
 
@@ -51,13 +51,13 @@ The folder an external artefact sits in MUST match its `jurisdiction:` frontmatt
 | `POLICY` | internal | an internal policy the organisation issues |
 | `INTERNAL_STANDARD` | internal | an internal standard or convention |
 
-Registered in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `INTERNAL_STANDARD-coding-conventions-1`, …).
+Registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `INTERNAL_STANDARD-coding-conventions-1`, …).
 
 ---
 
 ## 3. Frontmatter — external codex artefacts
 
-Carries the admission record ([CONTRACT.md](CONTRACT.md) §6, `zone: codex`, `gate_checks.source_authority`) plus the codex-specific fields below. A codex artefact stores the **source document only** — it does NOT carry bindings to the entities and processes the source affects. Bindings live on `REQUIREMENT.derived_from` (the requirements drawn from the source) and on `ASSERTION` (linking those requirements to subjects). See [§8 Migration](#8-migration) for the rationale.
+Carries the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: codex`, `gate_checks.source_authority`) plus the codex-specific fields below. A codex artefact stores the **source document only** — it does NOT carry bindings to the entities and processes the source affects. Bindings live on `REQUIREMENT.derived_from` (the requirements drawn from the source) and on `ASSERTION` (linking those requirements to subjects). See [§8 Migration](#8-migration) for the rationale.
 
 ```yaml
 id: LAW-PERSONAL-DATA-2017-1
@@ -105,10 +105,10 @@ A static artefact (Final Rule, published once) omits the `scan` block and instea
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
-| `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
+| `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). |
 | `source_url` | no | string | Canonical online location of the source document. Informational for static artefacts; the fetch target for the scanner agent (see §3.5) on live artefacts. |
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
-| `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Required-together with `snapshot_file`. |
+| `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). Required-together with `snapshot_file`. |
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
 | `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
 | `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
@@ -148,7 +148,7 @@ related_documents:
 
 | Subfield | Required | Type | Semantics |
 |---|---|---|---|
-| `id` | no | string | Typed canonical ID of the related document when it is itself an admitted codex artefact (see [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §1). When present, the ID MUST resolve in canon. Omit when the related document is not (yet) admitted — `url` then carries the pointer. |
+| `id` | no | string | Typed canonical ID of the related document when it is itself an admitted codex artefact (see [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1). When present, the ID MUST resolve in canon. Omit when the related document is not (yet) admitted — `url` then carries the pointer. |
 | `type` | yes | string | Free-text local annotation of the document's role in the family — typical values `PROPOSED_RULE`, `NPRM`, `GUIDANCE`, `AMENDMENT`, `COMPANION_RULE`, `WITHDRAWAL`. **Not** constrained to the Codex `TYPE` registry in §2. |
 | `name` | yes | string | Human-readable title of the related document. |
 | `url` | no | string | URL pointing at the related document. Required when `id` is absent. May coexist with `id` (the URL is informational once the artefact is admitted; the `id` is canonical). |
@@ -271,7 +271,7 @@ One artefact per file, named by its canonical ID. Examples:
 | Rule | Severity | Description |
 |---|---|---|
 | `CODEX-001` | error | An external artefact's `jurisdiction:` does not match its parent folder name under `codex/external/<jurisdiction>/`. |
-| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal needs `issuing_authority` + `effective_date`. All codex artefacts also carry the admission record ([CONTRACT.md](CONTRACT.md) §6). |
+| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal needs `issuing_authority` + `effective_date`. All codex artefacts also carry the admission record ([CONTRACT.md](../CONTRACT.md) §6). |
 | `CODEX-004` | warning | An `applies_to:` field is present on a codex artefact. The field was retired in this revision (see [§8 Migration](#8-migration)); bindings now live on `REQUIREMENT.derived_from` ([15-requirement.md](15-requirement.md)) and on `ASSERTION` ([16-assertion.md](16-assertion.md)). |
 | `CODEX-005` | info | A `type: REGULATION` artefact does not declare `monitoring_needed:`. The field SHOULD be explicit so downstream consumers (and scanner agents) know whether the source is static or live — see §3.4. Info severity, not warning, because some legacy artefacts predate the field; new REGULATION artefacts SHOULD set it. |
 
@@ -281,8 +281,8 @@ Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved a
 
 ## 7. References
 
-- Zone model and admission record: [CONTRACT.md](CONTRACT.md) §5–6.
-- Codex TYPE registry and uniqueness scope: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.5, §4.
+- Zone model and admission record: [CONTRACT.md](../CONTRACT.md) §5–6.
+- Codex TYPE registry and uniqueness scope: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5, §4.
 - The REQUIREMENT element that holds bindings drawn from codex sources: [15-requirement.md](15-requirement.md).
 - The ASSERTION notation that links requirements to subjects: [16-assertion.md](16-assertion.md).
 - Which zones and notations an adopter uses is declared in the `transitrix.yaml` manifest.

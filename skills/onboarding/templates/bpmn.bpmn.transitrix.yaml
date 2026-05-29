@@ -1,7 +1,7 @@
 notation: bpmn
 spec_version: "0.1"
 
-# BPMN process. Spec: notations/01-bpmn.md
+# BPMN process. Spec: notations/views/01-bpmn.md
 # Fill the FILL-ME values. Element types: startEvent, endEvent, task,
 # exclusiveGateway, parallelGateway, inclusiveGateway. Flows connect
 # element IDs across lanes.

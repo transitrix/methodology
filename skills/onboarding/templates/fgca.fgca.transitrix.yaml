@@ -1,7 +1,7 @@
 notation: fgca
 spec_version: "0.1"
 
-# FGCA chain. Spec: notations/02-fgca.md
+# FGCA chain. Spec: notations/views/02-fgca.md
 # Replace FILL-ME placeholders. IDs use the canonical grammar:
 # FACTOR-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
 

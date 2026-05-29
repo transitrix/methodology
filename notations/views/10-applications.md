@@ -16,7 +16,7 @@ file_extension: "*.applications.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all eleven Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -27,7 +27,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Element lifecycle
 
-Every inline entry under `applications[]` — whether `type: application`, `integration`, `platform`, or `data_store` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](CONTRACT.md) §7.1, the lifecycle sits on each catalogue entry; the applications-catalogue document itself does not carry a lifecycle field. Per-application `integrations[]` sub-entries (outbound integration descriptors nested inside an application) share their parent application's lifecycle and do not carry their own `valid_from` / `valid_to`. The catalogue's own `status` field (`Active` / `Draft` / `Deprecated` / `Decommissioning`) is a notation-specific operational state, distinct from `valid_from` / `valid_to` which mark the period the application element is asserted to exist.
+Every inline entry under `applications[]` — whether `type: application`, `integration`, `platform`, or `data_store` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each catalogue entry; the applications-catalogue document itself does not carry a lifecycle field. Per-application `integrations[]` sub-entries (outbound integration descriptors nested inside an application) share their parent application's lifecycle and do not carry their own `valid_from` / `valid_to`. The catalogue's own `status` field (`Active` / `Draft` / `Deprecated` / `Decommissioning`) is a notation-specific operational state, distinct from `valid_from` / `valid_to` which mark the period the application element is asserted to exist.
 
 ---
 
@@ -125,7 +125,7 @@ applications_catalogue:
 | `applications[].name` | Yes | Application name (should match the element) |
 | `applications[].type` | Yes | `application` / `integration` / `platform` / `data_store` |
 | `applications[].domain` | No | Business domain this application belongs to |
-| `applications[].owner_role` | No | BusinessRole element ID of the technical owner. **Time-varying** — lives in the sidecar `<app_id>.history.yaml` ([CONTRACT.md](CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `applications[].owner_role` | No | BusinessRole element ID of the technical owner. **Time-varying** — lives in the sidecar `<app_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
 | `applications[].vendor` | No | Vendor name or `Internal`. **Time-varying** — sidecar, not inline (an organisation may switch vendors mid-life). |
 | `applications[].status` | Yes | `Draft` / `Active` / `Deprecated` / `Decommissioning`. Operational state — stays inline; teams wanting status history MAY promote to sidecar voluntarily. |
 | `applications[].maturity` | No | CMM level 1–5. **Time-varying** — sidecar, not inline. |
@@ -141,7 +141,7 @@ applications_catalogue:
 
 ## 5a. Time-varying attributes — sidecar history
 
-An application's `owner_role`, `vendor`, and `maturity` evolve within the application's overall lifetime. Per [CONTRACT.md](CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the application's element file, **not inline** on the catalogue view or on the element file:
+An application's `owner_role`, `vendor`, and `maturity` evolve within the application's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the application's element file, **not inline** on the catalogue view or on the element file:
 
 ```
 canon/elements/03_application/applications/APP-OMS-1.yaml          # stable fields
@@ -164,9 +164,9 @@ attribute_versions:
     - { valid_from: "2025-09-01", value: 3 }
 ```
 
-Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](CONTRACT.md) §9.2.
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../CONTRACT.md) §9.2.
 
-Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = application.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](CONTRACT.md) §9.3).
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = application.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../CONTRACT.md) §9.3).
 
 `status`, `type`, `domain`, `description` are **not** time-varying in v1 and stay inline. Cross-reference lists (`capabilities`, `products`, `integrations`) are relations — Wave 3 territory.
 

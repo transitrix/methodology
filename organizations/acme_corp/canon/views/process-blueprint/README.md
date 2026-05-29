@@ -6,7 +6,7 @@ Wide value-chain blueprint — stages laid out left-to-right, each carrying its 
 
 `*.process-blueprint.transitrix.yaml`
 
-See [`notations/13-process-blueprint.md`](../../../../notations/13-process-blueprint.md) for the full spec.
+See [`notations/views/13-process-blueprint.md`](../../../../notations/views/13-process-blueprint.md) for the full spec.
 
 ## Lifecycle
 

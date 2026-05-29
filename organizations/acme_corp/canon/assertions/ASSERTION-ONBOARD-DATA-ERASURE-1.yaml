@@ -1,5 +1,5 @@
 # Worked example — partial-status assertion with mixed evidence.
-# Schema: notations/16-assertion.md §2.
+# Schema: notations/elements/16-assertion.md §2.
 # Demonstrates: subject = PROCESS, status = partial, evidence with two kinds
 # (external_doc + note) and a documented gap.
 

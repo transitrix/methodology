@@ -1,5 +1,5 @@
 # Worked example — full-evidence compliant assertion.
-# Schema: notations/16-assertion.md §2.
+# Schema: notations/elements/16-assertion.md §2.
 # Demonstrates: subject = PRODUCT, status = compliant, evidence with all three
 # kinds (canonical_ref + external_doc + note).
 
