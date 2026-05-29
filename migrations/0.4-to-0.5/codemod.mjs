@@ -29,6 +29,14 @@
 //      REL primitive per dropped parent. valid_from / admitted_at on the
 //      emitted REL inherit the host doc's date: (fallback "2024-01-01").
 //
+//   5. activity `goals: [GOAL-…]` → REL activity_goal extraction
+//      (notations/17-relations.md §6, notations/07-activities.md "Time-aware
+//      relations") Walks <target>/canon/views/**/*.yaml with notation:
+//      activities, finds inline `goals: [GOAL-A, GOAL-B]` arrays on activity
+//      entries, drops the inline line, and emits N REL files (one per goal)
+//      under canon/relations/ with `type: activity_goal`. valid_from /
+//      admitted_at on each emitted REL inherit the host doc's date:.
+//
 // Conventions (canonical for every migration recipe):
 //   - Pure-Node. Runs on a stock Node ≥ 20 with no native deps.
 //   - Idempotent. Running twice on the same input produces identical
@@ -349,6 +357,110 @@ function goalParentToRel(content) {
   return { content: out.join('\n'), modified, bailed: false, emits };
 }
 
+// --- Transform 5: activity `goals[]` → REL activity_goal extraction ---------
+
+const ACTIVITIES_NOTATIONS = new Set(['activities']);
+
+function relActivityGoalBody(relId, fromId, toId, validFrom) {
+  return [
+    'notation: relation',
+    `id: ${relId}`,
+    'type: activity_goal',
+    `from: ${fromId}`,
+    `to: ${toId}`,
+    '',
+    '# Admission record (CONTRACT.md §6) — emitted by 0.4 → 0.5 migration codemod.',
+    '# admitted_by is a placeholder marker — adopters should replace with the',
+    '# operator handle once the REL has been reviewed in their canon.',
+    'zone: canon',
+    `admitted_at: "${validFrom}"`,
+    'admitted_by: "migration-codemod-0.4-to-0.5"',
+    'gate_checks:',
+    '  uniqueness: pass',
+    '  consistency: pass',
+    '  completeness: pass',
+    '',
+    '# Primitive lifecycle (CONTRACT.md §7) — inherits the host doc date as a',
+    '# sensible epoch. Adopters should adjust if the link in fact took effect',
+    '# on a different date than the host doc.',
+    `valid_from: "${validFrom}"`,
+    'valid_to: null',
+    '',
+  ].join('\n');
+}
+
+function activityGoalsToRel(content) {
+  const notationMatch = content.match(/^notation\s*:\s*(\S+)/m);
+  if (!notationMatch) return { content, modified: 0, bailed: false };
+  if (!ACTIVITIES_NOTATIONS.has(notationMatch[1])) return { content, modified: 0, bailed: false };
+
+  const dateMatch = content.match(/^date\s*:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m);
+  const validFrom = dateMatch ? dateMatch[1].trim() : '2024-01-01';
+
+  const lines = content.split('\n');
+  const out = [];
+  const emits = [];
+  let modified = 0;
+  let inActivitiesBlock = null;
+  let currentActivityId = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const indent = line.match(/^(\s*)/)[1].length;
+
+    if (inActivitiesBlock !== null && trimmed !== '' && indent <= inActivitiesBlock) {
+      inActivitiesBlock = null;
+      currentActivityId = null;
+    }
+
+    if (inActivitiesBlock === null) {
+      const head = line.match(/^(\s*)activities\s*:\s*(?:#.*)?$/);
+      if (head) inActivitiesBlock = head[1].length;
+      out.push(line);
+      continue;
+    }
+
+    // New activity entry — `- id: <X>` (activity IDs may carry any prefix:
+    // A-001, PHASE-DESIGN, M-LAUNCH; opaque token, preserved as-is).
+    const dashId = line.match(/^\s*-\s+id\s*:\s*["']?(\S+?)["']?\s*(?:#.*)?$/);
+    if (dashId) {
+      currentActivityId = dashId[1];
+      out.push(line);
+      continue;
+    }
+
+    // Inline `goals: [GOAL-A, GOAL-B]` on the current activity entry — extract.
+    if (currentActivityId !== null) {
+      const goalsInline = line.match(/^\s*goals\s*:\s*\[([^\]]*)\]\s*(?:#.*)?$/);
+      if (goalsInline) {
+        const items = goalsInline[1]
+          .split(',')
+          .map(s => s.trim().replace(/^["']|["']$/g, ''))
+          .filter(Boolean);
+        const goalIds = items.filter(it => /^GOAL-\S+$/.test(it));
+        if (goalIds.length === 0) {
+          // No GOAL- IDs in the array — leave line alone.
+          out.push(line);
+          continue;
+        }
+        for (const toId of goalIds) {
+          const goalTail = toId.replace(/^GOAL-/, '');
+          const relId = `REL-${currentActivityId}-GOAL-${goalTail}-1`;
+          const relPath = `canon/relations/${relId}.yaml`;
+          emits.push({ path: relPath, content: relActivityGoalBody(relId, currentActivityId, toId, validFrom) });
+        }
+        modified += goalIds.length;
+        continue; // drop the inline goals: line
+      }
+    }
+
+    out.push(line);
+  }
+
+  return { content: out.join('\n'), modified, bailed: false, emits };
+}
+
 // --- Transform registry -----------------------------------------------------
 
 const transforms = [
@@ -379,6 +491,13 @@ const transforms = [
     fn: goalParentToRel,
     unit: 'inline parent extracted',
     units: 'inline parents extracted',
+  },
+  {
+    name: 'activity goals → REL activity_goal extraction',
+    rootName: 'canon/views',
+    fn: activityGoalsToRel,
+    unit: 'inline goal link extracted',
+    units: 'inline goal links extracted',
   },
 ];
 

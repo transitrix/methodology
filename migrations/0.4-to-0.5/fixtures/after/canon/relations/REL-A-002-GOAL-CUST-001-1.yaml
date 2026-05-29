@@ -1,0 +1,22 @@
+notation: relation
+id: REL-A-002-GOAL-CUST-001-1
+type: activity_goal
+from: A-002
+to: GOAL-CUST-001
+
+# Admission record (CONTRACT.md §6) — emitted by 0.4 → 0.5 migration codemod.
+# admitted_by is a placeholder marker — adopters should replace with the
+# operator handle once the REL has been reviewed in their canon.
+zone: canon
+admitted_at: "2026-05-11"
+admitted_by: "migration-codemod-0.4-to-0.5"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — inherits the host doc date as a
+# sensible epoch. Adopters should adjust if the link in fact took effect
+# on a different date than the host doc.
+valid_from: "2026-05-11"
+valid_to: null

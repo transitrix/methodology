@@ -22,6 +22,12 @@
 //      The canonical home is a `REL-…` file with `type: goal_parent`
 //      under canon/relations/.
 //
+//   5. activity goals first-class form
+//      No .yaml under <target>/canon/views/** (whose notation: is activities)
+//      may carry an inline `goals: [GOAL-…]` line inside its activities[]
+//      block. The canonical home is one or more `REL-…` files with
+//      `type: activity_goal` under canon/relations/.
+//
 // Run AFTER the codemod. Exits 0 if clean, 1 if any check fails,
 // 2 on script-internal error.
 //
@@ -139,6 +145,30 @@ const checks = [
         }
         const h = line.match(/^(\s*)goals\s*:\s*(?:#.*)?$/);
         if (h) inGoals = h[1].length;
+      }
+      return null;
+    },
+  },
+  {
+    name: 'activity goals first-class form',
+    rootName: 'canon/views',
+    fn: (text) => {
+      const nm = text.match(/^notation\s*:\s*(\S+)/m);
+      if (!nm || nm[1] !== 'activities') return null;
+      const lines = text.split('\n');
+      let inAct = null;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        const indent = line.match(/^(\s*)/)[1].length;
+        if (inAct !== null && trimmed !== '' && indent <= inAct) inAct = null;
+        if (inAct !== null) {
+          const m = line.match(/^\s*goals\s*:\s*\[([^\]]*)\]/);
+          if (m && /\bGOAL-\S/.test(m[1])) {
+            return 'has inline goals: [GOAL-…] on activity entry (use REL activity_goal instead)';
+          }
+        }
+        const h = line.match(/^(\s*)activities\s*:\s*(?:#.*)?$/);
+        if (h) inAct = h[1].length;
       }
       return null;
     },
