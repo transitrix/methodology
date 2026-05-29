@@ -14,17 +14,19 @@ Examples: `CONSTRAINT-GDPR-1.yaml`, `CONSTRAINT-1.yaml`.
 
 ## Element schema
 
-The schema is shared between `RULE` and `CONSTRAINT` elements — `type` distinguishes them and folder placement mirrors the ArchiMate layer.
+The schema is shared between `RULE` and `CONSTRAINT` elements — `notation` (plus the ID prefix and folder placement) distinguishes them; folder placement mirrors the ArchiMate layer. See the common envelope in [`notations/ELEMENT_PRIMITIVES.md`](../../../../../../notations/ELEMENT_PRIMITIVES.md) §3 and the CONSTRAINT field set in §7.13.
 
 ### Required
 
 | Field | Description |
 |---|---|
+| `notation` | literal `constraint` |
 | `id` | `CONSTRAINT-[<middle>-]<INTEGER>` |
 | `name` | one-line statement |
-| `type` | literal `constraint` |
 | `statement` | normative wording — `MUST` / `SHOULD` / `MUST NOT` recommended |
 | `status` | one of `active` / `proposed` / `deprecated` / `retired` |
+| admission record | `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §6 |
+| lifecycle | `valid_from`, `valid_to` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §7 |
 
 ### Optional
 
@@ -39,18 +41,31 @@ The schema is shared between `RULE` and `CONSTRAINT` elements — `type` disting
 ## Skeleton
 
 ```yaml
+notation: constraint
 id: CONSTRAINT-SAMPLE-1
 name: "Short one-line statement"
-type: constraint
 statement: "MUST / SHOULD / MUST NOT wording, single sentence."
 status: active
 
-# Optional fields below
+# Optional fields
 applies_to: []            # e.g. [PROCESS-ORDER-1, APPLICATION-OMS-1]
 source: "Regulation §X.Y / Contract §Z"
 owner_role: ROLE-OWNER-1
 severity: mandatory       # mandatory | recommended | advisory
 rationale: "Why this constraint exists in the organisation."
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null
 ```
 
 ## Examples in this folder
