@@ -1,0 +1,27 @@
+# Worked example — ACTOR element primitive (external organisation, business_unit).
+# Schema: notations/elements/19-actors.md + ELEMENT_PRIMITIVES.md §7.10.
+# The "external" nature of this body is recorded on the STAKEHOLDER that
+# references it (STAKEHOLDER-DPA-1, type: external) — ACTOR is identity only.
+
+notation: actor
+id: ACTOR-DPA-1
+name: "National Data Protection Authority"
+type: business_unit                     # an external organisation modelled as a business_unit actor
+description: >
+  The national data-protection regulator with oversight of personal-data
+  processing. Modelled as an identity so stakeholders / relations can point
+  at it; its external standing is carried on the referencing STAKEHOLDER.
+external_ref: "https://example.gov/data-protection-authority"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null

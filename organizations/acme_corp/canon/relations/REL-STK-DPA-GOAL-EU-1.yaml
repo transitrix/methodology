@@ -1,0 +1,27 @@
+# Worked example — stakeholding REL (STAKEHOLDER → GOAL).
+# Schema: notations/elements/17-relations.md §2–3.
+# The DPA's stake in the EU-expansion goal; per-stake concern/influence on the relation.
+
+notation: relation
+id: REL-STK-DPA-GOAL-EU-1
+type: stakeholding
+from: STAKEHOLDER-DPA-1
+to: GOAL-EU-1
+
+# Per-stake attributes (stakeholding)
+concern: "EU personal-data residency and erasure as the EU market is entered."
+influence: high
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — within both endpoints' windows (REL-003);
+# GOAL-EU-1 took effect 2026-05-26, so the stake cannot predate that.
+valid_from: "2026-05-26"
+valid_to: null
