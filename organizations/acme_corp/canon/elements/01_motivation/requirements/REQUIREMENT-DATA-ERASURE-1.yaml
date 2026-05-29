@@ -4,7 +4,7 @@
 
 notation: requirement
 id: REQUIREMENT-DATA-ERASURE-1
-title: "Personal-data erasure on request within 30 days"
+name: "Personal-data erasure on request within 30 days"
 description: >
   On a verified request from a data subject, the controller must erase the
   subject's personal data within 30 days. The window starts at the time the

@@ -20,7 +20,7 @@ Examples: `REQUIREMENT-DATA-ERASURE-1.yaml`, `REQUIREMENT-1.yaml`.
 
 Defined in [`notations/elements/15-requirement.md`](../../../../../../notations/elements/15-requirement.md) §2. Every requirement carries:
 
-- The requirement-specific fields: `notation: requirement`, `id`, `title`, `description`, optional `severity` / `derived_from`.
+- The requirement-specific fields: `notation: requirement`, `id`, `name`, `description`, optional `severity` / `derived_from`.
 - The admission record per [`notations/CONTRACT.md`](../../../../../../notations/CONTRACT.md) §6: `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks`.
 - The primitive lifecycle per [`notations/CONTRACT.md`](../../../../../../notations/CONTRACT.md) §7: `valid_from`, `valid_to`.
 
