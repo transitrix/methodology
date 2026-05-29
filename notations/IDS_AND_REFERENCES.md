@@ -53,7 +53,7 @@ CAPABILITY-H<L1[.L2[.L3]]>
 - `CAPABILITY-V1.2.3`
 - `CAPABILITY-H1.2`
 
-The diagram address derives from the V/H positional addressing system documented in [`05-capability-map.md`](05-capability-map.md) §4–5. Capability IDs are the only place the trailing integer is replaced by a multi-component path; every other TYPE follows §1 unchanged.
+The diagram address derives from the V/H positional addressing system documented in [`05-capability-map.md`](views/05-capability-map.md) §4–5. Capability IDs are the only place the trailing integer is replaced by a multi-component path; every other TYPE follows §1 unchanged.
 
 ---
 
@@ -76,18 +76,17 @@ Elements that get referenced across documents.
 | `PRODUCT` | product or service | Products catalogue |
 | `APPLICATION` | application | Applications catalogue |
 | `INTEGRATION` | integration between applications | Applications catalogue |
-| `ROLE` | business role | referenced as `owner_role` across notations |
-| `UNIT` | organisational unit | Activities |
-| `EMPLOYEE` | named employee | Activities |
+| `ROLE` | business role — a position / responsibility, distinct from the `ACTOR` that fills it | referenced as `owner_role` across notations; `role.unit` references an `ACTOR` of `type: business_unit` |
+| `ACTOR` | active-structure identity — `person`, `business_unit`, or `system` (ArchiMate Business Actor). Replaces the former `UNIT` / `EMPLOYEE` TYPEs (removed 2026-05-29). Engagement (employment, candidacy, …) and org hierarchy are first-class `REL` records, not inline fields. | Actors catalogue (`elements/02_business/actors/`); referenced as activity `owner`. Schema: [19-actors.md](elements/19-actors.md). |
 | `SCENARIO` | strategic scenario | Scenarios |
 | `ISSUE` | issue — problem, defect, or open question | Issues register |
 | `EQUIPMENT` | physical instrument, device, or facility a process stage depends on | Process Blueprint |
 | `INFORMATION_ENTITY` | data, document, or record produced or consumed by a process stage | Process Blueprint |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
 | `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
-| `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](15-requirement.md). |
-| `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](17-relations.md). |
-| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in a Project Card's narrative. Distinct from a "schedule milestone" (a zero-duration activity inside an Activities document, see [07-activities.md](07-activities.md) §5.9), which exists for critical-path computation. | Defined inside a Project Card document (`*.project-card.transitrix.yaml`); scope is the parent card document. Schema: [18-project-card.md](18-project-card.md). |
+| `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](elements/15-requirement.md). |
+| `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
+| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in a Project Card's narrative. Distinct from a "schedule milestone" (a zero-duration activity inside an Activities document, see [07-activities.md](views/07-activities.md) §5.9), which exists for critical-path computation. | Defined inside a Project Card document (`*.project-card.transitrix.yaml`); scope is the parent card document. Schema: [18-project-card.md](views/18-project-card.md). |
 
 ### 3.2 Document-level types
 
@@ -128,7 +127,7 @@ Raw, unprocessed material in the **Field** zone (see [CONTRACT.md](CONTRACT.md) 
 
 ### 3.5 Codex artefact types
 
-External constraints and internal authority documents in the **Codex** zone — *given to* the organisation, not authored by it. See [CONTRACT.md](CONTRACT.md) §5 and [14-codex.md](14-codex.md).
+External constraints and internal authority documents in the **Codex** zone — *given to* the organisation, not authored by it. See [CONTRACT.md](CONTRACT.md) §5 and [14-codex.md](elements/14-codex.md).
 
 | TYPE | Sub-zone | What it is |
 |---|---|---|
@@ -139,7 +138,7 @@ External constraints and internal authority documents in the **Codex** zone — 
 
 ### 3.6 Assertion type
 
-Compliance claims linking a `REQUIREMENT` to the elements that realise it. Assertions are canonical (canon zone) but live **outside** the `elements/` tree, under `canon/assertions/`. Schema: [16-assertion.md](16-assertion.md).
+Compliance claims linking a `REQUIREMENT` to the elements that realise it. Assertions are canonical (canon zone) but live **outside** the `elements/` tree, under `canon/assertions/`. Schema: [16-assertion.md](elements/16-assertion.md).
 
 | TYPE | What it is |
 |---|---|
@@ -154,11 +153,11 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | TYPE | Uniqueness scope |
 |---|---|
 | `FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY` | within the FGCA / FGA / Goals / Activities document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
-| `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](05-capability-map.md) §5). |
+| `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `PRODUCT`, `APPLICATION`, `INTEGRATION` | within the catalogue document. |
 | `ISSUE` | within the issues catalogue document. |
-| `ROLE`, `UNIT`, `EMPLOYEE` | within the organisation's element catalogue (`elements/02_business/`). |
+| `ROLE`, `ACTOR` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation. |
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
 | `RULE` | within the organisation's element catalogue (`elements/02_business/rules/`), one file per RULE. |
@@ -209,5 +208,5 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 ## 7. References
 
 - Notation catalogue and the index of all eleven notations: [`README.md`](README.md).
-- Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](05-capability-map.md) §4–5.
+- Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](views/05-capability-map.md) §4–5.
 - Methodology: `method/methodology.md`.

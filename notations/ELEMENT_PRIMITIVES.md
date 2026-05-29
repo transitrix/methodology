@@ -1,6 +1,6 @@
 # Element primitives — canonical file schema
 
-This appendix defines the **element-primitive file schema**: what a standalone canon-zone element file looks like, which element TYPEs get one, where each lives on disk, and how the per-TYPE field sets are defined. It is the cross-cutting companion to the view specs (`notations/views/`), the four element notations (`notations/elements/`), the ID grammar ([`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)), and the shared contracts ([`CONTRACT.md`](CONTRACT.md)).
+This appendix defines the **element-primitive file schema**: what a standalone canon-zone element file looks like, which element TYPEs get one, where each lives on disk, and how the per-TYPE field sets are defined. It is the cross-cutting companion to the view specs (`notations/views/`), the element notations (`notations/elements/`), the ID grammar ([`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md)), and the shared contracts ([`CONTRACT.md`](CONTRACT.md)).
 
 Recorded 2026-05-29 as the canonical decision for the methodology. Status: **documented** — the three decisions this document carries (standalone-vs-view-only mode assignment §4, the new `05_implementation` layer §6, and `name` as the single label field §3) were ratified by canon on 2026-05-29.
 
@@ -27,7 +27,7 @@ A `view-defined` TYPE has **no** standalone element-file schema in v1: its only 
 
 ---
 
-## 2. Relationship to the views, the four element notations, and `canon/`
+## 2. Relationship to the views, the element notations, and `canon/`
 
 ```
 canon/
@@ -42,8 +42,7 @@ canon/
       processes/      PROCESS-*.yaml
       products/       PRODUCT-*.yaml
       roles/          ROLE-*.yaml
-      units/          UNIT-*.yaml
-      employees/      EMPLOYEE-*.yaml
+      actors/         ACTOR-*.yaml           # elements/19-actors.md (person | business_unit | system)
       rules/          RULE-*.yaml             # worked-example precedent
     03_application/
       applications/   APPLICATION-*.yaml
@@ -59,7 +58,7 @@ canon/
   views/              *.<short>.transitrix.yaml   # the render-able projections
 ```
 
-- The **four element notations** (`14-codex` / `15-requirement` / `16-assertion` / `17-relations`) define specific element families with their own per-notation specs. This appendix is the *general* schema those specs specialise: REQUIREMENT (`elements/15`) and the capability element (`views/05` §13) are already-published instances of the `standalone` envelope below. Where an element notation spec exists, it remains authoritative for that TYPE's per-element fields; this document carries the cross-TYPE envelope and the placement/mode decisions, and gives the field set for the TYPEs that have no dedicated spec yet (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`, `PROCESS`, `PRODUCT`, `APPLICATION`, `INTEGRATION`, `ROLE`, `UNIT`, `EMPLOYEE`, `CONSTRAINT`, `RULE`).
+- The **element notations** (`14-codex` / `15-requirement` / `16-assertion` / `17-relations` / `19-actors`) define specific element families with their own per-notation specs. This appendix is the *general* schema those specs specialise: REQUIREMENT (`elements/15`) and the capability element (`views/05` §13) are already-published instances of the `standalone` envelope below. Where an element notation spec exists, it remains authoritative for that TYPE's per-element fields; this document carries the cross-TYPE envelope and the placement/mode decisions, and gives the field set for the TYPEs that have no dedicated spec yet (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`, `PROCESS`, `PRODUCT`, `APPLICATION`, `INTEGRATION`, `ROLE`, `CONSTRAINT`, `RULE`). `ACTOR` additionally has [elements/19-actors.md](elements/19-actors.md).
 - `REL` (`canon/relations/`) and `ASSERTION` (`canon/assertions/`) are canon-zone primitives that deliberately sit **outside** the `elements/` tree (their specs say so); they carry the same admission + lifecycle envelope but are not layer-placed elements. They are out of scope for the §4 element table but listed here for completeness.
 - `codex` artefacts (`LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`) live in the `codex/` zone, not `canon/elements/`, and follow [`elements/14-codex.md`](elements/14-codex.md). They are not `canon` elements and are out of scope here.
 
@@ -99,7 +98,7 @@ valid_to: null
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | The element TYPE's short name — the lowercased registry TYPE (`factor`, `goal`, `change`, `activity`, `capability`, `process`, `product`, `application`, `integration`, `role`, `unit`, `employee`, `rule`, `constraint`; `requirement` per [elements/15](elements/15-requirement.md)). Machine-readable type tag; redundant with the ID prefix but read by tooling that does not parse IDs. Drives `HDR-002`. |
+| `notation` | yes | string | The element TYPE's short name — the lowercased registry TYPE (`factor`, `goal`, `change`, `activity`, `capability`, `process`, `product`, `application`, `integration`, `role`, `actor`, `rule`, `constraint`; `requirement` per [elements/15](elements/15-requirement.md)). Machine-readable type tag; redundant with the ID prefix but read by tooling that does not parse IDs. Drives `HDR-002`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1 (and §2 for `CAPABILITY`). The prefix MUST be the element's registry TYPE. |
 | `name` | yes | string | Human-readable label. **Canonical across every element TYPE — no TYPE-specific aliases.** [elements/15-requirement.md](elements/15-requirement.md) historically used `title` (inherited from IEEE/ISO requirements templates — stylistic, not functional); REQUIREMENT migrates `title` → `name` (follow-up F-3, §10). A richer naming structure (e.g. `short_title` + `long_description`) is a separate additive enhancement via *additional fields*, never via an alias for `name`. |
 | `type` | per-TYPE | string | Subtype value from the TYPE's controlled vocabulary (e.g. `external` / `internal` for FACTOR; `domain` / `supporting` for CAPABILITY). Required where §7 defines a subtype vocabulary; omitted where it does not. **`type` carries the *subtype*, never the element TYPE itself** — the element TYPE is carried by `notation` + the ID prefix. |
@@ -135,9 +134,8 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](views/09-products.md) |
-| `ROLE` | standalone | `role` | business | `02_business/roles/` | §7.9 (reference-only until now) |
-| `UNIT` | standalone | `unit` | business | `02_business/units/` | §7.10 (reference-only until now) |
-| `EMPLOYEE` | standalone | `employee` | business | `02_business/employees/` | §7.11 (reference-only until now) |
+| `ROLE` | standalone | `role` | business | `02_business/roles/` | §7.9 |
+| `ACTOR` | standalone | `actor` | business | `02_business/actors/` | §7.10 + [elements/19-actors.md](elements/19-actors.md) |
 | `RULE` | standalone | `rule` | business | `02_business/rules/` | §7.12 (worked-example precedent) |
 | `APPLICATION` | standalone | `application` | application | `03_application/applications/` | §7.7 + [views/10-applications.md](views/10-applications.md) |
 | `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](views/10-applications.md) |
@@ -151,7 +149,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 ### 4.1 Why these assignments
 
 - **The strategy chain (`FACTOR` / `GOAL` / `CHANGE` / `ACTIVITY`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, FGCA, FGA, Activities, Scenarios, and Issues; a `FACTOR` in FGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 already mandates their catalogue uniqueness when cross-referenced. The flat FGCA/FGA/Goals/Activities documents remain the authoring surface (README "Form rule"); the catalogue file is the canonical record once an element is shared. Defining their element-file shape (§7.1–§7.4) is exactly what unblocks the elements-population that surfaced this task.
-- **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `UNIT` / `EMPLOYEE` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` / `UNIT` / `EMPLOYEE` were registered TYPEs with no schema and appeared only as cross-references (`owner_role`, `unit`, `employee`) — §7.9–§7.11 give them their first element-file schema.
+- **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` / `ISSUE` are `view-defined`.** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 scopes `SCENARIO` to "within the organisation" via its scenarios document and `ISSUE` to "within the issues catalogue document." A scenario is itself a container/projection over other elements; an issue register is a document-scoped tree. Neither is materialised as a standalone catalogue element in v1.
@@ -194,7 +192,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
 | `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`) |
-| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `UNIT` (`units/`), `EMPLOYEE` (`employees/`), `RULE` (`rules/`) |
+| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
 | `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `MILESTONE` (`milestones/` — see 6.2) |
@@ -265,9 +263,7 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary
 | `predecessors` | no | list | `ACTIVITY-…` IDs that must complete first. **Stays inline/timeless.** |
 | `parent` | no | string | `ACTIVITY-…` — the aggregating work package (recursive: initiative → programme → project → task, all one TYPE; §6.1). Subsumes WBS grouping. |
 | `scenario` | no | string | `SCENARIO-…` this activity belongs to. |
-| `unit` | no | string | `UNIT-…` responsible. |
-| `employee` | no | string | `EMPLOYEE-…` responsible. |
-| `owner` | no | string | Free-text owner (override when no typed `UNIT`/`EMPLOYEE`). |
+| `owner` | no | string | `ACTOR-…` responsible for the activity. Replaces the old parallel `owner`(free-text) / `unit` / `employee` fields, collapsed into one typed reference by the 2026-05-29 Actors decision. |
 | `start_date` / `end_date` | no | string | Planned dates — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
 | `labor_cost` / `resources_cost` / `effort` | no | number | Cost / effort signals. |
 | `score` / `sort` | no | integer | Prioritisation / display ordering. |
@@ -334,37 +330,39 @@ In v1 an integration is a nested entry under its source application's `integrati
 
 ### 7.9 `ROLE` — `02_business/roles/`
 
-First element-file schema for `ROLE` (previously reference-only via `owner_role`).
+`ROLE` is a **position / responsibility** — distinct from the `ACTOR` (§7.10) that fills it (ArchiMate Business Role vs Business Actor).
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `description` | recommended | string | What the role is accountable for. |
-| `unit` | no | string | `UNIT-…` the role sits in. |
+| `unit` | no | string | `ACTOR-…` of `type: business_unit` the role sits in (was `UNIT-…` before the 2026-05-29 Actors decision). |
 | `responsibility_area` | no | string | Domain / function area. |
 
-### 7.10 `UNIT` — `02_business/units/`
+### 7.10 `ACTOR` — `02_business/actors/`
 
-First element-file schema for `UNIT`.
-
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `description` | recommended | string | What the unit does. |
-| `head_role` | no | string | `ROLE-…` that heads the unit. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9). |
-| `headcount` | no | integer | **Time-varying** — sidecar. |
-
-**Time-aware:** the `unit_parent` (`UNIT → UNIT`) relation is reserved as first-class ([elements/17-relations.md](elements/17-relations.md) §3); no `UNIT` primitives ship in acme_corp v1.
-
-### 7.11 `EMPLOYEE` — `02_business/employees/`
-
-First element-file schema for `EMPLOYEE`.
+The active-structure identity primitive — *who or what exists and performs work* (ArchiMate Business Actor). A single TYPE with a `type` discriminator unifies the old `owner` / `unit` / `employee` ownership fields. Decided 2026-05-29 (strategy proposal): `ACTOR` is the identity; engagement (employment, candidacy, …) and stakes are separate `REL` records that point at it, never inline.
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `description` | no | string | Notes on the person's scope. |
-| `unit` | no | string | `UNIT-…` the employee belongs to. |
-| `roles` | no | list | `ROLE-…` IDs the employee holds. |
+| `type` | yes | string | `person` \| `business_unit` \| `system` — the identity discriminator. |
+| `description` | recommended | string | Who / what this actor is. |
+| `contact` | no | string | Contact handle (for `person` / `business_unit`). |
+| `external_ref` | no | string | External identifier or URL — e.g. a `system`'s integration endpoint, or an external organisation's reference. |
 
-> **Note:** `EMPLOYEE` files name real people; adopters apply their own data-protection rules (and the worked-example org redacts real names). See [CONTRACT.md](CONTRACT.md) §5 on the trust contract of canon.
+- **Identity only.** A `person` actor is *who someone is*, independent of engagement. Employment, candidacy, alumni status, community membership, and contracting are **first-class time-aware `REL` records** ([elements/17-relations.md](elements/17-relations.md) §3), not fields here — a person can exist in the org's scope (candidate, alumnus, contractor, community member) without being an employee.
+- **Org hierarchy.** A `business_unit` actor's parent unit is a time-aware `REL` of `type: unit_parent` (`ACTOR(business_unit) → ACTOR(business_unit)`), not an inline field.
+- **Role assignment.** Which `ROLE` an actor fills is carried on the relevant engagement `REL` (e.g. `employment` carries role assignments), not inline on the actor.
+
+> **Note:** `person` actors name real people; adopters apply their own data-protection rules (and the worked-example org redacts real names). See [CONTRACT.md](CONTRACT.md) §5 on the trust contract of canon.
+
+### 7.11 Removed TYPEs — `UNIT`, `EMPLOYEE`
+
+`UNIT` and `EMPLOYEE` were registered (schema-only) on 2026-05-29 and **removed the same day** by the Actors decision, before any primitives were populated:
+
+- `UNIT` → `ACTOR` with `type: business_unit`.
+- `EMPLOYEE` → `ACTOR` with `type: person` **plus** an `employment` `REL` (the employment relationship, with its dates and role assignments). The split keeps identity (the person) separate from engagement (the employment).
+
+The deprecation + mapping is recorded in the `0.5 → 0.6` migration recipe for any adopter who populated these between registration and the next cut.
 
 ### 7.12 `RULE` — `02_business/rules/`
 
@@ -419,8 +417,8 @@ Backfill for existing canon files and downstream tasks. Each is a **separate PR*
 - **F-1 — reconcile `.templates/elements/*_template.yaml`** to the §3 envelope: canonical IDs, `notation:` headers, admission + lifecycle blocks, `type:` for subtype only, dropped `metadata`/`properties` wrappers, one template per element TYPE (or one annotated template per layer). Touches `organizations/acme_corp/`. (§5.)
 - **F-2 — backfill `notation:` + `type:`-as-subtype on the `CONSTRAINT` / `RULE` worked examples.** `CONSTRAINT-GDPR-RESIDENCY-1` and `RULE-DUAL-APPROVAL-1` currently carry `type: constraint` / `type: rule` (TYPE repeated) and no `notation:` header — they pre-date the header contract. Add `notation: constraint` / `notation: rule` and drop or re-purpose `type:`. (§3, §7.12–7.13.)
 - **F-3 — migrate REQUIREMENT `title` → `name`.** Decided: `name` is the single canonical label field, no aliases (§3). [elements/15-requirement.md](elements/15-requirement.md) and the worked-example requirement files migrate via a trivial codemod (`s/^title:/name:/` over `canon/elements/01_motivation/requirements/*.yaml`, plus the field row in the spec). The transform lands in a methodology migration recipe (0.5 → 0.6, or pulled forward into 0.4 → 0.5 if that recipe is still open before tag).
-- **F-4 — acme_corp worked examples** for the newly-schema'd TYPEs (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`, `PROCESS`, `PRODUCT`, `APPLICATION`, `ROLE`, `UNIT`, `EMPLOYEE`) plus per-folder READMEs, created alongside the elements-population wave that surfaced this task.
-- **F-5 — declare `time_varying` fields per notation** (capability `current_maturity`/`owner_role`/`target_date`; application `lifecycle_stage`/`vendor`/`owner_role`/`maturity`; unit `headcount`/`head_role`) in the respective specs, completing the [CONTRACT.md](CONTRACT.md) §9.4 candidate list.
+- **F-4 — acme_corp worked examples** for the newly-schema'd TYPEs (`FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY`, `PROCESS`, `PRODUCT`, `APPLICATION`, `ROLE`) plus per-folder READMEs, created alongside the elements-population wave that surfaced this task. (`ACTOR` examples ship with the Actors notation.)
+- **F-5 — declare `time_varying` fields per notation** (capability `current_maturity`/`owner_role`/`target_date`; application `lifecycle_stage`/`vendor`/`owner_role`/`maturity`) in the respective specs, completing the [CONTRACT.md](CONTRACT.md) §9.4 candidate list.
 
 ---
 
