@@ -7,7 +7,7 @@
 
 notation: requirement
 id: REQUIREMENT-AUDIT-LOG-RETENTION-1
-title: "Retain operational audit logs for at least 12 months"
+name: "Retain operational audit logs for at least 12 months"
 description: >
   All systems producing operational audit logs must retain those logs for
   at least 12 months from creation. The obligation is an internal Acme

@@ -49,7 +49,7 @@ activities:
     valid_to: null
 ```
 
-`valid_from` / `valid_to` are required on every inline element per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7. The FGCA document itself does not carry a lifecycle field — it is a view, not an element.
+`valid_from` / `valid_to` are required on every inline element per [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §7. The FGCA document itself does not carry a lifecycle field — it is a view, not an element.
 
 ## See also
 

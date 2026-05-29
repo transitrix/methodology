@@ -1,6 +1,6 @@
+notation: constraint
 id: CONSTRAINT-GDPR-RESIDENCY-1
 name: "EU customer personal data must be stored within EU/EEA jurisdictions"
-type: constraint
 statement: >
   Personal data of EU customers MUST NOT be persisted, processed, or backed up
   outside EU / EEA jurisdictions unless an adequacy decision or an approved
@@ -21,6 +21,15 @@ rationale: >
   countries. Non-compliance carries administrative fines under Art. 83 (up
   to 4% of global annual turnover) and reputational risk; storage decisions
   for any system holding EU customer PII MUST reflect this constraint.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
 
 # Primitive lifecycle (CONTRACT.md §7) — GDPR Art. 44–49 effective since
 # 2018-05-25 (GDPR enforcement date); the org's adoption of this constraint

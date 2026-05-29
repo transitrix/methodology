@@ -46,7 +46,7 @@ The same regulation often produces a REQUIREMENT and a corresponding CONSTRAINT 
 ```yaml
 notation: requirement
 id: REQUIREMENT-DATA-ERASURE-1
-title: "Personal-data erasure on user request within 30 days"
+name: "Personal-data erasure on user request within 30 days"
 description: "On request from a data subject, the controller must erase personal data within 30 days. The window starts at the time the request is received and verified."
 
 # Optional regulatory attributes
@@ -73,7 +73,7 @@ valid_to: null
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `requirement`. Machine-readable type tag (redundant with the ID prefix but useful for tooling that reads files without parsing IDs). |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REQUIREMENT-[<middle>-]<INTEGER>`. |
-| `title` | yes | string | One-line statement of the requirement. |
+| `name` | yes | string | One-line statement of the requirement. (Was `title` before the 2026-05-29 single-label-field decision; see [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.) |
 | `description` | yes | string | Longer-form explanation of the obligation, its scope, and the conditions under which it applies. |
 | `severity` | no | string | One of `high`, `medium`, `low`. Organisation-defined priority for planning and reporting. Distinct from `obligation_level` (regulatory force, RFC 2119 — out of scope for v1; see [§5](#5-evolution)). |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
@@ -107,7 +107,7 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 
 | Rule | Severity | Description |
 |---|---|---|
-| `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `title`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
+| `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `name`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
 | `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
