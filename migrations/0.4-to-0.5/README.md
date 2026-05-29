@@ -2,11 +2,12 @@
 
 This folder is the **on-disk migration recipe** an adopter follows when upgrading their repository from methodology version 0.4 to 0.5. The format is defined for all future migration recipes per [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §10.4 and [`RELEASING.md`](../../RELEASING.md).
 
-This first published recipe is **demonstrative**: it covers one transform from the 0.4 → 0.5 cycle so the format is established and exercised end-to-end. Additional transforms from the 0.4 → 0.5 deprecated list (see [`CHANGELOG.md`](../../CHANGELOG.md) Deprecated under 0.5.0) land in subsequent commits to this folder; the codemod and validator extend additively.
+This recipe ships incrementally — each transform in the 0.4 → 0.5 cycle (see [`CHANGELOG.md`](../../CHANGELOG.md) Deprecated under 0.5.0) lands as an additive extension to the same `codemod.mjs` + `validate.mjs` + a per-pattern fixture pair under `fixtures/before/` and `fixtures/after/`.
 
 ## What this recipe covers
 
 - **Codex `applies_to.{entities, processes}` retirement.** In 0.5.0, external and internal codex artefacts no longer carry an `applies_to` block (see [`notations/14-codex.md`](../../notations/14-codex.md) §8 — Migration). Bindings move to `REQUIREMENT.derived_from` plus `ASSERTION`. Codex artefacts that still carry `applies_to` produce a `CODEX-004` deprecation warning; the recipe removes the field.
+- **Primitive lifecycle backfill.** In 0.5.0, every canonical element MUST carry `valid_from` and `valid_to` ([`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7). Adopters with element primitives under `canon/elements/` missing those fields get them backfilled: `valid_from` adopts the file's `last_updated:` value when present, otherwise falls back to the sensible epoch `"2024-01-01"` per the §7.4 migration recipe. `valid_to` defaults to `null` (currently in effect).
 
 ## Folder shape (canonical for all migration recipes)
 
@@ -69,16 +70,22 @@ diff -r /tmp/recipe-test migrations/0.4-to-0.5/fixtures/after
 
 ## Manual steps after the codemod
 
-The recipe handles the mechanical removal. The architectural redirect — *where the binding semantics moved to* — is the adopter's call and not codemod-able:
+The recipe handles the mechanical edits. Architectural redirects — *where the semantics moved to* — are the adopter's call and not codemod-able:
 
-1. For every `applies_to.entities[]` or `applies_to.processes[]` entry the codemod removed, the adopter decides whether that entry encoded:
-   - An obligation the org must fulfil → create a `REQUIREMENT-…` element under `canon/elements/01_motivation/requirements/` with `derived_from: [<codex artefact ID>]` (see [`15-requirement.md`](../../notations/15-requirement.md)).
-   - A compliance claim about a subject → create an `ASSERTION-…` under `canon/assertions/` linking the requirement to the subject (see [`16-assertion.md`](../../notations/16-assertion.md)).
-2. After the new REQUIREMENT / ASSERTION primitives are admitted, the original codex artefact's `applies_to` data is fully captured in canon.
+### Codex `applies_to` → REQUIREMENT + ASSERTION
 
-This is a model-shape choice the adopter makes once per binding; the codemod can't infer the right REQUIREMENT / ASSERTION shape automatically.
+For every `applies_to.entities[]` or `applies_to.processes[]` entry the codemod removed, the adopter decides whether that entry encoded:
 
-## What this recipe deliberately does NOT cover
+- An obligation the org must fulfil → create a `REQUIREMENT-…` element under `canon/elements/01_motivation/requirements/` with `derived_from: [<codex artefact ID>]` (see [`15-requirement.md`](../../notations/15-requirement.md)).
+- A compliance claim about a subject → create an `ASSERTION-…` under `canon/assertions/` linking the requirement to the subject (see [`16-assertion.md`](../../notations/16-assertion.md)).
+
+After the new REQUIREMENT / ASSERTION primitives are admitted, the original codex artefact's `applies_to` data is fully captured in canon. This is a model-shape choice the adopter makes once per binding; the codemod can't infer the right REQUIREMENT / ASSERTION shape automatically.
+
+### Lifecycle backfill date review
+
+The lifecycle backfill picks `valid_from` mechanically — `last_updated:` when present, otherwise `"2024-01-01"`. After running the codemod, the adopter SHOULD spot-check the backfilled `valid_from` values and adjust any that don't reflect the actual date the element took effect. The codemod's value is a safe default, not a historically-accurate claim.
+
+## What this recipe deliberately does NOT yet cover
 
 Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANGELOG.md) under the 0.5.0 entry. Adding them to this recipe is straightforward — each is its own transform inside the same `codemod.mjs` + `validate.mjs` + per-pattern fixture:
 
@@ -87,7 +94,6 @@ Other 0.4 → 0.5 deprecated patterns are listed in [`CHANGELOG.md`](../../CHANG
 - Inline `goals: [GOAL-…]` on activity entries → REL `activity_goal` files.
 - Inline `current_maturity` / `owner_role` / `target_date` on capability-map → sidecar.
 - Inline `owner_role` / `vendor` / `maturity` on applications → sidecar.
-- Lifecycle backfill on element primitives without `valid_from` / `valid_to`.
 - Capability ID canonical form residual (`scenarios` + supporting docs).
 
 Each transform follows the same conventions (idempotent, dry-run-supporting, diff-summary-printing, unsafe-ambiguity-bailing) and ships its own fixture pair. The order and packaging of those subsequent transforms is a separate task.
@@ -97,4 +103,6 @@ Each transform follows the same conventions (idempotent, dry-run-supporting, dif
 - Versioning and compatibility policy: [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §10.
 - Per-release operational checklist: [`RELEASING.md`](../../RELEASING.md).
 - The 0.5.0 release notes that drove this recipe: [`CHANGELOG.md`](../../CHANGELOG.md) under `0.5.0`.
-- The codex spec change that this transform implements: [`notations/14-codex.md`](../../notations/14-codex.md) §8.
+- Spec sources for the transforms shipped:
+  - Codex `applies_to` retirement — [`notations/14-codex.md`](../../notations/14-codex.md) §8.
+  - Lifecycle backfill — [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §7 (rule) and §7.4 (migration recipe).
