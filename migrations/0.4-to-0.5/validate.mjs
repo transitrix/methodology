@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 // Migration validator — methodology 0.4 → 0.5.
 //
-// CURRENT CHECK: assert no codex artefact under <target>/codex/**/*.yaml
-// still carries an applies_to: field. The codemod (codemod.mjs) is
-// responsible for the removal; this script confirms the result.
+// CHECKS (each entry runs independently; failures are aggregated):
 //
-// Run AFTER the codemod. Exits 0 if clean, 1 if any residue, 2 on
-// script-internal error.
+//   1. codex applies_to retirement
+//      No .yaml under <target>/codex/** may still carry an applies_to: field.
+//
+//   2. lifecycle backfill
+//      Every .yaml under <target>/canon/elements/** must carry both
+//      valid_from: and valid_to: keys.
+//
+// Run AFTER the codemod. Exits 0 if clean, 1 if any check fails,
+// 2 on script-internal error.
 //
 // Usage: node validate.mjs [target-dir]
 //   Default target-dir = current working directory
@@ -34,39 +39,80 @@ function walkYaml(dir, out = []) {
   return out;
 }
 
-const codexRoot = join(target, 'codex');
-if (!existsSync(codexRoot)) {
-  console.log(`No codex/ directory under ${target} — nothing to validate.`);
-  process.exit(0);
-}
+const checks = [
+  {
+    name: 'codex applies_to retirement',
+    rootName: 'codex',
+    fn: (text) => /^\s*applies_to\s*:/m.test(text) ? 'still carries applies_to' : null,
+  },
+  {
+    name: 'lifecycle backfill',
+    rootName: 'canon/elements',
+    fn: (text) => {
+      const hasFrom = /^\s*valid_from\s*:/m.test(text);
+      const hasTo = /^\s*valid_to\s*:/m.test(text);
+      if (!hasFrom && !hasTo) return 'missing valid_from and valid_to';
+      if (!hasFrom) return 'missing valid_from';
+      if (!hasTo) return 'missing valid_to';
+      return null;
+    },
+  },
+];
 
-const files = walkYaml(codexRoot);
-if (files.length === 0) {
-  console.log(`No .yaml files under ${codexRoot} — nothing to validate.`);
-  process.exit(0);
-}
+let totalChecked = 0;
+let totalOffenders = 0;
 
-let offenders = 0;
-for (const file of files) {
-  let content;
-  try {
-    content = readFileSync(file, 'utf8');
-  } catch (e) {
-    console.error(`! ${relative(target, file)}: read failed (${e.message})`);
-    offenders++;
+for (const c of checks) {
+  const root = join(target, c.rootName);
+  console.log(`Check: ${c.name}`);
+
+  if (!existsSync(root)) {
+    console.log(`  ${c.rootName}/ not present under target — skipping.`);
+    console.log('');
     continue;
   }
 
-  if (/^\s*applies_to\s*:/m.test(content)) {
-    console.error(`✗ ${relative(target, file)}: still carries applies_to`);
-    offenders++;
+  const files = walkYaml(root);
+  console.log(`  scanning ${files.length} .yaml file(s) under ${c.rootName}/`);
+
+  let offenders = 0;
+
+  for (const file of files) {
+    let content;
+    try {
+      content = readFileSync(file, 'utf8');
+    } catch (e) {
+      console.error(`  ! ${relative(target, file)}: read failed (${e.message})`);
+      offenders++;
+      continue;
+    }
+
+    const issue = c.fn(content);
+    if (issue) {
+      console.error(`  ✗ ${relative(target, file)}: ${issue}`);
+      offenders++;
+    }
   }
+
+  if (offenders === 0) {
+    console.log(`  ✓ all ${files.length} file(s) OK`);
+  } else {
+    console.error(`  ✗ ${offenders} file(s) failed this check`);
+  }
+  console.log('');
+
+  totalChecked += files.length;
+  totalOffenders += offenders;
 }
 
-console.log(``);
-if (offenders > 0) {
-  console.error(`FAIL: ${offenders} codex file${offenders === 1 ? '' : 's'} still carry applies_to. Re-run the codemod, then re-validate.`);
+console.log(`Summary across ${checks.length} check(s):`);
+console.log(`  files checked     ${totalChecked}`);
+console.log(`  offenders         ${totalOffenders}`);
+
+if (totalOffenders > 0) {
+  console.error(``);
+  console.error(`FAIL: ${totalOffenders} file(s) failed validation. Re-run the codemod, review any '! ... bailed' messages, then re-validate.`);
   process.exit(1);
 }
-console.log(`OK: ${files.length} codex file${files.length === 1 ? '' : 's'} validated; no applies_to present.`);
+console.log(`OK: all checks passed.`);
 process.exit(0);

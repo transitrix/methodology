@@ -1,0 +1,14 @@
+# Fixture — adopter element primitive BEFORE the 0.4 → 0.5 migration.
+# Has NO last_updated and NO lifecycle. The codemod uses the §7.4 epoch
+# fallback "2024-01-01" as valid_from.
+
+id: CONSTRAINT-EPOCH-DEMO-1
+name: "Demonstration constraint (fixture, no last_updated)"
+type: constraint
+statement: >
+  Illustrative constraint used as a migration fixture. No last_updated;
+  the codemod uses the sensible epoch from CONTRACT §7.4.
+status: active
+
+source: "Fixture external regulation"
+severity: mandatory
