@@ -74,6 +74,14 @@ effective_date: "2017-05-01"
 # Optional — local snapshot of the source document for audit trail.
 snapshot_file: "sources/snapshot_LAW-PERSONAL-DATA-2017-1_2026-05-27.pdf"
 snapshot_date: "2026-05-27"
+
+# Optional — pointers to related documents in the regulatory family
+# (NPRM, guidance, companion amendments, …) for lineage navigation.
+related_documents:
+  - id: "REGULATION-LDT-NPRM-2023-1"
+    type: PROPOSED_RULE
+    name: "Medical Devices; LDTs (NPRM)"
+    url: "https://www.federalregister.gov/d/2023-21662"
 ```
 
 | Field | Required | Type | Semantics |
@@ -82,6 +90,7 @@ snapshot_date: "2026-05-27"
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
 | `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Required-together with `snapshot_file`. |
+| `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
 
 ### 3.1 Snapshots
 
@@ -99,6 +108,34 @@ The `sources/` folder is part of the codex layout — adopters MAY commit snapsh
 **Re-snapshotting.** When a re-capture is needed (the source has been re-issued, the previous snapshot is corrupted, etc.), update `snapshot_file` to point at the new file and update `snapshot_date` accordingly. Prior snapshot files MAY be retained in `sources/` for history but only the path in `snapshot_file` is canonical.
 
 The two fields are required-together: a codex artefact MUST either declare both or omit both. Declaring only one is a configuration error (caught at adopter-validator level once a rule code is assigned).
+
+### 3.2 Related documents
+
+Regulatory artefacts typically belong to a family: a Final Rule has an NPRM that preceded it, may have companion guidance, and may be amended later by other instruments. `related_documents[]` encodes the lineage so a consumer reading the artefact can navigate the family without leaving the codex.
+
+```yaml
+related_documents:
+  - id: "REGULATION-LDT-NPRM-2023-1"       # typed ID if the related doc is itself an admitted codex artefact
+    type: PROPOSED_RULE                       # free-text local annotation (see below)
+    name: "Medical Devices; LDTs (NPRM)"
+    url: "https://www.federalregister.gov/d/2023-21662"
+  - type: GUIDANCE
+    name: "Laboratory Developed Tests Guidance"
+    url: "https://www.fda.gov/.../ldts-guidance"
+```
+
+| Subfield | Required | Type | Semantics |
+|---|---|---|---|
+| `id` | no | string | Typed canonical ID of the related document when it is itself an admitted codex artefact (see [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §1). When present, the ID MUST resolve in canon. Omit when the related document is not (yet) admitted — `url` then carries the pointer. |
+| `type` | yes | string | Free-text local annotation of the document's role in the family — typical values `PROPOSED_RULE`, `NPRM`, `GUIDANCE`, `AMENDMENT`, `COMPANION_RULE`, `WITHDRAWAL`. **Not** constrained to the Codex `TYPE` registry in §2. |
+| `name` | yes | string | Human-readable title of the related document. |
+| `url` | no | string | URL pointing at the related document. Required when `id` is absent. May coexist with `id` (the URL is informational once the artefact is admitted; the `id` is canonical). |
+
+`type` is intentionally free-text: a Codex `TYPE` enum (§2) is for admitted artefacts, while a `related_documents[]` entry is often a *pointer* to a document the adopter has not (yet) admitted. Constraining `type` to the enum would force premature admission of every document the family touches.
+
+### 3.3 Validation note
+
+Validation rules for §3.1 (snapshots) and §3.2 (related_documents) — required-together for the snapshot pair, canon-resolution for `related_documents[].id`, presence of `url` when `id` is absent — are candidates for explicit `CODEX-*` rule codes in a follow-up revision. Until then, the conventions are documented here and enforced informally during admission review.
 
 ---
 
