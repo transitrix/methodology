@@ -1,0 +1,28 @@
+# Worked example — STAKEHOLDER element primitive (external regulator).
+# Schema: notations/elements/20-stakeholders.md + ELEMENT_PRIMITIVES.md §7.15.
+# Identity lives in ACTOR-DPA-1; this record carries only the stake profile.
+
+notation: stakeholder
+id: STAKEHOLDER-DPA-1
+name: "Data Protection Authority"
+type: external                          # internal | external
+actor: ACTOR-DPA-1                      # REQUIRED — identity binding
+concern: "Lawful processing and timely erasure of EU customer personal data."
+interest: high
+influence: high
+description: >
+  External oversight stakeholder. Its stake in specific objects (e.g. the EU
+  expansion goal) is carried by `stakeholding` relations, not here.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null

@@ -1,0 +1,26 @@
+# Worked example — STAKEHOLDER element primitive (internal).
+# Schema: notations/elements/20-stakeholders.md + ELEMENT_PRIMITIVES.md §7.15.
+# The same Operations unit is both an ACTOR (it performs work) and a
+# STAKEHOLDER (it has an interest) — one identity (ACTOR-OPS-1), two records.
+
+notation: stakeholder
+id: STAKEHOLDER-OPS-1
+name: "Operations"
+type: internal
+actor: ACTOR-OPS-1                      # REQUIRED — identity binding
+concern: "Operational efficiency and support response time."
+interest: high
+influence: medium
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2024-01-01"
+valid_to: null

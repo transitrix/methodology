@@ -7,6 +7,7 @@ id: ACTIVITY-SUPPORT-1
 name: "Add second-shift coverage in EU timezone"
 goals:
   - GOAL-OPS-1
+owner: ACTOR-OPS-1                       # accountable ACTOR (ELEMENT_PRIMITIVES.md §7.4; was unit/employee)
 description: >
   Operational workstream to add second-shift support coverage, serving the
   response-time goal.
