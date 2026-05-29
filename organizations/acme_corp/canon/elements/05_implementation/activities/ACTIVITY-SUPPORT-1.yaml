@@ -1,0 +1,25 @@
+# Worked example — ACTIVITY element primitive (Work Package).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.4 + envelope §3.
+# Arranged by the FGA view (canon/views/fga/).
+
+notation: activity
+id: ACTIVITY-SUPPORT-1
+name: "Add second-shift coverage in EU timezone"
+goals:
+  - GOAL-OPS-1
+description: >
+  Operational workstream to add second-shift support coverage, serving the
+  response-time goal.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

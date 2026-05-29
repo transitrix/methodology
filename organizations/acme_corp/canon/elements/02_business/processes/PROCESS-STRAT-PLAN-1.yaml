@@ -1,0 +1,23 @@
+# Worked example — PROCESS element primitive (management process).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.5 + envelope §3.
+
+notation: process
+id: PROCESS-STRAT-PLAN-1
+name: "Annual Strategy Planning"
+owner_role: ROLE-EXEC-1
+description: >
+  Annual cycle that sets organisational strategy, goals, and the change
+  portfolio for the coming year.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

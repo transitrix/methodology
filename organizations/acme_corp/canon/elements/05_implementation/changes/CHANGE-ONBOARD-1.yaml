@@ -1,0 +1,26 @@
+# Worked example — CHANGE element primitive (BDN Gap).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.3 + envelope §3.
+# Referenced from the activities view via `delivers_changes: [CHANGE-ONBOARD-1]`.
+
+notation: change
+id: CHANGE-ONBOARD-1
+name: "Rework the customer onboarding journey"
+goals:
+  - GOAL-CUST-1
+description: >
+  The delta needed to improve the onboarding experience — a reworked
+  onboarding journey delivered by the discovery → design → build → launch
+  activity network.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

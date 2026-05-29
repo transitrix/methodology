@@ -1,0 +1,29 @@
+# Worked example — GOAL element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.2 + envelope §3.
+# Shared element: defined here, referenced from the goals-tree, FGA, and
+# process-map views. Parent (GOAL-REVENUE-1) carried inline by the goals
+# tree in v0.x — not on this element file.
+
+notation: goal
+id: GOAL-OPS-1
+name: "Cut support response time by half"
+type: "Strategic Goal"
+level: 1
+factors:
+  - FACTOR-COMP-1
+description: >
+  Halve the customer-support response time (P50) by the end of Q2 2026,
+  restoring it to under two hours.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null
