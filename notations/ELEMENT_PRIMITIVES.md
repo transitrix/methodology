@@ -37,6 +37,7 @@ canon/
       goals/          GOAL-*.yaml
       constraints/    CONSTRAINT-*.yaml      # worked-example precedent
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
+      stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -131,6 +132,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `GOAL` | standalone | `goal` | motivation | `01_motivation/goals/` | §7.2 + [views/04-goals.md](views/04-goals.md) |
 | `CONSTRAINT` | standalone | `constraint` | motivation | `01_motivation/constraints/` | §7.13 (worked-example precedent) |
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
+| `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](views/09-products.md) |
@@ -191,7 +193,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
-| `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`) |
+| `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
@@ -384,6 +386,21 @@ Already shipped (worked example `CONSTRAINT-GDPR-RESIDENCY-1`). Same field set a
 ### 7.14 View-defined TYPEs (no standalone schema in v1)
 
 `SCENARIO`, `ISSUE`, `EQUIPMENT`, `INFORMATION_ENTITY` have no standalone element-file schema. Their per-element fields are owned by their view specs: [views/11-scenarios.md](views/11-scenarios.md), [views/12-issues.md](views/12-issues.md), [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3. Each inline entry carries its own `valid_from` / `valid_to` per [CONTRACT.md](CONTRACT.md) §7.1.
+
+### 7.15 `STAKEHOLDER` — `01_motivation/stakeholders/`
+
+Motivation-layer interest primitive — the stake profile, with identity referenced from an `ACTOR`. Full spec: [elements/20-stakeholders.md](elements/20-stakeholders.md).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `type` | yes | string | `internal` \| `external`. |
+| `actor` | **yes** | string | `ACTOR-…` whose identity this stake attaches to — identity never lives on the stakeholder. |
+| `concern` | recommended | string | What the stakeholder cares about. |
+| `interest` | no | string | `high` \| `medium` \| `low`. |
+| `influence` | no | string | `high` \| `medium` \| `low`. |
+| `description` | no | string | Free-text elaboration. |
+
+Stake in a specific `GOAL` / `ACTIVITY` / `CAPABILITY` is a `stakeholding` relation ([elements/17-relations.md](elements/17-relations.md) §3), not an inline field.
 
 ---
 

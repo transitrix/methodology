@@ -27,7 +27,7 @@ All view notations share the same file-extension convention `.<short-name>.trans
 
 ## Elements
 
-The 5 element notations live under [`elements/`](elements/) — each defines a canon-zone primitive: standalone YAML files admitted to canon and referenced (by ID) from views and other elements. Element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7.
+The 6 element notations live under [`elements/`](elements/) — each defines a canon-zone primitive: standalone YAML files admitted to canon and referenced (by ID) from views and other elements. Element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7.
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -36,6 +36,7 @@ The 5 element notations live under [`elements/`](elements/) — each defines a c
 | [16-assertion.md](elements/16-assertion.md) | `assertion` | Canon-zone primitive linking a REQUIREMENT to a subject (PRODUCT / PROCESS / CAPABILITY). | `canon/assertions/ASSERTION-<…>.yaml` | documented |
 | [17-relations.md](elements/17-relations.md) | `relation` | First-class, time-aware relation between two canonical primitives — `parent` / `goal_parent` / `activity_goal` / `unit_parent` / engagement kinds. | `canon/relations/REL-<…>.yaml` | documented |
 | [19-actors.md](elements/19-actors.md) | `actor` | Active-structure identity primitive — `person` / `business_unit` / `system` (replaces the former UNIT / EMPLOYEE TYPEs). | `canon/elements/02_business/actors/ACTOR-<…>.yaml` | draft |
+| [20-stakeholders.md](elements/20-stakeholders.md) | `stakeholder` | Motivation-layer interest primitive — `internal` / `external`; carries the stake profile and references an `ACTOR` for identity. | `canon/elements/01_motivation/stakeholders/STAKEHOLDER-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 
