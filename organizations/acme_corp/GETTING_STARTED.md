@@ -1,350 +1,85 @@
-# Getting Started with Transitrix
+# Getting started with Transitrix
 
-Welcome to the Transitrix Architecture-as-Code methodology! This guide will walk you through your first architecture modeling exercise.
+A first modelling session in the Transitrix **architecture-as-text** methodology. You'll author a view, create an element primitive it references, and validate — all as plain YAML under Git.
+
+The fastest path for a brand-new repo is the **onboarding Skill** (`/transitrix-onboard`), which scaffolds the zoned layout and walks you through your first file. This guide is the manual equivalent against the worked `acme_corp` repo.
 
 ## Prerequisites
 
-- Git client
-- VS Code with the Transitrix extension — live diagram preview and inline validation as you edit (recommended)
-- Basic understanding of YAML format
-- *Optional:* Python 3.9+ — only if you want to run the local linter (`.validators/lint.py`) outside the editor
+- Git.
+- VS Code with **Transitrix Studio** — live diagram preview + inline validation as you edit (recommended).
+- Basic YAML.
+- *Optional:* `npx @transitrix/cli validate <file>` for command-line validation.
 
-## Step 1: Clone and Setup
+## Step 1 — Understand the layout
 
-```bash
-git clone <repository-url>
-cd Transitrix
-pip install pyyaml
-```
+A Transitrix repo has three parallel **zones** ([`notations/CONTRACT.md`](../../notations/CONTRACT.md) §5):
 
-## Step 2: Understand the Structure
+- **`canon/`** — the authoritative model. View documents in `canon/views/<notation>/`; element primitives in `canon/elements/<NN>_<layer>/<plural-type>/`; first-class relations in `canon/relations/`.
+- **`field/`** — raw inputs (interviews, surveys, …); not authoritative.
+- **`codex/`** — external laws/regulations + internal policies/standards, faithful to source.
 
-Review the main directories:
-- **canon/elements/** - All architecture elements organized by layer
-- **canon/relations/** - All relationships between elements
-- **.templates/** - Templates to copy when creating new elements
-- **.validators/** - Linting tools to ensure consistency
+Read [`notations/README.md`](../../notations/README.md) for the notation index and family selection.
 
-Read `method/methodology.md` for complete methodology details.
+## Step 2 — Author your first view (a Goals tree)
 
-## Step 3: Create Your First Element
+The Goals tree is the simplest starting point. The onboarding Skill copies a starter template (`templates/goals.goals.transitrix.yaml` from its bundle) into `canon/views/goals/<domain>.goals.transitrix.yaml`; in this repo a worked example already lives under [`canon/views/goals/`](canon/views/goals/). Keep the `notation: goals` / `spec_version:` header — it's required ([`CONTRACT.md`](../../notations/CONTRACT.md) §1). Fill the `FILL-ME` placeholders. A Goals tree is flat top-level arrays — `goal_types[]` + `goals[]`, hierarchy via `parent: GOAL-…` ([`notations/views/04-goals.md`](../../notations/views/04-goals.md)).
 
-Let's add a simple business role.
+## Step 3 — Create an element primitive
 
-### Option A: Using Command Line
+Elements referenced across documents get a standalone file. Create a `GOAL` under the motivation layer:
 
 ```bash
-# Copy the template
-cp .templates/elements/02_business_template.yaml \
-   canon/elements/02_business/SALES_MANAGER.yaml
-
-# Open and edit (use your editor)
-vim canon/elements/02_business/SALES_MANAGER.yaml
+cp .templates/elements/01_motivation_template.yaml \
+   canon/elements/01_motivation/goals/GOAL-REVENUE-1.yaml
 ```
 
-### Option B: Manual Steps
+Set the canonical envelope ([`notations/ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §3): `notation: goal`, a canonical `id` (`GOAL-REVENUE-1` — no leading zeros), `name`, the per-TYPE fields (§7.2), the **admission record** (`zone`/`admitted_at`/`admitted_by`/`gate_checks`, §6) and the **primitive lifecycle** (`valid_from`/`valid_to`, §7). See the worked examples already in `canon/elements/01_motivation/goals/`.
 
-1. Go to `canon/elements/02_business/`
-2. Create new file: `SALES_MANAGER.yaml`
-3. Copy this content:
+The view then references the element by ID — it doesn't duplicate it.
 
-```yaml
-id: "ROLE-SALES-001"
-name: "Sales Manager"
-type: "BusinessRole"
-layer: "Business"
+## Step 4 — Relationships
 
-metadata:
-  status: "Draft"
-  owner: "firstname.lastname"
-  created_at: "2026-05-03"
-  updated_at: "2026-05-03"
-  tags: ["sales", "management"]
+Two ways to link, depending on whether time matters ([`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §3, [`elements/17-relations.md`](../../notations/elements/17-relations.md)):
 
-properties:
-  description: "Responsible for managing sales team and customer relationships"
-  scope: "Sales Department"
-  criticality: "High"
-  responsibility_area: "Revenue Generation"
-  competencies:
-    - "Sales Strategy"
-    - "Team Management"
-    - "Customer Relationship Management"
+- **Inline cross-reference** — a typed-ID field: `owner_role: ROLE-…`, `goal.factors: [FACTOR-…]`, `activity.goals: [GOAL-…]`, `rule.applies_to: [PROCESS-…]`. Plural → array, singular → one ID ([`IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §5). Timeless within the host file. This covers most links.
+- **First-class time-aware relation (`REL`)** — a `canon/relations/REL-…yaml` file with its own `valid_from`/`valid_to`. Use it only for the links where history matters. The `type` enum is **closed**: `parent`, `goal_parent`, `activity_goal`, `unit_parent` ([`17-relations.md`](../../notations/elements/17-relations.md) §3). A re-parenting is two REL files (one ended, one new) — see `canon/relations/REL-CAP-V11-PARENT-*.yaml`.
 
-governance:
-  approval_required: false
-  compliance_frameworks: []
-```
+## Step 5 — Validate
 
-4. Save the file
+- **Studio** previews and validates on save.
+- **CLI:** `npx @transitrix/cli validate canon/views/goals/strategy-2026.goals.transitrix.yaml`.
+- The rules: the shared header (`HDR-001..004`, [`CONTRACT.md`](../../notations/CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, §7), element placement (`ELEM-001..005`, [`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §9), plus each notation's own "Validation rules" table.
 
-## Step 4: Create a Relationship
-
-Now let's connect the Sales Manager to a business process.
+## Step 6 — Commit and open a PR
 
 ```bash
-cp .templates/relations/relation_template.yaml \
-   canon/relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml
+git checkout -b feature/strategy-2026-goals
+git add canon/
+git commit -m "docs(canon): add 2026 goals tree + revenue goal"
+git push origin feature/strategy-2026-goals
 ```
 
-Edit `canon/relations/SALES_MANAGER_TO_ORDER_PROCESS.yaml`:
+Architecture changes review as a diff, like code.
 
-```yaml
-id: "REL-SALES-001"
+## Step 7 — What next
 
-source:
-  id: "ROLE-SALES-001"
-  type: "BusinessRole"
+Based on what you built, add the adjacent artefact ([`notations/README.md`](../../notations/README.md) family selection):
 
-target:
-  id: "PROC-ORD-001"  # This should be an existing process ID
-  type: "BusinessProcess"
+- Built a **Goals tree** → add an **FGCA**/**FGA** to link goals to driving factors and delivery activities.
+- Built **FGCA** → add a **Capability map** for the same domain.
+- Built a **Capability map** → add an **Applications catalogue**.
 
-type: "Assignment"
+## Naming conventions
 
-metadata:
-  status: "Draft"
-  created_at: "2026-05-03"
-  created_by: "firstname.lastname"
+Every typed ID is `<TYPE>-[<middle>-]<INTEGER>` — uppercase TYPE from the registry ([`IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §1, §3.1), no leading zeros (`GOAL-REVENUE-1`, not `GOAL-REVENUE-001`). `CAPABILITY` uses the V/H sub-grammar (`CAPABILITY-V1.2`). Element files are named `<ID>.yaml`. Full conventions: [`CONVENTIONS.md`](CONVENTIONS.md).
 
-properties:
-  description: "Sales Manager is responsible for managing order fulfillment process"
-  criticality: "High"
-```
+## Getting help
 
-**Note:** Make sure the target ID (`PROC-ORD-001`) exists in `canon/elements/02_business/`. For now, you can reference a process you'll create next, or use an existing element ID.
-
-## Step 5: Validate Your Changes
-
-The Transitrix VS Code extension validates and previews as you edit. To run the local linter as an optional extra check:
-
-```bash
-python3 .validators/lint.py
-```
-
-Expected output:
-```
-🔍 Transitrix Linter v1.0
-📂 Scanning: .
-
-Phase 1: Validating YAML syntax...
-  ✓ All YAML files are valid
-
-Phase 2: Loading architecture elements...
-  ✓ Loaded X elements, Y relations
-
-Phase 3: Checking atomicity...
-  ✓ No relations found in element files
-
-Phase 4: Validating referential integrity...
-  ⚠️ WARNING: Target element 'PROC-ORD-001' not found
-
-Phase 5: Validating semantic rules...
-  ✓ Semantic rules passed
-
-Phase 6: Checking compliance policies...
-  ⚠️ WARNING: Element 'ROLE-SALES-001' has status 'Draft' (OK for now)
-
-📊 Results:
-  Errors:   0
-  Warnings: 1
-
-✅ Validation PASSED - Architecture model is consistent
-```
-
-The warning about `PROC-ORD-001` is expected if you haven't created that process yet. Create it to clear the warning.
-
-## Step 6: Create a Business Process (Advanced)
-
-```bash
-cp .templates/bpmn/process_template.bpmn.transitrix.yaml \
-   canon/elements/02_business/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
-```
-
-Edit the file to define your process steps, roles, and systems involved.
-
-## Step 7: Commit and Create a Pull Request
-
-```bash
-# Check what you've created
-git status
-
-# Stage your changes
-git add canon/elements/
-git add canon/relations/
-
-# Commit with meaningful message
-git commit -m "docs(architecture): add Sales Manager role and order assignment
-
-- Added ROLE-SALES-001: Sales Manager business role
-- Added REL-SALES-001: Sales Manager assignment to order process
-- Validation passed with 0 errors
-"
-
-# Push to remote
-git push origin feature/add-sales-architecture
-
-# Create PR on GitHub/GitLab
-# Team reviews the architecture changes just like code reviews
-```
-
-## Step 8: Review Checklist for PRs
-
-When reviewing an architecture PR, check:
-
-- [ ] All YAML files are valid (linter passed)
-- [ ] Element IDs are unique and follow naming convention
-- [ ] Relations reference valid source/target IDs
-- [ ] No relations defined inside element files (atomicity rule)
-- [ ] Status field is appropriate (Draft vs. Active)
-- [ ] Owner is assigned for Active/Production elements
-- [ ] Descriptions are clear and explain the "why"
-- [ ] Layer and type fields match ArchiMate semantics
-
-## Common Workflows
-
-### Add a new microservice
-
-```bash
-# Create application component
-cp .templates/elements/03_application_template.yaml \
-   canon/elements/03_application/ORDER_API.yaml
-
-# Edit and fill in:
-# - id: APP-ORD-API-001
-# - name: Order API Service
-# - tech_stack: FastAPI, Python 3.12
-# - api_type: REST
-# - repository_url: https://github.com/org/order-api
-
-# Create relation to database
-cp .templates/relations/relation_template.yaml \
-   canon/relations/ORDER_API_TO_POSTGRES.yaml
-
-# Edit with source=APP-ORD-API-001, target=NODE-DB-001, type=Access
-
-# Validate and commit
-python3 .validators/lint.py
-git add canon/elements/ canon/relations/
-git commit -m "feat: add Order API microservice"
-git push
-```
-
-### Document infrastructure
-
-```bash
-# Create node (database, server, etc.)
-cp .templates/elements/04_technology_template.yaml \
-   canon/elements/04_technology/POSTGRES_PROD.yaml
-
-# Fill in infrastructure details:
-# - id: NODE-DB-001
-# - name: PostgreSQL Production Database
-# - deployment_location: AWS us-east-1
-# - instance_count: 3
-# - cpu_cores: 8
-
-python3 .validators/lint.py
-git add canon/elements/
-git commit -m "docs: add PostgreSQL production cluster to infrastructure"
-git push
-```
-
-## Useful Tips
-
-### Search for an element
-```bash
-grep -r "Order API" canon/elements/ --include="*.yaml"
-```
-
-### Find all relations pointing to a component
-```bash
-grep -r "APP-ORD-API-001" canon/relations/ --include="*.yaml"
-```
-
-### View YAML structure
-```bash
-cat canon/elements/03_application/ORDER_API.yaml | head -20
-```
-
-### Validate only one file
-```bash
-python3 -c "
-import yaml
-with open('canon/elements/03_application/ORDER_API.yaml') as f:
-    data = yaml.safe_load(f)
-    print('✓ Valid YAML:', data.get('id'))
-"
-```
-
-## Naming Conventions
-
-### Element IDs
-```
-[TYPE]-[SHORT_CODE]-[SEQUENCE]
-
-Examples:
-- GOAL-PERF-001       (Goal for Performance)
-- ROLE-SALES-001      (Business Role for Sales)
-- PROC-ORD-001        (Process for Orders)
-- APP-SRVC-001        (Application Service)
-- NODE-DB-001         (Node - Database)
-- INTFC-REST-001      (Interface - REST)
-```
-
-### File Names
-```
-[ELEMENT_NAME].yaml
-
-Examples:
-- SALES_MANAGER.yaml
-- ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
-- POSTGRES_PROD.yaml
-```
-
-### Relation IDs
-```
-REL-[SOURCE_TYPE]-[TARGET_TYPE]-[SEQUENCE]
-
-Examples:
-- REL-APP-NODE-001
-- REL-ROLE-PROC-001
-- REL-SALES-ORDER-001
-```
-
-## Troubleshooting
-
-### Linter says "YAML syntax error"
-Check your indentation - YAML is whitespace-sensitive. Use 2 spaces per indent level.
-
-### "Referential integrity: Source element not found"
-The element ID in your relation doesn't exist. Check:
-1. Spelling of the ID
-2. Whether the element file is in the correct directory
-3. Whether the element file has the correct `id:` field
-
-### "ATOMICITY VIOLATION: Element contains 'relations' section"
-You defined relations inside an element file. Move them to a separate file in `canon/relations/`.
-
-### Linter passes but I think something is wrong
-Edit `.validators/lint.py` and add your custom validation rule. See the Development section in README.md.
-
-## Next Steps
-
-1. **Model your organization:** Create elements for your business layers
-2. **Define relationships:** Connect elements to show dependencies
-3. **Create process diagrams:** Use BPMN for detailed process documentation
-4. **Set up CI/CD:** Configure automatic validation and diagram generation
-5. **Build views:** Create custom views for different stakeholders
-6. **Automate reports:** Generate architecture documentation automatically
-
-## Getting Help
-
-- Read the full methodology: `method/methodology.md`
-- Review templates in `.templates/` for detailed examples
-- Check the linter output for specific validation issues
-- Ask your architecture team - they can help you understand your organization's structure
+- Methodology canon: [`notations/`](../../notations/) (start at [`README.md`](../../notations/README.md)).
+- Element-primitive schema: [`notations/ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md).
+- This repo's agent guide: [`AGENTS.md`](AGENTS.md).
 
 ---
 
-**Happy Architecting! 🏗️**
+**Happy architecting! 🏗️**
