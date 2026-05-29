@@ -13,14 +13,14 @@ notation: products
 spec_version: "0.1"
 
 products_catalogue:
-  id: "PROD-CAT-1"
+  id: "PRODUCTS_CAT-1"
   name: "Acme Corp Products Catalogue"
   description: "Products and services offered by Acme Corp"
   version: "1.0"
   updated_at: "2026-05-26"
 
   products:
-    - product_id: "PROD-ECOMM-1"        # → canon/elements/02_business/products/PROD-ECOMM-1.yaml
+    - product_id: "PRODUCT-ECOMM-1"        # → canon/elements/02_business/products/PRODUCT-ECOMM-1.yaml
       name: "E-Commerce Platform"
       type: "digital_product"           # digital_product | service | platform | bundle
       domain: "Digital"
@@ -29,12 +29,12 @@ products_catalogue:
       maturity: 3
       description: "Online storefront and order management for end customers"
       capabilities: ["CAPABILITY-V1", "CAPABILITY-V2"]
-      processes: ["PROC-ORD-FULFILL-1"]
-      supporting_apps: ["APP-OMS-1", "APP-CRM-1"]
+      processes: ["PROCESS-ORD-FULFILL-1"]
+      supporting_apps: ["APPLICATION-OMS-1", "APPLICATION-CRM-1"]
       valid_from: "2026-05-26"          # CONTRACT.md §7 — required on every inline product; distinct from operational `status`
       valid_to: null
 
-    - product_id: "SVC-SUPPORT-1"
+    - product_id: "PRODUCT-SUPPORT-1"
       name: "Customer Support Service"
       type: "service"
       domain: "Operations"
