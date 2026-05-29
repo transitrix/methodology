@@ -1,9 +1,18 @@
 # Transitrix Advanced BPMN Process Template with Lanes & Stages
 # Purpose: Model complex business processes with multiple actors/lanes
-# Improvement: Based on segments project, enhanced with Transitrix integration
-# Location: elements/02_business/ (as PROCESS_NAME_process.bpmn.transitrix.yaml)
+# Location: canon/views/bpmn/ (as <DOMAIN>.bpmn.transitrix.yaml)
+#
+# ⚠ PENDING STRUCTURAL RECONCILIATION. This template predates the canonical BPMN
+# notation and uses an old shape (activities[]/UserTask/ServiceTask, assigned_role/
+# supporting_system, business_capability/related_processes). The canonical notation
+# (notations/views/01-bpmn.md) is process -> pools -> lanes -> elements + flows, with
+# file-local node labels (IDS_AND_REFERENCES.md §3.3) and no notation lifecycle.
+# Legacy element-reference IDs here have been canonicalised (APPLICATION-/PROCESS-/ROLE-),
+# but the document STRUCTURE is still the old shape and will not validate against
+# 01-bpmn.md until rewritten. Tracked as a dedicated bpmn-template rewrite task; use
+# notations/examples/bpmn/ for canonical-shape worked examples in the meantime.
 
-id: "PROC-XXX-001"
+id: "PROCESS-XXX-1"
 name: "Process Name with Multiple Actors"
 type: "BusinessProcess"
 layer: "Business"
@@ -28,21 +37,21 @@ bpmn:
   lanes:
     - id: "lane_customer"
       name: "Customer"
-      actor_role: "ROLE-CUSTOMER-001"  # Reference to BusinessRole
+      actor_role: "ROLE-CUSTOMER-1"  # Reference to BusinessRole
 
     - id: "lane_sales"
       name: "Sales Team"
-      actor_role: "ROLE-SALES-001"  # Reference to BusinessRole
-      responsible_system: "APP-CRM-001"  # Supporting system
+      actor_role: "ROLE-SALES-1"  # Reference to BusinessRole
+      responsible_system: "APPLICATION-CRM-1"  # Supporting system
 
     - id: "lane_warehouse"
       name: "Warehouse"
-      actor_role: "ROLE-WAREHOUSE-MANAGER-001"
-      responsible_system: "APP-WMS-001"  # Warehouse Management System
+      actor_role: "ROLE-WAREHOUSE-MANAGER-1"
+      responsible_system: "APPLICATION-WMS-1"  # Warehouse Management System
 
     - id: "lane_logistics"
       name: "Logistics Partner"
-      actor_role: "ROLE-LOGISTICS-PROVIDER-001"
+      actor_role: "ROLE-LOGISTICS-PROVIDER-1"
       responsible_system: "EXT-LOGISTICS-API"  # External system
 
   # Process stages (logical grouping)
@@ -65,7 +74,7 @@ bpmn:
           label: "Receive Order"
           lane: "lane_sales"
           description: "Order received in CRM system"
-          supporting_system: "APP-CRM-001"
+          supporting_system: "APPLICATION-CRM-1"
           required_data: ["CUSTOMER_ID", "ORDER_ITEMS"]
           output_data: ["ORDER_ID"]
           next: "S1_validate"
@@ -75,7 +84,7 @@ bpmn:
           label: "Validate Order"
           lane: "lane_sales"
           description: "Check inventory, pricing, customer credit"
-          supporting_system: "APP-CRM-001"
+          supporting_system: "APPLICATION-CRM-1"
           checks:
             - "Inventory availability"
             - "Customer creditworthiness"
@@ -94,7 +103,7 @@ bpmn:
           type: "task"
           label: "Notify Customer - Order Rejected"
           lane: "lane_sales"
-          supporting_system: "APP-NOTIFICATION-001"
+          supporting_system: "APPLICATION-NOTIFICATION-1"
           next: "S1_end"
 
         - id: "S1_end"
@@ -114,7 +123,7 @@ bpmn:
           label: "Send Order to Warehouse"
           lane: "lane_sales"
           description: "Order routed to fulfillment center"
-          supporting_system: "APP-WMS-001"
+          supporting_system: "APPLICATION-WMS-1"
           output_data: ["SHIPMENT_ID"]
           next: "S2_pick"
 
@@ -123,7 +132,7 @@ bpmn:
           label: "Pick Items from Inventory"
           lane: "lane_warehouse"
           description: "Warehouse staff picks items"
-          assigned_role: "ROLE-WAREHOUSE-PICKER-001"
+          assigned_role: "ROLE-WAREHOUSE-PICKER-1"
           required_data: ["ORDER_ID", "PRODUCT_LOCATIONS"]
           output_data: ["PICKED_ITEMS"]
           next: "S2_pack"
@@ -133,7 +142,7 @@ bpmn:
           label: "Pack Items"
           lane: "lane_warehouse"
           description: "Items packaged for shipment"
-          assigned_role: "ROLE-WAREHOUSE-PACKER-001"
+          assigned_role: "ROLE-WAREHOUSE-PACKER-1"
           quality_checks:
             - "Item count verification"
             - "Packaging integrity"
@@ -145,7 +154,7 @@ bpmn:
           label: "Quality Check"
           lane: "lane_warehouse"
           description: "Verify package meets quality standards"
-          supporting_system: "APP-QMS-001"  # Quality Management System
+          supporting_system: "APPLICATION-QMS-1"  # Quality Management System
           checks: ["Correct items", "Proper packaging", "Label accuracy"]
           next: "S2_decision"
 
@@ -159,7 +168,7 @@ bpmn:
           type: "userTask"
           label: "Repack Package"
           lane: "lane_warehouse"
-          assigned_role: "ROLE-WAREHOUSE-PACKER-001"
+          assigned_role: "ROLE-WAREHOUSE-PACKER-1"
           next: "S2_quality"  # Loop back to quality check
 
     # STAGE 3: Shipping & Delivery
@@ -174,7 +183,7 @@ bpmn:
           label: "Hand Off to Logistics"
           lane: "lane_warehouse"
           description: "Package ready for pickup by logistics"
-          supporting_system: "APP-WMS-001"
+          supporting_system: "APPLICATION-WMS-1"
           output_data: ["TRACKING_NUMBER"]
           next: "S3_ship"
 
@@ -191,7 +200,7 @@ bpmn:
           type: "serviceTask"
           label: "Notify Customer - Shipment Sent"
           lane: "lane_sales"
-          supporting_system: "APP-NOTIFICATION-001"
+          supporting_system: "APPLICATION-NOTIFICATION-1"
           notification_type: "Email + SMS"
           next: "S3_deliver"
 
@@ -235,14 +244,14 @@ kpis:
 # Resource Requirements
 resources:
   required_roles:
-    - "ROLE-SALES-001"
-    - "ROLE-WAREHOUSE-PICKER-001"
-    - "ROLE-WAREHOUSE-PACKER-001"
+    - "ROLE-SALES-1"
+    - "ROLE-WAREHOUSE-PICKER-1"
+    - "ROLE-WAREHOUSE-PACKER-1"
 
   required_systems:
-    - "APP-CRM-001"
-    - "APP-WMS-001"
-    - "APP-NOTIFICATION-001"
+    - "APPLICATION-CRM-1"
+    - "APPLICATION-WMS-1"
+    - "APPLICATION-NOTIFICATION-1"
     - "EXT-LOGISTICS-API"
 
   required_data_entities:
@@ -261,13 +270,13 @@ governance:
 
 # References
 references:
-  business_capability: "PROC-ORD-FULFILL"  # Capability this process supports
+  business_capability: "PROCESS-ORD-FULFILL-1"  # Capability this process supports
   supporting_goals:
     - "GOAL-DELIVERY-SPEED-001"
     - "GOAL-CUSTOMER-SATISFACTION-001"
   related_processes:
-    - "PROC-RETURNS-001"
-    - "PROC-CUSTOMER-SERVICE-001"
+    - "PROCESS-RETURNS-1"
+    - "PROCESS-CUSTOMER-SERVICE-1"
 
 # Versioning
 versioning:
@@ -299,7 +308,7 @@ versioning:
 
 ### System Integration
 - Every task that uses a system shows `supporting_system`
-- Reference to ApplicationComponent elements (APP-XXX-001)
+- Reference to ApplicationComponent elements (APPLICATION-XXX-1)
 - External systems prefixed with EXT-
 
 ### Quality & Control
