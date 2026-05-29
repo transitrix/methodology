@@ -47,7 +47,7 @@ products_catalogue:
 
 `capabilities`, `processes`, and `supporting_apps` hold **element IDs** (`CAPABILITY-V1`, `PROC-…`, `APP-…`), not display names — the catalogue references the elements, it does not duplicate them.
 
-`valid_from` / `valid_to` are required on every inline product entry per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7 and are distinct from the per-product `status` field (`Active` / `Deprecated`), which is an operational state. The products-catalogue document itself does not carry a lifecycle field.
+`valid_from` / `valid_to` are required on every inline product entry per [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §7 and are distinct from the per-product `status` field (`Active` / `Deprecated`), which is an operational state. The products-catalogue document itself does not carry a lifecycle field.
 
 ## See also
 

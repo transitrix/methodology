@@ -53,7 +53,7 @@ applications_catalogue:
 
 `capabilities` and `products` hold **element IDs**, not display names. Integrations may be inlined (as above) or modelled as their own `type: integration` entries.
 
-`valid_from` / `valid_to` are required on every inline applications-catalogue entry per [`notations/CONTRACT.md`](../../../../notations/CONTRACT.md) §7, regardless of `type` (`application` / `integration` / `platform` / `data_store`). They are distinct from the per-entry `status` field (operational state). Per-application nested `integrations[]` descriptors share the parent's lifecycle and carry no `valid_from` / `valid_to` of their own; when an integration is promoted to a top-level `type: integration` entry, it becomes a first-class lifecycle-bearing element with its own dates.
+`valid_from` / `valid_to` are required on every inline applications-catalogue entry per [`notations/CONTRACT.md`](../../../../../notations/CONTRACT.md) §7, regardless of `type` (`application` / `integration` / `platform` / `data_store`). They are distinct from the per-entry `status` field (operational state). Per-application nested `integrations[]` descriptors share the parent's lifecycle and carry no `valid_from` / `valid_to` of their own; when an integration is promoted to a top-level `type: integration` entry, it becomes a first-class lifecycle-bearing element with its own dates.
 
 ## See also
 

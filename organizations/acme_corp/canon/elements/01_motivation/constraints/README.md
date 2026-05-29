@@ -4,7 +4,7 @@ Constraint elements — design / operating constraints that bind the organisatio
 
 Constraints are referenced by FGCA factors via `references_constraint:` — the existence of a constraint is itself a factor for the organisation that acts on it. They may also be referenced from any other notation via `applies_to:` once a register-view notation lands; v1 ships the elements only.
 
-TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`CONSTRAINT`).
+TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`CONSTRAINT`).
 
 ## File convention
 
@@ -14,17 +14,19 @@ Examples: `CONSTRAINT-GDPR-1.yaml`, `CONSTRAINT-1.yaml`.
 
 ## Element schema
 
-The schema is shared between `RULE` and `CONSTRAINT` elements — `type` distinguishes them and folder placement mirrors the ArchiMate layer.
+The schema is shared between `RULE` and `CONSTRAINT` elements — `notation` (plus the ID prefix and folder placement) distinguishes them; folder placement mirrors the ArchiMate layer. See the common envelope in [`notations/ELEMENT_PRIMITIVES.md`](../../../../../../notations/ELEMENT_PRIMITIVES.md) §3 and the CONSTRAINT field set in §7.13.
 
 ### Required
 
 | Field | Description |
 |---|---|
+| `notation` | literal `constraint` |
 | `id` | `CONSTRAINT-[<middle>-]<INTEGER>` |
 | `name` | one-line statement |
-| `type` | literal `constraint` |
 | `statement` | normative wording — `MUST` / `SHOULD` / `MUST NOT` recommended |
 | `status` | one of `active` / `proposed` / `deprecated` / `retired` |
+| admission record | `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §6 |
+| lifecycle | `valid_from`, `valid_to` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §7 |
 
 ### Optional
 
@@ -39,18 +41,31 @@ The schema is shared between `RULE` and `CONSTRAINT` elements — `type` disting
 ## Skeleton
 
 ```yaml
+notation: constraint
 id: CONSTRAINT-SAMPLE-1
 name: "Short one-line statement"
-type: constraint
 statement: "MUST / SHOULD / MUST NOT wording, single sentence."
 status: active
 
-# Optional fields below
+# Optional fields
 applies_to: []            # e.g. [PROCESS-ORDER-1, APPLICATION-OMS-1]
 source: "Regulation §X.Y / Contract §Z"
 owner_role: ROLE-OWNER-1
 severity: mandatory       # mandatory | recommended | advisory
 rationale: "Why this constraint exists in the organisation."
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null
 ```
 
 ## Examples in this folder
@@ -61,6 +76,6 @@ rationale: "Why this constraint exists in the organisation."
 
 ## See also
 
-- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`CONSTRAINT`), §4 (uniqueness scope).
+- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`CONSTRAINT`), §4 (uniqueness scope).
 - Sibling rules catalogue: [`../../02_business/rules/`](../../02_business/rules/).
-- FGCA cross-reference field `references_constraint:` on FACTOR: [`notations/views/02-fgca.md`](../../../../../notations/views/02-fgca.md) § Fields → `factors[]`.
+- FGCA cross-reference field `references_constraint:` on FACTOR: [`notations/views/02-fgca.md`](../../../../../../notations/views/02-fgca.md) § Fields → `factors[]`.

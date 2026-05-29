@@ -4,7 +4,7 @@ Rule elements — business rules an organisation enforces. Each rule is one file
 
 Rules describe operational policy (approval thresholds, segregation of duties, eligibility criteria, …). They may be referenced from any other notation via `applies_to:` once a register-view notation lands; v1 ships the elements only. Rules contrast with **constraints** (`canon/elements/01_motivation/constraints/`) — constraints are binding rules imposed from outside or above (regulation, contract); rules are the organisation's own operating policy.
 
-TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`).
+TYPE registry: see [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`).
 
 ## File convention
 
@@ -14,17 +14,19 @@ Examples: `RULE-DUAL-APPROVAL-1.yaml`, `RULE-1.yaml`.
 
 ## Element schema
 
-The schema is shared between `RULE` and `CONSTRAINT` elements — `type` distinguishes them and folder placement mirrors the ArchiMate layer.
+The schema is shared between `RULE` and `CONSTRAINT` elements — `notation` (plus the ID prefix and folder placement) distinguishes them; folder placement mirrors the ArchiMate layer. See the common envelope in [`notations/ELEMENT_PRIMITIVES.md`](../../../../../../notations/ELEMENT_PRIMITIVES.md) §3 and the RULE field set in §7.12.
 
 ### Required
 
 | Field | Description |
 |---|---|
+| `notation` | literal `rule` |
 | `id` | `RULE-[<middle>-]<INTEGER>` |
 | `name` | one-line statement |
-| `type` | literal `rule` |
 | `statement` | normative wording — `MUST` / `SHOULD` / `MUST NOT` recommended |
 | `status` | one of `active` / `proposed` / `deprecated` / `retired` |
+| admission record | `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §6 |
+| lifecycle | `valid_from`, `valid_to` — [`CONTRACT.md`](../../../../../../notations/CONTRACT.md) §7 |
 
 ### Optional
 
@@ -39,18 +41,31 @@ The schema is shared between `RULE` and `CONSTRAINT` elements — `type` disting
 ## Skeleton
 
 ```yaml
+notation: rule
 id: RULE-SAMPLE-1
 name: "Short one-line statement"
-type: rule
 statement: "MUST / SHOULD / MUST NOT wording, single sentence."
 status: active
 
-# Optional fields below
+# Optional fields
 applies_to: []            # e.g. [PROCESS-EXPENSE-APPROVAL-1]
 source: "Internal Policy §X.Y / Board decision YYYY-MM-DD"
 owner_role: ROLE-OWNER-1
 severity: mandatory       # mandatory | recommended | advisory
 rationale: "Why this rule exists."
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-29"
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-15"
+valid_to: null
 ```
 
 ## Examples in this folder
@@ -61,5 +76,5 @@ rationale: "Why this rule exists."
 
 ## See also
 
-- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`), §4 (uniqueness scope).
+- TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`RULE`), §4 (uniqueness scope).
 - Sibling constraints catalogue: [`../../01_motivation/constraints/`](../../01_motivation/constraints/).
