@@ -70,12 +70,35 @@ gate_checks:
   source_authority: "Legislative Herald of Georgia"
 jurisdiction: ge                # MUST match the parent folder (CODEX-001)
 effective_date: "2017-05-01"
+
+# Optional — local snapshot of the source document for audit trail.
+snapshot_file: "sources/snapshot_LAW-PERSONAL-DATA-2017-1_2026-05-27.pdf"
+snapshot_date: "2026-05-27"
 ```
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
+| `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
+| `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Required-together with `snapshot_file`. |
+
+### 3.1 Snapshots
+
+A snapshot is a locally-captured copy of the source document held alongside the codex artefact for audit purposes. The snapshot is independent of the external URL remaining available; it is the artefact's authoritative state at `snapshot_date`.
+
+**File layout convention.** Snapshots live in a `sources/` subfolder co-located with the codex YAML file; the filename encodes the artefact ID and snapshot date for traceability:
+
+```
+codex/external/ge/LAW-PERSONAL-DATA-2017-1.yaml
+codex/external/ge/sources/snapshot_LAW-PERSONAL-DATA-2017-1_2026-05-27.pdf
+```
+
+The `sources/` folder is part of the codex layout — adopters MAY commit snapshot files to source control alongside the YAML. Binary formats (PDF, DOCX, HTML archive) are the typical shape; the format is unconstrained.
+
+**Re-snapshotting.** When a re-capture is needed (the source has been re-issued, the previous snapshot is corrupted, etc.), update `snapshot_file` to point at the new file and update `snapshot_date` accordingly. Prior snapshot files MAY be retained in `sources/` for history but only the path in `snapshot_file` is canonical.
+
+The two fields are required-together: a codex artefact MUST either declare both or omit both. Declaring only one is a configuration error (caught at adopter-validator level once a rule code is assigned).
 
 ---
 
