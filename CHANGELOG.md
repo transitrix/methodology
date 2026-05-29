@@ -20,6 +20,7 @@ The Actors / Stakeholders identity model (epics #98 / #99). Unifies active-struc
 - **New canonical TYPEs in `notations/IDS_AND_REFERENCES.md` §3.1:** `ACTOR`, `STAKEHOLDER`. New folders `canon/elements/02_business/actors/` and `canon/elements/01_motivation/stakeholders/`.
 - **acme_corp worked examples** — `ACTOR` (business_unit / external regulator / person), `STAKEHOLDER` (internal + external), and `stakeholding` / `employment` RELs, with folder READMEs. (#98/#99)
 - **`migrations/0.5-to-0.6/`** migration recipe — codemod + validate + fixtures for the UNIT/EMPLOYEE retirement.
+- **BPMN role / system cross-references** (`notations/views/01-bpmn.md` §7.2): optional `performed_by_role: ROLE-…` and `supported_by_application: APPLICATION-…` on lanes (default) and elements (override), with explicit precedence and validator rule `BPMN-XREF-001`. Inline view→canon cross-reference (not a `REL`); the principle is noted in `17-relations.md` §3. Both `.templates/bpmn/` templates rewritten from the legacy `activities[]` shape to the canonical `process`/`pools`/`lanes`/`elements`/`flows` structure. (#110)
 
 ### Changed
 

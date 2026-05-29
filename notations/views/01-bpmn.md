@@ -139,6 +139,8 @@ lanes:
 | `id` | string | Identifier pattern; must differ from pool id and from any element id |
 | `name` | string | Non-empty, free-form (rendered as the lane caption) |
 | `elements` | array | At least one element required |
+| `performed_by_role` | string | Optional. `ROLE-…` responsible for the work in this lane — the default for every element in it (see §7.2). |
+| `supported_by_application` | string | Optional. `APPLICATION-…` used for the work in this lane — the default for every element in it (see §7.2). |
 
 Order of lanes in the YAML determines the vertical order of swimlanes in the rendered diagram (top to bottom).
 
@@ -165,6 +167,8 @@ Each element is an object with these fields:
 | `id` | string | Identifier pattern; globally unique within the document |
 | `type` | string | One of the seven enum values above |
 | `name` | string | Required for tasks and gateways (non-empty); optional for events |
+| `performed_by_role` | string | Optional. `ROLE-…` responsible for this task — overrides the lane default (see §7.2). |
+| `supported_by_application` | string | Optional. `APPLICATION-…` used for this task — overrides the lane default (see §7.2). |
 
 Example:
 
@@ -193,6 +197,23 @@ Events (`startEvent`, `endEvent`) may omit `name` because their visual represent
 - **`parallelGateway`** — AND fork/join. When splitting, all outgoing flows are activated simultaneously; outgoing flows must not carry conditions. When joining, the gateway waits for all incoming tokens before proceeding.
 
 A gateway with exactly one incoming and one outgoing flow is forbidden — use a sequence flow instead.
+
+### 7.2. Role and system association (cross-references to canon)
+
+A BPMN document may record **who** performs each piece of work and **which system** supports it, by referencing canon primitives from two optional fields:
+
+- `performed_by_role: ROLE-…` — the responsible business role ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE`; `ACTOR` is the identity that fills it).
+- `supported_by_application: APPLICATION-…` — the supporting application ([10-applications.md](10-applications.md)).
+
+Both may appear at **lane** level (the default for every element in the lane — the standard swimlane-is-a-role reading) and at **element** level (an override for one task). Precedence, per element:
+
+1. Element-level value wins.
+2. Otherwise the enclosing lane's value applies.
+3. If neither is present, no role / system is declared for that element.
+
+This keeps a 10-task lane from repeating the field ten times while still allowing a single automated task inside a human lane to point at a system.
+
+These are **inline cross-references from a BPMN-local label to a canon primitive**, not `REL` files: a BPMN task / lane id is a document-local label ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3), not a canon primitive, so the link is one-way (canon never points back at a local label) and is validated by canon-existence (`BPMN-XREF-001`, §11), not by the `REL` rules. This is the same view-references-canon pattern used by capability-map (`business_process`), process-map (`capability`), and the products / applications catalogues — see [elements/17-relations.md](../elements/17-relations.md) §3.
 
 ---
 
@@ -354,6 +375,12 @@ In addition, anti-pattern checks (warnings, not errors) flag suspicious-but-vali
 | ID | Rule |
 |---|---|
 | **POOL-05** | Exactly one pool per document. |
+
+**Cross-references to canon**
+
+| ID | Rule |
+|---|---|
+| **BPMN-XREF-001** | A `performed_by_role` / `supported_by_application` value (on a lane or an element, §7.2) must resolve to an admitted primitive in canon: `ROLE-…` in `canon/elements/02_business/roles/`, `APPLICATION-…` in `canon/elements/03_application/applications/`. Same canon-existence bar as `REL-002`, applied at parse time when the catalogue is loaded. |
 
 ### Warnings (non-blocking)
 

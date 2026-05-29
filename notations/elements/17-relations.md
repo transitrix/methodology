@@ -88,6 +88,7 @@ Adding a new `type` value is a non-backwards-compatible methodology revision —
 
 - **`applies_to` (Codex → Canon).** Retired entirely in the compliance epic ([14-codex.md](14-codex.md) §8) — bindings now live as REQUIREMENT.`derived_from` plus ASSERTION; no `applies_to` relation kind is needed.
 - **Inline relations.** Each notation spec declares which of its relation kinds stay inline (timeless within their host file) versus which become first-class REL files. The per-notation declarations are added in subsequent Wave 3 PRs.
+- **View-document inline cross-references.** A view document may include inline cross-references to canon primitives via documented fields (e.g. capability-map `business_process`, process-map `capability`, BPMN `performed_by_role` / `supported_by_application`), distinct from `REL` element files. Such references are subject to canon-existence validation (per the view's own validator codes) but are **not** subject to `REL-002`, because the referring endpoint (a view-local node or label) is not itself a canon primitive — the link is one-way, and canon never points back at a view-local label.
 
 ---
 
