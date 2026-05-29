@@ -82,6 +82,14 @@ related_documents:
     type: PROPOSED_RULE
     name: "Medical Devices; LDTs (NPRM)"
     url: "https://www.federalregister.gov/d/2023-21662"
+
+# Required on REGULATION (CODEX-005) — does this artefact change over
+# time? false = static (published once, never amended); true = live.
+monitoring_needed: false
+monitor_instead:                              # only meaningful when monitoring_needed: false
+  - id: "REGULATION-CFR-21-PART-809-1"
+    name: "21 CFR Part 809 — In Vitro Diagnostic Products"
+    url: "https://www.ecfr.gov/current/title-21/part-809"
 ```
 
 | Field | Required | Type | Semantics |
@@ -91,6 +99,8 @@ related_documents:
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
 | `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Required-together with `snapshot_file`. |
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
+| `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
+| `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
 
 ### 3.1 Snapshots
 
@@ -136,6 +146,41 @@ related_documents:
 ### 3.3 Validation note
 
 Validation rules for §3.1 (snapshots) and §3.2 (related_documents) — required-together for the snapshot pair, canon-resolution for `related_documents[].id`, presence of `url` when `id` is absent — are candidates for explicit `CODEX-*` rule codes in a follow-up revision. Until then, the conventions are documented here and enforced informally during admission review.
+
+### 3.4 Monitoring and `monitor_instead`
+
+REGULATION artefacts fall into two operationally distinct categories that the spec MUST distinguish so consumers know which need periodic re-checking and which are permanently settled:
+
+- **Static (Final Rules, published once, never amended).** `monitoring_needed: false`. The artefact's content is fixed at admission. Adopters monitoring the underlying regulatory area instead watch the live counterpart documents (e.g., the CFR section the Final Rule amended) — those live documents are listed in `monitor_instead[]`.
+- **Live (CFR sections, continuously amended).** `monitoring_needed: true`. The artefact's source can change between scans; a downstream scanner agent (see §3.5) periodically re-fetches the source and flags drift. `monitor_instead` is meaningless here and SHOULD be omitted.
+
+```yaml
+# A Final Rule (static) — points consumers at the live CFR section.
+monitoring_needed: false
+monitor_instead:
+  - id: "REGULATION-CFR-21-PART-809-1"
+    name: "21 CFR Part 809 — In Vitro Diagnostic Products"
+    url: "https://www.ecfr.gov/current/title-21/part-809"
+```
+
+```yaml
+# A live CFR section — scanner agent will re-fetch periodically.
+monitoring_needed: true
+```
+
+| `monitor_instead[]` subfield | Required | Type | Semantics |
+|---|---|---|---|
+| `id` | no | string | Typed canonical ID when the live document is itself an admitted codex artefact. Same resolution semantics as `related_documents[].id` (§3.2). |
+| `name` | yes | string | Human-readable title of the live document. |
+| `url` | no | string | URL pointing at the live document. Required when `id` is absent. |
+
+`monitoring_needed` is **required on `type: REGULATION`** (CODEX-005). It is optional on `type: LAW` — laws also receive amendments, but treating that as a separate concern is deferred until a real adopter brings the use case.
+
+A `monitor_instead[]` entry duplicating the artefact's own `source_url` is a configuration error: the field is for *other* live documents, not the same one.
+
+### 3.5 Scanner-agent metadata
+
+When `monitoring_needed: true`, an automated scanner agent typically maintains additional state on the artefact — when it was last scanned, when the next scan is due, whether change was detected on the latest scan. The scan-state field set is defined in a follow-up revision; this spec section is reserved.
 
 ---
 
@@ -185,6 +230,7 @@ One artefact per file, named by its canonical ID. Examples:
 | `CODEX-001` | error | An external artefact's `jurisdiction:` does not match its parent folder name under `codex/external/<jurisdiction>/`. |
 | `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal needs `issuing_authority` + `effective_date`. All codex artefacts also carry the admission record ([CONTRACT.md](CONTRACT.md) §6). |
 | `CODEX-004` | warning | An `applies_to:` field is present on a codex artefact. The field was retired in this revision (see [§8 Migration](#8-migration)); bindings now live on `REQUIREMENT.derived_from` ([15-requirement.md](15-requirement.md)) and on `ASSERTION` ([16-assertion.md](16-assertion.md)). |
+| `CODEX-005` | info | A `type: REGULATION` artefact does not declare `monitoring_needed:`. The field SHOULD be explicit so downstream consumers (and scanner agents) know whether the source is static or live — see §3.4. Info severity, not warning, because some legacy artefacts predate the field; new REGULATION artefacts SHOULD set it. |
 
 Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved and is not reassigned.
 
