@@ -25,6 +25,17 @@ A `standalone` mode therefore does not forbid inline authoring inside a single v
 
 A `view-defined` TYPE has **no** standalone element-file schema in v1: its only definition home is the view/document that declares it (§4 lists which, and why).
 
+### 1.1 The reconstruction invariant — `Views = render(Elements, view_config)`
+
+The split between `canon/elements/` and `canon/views/` is governed by one invariant: **the elements are the complete and sufficient source of truth for the organisation's behaviour; a view is a projection over them.** Formally, a view is `render(Elements, view_config)` — it takes the canonical elements plus its own *presentation configuration* (which elements to show, grouping, filtering, ordering, display options) and renders them. The two folders own disjoint things:
+
+- **No behaviour lives only in a view.** Every fact about how the organisation works — a process's steps and flow, a goal hierarchy, a capability's maturity — must be reconstructable from `canon/elements/`. Delete `canon/views/` entirely and no knowledge is lost; the views regenerate.
+- **No view configuration lives in `canon/elements/`.** Which rows a Process Blueprint shows, a capability-map's orientation, a saved report's selection and filters — these are the view's own primary data and are not derivable from the elements. They are not behaviour; they stay in the view.
+
+**View-purity corollary.** A view carries *no non-derivable information beyond its configuration* — no hand-tuned layout, no view-only annotations, no canonical content that exists nowhere else. (Layout is already computed deterministically per notation, so it carries no information — consistent with this rule.) BPMN is the case this resolves: a process's flow is behaviour and belongs in the `PROCESS` element (§7.5); the BPMN file is a projection of it.
+
+This invariant scopes the materialisation modes of §4: `view-defined` must never mean "behaviour that lives only in a view" (§4.2).
+
 ---
 
 ## 2. Relationship to the views, the element notations, and `canon/`
@@ -157,6 +168,13 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`SCENARIO` / `ISSUE` are `view-defined`.** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 scopes `SCENARIO` to "within the organisation" via its scenarios document and `ISSUE` to "within the issues catalogue document." A scenario is itself a container/projection over other elements; an issue register is a document-scoped tree. Neither is materialised as a standalone catalogue element in v1.
 - **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](views/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
 
+### 4.2 `view-defined` is inline-content convenience, never a content home of last resort
+
+Per the reconstruction invariant (§1.1), `view-defined` in the table above is a convenience — a *content* element authored inline inside a view document instead of in its own catalogue file — and it does not license a view to be the **only** home of canonical content. Two distinctions follow:
+
+- **Content vs presentation config.** The element TYPEs in §4 are content (an `EQUIPMENT`, an `INFORMATION_ENTITY` — real things the organisation has). A view document *also* carries presentation configuration — which elements it shows, grouping, filtering, ordering, display options. That configuration is the view's own primary data, is not an element TYPE, and legitimately and permanently lives in the view (out of scope of this element table by construction). The rule: content is promotable to canon; presentation config stays in the view.
+- **`view-defined` content must be promotable.** `EQUIPMENT` / `INFORMATION_ENTITY` already are (§4.1) — inline today, with canonical-grammar IDs ready for promotion. The remaining non-promotable `view-defined` rows (`SCENARIO`, `ISSUE`) sit in tension with §1.1: a register of issues and an alternative-path scenario are content, not presentation. Reconciling each into a content element plus a report-configuration view is filed separately and is out of scope here.
+
 ---
 
 ## 5. Reconciliation with the legacy `.templates/elements/*` shape
@@ -277,13 +295,25 @@ Inline shape: [views/07-activities.md](views/07-activities.md) §5.2, [views/02-
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 
+The `PROCESS` element is the **complete, self-sufficient definition** of a business process. It carries not only the catalogue metadata but the process *behaviour* — the participants and the flow — so the process can be reconstructed without any view. A BPMN diagram is a **projection** of this element, not its definition home (the reconstruction invariant, §1.1; render contract in [views/01-bpmn.md](views/01-bpmn.md)).
+
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `owner_role` | no | string | `ROLE-…` accountable for the process. |
+| `owner_role` | no | string | `ROLE-…` accountable for the process as a whole. |
 | `capability` | no | string | `CAPABILITY-…` this process realises. |
 | `maturity` | no | integer | CMM level 1–5. |
-| `bpmn_file` | no | string | Path to the detailed BPMN diagram. |
+| `participants` | no | list | The process's lanes — each a reference to a canonical active-structure element, `ROLE-…` or `ACTOR-…` (person / business_unit / system). A participant's lane caption is **derived** from the referenced element's `name`; no caption text is stored here. List order is the rendered top-to-bottom lane order. |
+| `flow` | no | object | The canonical process graph — steps, gateways, and sequence flows (see below). Sufficient to regenerate a BPMN diagram; the view adds only layout, which is computed deterministically. |
 | `description` | recommended | string | One-paragraph elaboration. |
+
+The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **removed as a source field**. The flow is no longer authored in a separate `.bpmn` file the element points at; any `.bpmn.transitrix.yaml` is a *derived projection* of `flow` (generated output), never the source — see [views/01-bpmn.md](views/01-bpmn.md).
+
+**`flow` shape.** `flow` reuses the structural vocabulary defined once in [views/01-bpmn.md](views/01-bpmn.md) — the seven element types (`startEvent` / `endEvent` / `task` / `userTask` / `serviceTask` / `exclusiveGateway` / `parallelGateway`) and named sequence flows — but homed here as canon, not in a view. It follows the canon-wide flat-array-with-references form rule ([README](README.md) "Form rule"): a flat `steps` list, with lane membership expressed by reference rather than by nesting.
+
+- `flow.steps` — list of nodes. Each step: `id`, `type` (one of the seven), `name` (required for tasks / gateways; optional for events), `performed_by` (a member of `participants` — `ROLE-…` or `ACTOR-…`), and optional `supported_by_application` (`APPLICATION-…`). Precedence and the "swimlane is a role" default follow [views/01-bpmn.md](views/01-bpmn.md) §7.2; the BPMN projection derives lane grouping from `performed_by`.
+- `flow.sequence` — list of `{ from, to, condition?, default? }` sequence flows between step IDs (projects to the BPMN `flows` array).
+
+Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, or an `ACTIVITY` realising a step can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
 
 Inline shape (as referenced from the map): [views/06-process-map.md](views/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
 
