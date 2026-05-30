@@ -1,0 +1,33 @@
+name: Notations doc-lint
+
+# Mechanical front-door rot checks for the notations docs: example file
+# extensions + `notation:` headers, internal Markdown link resolution, and
+# methodology_version pin consistency. Implementation:
+# scripts/check-notations.mjs. The tracked audit NOTATIONS_VALIDATION.md holds
+# the judgement calls a linter can't make.
+#
+# CI is red on drift — the script exits non-zero and the job fails. Fix the
+# offending file, or — if an invariant is wrong — change the check and say why.
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:00 UTC — weekly safety net for drift introduced via
+    # direct-commit changes to main that bypass PR review.
+    - cron: '0 9 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run notations doc-lint
+        run: node scripts/check-notations.mjs

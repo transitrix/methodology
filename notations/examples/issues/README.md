@@ -31,4 +31,4 @@ notation: issues
 | `issues[].name` | One-line summary of the issue |
 | `issues[].status` | One of `open`, `in_progress`, `blocked`, `resolved`, `closed` |
 
-See [`../../12-issues.md`](../../12-issues.md) for the full specification.
+See [`../../views/12-issues.md`](../../views/12-issues.md) for the full specification.

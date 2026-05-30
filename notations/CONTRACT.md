@@ -162,23 +162,23 @@ The lifecycle fields are required on every canonical primitive once a notation s
 
 ## 8. Compliance-domain rules
 
-The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](16-assertion.md)). For discoverability, the validation rules for both are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
+The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](elements/15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](elements/16-assertion.md)). For discoverability, the validation rules for both are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
 
 | Rule | Severity | Notation | Short description | Authoritative spec |
 |---|---|---|---|---|
-| `REQ-001` | error | REQUIREMENT | `id` grammar invalid, or any required field missing | [15-requirement.md](15-requirement.md) §4 |
-| `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](15-requirement.md) §4 |
-| `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](15-requirement.md) §4 |
-| `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](15-requirement.md) §4 |
-| `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-002` | error | ASSERTION | `about` is missing, malformed, or resolves to a non-REQUIREMENT | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-003` | error | ASSERTION | `subject` does not resolve, or TYPE not in `{PRODUCT, PROCESS, CAPABILITY}` | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-004` | error | ASSERTION | a `realised_via` entry does not resolve | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-005` | error | ASSERTION | an `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-006` | error | ASSERTION | `status` not in the enum (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-007` | warning | ASSERTION | `evidence` is empty AND `status` is `compliant` or `partial` — undefended positive claim | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-008` | warning | ASSERTION | `next_review_at` is set and is in the past — assertion is stale | [16-assertion.md](16-assertion.md) §5 |
-| `ASSERT-DEAD-LINK-001` | warning | ASSERTION (cross-cutting) | `subject` or `realised_via` references a primitive whose `valid_to` is in the past — bound to a currently-retired element | [16-assertion.md](16-assertion.md) §5 |
+| `REQ-001` | error | REQUIREMENT | `id` grammar invalid, or any required field missing | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](elements/15-requirement.md) §4 |
+| `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-002` | error | ASSERTION | `about` is missing, malformed, or resolves to a non-REQUIREMENT | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-003` | error | ASSERTION | `subject` does not resolve, or TYPE not in `{PRODUCT, PROCESS, CAPABILITY}` | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-004` | error | ASSERTION | a `realised_via` entry does not resolve | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-005` | error | ASSERTION | an `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-006` | error | ASSERTION | `status` not in the enum (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-007` | warning | ASSERTION | `evidence` is empty AND `status` is `compliant` or `partial` — undefended positive claim | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-008` | warning | ASSERTION | `next_review_at` is set and is in the past — assertion is stale | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-DEAD-LINK-001` | warning | ASSERTION (cross-cutting) | `subject` or `realised_via` references a primitive whose `valid_to` is in the past — bound to a currently-retired element | [16-assertion.md](elements/16-assertion.md) §5 |
 
 In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT and ASSERTION files as they do to every other canonical artefact.
 
@@ -252,8 +252,8 @@ A notation spec MAY declare specific attributes as `time_varying`. v1 candidate 
 
 | Notation | Candidate `time_varying` attributes |
 |---|---|
-| Capability map ([05-capability-map.md](05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
-| Applications catalogue ([10-applications.md](10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life) |
+| Capability map ([05-capability-map.md](views/05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
+| Applications catalogue ([10-applications.md](views/10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life) |
 | Organisational unit (future) | `headcount`, `head_role` |
 
 Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR, mark its `time_varying` attributes and remove inline syntax for them. Adopters with existing inline values migrate by moving the value into a single-entry sidecar with `valid_from` set to the primitive's `valid_from`.
