@@ -4,7 +4,7 @@ Business Process Model and Notation 2.0 diagrams defined as compact YAML — one
 
 **File extension:** `*.bpmn.transitrix.yaml`
 
-See the canonical spec: [`../../01-bpmn.md`](../../01-bpmn.md).
+See the canonical spec: [`../../views/01-bpmn.md`](../../views/01-bpmn.md).
 
 ## Minimal structure
 

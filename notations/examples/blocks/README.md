@@ -4,7 +4,7 @@ Structured YAML model of a multi-level container layout — a recursive tree of 
 
 **File extension:** `*.blocks.transitrix.yaml`
 
-See [`../../08-blocks.md`](../../08-blocks.md) for the full notation reference.
+See [`../../views/08-blocks.md`](../../views/08-blocks.md) for the full notation reference.
 
 ## How to model a diagram
 

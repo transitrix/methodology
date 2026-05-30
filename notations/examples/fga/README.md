@@ -5,7 +5,7 @@ Use this format when you want a direct mapping from goals to activities without 
 
 **File extension:** `*.fga.transitrix.yaml`
 
-See the canonical spec: [`../../03-fga.md`](../../03-fga.md).
+See the canonical spec: [`../../views/03-fga.md`](../../views/03-fga.md).
 
 ## Minimal structure
 

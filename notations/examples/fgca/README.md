@@ -5,7 +5,7 @@ Shows how external factors drive goals, which require changes, which are deliver
 
 **File extension:** `*.fgca.transitrix.yaml`
 
-See the canonical spec: [`../../02-fgca.md`](../../02-fgca.md).
+See the canonical spec: [`../../views/02-fgca.md`](../../views/02-fgca.md).
 
 ## Minimal structure
 
@@ -56,7 +56,7 @@ author: "Your Name"
 - A goal MAY reference multiple factors via `factors: [FACTOR-…, FACTOR-…]`.
 - A change MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
 - An activity MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
-- For degenerate paths where a change layer adds no information, an activity MAY link directly via `goals: [GOAL-…]` — see [`../../02-fgca.md`](../../02-fgca.md) §Fields.
+- For degenerate paths where a change layer adds no information, an activity MAY link directly via `goals: [GOAL-…]` — see [`../../views/02-fgca.md`](../../views/02-fgca.md) §Fields.
 
 ## Examples in this folder
 

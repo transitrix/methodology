@@ -24,5 +24,3 @@ Each folder contains a `README.md` with format documentation and the list of exa
 1. Install the **Transitrix Studio** extension in VS Code.
 2. Open any example file — the preview panel opens automatically beside the editor.
 3. Edit and save the file to refresh the preview.
-
-For how `examples/` fits into the broader repo layout, see [`docs/repo-layout.md`](../docs/repo-layout.md).

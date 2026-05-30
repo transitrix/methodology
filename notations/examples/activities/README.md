@@ -1,6 +1,6 @@
 # Activity network diagram (AoN / PSND) and Gantt projection
 
-Activity-on-Node precedence diagram showing activities, durations, dependencies, and the computed critical path. Activities also project to a Gantt timeline when the schedule is anchored on a calendar — see §9 of the [Activities spec](../../07-activities.md).
+Activity-on-Node precedence diagram showing activities, durations, dependencies, and the computed critical path. Activities also project to a Gantt timeline when the schedule is anchored on a calendar — see §9 of the [Activities spec](../../views/07-activities.md).
 
 The critical path is highlighted automatically in both views.
 
@@ -59,7 +59,7 @@ author: "Your Name"
 
 ## Gantt projection — when it renders
 
-A document renders as a Gantt chart when **either** (per [07-activities.md §9](../../07-activities.md)):
+A document renders as a Gantt chart when **either** (per [07-activities.md §9](../../views/07-activities.md)):
 
 - **Computed mode** — every leaf activity has a `duration`, predecessors form a DAG, and a top-level `project.start_date` is present (an optional `project.calendar` controls working-day projection). CPM offsets project onto the calendar.
 - **Pinned mode** — every leaf activity carries both `start_date` and `end_date`.
