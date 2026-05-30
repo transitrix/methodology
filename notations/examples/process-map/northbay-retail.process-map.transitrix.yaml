@@ -37,7 +37,6 @@ process_map:
           capability: CAPABILITY-V2.2.1
           maturity: 2
           status: Active
-          bpmn_file: views/bpmn/DEMAND_FORECAST_process.bpmn.transitrix.yaml
           description: AI-assisted SKU-level demand prediction.
         - process_id: PROC-NB-INV-REPLEN-001
           name: Store Replenishment
@@ -57,7 +56,6 @@ process_map:
           capability: CAPABILITY-V1.2.2
           maturity: 3
           status: Active
-          bpmn_file: views/bpmn/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
         - process_id: PROC-NB-DELIVERY-001
           name: Last-mile Delivery
           owner_role: ROLE-LOG-001

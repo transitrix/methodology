@@ -42,7 +42,6 @@ notation: process-map
 | `owner_role` | Responsible role |
 | `capability` | Capability ID this process realises (canonical form, e.g. `CAPABILITY-V1`, `CAPABILITY-H1`) |
 | `maturity` | Integer 1–5 |
-| `bpmn_file` | Path to the detailed BPMN diagram |
 | `description` | Short description |
 
 ## Preview

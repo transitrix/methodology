@@ -24,7 +24,6 @@ process_map:
           capability: CAPABILITY-V1
           maturity: 3
           status: Active
-          bpmn_file: views/bpmn/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml
           description: End-to-end fulfilment from order placement to delivery.
         - process_id: PROC-CUST-ONBOARD-001
           name: Customer Onboarding
