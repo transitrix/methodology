@@ -207,7 +207,7 @@ Transitrix/
 │   ├── your_company/           # Your new organization
 │   └── another_org/            # Another organization
 ├── method/
-├── .github_workflows_example.yaml
+├── integration/ci-example.yaml
 └── README.md
 ```
 

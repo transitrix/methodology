@@ -120,7 +120,7 @@ The root `transitrix.yaml` pins which methodology release this repo conforms to 
 
 ```yaml
 transitrix: 1
-methodology_version: "0.4.x"
+methodology_version: "0.5.0"
 notations: [fgca, goals, activities, issues, capability-map, codex]
 zones: [canon, field, codex]
 ```
