@@ -35,7 +35,7 @@ Every inline process entry under `groups[].processes[]` carries the canonical pr
 
 The process landscape map answers the question: **what processes does the organisation have?**
 
-It is a structured catalogue — not a flow diagram. Individual process flows are described in BPMN files (`*.bpmn.transitrix.yaml`). The landscape map is the inventory that sits above them: it shows the full set of processes, how they are grouped, and their relationships to capabilities and organisational units.
+It is a structured catalogue — not a flow diagram. Individual process flows are defined on each `PROCESS` element itself (its `participants` + `flow`, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); a BPMN file (`*.bpmn.transitrix.yaml`) is a **derived projection** of that flow, not its source ([views/01-bpmn.md](01-bpmn.md)). The landscape map is the inventory that sits above the elements: it shows the full set of processes, how they are grouped, and their relationships to capabilities and organisational units. It references each process by `process_id`; the element is the definition home.
 
 The two notations are complementary:
 
@@ -91,7 +91,6 @@ process_map:
           capability: "CAPABILITY-V1"
           maturity: 2
           status: "Active"
-          bpmn_file: "views/bpmn/ORDER_FULFILLMENT_process.bpmn.transitrix.yaml"
 
         - process_id: "PROC-CUST-ONBOARD-001"
           name: "Customer Onboarding"
@@ -136,7 +135,8 @@ process_map:
 | `processes[].capability` | No | Capability ID this process realises (V1, H1, etc.) |
 | `processes[].maturity` | No | Current CMM level (1–5) |
 | `processes[].status` | Yes | `Draft` / `Active` / `Deprecated` |
-| `processes[].bpmn_file` | No | Path to the detailed BPMN diagram file |
+
+> **No `bpmn_file` pointer.** Earlier revisions carried an optional `processes[].bpmn_file` path to "the detailed BPMN diagram." It is **removed**: a BPMN file is a *derived projection* of the referenced `PROCESS` element's `flow` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5, [views/01-bpmn.md](01-bpmn.md)), not a source artefact. Storing a path to generated output in the inventory would violate the view-purity corollary ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). The map references the process by `process_id`; the diagram is regenerated from that element's `flow` and located by convention, so no separate pointer is held here.
 
 ---
 

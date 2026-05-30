@@ -10,6 +10,12 @@ maturity: 1
 description: >
   Bring a new customer from signed agreement to first productive use.
 
+# Participants — the lanes (ROLE-… / ACTOR-…), in rendered top-to-bottom order.
+# Lane captions derive from each referenced element's `name`. All resolve in canon.
+participants:
+  - ROLE-SALES-1
+  - ROLE-OPS-1
+
 # Admission record (CONTRACT.md §6)
 zone: canon
 admitted_at: "2026-05-29"

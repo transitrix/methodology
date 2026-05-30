@@ -1,7 +1,8 @@
 # Worked example — PROCESS element primitive.
 # Schema: notations/ELEMENT_PRIMITIVES.md §7.5 + envelope §3.
-# Arranged by the process-map view (canon/views/processmap/); the detailed
-# flow lives in canon/views/bpmn/.
+# The behaviour (participants + flow) lives here, on the element — this is the
+# complete, self-sufficient definition. A BPMN diagram is a derived projection
+# of `flow` (notations/views/01-bpmn.md); there is no `bpmn_file` source field.
 
 notation: process
 id: PROCESS-ORD-FULFILL-1
@@ -9,10 +10,61 @@ name: "Order Fulfilment"
 owner_role: ROLE-OPS-1
 capability: CAPABILITY-V1
 maturity: 2
-bpmn_file: "canon/views/bpmn/order-fulfilment.bpmn.transitrix.yaml"
 description: >
   End-to-end fulfilment of a customer order, from validated intake through
   pick / pack / ship to close-out.
+
+# Participants — the lanes, in rendered top-to-bottom order. Each references a
+# canonical active-structure element (ROLE-… / ACTOR-…); the lane caption is
+# derived from that element's `name`. All references resolve in canon.
+participants:
+  - ROLE-SALES-1
+  - ROLE-OPS-1
+
+# Flow — the canonical process graph (ELEMENT_PRIMITIVES.md §7.5). Sufficient to
+# regenerate the BPMN diagram; the view adds only deterministic layout.
+# Step IDs follow the canonical ID grammar (IDS_AND_REFERENCES.md §1) and are
+# addressable within this PROCESS; a step is promoted to a registered standalone
+# TYPE only when a second document first references it (§7.5, §3.3).
+flow:
+  steps:
+    - id: STEP-ORD-FULFILL-1
+      type: startEvent
+      performed_by: ROLE-SALES-1
+    - id: STEP-ORD-FULFILL-2
+      type: userTask
+      name: "Validate Order"
+      performed_by: ROLE-SALES-1
+      supported_by_application: APPLICATION-OMS-1
+    - id: STEP-ORD-FULFILL-3
+      type: exclusiveGateway
+      name: "In stock?"
+      performed_by: ROLE-OPS-1
+    - id: STEP-ORD-FULFILL-4
+      type: task
+      name: "Pick and Pack"
+      performed_by: ROLE-OPS-1
+      supported_by_application: APPLICATION-OMS-1
+    - id: STEP-ORD-FULFILL-5
+      type: task
+      name: "Ship Order"
+      performed_by: ROLE-OPS-1
+    - id: STEP-ORD-FULFILL-6
+      type: userTask
+      name: "Notify Customer of Backorder"
+      performed_by: ROLE-SALES-1
+      supported_by_application: APPLICATION-OMS-1
+    - id: STEP-ORD-FULFILL-7
+      type: endEvent
+      performed_by: ROLE-OPS-1
+  sequence:
+    - { from: STEP-ORD-FULFILL-1, to: STEP-ORD-FULFILL-2 }
+    - { from: STEP-ORD-FULFILL-2, to: STEP-ORD-FULFILL-3 }
+    - { from: STEP-ORD-FULFILL-3, to: STEP-ORD-FULFILL-4, condition: 'in_stock' }
+    - { from: STEP-ORD-FULFILL-3, to: STEP-ORD-FULFILL-6, default: true }
+    - { from: STEP-ORD-FULFILL-4, to: STEP-ORD-FULFILL-5 }
+    - { from: STEP-ORD-FULFILL-5, to: STEP-ORD-FULFILL-7 }
+    - { from: STEP-ORD-FULFILL-6, to: STEP-ORD-FULFILL-7 }
 
 # Admission record (CONTRACT.md §6)
 zone: canon

@@ -25,7 +25,7 @@ description: >
   One-paragraph elaboration.
 
 # ── per-TYPE fields (ELEMENT_PRIMITIVES.md §7) ──
-# PROCESS:  owner_role: ROLE-… ; capability: CAPABILITY-… ; maturity: 1-5 ; bpmn_file: …
+# PROCESS:  owner_role: ROLE-… ; capability: CAPABILITY-… ; maturity: 1-5 ; participants: [ROLE-…|ACTOR-…] ; flow: { steps, sequence }
 # PRODUCT:  type ; capabilities: [CAPABILITY-…] ; processes: [PROCESS-…] ; supporting_apps: [APPLICATION-…]
 # ROLE / UNIT / EMPLOYEE:  responsibility_area / unit / roles …
 # RULE:     statement ; applies_to: [PROCESS-…|APPLICATION-…] ; severity ; source ; owner_role
