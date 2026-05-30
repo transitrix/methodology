@@ -111,9 +111,11 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
-### 3.3 File-local labels (out of scope)
+### 3.3 File-local labels (standalone BPMN projection only)
 
-BPMN element IDs inside a single file (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) are local labels, not cross-document references. They identify nodes within one BPMN document and are not part of the TYPE registry above. Each BPMN file may use its own labelling convention.
+In a **standalone `.bpmn.transitrix.yaml` projection** — a generated diagram, not an authored source — the node IDs (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) are local labels, not cross-document references: they identify nodes within that one rendered file and are not part of the TYPE registry above.
+
+This does **not** apply to a process flow authored inside a `PROCESS` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.5). There the flow is canon: each `flow.steps[].id` follows the canonical ID grammar (§1) and is **addressable** — unique within its `PROCESS` and referenceable by a step-level `CHANGE`, a `RULE`, or an `ACTIVITY` — and is promoted to a registered standalone TYPE only if a second document references it (canonical-by-containment + promotion, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1).
 
 ### 3.4 Field artefact types
 
