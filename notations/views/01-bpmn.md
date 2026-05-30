@@ -26,11 +26,16 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
-## Element lifecycle
+## Relationship to the PROCESS element — BPMN is a projection
 
-BPMN files use **file-local labels** for the nodes they describe (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`). Per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3 these labels are not canonical elements — they identify nodes within one BPMN document only, not artefacts that the organisation registers in its element catalogue. Accordingly, neither the BPMN nodes nor the BPMN document itself carry the canonical primitive lifecycle (`valid_from` / `valid_to`) defined in [CONTRACT.md](../CONTRACT.md) §7.
+A `.bpmn.transitrix.yaml` document is a **projection** of a `PROCESS` element's `flow`, not the definition home of the process. The canonical behaviour — participants, steps, gateways, sequence flows — lives on the `PROCESS-…` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); this notation defines how that flow **renders** to BPMN 2.0. A BPMN file is derived output: it can be deleted and regenerated from the element with no loss (the reconstruction invariant, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
 
-The lifecycle of the **process** this BPMN file describes lives on the corresponding `PROCESS-…` element registered in the process landscape map ([06-process-map.md](06-process-map.md)); the BPMN file is the detailed flow representation of that process, not the lifecycle bearer.
+Two consequences:
+
+- **The view stores no behaviour and no captions of its own.** Lane captions are **derived** from each participant's `name`; the role / system bindings are the `PROCESS` `participants` and per-step `performed_by`. The only thing this notation adds on top of the element is layout, and layout is computed deterministically at compile time (§1) — so it carries no information either. The view is `render(PROCESS.flow)` and nothing more.
+- **Lifecycle and identity live on the element.** The node labels in a rendered BPMN file (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) remain file-local labels in the *projection* ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3); the canonical, addressable identity of each step is the `PROCESS` `flow.steps[].id` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5). Neither the BPMN file nor its labels carry the primitive lifecycle (`valid_from` / `valid_to`, [CONTRACT.md](../CONTRACT.md) §7); that lives on the `PROCESS` element registered in the process landscape map ([06-process-map.md](06-process-map.md)).
+
+> **Inversion (this change).** Until now the BPMN file was the detailed flow representation that the `PROCESS` element pointed at via `bpmn_file`. That pointer is inverted: the element's `flow` is the source, the BPMN file is derived. The structural schema in §3–§8 below describes the **projected (serialised) form** the renderer emits and consumes.
 
 ---
 
@@ -40,7 +45,7 @@ A process file describes a BPMN 2.0 process as a structured YAML document. The n
 
 The notation is intentionally minimal. It covers the subset of BPMN 2.0 that maps cleanly to text and produces unambiguous diagrams without manual editing. Element types and structures outside this subset are explicitly out of scope (see §13).
 
-The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Modeler, bpmn.io, Signavio, etc.) without round-tripping; YAML is the single source of truth.
+The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Modeler, bpmn.io, Signavio, etc.) without round-tripping. The canonical source of truth is the `PROCESS` element's `flow`, of which this YAML is a projection (see "Relationship to the PROCESS element" above).
 
 ---
 
@@ -120,7 +125,7 @@ The `pools` array must contain exactly one entry. Two or more entries cause a co
 
 ## 6. Lanes
 
-Lanes (a.k.a. swimlanes) partition a pool into horizontal bands, each typically representing a role or responsible system. Every element belongs to exactly one lane.
+Lanes (a.k.a. swimlanes) partition a pool into horizontal bands, each representing one **participant** — a `ROLE-…` or `ACTOR-…` (person / business_unit / system). Every element belongs to exactly one lane. In the canonical form a lane is the projection of one entry in the `PROCESS` `participants` list ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5).
 
 ```yaml
 lanes:
@@ -137,12 +142,12 @@ lanes:
 | Field | Type | Constraints |
 |---|---|---|
 | `id` | string | Identifier pattern; must differ from pool id and from any element id |
-| `name` | string | Non-empty, free-form (rendered as the lane caption) |
+| `performed_by` | string | The lane's participant — `ROLE-…` or `ACTOR-…`. The default for every element in the lane (see §7.2). |
+| `name` | string | The rendered lane caption. **Derived** from the participant's `name` — not authored (reconstruction invariant, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). Present in the serialised projection only. |
 | `elements` | array | At least one element required |
-| `performed_by_role` | string | Optional. `ROLE-…` responsible for the work in this lane — the default for every element in it (see §7.2). |
 | `supported_by_application` | string | Optional. `APPLICATION-…` used for the work in this lane — the default for every element in it (see §7.2). |
 
-Order of lanes in the YAML determines the vertical order of swimlanes in the rendered diagram (top to bottom).
+Order of participants in the `PROCESS` element determines the vertical order of swimlanes in the rendered diagram (top to bottom).
 
 ---
 
@@ -167,7 +172,7 @@ Each element is an object with these fields:
 | `id` | string | Identifier pattern; globally unique within the document |
 | `type` | string | One of the seven enum values above |
 | `name` | string | Required for tasks and gateways (non-empty); optional for events |
-| `performed_by_role` | string | Optional. `ROLE-…` responsible for this task — overrides the lane default (see §7.2). |
+| `performed_by` | string | Optional. `ROLE-…` or `ACTOR-…` responsible for this step — overrides the lane participant (see §7.2). |
 | `supported_by_application` | string | Optional. `APPLICATION-…` used for this task — overrides the lane default (see §7.2). |
 
 Example:
@@ -200,12 +205,12 @@ A gateway with exactly one incoming and one outgoing flow is forbidden — use a
 
 ### 7.2. Role and system association (cross-references to canon)
 
-A BPMN document may record **who** performs each piece of work and **which system** supports it, by referencing canon primitives from two optional fields:
+A process records **who** performs each piece of work and **which system** supports it by referencing canon primitives. In the canonical form these are the `PROCESS` `participants` and per-step `performed_by` / `supported_by_application` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); the BPMN projection carries them through:
 
-- `performed_by_role: ROLE-…` — the responsible business role ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE`; `ACTOR` is the identity that fills it).
+- `performed_by: ROLE-…` or `ACTOR-…` — the responsible role or actor ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE` as the position and `ACTOR` as the identity — person / business_unit / system — that fills it).
 - `supported_by_application: APPLICATION-…` — the supporting application ([10-applications.md](10-applications.md)).
 
-Both may appear at **lane** level (the default for every element in the lane — the standard swimlane-is-a-role reading) and at **element** level (an override for one task). Precedence, per element:
+Both may appear at **lane** level (the default for every element in the lane — the standard swimlane-is-a-participant reading) and at **element** level (an override for one task). Precedence, per element:
 
 1. Element-level value wins.
 2. Otherwise the enclosing lane's value applies.
@@ -380,7 +385,7 @@ In addition, anti-pattern checks (warnings, not errors) flag suspicious-but-vali
 
 | ID | Rule |
 |---|---|
-| **BPMN-XREF-001** | A `performed_by_role` / `supported_by_application` value (on a lane or an element, §7.2) must resolve to an admitted primitive in canon: `ROLE-…` in `canon/elements/02_business/roles/`, `APPLICATION-…` in `canon/elements/03_application/applications/`. Same canon-existence bar as `REL-002`, applied at parse time when the catalogue is loaded. |
+| **BPMN-XREF-001** | A `performed_by` / `supported_by_application` value (on a lane or an element, §7.2) must resolve to an admitted primitive in canon: `ROLE-…` in `canon/elements/02_business/roles/` or `ACTOR-…` in `canon/elements/02_business/actors/`; `APPLICATION-…` in `canon/elements/03_application/applications/`. Same canon-existence bar as `REL-002`, applied at parse time when the catalogue is loaded. |
 
 ### Warnings (non-blocking)
 
