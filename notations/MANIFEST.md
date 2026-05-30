@@ -29,7 +29,7 @@ In this methodology repo the worked example lives at `organizations/acme_corp/tr
 
 ```yaml
 transitrix: 1                       # manifest schema version (integer)
-methodology_version: "0.4.x"        # the methodology release this repo conforms to
+methodology_version: "0.5.0"        # the methodology release this repo conforms to
 notations: [fgca, goals, activities, issues, capability-map, codex]
 zones: [canon, field, codex]
 ```
@@ -38,7 +38,7 @@ zones: [canon, field, codex]
 |---|---|---|---|
 | `transitrix` | yes | integer | Manifest schema version. `1` today. Identifies the file as a Transitrix adopter manifest. |
 | `methodology_version` | yes | string | The methodology release this repository pins to. Adopters follow the published specs at this version rather than vendoring `notations/`. |
-| `notations` | yes | list | Short names of the notations the repository uses, from the catalogue in [README.md](README.md) — plus `codex` for the codex zone (see [14-codex.md](14-codex.md)). |
+| `notations` | yes | list | Short names of the notations the repository uses, from the catalogue in [README.md](README.md) — plus `codex` for the codex zone (see [14-codex.md](elements/14-codex.md)). |
 | `zones` | yes | list | Which zones the repository maintains — any subset of `canon`, `field`, `codex`. A repo MAY start canon-only and add `field` / `codex` later. |
 
 No validator enforces the manifest yet; it is declarative. Tooling MAY read it to discover the pinned methodology version and the active notations and zones.
@@ -49,4 +49,4 @@ No validator enforces the manifest yet; it is declarative. Tooling MAY read it t
 
 - Zone model and admission record: [CONTRACT.md](CONTRACT.md) §5–6.
 - Notation catalogue (short names): [README.md](README.md).
-- Codex zone: [14-codex.md](14-codex.md).
+- Codex zone: [14-codex.md](elements/14-codex.md).

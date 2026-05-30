@@ -12,13 +12,15 @@ It builds on **ArchiMate 3.2**, **BPMN 2.0**, and the **Capability Maturity Mode
 
 Start here:
 
-- **[`method/methodology.md`](method/methodology.md)** — the canonical methodology specification. Read this first.
+- **[`method/methodology.md`](method/methodology.md)** — the methodology overview. Read this first for the model and principles.
+- **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`glossary.md`](glossary.md)** — standardised terminology.
 - **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — navigation guide.
 
 Tooling:
 
-- **[`TOOLING.md`](TOOLING.md)** — how to use Transitrix Studio (the reference VS Code extension and CLI for editing all Transitrix custom formats).
+- **[`integration/studio.md`](integration/studio.md)** — how to use Transitrix Studio (the reference VS Code extension and CLI for editing all Transitrix custom formats).
+- **[`integration/tooling.md`](integration/tooling.md)** — broader tooling and ecosystem notes.
 
 Per-organisation:
 
@@ -29,44 +31,36 @@ Per-organisation:
 
 CI:
 
-- **[`.github_workflows_example.yaml`](.github_workflows_example.yaml)** — GitHub Actions template for the validators.
+- **[`integration/ci-example.yaml`](integration/ci-example.yaml)** — CI template for the validators.
 
 ## Repository structure
 
 ```
 transitrix/methodology/
-├── method/                          # Methodology spec
-│   ├── methodology.md               # Canonical methodology document
-│   ├── notations/                   # ArchiMate / PlantUML reference materials
-│   └── bpmn-notation-kit/           # BPMN DSL spec, rules, examples
+├── method/
+│   └── methodology.md               # Canonical methodology overview
+├── notations/                       # Notation specs — the canonical model
+│   ├── README.md                    # Index of all notations (view + element)
+│   ├── CONTRACT.md                  # Shared header / zones / lifecycle / versioning
+│   ├── IDS_AND_REFERENCES.md        # ID grammar + TYPE registry
+│   ├── ELEMENT_PRIMITIVES.md        # Element-primitive file schema
+│   ├── MANIFEST.md                  # Adopter manifest (transitrix.yaml) spec
+│   ├── views/                       # View-notation specs (BPMN, FGCA, goals, …)
+│   ├── elements/                    # Element-notation specs (codex, requirement, …)
+│   └── examples/                    # Worked example files per notation
 ├── organizations/
 │   ├── acme_corp/                   # Worked example organisation
-│   │   ├── elements/                # Architecture elements by ArchiMate layer
-│   │   │   ├── 01_motivation/
-│   │   │   ├── 02_business/
-│   │   │   ├── 03_application/
-│   │   │   └── 04_technology/
-│   │   ├── relations/               # Edges of the architecture graph
-│   │   ├── views/                   # Composite diagrams and aggregations over elements
-│   │   │   ├── goals/               # Goals trees
-│   │   │   ├── capabilities/        # Capability maps + maturity
-│   │   │   ├── processmap/          # Process landscape maps
-│   │   │   ├── bpmn/                # Process flow diagrams (BPMN)
-│   │   │   ├── fgca/                # Factor → Goal → Change → Activity chains
-│   │   │   ├── fga/                 # Factor → Goal → Activity chains
-│   │   │   ├── blocks/              # Nested block diagrams (Svgbob)
-│   │   │   ├── activities/          # Mermaid activity diagrams
-│   │   │   ├── products/            # Filtered views over Product elements
-│   │   │   └── applications/        # Filtered views over Application elements
-│   │   ├── .templates/              # Element / relation / view templates
-│   │   ├── .validators/             # Lint scripts (lint.py)
-│   │   ├── README.md
-│   │   ├── GETTING_STARTED.md
-│   │   └── CONVENTIONS.md
+│   │   ├── canon/                   # Zone: validated model — elements, relations, assertions, views
+│   │   ├── field/                   # Zone: raw material — interviews, surveys, observations
+│   │   ├── codex/                   # Zone: external laws + internal policies
+│   │   ├── .templates/  .validators/
+│   │   ├── transitrix.yaml          # Adopter manifest
+│   │   └── README.md  GETTING_STARTED.md  CONVENTIONS.md  AGENTS.md
 │   └── NEW_ORGANIZATION_TEMPLATE.md # How to bootstrap a new organisation
-├── glossary.md
-├── PROJECT_INDEX.md
-├── TOOLING.md
+├── migrations/                      # Per-release migration recipes (0.4→0.5, 0.5→0.6)
+├── integration/                     # Studio / tooling / CI integration notes
+├── skills/                          # Onboarding + extraction skills
+├── glossary.md  PROJECT_INDEX.md  CHANGELOG.md  RELEASING.md
 ├── README.md                        # This file
 ├── LICENSE                          # MIT
 └── CONTRIBUTING.md                  # How to contribute
@@ -83,8 +77,8 @@ $EDITOR organizations/your_company/CONVENTIONS.md
 
 # 3. Create your first element from a template
 cp organizations/your_company/.templates/elements/03_application_template.yaml \
-   organizations/your_company/elements/03_application/MY_SERVICE.yaml
-$EDITOR organizations/your_company/elements/03_application/MY_SERVICE.yaml
+   organizations/your_company/canon/elements/03_application/MY_SERVICE.yaml
+$EDITOR organizations/your_company/canon/elements/03_application/MY_SERVICE.yaml
 
 # 4. Validate
 python3 organizations/your_company/.validators/lint.py
@@ -104,20 +98,9 @@ git commit -m "docs(arch): add MY_SERVICE for your_company"
 
 ## Notations supported
 
-Transitrix defines text-native notations for the most common enterprise-architecture artefacts. Each has a per-format extension. See [`notations/README.md`](notations/README.md) for the canonical index of all eleven notations and [methodology.md §6](method/methodology.md#6-notation-kit) for the rationale.
+Transitrix defines text-native notations for the most common enterprise-architecture artefacts — process diagrams (BPMN), goals trees, capability maps, the FGCA / FGA strategy chains, activities networks, process maps, blocks, products and applications catalogues, scenarios, issues, and process blueprints — plus element notations for the codex, requirements, assertions, relations, actors, and stakeholders. Each view notation has a `*.<short-name>.transitrix.yaml` extension and a `notation:` header.
 
-| Notation | Extension | Purpose | Status |
-| --- | --- | --- | --- |
-| Process diagram (BPMN 2.0) | `*.bpmn.transitrix.yaml` | Process flow with lanes, KPIs | Implemented |
-| Nested block diagrams | `*.blocks.transitrix.yaml` | Multi-level container layouts — recursive `block` tree | Documented |
-| Goals tree | `*.goals.transitrix.yaml` | Hierarchical goals | Planned |
-| Capabilities map | `*.capmap.transitrix.yaml` | Capabilities + maturity | Planned |
-| Process landscape map | `*.processmap.transitrix.yaml` | Top-level process catalogue | Planned |
-| FGCA | `*.fgca.transitrix.yaml` | Strategy-to-execution chain (Factor → Goal → Change → Activity) | Documented |
-| FGA | `*.fga.transitrix.yaml` | Simplified strategy chain (Factor → Goal → Activity) | Planned |
-| Activities | Mermaid (`.mmd`) | Quick activity / sequence diagrams | External standard |
-| Products | YAML element catalogue | Product / service inventory | Planned |
-| Applications | YAML element catalogue | Application portfolio | Planned |
+See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/methodology.md` §6](method/methodology.md#6-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
 
 ## Validation in one paragraph
 
@@ -142,5 +125,5 @@ Transitrix — including the FGCA / FGA notations that form part of it — is au
 
 ---
 
-**Methodology version:** 1.0
-**Last updated:** 2026-05-07
+**Methodology status:** pre-1.0 — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
+**Last updated:** 2026-05-30

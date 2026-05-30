@@ -1,7 +1,7 @@
 ---
 title: Transitrix — Methodology for Enterprise Architecture as Code
-status: v1.0_draft
-last_reviewed: 2026-05-26
+status: active
+last_reviewed: 2026-05-30
 audience: public
 license: MIT
 tags: [transitrix, methodology, enterprise_architecture, architecture_as_code, archimate, bpmn]
@@ -53,22 +53,23 @@ Transitrix does not invent semantics where they already exist. It builds on:
 
 Transitrix adds value at the layer above these standards: how the model is **stored**, **versioned**, **validated**, **rendered**, and **acted upon** by both humans and software agents.
 
-> **Editorial note (2026-05-08):** the ArchiMate vocabulary reference below was ported in from a standalone file. Section numbering is not yet harmonised — to be folded into §3 / §4 in a later pass.
-
 ## 3a. ArchiMate vocabulary reference
 
 Transitrix uses ArchiMate 3.2 as the vocabulary for architectural elements. Every YAML element file carries a `type` field drawn from this vocabulary. Relations between elements use ArchiMate relation types. The subset documented here covers what is actively used in the methodology — it is not a replacement for the full Open Group standard.
 
+> **Canonical ID authority.** The ID grammar and the full TYPE registry are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). Where the prefix tables below differ from that registry, the registry wins — the tables here describe the ArchiMate element *vocabulary*, not the canonical ID forms.
+
 ### 3a.1 Layer mapping
 
-ArchiMate organises elements across four layers. In Transitrix these map directly to the folder structure under `elements/`:
+ArchiMate organises elements across layers. In Transitrix these map directly to the folder structure under `canon/elements/`:
 
 | ArchiMate Layer | Transitrix folder | Contents |
 |---|---|---|
-| Motivation | `elements/01_motivation/` | Goals, principles, drivers, constraints |
-| Business | `elements/02_business/` | Roles, actors, processes, functions, products |
-| Application | `elements/03_application/` | Components, services, data objects, interfaces |
-| Technology | `elements/04_technology/` | Nodes, system software, artefacts, devices |
+| Motivation | `canon/elements/01_motivation/` | Goals, constraints, requirements, stakeholders |
+| Business | `canon/elements/02_business/` | Roles, actors, processes, products, rules |
+| Application | `canon/elements/03_application/` | Components, services, data objects, interfaces |
+| Technology | `canon/elements/04_technology/` | Nodes, system software, artefacts, devices |
+| Implementation & Migration | `canon/elements/05_implementation/` | Activities, changes |
 
 ### 3a.2 Motivation layer elements
 
@@ -140,7 +141,7 @@ name: "Order API"              # Human-readable name
 type: "ApplicationComponent"   # ArchiMate 3.2 type (see tables above)
 layer: "Application"           # Motivation | Business | Application | Technology
 metadata:
-  status: "Active"             # Draft | Active | Deprecated | Archived
+  status: "Active"             # Draft | Active | Deprecated
   owner: "firstname.lastname"
   created_at: "2026-05-08"
   updated_at: "2026-05-08"
@@ -177,7 +178,7 @@ properties:
 
 ## 4. Repository structure
 
-A Transitrix-managed repository organises content in a predictable, ArchiMate-aligned hierarchy. Multiple organisations can coexist in a single repository (multi-tenant structure).
+A Transitrix-managed repository organises content per organisation. Multiple organisations can coexist in a single repository (multi-tenant structure). Each organisation's content is split into three parallel **zones** — `canon`, `field`, and `codex` — defined in [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5. The zones are parallel, not stacked: validated truth (`canon`), raw source material (`field`), and externally-given constraints (`codex`) sit side by side.
 
 ```
 organizations/
@@ -185,32 +186,34 @@ organizations/
 │   ├── README.md                  # Organisation overview
 │   ├── GETTING_STARTED.md         # Onboarding for the team
 │   ├── CONVENTIONS.md             # Local naming conventions and overrides
-│   ├── elements/                  # Atomic ArchiMate elements (1 element = 1 file)
-│   │   ├── 01_motivation/         # Goals, principles, drivers, constraints
-│   │   ├── 02_business/           # Roles, actors, processes, functions, products
-│   │   ├── 03_application/        # Components, services, data objects
-│   │   └── 04_technology/         # Nodes, system software, artefacts
-│   ├── relations/                 # Edges of the architecture graph (1 relation = 1 file)
-│   ├── views/                     # Composite diagrams and aggregations over elements
-│   │   ├── goals/                 # Goals trees
-│   │   ├── capabilities/          # Capability maps + maturity
-│   │   ├── processmap/            # Process landscape maps
-│   │   ├── bpmn/                  # Process flow diagrams (BPMN)
-│   │   ├── fgca/                  # Factor → Goal → Change → Activity chains
-│   │   ├── fga/                   # Factor → Goal → Activity chains
-│   │   ├── blocks/                # Nested block diagrams (ASCII / Svgbob)
-│   │   ├── activities/            # Activity schedule networks
-│   │   ├── products/              # Filtered views over Product elements
-│   │   └── applications/          # Filtered views over Application elements
+│   ├── AGENTS.md                  # Assistant-neutral agent guide
+│   ├── transitrix.yaml            # Adopter manifest — pinned methodology version, notations, zones
+│   ├── canon/                     # Zone: validated, authoritative model
+│   │   ├── elements/              # Atomic elements by ArchiMate layer (1 element = 1 file)
+│   │   │   ├── 01_motivation/     # Goals, constraints, requirements, stakeholders
+│   │   │   ├── 02_business/       # Roles, actors, processes, products, rules
+│   │   │   ├── 03_application/    # Components, services, data objects
+│   │   │   └── 05_implementation/ # Activities, changes
+│   │   ├── relations/             # First-class, time-aware relations (1 relation = 1 file)
+│   │   ├── assertions/            # Compliance assertions (REQUIREMENT ↔ subject)
+│   │   └── views/                 # Composite diagrams and aggregations over elements
+│   │       ├── goals/  capabilities/  processmap/  bpmn/  fgca/  fga/
+│   │       └── blocks/  activities/  products/  applications/  scenarios/  …
+│   ├── field/                     # Zone: raw material — interviews, surveys, observations, drafts
+│   ├── codex/                     # Zone: external laws / regulations + internal policies / standards
+│   │   ├── external/<jurisdiction>/
+│   │   └── internal/
 │   ├── .templates/                # Copy-and-fill templates for elements / relations / views
-│   ├── .validators/               # Lint and schema scripts
+│   └── .validators/               # Lint and schema scripts
 └── NEW_ORGANIZATION_TEMPLATE.md   # How to bootstrap a new organisation
 ```
 
-Two-layer separation matters:
+Two layers stay separate inside `canon/`:
 
-- **`elements/`** holds atomic ArchiMate-typed objects. Each file describes exactly one element — its identity, type, properties, and metadata. No aggregation, no flow, no list of related items.
-- **`views/`** holds compositions over elements. A goals tree is a hierarchy referencing many Goal elements. A BPMN diagram is a detailed flow over a single BusinessProcess element. A products list is a filtered view over all elements of type Product. Views aggregate; elements stay atomic.
+- **`canon/elements/`** holds atomic ArchiMate-typed objects. Each file describes exactly one element — its identity, type, properties, metadata, admission record, and lifecycle. No aggregation, no flow, no list of related items.
+- **`canon/views/`** holds compositions over elements. A goals tree is a hierarchy referencing many Goal elements. A BPMN diagram is a detailed flow over a single BusinessProcess element. A products list is a filtered view over all elements of type Product. Views aggregate; elements stay atomic.
+
+Every canonical artefact carries an **admission record** and a **primitive lifecycle** (`valid_from` / `valid_to`) — both defined in [`notations/CONTRACT.md`](../notations/CONTRACT.md) §6–7. Attributes that change over time live in `*.history.yaml` sidecars (§9), not inline.
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
 
@@ -257,31 +260,17 @@ Transitrix supports a set of **notations** for describing different aspects of a
 
 Every notation is specified in its own file under `notations/`. The file-header rules common to all of them — the required `notation:` field, the reserved `spec_version:` field, validator behaviour, and the extension/content match guarantee — are defined once in `notations/CONTRACT.md`. The cross-notation ID grammar and TYPE registry live in `notations/IDS_AND_REFERENCES.md`.
 
-The table below is the canonical Transitrix notation set. Every notation file follows the extension convention `*.<short-name>.transitrix.yaml` and begins with a `notation: <short-name>` header. The `Status` column reflects the maturity of the notation **specification** (`draft`, `documented`, or `stable`), not whether a tool implements it; tool support is tracked per spec in its `dsm_status:` field.
+The **canonical index of all notations** — view notations and element notations alike, with their short names, file extensions, and spec-maturity status — lives in [`notations/README.md`](../notations/README.md). That index is the single source of truth for the notation set; this document does not restate the catalogue (a duplicate would drift). The `Status` column there reflects the maturity of the notation **specification** (`draft`, `documented`, or `stable`), not whether a tool implements it; tool support is tracked per spec in its `dsm_status:` field.
 
-| # | Notation | File extension | Purpose | Status |
-| --- | --- | --- | --- | --- |
-| 01 | **BPMN process diagram** | `*.bpmn.transitrix.yaml` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | documented |
-| 02 | **FGCA** | `*.fgca.transitrix.yaml` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | documented |
-| 03 | **FGA** | `*.fga.transitrix.yaml` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | draft |
-| 04 | **Goals tree** | `*.goals.transitrix.yaml` | Hierarchy of strategic and tactical goals as a tree. | documented |
-| 05 | **Capabilities map** | `*.capability-map.transitrix.yaml` | Capability hierarchy with CMMI V2.0 maturity, addressing, and vertical / horizontal orientation. | documented |
-| 06 | **Process landscape map** | `*.process-map.transitrix.yaml` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | draft |
-| 07 | **Activities** | `*.activities.transitrix.yaml` | Project schedule as an Activity-on-Node network, with an optional Gantt timeline projection. | documented |
-| 08 | **Nested block diagrams** | `*.blocks.transitrix.yaml` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | documented |
-| 09 | **Products** | `*.products.transitrix.yaml` | Inventory of products and services — text-and-table catalogue, no diagram. | draft |
-| 10 | **Applications** | `*.applications.transitrix.yaml` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | draft |
-| 11 | **Scenarios** | `*.scenarios.transitrix.yaml` | Alternative strategic development paths — each scenario scopes its own goals, capabilities, activities, products, processes, and applications. | documented |
-| 12 | **Issues register** | `*.issues.transitrix.yaml` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | draft |
-| 13 | **Process Blueprint** | `*.process-blueprint.transitrix.yaml` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | draft |
+A few cross-cutting notes:
 
-Gantt is not a separate notation — the calendar-timeline view ships as the Gantt projection of the Activities notation (07).
-
-Notations 09 (Products) and 10 (Applications) are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other notation is a diagram, rendered through Transitrix Studio's shared diagram engine.
+- Every view notation follows the extension convention `*.<short-name>.transitrix.yaml` and begins with a `notation: <short-name>` header (see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §1–3). Element notations are addressed by ID and governed by per-notation file-location rules.
+- Gantt is not a separate notation — the calendar-timeline view ships as the Gantt projection of the Activities notation.
+- Products and Applications are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other view notation is a diagram, rendered through Transitrix Studio's shared diagram engine.
 
 ### 6.1 Where each notation lives in the repository
 
-Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live under `elements/`. The two layers stay separate (see §4).
+Diagrams and aggregations live under `canon/views/`. Atomic ArchiMate elements live under `canon/elements/`. The two layers stay separate (see §4). The per-notation paths in the table below are shown relative to the organisation's `canon/` zone.
 
 | Notation | Typical location | What it is |
 | --- | --- | --- |
@@ -299,7 +288,7 @@ Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live un
 | Issues register | `views/issues/<NAME>.issues.transitrix.yaml` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan |
 | Process Blueprint | `views/process-blueprint/<DOMAIN>.process-blueprint.transitrix.yaml` | Wide value-chain blueprint referencing stage aspects (systems, actors, equipment, information entities) |
 
-Individual product and application instances are still stored as **atomic elements** in their respective ArchiMate-layer folders — `elements/02_business/<PRODUCT_ID>.yaml` (with `type: Product`) and `elements/03_application/<APP_ID>.yaml` (with `type: ApplicationComponent`). The "view" file in `views/products/` or `views/applications/` defines how to filter, group, and present those elements (e.g., "all active Products grouped by category").
+Individual product and application instances are still stored as **atomic elements** in their respective ArchiMate-layer folders — `canon/elements/02_business/<PRODUCT_ID>.yaml` (with `type: Product`) and `canon/elements/03_application/<APP_ID>.yaml` (with `type: ApplicationComponent`). The "view" file in `views/products/` or `views/applications/` defines how to filter, group, and present those elements (e.g., "all active Products grouped by category").
 
 Inline diagrams (Mermaid blocks in markdown, embedded ASCII block diagrams) are explicitly allowed when the diagram is bound to one specific document and has no independent life. Use stand-alone files in `views/` when the diagram is a first-class artefact of the model.
 
@@ -347,7 +336,7 @@ The two notations are complementary — most organisations need both.
 
 Working with the Transitrix repository is structurally identical to working with a software codebase:
 
-1. **Create.** Copy a template from `.templates/` into the appropriate `elements/` or `relations/` folder.
+1. **Create.** Copy a template from `.templates/` into the appropriate `canon/elements/` or `canon/relations/` folder.
 2. **Describe.** Fill in the YAML — element attributes or relation endpoints. Add metadata (owner, status, dates).
 3. **Validate.** Run the linter (`.validators/lint.py`) locally. Fix syntax, integrity, and policy errors.
 4. **Review.** Open a pull request. Reviewers see the change as a Git diff — the same review surface as for code.
@@ -365,7 +354,7 @@ The linter applies five categories of rules. Each category has progressively-dee
 | **Atomicity** | Element files contain no relations section; relation files contain no element fields beyond endpoints. |
 | **Referential integrity** | Every `source` and `target` in a relation refers to an existing element id. |
 | **Semantics** | Relations conform to ArchiMate 3.2 layer rules (e.g., a BusinessRole cannot be served by an ApplicationComponent without an intermediate ApplicationService). |
-| **Policy** | Active / Production status requires an `owner` field; recent updates require an `updated_at` date; deprecated elements must reference a successor. |
+| **Policy** | Active status requires an `owner` field; recent updates require an `updated_at` date; deprecated elements must reference a successor. |
 
 Validators run locally on save and as a CI gate on every pull request. A pull request that breaks the validation matrix cannot be merged.
 
@@ -383,19 +372,7 @@ Consistency in names is a small thing that pays back daily during diff review an
 
 ### 9.1 Element id type prefixes
 
-| Prefix | ArchiMate type |
-| --- | --- |
-| `ROLE` | BusinessRole |
-| `ACTOR` | BusinessActor |
-| `PROC` | BusinessProcess |
-| `FUNC` | BusinessFunction |
-| `CAP` | Capability |
-| `APP` | ApplicationComponent |
-| `SVC` | ApplicationService |
-| `DATA` | DataObject |
-| `NODE` | Node (infrastructure) |
-| `SYS` | SystemSoftware |
-| `EXT` | External system |
+The canonical ID grammar and the full TYPE registry (`FACTOR`, `GOAL`, `ACTOR`, `CAPABILITY-V…`, `REQUIREMENT`, …) are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). Refer to it rather than to a local prefix list — a duplicate would drift from the registry.
 
 ### 9.2 Mandatory metadata
 
@@ -410,7 +387,7 @@ metadata:
   tags: ["tag1", "tag2"]
 ```
 
-`owner` is mandatory for any element with status `Active` or `Production`. Without an owner, the linter blocks the change.
+`owner` is mandatory for any element with status `Active`. Without an owner, the linter blocks the change.
 
 ## 10. Documentation hierarchy
 
@@ -419,7 +396,7 @@ A Transitrix repository carries documentation at three levels:
 **Repository root:**
 
 - `README.md` — overview and quick start
-- `methodology.md` (this document) — canonical methodology spec
+- `method/methodology.md` (this document) — canonical methodology overview
 - `glossary.md` — standard terminology
 - `LICENSE`, `CONTRIBUTING.md` — open-source artefacts
 
@@ -445,16 +422,16 @@ For organisations integrating Transitrix into existing pipelines, the linter (`.
 
 ## 12. Getting started
 
-### 13.1 For a new organisation
+### 12.1 For a new organisation
 
 1. Read `organizations/NEW_ORGANIZATION_TEMPLATE.md`.
 2. Create `organizations/<your_org_slug>/`.
 3. Copy structure from `organizations/acme_corp/` as a starting reference.
 4. Adapt `.templates/` to local conventions and overrides.
-5. Add the first elements to `elements/`.
+5. Add the first elements to `canon/elements/`.
 6. Open a pull request to introduce the organisation; the validators check the structure.
 
-### 13.2 For modelling capabilities
+### 12.2 For modelling capabilities
 
 1. Open `<org>/.templates/capability-map_template.yaml`.
 2. Define vertical (V) and horizontal (H) capabilities.
@@ -463,7 +440,7 @@ For organisations integrating Transitrix into existing pipelines, the linter (`.
 5. Set target maturity and a target date.
 6. Commit and open a PR.
 
-### 13.3 For modelling complex processes
+### 12.3 For modelling complex processes
 
 Use Transitrix Studio for BPMN authoring with lanes, stages, and KPIs.
 
@@ -483,7 +460,7 @@ This methodology document follows semantic versioning at the methodology level:
 - **Minor** — new notations, new validation rules, additive schema changes.
 - **Patch** — wording, examples, clarifications.
 
-Current methodology version: **1.0**. Tooling versions (Transitrix Studio, etc.) advance independently and declare their compatible methodology version range.
+The methodology is **pre-1.0** — see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 for the full compatibility policy (pre-1.0 MINOR bumps may carry breaking changes). The current release is recorded in [`CHANGELOG.md`](../CHANGELOG.md) and pinned per adopter repository via `methodology_version` in `transitrix.yaml` (see [`notations/MANIFEST.md`](../notations/MANIFEST.md)); this document does not restate a version number. Tooling versions (Transitrix Studio, etc.) advance independently and declare their compatible methodology version range.
 
 ## 14. License and contributing
 
@@ -497,5 +474,5 @@ Transitrix is authored by **Valerii Korobeinikov**. The methodology — includin
 
 ---
 
-**Document version:** 1.0 (initial English canonical, 2026-05-07).
+**Last reviewed:** 2026-05-30. The methodology's own versioning is tracked in [`CHANGELOG.md`](../CHANGELOG.md); this document is maintained alongside the `notations/` specs.
 **Status:** Active.
