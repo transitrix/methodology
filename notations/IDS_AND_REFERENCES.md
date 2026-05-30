@@ -1,6 +1,6 @@
 # IDs and cross-references — canonical grammar
 
-This appendix defines the ID grammar used across all eleven Transitrix notations and enumerates the TYPE registry. Every element ID and every cross-reference in any notation file follows this grammar.
+This appendix defines the ID grammar used across all Transitrix notations and enumerates the TYPE registry. Every element ID and every cross-reference in any notation file follows this grammar.
 
 Recorded 2026-05-20 as the canonical decision for the methodology.
 
@@ -209,6 +209,6 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 
 ## 7. References
 
-- Notation catalogue and the index of all eleven notations: [`README.md`](README.md).
+- Notation catalogue and the index of all notations: [`README.md`](README.md).
 - Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](views/05-capability-map.md) §4–5.
 - Methodology: `method/methodology.md`.
