@@ -1,0 +1,30 @@
+# Worked example — ASSESSMENT element primitive.
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.16 + envelope §3.
+# ArchiMate Assessment over a Driver: a dated finding about the state of
+# FACTOR-COMP-1 ("Support response time degraded over Q1"). No polarity field —
+# whether 8h is "bad" is an INFLUENCE concern, not the finding's.
+
+notation: assessment
+id: ASSESSMENT-SUPPORT-RESPONSE-1
+name: "Support first-response time at 8h and degrading"
+assesses: FACTOR-COMP-1
+description: >
+  Median first-response time on support tickets stood at 8 hours at the
+  Q1 2026 review and has trended upward across the prior two quarters.
+  The finding is the observed state of the support-response-time driver.
+observed_at: "2026-04-15"
+method: measurement
+source: "Support operations dashboard, Q1 2026 review"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-31"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-04-15"
+valid_to: null
