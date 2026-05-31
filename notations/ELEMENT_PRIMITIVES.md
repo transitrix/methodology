@@ -49,6 +49,7 @@ canon/
       constraints/    CONSTRAINT-*.yaml      # worked-example precedent
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
+      assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one FACTOR; no polarity)
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -144,6 +145,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `CONSTRAINT` | standalone | `constraint` | motivation | `01_motivation/constraints/` | §7.13 (worked-example precedent) |
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
 | `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
+| `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](views/09-products.md) |
@@ -164,6 +166,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **The strategy chain (`FACTOR` / `GOAL` / `CHANGE` / `ACTIVITY`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, FGCA, FGA, Activities, Scenarios, and Issues; a `FACTOR` in FGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 already mandates their catalogue uniqueness when cross-referenced. The flat FGCA/FGA/Goals/Activities documents remain the authoring surface (README "Form rule"); the catalogue file is the canonical record once an element is shared. Defining their element-file shape (§7.1–§7.4) is exactly what unblocks the elements-population that surfaced this task.
 - **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
+- **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `FACTOR` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the factor without losing that history. It is therefore its own catalogue element that references its `FACTOR` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` / `ISSUE` are `view-defined`.** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 scopes `SCENARIO` to "within the organisation" via its scenarios document and `ISSUE` to "within the issues catalogue document." A scenario is itself a container/projection over other elements; an issue register is a document-scoped tree. Neither is materialised as a standalone catalogue element in v1.
 - **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](views/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
@@ -211,7 +214,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
-| `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`) |
+| `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
@@ -431,6 +434,22 @@ Motivation-layer interest primitive — the stake profile, with identity referen
 | `description` | no | string | Free-text elaboration. |
 
 Stake in a specific `GOAL` / `ACTIVITY` / `CAPABILITY` is a `stakeholding` relation ([elements/17-relations.md](elements/17-relations.md) §3), not an inline field.
+
+### 7.16 `ASSESSMENT` — `01_motivation/assessments/`
+
+Motivation-layer **finding** primitive — a dated finding/judgement about the state of a `FACTOR` (driver). **ArchiMate mapping: Assessment**, assessing a **Driver** (the `FACTOR` it references). An assessment is a *found fact* ("support response time 8h, degrading"), not a recommendation; it justifies its own element by **temporality** — one driver accrues many assessments over time, each separately dated and lifecycled.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `assesses` | **yes** | string | `FACTOR-…` (the Driver) this finding is about. Singular ref ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §5); resolves to one defined `FACTOR`. |
+| `description` | **yes** | string | The finding itself — the observed state of the driver ("support response time 8h, degrading"). Used in place of a normative `statement`; an assessment states what *is*, not what *must be*. |
+| `observed_at` | recommended | string | Date the finding was observed / measured — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Distinct from `admitted_at` (admission to canon) and `valid_from` (when the finding took effect as a record). |
+| `method` | no | string | How the finding was established — e.g. `measurement`, `survey`, `observation`, `expert_judgement`. |
+| `source` | no | string | Citation / evidence pointer behind the finding (a dashboard, a report, a Field artefact reference). Field provenance proper goes in `derived_from` (§3). |
+
+**No polarity / SWOT field.** An assessment records *what was found*, never whether it is good or bad. Whether the finding acts as a strength, weakness, opportunity, or threat — and on what — is carried by the `INFLUENCE` relation (separate sub-task), not by the assessment. (No subtype vocabulary — `type` omitted.)
+
+No view inline shape: `ASSESSMENT` is standalone-only — it is not authored inline inside any view document.
 
 ---
 
