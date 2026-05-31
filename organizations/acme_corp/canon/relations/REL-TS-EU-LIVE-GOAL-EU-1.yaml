@@ -1,0 +1,32 @@
+# Worked example — target_state_satisfies_goal REL (TARGET_STATE → GOAL).
+# Schema: notations/elements/17-relations.md §2–3.
+# The EU-live target state satisfies the EU-expansion goal, in full.
+# M:N machinery: one REL file per (target_state, goal) pair. If this same
+# target state later turned out to satisfy a second goal as well (e.g.
+# a cost-of-operation goal), that would be a separate REL file alongside
+# this one — not a second `to:` on this file.
+
+notation: relation
+id: REL-TS-EU-LIVE-GOAL-EU-1
+type: target_state_satisfies_goal
+from: TARGET_STATE-EU-LIVE-1
+to: GOAL-EU-1
+
+# Per-relation attribute (target_state_satisfies_goal).
+# Closed vocabulary: `partial` | `full`. Optional; default `full` when omitted.
+degree: full
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-31"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — within both endpoints' windows (REL-003).
+# GOAL-EU-1 took effect 2026-05-26 and TARGET_STATE-EU-LIVE-1 took effect 2026-05-31,
+# so the satisfaction cannot predate the later of the two.
+valid_from: "2026-05-31"
+valid_to: null
