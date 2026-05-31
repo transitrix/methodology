@@ -1,0 +1,38 @@
+# Worked example — assessment_influences_goal REL (ASSESSMENT → GOAL).
+# Schema: notations/elements/17-relations.md §2–3.
+# The "support response time 8h and degrading" finding negatively influences
+# the "cut support response time by half" goal — the central metric is moving
+# away from the target.
+#
+# M:N machinery: one REL file per (assessment, goal) pair. If the same
+# assessment also bore on a different goal (e.g. a customer-experience goal,
+# with possibly a different sign), that would be a separate REL file alongside
+# this one — not a second `to:` on this file. All polarity in the motivation
+# model lives on this REL, never on the assessment node.
+
+notation: relation
+id: REL-ASSMT-SUPP-RESP-GOAL-OPS-1
+type: assessment_influences_goal
+from: ASSESSMENT-SUPPORT-RESPONSE-1
+to: GOAL-OPS-1
+
+# Per-relation attributes (assessment_influences_goal).
+# `sign` is required, closed vocabulary: `positive` | `negative`.
+# `magnitude` is optional, closed vocabulary: `low` | `medium` | `high`.
+sign: negative
+magnitude: high
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-31"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7) — within both endpoints' windows (REL-003).
+# ASSESSMENT-SUPPORT-RESPONSE-1 took effect 2026-04-15 and GOAL-OPS-1 took
+# effect 2026-05-26, so the influence cannot predate the later of the two.
+valid_from: "2026-05-26"
+valid_to: null

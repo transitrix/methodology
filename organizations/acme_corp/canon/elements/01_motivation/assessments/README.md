@@ -2,7 +2,7 @@
 
 Assessment element primitives — each file is one **dated finding about the state of a `FACTOR`** (driver) on the ArchiMate 3.2 **motivation** layer (ArchiMate **Assessment**, assessing a Driver). An assessment is a *found fact* ("support response time 8h, degrading"), not a recommendation. It is its own element — rather than a field on the factor — because of **temporality**: one driver accrues many assessments over time, each separately dated and lifecycled.
 
-An assessment carries **no polarity / SWOT field**: whether a finding reads as a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation, not of the finding itself.
+An assessment carries **no polarity / SWOT field**: whether a finding reads as a strength, weakness, opportunity, or threat is a property of the `assessment_influences_goal` REL ([`17-relations.md`](../../../../../../notations/elements/17-relations.md) §3, signed `positive` | `negative` with optional `magnitude`), not of the finding itself.
 
 TYPE registry: [`notations/IDS_AND_REFERENCES.md`](../../../../../../notations/IDS_AND_REFERENCES.md) §3.1 (`ASSESSMENT`).
 
@@ -28,3 +28,4 @@ Defined in [`notations/ELEMENT_PRIMITIVES.md`](../../../../../../notations/ELEME
 
 - Element-primitive schema: [`notations/ELEMENT_PRIMITIVES.md`](../../../../../../notations/ELEMENT_PRIMITIVES.md) §7.16.
 - The driver this assesses: [`../factors/`](../factors/).
+- Worked influence on a goal: [`../../../relations/REL-ASSMT-SUPP-RESP-GOAL-OPS-1.yaml`](../../../relations/REL-ASSMT-SUPP-RESP-GOAL-OPS-1.yaml) — the negative influence on `GOAL-OPS-1`.

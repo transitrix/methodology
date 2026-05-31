@@ -450,7 +450,7 @@ Motivation-layer **finding** primitive — a dated finding/judgement about the s
 | `method` | no | string | How the finding was established — e.g. `measurement`, `survey`, `observation`, `expert_judgement`. |
 | `source` | no | string | Citation / evidence pointer behind the finding (a dashboard, a report, a Field artefact reference). Field provenance proper goes in `derived_from` (§3). |
 
-**No polarity / SWOT field.** An assessment records *what was found*, never whether it is good or bad. Whether the finding acts as a strength, weakness, opportunity, or threat — and on what — is carried by the `INFLUENCE` relation (separate sub-task), not by the assessment. (No subtype vocabulary — `type` omitted.)
+**No polarity / SWOT field.** An assessment records *what was found*, never whether it is good or bad. Whether the finding acts as a strength, weakness, opportunity, or threat — and on what — is carried by the `assessment_influences_goal` REL kind ([elements/17-relations.md](elements/17-relations.md) §3, signed `positive` \| `negative` with optional `magnitude`), not by the assessment. (No subtype vocabulary — `type` omitted.) Resolution path for views: scan `canon/relations/` for REL files with `type: assessment_influences_goal` and `from: ASSESSMENT-…` (forward — which goals this finding bears on, with which sign); the reverse direction (which findings bear on a given goal) matches on `to: GOAL-…`. A SWOT view crosses the assessed `FACTOR.type` (internal/external) with the REL's `sign` to derive S/W/O/T quadrants per goal — derived, not stored.
 
 No view inline shape: `ASSESSMENT` is standalone-only — it is not authored inline inside any view document.
 
