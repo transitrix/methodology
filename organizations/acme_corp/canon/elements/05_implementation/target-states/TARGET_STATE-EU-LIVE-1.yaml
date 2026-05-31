@@ -1,0 +1,40 @@
+# Worked example — TARGET_STATE element primitive (ArchiMate Plateau).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.17 + envelope §3.
+# A structural snapshot — the CAPABILITY / PROCESS / APPLICATION selection
+# that exists when one or more GOALs are met. Satisfaction of GOAL-EU-1 is
+# a separate REL (see epic strategy#122, TargetState↔Goal sub-task); it is
+# never inline on this element.
+
+notation: target-state
+id: TARGET_STATE-EU-LIVE-1
+name: "EU operations live — three markets, localised CRM and payments"
+description: >
+  The structural end-state in which Acme operates in three EU markets:
+  the EU-localised CRM is live alongside the existing OMS, and the
+  customer-onboarding and order-fulfilment processes run on EU
+  infrastructure. The path that reaches this state is carried by a
+  SCENARIO; the goal it satisfies (GOAL-EU-1) is carried by a
+  target_state_satisfies_goal REL, not by an inline field here.
+capabilities:
+  - CAPABILITY-V1
+  - CAPABILITY-V1.2
+  - CAPABILITY-V2
+processes:
+  - PROCESS-CUST-ONBOARD-1
+  - PROCESS-ORD-FULFILL-1
+applications:
+  - APPLICATION-CRM-1
+  - APPLICATION-OMS-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-05-31"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-31"
+valid_to: null

@@ -65,7 +65,8 @@ canon/
       activities/     ACTIVITY-*.yaml          # Work Package (recursive)
       changes/        CHANGE-*.yaml            # Gap (multi-scale)
       milestones/     MILESTONE-*.yaml         # Implementation Event — registration owned by the MILESTONE TYPE task; folder reserved here
-      # room reserved for DELIVERABLE / PLATEAU if either becomes a first-class TYPE
+      target-states/  TARGET_STATE-*.yaml      # Plateau (§7.17 — structural snapshot satisfying GOALs)
+      # room reserved for DELIVERABLE if it ever becomes a first-class TYPE
   relations/          REL-*.yaml              # elements/17-relations.md (flat, not under elements/)
   assertions/         ASSERTION-*.yaml        # elements/16-assertion.md (flat, not under elements/)
   views/              *.<short>.transitrix.yaml   # the render-able projections
@@ -111,7 +112,7 @@ valid_to: null
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | The element TYPE's short name — the lowercased registry TYPE (`factor`, `goal`, `change`, `activity`, `capability`, `process`, `product`, `application`, `integration`, `role`, `actor`, `rule`, `constraint`; `requirement` per [elements/15](elements/15-requirement.md)). Machine-readable type tag; redundant with the ID prefix but read by tooling that does not parse IDs. Drives `HDR-002`. |
+| `notation` | yes | string | The element TYPE's short name — the lowercased registry TYPE (`factor`, `goal`, `change`, `activity`, `target-state`, `capability`, `process`, `product`, `application`, `integration`, `role`, `actor`, `rule`, `constraint`, `assessment`; `requirement` per [elements/15](elements/15-requirement.md)). Machine-readable type tag; redundant with the ID prefix but read by tooling that does not parse IDs. Drives `HDR-002`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1 (and §2 for `CAPABILITY`). The prefix MUST be the element's registry TYPE. |
 | `name` | yes | string | Human-readable label. **Canonical across every element TYPE — no TYPE-specific aliases.** [elements/15-requirement.md](elements/15-requirement.md) historically used `title` (inherited from IEEE/ISO requirements templates — stylistic, not functional); REQUIREMENT migrates `title` → `name` (follow-up F-3, §10). A richer naming structure (e.g. `short_title` + `long_description`) is a separate additive enhancement via *additional fields*, never via an alias for `name`. |
 | `type` | per-TYPE | string | Subtype value from the TYPE's controlled vocabulary (e.g. `external` / `internal` for FACTOR; `domain` / `supporting` for CAPABILITY). Required where §7 defines a subtype vocabulary; omitted where it does not. **`type` carries the *subtype*, never the element TYPE itself** — the element TYPE is carried by `notation` + the ID prefix. |
@@ -156,6 +157,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](views/10-applications.md) |
 | `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-fgca.md](views/02-fgca.md) |
 | `ACTIVITY` | standalone | `activity` | implementation | `05_implementation/activities/` | §7.4 + [views/07-activities.md](views/07-activities.md) |
+| `TARGET_STATE` | standalone | `target-state` | implementation | `05_implementation/target-states/` | §7.17 (no dedicated spec) |
 | `SCENARIO` | view-defined | `scenarios` | — | (none — `views/<…>.scenarios.transitrix.yaml`) | [views/11-scenarios.md](views/11-scenarios.md) |
 | `ISSUE` | view-defined | `issues` | — | (none — `views/<…>.issues.transitrix.yaml`) | [views/12-issues.md](views/12-issues.md) |
 | `EQUIPMENT` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3 |
@@ -167,6 +169,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `FACTOR` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the factor without losing that history. It is therefore its own catalogue element that references its `FACTOR` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
+- **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is the M:N relation declared on epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) and lands as a `REL` kind in a separate sub-task — never inline on this element.
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` / `ISSUE` are `view-defined`.** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 scopes `SCENARIO` to "within the organisation" via its scenarios document and `ISSUE` to "within the issues catalogue document." A scenario is itself a container/projection over other elements; an issue register is a document-scoped tree. Neither is materialised as a standalone catalogue element in v1.
 - **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](views/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
@@ -218,7 +221,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
-| `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `MILESTONE` (`milestones/` — see 6.2) |
+| `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `MILESTONE` (`milestones/` — see 6.2) |
 
 ### 6.1 New layer — `05_implementation`
 
@@ -227,7 +230,7 @@ This document **adds an `05_implementation/` layer**, the ArchiMate 3.2 *Impleme
 - An `ACTIVITY` ("initiative / workstream") is an ArchiMate **Work Package** — a unit of transformation work, not a steady-state business element. A `CHANGE` (the BDN change layer) is a **Gap** — a required delta to reach the target state. Both belong to the *execution* half of the strategy chain, distinct from the *intent* half (`FACTOR` / `GOAL`) in `01_motivation` and from the *steady-state* business elements (`CAPABILITY` / `PROCESS` / `ROLE` / …) in `02_business`.
 - Placing them in `02_business` would conflate "what the organisation is and does" with "the programme that changes it." A dedicated Implementation & Migration layer keeps the BDN execution layers together and ArchiMate-aligned, and matches the existing numbered-layer convention (`01_motivation` … `04_technology`). (The rejected alternative was to fold both into `02_business`.)
 
-**ArchiMate 5 → Transitrix 3.** The Transitrix model intentionally collapses ArchiMate's five Implementation & Migration concepts into three TYPEs: **ACTIVITY** covers *Work Package + Deliverable*; **CHANGE** covers *Gap*; **MILESTONE** covers *Implementation Event*. *Plateau* is expressed via time-aware attributes on primitives rather than as a standalone TYPE. `DELIVERABLE` and `PLATEAU` folders are reserved should either ever become a first-class TYPE.
+**ArchiMate 5 → Transitrix 4.** The Transitrix model collapses ArchiMate's five Implementation & Migration concepts into four TYPEs: **ACTIVITY** covers *Work Package + Deliverable*; **CHANGE** covers *Gap*; **TARGET_STATE** covers *Plateau* (§7.17 — the structural end-state an architect varies when offering solution options); **MILESTONE** covers *Implementation Event*. `DELIVERABLE` is the one ArchiMate concept that remains absorbed (into `ACTIVITY`); its folder stays reserved should it ever need to be split out as a first-class TYPE.
 
 Both `ACTIVITY` and `CHANGE` are **recursive / multi-scale**: a strategic initiative aggregates programmes → projects → tasks (all one `ACTIVITY` TYPE), and a capability-level `CHANGE` decomposes into process-level and step-level `CHANGE`s — in both cases via a `parent` relation between same-TYPE elements (see §7.3, §7.4). This matches the DSM model.
 
@@ -450,6 +453,26 @@ Motivation-layer **finding** primitive — a dated finding/judgement about the s
 **No polarity / SWOT field.** An assessment records *what was found*, never whether it is good or bad. Whether the finding acts as a strength, weakness, opportunity, or threat — and on what — is carried by the `INFLUENCE` relation (separate sub-task), not by the assessment. (No subtype vocabulary — `type` omitted.)
 
 No view inline shape: `ASSESSMENT` is standalone-only — it is not authored inline inside any view document.
+
+### 7.17 `TARGET_STATE` — `05_implementation/target-states/`
+
+Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target state is the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more `GOAL`s are met. It is what an architect *varies* when offering the customer solution options — making it a first-class addressable element, not an inline fragment of a goal or a scenario. The path from today's state to a target state is a `SCENARIO`; the goals a target state satisfies are carried as a separate `REL` kind (epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122), TargetState↔Goal sub-task), never inline here.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `capabilities` | no | list | `CAPABILITY-…` IDs in the target-state composition (the V/H IDs of [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §2). |
+| `processes` | no | list | `PROCESS-…` IDs in the composition. |
+| `applications` | no | list | `APPLICATION-…` IDs in the composition. |
+| `description` | recommended | string | One-paragraph elaboration — what *is true* about the organisation in this state. |
+| `link` | no | string | URL to supplementary documentation. |
+
+- **Composition lists are inline.** The target state *is* its composition; the lists name the structural primitives present in the state, not relationships that vary independently. They are timeless on the element file — the element's own `valid_from` / `valid_to` (§3 envelope) carry the lifecycle of the state as a whole.
+- **Goal satisfaction is a `REL`, not an inline field.** The `TARGET_STATE → GOAL` satisfaction relation is M:N and lands as a first-class time-aware `REL` kind on a separate sub-task of epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122). Do not add a `goals:` field to this element.
+- **Scenarios point at target states, not the other way around.** A `SCENARIO` is a *path* — the change sequence that reaches a target state. The `target_state` reference lives on the scenario per the SCENARIO reclassification sub-task; this element carries no `scenarios:` back-reference.
+
+No subtype vocabulary on `type`. (`base` / `intermediate` / `final` is one classification an organisation might use; v1 leaves it open.) The composition lists are the only required content for a target state to be useful — name + composition is enough to render it as a structural snapshot.
+
+There is no dedicated view spec in v1 — a target state is a *content element*, rendered as part of a Scenarios view (a path landing on it) and referenced as a composition fragment from any structural view that wants to scope itself to one state.
 
 ---
 
