@@ -2,8 +2,9 @@
 # Schema: notations/ELEMENT_PRIMITIVES.md §7.17 + envelope §3.
 # A structural snapshot — the CAPABILITY / PROCESS / APPLICATION selection
 # that exists when one or more GOALs are met. Satisfaction of GOAL-EU-1 is
-# a separate REL (see epic strategy#122, TargetState↔Goal sub-task); it is
-# never inline on this element.
+# carried as a target_state_satisfies_goal REL
+# (notations/elements/17-relations.md §3); it is never inline on this element.
+# Worked example REL file: canon/relations/REL-TS-EU-LIVE-GOAL-EU-1.yaml.
 
 notation: target-state
 id: TARGET_STATE-EU-LIVE-1

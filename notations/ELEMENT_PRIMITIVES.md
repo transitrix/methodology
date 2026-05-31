@@ -456,7 +456,7 @@ No view inline shape: `ASSESSMENT` is standalone-only — it is not authored inl
 
 ### 7.17 `TARGET_STATE` — `05_implementation/target-states/`
 
-Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target state is the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more `GOAL`s are met. It is what an architect *varies* when offering the customer solution options — making it a first-class addressable element, not an inline fragment of a goal or a scenario. The path from today's state to a target state is a `SCENARIO`; the goals a target state satisfies are carried as a separate `REL` kind (epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122), TargetState↔Goal sub-task), never inline here.
+Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target state is the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more `GOAL`s are met. It is what an architect *varies* when offering the customer solution options — making it a first-class addressable element, not an inline fragment of a goal or a scenario. The path from today's state to a target state is a `SCENARIO`; the goals a target state satisfies are carried as a separate `REL` kind (`target_state_satisfies_goal`, [elements/17-relations.md](elements/17-relations.md) §3), never inline here.
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
@@ -467,7 +467,7 @@ Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target 
 | `link` | no | string | URL to supplementary documentation. |
 
 - **Composition lists are inline.** The target state *is* its composition; the lists name the structural primitives present in the state, not relationships that vary independently. They are timeless on the element file — the element's own `valid_from` / `valid_to` (§3 envelope) carry the lifecycle of the state as a whole.
-- **Goal satisfaction is a `REL`, not an inline field.** The `TARGET_STATE → GOAL` satisfaction relation is M:N and lands as a first-class time-aware `REL` kind on a separate sub-task of epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122). Do not add a `goals:` field to this element.
+- **Goal satisfaction is a `REL`, not an inline field.** The `TARGET_STATE → GOAL` satisfaction relation is M:N and lives as a first-class time-aware `REL` kind — `target_state_satisfies_goal` ([elements/17-relations.md](elements/17-relations.md) §3, with optional `degree: partial | full`). Do not add a `goals:` field to this element. A view that needs the goals a given target state satisfies reads `canon/relations/` for REL files with `type: target_state_satisfies_goal` and `from: TARGET_STATE-…`; the reverse lookup (target states that reach a given goal) matches on `to: GOAL-…`.
 - **Scenarios point at target states, not the other way around.** A `SCENARIO` is a *path* — the change sequence that reaches a target state. The `target_state` reference lives on the scenario per the SCENARIO reclassification sub-task; this element carries no `scenarios:` back-reference.
 
 No subtype vocabulary on `type`. (`base` / `intermediate` / `final` is one classification an organisation might use; v1 leaves it open.) The composition lists are the only required content for a target state to be useful — name + composition is enough to render it as a structural snapshot.
