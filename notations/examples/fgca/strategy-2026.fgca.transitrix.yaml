@@ -13,9 +13,11 @@ factors:
   - id: FACTOR-1
     name: "Competitive market pressure"
     type: external
+    category: economic
   - id: FACTOR-2
     name: "Digital adoption acceleration"
     type: external
+    category: technological
 
 goals:
   - id: GOAL-1

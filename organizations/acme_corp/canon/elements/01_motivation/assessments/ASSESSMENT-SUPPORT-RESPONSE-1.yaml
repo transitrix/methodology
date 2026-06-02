@@ -1,10 +1,11 @@
 # Worked example — ASSESSMENT element primitive.
 # Schema: notations/ELEMENT_PRIMITIVES.md §7.16 + envelope §3.
 # ArchiMate Assessment over a Driver: a dated finding about the state of
-# FACTOR-COMP-1 ("Support response time degraded over Q1"). No polarity field —
-# whether 8h is "bad" is carried by the assessment_influences_goal REL kind
-# (notations/elements/17-relations.md §3); see canon/relations/REL-ASSMT-SUPP-
-# RESP-GOAL-OPS-1.yaml for the worked negative influence on GOAL-OPS-1.
+# FACTOR-COMP-1 (the neutral driver "Support response time"). No polarity
+# field — whether 8h is "bad" is carried by the assessment_influences_goal
+# REL kind (notations/elements/17-relations.md §3); see canon/relations/
+# REL-ASSMT-SUPP-RESP-GOAL-OPS-1.yaml for the worked negative influence on
+# GOAL-OPS-1.
 
 notation: assessment
 id: ASSESSMENT-SUPPORT-RESPONSE-1
