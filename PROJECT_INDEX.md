@@ -15,7 +15,7 @@ A map of the repository and where to find things. For the methodology itself, st
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history (Keep a Changelog; SemVer with pre-1.0 caveats). |
 | [`RELEASING.md`](RELEASING.md) | Per-release operational checklist for the maintainer. |
 | [`integration/`](integration/) | Tooling, Studio, and CI integration notes. |
-| [`migrations/`](migrations/) | Per-release migration recipes (e.g. `0.4-to-0.5/`, `0.5-to-0.6/`). |
+| [`migrations/`](migrations/) | Per-release migration recipes (e.g. `0.5-to-0.6/`). |
 | [`skills/`](skills/) | Onboarding and per-layer extraction skills. |
 | [`organizations/`](organizations/) | Adopter organisations — the worked example `acme_corp/` lives here. |
 | [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md) | MIT licence; contribution guide. |
@@ -74,4 +74,4 @@ Every change runs through the validator (`.validators/lint.py`) and the CI gate:
 ---
 
 **Status:** maintained alongside the `notations/` specs. The methodology's version is tracked in [`CHANGELOG.md`](CHANGELOG.md); the methodology is **pre-1.0**.
-**Last updated:** 2026-05-30
+**Last updated:** 2026-06-02

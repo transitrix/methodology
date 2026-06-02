@@ -57,7 +57,7 @@ transitrix/methodology/
 │   │   ├── transitrix.yaml          # Adopter manifest
 │   │   └── README.md  GETTING_STARTED.md  CONVENTIONS.md  AGENTS.md
 │   └── NEW_ORGANIZATION_TEMPLATE.md # How to bootstrap a new organisation
-├── migrations/                      # Per-release migration recipes (0.4→0.5, 0.5→0.6)
+├── migrations/                      # Per-release migration recipes (0.5→0.6)
 ├── integration/                     # Studio / tooling / CI integration notes
 ├── skills/                          # Onboarding + extraction skills
 ├── glossary.md  PROJECT_INDEX.md  CHANGELOG.md  RELEASING.md
