@@ -2,45 +2,45 @@
 
 File extension: **`.scenarios.transitrix.yaml`**
 
-## Format overview
-
-A scenario represents an alternative strategic development path for an organisation. Each scenario carries its own scoped set of goals, capabilities, activities, products, processes, applications, and a view over the shared factor catalogue. Use scenarios to model and compare optimistic, baseline, or pessimistic strategic options before committing.
+The scenarios view is a **report-configuration surface** over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). Each `SCENARIO` element is a *path* — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s. See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) for the view spec and [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.18 for the SCENARIO element schema.
 
 ## Files in this folder
 
 | File | Description |
 |---|---|
-| [`optimistic-2027.scenarios.transitrix.yaml`](optimistic-2027.scenarios.transitrix.yaml) | Compact scenario with vision, three factors, and reference lists |
-| [`omnichannel-2028.scenarios.transitrix.yaml`](omnichannel-2028.scenarios.transitrix.yaml) | Realistic retail omnichannel scenario; references the NorthBay capability and process maps |
+| [`optimistic-2027.scenarios.transitrix.yaml`](optimistic-2027.scenarios.transitrix.yaml) | **v0.2 content-document shape (pending migration).** Compact scenario with vision, three factors, and reference lists. Predates the SCENARIO reclassification ([strategy#122](https://github.com/vkgeorgia/strategy/issues/122)); migrates in a follow-up sub-task. |
+| [`omnichannel-2028.scenarios.transitrix.yaml`](omnichannel-2028.scenarios.transitrix.yaml) | **v0.2 content-document shape (pending migration).** Realistic retail omnichannel scenario; references the NorthBay capability and process maps. Same pending-migration status as above. |
 
 ## Notation header
 
-Every file must start with:
+Every file starts with:
 
 ```yaml
 notation: scenarios
 ```
 
-## Required fields
+## v0.3 — report-config shape (target shape after migration)
 
-| Field | Description |
-|---|---|
-| `scenario.id` | Unique scenario ID |
-| `scenario.name` | Human-readable name |
-| `scenario.status` | One of: `Draft`, `Active`, `Archived` |
+A post-reclassification scenarios view file carries no canonical content. It declares a `view` object that names which `SCENARIO` elements to render and how:
 
-## Optional fields
+```yaml
+notation: scenarios
+spec_version: "0.3"
+methodology_version: "0.5.0"
 
-| Field | Description |
-|---|---|
-| `scenario.description` | Short description of the strategic premise |
-| `scenario.created_at` | Date in `YYYY-MM-DD` format |
-| `scenario.vision` | Narrative description of the future under this scenario |
-| `scenario.factors_view` | Per-scenario relevance and impact for factors from the shared catalogue |
-| `scenario.goals` / `capabilities` / `activities` / `products` / `processes` / `applications` | Reference lists with `{goal_id, capability_id, ...}` entries |
+view:
+  id: SCENARIOS-2027-CUT-1
+  name: "2027 cut — candidate paths"
+  scenarios:
+    include: [SCENARIO-OPTIMISTIC-1, SCENARIO-CONSERVATIVE-1]
+  layout: "side-by-side"
+  show_steps: true
+  show_target_state: true
+  show_pursues: true
+```
 
-Factor relevance, if specified, must be one of `High`, `Medium`, `Low`.
+Each referenced `SCENARIO-…` is a standalone element file under `canon/elements/05_implementation/scenarios/` with inline `pursues` (goal list — intent), `arrives_at` (single `TARGET_STATE-…` ref — destination), and ordered `steps` (`ACTIVITY-…` / `CHANGE-…`). See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) §3 for the full field set.
 
 ## Preview
 
-Open any `.scenarios.transitrix.yaml` file in VS Code with Transitrix Studio installed — the preview panel opens automatically showing the vision, factors-view table, and reference sections.
+Open any `.scenarios.transitrix.yaml` file in VS Code with Transitrix Studio installed — the preview panel opens automatically.
