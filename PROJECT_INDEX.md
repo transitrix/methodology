@@ -10,6 +10,7 @@ A map of the repository and where to find things. For the methodology itself, st
 |---|---|
 | [`README.md`](README.md) | Project overview and quick start. |
 | [`method/methodology.md`](method/methodology.md) | Methodology overview — principles, zones, repository structure, change lifecycle. |
+| [`method/team-operations.md`](method/team-operations.md) | Team Operations convention — `operations/` folder, ADR + Work Item shapes; operational layer alongside the model (not a zone). |
 | [`notations/`](notations/) | The canonical model: notation specs, shared contract, ID grammar, examples. |
 | [`glossary.md`](glossary.md) | Standardised terminology. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history (Keep a Changelog; SemVer with pre-1.0 caveats). |
@@ -55,6 +56,7 @@ organizations/acme_corp/
 │   └── views/              # Composite diagrams and aggregations over elements
 ├── field/                  # Zone: interviews, surveys, observations, drafts
 ├── codex/                  # Zone: external/<jurisdiction>/ laws + internal/ policies
+├── operations/             # Operational layer (NOT a zone) — team's ADRs + Work Items
 ├── .templates/             # Copy-and-fill templates
 └── .validators/            # Lint and schema scripts (lint.py)
 ```
