@@ -43,7 +43,7 @@ migrations/0.5-to-0.6/
 
 ## Conventions
 
-Pure-Node (≥ 20), idempotent, `[--dry-run] [target-dir]` CLI, diff-style summary, exits non-zero on unsafe ambiguity (leaving the offending file unchanged). Identical to the [`0.4-to-0.5`](../0.4-to-0.5/) recipe.
+Pure-Node (≥ 20), idempotent, `[--dry-run] [target-dir]` CLI, diff-style summary, exits non-zero on unsafe ambiguity (leaving the offending file unchanged).
 
 ## Running
 
