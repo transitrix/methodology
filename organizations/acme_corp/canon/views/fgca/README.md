@@ -21,8 +21,9 @@ author: "Acme Strategy Office"
 
 factors:
   - id: FACTOR-EU-REG-1           # → canon/elements/01_motivation/factors/FACTOR-EU-REG-1.yaml
-    name: "EU regulatory window closing in Q3"
+    name: "EU regulatory window for market entry"   # neutral driver — findings live on ASSESSMENTs
     type: external
+    category: legal               # PESTLE — external only
     references_constraint: [CONSTRAINT-GDPR-RESIDENCY-1]   # → canon/elements/01_motivation/constraints/
     valid_from: "2026-05-26"      # CONTRACT.md §7 — required on every inline element
     valid_to: null

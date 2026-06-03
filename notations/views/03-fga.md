@@ -94,6 +94,7 @@ factors:
   - id: FACTOR-1
     name: "Competitive market pressure"
     type: external          # external | internal
+    category: economic      # PESTLE — external only
 
 goals:
   - id: GOAL-1
@@ -131,12 +132,15 @@ A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](../exampl
 
 ### `factors[]`
 
+A factor is a **neutral driver** — a standing force the organisation acts on, not a finding about it. Findings about a driver's current state live on `ASSESSMENT` records that reference the FACTOR. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (FACTOR as ArchiMate Driver) and §7.16 (ASSESSMENT).
+
 | Field | Required | Description |
 |---|---|---|
 | `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
-| `name` | yes | what the factor is |
+| `name` | yes | what the factor is — the neutral driver, not a finding about it |
 | `type` | no | `external` or `internal` |
-| `description` | no | one-paragraph elaboration |
+| `category` | no | PESTLE sub-classification for external factors — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal factors. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
+| `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
 ### `goals[]`
 

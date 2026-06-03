@@ -1,16 +1,24 @@
-# Worked example — FACTOR element primitive.
+# Worked example — FACTOR element primitive (external driver, PESTLE: legal).
 # Schema: notations/ELEMENT_PRIMITIVES.md §7.1 + envelope §3.
 # Definition home for this factor; referenced inline from the FGCA view
 # (canon/views/fgca/) which is the authoring surface.
+#
+# Neutral Driver — the standing external regulatory force, not a finding about
+# its current state. Dated findings about this driver (e.g. a closing window,
+# a moving timeline) would live on ASSESSMENT records that assesses this FACTOR.
+# `category: legal` per PESTLE — binding regulations / law.
 
 notation: factor
 id: FACTOR-EU-REG-1
-name: "EU regulatory window closing in Q3"
+name: "EU regulatory window for market entry"
 type: external
+category: legal
 description: >
-  A favourable EU market-entry regulatory window is expected to close in
-  Q3 2026. The pressure to act before it closes is the external driver
-  behind the EU-expansion goal chain.
+  Standing external driver — the EU regulatory regime governing market
+  entry for the organisation's product. The organisation's portfolio is
+  subject to it. Findings about its current state (a closing window, a
+  moving timeline, a notified-body bottleneck) belong on ASSESSMENT
+  records that assesses this FACTOR — they are not inline here.
 
 # The factor reflects a standing constraint the organisation must respect.
 references_constraint:

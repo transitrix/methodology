@@ -1,15 +1,25 @@
 # Worked example — FACTOR element primitive (internal driver).
 # Schema: notations/ELEMENT_PRIMITIVES.md §7.1 + envelope §3.
 # Referenced inline from the FGA view (canon/views/fga/).
+#
+# Neutral Driver — the standing internal force ("support response time" as a
+# performance dimension the organisation acts on), not a finding about it.
+# Findings about this driver's current state live on ASSESSMENT records that
+# assesses: FACTOR-COMP-1 — see ../assessments/ASSESSMENT-SUPPORT-RESPONSE-1.yaml
+# for the worked "8h and degrading" finding.
+# No PESTLE category — PESTLE applies to external factors only.
 
 notation: factor
 id: FACTOR-COMP-1
-name: "Support response time degraded over Q1"
+name: "Support response time"
 type: internal
 description: >
-  Internal support response time (P50) drifted upward through Q1 2026.
-  The performance gap is the internal driver behind the operational-
-  improvement goal chain.
+  Standing internal driver — the performance dimension of support first-
+  response time. The organisation organises around this dimension; the
+  operational-improvement goal chain is driven by it. Dated findings about
+  the current state of this dimension (measurements, trends, judgements)
+  live on ASSESSMENT records that reference this FACTOR — they are not
+  inline here.
 
 # Admission record (CONTRACT.md §6)
 zone: canon

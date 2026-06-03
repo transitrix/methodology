@@ -141,6 +141,7 @@ factors:
   - id: FACTOR-1
     name: "Competitive market pressure"
     type: external          # external | internal
+    category: economic      # PESTLE — external only (political | economic | social | technological | legal | environmental)
 
 goals:
   - id: GOAL-1
@@ -184,13 +185,16 @@ A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](../exam
 
 ### `factors[]`
 
+A factor is a **neutral driver** — a standing force the organisation acts on, not a finding about it. Findings about a driver's current state (numbers, trends, observations) live on `ASSESSMENT` records that reference the FACTOR; they are not inline on a factor entry. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (FACTOR as ArchiMate Driver) and §7.16 (ASSESSMENT).
+
 | Field | Required | Description |
 |---|---|---|
 | `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
-| `name` | yes | what the factor is |
+| `name` | yes | what the factor is — the neutral driver, not a finding about it |
 | `type` | no | `external` or `internal` |
+| `category` | no | PESTLE sub-classification for external factors — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal factors. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
 | `references_constraint` | no | array of `CONSTRAINT-…` IDs the factor reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a factor for the organisation that acts on it — the factor is the FGCA driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
-| `description` | no | one-paragraph elaboration |
+| `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
 ### `goals[]`
 

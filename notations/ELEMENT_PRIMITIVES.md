@@ -247,10 +247,13 @@ Each subsection lists the per-TYPE fields that sit between the identity block an
 
 ### 7.1 `FACTOR` — `01_motivation/factors/`
 
+ArchiMate **Driver** — a neutral, standing force the organisation acts on (an environmental pressure, a market shift, an internal performance dimension). A FACTOR is the *thing*, not a judgement about its state: it names the dimension the organisation organises around ("EU regulatory window", "Customer churn", "Support response time"). It carries no polarity and no findings. A dated finding/judgement about a driver's current state — a measurement, a trend, an observation — is an `ASSESSMENT` (§7.16) that `assesses` the FACTOR; the assessment is what changes over time, the FACTOR is what persists. Whether a finding reads as a strength, weakness, opportunity, or threat lives on the `assessment_influences_goal` REL ([elements/17-relations.md](elements/17-relations.md) §3), not on the FACTOR or the ASSESSMENT.
+
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `type` | no | string | `external` \| `internal`. |
-| `description` | recommended | string | One-paragraph elaboration of the driver. |
+| `category` | no | string | **PESTLE sub-classification** for external drivers — one of `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Use on external factors to record which PESTLE class the driver falls into (regulators / public policy → `political`; binding regulations / law → `legal`; markets / costs / demand → `economic`; demographic / cultural → `social`; technology shifts → `technological`; climate / sustainability → `environmental`). Omit on internal factors — PESTLE does not apply. |
+| `description` | recommended | string | One-paragraph elaboration of the driver — what the standing force is, not a finding about it. Keep findings (numbers, trends, observations) out of the FACTOR; put them on an `ASSESSMENT` that `assesses` this factor. |
 | `references_constraint` | no | list | `CONSTRAINT-…` IDs the factor reflects. |
 
 Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.2.

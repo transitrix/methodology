@@ -16,6 +16,7 @@ factors:
   - id: FACTOR-DATA-RESIDENCY-1
     name: "EU customer personal-data residency obligation"
     type: external
+    category: legal
     references_constraint:
       - CONSTRAINT-GDPR-RESIDENCY-1
 
