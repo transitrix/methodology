@@ -15,8 +15,9 @@ author: "FILL-ME"
 
 factors:
   - id: FACTOR-1
-    name: "FILL-ME factor — strategic driver"
+    name: "FILL-ME factor — neutral driver (the standing force, not a finding about it)"
     type: external           # external | internal
+    # category: economic     # PESTLE — external only: political | economic | social | technological | legal | environmental
 
 goals:
   - id: GOAL-1

@@ -21,8 +21,8 @@ author: "Acme Ops"
 
 factors:
   - id: FACTOR-COMP-1              # → canon/elements/01_motivation/factors/FACTOR-COMP-1.yaml
-    name: "Support response time degraded over Q1"
-    type: internal
+    name: "Support response time"  # neutral driver — the finding "8h and degrading" lives on ASSESSMENT-SUPPORT-RESPONSE-1
+    type: internal                 # internal → no PESTLE category
     valid_from: "2026-05-26"       # CONTRACT.md §7 — required on every inline element
     valid_to: null
 

@@ -13,9 +13,11 @@ factors:
   - id: FACTOR-MARKET-1
     name: "Market growth opportunity in new geographies"
     type: external
+    category: economic
   - id: FACTOR-REG-1
     name: "Increasing regulatory pressure (GDPR, data residency)"
     type: external
+    category: legal
   - id: FACTOR-TECH-1
     name: "Internal shift to cloud-native architecture"
     type: internal
