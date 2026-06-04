@@ -37,7 +37,7 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const REPO_ROOT = join(dirname(__filename), '..');
 const CATALOGUE_PATH = join(REPO_ROOT, 'notations', 'README.md');
-const SKILL_PATH = join(REPO_ROOT, 'skills', 'onboarding', 'SKILL.md');
+const SKILL_PATH = join(REPO_ROOT, 'skills', 'onboard', 'SKILL.md');
 
 // --- Parsers ---------------------------------------------------------------
 
@@ -91,7 +91,7 @@ async function parseCatalogue() {
   return out;
 }
 
-// Pull the family-selection matrix from skills/onboarding/SKILL.md.
+// Pull the family-selection matrix from skills/onboard/SKILL.md.
 // Returns: Set<file_extension>. The matrix has one row per notation; we use
 // the file-extension column as the join key against the canon catalogue.
 async function parseSkillMatrix() {
@@ -136,7 +136,7 @@ async function parseSkillMatrix() {
   return out;
 }
 
-// Pull the view-notation template paths from skills/onboarding/SKILL.md.
+// Pull the view-notation template paths from skills/onboard/SKILL.md.
 // Returns: Set<short_name>, extracted from `templates/<short>.<short>.transitrix.yaml`.
 // Other template categories (root scaffolding, codex) do not match the
 // `<short>.<short>.transitrix.yaml` shape and are naturally filtered out.
@@ -164,7 +164,7 @@ function reportFailure(failures) {
     console.error(`  - [${f.check}] ${f.message}`);
   }
   console.error(
-    `\nFix the Skill (skills/onboarding/SKILL.md) to match the canon ` +
+    `\nFix the Skill (skills/onboard/SKILL.md) to match the canon ` +
     `(notations/README.md), or — if the canon is wrong — update both ` +
     `together in the same PR.\n`
   );

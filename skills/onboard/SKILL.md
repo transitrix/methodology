@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 Drive a newcomer from zero to a working Transitrix enterprise-as-text repo in one session. The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for picking it up.
 
-The user has typed `/transitrix-onboard` (or you've decided to invoke this skill from a freeform request). Follow the six-step flow below. Don't deviate without telling the user.
+The user has typed `/transitrix:onboard` (or you've decided to invoke this skill from a freeform request). Follow the six-step flow below. Don't deviate without telling the user.
 
 ---
 

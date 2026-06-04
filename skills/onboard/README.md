@@ -1,46 +1,40 @@
 # Transitrix Onboarding Skill
 
-A Claude Code [Skill](https://docs.claude.com/en/docs/claude-code/skills) that drives a newcomer from zero to a working Transitrix enterprise-as-text repo. After it is installed, the user invokes it with `/transitrix-onboard` (or by describing the goal in plain language), and the agent walks them through scaffolding the canonical zoned (`canon/` + `field/` + `codex/`) adopter shape, picking a starter notation, and authoring their first file with inline canonical validation.
+A Claude Code [plugin](https://docs.claude.com/en/docs/claude-code/plugins) that drives a newcomer from zero to a working Transitrix enterprise-as-text repo. After it is installed, the user invokes it with `/transitrix:onboard` (or by describing the goal in plain language), and the agent walks them through scaffolding the canonical zoned (`canon/` + `field/` + `codex/`) adopter shape, picking a starter notation, and authoring their first file with inline canonical validation.
 
 The skill itself runs in Claude Code. What it **scaffolds** for the adopter is assistant-neutral: the agent guide it drops in is `AGENTS.md` (read by any tool that supports the AGENTS.md convention), plus a `.github/copilot-instructions.md` pointer for GitHub Copilot. Adopters on Cursor / Claude Code / other tools add a one-line pointer in their tool's location.
 
-This directory is the **source bundle** for the skill. The bundle ships:
+This directory is the **plugin bundle**. It ships:
 
-- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 13 view notations + codex zone primitives).
+- [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) — the plugin manifest (name, version, license, keywords) consumed by Claude Code at install time.
+- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 14 view notations + codex zone primitives).
 - [`templates/`](templates/) — starter files in three groups: **root scaffolding** (`transitrix.yaml` manifest + assistant-neutral `AGENTS.md` + GitHub Copilot pointer), **view notations** (one `.transitrix.yaml` per view notation), and **codex zone primitives** (external + internal).
+- [`extraction/`](extraction/) — per-layer extraction prompts for initial Canon population from Field artefacts (motivation / business / application).
 
-The skill is **read-only** against the methodology repo. It does not ship the canon — when the user goes deeper than the embedded cheat sheet, the skill fetches the full spec from `github.com/transitrix/methodology` via `WebFetch`.
+The plugin is **read-only** against the methodology canon. It does not ship the canon — when the user goes deeper than the embedded cheat sheet, the plugin fetches the full spec from `github.com/transitrix/methodology` via `WebFetch`.
 
 ---
 
-## Install — Claude Code (local skill)
+## Install
 
-Claude Code reads skills from `~/.claude/skills/<command-name>/`. The slash command name is taken from the **install directory name**, not from anywhere in `SKILL.md`. To get `/transitrix-onboard`, copy this directory into `~/.claude/skills/transitrix-onboard/`.
+The plugin is published through the **`transitrix-methodology`** marketplace, which lives in this same repository. The marketplace manifest is at the repository root in [`.claude-plugin/marketplace.json`](../../.claude-plugin/marketplace.json); the plugin source is `./skills/onboard` within the marketplace.
 
-### macOS / Linux
+Inside a Claude Code session, add the marketplace once and install the plugin:
 
-```bash
-git clone https://github.com/transitrix/methodology.git /tmp/methodology
-mkdir -p ~/.claude/skills
-cp -r /tmp/methodology/skills/onboarding ~/.claude/skills/transitrix-onboard
+```
+/plugin marketplace add transitrix/methodology
+/plugin install transitrix@transitrix-methodology
 ```
 
-### Windows (PowerShell)
+Then invoke the skill:
 
-```powershell
-git clone https://github.com/transitrix/methodology.git $env:TEMP\methodology
-New-Item -ItemType Directory -Force $env:USERPROFILE\.claude\skills | Out-Null
-Copy-Item -Recurse $env:TEMP\methodology\skills\onboarding `
-  $env:USERPROFILE\.claude\skills\transitrix-onboard
+```
+/transitrix:onboard
 ```
 
-After copying, **restart Claude Code** so it re-scans the skills directory. The skill is then live in any project.
+The slash command name is always `/<plugin>:<skill>` in plugin mode — `transitrix` is the plugin name (set in `.claude-plugin/plugin.json`) and `onboard` is the skill folder name (this directory). The namespaced form is unconditional for plugin-installed skills; there is no shorter alias.
 
-To update later, re-clone the methodology repo and re-copy. The bundle has no external dependencies — copying the files is the entire install.
-
-### Project-local install
-
-If you'd rather scope the skill to one project, put it in `<project>/.claude/skills/transitrix-onboard/` instead. Same rename rule applies.
+To update, re-run `/plugin install transitrix@transitrix-methodology` (or use `/plugin update` if available in your Claude Code version) — Claude Code re-fetches the marketplace and the plugin from `main`.
 
 ---
 
@@ -48,7 +42,7 @@ If you'd rather scope the skill to one project, put it in `<project>/.claude/ski
 
 Once installed, invoke the skill in three ways:
 
-1. **Slash command** — type `/transitrix-onboard` in any Claude Code session.
+1. **Slash command** — type `/transitrix:onboard` in any Claude Code session.
 2. **Freeform** — say "set up Transitrix for my org", "scaffold a transitrix repo", or "I want to model my architecture as text"; the skill's `when_to_use` triggers should pick it up.
 3. **Mid-session** — already in a project and want to add a new notation file? Say "use the Transitrix onboarding skill to add an FGCA for the retention chain" and the agent will jump in at step 3 (template copy).
 
@@ -77,9 +71,9 @@ Three groups: root scaffolding, view notations, and codex zone primitives.
 | Assistant-neutral agent guide | [`AGENTS.md`](templates/AGENTS.md) | `<repo-root>/AGENTS.md` |
 | GitHub Copilot pointer → `AGENTS.md` | [`copilot-instructions.md`](templates/copilot-instructions.md) | `<repo-root>/.github/copilot-instructions.md` |
 
-### View notations (dropped into `canon/views/<notation>/` in Step 3)
+### View notations (dropped into `canon/views/<notation-folder>/` in Step 3)
 
-One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 13 view templates are:
+One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 14 view templates are:
 
 | Notation | Template |
 |---|---|
@@ -96,6 +90,7 @@ One starter YAML per view notation, named `<notation>.<short-name>.transitrix.ya
 | Products | [`products.products.transitrix.yaml`](templates/products.products.transitrix.yaml) |
 | Issues | [`issues.issues.transitrix.yaml`](templates/issues.issues.transitrix.yaml) |
 | Process Blueprint | [`process-blueprint.process-blueprint.transitrix.yaml`](templates/process-blueprint.process-blueprint.transitrix.yaml) |
+| Activity Card | [`activity-card.activity-card.transitrix.yaml`](templates/activity-card.activity-card.transitrix.yaml) |
 
 ### Codex zone primitives (dropped into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
@@ -125,11 +120,7 @@ The skill does **not** request `Edit` against any file under the methodology can
 
 ## Updating the bundle
 
-The bundle is part of the methodology repo (`github.com/transitrix/methodology`, path `skills/onboarding/`). Changes to the bundle ship in the same PR flow as everything else in the methodology repo. After a release:
-
-- The latest `main` of `skills/onboarding/` is always the source of truth.
-- Users re-install by re-running the copy step above.
-- There is no auto-update — the bundle is plain files.
+The plugin source is part of the methodology repo (`github.com/transitrix/methodology`, path `skills/onboard/`). Changes ship in the same PR flow as everything else. After a release, users re-install with `/plugin install transitrix@transitrix-methodology` to pick up the latest `main`.
 
 If a notation's canonical shape changes, the template under `templates/` and the corresponding row in `SKILL.md`'s cheat sheet must be updated in the same commit.
 
@@ -166,7 +157,7 @@ The script exits `1` on drift (CI red) with a per-finding list naming the specif
 
 Read the per-finding output. For each finding:
 
-- **Check A / B failure** — the canon added or renamed a notation; update the Skill cheat sheet and add/rename the view-template under `skills/onboarding/templates/` in the same PR.
+- **Check A / B failure** — the canon added or renamed a notation; update the Skill cheat sheet and add/rename the view-template under `skills/onboard/templates/` in the same PR.
 - **Check C / D failure** — the Skill has a stray row or template that doesn't match the canon; either the catalogue is missing the notation (update the catalogue) or the Skill has a typo (fix the Skill).
 
 The script runs on every PR, so a drift introduced anywhere — Skill side or canon side — surfaces in the PR conversation, not in the Actions tab as a warning.

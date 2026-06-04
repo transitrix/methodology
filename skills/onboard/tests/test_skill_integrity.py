@@ -11,7 +11,7 @@ reading SKILL.md and producing the repo end-to-end) needs an API key and lives
 in drive_skill_e2e.py, gated to the weekly cron. See tests/README.md for the
 harness-choice rationale and the @transitrix/diagrams stand-in note.
 
-Run:  python skills/onboarding/tests/test_skill_integrity.py
+Run:  python skills/onboard/tests/test_skill_integrity.py
 Exit: 0 = all checks pass; 1 = a check failed (message localises the problem).
 """
 
@@ -174,26 +174,21 @@ ZONE_SKELETON = [
 def check_clean_install_goals_path():
     work = tempfile.mkdtemp(prefix="transitrix-installtest-")
     try:
-        # 1. Clean ephemeral workspace: a fresh HOME with no ~/.claude state.
-        home = os.path.join(work, "home")
-        os.makedirs(os.path.join(home, ".claude", "skills"), exist_ok=True)
-        check(not os.path.exists(os.path.join(home, ".claude", "skills", "transitrix-onboard")),
-              "precondition: workspace already had the skill installed")
+        # 1. Plugin install is opaque (Claude Code's `/plugin install …` resolves
+        #    a marketplace manifest, fetches the plugin source, and registers
+        #    `/<plugin>:<skill>` for the session). Whatever directory the runtime
+        #    materialises the plugin into is implementation-detail; this test
+        #    treats the bundle source tree as the SKILL_DIR the agent will see.
+        check(os.path.isfile(os.path.join(SKILL_DIR, ".claude-plugin", "plugin.json")),
+              "plugin manifest missing: skills/onboard/.claude-plugin/plugin.json")
 
-        # 2. Install the skill the way the README documents (cp -r into the
-        #    command-named directory -> the /transitrix-onboard slash command).
-        installed = os.path.join(home, ".claude", "skills", "transitrix-onboard")
-        shutil.copytree(SKILL_DIR, installed)
-        check(os.path.isfile(os.path.join(installed, "SKILL.md")),
-              "install did not place SKILL.md under ~/.claude/skills/transitrix-onboard/")
-
-        # 3. Drive the representative path deterministically: scaffold the zoned
-        #    skeleton (Step 2) and instantiate the Goals starter (Step 3), against
-        #    an empty target repo.
+        # 2. Drive the representative path deterministically against the bundle:
+        #    scaffold the zoned skeleton (Step 2) and instantiate the Goals
+        #    starter (Step 3) into an empty target repo.
         repo = os.path.join(work, "target-repo")
         for d in ZONE_SKELETON:
             os.makedirs(os.path.join(repo, d), exist_ok=True)
-        tdir = os.path.join(installed, "templates")
+        tdir = os.path.join(SKILL_DIR, "templates")
         for f in ROOT_TEMPLATES:
             dest = os.path.join(repo, ".github") if f == "copilot-instructions.md" else repo
             os.makedirs(dest, exist_ok=True)

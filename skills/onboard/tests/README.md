@@ -15,7 +15,7 @@ is split:
 
 | Script | What it does | API key | Where it runs |
 |---|---|---|---|
-| `test_skill_integrity.py` | **Deterministic Skill-correctness guard.** Verifies the bundle is intact; every template `SKILL.md` references exists, parses, and carries the matching canonical `notation:` header; then performs a clean install into an ephemeral `HOME` and the representative **Goals** drive (scaffold the zoned skeleton + instantiate the Goals starter) into an empty repo, asserting the result validates. | none | **every PR** touching `skills/onboarding/**`, and the weekly cron |
+| `test_skill_integrity.py` | **Deterministic Skill-correctness guard.** Verifies the bundle is intact; every template `SKILL.md` references exists, parses, and carries the matching canonical `notation:` header; then performs a clean install into an ephemeral `HOME` and the representative **Goals** drive (scaffold the zoned skeleton + instantiate the Goals starter) into an empty repo, asserting the result validates. | none | **every PR** touching `skills/onboard/**`, and the weekly cron |
 | `drive_skill_e2e.py` | **True LLM end-to-end drive.** Installs the bundle, hands an agent a synthetic persona prompt with no human-in-the-loop, lets it run the six-step flow via the `claude` CLI, then runs the same structural assertions against the produced repo. | required | **weekly cron only** (skips gracefully — exit 0 — when the key or CLI is absent) |
 
 **Language: Python (stdlib + PyYAML).** The repo has no Node toolchain, and the test
@@ -40,8 +40,8 @@ test suite.
 
 ```bash
 pip install pyyaml
-python skills/onboarding/tests/test_skill_integrity.py          # always
-ANTHROPIC_API_KEY=… python skills/onboarding/tests/drive_skill_e2e.py   # full LLM drive
+python skills/onboard/tests/test_skill_integrity.py          # always
+ANTHROPIC_API_KEY=… python skills/onboard/tests/drive_skill_e2e.py   # full LLM drive
 ```
 
 Exit `0` = pass; `1` = a check failed, with the failing assertion (and, for Goals, the
@@ -51,6 +51,6 @@ specific validation error) printed so the problem is localisable without a debug
 
 `.github/workflows/onboarding-skill-test.yml`:
 - **`integrity`** job — runs `test_skill_integrity.py` on every PR touching
-  `skills/onboarding/**`, on the weekly cron, and on manual dispatch.
+  `skills/onboard/**`, on the weekly cron, and on manual dispatch.
 - **`e2e-drive`** job — runs `drive_skill_e2e.py` only on the weekly cron / manual
   dispatch, with `ANTHROPIC_API_KEY` from repo secrets. Absent the secret it skips green.

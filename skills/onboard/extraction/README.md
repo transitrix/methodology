@@ -1,4 +1,4 @@
-# `skills/onboarding/extraction/`
+# `skills/onboard/extraction/`
 
 Per-layer extraction prompts for initial Canon population from Field artefacts. Each file is a fully-formed **system prompt** that an extraction-batch agent reads, alongside one or more Field artefacts as input, to produce draft canonical primitives. A human then admits each draft to canon via the admission gate ([`notations/CONTRACT.md`](../../../notations/CONTRACT.md) §6).
 
