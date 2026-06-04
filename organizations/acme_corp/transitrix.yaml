@@ -21,3 +21,4 @@ notations:
   - relation
   - activity-card
 zones: [canon, field, codex]
+coverage_profile: full           # see methodology notations/COVERAGE_PROFILES.md

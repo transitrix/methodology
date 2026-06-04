@@ -32,6 +32,7 @@ transitrix: 1                       # manifest schema version (integer)
 methodology_version: "0.5.0"        # the methodology release this repo conforms to
 notations: [fgca, goals, activities, issues, capability-map, codex]
 zones: [canon, field, codex]
+coverage_profile: full              # optional — see COVERAGE_PROFILES.md
 ```
 
 | Field | Required | Type | Semantics |
@@ -40,6 +41,7 @@ zones: [canon, field, codex]
 | `methodology_version` | yes | string | The methodology release this repository pins to. Adopters follow the published specs at this version rather than vendoring `notations/`. |
 | `notations` | yes | list | Short names of the notations the repository uses, from the catalogue in [README.md](README.md) — plus `codex` for the codex zone (see [14-codex.md](elements/14-codex.md)). |
 | `zones` | yes | list | Which zones the repository maintains — any subset of `canon`, `field`, `codex`. A repo MAY start canon-only and add `field` / `codex` later. |
+| `coverage_profile` | no | string \| map | Which slice of the methodology's vocabulary is in scope for this repo. Short form: a shipped preset name (`minimal` / `core` / `full`). Long form: a custom profile that extends a preset. Defaults to `full` when omitted. Full schema, presets, closure rule, and validation in [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md). |
 
 No validator enforces the manifest yet; it is declarative. Tooling MAY read it to discover the pinned methodology version and the active notations and zones.
 
@@ -50,3 +52,4 @@ No validator enforces the manifest yet; it is declarative. Tooling MAY read it t
 - Zone model and admission record: [CONTRACT.md](CONTRACT.md) §5–6.
 - Notation catalogue (short names): [README.md](README.md).
 - Codex zone: [14-codex.md](elements/14-codex.md).
+- Coverage Profile (the `coverage_profile:` field): [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md).

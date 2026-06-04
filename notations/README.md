@@ -42,6 +42,8 @@ Element notations don't carry the `*.transitrix.yaml` extension convention — t
 
 The cross-cutting **element-primitive file schema** — the common envelope every standalone element file carries, which TYPEs get a standalone file vs. live only inline in a view, and where each lives on disk — is defined once in [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md). The element notations above are specialised instances of that envelope.
 
+The cross-cutting **Coverage Profile** — the mechanism an adopter uses to declare which slice of the methodology's vocabulary (per-layer element TYPEs + relation TYPEs) is in scope for their repository — is defined in [`COVERAGE_PROFILES.md`](COVERAGE_PROFILES.md). Adopters declare a profile in [`transitrix.yaml`](MANIFEST.md); the default when omitted is `full`.
+
 ## Status vocabulary
 
 The `status:` field in each spec's front-matter describes the **spec's maturity** — how stable and complete the notation specification is. It does **not** describe whether a tool implements the notation; tool implementation is tracked separately in the `dsm_status:` field on the same spec.
