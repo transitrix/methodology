@@ -24,10 +24,13 @@ acme_corp/
 ├── codex/                       # external laws/regulations + internal policies/standards, faithful to source
 │   ├── external/<jurisdiction>/ # LAW, REGULATION
 │   └── internal/                # POLICY, INTERNAL_STANDARD
+├── operations/                  # operational layer (NOT a zone) — the team's ADRs + Work Items
+│   ├── decisions/               #   ADR-NNNN-<slug>.md
+│   └── work-items/              #   WI-NNNN-<slug>.md
 └── .templates/                  # copy-and-fill templates for new elements / views / relations
 ```
 
-The three **zones** (`canon` / `field` / `codex`) are parallel, not stacked — see [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §5.
+The three **zones** (`canon` / `field` / `codex`) are parallel, not stacked — see [`notations/CONTRACT.md`](../../notations/CONTRACT.md) §5. The `operations/` folder sits alongside the zones as a separate **operational layer**: it records how the team applying Transitrix runs itself (decisions and work items), not the enterprise being modelled. See [`method/team-operations.md`](../../method/team-operations.md) for the convention and [`operations/README.md`](operations/README.md) for the local rules.
 
 ## 🚀 Quick start
 

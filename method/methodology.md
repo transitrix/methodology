@@ -203,6 +203,9 @@ organizations/
 │   ├── codex/                     # Zone: external laws / regulations + internal policies / standards
 │   │   ├── external/<jurisdiction>/
 │   │   └── internal/
+│   ├── operations/                # Operational layer (NOT a zone) — team's own ADRs + Work Items (§4.1)
+│   │   ├── decisions/             #   ADR-NNNN-<slug>.md
+│   │   └── work-items/            #   WI-NNNN-<slug>.md
 │   ├── .templates/                # Copy-and-fill templates for elements / relations / views
 │   └── .validators/               # Lint and schema scripts
 └── NEW_ORGANIZATION_TEMPLATE.md   # How to bootstrap a new organisation
@@ -214,6 +217,16 @@ Two layers stay separate inside `canon/`:
 - **`canon/views/`** holds compositions over elements. A goals tree is a hierarchy referencing many Goal elements. A BPMN diagram is a detailed flow over a single BusinessProcess element. A products list is a filtered view over all elements of type Product. Views aggregate; elements stay atomic.
 
 Every canonical artefact carries an **admission record** and a **primitive lifecycle** (`valid_from` / `valid_to`) — both defined in [`notations/CONTRACT.md`](../notations/CONTRACT.md) §6–7. Attributes that change over time live in `*.history.yaml` sidecars (§9), not inline.
+
+### 4.1 Operational layer — Team Operations (`operations/`)
+
+Alongside the model zones, an adopter team optionally keeps an **operational layer** — its own decision log and in-flight work — at `organizations/<org>/operations/`. This is the **Team Operations** convention: a sibling folder containing `decisions/` (Architecture Decision Records, `ADR-…`) and `work-items/` (Work Items, `WI-…`), plus a one-screen local README.
+
+`operations/` is **not** a zone. It sits outside `canon` / `field` / `codex`, is not admitted through the zone gates, and its IDs (`ADR-NNNN`, `WI-NNNN`) are deliberately outside the canonical TYPE registry. It exists to keep the team's own working artefacts under the same version control and review surface as the model, without leaking into the model.
+
+The convention is **distinct from the model-side `issues` notation** ([`notations/views/12-issues.md`](../notations/views/12-issues.md)): that catalogue records architectural issues (defects, open questions, risks in the model or the system being modelled) and is part of canon; Team Operations Work Items record what the team itself is doing, deliberately not called "issues" to prevent collision.
+
+Full convention: [`method/team-operations.md`](team-operations.md). Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
 
