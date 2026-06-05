@@ -118,6 +118,12 @@ Read it as: the **PROCESS bears** the obligation (it is the unit of compliance),
 
 ---
 
+## 2.2 Proposed (pre-admission) assertions
+
+An automated harvest MAY emit an ASSERTION in the `proposed` admission state ([CONTRACT.md](../CONTRACT.md) §6.1) — e.g. a collector recording that a freshly-extracted obligation impacts a process or step. A proposed assertion carries `admission_state: proposed`, is excluded from admitted canon and every derived view, and does **not** count as coverage for `REQ-COVERAGE-001` until a human admits it (`proposed → active`). The collector never writes admitted canon; a human gate admits or rejects each draft. A proposed assertion MAY reference a proposed REQUIREMENT in the same harvest batch, but an admitted (`active`) assertion MUST NOT depend on an un-admitted one (`ADMIT-005`).
+
+---
+
 ## 3. Status vocabulary
 
 | Value | Meaning |

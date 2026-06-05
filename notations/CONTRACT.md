@@ -109,6 +109,68 @@ derived_from:               # optional; typed IDs of the artefacts this one deri
 
 A zone MAY record additional checks beyond its standard set; codex artefacts additionally carry zone-specific frontmatter defined in the codex notation spec.
 
+### 6.1 Pre-admission lifecycle — `proposed → active | rejected`
+
+The admission record above describes an artefact that **has** passed its zone gate. Some artefacts are produced by an **automated harvest** — a scanner / collector that extracts candidate canon from a source (a `REQUIREMENT` from a regulation, an `ASSERTION` of impact) — and **must not enter admitted canon until a human reviews them**. The collector never writes admitted canon directly: it emits *proposed* drafts plus a review digest, and a human gate admits or rejects each.
+
+A **pre-admission state**, recorded by `admission_state` on the admission record, governs this. It is orthogonal to `zone`: `zone` names the artefact's **target** zone (where it lives once admitted), while `admission_state` records whether it has yet **passed that zone's gate**.
+
+```yaml
+zone: canon                          # the TARGET zone — where this artefact lives once admitted
+admission_state: proposed            # proposed | active | rejected — absent ⇒ active (back-compat)
+proposed_at: "2026-06-05"            # required when proposed/rejected — when the harvest emitted the draft
+proposed_by: "reg-intel-collector"   # required when proposed/rejected — the tool / harvest id (never a human)
+gate_checks:
+  uniqueness: pass                   # checks the harvest can self-certify mechanically
+  consistency: pass
+  completeness: pending_review       # human-judgement checks the harvest cannot certify
+derived_from:
+  - REGULATION-GDPR-2016-1
+# admitted_at / admitted_by are ABSENT until a human admits (proposed → active)
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `admission_state` | no | string | `proposed` \| `active` \| `rejected`. **Absent ⇒ `active`** — human-authored canon is admitted by construction, so existing files need no change (back-compat). |
+| `proposed_at` | when `proposed` / `rejected` | string | Date the automated harvest emitted the draft — quoted ISO 8601 (§4). |
+| `proposed_by` | when `proposed` / `rejected` | string | The tool / harvest identifier that emitted the draft. A human never writes `proposed`. |
+| `rejected_at` | when `rejected` | string | Date a human refused the draft. |
+| `rejected_by` | when `rejected` | string | The human reviewer who refused it. |
+| `rejection_reason` | recommended when `rejected` | string | Why the draft was refused — kept for audit. |
+
+For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitted_by` is **deferred** (they are filled only on admission); `proposed_at` / `proposed_by` stand in their place.
+
+**The state machine:**
+
+```
+   (automated harvest emits)
+              │
+              ▼
+          proposed ──(human gate: review, complete gate_checks, accept)──▶ active
+              │
+              └────────────(human review: refuse)──────────────────────▶ rejected
+```
+
+- **`proposed`** — written **only** by an automated harvest. The artefact is shaped as its target canon TYPE and is structurally validated as that TYPE, but it is **not admitted canon**: it is excluded from the admitted set and from every derived view (below). `admitted_at` / `admitted_by` are absent; human-judgement `gate_checks` carry `pending_review`.
+- **`active`** — admitted to canon. A human reviewer runs the canon gate (§6), completes every `gate_checks` entry to `pass`, sets `admission_state: active`, and fills `admitted_at` / `admitted_by` with the admission date and their handle. This is the only transition into admitted canon for a harvested draft. (Human-authored canon starts here directly, with `admission_state` absent.)
+- **`rejected`** — a human reviewed the draft and refused it. The file is retained as an **auditable decision record** (who, when, why) but is never admitted canon and is excluded from derived views. A later harvest that re-finds the same source emits a *new* `proposed` draft; `rejected` is terminal and is not reopened.
+
+`active` and `rejected` are terminal for this pre-admission machine. Retirement of an already-active element is the separate `valid_to` lifecycle (§7), not a state here.
+
+**Exclusion from derived views and cross-cutting checks.** Only `active` (and absent ⇒ active) artefacts constitute **admitted canon**. Renderers, views, and cross-cutting validators operate on the admitted set: a `proposed` or `rejected` artefact does not appear in any derived view and does not count toward coverage (e.g. `REQ-COVERAGE-001`). A `proposed` artefact MAY reference another `proposed` artefact in the same harvest batch; an `active` artefact MUST NOT depend on a `proposed` one — admit the dependency first (`ADMIT-005`).
+
+**Validation rules** (apply to every canonical artefact, alongside the header and lifecycle rules):
+
+| Rule | Severity | Description |
+|---|---|---|
+| `ADMIT-001` | error | `admission_state` is present and not one of `proposed` / `active` / `rejected`. |
+| `ADMIT-002` | error | `admission_state: proposed` but `admitted_at` / `admitted_by` are present (a proposed draft is not yet admitted), or `proposed_at` / `proposed_by` are missing. |
+| `ADMIT-003` | error | `admission_state` is `active` or absent, but `admitted_at` / `admitted_by` are missing or any `gate_checks` entry is not `pass`. |
+| `ADMIT-004` | error | `admission_state: rejected` but `rejected_at` / `rejected_by` are missing. |
+| `ADMIT-005` | warning | An `active` artefact cross-references a `proposed` or `rejected` artefact — admitted canon must not depend on un-admitted drafts. Cross-cutting (requires the full catalogue). |
+
+This lifecycle is what an automated regulatory-intelligence collector (a separate task) depends on: the collector emits `proposed` drafts plus a review digest, and the human gate admits or rejects. The per-TYPE specs note it where relevant ([15-requirement.md](elements/15-requirement.md), [16-assertion.md](elements/16-assertion.md)).
+
 ---
 
 ## 7. Primitive lifecycle
