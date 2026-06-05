@@ -33,6 +33,8 @@ methodology_version: "0.5.0"        # the methodology release this repo conforms
 notations: [fgca, goals, activities, issues, capability-map, codex]
 zones: [canon, field, codex]
 coverage_profile: full              # optional — see COVERAGE_PROFILES.md
+confidence_decay:                   # optional — per-TYPE freshness decay; see CONTRACT.md §11.3
+  defaults: { fresh_days: 180, stale_days: 730, floor: 0.3 }
 ```
 
 | Field | Required | Type | Semantics |
@@ -42,6 +44,7 @@ coverage_profile: full              # optional — see COVERAGE_PROFILES.md
 | `notations` | yes | list | Short names of the notations the repository uses, from the catalogue in [README.md](README.md) — plus `codex` for the codex zone (see [14-codex.md](elements/14-codex.md)). |
 | `zones` | yes | list | Which zones the repository maintains — any subset of `canon`, `field`, `codex`. A repo MAY start canon-only and add `field` / `codex` later. |
 | `coverage_profile` | no | string \| map | Which slice of the methodology's vocabulary is in scope for this repo. Short form: a shipped preset name (`minimal` / `core` / `full`). Long form: a custom profile that extends a preset. Defaults to `full` when omitted. Full schema, presets, closure rule, and validation in [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md). |
+| `confidence_decay` | no | map | Per-element-TYPE freshness-decay parameters (`fresh_days`, `stale_days`, `floor`) used by confidence scoring. A `defaults` sub-map applies to any TYPE not listed under `by_type`. Defined in [CONTRACT.md](CONTRACT.md) §11.3. Omitted ⇒ the §11.3 defaults apply. |
 
 No validator enforces the manifest yet; it is declarative. Tooling MAY read it to discover the pinned methodology version and the active notations and zones.
 
@@ -53,3 +56,4 @@ No validator enforces the manifest yet; it is declarative. Tooling MAY read it t
 - Notation catalogue (short names): [README.md](README.md).
 - Codex zone: [14-codex.md](elements/14-codex.md).
 - Coverage Profile (the `coverage_profile:` field): [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md).
+- Confidence and freshness (the `confidence_decay:` field): [CONTRACT.md](CONTRACT.md) §11.
