@@ -1,0 +1,64 @@
+notation: registry
+id: REGISTRY-REG-SOURCES-1
+name: "Regulatory source registry"
+type: regulatory_source
+description: >
+  The curated list of regulatory sources the organisation watches for the
+  obligations it must track — which sources, where each is published, whether
+  and how each is monitored for change, and how often. Authored configuration
+  only; per-row operating state (last scan, next due, change-detected, review
+  pending, latest snapshot) lives in the co-located runstate sidecar, not here.
+default_scan_frequency: P90D       # registry-wide default; rows may override
+
+rows:
+  - id: SOURCE-GDPR-1
+    name: "EU GDPR — Regulation (EU) 2016/679"
+    type: regulation
+    jurisdiction: EU
+    citation: "Regulation (EU) 2016/679 (General Data Protection Regulation), consolidated text"
+    source_url: "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    monitoring_needed: true
+    change_signal_method: version-date    # consolidated text carries a dated version stamp
+    # scan_frequency omitted → registry default (P90D)
+
+  - id: SOURCE-EU-AI-ACT-1
+    name: "EU AI Act — Regulation (EU) 2024/1689"
+    type: regulation
+    jurisdiction: EU
+    citation: "Regulation (EU) 2024/1689 (Artificial Intelligence Act)"
+    source_url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    monitoring_needed: true
+    change_signal_method: etag
+    scan_frequency: P30D                   # higher cadence during phased entry into force
+
+  - id: SOURCE-EDPB-GUIDE-1
+    name: "EDPB guidelines (consolidated index)"
+    type: guidance
+    jurisdiction: EU
+    citation: "European Data Protection Board — adopted guidelines index"
+    source_url: "https://www.edpb.europa.eu/our-work-tools/general-guidance/guidelines-recommendations-best-practices_en"
+    monitoring_needed: true
+    change_signal_method: api-updated-field
+
+  - id: SOURCE-BDSG-DE-1
+    name: "German BDSG (GDPR implementing law)"
+    type: law
+    jurisdiction: DE
+    citation: "Bundesdatenschutzgesetz — national implementation of the GDPR"
+    source_url: "https://www.gesetze-im-internet.de/bdsg_2018/"
+    monitoring_needed: false
+    monitor_instead:
+      - SOURCE-GDPR-1                       # covered via the EU regulation watch
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-05"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-06-05"
+valid_to: null

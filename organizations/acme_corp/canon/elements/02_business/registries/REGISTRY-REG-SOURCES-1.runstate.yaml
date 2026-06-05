@@ -1,0 +1,29 @@
+# Operating-state sidecar — machine-written runtime telemetry, NOT canon.
+# See CONTRACT.md §9.6 and ELEMENT_PRIMITIVES.md §7.19. This file carries no
+# admission record and is regenerable: a collector re-run rebuilds it. It holds
+# per-row operating STATE only; authored configuration lives in the registry.
+target: REGISTRY-REG-SOURCES-1
+
+rows:
+  SOURCE-GDPR-1:
+    last_scanned_at: "2026-06-04"
+    next_scan_due: "2026-09-02"            # last + P90D (registry default)
+    change_detected: false
+    review_needed: false
+    latest_snapshot: "snapshots/SOURCE-GDPR-1/2026-06-04.html"
+
+  SOURCE-EU-AI-ACT-1:
+    last_scanned_at: "2026-06-04"
+    next_scan_due: "2026-07-04"            # last + P30D (row override)
+    change_detected: true
+    review_needed: true
+    latest_snapshot: "snapshots/SOURCE-EU-AI-ACT-1/2026-06-04.html"
+
+  SOURCE-EDPB-GUIDE-1:
+    last_scanned_at: "2026-06-04"
+    next_scan_due: "2026-09-02"            # last + P90D (registry default)
+    change_detected: false
+    review_needed: false
+    latest_snapshot: "snapshots/SOURCE-EDPB-GUIDE-1/2026-06-04.json"
+
+  # SOURCE-BDSG-DE-1 has no state — monitoring_needed: false (watched via SOURCE-GDPR-1).

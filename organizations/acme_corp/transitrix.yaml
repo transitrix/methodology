@@ -22,3 +22,5 @@ notations:
   - activity-card
 zones: [canon, field, codex]
 coverage_profile: full           # see methodology notations/COVERAGE_PROFILES.md
+operating_parameters:            # org-wide operating defaults — see notations/MANIFEST.md §2
+  default_scan_frequency: P30D   # ISO 8601 duration; default cadence for REGISTRY rows that omit scan_frequency
