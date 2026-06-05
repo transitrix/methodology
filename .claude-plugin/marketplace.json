@@ -1,0 +1,27 @@
+{
+  "name": "transitrix-methodology",
+  "owner": {
+    "name": "Transitrix"
+  },
+  "description": "Transitrix methodology — open methodology and tooling for enterprise architecture as a decision discipline. Catalog of Claude Code plugins maintained alongside the methodology canon.",
+  "homepage": "https://transitrix.com",
+  "plugins": [
+    {
+      "name": "transitrix",
+      "source": "./skills/onboard",
+      "description": "Scaffold a Transitrix enterprise-architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest), and author a first notation file with inline canonical validation.",
+      "keywords": [
+        "enterprise-architecture",
+        "architecture-as-text",
+        "methodology",
+        "scaffolding",
+        "onboarding",
+        "transitrix",
+        "bpmn",
+        "fgca",
+        "capability-map",
+        "process-blueprint"
+      ]
+    }
+  ]
+}

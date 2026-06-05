@@ -39,7 +39,7 @@ One worked skeleton per notation under `canon/views/` (fgca, fga, goals, capabil
 
 ## Copy-and-fill templates — `.templates/`
 
-To start a new artefact, copy the matching template: `.templates/elements/<NN>_<layer>_template.yaml` for element primitives, `.templates/relations/relation_template.yaml` for a REL, `.templates/capability-map_template.yaml` for a capability map. The onboarding Skill (`/transitrix-onboard`) automates this for a fresh repo.
+To start a new artefact, copy the matching template: `.templates/elements/<NN>_<layer>_template.yaml` for element primitives, `.templates/relations/relation_template.yaml` for a REL, `.templates/capability-map_template.yaml` for a capability map. The onboarding Skill (`/transitrix:onboard`) automates this for a fresh repo.
 
 ---
 

@@ -49,13 +49,13 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 
 The agent reads the canon as **read-only**. It never edits methodology files from this repo, and it never copies methodology content into this repo wholesale (link to it instead).
 
-If the Transitrix onboarding Skill (`/transitrix-onboard`) is available, the agent may use its cheat sheet as a quick reference, but the canon remains the source of truth for any conflict.
+If the Transitrix onboarding Skill (`/transitrix:onboard`) is available, the agent may use its cheat sheet as a quick reference, but the canon remains the source of truth for any conflict.
 
 ---
 
 ## 3. Repository layout
 
-The canonical layout an adopter inherits when scaffolded by `/transitrix-onboard`:
+The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard`:
 
 ```
 <repo-root>/

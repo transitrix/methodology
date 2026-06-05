@@ -3,7 +3,7 @@ name: Onboarding Skill install test
 # From-scratch install test for the Transitrix Onboarding Skill (strategy#56).
 # Proves a first-time user can install the Skill against a clean workspace and
 # end up with a working, canon-valid repo. Implementation + harness rationale:
-# skills/onboarding/tests/README.md.
+# skills/onboard/tests/README.md.
 #
 # Two jobs:
 #   integrity  — deterministic, no API key. Runs on every PR touching the Skill,
@@ -14,7 +14,7 @@ name: Onboarding Skill install test
 on:
   pull_request:
     paths:
-      - 'skills/onboarding/**'
+      - 'skills/onboard/**'
       - '.github/workflows/onboarding-skill-test.yml'
   workflow_dispatch:
   schedule:
@@ -37,7 +37,7 @@ jobs:
         run: pip install pyyaml
 
       - name: Run Skill install test (deterministic)
-        run: python skills/onboarding/tests/test_skill_integrity.py
+        run: python skills/onboard/tests/test_skill_integrity.py
 
   e2e-drive:
     # True LLM end-to-end drive — only on the weekly cron and manual dispatch,
@@ -62,4 +62,4 @@ jobs:
       - name: Drive the Skill end-to-end
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python skills/onboarding/tests/drive_skill_e2e.py
+        run: python skills/onboard/tests/drive_skill_e2e.py

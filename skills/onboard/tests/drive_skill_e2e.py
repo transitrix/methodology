@@ -13,7 +13,7 @@ NOT run in PR CI (see tests/README.md and the workflow). It skips gracefully —
 exit 0 — when the key or the CLI is absent, so it never red-flags CI for an
 infra reason; the cron run with the secret is where it actually exercises.
 
-Run:  ANTHROPIC_API_KEY=… python skills/onboarding/tests/drive_skill_e2e.py
+Run:  ANTHROPIC_API_KEY=… python skills/onboard/tests/drive_skill_e2e.py
 """
 
 import os
@@ -47,9 +47,15 @@ def main():
 
     work = tempfile.mkdtemp(prefix="transitrix-e2e-")
     try:
-        # Clean ephemeral HOME with only the skill installed.
+        # Clean ephemeral HOME with the skill bundle pre-staged. The plugin
+        # marketplace install path (`/plugin marketplace add transitrix/methodology`
+        # + `/plugin install transitrix@transitrix-methodology`) is exercised by
+        # users; here we drop the bundle directly into Claude Code's standalone
+        # skills directory so the agent can pick it up without a live marketplace
+        # round-trip. The PERSONA_PROMPT triggers the skill by intent, not by
+        # slash-command name, so either install path produces the same drive.
         home = os.path.join(work, "home")
-        installed = os.path.join(home, ".claude", "skills", "transitrix-onboard")
+        installed = os.path.join(home, ".claude", "skills", "onboard")
         os.makedirs(os.path.dirname(installed), exist_ok=True)
         shutil.copytree(guard.SKILL_DIR, installed)
 

@@ -2,7 +2,7 @@
 
 A first modelling session in the Transitrix **architecture-as-text** methodology. You'll author a view, create an element primitive it references, and validate — all as plain YAML under Git.
 
-The fastest path for a brand-new repo is the **onboarding Skill** (`/transitrix-onboard`), which scaffolds the zoned layout and walks you through your first file. This guide is the manual equivalent against the worked `acme_corp` repo.
+The fastest path for a brand-new repo is the **onboarding Skill** (`/transitrix:onboard`), which scaffolds the zoned layout and walks you through your first file. This guide is the manual equivalent against the worked `acme_corp` repo.
 
 ## Prerequisites
 
