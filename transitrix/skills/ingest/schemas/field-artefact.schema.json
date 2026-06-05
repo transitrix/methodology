@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/ingest/field-artefact.schema.json",
+  "title": "Transitrix field artefact (ingest)",
+  "description": "A field-zone artefact emitted by the ingest pipeline from one converted source document. Carries the admission record (CONTRACT.md §6) with a proposed source_quality (§11.2) and a type-specific body block the extraction step reads. The skill proposes; a human confirms source_quality at admission.",
+  "type": "object",
+  "required": ["id", "name", "type", "zone", "admitted_at", "admitted_by", "gate_checks", "provenance"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Canonical ID: <TYPE>-[<middle>-]<INTEGER>. For field artefacts the TYPE is the document type and the convention includes a date stamp, e.g. INTERVIEW-cfo-strategy-20260415-1.",
+      "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "type": {
+      "type": "string",
+      "description": "Field TYPE registry (IDS_AND_REFERENCES.md §3.4).",
+      "enum": ["INTERVIEW", "SURVEY", "OBSERVATION", "DRAFT"]
+    },
+    "zone": { "const": "field" },
+    "admitted_at": {
+      "type": "string",
+      "description": "Quoted ISO 8601 date (CONTRACT.md §4).",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "admitted_by": {
+      "type": "string",
+      "description": "Person handle or tool identifier that ran the field admission gate. Never a personal email."
+    },
+    "gate_checks": {
+      "type": "object",
+      "description": "The field zone's standard check is `provenance` (CONTRACT.md §6).",
+      "required": ["provenance"],
+      "properties": {
+        "provenance": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "source_quality": {
+      "type": "string",
+      "description": "PROPOSED trust in the source (CONTRACT.md §11.2). Closed ordinal set; weight is informational. A human confirms at admission. Absent ⇒ downstream confidence scoring treats the source as `unverified`.",
+      "enum": ["authoritative", "corroborated", "single_source", "unverified"]
+    },
+    "source_quality_proposed_by": {
+      "type": "string",
+      "description": "Tool identifier that proposed source_quality, so the human confirmation is auditable. Optional."
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Who / when / in what setting the material came from. The recorded source of the material is the field zone's contract.",
+      "required": ["captured_by", "captured_on", "setting"],
+      "properties": {
+        "captured_by": { "type": "string", "description": "Who recorded the material (handle or tool id)." },
+        "subject_role": { "type": "string", "description": "Role of the source (e.g. \"Chief Financial Officer\") — a role, never a named person." },
+        "captured_on": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "Date the material was captured." },
+        "setting": { "type": "string", "description": "Context in which the material was captured." }
+      },
+      "additionalProperties": true
+    },
+    "raw_source": {
+      "type": "string",
+      "description": "Path, relative to the org root, to the retained raw file in _intake/processed/ — the byte-level source this artefact was derived from, kept for traceability."
+    },
+    "notes": { "type": "string", "description": "Body block for type INTERVIEW — free-text transcript or notes the extraction step reads." },
+    "responses": { "type": "string", "description": "Body block for type SURVEY — structured or free-text answers." },
+    "observations": { "type": "string", "description": "Body block for type OBSERVATION — what was directly observed." },
+    "content": { "type": "string", "description": "Body block for type DRAFT — working draft awaiting admission." }
+  },
+  "allOf": [
+    {
+      "description": "Each field TYPE carries its own body block.",
+      "oneOf": [
+        { "properties": { "type": { "const": "INTERVIEW" } }, "required": ["notes"] },
+        { "properties": { "type": { "const": "SURVEY" } }, "required": ["responses"] },
+        { "properties": { "type": { "const": "OBSERVATION" } }, "required": ["observations"] },
+        { "properties": { "type": { "const": "DRAFT" } }, "required": ["content"] }
+      ]
+    }
+  ]
+}
