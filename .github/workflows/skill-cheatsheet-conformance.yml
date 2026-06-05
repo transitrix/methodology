@@ -1,7 +1,7 @@
 name: Skill cheat-sheet conformance
 
 # Catches drift between the onboarding Skill's embedded cheat sheet
-# (skills/onboard/SKILL.md) and the canonical notation catalogue
+# (transitrix/skills/onboard/SKILL.md) and the canonical notation catalogue
 # (notations/README.md). Implementation: scripts/check-skill-cheatsheet.mjs.
 #
 # CI is red on drift — the script exits non-zero and the job fails. Fix the

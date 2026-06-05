@@ -4,9 +4,8 @@ A Claude Code [plugin](https://docs.claude.com/en/docs/claude-code/plugins) that
 
 The skill itself runs in Claude Code. What it **scaffolds** for the adopter is assistant-neutral: the agent guide it drops in is `AGENTS.md` (read by any tool that supports the AGENTS.md convention), plus a `.github/copilot-instructions.md` pointer for GitHub Copilot. Adopters on Cursor / Claude Code / other tools add a one-line pointer in their tool's location.
 
-This directory is the **plugin bundle**. It ships:
+This directory is the **`onboard` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest — name, version, license, keywords — consumed by Claude Code at install time, with one `skills/<name>/` directory per skill). This skill ships:
 
-- [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) — the plugin manifest (name, version, license, keywords) consumed by Claude Code at install time.
 - [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 14 view notations + codex zone primitives).
 - [`templates/`](templates/) — starter files in three groups: **root scaffolding** (`transitrix.yaml` manifest + assistant-neutral `AGENTS.md` + GitHub Copilot pointer), **view notations** (one `.transitrix.yaml` per view notation), and **codex zone primitives** (external + internal).
 - [`extraction/`](extraction/) — per-layer extraction prompts for initial Canon population from Field artefacts (motivation / business / application).
@@ -17,7 +16,7 @@ The plugin is **read-only** against the methodology canon. It does not ship the 
 
 ## Install
 
-The plugin is published through the **`transitrix-methodology`** marketplace, which lives in this same repository. The marketplace manifest is at the repository root in [`.claude-plugin/marketplace.json`](../../.claude-plugin/marketplace.json); the plugin source is `./skills/onboard` within the marketplace.
+The plugin is published through the **`transitrix-methodology`** marketplace, which lives in this same repository. The marketplace manifest is at the repository root in [`.claude-plugin/marketplace.json`](../../../.claude-plugin/marketplace.json); the plugin source is `./transitrix` within the marketplace.
 
 Inside a Claude Code session, add the marketplace once and install the plugin:
 
@@ -120,7 +119,7 @@ The skill does **not** request `Edit` against any file under the methodology can
 
 ## Updating the bundle
 
-The plugin source is part of the methodology repo (`github.com/transitrix/methodology`, path `skills/onboard/`). Changes ship in the same PR flow as everything else. After a release, users re-install with `/plugin install transitrix@transitrix-methodology` to pick up the latest `main`.
+The plugin source is part of the methodology repo (`github.com/transitrix/methodology`, path `transitrix/`; this skill at `transitrix/skills/onboard/`). Changes ship in the same PR flow as everything else. After a release, users re-install with `/plugin install transitrix@transitrix-methodology` to pick up the latest `main`.
 
 If a notation's canonical shape changes, the template under `templates/` and the corresponding row in `SKILL.md`'s cheat sheet must be updated in the same commit.
 
@@ -128,14 +127,14 @@ If a notation's canonical shape changes, the template under `templates/` and the
 
 ## Cheat-sheet conformance check
 
-The embedded cheat sheet in [`SKILL.md`](SKILL.md) is downstream of [`notations/README.md`](../../notations/README.md). When the canon catalogue changes — a notation added, renamed, retired, or its file extension changed — the Skill must follow. CI guards this:
+The embedded cheat sheet in [`SKILL.md`](SKILL.md) is downstream of [`notations/README.md`](../../../notations/README.md). When the canon catalogue changes — a notation added, renamed, retired, or its file extension changed — the Skill must follow. CI guards this:
 
-- **Script:** [`scripts/check-skill-cheatsheet.mjs`](../../scripts/check-skill-cheatsheet.mjs) — pure Node, no dependencies.
-- **Workflow:** [`.github/workflows/skill-cheatsheet-conformance.yml`](../../.github/workflows/skill-cheatsheet-conformance.yml) — runs on every PR and weekly Monday 09:00 UTC.
+- **Script:** [`scripts/check-skill-cheatsheet.mjs`](../../../scripts/check-skill-cheatsheet.mjs) — pure Node, no dependencies.
+- **Workflow:** [`.github/workflows/skill-cheatsheet-conformance.yml`](../../../.github/workflows/skill-cheatsheet-conformance.yml) — runs on every PR and weekly Monday 09:00 UTC.
 
 ### What the script checks
 
-Ground truth = the catalogue table in [`notations/README.md`](../../notations/README.md). The script verifies:
+Ground truth = the catalogue table in [`notations/README.md`](../../../notations/README.md). The script verifies:
 
 | Check | Rule |
 |---|---|
@@ -148,7 +147,7 @@ The script exits `1` on drift (CI red) with a per-finding list naming the specif
 
 ### What the script does NOT check
 
-- The codex zone-primitives section in the cheat sheet — codex isn't in the catalogue table; it's a parallel zone-primitive notation with a separate spec ([`notations/elements/14-codex.md`](../../notations/elements/14-codex.md)).
+- The codex zone-primitives section in the cheat sheet — codex isn't in the catalogue table; it's a parallel zone-primitive notation with a separate spec ([`notations/elements/14-codex.md`](../../../notations/elements/14-codex.md)).
 - Root-scaffolding templates (`transitrix.yaml`, `AGENTS.md`, `copilot-instructions.md`) — adopter-shape concerns, not notation-shape concerns.
 - Intra-spec drift (each spec's front-matter `file_extension` vs its "File header" section) — a separate known issue, not the Skill's fault.
 - The free-text "Situation" prose in the family-selection matrix.
@@ -157,7 +156,7 @@ The script exits `1` on drift (CI red) with a per-finding list naming the specif
 
 Read the per-finding output. For each finding:
 
-- **Check A / B failure** — the canon added or renamed a notation; update the Skill cheat sheet and add/rename the view-template under `skills/onboard/templates/` in the same PR.
+- **Check A / B failure** — the canon added or renamed a notation; update the Skill cheat sheet and add/rename the view-template under `transitrix/skills/onboard/templates/` in the same PR.
 - **Check C / D failure** — the Skill has a stray row or template that doesn't match the canon; either the catalogue is missing the notation (update the catalogue) or the Skill has a typo (fix the Skill).
 
 The script runs on every PR, so a drift introduced anywhere — Skill side or canon side — surfaces in the PR conversation, not in the Actions tab as a warning.

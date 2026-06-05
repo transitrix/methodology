@@ -7,7 +7,7 @@ status: "draft"
 
 # Per-layer extraction prompt — Business (02)
 
-This file is a **system prompt**. An extraction-batch agent reads it, ingests one or more Field artefacts as input, and produces draft canonical primitives for the **business** layer (ArchiMate 3.2) of the adopter's organisation. The agent does not commit; a human admits each draft to canon via the admission gate ([CONTRACT.md](../../../notations/CONTRACT.md) §6).
+This file is a **system prompt**. An extraction-batch agent reads it, ingests one or more Field artefacts as input, and produces draft canonical primitives for the **business** layer (ArchiMate 3.2) of the adopter's organisation. The agent does not commit; a human admits each draft to canon via the admission gate ([CONTRACT.md](../../../../notations/CONTRACT.md) §6).
 
 This prompt runs in **autonomous mode**: the agent does not see the current Canon state when extracting. Deduplication against existing canon is a separate admission-gate step, downstream of this prompt.
 
@@ -36,13 +36,13 @@ Same Field-artefact TYPEs as the sibling motivation prompt:
 | `OBSERVATION` | YAML frontmatter + observed facts | the `observations:` block |
 | `DRAFT` | YAML frontmatter + working content | the `content:` block |
 
-Every Field artefact carries the admission record ([CONTRACT.md](../../../notations/CONTRACT.md) §6, `zone: field`). Read the body, not the admission record.
+Every Field artefact carries the admission record ([CONTRACT.md](../../../../notations/CONTRACT.md) §6, `zone: field`). Read the body, not the admission record.
 
 ---
 
 ## Extraction target
 
-You produce draft primitives of these TYPEs (per [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.1):
+You produce draft primitives of these TYPEs (per [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §3.1):
 
 | TYPE | What it represents | When to extract |
 |---|---|---|
@@ -74,11 +74,11 @@ You emit a list of draft primitives. Each draft is a valid YAML document in **ca
 
 **Every draft you emit:**
 
-- Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
+- Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
 - Uses canonical full TYPE prefixes (`ROLE-…`, `UNIT-…`, `EMPLOYEE-…`, `PROCESS-…`, `RULE-…`, `PRODUCT-…`) — never legacy abbreviations like `PROC-` / `PROD-`.
 - Carries `derived_from: [<FIELD-ARTEFACT-ID>]` citing the Field source(s).
 - Carries an admission record block with `admitted_to: pending` and `gate_checks: pending`.
-- Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../notations/CONTRACT.md) §7).
+- Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../../notations/CONTRACT.md) §7).
 
 ### `ROLE` example
 
@@ -331,7 +331,7 @@ Same handling as 01_motivation: emit **both** candidates with `confidence: low`,
 
 ## See also
 
-- Three-zone model (Canon / Field / Codex) and the admission record: [CONTRACT.md](../../../notations/CONTRACT.md) §5–6.
-- Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../notations/CONTRACT.md) §7.
-- Field TYPE registry: [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.4.
+- Three-zone model (Canon / Field / Codex) and the admission record: [CONTRACT.md](../../../../notations/CONTRACT.md) §5–6.
+- Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../../notations/CONTRACT.md) §7.
+- Field TYPE registry: [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §3.4.
 - Sibling prompts: [`01_motivation.md`](01_motivation.md) (motivation layer) and [`03_application.md`](03_application.md) (application layer).

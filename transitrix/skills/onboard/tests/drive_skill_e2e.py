@@ -13,7 +13,7 @@ NOT run in PR CI (see tests/README.md and the workflow). It skips gracefully —
 exit 0 — when the key or the CLI is absent, so it never red-flags CI for an
 infra reason; the cron run with the secret is where it actually exercises.
 
-Run:  ANTHROPIC_API_KEY=… python skills/onboard/tests/drive_skill_e2e.py
+Run:  ANTHROPIC_API_KEY=… python transitrix/skills/onboard/tests/drive_skill_e2e.py
 """
 
 import os
