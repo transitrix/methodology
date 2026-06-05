@@ -1,0 +1,22 @@
+{
+  "name": "@transitrix/ingest-cli",
+  "version": "0.0.1",
+  "description": "Deterministic CLI for the Transitrix ingest skill — scaffold intake, convert documents, emit field artefacts and canon candidates, validate, and stage a review queue. Never writes canon.",
+  "type": "module",
+  "bin": {
+    "transitrix-ingest": "./ingest.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "ingest.mjs",
+    "src/"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Transitrix"
+  },
+  "repository": "https://github.com/transitrix/methodology",
+  "dependencies": {}
+}
