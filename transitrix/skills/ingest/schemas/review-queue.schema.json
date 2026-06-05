@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/ingest/review-queue.schema.json",
+  "title": "Transitrix ingest review queue",
+  "description": "The human gate produced by the ingest pipeline for one batch. It lists the field artefacts (with proposed source_quality), the canon candidates (with derived_from, extraction_confidence, and any validation / coverage flags), and the below-threshold relation suggestions. NOTHING in this queue is admitted to canon — a human reviews, confirms or revises each proposed source_quality, and runs the canon admission gate to admit candidates.",
+  "type": "object",
+  "required": ["generated_by", "org_root", "field_artefacts", "candidates"],
+  "additionalProperties": true,
+  "properties": {
+    "generated_by": {
+      "type": "string",
+      "description": "Tool identifier that produced the queue (e.g. the ingest CLI version)."
+    },
+    "org_root": {
+      "type": "string",
+      "description": "Path to the adopter organisation root this batch was ingested into."
+    },
+    "sources": {
+      "type": "array",
+      "description": "The raw source files this batch derived from, retained under _intake/processed/.",
+      "items": { "type": "string" }
+    },
+    "coverage_profile": {
+      "type": "string",
+      "description": "The adopter's active coverage_profile that candidates were checked against (COVERAGE_PROFILES.md)."
+    },
+    "field_artefacts": {
+      "type": "array",
+      "description": "Field artefacts emitted in this batch, each with its PROPOSED source_quality for the human to confirm.",
+      "items": {
+        "type": "object",
+        "required": ["id", "proposed_source_quality"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+          },
+          "proposed_source_quality": {
+            "type": "string",
+            "enum": ["authoritative", "corroborated", "single_source", "unverified"]
+          },
+          "raw_source": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "description": "Canon candidates awaiting the human admission gate. Each conforms to candidate.schema.json; the queue references them and surfaces their flags.",
+      "items": {
+        "type": "object",
+        "required": ["ref", "kind", "extraction_confidence"],
+        "properties": {
+          "ref": { "type": "string", "description": "Path or ID of the candidate file." },
+          "kind": { "enum": ["element", "relation"] },
+          "extraction_confidence": { "enum": ["high", "medium", "low"] },
+          "coverage_flag": { "enum": ["in_profile", "out_of_profile"] },
+          "validation_flags": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      }
+    },
+    "relation_suggestions": {
+      "type": "array",
+      "description": "Relations that fell below the conservative emission threshold (Step 4). Surfaced as SUGGESTIONS for the reviewer, never emitted as candidates.",
+      "items": {
+        "type": "object",
+        "required": ["rel_kind", "from", "to", "reason"],
+        "properties": {
+          "rel_kind": { "type": "string" },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "reason": { "type": "string", "description": "Why it was held back (e.g. below confidence threshold, ambiguous endpoint)." }
+        },
+        "additionalProperties": true
+      }
+    },
+    "gate": {
+      "type": "object",
+      "description": "Invariant statement for auditors and tooling: this skill admits nothing.",
+      "properties": {
+        "admits_to_canon": { "const": false }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "transitrix",
-      "source": "./skills/onboard",
+      "source": "./transitrix",
       "description": "Scaffold a Transitrix enterprise-architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest), and author a first notation file with inline canonical validation.",
       "keywords": [
         "enterprise-architecture",

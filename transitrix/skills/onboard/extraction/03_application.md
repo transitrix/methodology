@@ -7,7 +7,7 @@ status: "draft"
 
 # Per-layer extraction prompt — Application (03)
 
-This file is a **system prompt**. An extraction-batch agent reads it, ingests one or more Field artefacts as input, and produces draft canonical primitives for the **application** layer (ArchiMate 3.2) of the adopter's organisation. The agent does not commit; a human admits each draft to canon via the admission gate ([CONTRACT.md](../../../notations/CONTRACT.md) §6).
+This file is a **system prompt**. An extraction-batch agent reads it, ingests one or more Field artefacts as input, and produces draft canonical primitives for the **application** layer (ArchiMate 3.2) of the adopter's organisation. The agent does not commit; a human admits each draft to canon via the admission gate ([CONTRACT.md](../../../../notations/CONTRACT.md) §6).
 
 This prompt runs in **autonomous mode** alongside [`01_motivation.md`](01_motivation.md) and [`02_business.md`](02_business.md). Material that belongs to a sibling layer surfaces in `cross_layer_hints:`, never as a wrong-TYPE primitive.
 
@@ -34,13 +34,13 @@ Same Field-artefact TYPEs as the sibling prompts:
 | `OBSERVATION` | YAML frontmatter + observed facts | the `observations:` block |
 | `DRAFT` | YAML frontmatter + working content | the `content:` block |
 
-Every Field artefact carries the admission record ([CONTRACT.md](../../../notations/CONTRACT.md) §6, `zone: field`). Read the body, not the admission record.
+Every Field artefact carries the admission record ([CONTRACT.md](../../../../notations/CONTRACT.md) §6, `zone: field`). Read the body, not the admission record.
 
 ---
 
 ## Extraction target
 
-You produce draft primitives of these TYPEs (per [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.1):
+You produce draft primitives of these TYPEs (per [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §3.1):
 
 | TYPE | What it represents | When to extract |
 |---|---|---|
@@ -78,11 +78,11 @@ You emit a list of draft primitives. Each draft is a valid YAML document in **ca
 
 **Every draft you emit:**
 
-- Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
+- Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
 - Uses canonical full TYPE prefixes (`APPLICATION-…`, `INTEGRATION-…`, `INFORMATION_ENTITY-…`) — never legacy abbreviations like `APP-` / `INT-`.
 - Carries `derived_from: [<FIELD-ARTEFACT-ID>]`.
 - Carries an admission record block with `admitted_to: pending` and `gate_checks: pending`.
-- Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../notations/CONTRACT.md) §7).
+- Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../../notations/CONTRACT.md) §7).
 
 ### `APPLICATION` example
 
@@ -257,9 +257,9 @@ Same handling as sibling prompts: emit **both** candidates with `confidence: low
 
 ## See also
 
-- Three-zone model and the admission record: [CONTRACT.md](../../../notations/CONTRACT.md) §5–6.
-- Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../notations/CONTRACT.md) §7.
-- Time-varying attributes for applications (`vendor`, `owner_role`, `maturity`) — sidecar contract: [CONTRACT.md](../../../notations/CONTRACT.md) §9. Extraction emits the stable fields only; sidecar admission is a separate step.
-- Applications catalogue notation: [10-applications.md](../../../notations/views/10-applications.md).
-- Field TYPE registry: [IDS_AND_REFERENCES.md](../../../notations/IDS_AND_REFERENCES.md) §3.4.
+- Three-zone model and the admission record: [CONTRACT.md](../../../../notations/CONTRACT.md) §5–6.
+- Primitive lifecycle (`valid_from` / `valid_to`): [CONTRACT.md](../../../../notations/CONTRACT.md) §7.
+- Time-varying attributes for applications (`vendor`, `owner_role`, `maturity`) — sidecar contract: [CONTRACT.md](../../../../notations/CONTRACT.md) §9. Extraction emits the stable fields only; sidecar admission is a separate step.
+- Applications catalogue notation: [10-applications.md](../../../../notations/views/10-applications.md).
+- Field TYPE registry: [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §3.4.
 - Sibling prompts: [`01_motivation.md`](01_motivation.md) (motivation layer) and [`02_business.md`](02_business.md) (business layer).

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/ingest/candidate.schema.json",
+  "title": "Transitrix canon candidate (ingest)",
+  "description": "A typed canon CANDIDATE proposed by the ingest pipeline — an element or a relation. A candidate is never canon: it carries admitted_to: pending and is gated by a human via the review queue. It cites its field source via derived_from, and carries extraction_confidence as a review flag that is kept strictly separate from the source's source_quality and is never persisted into canon.",
+  "type": "object",
+  "required": ["kind", "derived_from", "admitted_to", "extraction_confidence"],
+  "additionalProperties": true,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "description": "Whether this candidate is an element or a typed relation.",
+      "enum": ["element", "relation"]
+    },
+    "derived_from": {
+      "type": "array",
+      "description": "Typed IDs of the field artefact(s) this candidate was derived from (CONTRACT.md §6). A citation, never a migration. At least one is required for a candidate.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+      }
+    },
+    "admitted_to": {
+      "const": "pending",
+      "description": "A candidate is always pending. The human admission gate completes admission; this skill never sets it to `canon`."
+    },
+    "extraction_confidence": {
+      "type": "string",
+      "description": "Review flag — did the model read the document correctly. SEPARATE from source_quality (CONTRACT.md §11.8); surfaced in the review queue; never folded into source_quality; never persisted into canon.",
+      "enum": ["high", "medium", "low"]
+    },
+    "extraction_notes": {
+      "type": "string",
+      "description": "Ambiguities, contradictions, or judgement calls the human reviewer should resolve."
+    },
+    "coverage_flag": {
+      "type": "string",
+      "description": "Set when the candidate's TYPE / REL kind falls outside the adopter's active coverage_profile (COVERAGE_PROFILES.md). Out-of-profile candidates are flagged, not silently emitted into canon nor silently dropped.",
+      "enum": ["in_profile", "out_of_profile"]
+    },
+    "validation_flags": {
+      "type": "array",
+      "description": "Actionable reasons a candidate did not validate cleanly (ID grammar, TYPE registry, closed REL kinds, lifecycle). Each flag routes the candidate to the review queue rather than rejecting it.",
+      "items": { "type": "string" }
+    }
+  },
+  "oneOf": [
+    {
+      "title": "Element candidate",
+      "properties": {
+        "kind": { "const": "element" },
+        "id": {
+          "type": "string",
+          "description": "Canonical element ID: <TYPE>-[<middle>-]<INTEGER>.",
+          "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "element_type": {
+          "type": "string",
+          "description": "Canonical element TYPE (IDS_AND_REFERENCES.md §3.1), e.g. FACTOR, GOAL, ROLE, APPLICATION.",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "valid_from": { "type": ["string", "null"], "description": "Lifecycle anchor (CONTRACT.md §7). `pending` or a date when known." },
+        "valid_to": { "type": ["string", "null"] }
+      },
+      "required": ["id", "name", "element_type"]
+    },
+    {
+      "title": "Relation candidate",
+      "description": "Relations are the risky part: only emitted as a candidate above a high confidence threshold (v0 is relation-conservative). Below-threshold relations are review-queue suggestions, not candidates.",
+      "properties": {
+        "kind": { "const": "relation" },
+        "rel_kind": {
+          "type": "string",
+          "description": "A closed REL kind from the relations registry (17-relations.md). Never invented."
+        },
+        "from": {
+          "type": "string",
+          "description": "Source endpoint — a candidate or canonical element ID.",
+          "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+        },
+        "to": {
+          "type": "string",
+          "description": "Target endpoint — a candidate or canonical element ID.",
+          "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+        }
+      },
+      "required": ["rel_kind", "from", "to"]
+    }
+  ]
+}

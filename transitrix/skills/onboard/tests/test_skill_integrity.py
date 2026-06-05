@@ -11,7 +11,7 @@ reading SKILL.md and producing the repo end-to-end) needs an API key and lives
 in drive_skill_e2e.py, gated to the weekly cron. See tests/README.md for the
 harness-choice rationale and the @transitrix/diagrams stand-in note.
 
-Run:  python skills/onboard/tests/test_skill_integrity.py
+Run:  python transitrix/skills/onboard/tests/test_skill_integrity.py
 Exit: 0 = all checks pass; 1 = a check failed (message localises the problem).
 """
 
@@ -179,8 +179,11 @@ def check_clean_install_goals_path():
         #    `/<plugin>:<skill>` for the session). Whatever directory the runtime
         #    materialises the plugin into is implementation-detail; this test
         #    treats the bundle source tree as the SKILL_DIR the agent will see.
-        check(os.path.isfile(os.path.join(SKILL_DIR, ".claude-plugin", "plugin.json")),
-              "plugin manifest missing: skills/onboard/.claude-plugin/plugin.json")
+        #    The plugin manifest lives at the PLUGIN root (transitrix/), not the
+        #    skill dir — a multi-skill plugin carries one plugin.json above skills/.
+        plugin_json = os.path.join(SKILL_DIR, "..", "..", ".claude-plugin", "plugin.json")
+        check(os.path.isfile(plugin_json),
+              "plugin manifest missing: transitrix/.claude-plugin/plugin.json")
 
         # 2. Drive the representative path deterministically against the bundle:
         #    scaffold the zoned skeleton (Step 2) and instantiate the Goals

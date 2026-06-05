@@ -39,7 +39,7 @@ const VERSION_SOT = join(REPO_ROOT, 'organizations', 'acme_corp', 'transitrix.ya
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
-  'skills/onboard/templates/transitrix.yaml', // "pin a real release once the adopter chooses one"
+  'transitrix/skills/onboard/templates/transitrix.yaml', // "pin a real release once the adopter chooses one"
 ]);
 
 // Directories never walked.
