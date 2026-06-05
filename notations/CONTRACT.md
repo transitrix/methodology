@@ -266,6 +266,30 @@ Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR,
 - **Versioning the lifecycle itself.** `valid_from` / `valid_to` on the primitive are not versionable. To change a primitive's lifecycle, rewrite the file via git; the git history is the audit trail.
 - **Auto-derived rollups.** Cross-attribute computations (e.g. "average maturity over Q3 2026") are query-time concerns of the renderer / DSM, not of the sidecar schema.
 
+### 9.6 Operating-state sidecars vs versioned-attribute sidecars
+
+§9.1–§9.5 define the **versioned-attribute sidecar** (`<id>.history.yaml`): a git-tracked record of how an element's *business attributes* changed over time — maturity, vendor, owning role — each a value with a `valid_from`. It is part of the audit trail of canon; a human authors it.
+
+A distinct need arises when an element drives an *automated operating activity* and accrues **runtime operating state** — machine-written telemetry about that activity, not a versioned business attribute. The motivating case is a `REGISTRY` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19): a regulatory-source watch-list whose collector records, per row, when each source was last scanned, when it is next due, whether a change was detected, whether human review is pending, and the latest captured snapshot. This is **state, not config**, and must not churn the source-of-truth element on every scan.
+
+Such state lives in an **operating-state sidecar**, co-located with its target element but kept distinct from the versioned-attribute sidecar:
+
+```
+<id>.yaml            # the element — authored configuration only
+<id>.history.yaml    # versioned business attributes (§9.1) — human-authored, canon audit trail
+<id>.runstate.yaml   # operating state — machine-written runtime telemetry, NOT canon
+```
+
+| Aspect | Versioned-attribute sidecar (`.history.yaml`) | Operating-state sidecar (`.runstate.yaml`) |
+|---|---|---|
+| Holds | business attributes that changed over the element's life | runtime telemetry of an automated activity the element drives |
+| Author | human (admission-gated edits) | machine (the collector / runner) |
+| Shape | `target` + `attribute_versions` keyed by attribute, each a `valid_from`-stamped value list (§9.1) | `target` + `rows`/state keyed per the driving element's schema; current-value, not full history |
+| Zone | canon-adjacent — part of the audit trail, git-tracked | **not canon** — carries no admission record; it is regenerable runtime data |
+| Validation | `VERSIONED-001..005` (§9.3) | governed by the driving element's spec, not by `VERSIONED-*` |
+
+Both share the §9.1 sidecar principles — co-located with the target, no admission record of its own, temporal window governed by the target's lifecycle — but an operating-state sidecar is **not** a versioned-attribute store and is **not** canon: deleting it loses no authored knowledge, because a re-run regenerates it. The concrete `runstate.yaml` shape for the regulatory-source registry is defined in [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19; this section fixes only the config/state boundary and the naming convention.
+
 ---
 
 ## 10. Versioning and compatibility

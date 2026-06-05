@@ -57,6 +57,7 @@ canon/
       roles/          ROLE-*.yaml
       actors/         ACTOR-*.yaml           # elements/19-actors.md (person | business_unit | system)
       rules/          RULE-*.yaml             # worked-example precedent
+      registries/     REGISTRY-*.yaml         # §7.19 — org-authored operating config; rows inline, promotable
     03_application/
       applications/   APPLICATION-*.yaml
       integrations/   INTEGRATION-*.yaml      # promotable; nested-in-view in v1 (§4)
@@ -153,6 +154,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `ROLE` | standalone | `role` | business | `02_business/roles/` | §7.9 |
 | `ACTOR` | standalone | `actor` | business | `02_business/actors/` | §7.10 + [elements/19-actors.md](elements/19-actors.md) |
 | `RULE` | standalone | `rule` | business | `02_business/rules/` | §7.12 (worked-example precedent) |
+| `REGISTRY` | standalone (rows inline, canonical-by-containment, promotable) | `registry` | business | `02_business/registries/` | §7.19 (no dedicated spec) |
 | `APPLICATION` | standalone | `application` | application | `03_application/applications/` | §7.7 + [views/10-applications.md](views/10-applications.md) |
 | `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](views/10-applications.md) |
 | `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-fgca.md](views/02-fgca.md) |
@@ -167,6 +169,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 
 - **The strategy chain (`FACTOR` / `GOAL` / `CHANGE` / `ACTIVITY`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, FGCA, FGA, Activities, Scenarios, and Issues; a `FACTOR` in FGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 already mandates their catalogue uniqueness when cross-referenced. The flat FGCA/FGA/Goals/Activities documents remain the authoring surface (README "Form rule"); the catalogue file is the canonical record once an element is shared. Defining their element-file shape (§7.1–§7.4) is exactly what unblocks the elements-population that surfaced this task.
 - **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
+- **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `FACTOR` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the factor without losing that history. It is therefore its own catalogue element that references its `FACTOR` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is the M:N relation declared on epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) and lands as a `REL` kind in a separate sub-task — never inline on this element.
@@ -219,7 +222,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
 | `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
-| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`) |
+| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
 | `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2) |
@@ -499,6 +502,49 @@ Implementation-layer **path** primitive — the ordered set of steps (`ACTIVITY`
 - **No `vision` / `factors_view` / status vocabulary.** Narrative vision and per-scenario factor relevance were v0.x conveniences mixed into the same document. With the reclassification, narrative is `description`; factor analysis lives in the motivation layer (`ASSESSMENT`, §7.16, and the `assessment_influences_goal` REL kind), not as a per-scenario projection.
 
 No subtype vocabulary on `type`. There is no dedicated view spec in v1 — a scenario is a *content element*. The scenarios view ([views/11-scenarios.md](views/11-scenarios.md)) renders the catalogue (ordering, filtering, comparison side-by-side); it is a report-configuration surface over the `SCENARIO` elements, not a content home.
+
+### 7.19 `REGISTRY` — `02_business/registries/`
+
+Business-layer **operating-configuration** primitive — a curated, **org-authored** list the organisation maintains to drive an operating activity. It is model content (a real, authoritative thing the organisation keeps), but it is neither intent nor an externally-given constraint: it is the configuration the org authors to decide *how it operates*. The placement rationale (why not motivation / codex / Field / `RULE` / the team `operations/` folder) is in §4.1. There is no clean ArchiMate concept for it; it is a methodology operating-configuration primitive on the business layer.
+
+The **worked example** is the regulatory **source registry** — the list of regulatory sources the organisation watches, where each lives, whether and how it is monitored for change, and how often. (`organizations/acme_corp/canon/elements/02_business/registries/REGISTRY-REG-SOURCES-1.yaml`.) The schema is designed so a registry of a different `type` can be added later without re-deciding the envelope.
+
+**Element-level fields:**
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `type` | **yes** | string | The registry *kind* — the subtype that fixes which row schema applies. v1 vocabulary: `regulatory_source` (the worked example). Open for additive extension; a new kind defines its own row schema in this section. |
+| `description` | recommended | string | One-paragraph statement of what this registry is for and how it is maintained. |
+| `default_scan_frequency` | no | string | ISO 8601 duration ([CONTRACT.md](CONTRACT.md) §4 dates; durations e.g. `P1D` / `P7D` / `P30D`) applied to any row that omits `scan_frequency`. Overrides the organisation-wide default in the manifest's `operating_parameters:` ([MANIFEST.md](MANIFEST.md) §2). Resolution order for a row's effective cadence: row `scan_frequency` → this registry `default_scan_frequency` → manifest `operating_parameters.default_scan_frequency`. |
+| `rows` | **yes** | list | The registry entries. Each row is inline and **canonical-by-containment** — see below. The per-row fields depend on the registry `type`. |
+
+**Rows are inline, canonical-by-containment, promotable.** Each row carries an `id` in the canonical grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), unique within the registry, and is **addressable** — a `REQUIREMENT.derived_from`, an `ASSERTION`, or a `CHANGE` may reference a row by its ID. A row stays inline (the REGISTRY element carries the single admission record and lifecycle, §1 inline-element rule) and is **promoted** to its own standalone record, registering its row TYPE, only when a *second* document references it (§1 promotion rule) — the identical mechanic to a `PROCESS` flow step (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). The row TYPE prefix for the regulatory-source kind is `SOURCE` (e.g. `SOURCE-GDPR-1`); it is unregistered until promotion, exactly as `STEP-…` is for a process flow.
+
+#### Row schema — `type: regulatory_source`
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `id` | **yes** | string | Canonical-grammar ID of the source row (the *source_id*), e.g. `SOURCE-GDPR-1`. Contained + promotable (above). |
+| `name` | **yes** | string | Human-readable label of the source. |
+| `type` | **yes** | string | Source classification — `law` \| `regulation` \| `policy` \| `standard` \| `guidance`. (Distinct from the codex artefact TYPEs: this classifies the *source* in the watch-list; it does not admit a codex artefact.) |
+| `jurisdiction` | **yes** | string | The regime / jurisdiction the source belongs to, e.g. `EU`, `US-CA`, `UK`. Industry- and regime-agnostic — no sector or named regulation is privileged by the schema. |
+| `citation` | recommended | string | Human citation of the source (title, article / section, issuing body). |
+| `source_url` | recommended | string | Canonical URL where the source is published. |
+| `monitoring_needed` | **yes** | boolean | Whether this source is actively watched for change. `false` for a source recorded for reference but not monitored. |
+| `monitor_instead` | no | list | `SOURCE-…` IDs (in this registry) that are watched in place of this one — e.g. an aggregator or consolidated text is monitored instead of each amendment. Present only where `monitoring_needed: false` because coverage comes via another row. |
+| `scan_frequency` | no | string | ISO 8601 duration — how often this source is scanned. When omitted, the registry / manifest default applies (resolution order above). |
+| `change_signal_method` | no | string | How a change is detected — `etag` \| `api-updated-field` \| `version-date` \| `content-hash`. Required where `monitoring_needed: true`. |
+
+**Config vs operating state — the split (acceptance criterion).** A row's **operating state** — `last_scanned_at`, `next_scan_due`, `change_detected`, `review_needed`, and the resolved `latest_snapshot` pointer — is *runtime data written by the collector*, not authored configuration. It MUST NOT be stored inline on the REGISTRY element (which would churn the source-of-truth artefact on every scan and lose the config/state boundary). It lives in a co-located **operating-state sidecar** ([CONTRACT.md](CONTRACT.md) §9.6):
+
+```
+REGISTRY-<…>.yaml            # the registry — authored configuration only (this schema)
+REGISTRY-<…>.runstate.yaml   # per-row operating state — machine-written, NOT canon
+```
+
+> **Deviation flagged for review.** The task's row-schema list placed the *latest-snapshot pointer* among the row fields. It is moved to the operating-state sidecar here because a snapshot pointer that advances on every detected change is **state**, not authored config — keeping it on the row would breach the very config/state boundary this task establishes. The runtime pointer therefore lives in `runstate.yaml` alongside the other state counters; the row schema above carries only authored configuration. Valerii gates this call at merge.
+
+Inline shape: no view spec in v1 — a registry is a content element, authored directly as the element file. A render-able "what are we watching / what changed" view is a separate report-configuration concern (out of scope here).
 
 ---
 
