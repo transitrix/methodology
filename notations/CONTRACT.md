@@ -97,13 +97,14 @@ derived_from:               # optional; typed IDs of the artefacts this one deri
 | `admitted_by` | yes | string | The person handle or tool identifier that ran the admission gate. |
 | `gate_checks` | yes | map | Sub-map keyed by check name; each value records the outcome (`pass`, or a short note). The standard checks per zone are listed below. |
 | `derived_from` | no | list | Typed IDs (per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md)) of the artefacts this one was derived from. This is how a Canon record cites the Field material behind it (§5) — a citation, never a migration. |
+| `source_quality` | field zone: recommended | string | Authored trust in the *source* of the material, from the closed set `authoritative` / `corroborated` / `single_source` / `unverified` (§11.2). Part of the `field` zone's `provenance` contract (§5). Absent ⇒ downstream confidence scoring (§11) treats the source as `unverified`. Not meaningful on `canon` / `codex` artefacts. |
 
 **Standard `gate_checks` per zone** — the minimum each zone's gate asserts:
 
 | Zone | Standard checks | Meaning |
 |---|---|---|
 | `canon` | `uniqueness`, `consistency`, `completeness` | IDs unique within the catalogue; no contradiction with existing canon; required fields present. |
-| `field` | `provenance` | The source of the material is recorded — who, when, and in what setting. |
+| `field` | `provenance` | The source of the material is recorded — who, when, in what setting, and at what trust (`source_quality`, §11.2). |
 | `codex` | `source_authority` | The issuing or authoritative source is identified and the artefact is faithful to it. |
 
 A zone MAY record additional checks beyond its standard set; codex artefacts additionally carry zone-specific frontmatter defined in the codex notation spec.
@@ -313,3 +314,101 @@ A `MAJOR` release SHOULD ship with a migration recipe under `migrations/<from>-t
 - **The 1.0 cut decision.** Phase 4 of this epic — gated on the in-flight schema epics landing.
 - **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
 - **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
+
+---
+
+## 11. Confidence and freshness
+
+Canon is the authoritative model, but not every canonical statement is equally well-sourced, and confidence in a statement *ages* — a fact last reaffirmed two years ago is less certain than one confirmed last month, even when both are still `valid`. This section defines how Transitrix records the trust earned at data entry, how it decays that trust as a statement goes unreaffirmed, and how it surfaces a composite for a rendered view.
+
+Confidence is **metadata about certainty, not a contradiction flag.** A low-confidence canonical element is still canon — internally consistent and authoritative per §5. Confidence never gates admission and never mutates canon; it is computed, reported, and displayed.
+
+### 11.1 Two independent signals
+
+| Signal | Origin | Mutability | Lives in |
+|---|---|---|---|
+| **source trust** | Authored at entry — a judgement about *who or what* the material came from. | Fixed once recorded; a source does not become more or less trustworthy with the passage of time. | `source_quality` on a `field` artefact's admission record (§6). |
+| **freshness** | Derived — a function of how long ago the canonical statement was last reaffirmed. | Changes every day; recomputed at query / render time. | Not stored. Computed from the canon element's `admitted_at` (§6). |
+
+The two are deliberately separate. Collapsing them into one decaying number would erase the authored signal. A statement's overall confidence combines them (§11.4).
+
+### 11.2 Source-trust scale
+
+`source_quality` is a closed ordinal set. The numeric weight is used only for the arithmetic in §11.4–11.6; authors record the label, never the number.
+
+| Label | Weight | Meaning |
+|---|---|---|
+| `authoritative` | 1.0 | Primary source of record: the organisation's system of record, a signed document, or the accountable owner stating it directly. |
+| `corroborated` | 0.8 | Confirmed by triangulation across more than one independent field source. |
+| `single_source` | 0.5 | One uncorroborated informant or observation. |
+| `unverified` | 0.25 | Draft, assumption, inference, or hearsay. The default when `source_quality` is absent. |
+
+### 11.3 Freshness decay
+
+Freshness anchors on the canon element's `admitted_at` (§6) — the date the admission gate last ran for it. Re-running the gate on an unchanged element ("still true as of today") is a **reaffirmation**: it bumps `admitted_at` and resets freshness. This is the maintenance action that cures staleness; canon content is not edited to refresh a score.
+
+```
+age_days  = today − admitted_at
+freshness = 1.0      if age_days ≤ fresh_days
+          = floor    if age_days ≥ stale_days
+          = 1.0 − (1.0 − floor) · (age_days − fresh_days) / (stale_days − fresh_days)   otherwise
+```
+
+Freshness never reaches zero — old canon is less certain, not worthless; it bottoms out at `floor`. The three parameters are configured per element TYPE, because different facts age at different rates (an organisation's capability map ages over years; a price list over weeks). They live in the adopter manifest (`transitrix.yaml`) under `confidence_decay` ([MANIFEST.md](MANIFEST.md) §2); the `defaults` apply to any TYPE not overridden under `by_type`:
+
+```yaml
+confidence_decay:
+  defaults: { fresh_days: 180, stale_days: 730, floor: 0.3 }
+  by_type:
+    CAPABILITY:  { fresh_days: 365, stale_days: 1825 }
+    APPLICATION: { fresh_days: 180, stale_days: 730 }
+```
+
+### 11.4 Element confidence
+
+For one canonical element:
+
+```
+source_trust(element) = max weight over the source_quality of every field artefact
+                        the element cites via derived_from (§6)
+confidence(element)   = source_trust(element) · freshness(element)
+```
+
+Source trust takes the **best** available source (`max`): an element corroborated by an authoritative source is not dragged down by an additional weaker one — extra weak sources add nothing, they do not subtract. Multiplying by freshness then ages that trust: an `authoritative`-but-long-unreaffirmed element scores `1.0 · floor`, while a `single_source`-but-fresh element scores `0.5 · 1.0`.
+
+### 11.5 Unsourced elements
+
+`derived_from` remains optional (§6) — requiring it would break existing canon and is not in scope here. But an element with no resolvable `derived_from` has no authored trust to draw on. For confidence scoring it is treated as `unverified` (0.25) **and counted separately** so the gap is visible rather than hidden. This biases toward filling provenance without making it a hard gate.
+
+### 11.6 View composite
+
+A view renders a set of canonical elements. Its composite confidence is computed at render time and is **not stored** — views carry no lifecycle (§7.1) and no confidence state of their own. Three numbers are surfaced alongside the view's formation date:
+
+| Component | Definition |
+|---|---|
+| **weakest link** | `min` of `confidence(element)` over the rendered elements — a view is only as trustworthy as its weakest element. The headline figure. |
+| **mean** | arithmetic mean of `confidence(element)` over the rendered elements (equal weight per element in v1). |
+| **coverage** | fraction of rendered elements with a resolvable `derived_from`. |
+
+For display, a numeric confidence maps to a band: **A** ≥ 0.8, **B** ≥ 0.6, **C** ≥ 0.4, **D** < 0.4. The headline band is the band of the weakest link. Example render header:
+
+```
+Data confidence (as of 2026-06-05): B (weakest link) · 0.71 mean · 92% sourced
+```
+
+### 11.7 Regular freshness check
+
+A scheduled validator pass computes freshness across canon and **reports** — it never writes. It flags every canonical element whose `age_days ≥ stale_days` for its TYPE (i.e. freshness has bottomed out at `floor`), so they can be reaffirmed. The cure is re-admission (§11.3), not an edit.
+
+| Rule | Severity | Description |
+|---|---|---|
+| `FRESHNESS-001` | warning | A canonical element's `age_days` (today − `admitted_at`) is ≥ `stale_days` for its TYPE. The element is stale and should be reaffirmed. Advisory only — never blocks, never mutates canon. |
+
+`FRESHNESS-001` is cross-cutting in the §8 sense: it needs the element's admission date and the active `confidence_decay` config, not just the file in isolation.
+
+### 11.8 Out of scope (v1)
+
+- **Persisting the confidence trajectory.** Confidence is recomputed on read. If an organisation later needs the history of a confidence value, the versioned-attribute sidecar (§9) is the mechanism — not added here.
+- **`source_quality` as a first-class entity.** Today it is a label on a field artefact's provenance, not a referenced source record. Promoting sources to entities is a later concern.
+- **Automatic reaffirmation.** Bumping `admitted_at` is a deliberate human / tool gate action; nothing reaffirms canon on its own.
+- **Importance-weighting the mean.** v1 weights every rendered element equally; weighting by element importance is deferred.
