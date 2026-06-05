@@ -1,0 +1,75 @@
+name: Ingest skill test
+
+# Pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
+# Implementation + harness rationale: transitrix/skills/ingest/tests/README.md.
+#
+# Two jobs:
+#   integrity  — deterministic, no API key. Drives the real CLI end-to-end on a
+#                fixture. Runs on every PR touching the skill or the CLI, the weekly
+#                cron, and manual dispatch. CI is red on any break.
+#   e2e-drive  — true LLM drive (needs ANTHROPIC_API_KEY). Cron / dispatch only;
+#                skips green when the secret (or the unpublished CLI) is absent.
+
+on:
+  pull_request:
+    paths:
+      - 'transitrix/skills/ingest/**'
+      - 'packages/ingest-cli/**'
+      - '.github/workflows/ingest-skill-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:30 UTC — weekly safety net (incl. the full LLM drive).
+    - cron: '30 9 * * 1'
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run Ingest pipeline test (deterministic)
+        run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
+
+  e2e-drive:
+    # True LLM end-to-end drive — only on the weekly cron and manual dispatch,
+    # never on PRs (no API key in PR CI). Skips green if the secret is absent.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Drive the Ingest skill end-to-end
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python transitrix/skills/ingest/tests/drive_ingest_e2e.py
