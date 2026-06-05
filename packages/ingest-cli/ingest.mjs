@@ -18,6 +18,9 @@ import { dirname, join, resolve } from 'node:path';
 import { scaffoldIntake, findOrgRoot, stageDir } from './src/intake.mjs';
 import { convert, ConvertError } from './src/convert.mjs';
 import { emitFieldArtefact } from './src/field-artefact.mjs';
+import { validateCandidate, loadCandidates } from './src/validate.mjs';
+import { readCoverageProfile } from './src/coverage.mjs';
+import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -54,15 +57,18 @@ function usage() {
     '  field-artefact <md> --type T --role R --date YYYY-MM-DD [--setting S]',
     '                 [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
     '                                 Emit a field artefact with a proposed source_quality',
+    '  validate <candidates-dir>      Validate candidate *.json against the contract + coverage profile',
+    '  review-queue <candidates-dir>  Assemble the human review queue (writes review-queue.yaml)',
+    '                 [--out <path>]',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
     '',
     'Not yet implemented in this increment:',
-    '  emit-candidates  validate  review-queue',
+    '  emit-candidates',
   ].join('\n');
 }
 
-const NOT_YET = new Set(['emit-candidates', 'validate', 'review-queue']);
+const NOT_YET = new Set(['emit-candidates']);
 
 async function cmdScaffoldIntake(args) {
   const orgRoot = args[0];
@@ -134,6 +140,51 @@ async function cmdFieldArtefact(args) {
   }
 }
 
+async function resolveDir(dirArg, label) {
+  if (!dirArg) { console.error(`${label}: missing <candidates-dir>`); return { code: 1 }; }
+  const dir = resolve(dirArg);
+  try { await access(dir); } catch { console.error(`${label}: directory not found: ${dirArg}`); return { code: 2 }; }
+  const orgRoot = await findOrgRoot(dir);
+  if (!orgRoot) { console.error(`${label}: "${dirArg}" is not inside an _intake/ workspace.`); return { code: 2 }; }
+  return { dir, orgRoot, profile: await readCoverageProfile(orgRoot) };
+}
+
+async function cmdValidate(args) {
+  const { _ } = parseArgs(args);
+  const r = await resolveDir(_[0], 'validate');
+  if (r.code) return r.code;
+
+  const loaded = await loadCandidates(r.dir);
+  if (loaded.length === 0) { console.log(`validate: no candidate *.json files in ${_[0]}`); return 0; }
+
+  let needsReview = 0;
+  for (const { ref, candidate, parseError } of loaded) {
+    if (parseError || !candidate) { console.log(`FLAG   ${ref}\n         - does not parse: ${parseError || 'null'}`); needsReview++; continue; }
+    const v = validateCandidate(candidate, r.profile);
+    const issues = [...v.validation_flags];
+    if (v.coverage_flag === 'out_of_profile') issues.push(`coverage: ${v.coverage_reason || 'out of profile'}`);
+    if (issues.length) { needsReview++; console.log(`FLAG   ${ref}`); for (const i of issues) console.log(`         - ${i}`); }
+    else console.log(`ok     ${ref}`);
+  }
+  console.log(`\n${loaded.length} candidate(s); ${needsReview} need review.`);
+  return needsReview ? 1 : 0;
+}
+
+async function cmdReviewQueue(args) {
+  const { _, flags } = parseArgs(args);
+  const r = await resolveDir(_[0], 'review-queue');
+  if (r.code) return r.code;
+
+  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile });
+  const out = flags.out ? resolve(flags.out) : join(stageDir(r.orgRoot, 'processing'), 'review-queue.yaml');
+  await writeReviewQueue(queue, out);
+  const flagged = queue.candidates.filter(c => c.validation_flags.length || c.coverage_flag === 'out_of_profile').length;
+  console.log(`review queue  ->  ${out}`);
+  console.log(`  ${queue.field_artefacts.length} field artefact(s), ${queue.candidates.length} candidate(s) (${flagged} flagged), ${queue.relation_suggestions.length} relation suggestion(s).`);
+  console.log('  nothing admitted to canon — a human gates this queue.');
+  return 0;
+}
+
 async function main(argv) {
   const [cmd, ...args] = argv;
 
@@ -149,6 +200,8 @@ async function main(argv) {
     case 'scaffold-intake': return cmdScaffoldIntake(args);
     case 'convert':         return cmdConvert(args);
     case 'field-artefact':  return cmdFieldArtefact(args);
+    case 'validate':        return cmdValidate(args);
+    case 'review-queue':    return cmdReviewQueue(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
       return 1;

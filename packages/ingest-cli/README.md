@@ -27,8 +27,8 @@ transitrix-ingest <command> [args]
 | `convert <inbox-file>` | ✅ | Convert a document to Markdown in `_intake/processing/` (Markitdown; `.md`/`.txt` passthrough). |
 | `field-artefact <md> --type --role --date` | ✅ | Emit a field artefact with provenance + proposed `source_quality`; retain the raw source in `_intake/processed/`. |
 | `emit-candidates` | ⏳ | Emit typed canon candidates (entity-strong, relation-conservative). |
-| `validate` | ⏳ | Validate candidates against the schemas + coverage profile. |
-| `review-queue` | ⏳ | Stage the human review queue. |
+| `validate <candidates-dir>` | ✅ | Validate candidate `*.json` against the contract (in code) + coverage profile; flags, never drops. |
+| `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`. |
 
 ## Layout
 
@@ -41,4 +41,7 @@ packages/ingest-cli/
     convert.mjs        # document -> Markdown (Markitdown shell-out)
     yaml.mjs           # zero-dep YAML emitter + manifest scalar reader
     field-artefact.mjs # emit a field artefact + proposed source_quality
+    coverage.mjs       # read coverage_profile + classify in/out of profile
+    validate.mjs       # candidate contract checks (in code) + candidate loader
+    review-queue.mjs   # assemble + emit the human review queue
 ```
