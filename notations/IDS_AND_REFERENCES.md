@@ -73,6 +73,7 @@ Elements that get referenced across documents.
 | `ACTIVITY` | initiative / workstream | FGCA, FGA, Activities |
 | `CAPABILITY` | capability — V/H sub-grammar, see §2 | Capability map, Products, Applications, Process map |
 | `PROCESS` | business process | Process landscape map, BPMN |
+| `STEP` | process-flow step — a single node (task / event / gateway) in a `PROCESS` element's `flow`. Canonical-by-containment within its PROCESS (which carries the admission record); addressable by its `STEP-…` id and promoted to a standalone catalogue record only when a second document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). | `PROCESS.flow` (inline, §7.5); promoted to `elements/02_business/steps/`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20. |
 | `PRODUCT` | product or service | Products catalogue |
 | `APPLICATION` | application | Applications catalogue |
 | `INTEGRATION` | integration between applications | Applications catalogue |
@@ -118,7 +119,7 @@ BPMN diagrams use their `process.id` as the document identifier; that field is a
 
 In a **standalone `.bpmn.transitrix.yaml` projection** — a generated diagram, not an authored source — the node IDs (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) are local labels, not cross-document references: they identify nodes within that one rendered file and are not part of the TYPE registry above.
 
-This does **not** apply to a process flow authored inside a `PROCESS` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.5). There the flow is canon: each `flow.steps[].id` follows the canonical ID grammar (§1) and is **addressable** — unique within its `PROCESS` and referenceable by a step-level `CHANGE`, a `RULE`, or an `ACTIVITY` — and is promoted to a registered standalone TYPE only if a second document references it (canonical-by-containment + promotion, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1).
+This does **not** apply to a process flow authored inside a `PROCESS` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.5). There the flow is canon: each `flow.steps[].id` follows the canonical ID grammar (§1) and is **addressable** — unique within its `PROCESS` and referenceable by a step-level `CHANGE`, a `RULE`, an `ACTIVITY`, or an `ASSERTION` — and is promoted to the registered standalone `STEP` TYPE (§3.1; element-file shape and promotion mechanic in [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20) only if a second document references it (canonical-by-containment + promotion, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1). The `STEP` TYPE is the canonical step identity; the file-local `TASK-…` / `SE-…` / `EE-…` labels above are projection labels, never a step's catalogue identity.
 
 ### 3.4 Field artefact types
 
@@ -161,6 +162,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY` | within the FGCA / FGA / Goals / Activities document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
+| `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
 | `PRODUCT`, `APPLICATION`, `INTEGRATION` | within the catalogue document. |
 | `ISSUE` | within the issues catalogue document. |
 | `ROLE`, `ACTOR` | within the organisation's element catalogue (`elements/02_business/`). |
