@@ -15,9 +15,13 @@ A map of the repository and where to find things. For the methodology itself, st
 | [`glossary.md`](glossary.md) | Standardised terminology. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history (Keep a Changelog; SemVer with pre-1.0 caveats). |
 | [`RELEASING.md`](RELEASING.md) | Per-release operational checklist for the maintainer. |
+| [`NOTATIONS_VALIDATION.md`](NOTATIONS_VALIDATION.md) | Maintainer audit — open shape decisions a linter can't make, plus flagged nits. |
 | [`integration/`](integration/) | Tooling, Studio, and CI integration notes. |
 | [`migrations/`](migrations/) | Per-release migration recipes (e.g. `0.5-to-0.6/`). |
-| [`skills/`](skills/) | Onboarding and per-layer extraction skills. |
+| [`transitrix/`](transitrix/) | Claude / Copilot Agent Skills plugin — currently `skills/onboard/` and `skills/ingest/`. |
+| [`packages/`](packages/) | Versioned tooling packages — e.g. `@transitrix/ingest-cli`, the shared CLI invoked by the ingest skill. |
+| [`scripts/`](scripts/) | Repo-level doc-lint scripts (`check-notations.mjs`, `check-skill-cheatsheet.mjs`). |
+| [`docs/`](docs/) | Decision records (`decisions/`) and other maintainer-facing notes. |
 | [`organizations/`](organizations/) | Adopter organisations — the worked example `acme_corp/` lives here. |
 | [`LICENSE`](LICENSE), [`CONTRIBUTING.md`](CONTRIBUTING.md) | MIT licence; contribution guide. |
 
@@ -75,5 +79,5 @@ Every change runs through the validator (`.validators/lint.py`) and the CI gate:
 
 ---
 
-**Status:** maintained alongside the `notations/` specs. The methodology's version is tracked in [`CHANGELOG.md`](CHANGELOG.md); the methodology is **pre-1.0**.
-**Last updated:** 2026-06-02
+**Status:** maintained alongside the `notations/` specs. This file is the single canonical file map for the repository — `README.md` carries only a three-bucket overview that points back here. The methodology's version is tracked in [`CHANGELOG.md`](CHANGELOG.md); the methodology is **pre-1.0**.
+**Last updated:** 2026-06-05
