@@ -8,8 +8,8 @@
 //
 // Exit codes:  0 = ok  ·  1 = usage / findings that need review  ·  2 = error
 //
-// Implemented in this increment: --version, scaffold-intake, convert.
-// field-artefact / emit-candidates / validate / review-queue land next.
+// Implemented: --version, scaffold-intake, convert, field-artefact.
+// emit-candidates / validate / review-queue land next.
 
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -17,8 +17,27 @@ import { dirname, join, resolve } from 'node:path';
 
 import { scaffoldIntake, findOrgRoot, stageDir } from './src/intake.mjs';
 import { convert, ConvertError } from './src/convert.mjs';
+import { emitFieldArtefact } from './src/field-artefact.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Tiny flag parser: returns { _: [positionals], flags: { name: value } }.
+// `--k v` and `--k=v` are supported; a bare `--k` becomes boolean true.
+function parseArgs(args) {
+  const out = { _: [], flags: {} };
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a.startsWith('--')) {
+      const eq = a.indexOf('=');
+      if (eq >= 0) out.flags[a.slice(2, eq)] = a.slice(eq + 1);
+      else if (i + 1 < args.length && !args[i + 1].startsWith('--')) out.flags[a.slice(2)] = args[++i];
+      else out.flags[a.slice(2)] = true;
+    } else out._.push(a);
+  }
+  return out;
+}
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 async function version() {
   const pkg = JSON.parse(await readFile(join(__dirname, 'package.json'), 'utf8'));
@@ -32,15 +51,18 @@ function usage() {
     'Commands:',
     '  scaffold-intake <org-root>     Create _intake/{inbox,processing,processed} (idempotent)',
     '  convert <inbox-file>           Convert a document to Markdown in _intake/processing/',
+    '  field-artefact <md> --type T --role R --date YYYY-MM-DD [--setting S]',
+    '                 [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
+    '                                 Emit a field artefact with a proposed source_quality',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
     '',
     'Not yet implemented in this increment:',
-    '  field-artefact  emit-candidates  validate  review-queue',
+    '  emit-candidates  validate  review-queue',
   ].join('\n');
 }
 
-const NOT_YET = new Set(['field-artefact', 'emit-candidates', 'validate', 'review-queue']);
+const NOT_YET = new Set(['emit-candidates', 'validate', 'review-queue']);
 
 async function cmdScaffoldIntake(args) {
   const orgRoot = args[0];
@@ -76,6 +98,42 @@ async function cmdConvert(args) {
   }
 }
 
+async function cmdFieldArtefact(args) {
+  const { _, flags } = parseArgs(args);
+  const md = _[0];
+  if (!md) { console.error('field-artefact: missing <md> (a converted file in _intake/processing/)'); return 1; }
+  const mdPath = resolve(md);
+  try { await access(mdPath); } catch { console.error(`field-artefact: file not found: ${md}`); return 2; }
+  if (!flags.type || !flags.role || !flags.date) {
+    console.error('field-artefact: --type, --role and --date are required');
+    return 1;
+  }
+  const orgRoot = await findOrgRoot(mdPath);
+  if (!orgRoot) { console.error(`field-artefact: "${md}" is not inside an _intake/ workspace.`); return 2; }
+
+  try {
+    const res = await emitFieldArtefact({
+      orgRoot, mdPath,
+      type: String(flags.type).toUpperCase(),
+      role: flags.role,
+      date: flags.date,
+      setting: flags.setting,
+      capturedBy: flags['captured-by'] || '@transitrix/ingest-cli',
+      sourceQuality: flags['source-quality'],
+      slug: flags.slug,
+      admittedAt: flags['admitted-at'] || today(),
+      name: flags.name,
+    });
+    console.log(`field artefact  ${res.id}  ->  ${res.outPath}`);
+    console.log(`  proposed source_quality: ${res.proposedSQ} (confirm at admission)`);
+    if (res.rawMoved) console.log(`  raw source retained: ${res.rawMoved}`);
+    return 0;
+  } catch (err) {
+    console.error(`field-artefact: ${err.message}`);
+    return 2;
+  }
+}
+
 async function main(argv) {
   const [cmd, ...args] = argv;
 
@@ -90,6 +148,7 @@ async function main(argv) {
   switch (cmd) {
     case 'scaffold-intake': return cmdScaffoldIntake(args);
     case 'convert':         return cmdConvert(args);
+    case 'field-artefact':  return cmdFieldArtefact(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
       return 1;
