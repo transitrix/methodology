@@ -35,36 +35,13 @@ CI:
 
 ## Repository structure
 
-```
-transitrix/methodology/
-├── method/
-│   └── methodology.md               # Canonical methodology overview
-├── notations/                       # Notation specs — the canonical model
-│   ├── README.md                    # Index of all notations (view + element)
-│   ├── CONTRACT.md                  # Shared header / zones / lifecycle / versioning
-│   ├── IDS_AND_REFERENCES.md        # ID grammar + TYPE registry
-│   ├── ELEMENT_PRIMITIVES.md        # Element-primitive file schema
-│   ├── MANIFEST.md                  # Adopter manifest (transitrix.yaml) spec
-│   ├── views/                       # View-notation specs (BPMN, FGCA, goals, …)
-│   ├── elements/                    # Element-notation specs (codex, requirement, …)
-│   └── examples/                    # Worked example files per notation
-├── organizations/
-│   ├── acme_corp/                   # Worked example organisation
-│   │   ├── canon/                   # Zone: validated model — elements, relations, assertions, views
-│   │   ├── field/                   # Zone: raw material — interviews, surveys, observations
-│   │   ├── codex/                   # Zone: external laws + internal policies
-│   │   ├── .templates/  .validators/
-│   │   ├── transitrix.yaml          # Adopter manifest
-│   │   └── README.md  GETTING_STARTED.md  CONVENTIONS.md  AGENTS.md
-│   └── NEW_ORGANIZATION_TEMPLATE.md # How to bootstrap a new organisation
-├── migrations/                      # Per-release migration recipes (0.5→0.6)
-├── integration/                     # Studio / tooling / CI integration notes
-├── skills/                          # Onboarding + extraction skills
-├── glossary.md  PROJECT_INDEX.md  CHANGELOG.md  RELEASING.md
-├── README.md                        # This file
-├── LICENSE                          # MIT
-└── CONTRIBUTING.md                  # How to contribute
-```
+The repository has three buckets:
+
+- **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/), [`glossary.md`](glossary.md), [`migrations/`](migrations/).
+- **Worked example** — a sample organisation to learn from: [`organizations/acme_corp/`](organizations/acme_corp/).
+- **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
+
+For the full file map, see [`PROJECT_INDEX.md`](PROJECT_INDEX.md) — the single canonical navigation guide.
 
 ## Quick start — for a new organisation
 
@@ -126,4 +103,4 @@ Transitrix — including the FGCA / FGA notations that form part of it — is au
 ---
 
 **Methodology status:** pre-1.0 — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
-**Last updated:** 2026-05-30
+**Last updated:** 2026-06-05
