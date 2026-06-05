@@ -2,7 +2,7 @@
 title: "Assertion — REQUIREMENT realisation claim"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-28"
+last_updated: "2026-06-05"
 status: "draft"
 ---
 
@@ -32,7 +32,7 @@ A REQUIREMENT records *what the organisation is obliged to do*. An Assertion rec
                             valid_from / valid_to
 ```
 
-`realised_via[]` names the **elements that technically deliver the requirement** — capabilities, processes, internal standards, applications. These are factual references, not claims; the claim itself is the `status` field. Status and evidence are mutable over the assertion's lifecycle; the realisation set may also change (a process is replaced, a capability matures).
+`realised_via[]` names the **elements that technically deliver the requirement** — capabilities, processes, internal standards, applications. These are factual references, not claims; the claim itself is the `status` field. Status and evidence are mutable over the assertion's lifecycle; the realisation set may also change (a process is replaced, a capability matures). Where an obligation lands not on the whole subject but on a **specific task or stage**, the bearing flow step is named here — the stage/task-level idiom in §2.1.
 
 Assertions are about **REQUIREMENTs only.** CONSTRAINT compliance — the parallel question "is the organisation respecting the restriction?" — is **out of scope for v1.** A CONSTRAINT is either honoured or violated, and that is currently modelled inline on the CONSTRAINT artefact or via downstream tooling, not via an ASSERTION. (See §5.)
 
@@ -83,7 +83,7 @@ valid_to: null
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `ASSERTION-[<middle>-]<INTEGER>`. |
 | `about` | yes | string | Typed ID of the REQUIREMENT this assertion is about. The validator resolves it (`ASSERT-002`). |
 | `subject` | yes | string | Exactly one typed ID of the element that owns the claim. TYPE MUST be one of `PRODUCT`, `PROCESS`, `CAPABILITY` (`ASSERT-003`). |
-| `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. |
+| `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. MAY name a process-flow `STEP-…` to localise the claim to a specific task / stage (§2.1); referencing a step is a cross-document reference that promotes it (`ASSERT-009`; [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20). |
 | `status` | yes | string | One of: `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. See §3 below. |
 | `evidence` | no | list | Hybrid array of evidence entries; each carries a `kind` and kind-specific fields. See §4. |
 | `assessed_at` | no | string | Date the current status was determined — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
@@ -95,6 +95,26 @@ valid_to: null
 | `gate_checks` | yes | map | Standard canon checks (`uniqueness`, `consistency`, `completeness`). |
 | `valid_from` | yes | string | Date the assertion took effect — see [CONTRACT.md](../CONTRACT.md) §7. |
 | `valid_to` | yes | string \| null | Date the assertion ceased to be in effect, or `null` if still in effect. |
+
+---
+
+## 2.1 Stage / task-level compliance impact
+
+A REQUIREMENT often lands not on a whole subject but on a **specific task or stage within a process** — "this obligation impacts *this step*". The canonical way to express that keeps the compliance **subject at the established grain** (`PRODUCT` / `PROCESS` / `CAPABILITY`, `ASSERT-003`) and names the **bearing flow step(s)** in `realised_via`:
+
+```yaml
+about: REQUIREMENT-RIGHT-TO-ERASURE-1
+subject: PROCESS-USER-DATA-PURGE-1        # the compliance unit — the process bears the obligation
+realised_via:
+  - STEP-USER-DATA-PURGE-4                 # the specific flow step that realises (and is impacted by) it
+status: compliant
+```
+
+Read it as: the **PROCESS bears** the obligation (it is the unit of compliance), and the named **STEP is where in the process the obligation is realised** — and therefore the step that a change to the obligation impacts. The same idiom extends to any resolvable bearing element (a process-blueprint stage, an `ACTIVITY`); `realised_via` carries no TYPE restriction.
+
+**This is the decided idiom.** The alternative — making a process step (or `ACTIVITY`) an `ASSERTION.subject` directly — was **considered and rejected**: it would fragment the unit of compliance into many sub-process subjects, grow the `ASSERT-003` subject enum, and break tooling that assumes the `{PRODUCT, PROCESS, CAPABILITY}` subject grain. The process-with-bearing-steps idiom localises impact **without** moving the compliance unit, and is fully backward-compatible — existing assertions are unaffected and `ASSERT-003` is unchanged.
+
+**Referencing a step promotes it.** A flow step is canonical-by-containment in its `PROCESS` until a second document references it; an assertion's `realised_via` is exactly such a reference. The step MUST therefore be **promoted** to a standalone `STEP` element ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1; element-file shape and mechanical promotion in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20) so the id resolves under `ASSERT-004`. A step referenced but not yet promoted is flagged by `ASSERT-009` (§5). This dependency is why stage/task-level assertions require step addressability.
 
 ---
 
@@ -144,7 +164,10 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-006` | error | `status` is not one of `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. |
 | `ASSERT-007` | warning | `evidence` is empty AND `status` is `compliant` or `partial`. A positive status without evidence is undefended. |
 | `ASSERT-008` | warning | `next_review_at` is set and is in the past relative to today. The assertion is stale and due for re-review. |
+| `ASSERT-009` | warning | A `realised_via` entry references a process-flow step (`STEP-…`) that is **not promoted** to a standalone `STEP` element (it remains inline in its `PROCESS`). The assertion is a cross-document reference and triggers promotion ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20); promote the step so the reference resolves as a first-class element. Distinct from `ASSERT-004`, which fires only when the id resolves to nothing at all. Cross-cutting — requires the full canon catalogue (the `PROCESS` flows and the `STEP` files) to evaluate. |
 | `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](../CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
+
+**`ASSERT-003` is deliberately unchanged.** Stage/task-level impact (§2.1) is expressed through `realised_via`, not by widening the `subject` enum — the subject grain stays `{PRODUCT, PROCESS, CAPABILITY}`, and every assertion authored before this addition (e.g. under epic #83) remains valid. The only addition is `ASSERT-009`, a warning that never fires on assertions without step references.
 
 The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 

@@ -179,11 +179,12 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `ASSERT-006` | error | ASSERTION | `status` not in the enum (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-007` | warning | ASSERTION | `evidence` is empty AND `status` is `compliant` or `partial` — undefended positive claim | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-008` | warning | ASSERTION | `next_review_at` is set and is in the past — assertion is stale | [16-assertion.md](elements/16-assertion.md) §5 |
+| `ASSERT-009` | warning | ASSERTION (cross-cutting) | `realised_via` references a flow step (`STEP-…`) not yet promoted to a standalone element — promote per [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20 (stage/task-level impact idiom, [16-assertion.md](elements/16-assertion.md) §2.1) | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-DEAD-LINK-001` | warning | ASSERTION (cross-cutting) | `subject` or `realised_via` references a primitive whose `valid_to` is in the past — bound to a currently-retired element | [16-assertion.md](elements/16-assertion.md) §5 |
 
 In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT and ASSERTION files as they do to every other canonical artefact.
 
-The two `*-COVERAGE-001` / `*-DEAD-LINK-001` rules are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue.
+The `*-COVERAGE-001` / `*-DEAD-LINK-001` rules and `ASSERT-009` are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references; `ASSERT-009`'s promotion check depends on the `PROCESS` flows and the `STEP` files). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue.
 
 ---
 
