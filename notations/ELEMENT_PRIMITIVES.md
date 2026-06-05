@@ -53,6 +53,7 @@ canon/
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
+      steps/          STEP-*.yaml            # §7.20 — promoted process-flow steps (canonical-by-containment in a PROCESS)
       products/       PRODUCT-*.yaml
       roles/          ROLE-*.yaml
       actors/         ACTOR-*.yaml           # elements/19-actors.md (person | business_unit | system)
@@ -150,6 +151,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
+| `STEP` | contained (in `PROCESS.flow`) → standalone (promotable) | `step` | business | `02_business/steps/` | §7.20 (inline shape: §7.5) |
 | `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](views/09-products.md) |
 | `ROLE` | standalone | `role` | business | `02_business/roles/` | §7.9 |
 | `ACTOR` | standalone | `actor` | business | `02_business/actors/` | §7.10 + [elements/19-actors.md](elements/19-actors.md) |
@@ -173,6 +175,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `FACTOR` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the factor without losing that history. It is therefore its own catalogue element that references its `FACTOR` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is the M:N relation declared on epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) and lands as a `REL` kind in a separate sub-task — never inline on this element.
+- **`STEP` is contained-then-promotable (a third shape, distinct from `view-defined`).** A process-flow step lives inline in its `PROCESS` element's `flow.steps[]` (§7.5), not in a view — so it is neither `standalone` (no element file until promoted) nor `view-defined` (its definition home is a *standalone element*, not a view document). It is **canonical-by-containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). It is **promoted** to a standalone `02_business/steps/STEP-….yaml` only when a *second* document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). This promotion trigger fired in the regulatory-intelligence build (compliance impact expressed via `ASSERTION` → flow-step ids), which is what moved this TYPE from reserved to registered. The promotion is **mechanical** (§7.20): the step's attributes move to the standalone file, its `flow.steps[]` entry reduces to a reference, and `flow.sequence` (the process-owned graph edges) is untouched — the id never changes. The BPMN node-label forms (`TASK-…` / `SE-…` / `EE-…`) are projection-local labels ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3), **not** a step's catalogue identity; `STEP` is.
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` is `standalone`, as the path the architect plans.** A scenario is *the path*, not the destination — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate **Course of Action** realised by Work Packages + Gaps; epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122)). It is what an architect *varies* alongside the `TARGET_STATE` when offering customer solution options — multiple paths may reach the same end-state. That makes it a first-class addressable element, not an inline fragment of a view. The earlier `view-defined` placement (a "scenario document" that scoped its own goals/capabilities/activities/etc.) conflated the path with the things it sequences and the things its end-state contains; the reclassification splits them: `TARGET_STATE` owns structural composition (§7.17), `SCENARIO` owns the ordered steps (§7.18). Scenario references — `pursues` goal list, `arrives_at` target-state ref, ordered `steps` — are **inline (B2)**; the only first-class REL in the planning model is `target_state_satisfies_goal` (declared on `TARGET_STATE`, §7.17).
 - **`ISSUE` is `view-defined`.** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 scopes `ISSUE` to "within the issues catalogue document." An issue register is a document-scoped tree; it is not materialised as a standalone catalogue element in v1.
@@ -222,7 +225,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
 | `01_motivation/` | Motivation | `FACTOR` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
-| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
+| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
 | `05_implementation/` | Implementation & Migration | `ACTIVITY` (`activities/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2) |
@@ -326,7 +329,7 @@ The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **remove
 - `flow.steps` — list of nodes. Each step: `id`, `type` (one of the seven), `name` (required for tasks / gateways; optional for events), `performed_by` (a member of `participants` — `ROLE-…` or `ACTOR-…`), and optional `supported_by_application` (`APPLICATION-…`). Precedence and the "swimlane is a participant" default follow [views/01-bpmn.md](views/01-bpmn.md) §7.2; the BPMN projection derives lane grouping from `performed_by`.
 - `flow.sequence` — list of `{ from, to, condition?, default? }` sequence flows between step IDs (projects to the BPMN `flows` array).
 
-Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, or an `ACTIVITY` realising a step can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
+Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, an `ACTIVITY` realising a step, or an `ASSERTION` (`subject` / `realised_via`) can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record (the registered `STEP` TYPE, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; element-file shape and promotion mechanic in §7.20) only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
 
 Inline shape (as referenced from the map): [views/06-process-map.md](views/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
 
@@ -545,6 +548,33 @@ REGISTRY-<…>.runstate.yaml   # per-row operating state — machine-written, NO
 > **Deviation flagged for review.** The task's row-schema list placed the *latest-snapshot pointer* among the row fields. It is moved to the operating-state sidecar here because a snapshot pointer that advances on every detected change is **state**, not authored config — keeping it on the row would breach the very config/state boundary this task establishes. The runtime pointer therefore lives in `runstate.yaml` alongside the other state counters; the row schema above carries only authored configuration. Valerii gates this call at merge.
 
 Inline shape: no view spec in v1 — a registry is a content element, authored directly as the element file. A render-able "what are we watching / what changed" view is a separate report-configuration concern (out of scope here).
+
+### 7.20 `STEP` — `02_business/steps/` (promoted; contained-in-`PROCESS` in v1)
+
+A process-flow **step** — a single node (task / event / gateway) in a `PROCESS` element's `flow.steps[]` (§7.5). A step's **definition home is the `PROCESS` element**, where it is authored inline and is canonical **by containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). This subsection defines the **standalone element-file shape** a step takes **when promoted**, so promotion is mechanical, not a redesign (§4.1).
+
+**When it promotes.** Only when a *second* document first references the step (§1 promotion rule): a step-level `CHANGE` (§7.3), a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). Until then there is no `STEP` element file — the step lives only in its PROCESS. The trigger fired in the regulatory-intelligence build (stage/task-level compliance impact expressed via `ASSERTION` → flow-step ids), which moved this TYPE from reserved to registered.
+
+**Standalone fields** (mirror the inline `flow.steps[]` shape of §7.5; the envelope is §3):
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `type` | **yes** | string | The node kind — one of the seven flow node types `startEvent` \| `endEvent` \| `task` \| `userTask` \| `serviceTask` \| `exclusiveGateway` \| `parallelGateway` (§7.5, [views/01-bpmn.md](views/01-bpmn.md)). Carries the subtype; the element TYPE is `STEP`. |
+| `process` | **yes** | string | `PROCESS-…` this step belongs to — the container it was promoted out of. Singular ref ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §5); a promoted step must name its home process. |
+| `name` | task / gateway: **yes**; event: optional | string | The step label, per §7.5. |
+| `performed_by` | recommended | string | `ROLE-…` / `ACTOR-…` — the lane the step runs in (a `participant` of the process), per §7.5. |
+| `supported_by_application` | no | string | `APPLICATION-…` supporting the step, per §7.5. |
+
+**Promotion is mechanical:**
+
+1. Create `02_business/steps/<STEP-id>.yaml` with the §3 envelope and the fields above, copying `type` / `name` / `performed_by` / `supported_by_application` from the step's `flow.steps[]` entry. Set `process:` to the home `PROCESS-…`; default `valid_from` to the process's `valid_from`.
+2. In the PROCESS element, reduce that `flow.steps[]` entry to a **reference** — `{ id: <STEP-id> }`. Its attributes now live in the standalone file (no duplication, no drift).
+3. Leave `flow.sequence` untouched — the graph **edges** are process-owned and keep referencing the step by id.
+4. The id is **unchanged** by promotion (no rename); every existing reference keeps resolving.
+
+**Reconstruction invariant holds (§1.1).** The process behaviour stays fully reconstructable from `canon/elements/`: graph **nodes** resolve via the promoted `STEP` files (exactly as `participants` and `supported_by_application` already resolve by reference), graph **edges** stay in `PROCESS.flow.sequence`. A renderer that needs a node's kind or label loads the `STEP` file, the same way it loads any referenced element.
+
+No view spec — a step is a content element, authored inline in its PROCESS and (on promotion) materialised as the file above. **No promoted steps exist in the worked-example org yet**: its assertions' `realised_via` target `PROCESS` / `CAPABILITY` / `INTERNAL_STANDARD`, not steps, so every step remains canonical-by-containment in `PROCESS-ORD-FULFILL-1`. The `02_business/steps/` folder documents the shape and skeleton for when promotion first fires.
 
 ---
 
