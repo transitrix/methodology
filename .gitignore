@@ -187,6 +187,9 @@ PROJECT_RULES.md
 # Local-only working folders
 _pitch*/
 
+# Local agent-runner script
+run-methodology-agent.ps1
+
 # ============================================================================
 # NOTES
 # ============================================================================

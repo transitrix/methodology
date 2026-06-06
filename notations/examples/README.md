@@ -16,6 +16,7 @@ One subfolder per diagram format. Open any example file in VS Code with the Tran
 | [`applications/`](applications/) | `*.applications.transitrix.yaml` | Applications catalogue | Inventory of applications, integrations, platforms, and data stores |
 | [`scenarios/`](scenarios/) | `*.scenarios.transitrix.yaml` | Scenarios | Planning and simulation scenarios |
 | [`process-blueprint/`](process-blueprint/) | `*.process-blueprint.transitrix.yaml` | Process Blueprint | Wide blueprint of a value chain — stages with systems, actors, equipment, information entities |
+| [`compliance-impact/`](compliance-impact/) | `*.compliance-impact.transitrix.yaml` | Compliance Impact | Report-config view over the compliance overlay — (obligation × subject) matrix derived from `ASSERTION` + process flow + `REQUIREMENT` status |
 
 Each folder contains a `README.md` with format documentation and the list of example files.
 
