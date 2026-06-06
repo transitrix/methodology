@@ -12,7 +12,7 @@ tags: [confidence, provenance, freshness, zones, views, data-quality]
 
 **Status:** Accepted
 **Date:** 2026-06-05
-**Deciders:** Valerii Korobeinikov; Win-Claude (Transitrix-family coordinator — decided at family level per the escalation policy)
+**Deciders:** Valerii Korobeinikov
 **Scope:** Repo-local to `methodology` (canonical owner of notation semantics). Consumed by `transitrix-dsm` (entry + storage) and `transitrix-studio` (view render). Those repos align as consumers per their standing "methodology is canon" rules; this ADR does not change their internal architecture.
 
 ---
