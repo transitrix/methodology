@@ -131,6 +131,7 @@ async function cmdFieldArtefact(args) {
     console.log(`field artefact  ${res.id}  ->  ${res.outPath}`);
     console.log(`  proposed source_quality: ${res.proposedSQ} (confirm at admission)`);
     if (res.rawMoved) console.log(`  raw source retained: ${res.rawMoved}`);
+    if (res.sourceHash) console.log(`  source_hash:         ${res.sourceHash}`);
     return 0;
   } catch (err) {
     console.error(`field-artefact: ${err.message}`);

@@ -25,6 +25,7 @@ async function readFieldArtefact(orgRoot, id) {
     id,
     proposed_source_quality: readTopScalar(text, 'source_quality'),
     raw_source: readTopScalar(text, 'raw_source') || undefined,
+    source_hash: readTopScalar(text, 'source_hash') || undefined,
   };
 }
 
