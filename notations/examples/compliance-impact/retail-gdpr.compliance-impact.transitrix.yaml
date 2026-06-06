@@ -1,0 +1,32 @@
+notation: compliance-impact
+spec_version: "0.1"
+methodology_version: "0.5.0"
+
+view:
+  id: COMPLIANCE_IMPACT-RETAIL-GDPR-1
+  name: "Retail product — GDPR obligations"
+  description: |
+    Compliance overlay for the retail product family against the GDPR slice of canon.
+    Rows are obligations (one REQUIREMENT per row); columns are the stages and tasks
+    of the processes that realise the retail product, in process-flow order.
+
+  subjects:
+    products: [PRODUCT-RETAIL-1]
+
+  obligations:
+    filter:
+      derived_from_codex: [REGULATION-EU-GDPR-1]
+
+  grouping:
+    rows: "obligation"
+    columns: "product-stage-task"
+
+  status_display:
+    show: ["compliant", "partial", "non_compliant", "under_review", "n_a"]
+    treat_proposed_as: "hidden"
+
+  empty_cells:
+    no_obligation_label: "No mapped obligation (current model)"
+
+  order_rows_by: "id"
+  order_columns_by: "process-order"
