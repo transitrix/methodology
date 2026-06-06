@@ -1,0 +1,42 @@
+notation: compliance-impact
+spec_version: "0.1"
+
+# Compliance Impact. Spec: notations/views/21-compliance-impact.md
+# Report-config over the compliance overlay (sibling of Scenarios).
+# Carries no canonical content — every cell is DERIVED from ASSERTION +
+# process flow + REQUIREMENT status. This file only declares which slice
+# of that matrix to render and how.
+
+view:
+  id: COMPLIANCE_IMPACT-FILL-ME-1
+  name: "FILL-ME — e.g. Retail product — GDPR obligations"
+  description: "FILL-ME — which obligations against which subjects, and why"
+
+  # What the view displays. At least one of products / processes MUST be present.
+  subjects:
+    products: [PRODUCT-FILL-ME-1]
+    # processes: [PROCESS-FILL-ME-1]   # optional; instead of or in addition to products
+
+  # Which obligations are in scope. Use `include` OR `filter` (include wins).
+  obligations:
+    filter:
+      derived_from_codex: [REGULATION-FILL-ME-1]
+    # include: [REQUIREMENT-FILL-ME-1, REQUIREMENT-FILL-ME-2]
+
+  # Axes of the matrix.
+  grouping:
+    rows: "obligation"               # obligation | stage | task
+    columns: "product-stage-task"    # product-stage-task | product-stage | product
+
+  # Status display.
+  status_display:
+    show: ["compliant", "partial", "non_compliant", "under_review", "n_a"]
+    treat_proposed_as: "hidden"      # hidden | shown-distinct
+
+  # Empty-cell label (the modelling-gap case; the n_a case is rendered distinctly).
+  empty_cells:
+    no_obligation_label: "No mapped obligation (current model)"
+
+  # Optional ordering knobs.
+  order_rows_by: "id"                # id | name | regime | jurisdiction
+  order_columns_by: "process-order"  # process-order | id | name
