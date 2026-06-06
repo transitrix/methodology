@@ -2,7 +2,7 @@
 title: "Requirement — motivation-layer positive obligation"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-28"
+last_updated: "2026-06-06"
 status: "draft"
 ---
 
@@ -37,7 +37,40 @@ Both types are first-class motivation elements (per ArchiMate 3.2). Both may car
 | "Manufacturer must register its establishment annually with the regulator" | REQUIREMENT | positive action — *register* |
 | "An unregistered establishment cannot manufacture or distribute" | CONSTRAINT | restriction — *cannot* manufacture |
 
-The same regulation often produces a REQUIREMENT and a corresponding CONSTRAINT (the two sides of the same rule). Both are valid; both may be modelled.
+The same regulation often produces a REQUIREMENT and a corresponding CONSTRAINT (the two sides of the same rule). Both are valid; both may be modelled — but not every rule warrants both. §1.1 sets the authoring defaults for obligations extracted from a codex source; §1.2 sets the test for when to mirror.
+
+### 1.1 Default classification for extracted obligations
+
+When an obligation is **extracted from a codex source** — by an automated harvest (e.g. a regulatory-intelligence collector) or by a human reading a law / regulation / policy — the form of the obligation in the source text determines the TYPE. The defaults below apply; they are conventions, not validator rules.
+
+| Obligation form in source text | Default TYPE | Rationale |
+|---|---|---|
+| Positive duty — verbs of action / state to *achieve* ("must register", "must submit", "must maintain", "must obtain", "shall provide") | `REQUIREMENT` | Positive obligation per §1; this is the dominant form of regulatory text in practice. |
+| Pure prohibition with no paired positive duty in the same rule — verbs of restriction ("must not transfer", "cannot market", "shall not retain beyond", "is limited to") | `CONSTRAINT` | Restriction per §1; the source imposes a boundary, not an action. |
+| Both forms present in the same rule (registration duty AND prohibition on unregistered activity; retention duty AND prohibition on premature erasure) | both, per §1.2 | The rule has two distinct subject sets or two distinct enforcement surfaces (§1.2). |
+
+**Positive obligations are the dominant form.** Practical experience extracting obligations from laws and regulations shows the overwhelming majority are positive duties. A scanner / collector's CLASSIFY step SHOULD default to `REQUIREMENT` for any obligation that is plausibly action-shaped, and surface only the unambiguously-restrictive ones as `CONSTRAINT`. Modelling positive obligations as `CONSTRAINT` is a common authoring mistake — `ASSERTION` ([elements/16-assertion.md](16-assertion.md)) binds compliance claims to `REQUIREMENT` (via `about:`), so a positive obligation mis-typed as `CONSTRAINT` has no surface for an assertion to bind to.
+
+### 1.2 When to mirror a REQUIREMENT with a CONSTRAINT — and when not
+
+Some rules genuinely have two sides; many do not. Authoring both a REQUIREMENT and a mirror CONSTRAINT for every rule doubles the catalogue without adding model power and inflates `REQ-COVERAGE-001` noise (every mirror needs its own assertion line). The test:
+
+**Mirror (author both) when at least one of:**
+
+- **The source text uses both forms.** "The manufacturer must register its establishment annually; an unregistered establishment shall not manufacture or distribute medical devices." Two sentences, two forms, one rule — author `REQUIREMENT-MFR-REGISTER-…` and `CONSTRAINT-UNREGISTERED-MFR-…`.
+- **The negative form binds a different subject set.** The REQUIREMENT binds the regulated entity (e.g., a registered manufacturer); the CONSTRAINT binds any actor in the same role (registered or not — distributors, importers, retailers can also be subjects of an "unregistered establishment cannot …" prohibition). The two sides are not the same compliance scope and an assertion against one does not cover the other.
+- **The negative form has independent enforcement machinery.** A different penalty regime, a different audit surface, or a different competent authority enforces the prohibition than the positive duty. When the model is consumed for compliance reporting, the two sides need to be tracked separately.
+
+**Author only the positive form (`REQUIREMENT`) when:**
+
+- The source rule is a pure affirmative duty — periodic reporting, registration, maintenance, audit preparation, notification — and the rule text imposes no independent prohibition of failing to do it. "Failing to register" is implicit in the duty and does not need a separate `CONSTRAINT`. The same applies when a derived prohibition would simply restate the requirement in the negative ("must register" ↔ "must not be unregistered") with no added subject set or enforcement surface.
+
+**Author only the negative form (`CONSTRAINT`) when:**
+
+- The source rule is a pure prohibition with no associated affirmative duty in the same scope. "The controller shall not transfer personal data outside the EEA without an adequacy decision or appropriate safeguards." There is no positive duty to *transfer* — the regulation does not require transfer, it restricts it. Authoring a synthetic `REQUIREMENT-TRANSFER-WITH-SAFEGUARDS` would invent an obligation the source did not impose.
+- A pre-existing `REQUIREMENT` already captures the affirmative duty and the prohibition adds nothing the assertion against the `REQUIREMENT` does not already cover. **Do not double-model the same rule.**
+
+**Authoring sequence for a scanner-extracted positive obligation:** classify as `REQUIREMENT` (§1.1 default); admit; only then consider whether §1.2 mirror conditions apply and, if so, author a separate `CONSTRAINT` element. The mirror is a deliberate authoring decision, never an automated emission.
 
 ---
 
