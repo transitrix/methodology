@@ -39,7 +39,12 @@
             "type": "string",
             "enum": ["authoritative", "corroborated", "single_source", "unverified"]
           },
-          "raw_source": { "type": "string" }
+          "raw_source": { "type": "string" },
+          "source_hash": {
+            "type": "string",
+            "description": "Content fingerprint of the raw bytes, surfaced for the reviewer (e.g. to compare against an inbox copy).",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
         },
         "additionalProperties": true
       }

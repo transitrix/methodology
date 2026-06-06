@@ -7,6 +7,7 @@
 // never touches canon/.
 
 import { readFile, writeFile, mkdir, readdir, rename, access } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, resolve, basename, extname } from 'node:path';
 import { isValidId, makeId, slugSegment, parseId } from './ids.mjs';
 import { dump } from './yaml.mjs';
@@ -82,10 +83,15 @@ export async function emitFieldArtefact(opts) {
   const body = await readFile(mdPath, 'utf8');
   const proposedSQ = sourceQuality || DEFAULT_SQ[type];
 
-  // Move the raw source into processed/ and record a traceable pointer.
+  // Move the raw source into processed/ and record a traceable pointer + SHA-256.
+  // The hash gives the artefact tamper-evidence (a re-saved "same" file is detected
+  // by mismatch) and a stable provenance fingerprint independent of the path.
   const raw = await findRaw(orgRoot, mdPath);
   let rawSource = null;
+  let sourceHash = null;
   if (raw) {
+    const bytes = await readFile(raw);
+    sourceHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
     const dest = join(stageDir(orgRoot, 'processed'), basename(raw));
     await mkdir(stageDir(orgRoot, 'processed'), { recursive: true });
     await rename(raw, dest);
@@ -109,6 +115,7 @@ export async function emitFieldArtefact(opts) {
       setting: setting || `ingested via @transitrix/ingest-cli from ${basename(mdPath)}`,
     },
     ...(rawSource ? { raw_source: rawSource } : {}),
+    ...(sourceHash ? { source_hash: sourceHash } : {}),
     [info.body]: body,
   };
 
@@ -116,7 +123,7 @@ export async function emitFieldArtefact(opts) {
   const outPath = join(fieldDir, `${id}.yaml`);
   await writeFile(outPath, dump(artefact), 'utf8');
 
-  return { id, outPath, proposedSQ, rawMoved: rawSource };
+  return { id, outPath, proposedSQ, rawMoved: rawSource, sourceHash };
 }
 
 export { TYPE_INFO, SOURCE_QUALITY };

@@ -19,6 +19,7 @@ Run:  python transitrix/skills/ingest/tests/test_ingest_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
 """
 
+import hashlib
 import json
 import os
 import re
@@ -39,6 +40,7 @@ CLI = os.path.join(REPO_ROOT, "packages", "ingest-cli", "ingest.mjs")
 FIXTURES = os.path.join(HERE, "fixtures")
 
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
+SOURCE_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 SOURCE_QUALITY = {"authoritative", "corroborated", "single_source", "unverified"}
 
 _failures = []
@@ -108,8 +110,9 @@ def part_b_pipeline():
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write("transitrix: 1\nmethodology_version: \"0.5.0\"\ncoverage_profile: full\n")
 
-        shutil.copy(os.path.join(FIXTURES, "raw", "INTERVIEW-sample.md"),
-                    os.path.join(org, "_intake", "inbox", "INTERVIEW-sample.md"))
+        raw_src = os.path.join(FIXTURES, "raw", "INTERVIEW-sample.md")
+        expected_hash = "sha256:" + hashlib.sha256(open(raw_src, "rb").read()).hexdigest()
+        shutil.copy(raw_src, os.path.join(org, "_intake", "inbox", "INTERVIEW-sample.md"))
 
         r = run_cli("convert", os.path.join(org, "_intake", "inbox", "INTERVIEW-sample.md"))
         check(r.returncode == 0, f"convert failed: {r.stderr.strip()}")
@@ -128,6 +131,9 @@ def part_b_pipeline():
             check(d.get("source_quality") in SOURCE_QUALITY, f"source_quality not in the closed set: {d.get('source_quality')}")
             check(isinstance(d.get("notes"), str) and d["notes"].strip(), "field artefact body block (notes) missing")
             check(str(d.get("raw_source", "")).startswith("_intake/processed/"), "raw_source not retained under _intake/processed/")
+            sh = d.get("source_hash", "")
+            check(bool(SOURCE_HASH_RE.match(sh)), f"source_hash missing or malformed: {sh!r}")
+            check(sh == expected_hash, f"source_hash does not match raw bytes: got {sh!r}, expected {expected_hash!r}")
 
         r = run_cli("emit-candidates", art, "--from", os.path.join(FIXTURES, "extraction-result.json"))
         check(r.returncode == 0, f"emit-candidates failed: {r.stderr.strip()}")
@@ -151,6 +157,9 @@ def part_b_pipeline():
             check(q.get("gate", {}).get("admits_to_canon") is False, "review queue gate.admits_to_canon must be False")
             check(isinstance(q.get("candidates"), list) and len(q["candidates"]) >= 1, "review queue lists no candidates")
             check(len(q.get("relation_suggestions", [])) >= 1, "review queue did not carry the held-back suggestion")
+            fas = q.get("field_artefacts") or []
+            check(any(fa.get("source_hash") == expected_hash for fa in fas),
+                  "review queue did not carry the field artefact's source_hash through")
 
         # THE ONE RULE: the pipeline must never create canon/.
         check(not os.path.exists(os.path.join(org, "canon")), "pipeline created canon/ — it must only propose")

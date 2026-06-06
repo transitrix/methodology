@@ -78,7 +78,7 @@ npx @transitrix/ingest-cli field-artefact <processing/file.md> \
     --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role "<role>" --date YYYY-MM-DD
 ```
 
-The CLI fills the admission record (`zone: field`, `gate_checks.provenance`) and **proposes** a `source_quality` from the document type. The schema is [`schemas/field-artefact.schema.json`](schemas/field-artefact.schema.json); the canonical contract is [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md) (admission record) and [§11.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md) (the source-trust scale).
+The CLI fills the admission record (`zone: field`, `gate_checks.provenance`) and **proposes** a `source_quality` from the document type. It also fingerprints the raw bytes as `source_hash: sha256:<hex>` alongside `raw_source` — tamper-evidence for adopters with audit needs (GDPR / SOX / ISO 27001) and source-replacement detection: a re-saved "same" file is caught by hash mismatch, not by silent drift. The schema is [`schemas/field-artefact.schema.json`](schemas/field-artefact.schema.json); the canonical contract is [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md) (admission record) and [§11.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md) (the source-trust scale).
 
 **Proposed `source_quality` by document character** — closed set, the human confirms at admission:
 
