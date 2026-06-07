@@ -190,6 +190,11 @@ _pitch*/
 # Local agent-runner script
 run-methodology-agent.ps1
 
+# Architecture Decision Records — kept local until external contributors arrive.
+# Visible to local agents (orchestrator) on disk; not published to the open repo.
+# Revisit when contributors join (see win-claude/tasks.md).
+docs/decisions/
+
 # ============================================================================
 # NOTES
 # ============================================================================
