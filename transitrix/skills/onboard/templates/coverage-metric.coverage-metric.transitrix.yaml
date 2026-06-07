@@ -1,0 +1,57 @@
+notation: coverage-metric
+spec_version: "0.1"
+methodology_version: "0.5.0"
+
+# Coverage Metric. Spec: notations/views/22-coverage-metric.md
+# Report-config over the coverage read of canon (sibling of Compliance Impact).
+# Carries no canonical content — every cell is DERIVED from ASSERTION +
+# process flow + REQUIREMENT.derived_from + codex. This file only declares which
+# slice of that coverage matrix to render and how. It counts, per regime, the
+# subjects with zero admitted obligations, and splits a modelling gap from a
+# modelled exclusion (an admitted ASSERTION with status: n_a).
+
+view:
+  id: COVERAGE_METRIC-FILL-ME-1
+  name: "FILL-ME — e.g. Retail product — regime coverage"
+  description: "FILL-ME — which subjects, which regimes, and why"
+
+  # What the view counts over. At least one of products / processes MUST be present
+  # (the renderer derives the stage / task grain from the named subjects).
+  subjects:
+    products: [PRODUCT-FILL-ME-1]
+    # processes: [PROCESS-FILL-ME-1]   # optional; in addition to or instead of products
+
+  # Which regimes the coverage axis enumerates. Either an explicit include list of
+  # codex artefacts (each is one regime column), or a filter selecting codex
+  # artefacts by jurisdiction / type. If both are present, include wins.
+  regimes:
+    include:
+      - REGULATION-FILL-ME-1
+      # - LAW-FILL-ME-1
+    # filter:
+    #   jurisdiction: [eu, ge]
+    #   codex_type: [LAW, REGULATION]   # optional; default — all four codex TYPEs
+
+  # Grouping (the axes of the matrix). Default: subject × regime.
+  grouping:
+    rows: "subject"             # subject | regime
+    subject_grain: "task"       # product | product-stage | task
+    columns: "regime"           # regime | jurisdiction
+
+  # What counts as "covered" for a (subject, regime) pair (see spec §5.2).
+  coverage_rule:
+    counts_as_covered: "any-active-assertion"   # any-active-assertion (default) | any-non-na-assertion
+    treat_proposed_as: "hidden"                 # hidden (default) | shown-distinct
+
+  # Empty-cell labels — see spec §5.3 for the canonical strings and the distinction.
+  empty_cells:
+    not_yet_modelled_label: "Not yet modelled"
+    no_obligation_asserted_label: "No obligation asserted (modelled fact)"
+
+  # Optional ordering and aggregation knobs.
+  order_rows_by: "id"           # id | name | gap-count-desc | gap-count-asc
+  order_columns_by: "id"        # id | name | jurisdiction
+  summary:
+    show_per_regime_total: true
+    show_per_subject_total: true
+    show_grand_total: true
