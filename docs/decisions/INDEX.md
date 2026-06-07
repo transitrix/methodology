@@ -7,3 +7,4 @@ Format: dated `YYYY-MM-DD-slug.md`, front-matter (`status`, `date`, `scope`, `su
 | Date | ADR | Status | Scope |
 |---|---|---|---|
 | 2026-06-05 | [Data quality — source trust, freshness decay, view composite confidence](./2026-06-05-data-quality-source-trust-and-freshness.md) | Accepted | methodology (consumed by DSM, Studio) |
+| 2026-06-07 | [Ingest — one skill, two routes (field + codex), shared vocabulary](./2026-06-07-ingest-field-codex-two-routes.md) | Accepted | methodology (ingest skill + CLI) |
