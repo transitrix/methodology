@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Four parts:
+Deterministic, no-API-key guard. Five parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -15,6 +15,8 @@ Deterministic, no-API-key guard. Four parts:
      accepted, a non-closed rel_kind is flagged, derived_from merges across sources.
   D. IG-1 assertion candidate — emit shapes an assertion; a valid one passes,
      bad subject TYPE / status / non-REQUIREMENT about are flagged.
+  E. IG-2 codex artefact — codex-artefact emits a faithful law/policy source
+     artefact (no source_quality); downstream REQUIREMENT/ASSERTION candidates cite it.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -62,7 +64,7 @@ def frontmatter(path):
     return yaml.safe_load(m.group(1)) if m else None
 
 
-# ── Part A — bundle integrity ───────────────────────────────────
+# ── Part A — bundle integrity ────────────────────────────────────
 
 def part_a_bundle():
     skill = os.path.join(SKILL_DIR, "SKILL.md")
@@ -180,7 +182,7 @@ def part_b_pipeline():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part C — IG-5 regressions (rehearsal-found defects) ──────────────────
+# ── Part C — IG-5 regressions (rehearsal-found defects) ──────────────
 
 def part_c_ig5():
     """Capability V/H ID accepted, closed-REL-kind flag, derived_from merge."""
@@ -249,7 +251,7 @@ def part_c_ig5():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part D — IG-1 assertion candidate kind ───────────────────────────────────
+# ── Part D — IG-1 assertion candidate kind ───────────────────────
 
 def part_d_ig1():
     """Assertion candidate: emit shaping, valid passes, bad subject/status/about flagged."""
@@ -309,10 +311,83 @@ def part_d_ig1():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part E — IG-2 codex artefact emitter ─────────────────────────
+
+def part_e_ig2():
+    """Faithful codex LAW artefact + downstream REQUIREMENT/ASSERTION candidates citing it."""
+    if not shutil.which("node"):
+        print("SKIP Part E: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-ig2-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        inbox = os.path.join(org, "_intake", "inbox")
+        proc = os.path.join(org, "_intake", "processing")
+        raw = os.path.join(inbox, "LAW-conveyor.txt")
+        with open(raw, "wb") as fh:
+            fh.write(b"Article 3 - certification required before market placement.\n")
+        expected_hash = "sha256:" + hashlib.sha256(open(raw, "rb").read()).hexdigest()
+        with open(os.path.join(proc, "LAW-conveyor.md"), "w", encoding="utf-8") as fh:
+            fh.write("# Regulation\nArticle 3 - certification required before market placement.\n")
+
+        r = run_cli("codex-artefact", os.path.join(proc, "LAW-conveyor.md"),
+                    "--type", "LAW", "--jurisdiction", "eu", "--effective-date", "2026-01-01",
+                    "--source-authority", "FICTIONAL", "--slug", "conveyor-safety",
+                    "--admitted-at", "2026-06-07", "--monitoring")
+        check(r.returncode == 0, "IG-2: codex-artefact failed: %s" % (r.stderr or r.stdout))
+
+        art = os.path.join(org, "codex", "external", "eu", "LAW-conveyor_safety-1.yaml")
+        if check(os.path.isfile(art), "IG-2: codex artefact not written under codex/external/eu/"):
+            d = yaml.safe_load(open(art, encoding="utf-8"))
+            check(d.get("zone") == "codex", "IG-2: codex artefact zone is not 'codex'")
+            check(d.get("type") == "LAW", "IG-2: codex artefact type")
+            check(d.get("jurisdiction") == "eu", "IG-2: jurisdiction must match the folder (CODEX-001)")
+            check(d.get("effective_date") == "2026-01-01", "IG-2: effective_date")
+            check(d.get("gate_checks", {}).get("source_authority") == "FICTIONAL", "IG-2: gate_checks.source_authority")
+            check("source_quality" not in d, "IG-2: a codex artefact must NOT carry source_quality (authoritative by construction)")
+            check(d.get("source_hash") == expected_hash, "IG-2: source_hash mismatch")
+            check(str(d.get("snapshot_file", "")).startswith("sources/snapshot_"), "IG-2: snapshot_file under sources/")
+            check(d.get("monitoring_needed") is True, "IG-2: monitoring_needed")
+
+        check(os.path.isdir(os.path.join(org, "codex", "external", "eu", "sources")), "IG-2: codex sources/ folder missing")
+        check(not os.path.exists(raw), "IG-2: raw source was not moved into codex sources/")
+        check(not os.path.exists(os.path.join(org, "canon")), "IG-2: codex emit must not create canon/")
+
+        # Downstream: derive REQUIREMENT + ASSERTION candidates that cite the codex LAW.
+        res = os.path.join(work, "res.json")
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({"elements": [{"id": "REQUIREMENT-CONVEYOR-CERT-1", "name": "Hold a certificate",
+                                     "element_type": "REQUIREMENT", "extraction_confidence": "high"}],
+                       "relations": [],
+                       "assertions": [{"id": "ASSERTION-FLEXLINE-CERT-1", "about": "REQUIREMENT-CONVEYOR-CERT-1",
+                                       "subject": "PRODUCT-FLEXLINE-1", "status": "under_review",
+                                       "extraction_confidence": "medium"}]}, fh)
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        r = run_cli("emit-candidates", art, "--from", res, "--candidates-dir", cdir)
+        check(r.returncode == 0, "IG-2: emit-candidates from a codex artefact failed: %s" % (r.stderr or r.stdout))
+
+        req = json.load(open(os.path.join(cdir, "REQUIREMENT-CONVEYOR-CERT-1.json"), encoding="utf-8"))
+        ass = json.load(open(os.path.join(cdir, "ASSERTION-FLEXLINE-CERT-1.json"), encoding="utf-8"))
+        check(req.get("derived_from") == ["LAW-conveyor_safety-1"],
+              "IG-2: REQUIREMENT candidate does not cite the codex LAW: %r" % req.get("derived_from"))
+        check(ass.get("kind") == "assertion" and ass.get("derived_from") == ["LAW-conveyor_safety-1"],
+              "IG-2: ASSERTION candidate does not cite the codex LAW: %r" % ass.get("derived_from"))
+        r = run_cli("validate", cdir)
+        check(r.returncode == 0, "IG-2: codex-derived candidates did not validate clean: %s" % (r.stdout + r.stderr))
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
 part_d_ig1()
+part_e_ig2()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
