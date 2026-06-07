@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Two parts:
+Deterministic, no-API-key guard. Three parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -11,6 +11,8 @@ Deterministic, no-API-key guard. Two parts:
      proposed source_quality, candidate files, a review queue with the gate closed,
      the two-axes rule (a candidate carrying source_quality is flagged), and THE ONE
      RULE — canon/ is never written.
+  C. IG-5 regressions — the three rehearsal-found defects: capability V/H ID is
+     accepted, a non-closed rel_kind is flagged, derived_from merges across sources.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -58,7 +60,7 @@ def frontmatter(path):
     return yaml.safe_load(m.group(1)) if m else None
 
 
-# ── Part A — bundle integrity ────────────────────────────────────────────────
+# ── Part A — bundle integrity ───────────────────────────────────
 
 def part_a_bundle():
     skill = os.path.join(SKILL_DIR, "SKILL.md")
@@ -86,7 +88,7 @@ def part_a_bundle():
     check(os.path.isfile(CLI), "CLI entry point missing: packages/ingest-cli/ingest.mjs")
 
 
-# ── Part B — CLI pipeline drive ──────────────────────────────────────────────
+# ── Part B — CLI pipeline drive ──────────────────────────────────
 
 def run_cli(*args):
     return subprocess.run(["node", CLI, *args], capture_output=True, text=True)
@@ -176,8 +178,78 @@ def part_b_pipeline():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part C — IG-5 regressions (rehearsal-found defects) ──────────────────
+
+def part_c_ig5():
+    """Capability V/H ID accepted, closed-REL-kind flag, derived_from merge."""
+    if not shutil.which("node"):
+        print("SKIP Part C: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-ig5-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+
+        def cand(name, obj):
+            with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+                json.dump(obj, fh)
+
+        fid = "INTERVIEW-x-20260101-1"
+        cand("CAP.json", {"kind": "element", "id": "CAPABILITY-V1.2", "name": "Cap",
+                          "element_type": "CAPABILITY", "derived_from": [fid],
+                          "admitted_to": "pending", "extraction_confidence": "high"})
+        cand("RELbad.json", {"kind": "relation", "rel_kind": "contributes_to",
+                             "from": "FACTOR-A-1", "to": "GOAL-B-1", "derived_from": [fid],
+                             "admitted_to": "pending", "extraction_confidence": "high"})
+        cand("RELok.json", {"kind": "relation", "rel_kind": "stakeholding",
+                            "from": "STAKEHOLDER-A-1", "to": "GOAL-B-1", "derived_from": [fid],
+                            "admitted_to": "pending", "extraction_confidence": "high"})
+
+        r = run_cli("validate", cdir)
+        out = r.stdout + r.stderr
+        check("violates the ID grammar: CAPABILITY-V1.2" not in out,
+              "IG-5a: capability V/H address (CAPABILITY-V1.2) wrongly flagged for ID grammar")
+        check("contributes_to" in out and "closed REL kind" in out,
+              "IG-5c: a non-closed rel_kind (contributes_to) was not flagged")
+        check("stakeholding" not in out,
+              "IG-5c: a valid closed rel_kind (stakeholding) was wrongly flagged")
+
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        for f in ("INTERVIEW-a-20260101-1", "INTERVIEW-b-20260101-1"):
+            with open(os.path.join(fdir, f + ".yaml"), "w", encoding="utf-8") as fh:
+                fh.write('id: "%s"\nname: "x"\ntype: "INTERVIEW"\nzone: "field"\nnotes: "x"\n' % f)
+        res = os.path.join(work, "res.json")
+        mdir = os.path.join(org, "_intake", "processing", "merge")
+
+        def emit(field_id, conf):
+            with open(res, "w", encoding="utf-8") as fh:
+                json.dump({"elements": [{"id": "GOAL-SHARED-1", "name": "Shared",
+                                         "element_type": "GOAL", "extraction_confidence": conf}],
+                           "relations": []}, fh)
+            return run_cli("emit-candidates", os.path.join(fdir, field_id + ".yaml"),
+                           "--from", res, "--candidates-dir", mdir)
+
+        emit("INTERVIEW-a-20260101-1", "medium")
+        emit("INTERVIEW-b-20260101-1", "high")
+        merged = json.load(open(os.path.join(mdir, "GOAL-SHARED-1.json"), encoding="utf-8"))
+        check(sorted(merged.get("derived_from", [])) == ["INTERVIEW-a-20260101-1", "INTERVIEW-b-20260101-1"],
+              "IG-5b: derived_from not merged across two sources: %r" % merged.get("derived_from"))
+        check(merged.get("extraction_confidence") == "high",
+              "IG-5b: merge did not keep the stronger extraction_confidence: %r" % merged.get("extraction_confidence"))
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
+part_c_ig5()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
