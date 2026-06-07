@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
-> **Status — skeleton (v0).** This skill ships the agent-facing protocol, the artefact/candidate/review-queue schemas, and the `_intake/` convention. The deterministic logic lives in a separate CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) that lands in a follow-up increment. Until that CLI is installed, the pipeline steps below describe the contract rather than an executable path — run the **CLI-presence pre-check** (Step 0) first and stop if it is absent.
+> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the field→canon pipeline against it. It runs **agent-neutrally** under Claude and GitHub Copilot — all heavy logic is in the CLI, and this `SKILL.md` only sequences it.
 
@@ -30,7 +30,7 @@ npx @transitrix/ingest-cli --version
 ```
 
 - **Present** → proceed.
-- **Absent** → this skill is not yet operational in this install (the CLI ships in a later increment). Stop and tell the user; do not hand-roll the pipeline, because hand-rolled extraction has no deterministic validator gate and risks the one rule above.
+- **Absent** → the CLI is not installed (or not published) in this environment. Stop and tell the user; do not hand-roll the pipeline, because hand-rolled extraction has no deterministic validator gate and risks the one rule above.
 
 Also confirm you are operating inside a Transitrix adopter repository (a `transitrix.yaml` manifest at the repo root; see [MANIFEST](https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md)). If there is no repo yet, the user wants `/transitrix:onboard` first.
 
@@ -74,7 +74,7 @@ If Markitdown is not installed the CLI exits with an actionable message naming t
 Each converted document becomes one `field` artefact carrying a complete **admission record** — provenance (who / when / in what setting) and a **proposed** `source_quality`. The field artefact is what lives in `field/`; the original raw bytes stay in `_intake/processed/` so the artefact is traceable to its source.
 
 ```
-npx @transitrix/ingest-cli field-artefact <processing/file.md> \
+npx @transitrix/ingest-cli admit-source --zone field <processing/file.md> \
     --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role "<role>" --date YYYY-MM-DD
 ```
 
@@ -90,6 +90,8 @@ The CLI fills the admission record (`zone: field`, `gate_checks.provenance`) and
 | Draft, assumption, inference, hearsay | `unverified` | 0.25 |
 
 The skill **proposes**; a human **confirms**. Never silently bake a higher trust than the source warrants.
+
+**Codex sources — laws, regulations, policies, standards — take the parallel `codex` route:** `npx @transitrix/ingest-cli admit-source --zone codex <processing/file.md> --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION) or `codex/internal/` (POLICY/INTERNAL_STANDARD) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`.
 
 ---
 
@@ -147,7 +149,7 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
 
-The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `field-artefact`, `emit-candidates`, `validate`, `review-queue`.
+The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`.
 
 ---
 

@@ -8,8 +8,9 @@
 //
 // Exit codes:  0 = ok  ·  1 = usage / findings that need review  ·  2 = error
 //
-// Implemented: --version, scaffold-intake, convert, field-artefact.
-// emit-candidates / validate / review-queue land next.
+// Implemented: --version, scaffold-intake, convert, admit-source (field + codex;
+// field-artefact / codex-artefact remain as deprecated aliases), emit-candidates,
+// validate, review-queue.
 
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,7 @@ import { validateCandidate, loadCandidates } from './src/validate.mjs';
 import { readCoverageProfile } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
+import { emitCodexArtefact } from './src/codex-artefact.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -55,9 +57,12 @@ function usage() {
     'Commands:',
     '  scaffold-intake <org-root>     Create _intake/{inbox,processing,processed} (idempotent)',
     '  convert <inbox-file>           Convert a document to Markdown in _intake/processing/',
-    '  field-artefact <md> --type T --role R --date YYYY-MM-DD [--setting S]',
-    '                 [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
-    '                                 Emit a field artefact with a proposed source_quality',
+    '  admit-source <md> --zone field|codex   Admit a converted source to the field or codex zone',
+    '                 field: --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role R --date YYYY-MM-DD',
+    '                        [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
+    '                 codex: --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD',
+    '                        [--jurisdiction J] [--source-authority A] [--issuing-authority A] [--slug SL] [--monitoring]',
+    '  field-artefact / codex-artefact        Deprecated aliases of admit-source --zone field|codex',
     '  emit-candidates <field-artefact> --from <result.json> [--candidates-dir <dir>]',
     '                                 Shape the agent extraction result into candidates',
     '  validate <candidates-dir>      Validate candidate *.json against the contract + coverage profile',
@@ -137,6 +142,55 @@ async function cmdFieldArtefact(args) {
     console.error(`field-artefact: ${err.message}`);
     return 2;
   }
+}
+
+async function cmdCodexArtefact(args) {
+  const { _, flags } = parseArgs(args);
+  const md = _[0];
+  if (!md) { console.error('codex-artefact: missing <md> (a converted file in _intake/processing/)'); return 1; }
+  const mdPath = resolve(md);
+  try { await access(mdPath); } catch { console.error(`codex-artefact: file not found: ${md}`); return 2; }
+  if (!flags.type || !flags['effective-date']) {
+    console.error('codex-artefact: --type and --effective-date are required');
+    return 1;
+  }
+  const orgRoot = await findOrgRoot(mdPath);
+  if (!orgRoot) { console.error(`codex-artefact: "${md}" is not inside an _intake/ workspace.`); return 2; }
+
+  try {
+    const res = await emitCodexArtefact({
+      orgRoot, mdPath,
+      type: String(flags.type).toUpperCase(),
+      jurisdiction: flags.jurisdiction,
+      effectiveDate: flags['effective-date'],
+      sourceAuthority: flags['source-authority'],
+      issuingAuthority: flags['issuing-authority'],
+      admittedAt: flags['admitted-at'] || today(),
+      admittedBy: flags['admitted-by'] || '@transitrix/ingest-cli',
+      monitoring: flags.monitoring === true || flags.monitoring === 'true',
+      slug: flags.slug,
+      name: flags.name,
+    });
+    console.log(`codex artefact  ${res.id}  ->  ${res.outPath}`);
+    console.log(`  zone: codex (${res.scope}) — authoritative by construction; derive obligations as REQUIREMENT + ASSERTION candidates`);
+    if (res.snapshotFile) console.log(`  snapshot retained: ${res.snapshotFile}`);
+    if (res.sourceHash) console.log(`  source_hash:       ${res.sourceHash}`);
+    return 0;
+  } catch (err) {
+    console.error(`codex-artefact: ${err.message}`);
+    return 2;
+  }
+}
+
+// Unified front door (admit-source --zone). `field-artefact` and `codex-artefact`
+// remain as deprecated aliases for one release; both route through here.
+async function cmdAdmitSource(args) {
+  const { flags } = parseArgs(args);
+  const zone = flags.zone || 'field';
+  if (zone === 'field') return cmdFieldArtefact(args);
+  if (zone === 'codex') return cmdCodexArtefact(args);
+  console.error(`admit-source: --zone must be field|codex (got ${JSON.stringify(zone)})`);
+  return 1;
 }
 
 async function resolveDir(dirArg, label) {
@@ -225,7 +279,9 @@ async function main(argv) {
   switch (cmd) {
     case 'scaffold-intake': return cmdScaffoldIntake(args);
     case 'convert':         return cmdConvert(args);
+    case 'admit-source':    return cmdAdmitSource(args);
     case 'field-artefact':  return cmdFieldArtefact(args);
+    case 'codex-artefact':  return cmdCodexArtefact(args);
     case 'emit-candidates': return cmdEmitCandidates(args);
     case 'validate':        return cmdValidate(args);
     case 'review-queue':    return cmdReviewQueue(args);
