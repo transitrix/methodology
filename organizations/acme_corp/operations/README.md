@@ -25,7 +25,7 @@ operations/
 |---|---|
 | The team agreed on a way the repo or model is set up (a versioning pin, a naming override, a process choice) | **ADR** in `decisions/` |
 | Someone is doing a piece of work that touches one or more model entities (filling in capability assessments, drafting a view, refactoring a relation set) | **WI** in `work-items/` |
-| An architectural problem about the modelled enterprise (e.g. a defect in a process, a risk in a system) | **NOT here** — file an `ISSUE` under `canon/views/issues/` (model-side, see [`notations/views/12-issues.md`](../../../notations/views/12-issues.md)) |
+| An architectural problem about the modelled enterprise (e.g. a defect in a process, a risk in a system) | **NOT here** — model it as an `ASSESSMENT` in canon (ArchiMate Assessment); the former model-side `issues` notation was retired (2026-06-07) |
 | A long discussion or proposal that has not landed on a decision | The pull-request that opens the candidate ADR — not a separate file here |
 
 ## Linking into the model — `relates_to:`

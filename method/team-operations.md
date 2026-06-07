@@ -22,7 +22,7 @@ This is the **Team Operations** convention. It defines a folder, two file shapes
 **Hard distinctions to preserve:**
 
 - **Operational ≠ Model.** Team-operations artefacts are not part of `canon/`. They do not describe the enterprise. They are not subject to the zone admission gates (see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5–6) and they are not in the ID grammar registry (see [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md)). They live in a sibling folder, `operations/`, deliberately outside the zone model.
-- **Operational ≠ `ISSUE` notation.** The model already has an [`issues`](../notations/views/12-issues.md) view notation, which catalogues **architectural** issues — defects, open questions, and risks *in the model or in the system being modelled*. That is part of canon. Team Operations uses **Work Items (`WI-…`)** for what the team is doing day to day, deliberately not the word "issue", to keep the two from colliding. An adopter who needs to track an architectural problem files an `ISSUE` under `canon/views/issues/`; an adopter who needs to track a piece of their own workstream files a `WI` under `operations/work-items/`.
+- **Operational ≠ model.** A problem, risk, or weakness *about the modelled enterprise* is a model finding — captured as an `ASSESSMENT` (ArchiMate Assessment) in canon, not as a team-operations artefact. Team Operations uses **Work Items (`WI-…`)** for what the team is doing day to day; an architectural finding is an `ASSESSMENT`, a piece of the team's own workstream is a `WI` under `operations/work-items/`. (The former model-side `issues` notation was retired, 2026-06-07.)
 
 The convention is intentionally minimal: a folder, two templates, and a one-screen rules doc. Adopters who want a heavier process should keep their existing tracker — this convention is for teams that want their decision log and work queue under the same version control and review surface as the model itself.
 
@@ -174,7 +174,7 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 
 - Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
 - Methodology overview: [`method/methodology.md`](methodology.md) §4 — repository structure.
-- Distinct from the model-side issues catalogue: [`notations/views/12-issues.md`](../notations/views/12-issues.md).
+- Architectural findings about the enterprise are modelled as `ASSESSMENT` (the former model-side `issues` notation was retired, 2026-06-07).
 - Distinct from the canon zones: [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5.
 
 ---

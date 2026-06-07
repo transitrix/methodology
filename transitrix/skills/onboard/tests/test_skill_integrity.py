@@ -28,12 +28,12 @@ except ImportError:  # pragma: no cover
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# The 14 view notations the skill ships a template for (SKILL.md § Templates).
+# The 13 view notations the skill ships a template for (SKILL.md § Templates).
 # Filename convention: <short>.<short>.transitrix.yaml, with `notation: <short>` inside.
 VIEW_NOTATIONS = [
     "bpmn", "fgca", "fga", "goals", "capability-map", "process-map",
     "activities", "blocks", "scenarios", "applications", "products",
-    "issues", "process-blueprint", "activity-card",
+    "process-blueprint", "activity-card",
 ]
 ROOT_TEMPLATES = ["transitrix.yaml", "AGENTS.md", "copilot-instructions.md"]
 CODEX_TEMPLATES = ["codex-external.yaml", "codex-internal.yaml"]

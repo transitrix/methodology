@@ -1,6 +1,6 @@
 ---
 name: Transitrix Onboarding
-description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, issues, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
+description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
 when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -53,7 +53,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   └── views/                      # one subfolder per notation
 │       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
 │       ├── activities/   blocks/   scenarios/
-│       └── applications/   products/   issues/   process-blueprint/
+│       └── applications/   products/   process-blueprint/
 ├── field/                          # raw inputs — not authoritative; provenance is the point
 │   └── interviews/   surveys/   observations/   drafts/
 └── codex/                          # constraints given to the org, faithful to source
@@ -194,7 +194,6 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Alternative strategic development paths | **Scenarios** | `*.scenarios.transitrix.yaml` |
 | Catalogue of applications + integrations | **Applications** | `*.applications.transitrix.yaml` |
 | Catalogue of products + services | **Products** | `*.products.transitrix.yaml` |
-| Register of issues — problems, defects, open questions | **Issues** | `*.issues.transitrix.yaml` |
 | Single-project narrative view — FGCA chain, dates, milestones, gate decisions | **Activity Card** | `*.activity-card.transitrix.yaml` |
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
 | Coverage of canon — which subjects are dark for each regulatory regime, splitting modelling gaps from modelled exclusions | **Coverage Metric** | `*.coverage-metric.transitrix.yaml` |
@@ -226,7 +225,6 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 - **Scenarios** — `notation: scenarios`. Alternative strategic development paths, each scoping its own goals / capabilities / activities / products / processes / applications.
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
-- **Issues register** — `notation: issues`. Root key `issues_catalogue:` with `issues[]`. Each issue: `issue_id`, `name`, `status` (`open` / `in_progress` / `blocked` / `resolved` / `closed`), optional `parent`, `description`, `relates_to`, `owner_role`. Hierarchy via `parent`.
 - **Activity Card** — `notation: activity-card`. Root key `activity_card:` carrying a single project's narrative — the FGCA chain it implements (`factor`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
 - **Compliance Impact** — `notation: compliance-impact`. Report-config over the compliance overlay (sibling of Scenarios). Root key `view:` declaring `subjects` (products / processes), `obligations` (`include` or `filter`), `grouping`, `status_display`, and `empty_cells`. Carries no canonical content — every cell is derived from `ASSERTION` + process flow + `REQUIREMENT` status.
@@ -275,7 +273,6 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Scenarios | `templates/scenarios.scenarios.transitrix.yaml` |
 | Applications | `templates/applications.applications.transitrix.yaml` |
 | Products | `templates/products.products.transitrix.yaml` |
-| Issues | `templates/issues.issues.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
 | Activity Card | `templates/activity-card.activity-card.transitrix.yaml` |
 | Compliance Impact | `templates/compliance-impact.compliance-impact.transitrix.yaml` |
