@@ -55,10 +55,9 @@ source_section: "Art.30(1)(b),(g)"            # optional — free-text section i
 amended_at: "2026-05-21"                      # optional — when the source authority published the amendment (if known)
 detected_at: "2026-06-05"                     # required — when the scan / human detected the change
 
-# Optional — placeholder for SEGMENT lineage; remains empty until the SEGMENT
-# type lands as its own field-zone primitive (a separate task). When that
-# arrives, each segment_refs[] entry is a typed SEGMENT-… ID identifying the
-# extracted chunk of source text the amendment touched.
+# Optional — typed SEGMENT-… IDs identifying the extracted chunks of source
+# text the amendment touched (the structured form of source_section). Each
+# must resolve to an admitted SEGMENT (22 → 23-segment.md) on the same source.
 segment_refs: []
 
 # Optional — scanner / human hints about canon elements the amendment is
@@ -91,10 +90,10 @@ source_quality: corroborated                  # optional — see CONTRACT.md §1
 | `name` | yes | string | One-line human-readable label naming what changed. Mirrors the `name` convention across the methodology ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3). |
 | `change_description` | yes | string | Longer-form description of what moved — wording deltas, scope shifts, dates, the editorial trail the scanner produced or the human transcribed. Free text; not the same field as the codex artefact's `scan.change_description` (that is operating state on the codex side; this is the field-zone record). |
 | `source` | yes | string | Typed canonical ID of the codex artefact that was amended. MUST resolve to an admitted codex artefact whose TYPE is one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` (`AMENDMENT-002`). |
-| `source_section` | no | string | Free-text section identifier within the source — article / paragraph / page / clause — for human navigation. Provisional shape: once the SEGMENT TYPE lands as a typed field-zone primitive (a separate task), the structured form moves to `segment_refs[]` (below) and `source_section` becomes a legacy free-text annotation. |
+| `source_section` | no | string | Free-text section identifier within the source — article / paragraph / page / clause — for human navigation. **Legacy annotation**: with the `SEGMENT` TYPE now registered ([23-segment.md](23-segment.md)), the structured form of "which part of the source" is `segment_refs[]` (below), each resolving to a SEGMENT that carries its own `locator`. Retain `source_section` only as a free-text convenience when no SEGMENT has been extracted yet; prefer `segment_refs[]` once chunks exist. |
 | `amended_at` | no | string | Date the source authority published the amendment — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. Optional because some sources do not carry an explicit publication date for incremental amendments; when absent, the detection date alone witnesses the event. |
 | `detected_at` | yes | string | Date the scan or human first noticed the change — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. Distinct from `proposed_at` / `admitted_at` (those are admission-gate events on this artefact); `detected_at` is the underlying detection event the artefact records. |
-| `segment_refs` | no | list | Typed `SEGMENT-…` IDs identifying the extracted chunks of source text the amendment touched. **Placeholder in this revision** — see §6 (Evolution): the SEGMENT TYPE is reserved for a separate task that lands the field-zone shape and typed-ID resolution; until then the field is documented and accepted but carries no resolution check. |
+| `segment_refs` | no | list | Typed `SEGMENT-…` IDs identifying the extracted chunks of source text the amendment touched ([23-segment.md](23-segment.md)). Each entry MUST resolve to an admitted SEGMENT whose `source` is this amendment's `source` (`AMENDMENT-007`) — a chunk of the amended document, not of some other source. The structured replacement for the free-text `source_section`. |
 | `likely_impacted` | no | list | Typed canonical IDs of canon elements the amendment is likely to impact — scanner / human hints surfaced for the review digest, not authoritative claims. Typical TYPEs: `REQUIREMENT`, `CONSTRAINT`, `PROCESS`, `STEP`, `PRODUCT`, `CAPABILITY`, `ASSERTION`. Each entry MUST resolve to an admitted element in canon (`AMENDMENT-003`). The authoritative impact set is expressed by the canon `CHANGE` elements named in `motivates[]` once a human adjudicates. |
 | `motivates` | no | list | Typed `CHANGE-…` IDs naming the canon `CHANGE` / Gap elements this amendment motivates. Empty on first emission; filled by the human as Gap elements are authored. Each entry MUST resolve to an admitted canon `CHANGE` element (`AMENDMENT-004`). The link is symmetric: a canon `CHANGE` motivated by an AMENDMENT additionally carries `derived_from: [AMENDMENT-…]` on its own admission record, so either side is queryable without traversing the other catalogue. |
 | `zone` | yes | string | Always `field` for AMENDMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
@@ -169,11 +168,11 @@ The folder name is the plural of the TYPE in lowercase, matching the existing fi
 | `AMENDMENT-004` | error | An entry in `motivates` is a well-formed typed ID but does not resolve to any admitted canon element of TYPE `CHANGE`. The amendment-to-Gap link must point at a real Gap. |
 | `AMENDMENT-005` | warning | `amended_at` is present and is later than `detected_at`. A detection cannot have happened before the underlying event; the dates are likely transposed or one is wrong. Warning, not error, because some sources publish-dates that are administratively backdated past the agent's first detection (a future-dated effective date is a separate matter and is not flagged). |
 | `AMENDMENT-006` | warning | `gate_checks.provenance` is the literal `pending_review` AND `admission_state` is absent or `active`. The admitted artefact never had its provenance check completed by a human — a scanner-staged draft was admitted without finishing the review. |
-| `AMENDMENT-007` | info | `segment_refs[]` is non-empty. The SEGMENT TYPE is reserved for a separate task; until that lands, entries in this list cannot be resolution-checked. Informational, surfaced so adopters know the field is in a placeholder state. Promoted to a resolution-checking rule once SEGMENT is registered. |
+| `AMENDMENT-007` | error | An entry in `segment_refs[]` is a well-formed typed ID but does not resolve to an admitted `SEGMENT` ([23-segment.md](23-segment.md)), or resolves to a SEGMENT whose `source` differs from this amendment's `source`. A segment reference must point at an admitted chunk of the amended document. |
 
 The admission-state rules (`ADMIT-001..005`, [CONTRACT.md](../CONTRACT.md) §6.1) apply in addition to the rules above. The header (`HDR-001..004`) and primitive-lifecycle (`LIFECYCLE-001..004`) rules do **not** apply, per §2.
 
-`AMENDMENT-003` and `AMENDMENT-004` are **cross-cutting**: they resolve typed IDs against the full canon catalogue, not the AMENDMENT file in isolation. The validator must be loaded with the canon set to evaluate them.
+`AMENDMENT-003`, `AMENDMENT-004`, and `AMENDMENT-007` are **cross-cutting**: they resolve typed IDs against the full canon + field catalogue, not the AMENDMENT file in isolation. The validator must be loaded with that set to evaluate them.
 
 ---
 
@@ -181,7 +180,7 @@ The admission-state rules (`ADMIT-001..005`, [CONTRACT.md](../CONTRACT.md) §6.1
 
 Out of scope for this initial schema; tracked as follow-up work:
 
-- **`SEGMENT` field-zone TYPE wiring.** `segment_refs[]` is a placeholder in this revision. A separate task introduces the `SEGMENT` TYPE — extracted chunks of regulatory text the scanner identified — at which point `segment_refs[]` becomes a typed-ID list with its own resolution check, `source_section` is demoted to a free-text legacy annotation, and `AMENDMENT-007` is upgraded from `info` to an error-grade resolution rule.
+- **`SEGMENT` field-zone TYPE wiring.** *(Done — [23-segment.md](23-segment.md).)* `segment_refs[]` resolves to typed `SEGMENT-…` chunks (`AMENDMENT-007`, now error-grade), `source_section` is demoted to a free-text legacy annotation, and the structured "which part of the source" lives on each SEGMENT's `locator`.
 - **Automated re-derivation hint.** When an AMENDMENT motivates a canon `CHANGE`, the canon `REQUIREMENT` elements whose `derived_from` cites the amended codex source are the obligations most likely needing re-extraction. A cross-cutting rule that surfaces "REQUIREMENTs derived from a source with an active AMENDMENT" is a candidate for the freshness / staleness validator pass ([CONTRACT.md](../CONTRACT.md) §11.7); not added here.
 - **Per-amendment effective-date semantics.** An amendment may take effect immediately, on a fixed future date, or after a transition window. Modelling the effective-date model on the AMENDMENT itself (rather than on the resulting canon `CHANGE`) is deferred — for now the amendment records the detection, and the canon `CHANGE` carries the org's planned response and its own dates.
 - **Worked example yaml.** A worked example under `organizations/acme_corp/field/amendments/` plus a per-folder README is planned alongside the broader compliance worked-examples wave; not part of this initial registration.
@@ -193,6 +192,7 @@ Out of scope for this initial schema; tracked as follow-up work:
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.4 (entry), §1 (grammar), §4 (uniqueness scope).
 - Zone model, admission record, pre-admission lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §6.1.
 - The codex artefacts an AMENDMENT records changes to: [14-codex.md](14-codex.md), especially §3.4 (`monitoring_needed`) and §3.5 (scanner-agent `scan` block).
+- The extracted source chunks an AMENDMENT cites via `segment_refs[]`: [23-segment.md](23-segment.md).
 - The canon `CHANGE` (ArchiMate Gap) elements an AMENDMENT motivates: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`CHANGE`); used by FGCA ([views/02-fgca.md](../views/02-fgca.md)) and Activities ([views/07-activities.md](../views/07-activities.md)).
 - The motivation-layer obligations whose re-derivation an amendment may trigger: [15-requirement.md](15-requirement.md), [16-assertion.md](16-assertion.md).
 - Confidence and source trust on field artefacts: [CONTRACT.md](../CONTRACT.md) §11.
