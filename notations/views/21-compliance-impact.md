@@ -186,7 +186,7 @@ Two distinct empty-cell conditions exist; the view MUST distinguish them in the 
 | No admitted `ASSERTION` binds the cell. | **"No mapped obligation (current model)"** (default) | The model has not yet recorded an obligation for this cell. This is a **modelling gap**, not a regulatory fact — the regime that would impose an obligation here may not yet be harvested; the obligation may exist in canon but not yet have an `ASSERTION` against this subject. |
 | The obligation explicitly does not apply (an admitted `ASSERTION` exists with `status: n_a`). | **"No obligation applies"** | A reviewer has determined this obligation is jurisdictionally / categorically excluded for the subject. This is a **modelled fact**. |
 
-The label "**No mapped obligation (current model)**" is the §9 distinction codified — see the Coverage metric ([strategy#155](https://github.com/vkgeorgia/strategy/issues/155), filed under epic [strategy#147](https://github.com/vkgeorgia/strategy/issues/147)) for the per-jurisdiction / per-regime read of the same empty-cell set. The canonical wording is deliberately not "No direct obligation" — that string was the legacy label in the reg-intel demo's `tools/render_impact.py` and conflated the two conditions.
+The label "**No mapped obligation (current model)**" codifies the modelling-gap vs modelled-fact distinction. The forthcoming Coverage metric view (sibling notation, separately tracked) is the per-jurisdiction / per-regime read of the same empty-cell set. The canonical wording is deliberately not "No direct obligation" — that string was the legacy label in the reg-intel demo's `tools/render_impact.py` and conflated the two conditions.
 
 A conformant renderer MUST NOT collapse the two conditions into a single visual treatment. The visual encoding (colour, hatching, text) is left to the renderer; the data-level distinction is not.
 
@@ -206,7 +206,7 @@ Compliance Impact view (this notation — report-config)
   └── reads   → REQUIREMENT status              (15-requirement.md — for row-level decoration)
 ```
 
-Pairs with **Coverage metric** ([strategy#155](https://github.com/vkgeorgia/strategy/issues/155)) — a second read of the same impact mapping that counts the "No mapped obligation (current model)" cells per jurisdiction / regime.
+Pairs with the forthcoming **Coverage metric** view (sibling report-config notation, separately tracked) — a second read of the same impact mapping that counts the "No mapped obligation (current model)" cells per jurisdiction / regime.
 
 Pairs with **Transitrix Studio compliance views / export** (consumer side, tracked separately) — the in-Studio renderer that implements §5.
 
