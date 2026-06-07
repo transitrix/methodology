@@ -15,6 +15,17 @@ import { classifyCoverage } from './coverage.mjs';
 
 const EXTRACTION_CONFIDENCE = new Set(['high', 'medium', 'low']);
 
+// Closed REL `type` enum — notations/elements/17-relations.md §3. The enum is closed
+// in v1; adding a kind is a non-backwards-compatible methodology revision. The CLI
+// tracks it (like ID_RE) so a rel_kind outside the enum is FLAGGED for review — never
+// silently emitted, never dropped. This completes the candidate contract: the bundle's
+// candidate.schema.json names "closed REL kinds" among what validation_flags covers.
+const CLOSED_REL_KINDS = new Set([
+  'parent', 'goal_parent', 'target_state_satisfies_goal', 'assessment_influences_goal',
+  'activity_goal', 'unit_parent', 'employment', 'candidacy', 'alumni_membership',
+  'community_membership', 'contracting', 'stakeholding',
+]);
+
 // Validate one candidate against `profile`. Returns
 // { validation_flags: [...], coverage_flag, coverage_reason? }.
 export function validateCandidate(cand, profile) {
@@ -50,6 +61,7 @@ export function validateCandidate(cand, profile) {
     type = cand.element_type;
   } else if (cand.kind === 'relation') {
     if (!cand.rel_kind) flags.push('relation is missing rel_kind');
+    else if (!CLOSED_REL_KINDS.has(cand.rel_kind)) flags.push(`rel_kind is not a closed REL kind (17-relations.md §3): ${cand.rel_kind}`);
     if (!isValidId(cand.from)) flags.push(`relation "from" violates the ID grammar: ${cand.from}`);
     if (!isValidId(cand.to)) flags.push(`relation "to" violates the ID grammar: ${cand.to}`);
     type = cand.rel_kind;
@@ -77,4 +89,4 @@ export async function loadCandidates(dir) {
   return out;
 }
 
-export { EXTRACTION_CONFIDENCE };
+export { EXTRACTION_CONFIDENCE, CLOSED_REL_KINDS };

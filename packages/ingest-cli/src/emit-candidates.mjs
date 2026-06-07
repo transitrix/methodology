@@ -9,12 +9,17 @@
 // Relation-conservatism (v0): only HIGH-confidence relations become candidates;
 // medium/low relations are held back as review-queue suggestions. Entities flow
 // through regardless of confidence (the flag rides along for the reviewer).
+//
+// Corroboration: when the SAME candidate (same element id, or same REL triple) is
+// emitted again from a different field source, derived_from is MERGED (union), not
+// overwritten — a fact confirmed across two sources must accumulate its citations.
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
 
 const REL_THRESHOLD = 'high';
+const CONFIDENCE_RANK = { low: 0, medium: 1, high: 2 };
 
 function safeName(s) {
   return String(s).replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');
@@ -75,6 +80,32 @@ function candidateFilename(c, index) {
   return `candidate-${index}.json`;
 }
 
+async function fileExists(p) { try { await access(p); return true; } catch { return false; } }
+
+// Merge a freshly-shaped candidate with one already on disk for the same key:
+// union derived_from (dedup, order-preserving), keep the STRONGER extraction_confidence
+// (corroboration raises confidence), and concatenate distinct extraction_notes.
+export function mergeCandidates(existing, fresh) {
+  const derived_from = Array.isArray(existing.derived_from) ? [...existing.derived_from] : [];
+  for (const d of fresh.derived_from || []) if (!derived_from.includes(d)) derived_from.push(d);
+
+  const rank = (v) => (v in CONFIDENCE_RANK ? CONFIDENCE_RANK[v] : -1);
+  const extraction_confidence =
+    rank(fresh.extraction_confidence) >= rank(existing.extraction_confidence)
+      ? fresh.extraction_confidence : existing.extraction_confidence;
+
+  const merged = { ...existing, ...fresh, derived_from, extraction_confidence };
+
+  const notes = [];
+  for (const n of [existing.extraction_notes, fresh.extraction_notes]) {
+    if (n && !notes.includes(n)) notes.push(n);
+  }
+  if (notes.length) merged.extraction_notes = notes.join(' | ');
+  else delete merged.extraction_notes;
+
+  return merged;
+}
+
 export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, candidatesDir }) {
   const fieldText = await readFile(fieldArtefactPath, 'utf8');
   const derivedFrom = readTopScalar(fieldText, 'id');
@@ -90,7 +121,15 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   await mkdir(dir, { recursive: true });
   let i = 0;
   for (const c of candidates) {
-    await writeFile(join(dir, candidateFilename(c, i++)), JSON.stringify(c, null, 2) + '\n', 'utf8');
+    const out = join(dir, candidateFilename(c, i++));
+    let toWrite = c;
+    if (await fileExists(out)) {
+      try {
+        const existing = JSON.parse(await readFile(out, 'utf8'));
+        toWrite = mergeCandidates(existing, c);   // corroboration — accumulate derived_from
+      } catch { /* unparseable existing file — overwrite with the fresh candidate */ }
+    }
+    await writeFile(out, JSON.stringify(toWrite, null, 2) + '\n', 'utf8');
   }
 
   // Suggestions feed the review queue (loaded by `review-queue` when present).
