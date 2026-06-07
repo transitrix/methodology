@@ -4,7 +4,7 @@ The **front door** of a Transitrix repository: it turns raw organisational mater
 
 This directory is the **`ingest` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, with one `skills/<name>/` directory per skill). Invoked as `/transitrix:ingest`.
 
-> **Status — skeleton (v0).** This skill ships the agent-facing protocol ([`SKILL.md`](SKILL.md)), the artefact / candidate / review-queue JSON schemas ([`schemas/`](schemas/)), and the `_intake/` convention ([`templates/_intake.README.md`](templates/_intake.README.md)). The deterministic CLI and the extraction prompts land in follow-up increments (see [Roadmap](#roadmap)). Until the CLI is published, `SKILL.md`'s pipeline steps describe the contract, and the skill's Step 0 pre-check stops cleanly if the CLI is absent.
+> **Status — operational.** Beyond the agent-facing protocol ([`SKILL.md`](SKILL.md)), JSON schemas ([`schemas/`](schemas/)), and the `_intake/` convention ([`templates/_intake.README.md`](templates/_intake.README.md)), the deterministic CLI ([`@transitrix/ingest-cli`](../../../packages/ingest-cli/)) implements all subcommands and is covered by a no-API-key integrity test (see [Roadmap](#roadmap)). The skill's Step 0 pre-check still stops cleanly if the CLI is not installed in a given environment.
 
 ---
 
@@ -19,7 +19,7 @@ This directory is the **`ingest` skill** within the `transitrix` plugin (the plu
 
 ## What it ships
 
-- [`SKILL.md`](SKILL.md) — the agent-facing, agent-neutral protocol: a six-step pipeline (`scaffold-intake → convert → field-artefact → emit-candidates → validate → review-queue`) plus the hard constraints.
+- [`SKILL.md`](SKILL.md) — the agent-facing, agent-neutral protocol: a six-step pipeline (`scaffold-intake → convert → admit-source → emit-candidates → validate → review-queue`) plus the hard constraints.
 - [`schemas/`](schemas/) — JSON Schemas for the three artefacts the pipeline produces: a `field` artefact, a canon candidate, and the review queue.
 - [`templates/_intake.README.md`](templates/_intake.README.md) — the documentation the CLI drops into an adopter's `_intake/` folder describing the `inbox → processing → processed` flow.
 
@@ -66,9 +66,9 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 
 | Increment | Contents |
 |---|---|
-| **Skeleton (this)** | `SKILL.md`, JSON schemas, `_intake/` convention, plugin wiring. |
-| **CLI** | `@transitrix/ingest-cli` — the deterministic subcommands (`scaffold-intake`, `convert`, `field-artefact`, `emit-candidates`, `validate`, `review-queue`) + the forked extraction prompts in `prompts/`. |
-| **Tests + CI** | A no-API-key integrity test (bundle + dry CLI run on a fixture) and a weekly LLM-drive, plus a workflow — mirroring the onboarding skill's test harness. |
+| **Skeleton** ✓ landed | `SKILL.md`, JSON schemas, `_intake/` convention, plugin wiring. |
+| **CLI** ✓ landed | `@transitrix/ingest-cli` — the deterministic subcommands (`scaffold-intake`, `convert`, `admit-source`/`field-artefact`/`codex-artefact`, `emit-candidates`, `validate`, `review-queue`) + the forked extraction prompts in `prompts/`. |
+| **Tests + CI** ✓ landed | A no-API-key integrity test (bundle + dry CLI run on a fixture) and a weekly LLM-drive, plus a workflow — mirroring the onboarding skill's test harness. |
 
 ---
 
