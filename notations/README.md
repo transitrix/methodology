@@ -4,7 +4,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 ## Views
 
-The 15 view notations live under [`views/`](views/) — each describes a render-able artefact with its own YAML schema and file extension.
+The 16 view notations live under [`views/`](views/) — each describes a render-able artefact with its own YAML schema and file extension.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
@@ -23,6 +23,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 | [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | documented |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
+| [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 
 All view notations share the same file-extension convention `.<short-name>.transitrix.yaml`, and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
 

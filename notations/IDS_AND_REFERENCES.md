@@ -113,6 +113,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
 | `ACTIVITY_CARD` | `*.activity-card.transitrix.yaml` |
 | `COMPLIANCE_IMPACT` | `*.compliance-impact.transitrix.yaml` |
+| `COVERAGE_METRIC` | `*.coverage-metric.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
