@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Three parts:
+Deterministic, no-API-key guard. Four parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -13,6 +13,8 @@ Deterministic, no-API-key guard. Three parts:
      RULE — canon/ is never written.
   C. IG-5 regressions — the three rehearsal-found defects: capability V/H ID is
      accepted, a non-closed rel_kind is flagged, derived_from merges across sources.
+  D. IG-1 assertion candidate — emit shapes an assertion; a valid one passes,
+     bad subject TYPE / status / non-REQUIREMENT about are flagged.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -247,9 +249,70 @@ def part_c_ig5():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part D — IG-1 assertion candidate kind ───────────────────────────────────
+
+def part_d_ig1():
+    """Assertion candidate: emit shaping, valid passes, bad subject/status/about flagged."""
+    if not shutil.which("node"):
+        print("SKIP Part D: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-ig1-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        fid = "INTERVIEW-law-20260101-1"
+        with open(os.path.join(fdir, fid + ".yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "%s"\nname: "x"\ntype: "INTERVIEW"\nzone: "field"\nnotes: "x"\n' % fid)
+
+        res = os.path.join(work, "res.json")
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({"elements": [], "relations": [],
+                       "assertions": [{"id": "ASSERTION-FLEXLINE-CERT-1",
+                                       "about": "REQUIREMENT-CERT-1", "subject": "PRODUCT-FLEXLINE-1",
+                                       "status": "under_review", "realised_via": ["CAPABILITY-V1.2"],
+                                       "extraction_confidence": "medium"}]}, fh)
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        run_cli("emit-candidates", os.path.join(fdir, fid + ".yaml"), "--from", res, "--candidates-dir", cdir)
+
+        shaped = json.load(open(os.path.join(cdir, "ASSERTION-FLEXLINE-CERT-1.json"), encoding="utf-8"))
+        check(shaped.get("kind") == "assertion" and shaped.get("admitted_to") == "pending"
+              and shaped.get("derived_from") == [fid] and shaped.get("subject") == "PRODUCT-FLEXLINE-1",
+              "IG-1: emit-candidates did not shape an assertion candidate correctly: %r" % shaped)
+
+        # A valid assertion (PRODUCT subject, closed status, REQUIREMENT about) validates clean.
+        r = run_cli("validate", cdir)
+        check(r.returncode == 0, "IG-1: a valid assertion candidate was flagged: %s" % (r.stdout + r.stderr))
+
+        def cand(name, obj):
+            with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+                json.dump(obj, fh)
+        base = {"kind": "assertion", "derived_from": [fid], "admitted_to": "pending",
+                "extraction_confidence": "high"}
+        cand("A_badsubj.json", {**base, "id": "ASSERTION-X-1", "about": "REQUIREMENT-C-1",
+                                "subject": "GOAL-Z-1", "status": "compliant"})
+        cand("A_badstatus.json", {**base, "id": "ASSERTION-Y-1", "about": "REQUIREMENT-C-1",
+                                  "subject": "PROCESS-P-1", "status": "maybe"})
+        cand("A_badabout.json", {**base, "id": "ASSERTION-W-1", "about": "GOAL-G-1",
+                                 "subject": "CAPABILITY-V1", "status": "compliant"})
+        r = run_cli("validate", cdir)
+        out = r.stdout + r.stderr
+        check("ASSERT-003" in out, "IG-1: bad assertion subject TYPE not flagged (ASSERT-003)")
+        check("assertion status must be" in out, "IG-1: bad assertion status not flagged")
+        check("ASSERT-002" in out, "IG-1: assertion about non-REQUIREMENT not flagged (ASSERT-002)")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
+part_d_ig1()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
