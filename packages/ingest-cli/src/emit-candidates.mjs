@@ -1,18 +1,21 @@
 // `emit-candidates` — take the agent's extraction RESULT (produced by running the
 // prompts/ over a field artefact) and emit typed canon CANDIDATES. The CLI does the
 // deterministic part: it reads derived_from from the field artefact itself, shapes
-// each element/relation into a candidate (admitted_to: pending, the field ID in
-// derived_from, extraction_confidence carried through as a review flag), applies
+// each element/relation/assertion into a candidate (admitted_to: pending, the field ID
+// in derived_from, extraction_confidence carried through as a review flag), applies
 // relation-conservatism, and writes candidate *.json. It never extracts (that is the
 // agent's job) and never writes canon.
 //
 // Relation-conservatism (v0): only HIGH-confidence relations become candidates;
-// medium/low relations are held back as review-queue suggestions. Entities flow
-// through regardless of confidence (the flag rides along for the reviewer).
+// medium/low relations are held back as review-queue suggestions. Entities and
+// assertions flow through regardless of confidence (the flag rides along for the
+// reviewer) — an ASSERTION is a constrained claim (about a REQUIREMENT, restricted
+// subject TYPE, closed status enum), and the human gate adjudicates every one.
 //
-// Corroboration: when the SAME candidate (same element id, or same REL triple) is
-// emitted again from a different field source, derived_from is MERGED (union), not
-// overwritten — a fact confirmed across two sources must accumulate its citations.
+// Corroboration: when the SAME candidate (same element id / same REL triple / same
+// assertion id) is emitted again from a different field source, derived_from is MERGED
+// (union), not overwritten — a fact confirmed across two sources must accumulate its
+// citations.
 
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -71,11 +74,28 @@ export function shapeCandidates(derivedFrom, result) {
     }
   }
 
+  for (const a of result.assertions || []) {
+    const c = {
+      kind: 'assertion',
+      id: a.id,
+      about: a.about,
+      subject: a.subject,
+      status: a.status,
+      derived_from: [derivedFrom],
+      admitted_to: 'pending',
+      extraction_confidence: a.extraction_confidence,
+    };
+    if (a.realised_via !== undefined) c.realised_via = a.realised_via;
+    if (a.evidence !== undefined) c.evidence = a.evidence;
+    if (a.extraction_notes) c.extraction_notes = a.extraction_notes;
+    candidates.push(c);
+  }
+
   return { candidates, suggestions };
 }
 
 function candidateFilename(c, index) {
-  if (c.kind === 'element' && c.id) return `${safeName(c.id)}.json`;
+  if ((c.kind === 'element' || c.kind === 'assertion') && c.id) return `${safeName(c.id)}.json`;
   if (c.kind === 'relation') return `REL_${safeName(c.rel_kind)}__${safeName(c.from)}__${safeName(c.to)}.json`;
   return `candidate-${index}.json`;
 }

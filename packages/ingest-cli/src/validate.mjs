@@ -26,6 +26,16 @@ const CLOSED_REL_KINDS = new Set([
   'community_membership', 'contracting', 'stakeholding',
 ]);
 
+// ASSERTION contract — notations/elements/16-assertion.md §2/§3. `about` must reference
+// a REQUIREMENT (ASSERT-002 resolution is canon-side; the candidate stage checks the
+// grammar + TYPE prefix); `subject` TYPE is restricted (ASSERT-003); `status` is a
+// closed enum. Cross-document resolution (does `about` resolve to an admitted
+// REQUIREMENT) happens at the human admission gate, not here.
+const ASSERTION_STATUS = new Set(['compliant', 'partial', 'non_compliant', 'under_review', 'n_a']);
+const ASSERTION_SUBJECT_TYPES = new Set(['PRODUCT', 'PROCESS', 'CAPABILITY']);
+
+function typeOf(id) { return typeof id === 'string' ? id.split('-')[0] : null; }
+
 // Validate one candidate against `profile`. Returns
 // { validation_flags: [...], coverage_flag, coverage_reason? }.
 export function validateCandidate(cand, profile) {
@@ -34,8 +44,8 @@ export function validateCandidate(cand, profile) {
     return { validation_flags: ['candidate is not a JSON object'], coverage_flag: 'out_of_profile' };
   }
 
-  if (cand.kind !== 'element' && cand.kind !== 'relation') {
-    flags.push(`kind must be "element" or "relation" (got ${JSON.stringify(cand.kind)})`);
+  if (cand.kind !== 'element' && cand.kind !== 'relation' && cand.kind !== 'assertion') {
+    flags.push(`kind must be "element", "relation" or "assertion" (got ${JSON.stringify(cand.kind)})`);
   }
   if (!Array.isArray(cand.derived_from) || cand.derived_from.length < 1) {
     flags.push('derived_from must cite at least one field artefact ID');
@@ -65,6 +75,18 @@ export function validateCandidate(cand, profile) {
     if (!isValidId(cand.from)) flags.push(`relation "from" violates the ID grammar: ${cand.from}`);
     if (!isValidId(cand.to)) flags.push(`relation "to" violates the ID grammar: ${cand.to}`);
     type = cand.rel_kind;
+  } else if (cand.kind === 'assertion') {
+    if (!isValidId(cand.id)) flags.push(`assertion id violates the ID grammar: ${cand.id}`);
+    if (!isValidId(cand.about)) flags.push(`assertion "about" violates the ID grammar: ${cand.about}`);
+    else if (typeOf(cand.about) !== 'REQUIREMENT') flags.push(`assertion "about" must reference a REQUIREMENT (ASSERT-002): ${cand.about}`);
+    if (!isValidId(cand.subject)) flags.push(`assertion "subject" violates the ID grammar: ${cand.subject}`);
+    else if (!ASSERTION_SUBJECT_TYPES.has(typeOf(cand.subject))) flags.push(`assertion "subject" TYPE must be PRODUCT|PROCESS|CAPABILITY (ASSERT-003): ${cand.subject}`);
+    if (!ASSERTION_STATUS.has(cand.status)) flags.push(`assertion status must be compliant|partial|non_compliant|under_review|n_a (got ${JSON.stringify(cand.status)})`);
+    if (cand.realised_via !== undefined) {
+      if (!Array.isArray(cand.realised_via)) flags.push('assertion realised_via must be an array of typed IDs');
+      else for (const rv of cand.realised_via) if (!isValidId(rv)) flags.push(`assertion realised_via has an invalid ID: ${rv}`);
+    }
+    type = 'ASSERTION';
   }
 
   const cov = classifyCoverage(profile, type);
@@ -89,4 +111,4 @@ export async function loadCandidates(dir) {
   return out;
 }
 
-export { EXTRACTION_CONFIDENCE, CLOSED_REL_KINDS };
+export { EXTRACTION_CONFIDENCE, CLOSED_REL_KINDS, ASSERTION_STATUS, ASSERTION_SUBJECT_TYPES };

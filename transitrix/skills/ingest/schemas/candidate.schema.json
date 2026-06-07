@@ -10,7 +10,7 @@
     "kind": {
       "type": "string",
       "description": "Whether this candidate is an element or a typed relation.",
-      "enum": ["element", "relation"]
+      "enum": ["element", "relation", "assertion"]
     },
     "derived_from": {
       "type": "array",
@@ -87,6 +87,24 @@
         }
       },
       "required": ["rel_kind", "from", "to"]
+    },
+    {
+      "title": "Assertion candidate",
+      "description": "A compliance claim that a subject (PRODUCT/PROCESS/CAPABILITY) satisfies a REQUIREMENT (16-assertion.md). Constrained: about -> REQUIREMENT (ASSERT-002), subject TYPE restricted (ASSERT-003), status a closed enum. Flows as a candidate regardless of confidence; the human gate adjudicates.",
+      "properties": {
+        "kind": { "const": "assertion" },
+        "id": {
+          "type": "string",
+          "description": "Canonical assertion ID: ASSERTION-[<middle>-]<INTEGER>.",
+          "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
+        },
+        "about": { "type": "string", "description": "Typed ID of the REQUIREMENT this assertion is about (ASSERT-002)." },
+        "subject": { "type": "string", "description": "Typed ID of the subject element; TYPE in {PRODUCT, PROCESS, CAPABILITY} (ASSERT-003)." },
+        "status": { "type": "string", "enum": ["compliant", "partial", "non_compliant", "under_review", "n_a"] },
+        "realised_via": { "type": "array", "items": { "type": "string" }, "description": "Optional typed IDs of elements that realise the requirement (ASSERT-004)." },
+        "evidence": { "type": "array", "description": "Optional hybrid evidence entries (16-assertion.md §4)." }
+      },
+      "required": ["id", "about", "subject", "status"]
     }
   ]
 }
