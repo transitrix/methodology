@@ -225,6 +225,12 @@ scan:
 
 The `scan` block is optional — a brand-new live artefact that no scanner has touched yet legitimately has no `scan` block. Once a scanner runs against it the block appears and is maintained on subsequent scans.
 
+### 3.6 Trust and provenance — vs the field zone
+
+A codex source is **authoritative by construction**: it is *given to* the organisation by an outside or issuing authority, so a codex artefact carries **no** `source_quality`. The graded source-trust scale (`authoritative` / `corroborated` / `single_source` / `unverified`, [CONTRACT.md](../CONTRACT.md) §11.2) is a **field-zone** concept — it scores how far to trust an *informant or observation*. A codex source has nothing to grade: `gate_checks.source_authority` records **who** the authoritative source is (provenance), not **how much** to trust it. `source_quality` and `source_authority` are therefore **different axes** — one a graded trust label on field input, the other a provenance gate-check on codex input — and are deliberately *not* unified despite the similar names.
+
+The **retained copy of the source** is likewise the same concept under a zone-appropriate name. In codex it is the `snapshot_file` (a point-in-time capture of an external, possibly-evolving document, held in `sources/`, §3.1); in the **field** zone it is the ingest pipeline's field-artefact `raw_source` (the raw input bytes, retained in `_intake/processed/`). Both are a byte-level copy kept for traceability and fingerprinted by a `source_hash`; they are named per zone — "snapshot" fits an external evolving source, "raw source" fits captured field material — rather than unified. See the decision record [`docs/decisions/2026-06-07-ingest-vocabulary-clarify-not-rename.md`](../../docs/decisions/2026-06-07-ingest-vocabulary-clarify-not-rename.md).
+
 ---
 
 ## 4. Frontmatter — internal codex artefacts
