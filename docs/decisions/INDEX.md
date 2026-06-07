@@ -10,3 +10,4 @@ Format: dated `YYYY-MM-DD-slug.md`, front-matter (`status`, `date`, `scope`, `su
 | 2026-06-07 | [Ingest — one skill, two routes (field + codex), shared vocabulary](./2026-06-07-ingest-field-codex-two-routes.md) | Accepted | methodology (ingest skill + CLI) |
 | 2026-06-07 | [Retire the model-side ISSUE type; no bespoke replacement](./2026-06-07-retire-model-issue-type.md) | Accepted | methodology (ISSUE TYPE + issues view) |
 | 2026-06-07 | [Entity classification axis is the ArchiMate layer; governance docs are cross-cutting](./2026-06-07-entity-classification-axis-archimate-layers.md) | Accepted | methodology (notations vocabulary + root docs) |
+| 2026-06-07 | [Ingest vocabulary — clarify the field/codex correspondence, do not rename](./2026-06-07-ingest-vocabulary-clarify-not-rename.md) | Accepted | methodology (ingest docs / 14-codex) |

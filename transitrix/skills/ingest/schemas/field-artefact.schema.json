@@ -39,7 +39,7 @@
     },
     "source_quality": {
       "type": "string",
-      "description": "PROPOSED trust in the source (CONTRACT.md §11.2). Closed ordinal set; weight is informational. A human confirms at admission. Absent ⇒ downstream confidence scoring treats the source as `unverified`.",
+      "description": "PROPOSED trust in the source (CONTRACT.md §11.2). Closed ordinal set; weight is informational. A human confirms at admission. Absent ⇒ downstream confidence scoring treats the source as `unverified`. Field-zone only: codex sources are authoritative by construction and carry no source_quality (14-codex.md §3.6).",
       "enum": ["authoritative", "corroborated", "single_source", "unverified"]
     },
     "source_quality_proposed_by": {
@@ -60,7 +60,7 @@
     },
     "raw_source": {
       "type": "string",
-      "description": "Path, relative to the org root, to the retained raw file in _intake/processed/ — the byte-level source this artefact was derived from, kept for traceability."
+      "description": "Path, relative to the org root, to the retained raw file in _intake/processed/ — the byte-level source this artefact was derived from, kept for traceability. The field-zone analogue of a codex artefact's `snapshot_file` (14-codex.md §3.6): the same retained-source-copy concept, named per zone."
     },
     "source_hash": {
       "type": "string",
