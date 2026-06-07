@@ -224,7 +224,7 @@ Alongside the model zones, an adopter team optionally keeps an **operational lay
 
 `operations/` is **not** a zone. It sits outside `canon` / `field` / `codex`, is not admitted through the zone gates, and its IDs (`ADR-NNNN`, `WI-NNNN`) are deliberately outside the canonical TYPE registry. It exists to keep the team's own working artefacts under the same version control and review surface as the model, without leaking into the model.
 
-The convention is **distinct from the model-side `issues` notation** ([`notations/views/12-issues.md`](../notations/views/12-issues.md)): that catalogue records architectural issues (defects, open questions, risks in the model or the system being modelled) and is part of canon; Team Operations Work Items record what the team itself is doing, deliberately not called "issues" to prevent collision.
+Team Operations Work Items record what the team itself is doing; a problem, risk, or weakness *about the modelled enterprise* is a model finding, captured as an `ASSESSMENT` in canon. (The former model-side `issues` notation was retired, 2026-06-07.)
 
 Full convention: [`method/team-operations.md`](team-operations.md). Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
 

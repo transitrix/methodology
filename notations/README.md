@@ -4,7 +4,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 ## Views
 
-The 16 view notations live under [`views/`](views/) — each describes a render-able artefact with its own YAML schema and file extension.
+The 15 view notations live under [`views/`](views/) — each describes a render-able artefact with its own YAML schema and file extension.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
@@ -19,7 +19,6 @@ The 16 view notations live under [`views/`](views/) — each describes a render-
 | [09-products.md](views/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
 | [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
-| [12-issues.md](views/12-issues.md) | `issues` | Register of issues — problems, defects, open questions — in a parent/child tree, complementing the activities plan. | `*.issues.transitrix.yaml` | draft |
 | [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 | [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | documented |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |

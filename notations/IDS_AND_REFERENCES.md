@@ -80,7 +80,6 @@ Elements that get referenced across documents.
 | `ROLE` | business role — a position / responsibility, distinct from the `ACTOR` that fills it | referenced as `owner_role` across notations; `role.unit` references an `ACTOR` of `type: business_unit` |
 | `ACTOR` | active-structure identity — `person`, `business_unit`, or `system` (ArchiMate Business Actor). Replaces the former `UNIT` / `EMPLOYEE` TYPEs (removed 2026-05-29). Engagement (employment, candidacy, …) and org hierarchy are first-class `REL` records, not inline fields. | Actors catalogue (`elements/02_business/actors/`); referenced as activity `owner`. Schema: [19-actors.md](elements/19-actors.md). |
 | `SCENARIO` | implementation-layer **path** primitive — the ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate Course of Action realised by Work Packages + Gaps). The destination is a separate primitive (`TARGET_STATE`); the scenario references it via `arrives_at` and owns its `steps`. | Scenarios catalogue (`elements/05_implementation/scenarios/`); rendered by [11-scenarios.md](views/11-scenarios.md) as a report-config view. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
-| `ISSUE` | issue — problem, defect, or open question | Issues register |
 | `EQUIPMENT` | physical instrument, device, or facility a process stage depends on | Process Blueprint |
 | `INFORMATION_ENTITY` | data, document, or record produced or consumed by a process stage | Process Blueprint |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
@@ -109,7 +108,6 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
 | `BLOCKS` | `*.blocks.transitrix.yaml` |
-| `ISSUES_CAT` | `*.issues.transitrix.yaml` |
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
 | `ACTIVITY_CARD` | `*.activity-card.transitrix.yaml` |
 | `COMPLIANCE_IMPACT` | `*.compliance-impact.transitrix.yaml` |
@@ -168,7 +166,6 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
 | `PRODUCT`, `APPLICATION`, `INTEGRATION` | within the catalogue document. |
-| `ISSUE` | within the issues catalogue document. |
 | `ROLE`, `ACTOR` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation's element catalogue (`elements/05_implementation/scenarios/`), one file per SCENARIO. |
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
