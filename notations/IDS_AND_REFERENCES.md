@@ -134,6 +134,7 @@ Raw, unprocessed material in the **Field** zone (see [CONTRACT.md](CONTRACT.md) 
 | `OBSERVATION` | a direct observation of work, a system, or an event |
 | `DRAFT` | a working draft not yet admitted to canon |
 | `AMENDMENT` | a structured record that a watched codex source has been amended — what moved, when it was detected, the source section, hints about likely-impacted canon elements, and (post-adjudication) the canon `CHANGE` / Gap elements it motivates. Distinct from canon `CHANGE` (§3.1, ArchiMate Gap — the *org's planned delta*); AMENDMENT records the *external detection event*. Schema: [22-amendment.md](elements/22-amendment.md). |
+| `SEGMENT` | an extracted chunk of a codex source — one article / clause / paragraph / section — with a locator into the source and the chunk text (or its `sha256` fingerprint). The addressable text-level provenance that an `AMENDMENT` (`segment_refs[]`), a `REQUIREMENT` / `ASSERTION`, or the compliance-impact view cites instead of a free-text section string. Schema: [23-segment.md](elements/23-segment.md). |
 
 ### 3.5 Codex artefact types
 
@@ -181,7 +182,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
 | `MILESTONE` | within the activity-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
-| `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT`, `AMENDMENT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
+| `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT`, `AMENDMENT`, `SEGMENT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
 
