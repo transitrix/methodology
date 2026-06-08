@@ -21,6 +21,7 @@ import { access } from 'node:fs/promises';
 import { findOrgRoot, listDue, findCodexFile } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
 import { checkSignal } from './src/check-signal.mjs';
+import { fetchSnapshot } from './src/snapshot.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -64,6 +65,9 @@ function usage() {
     '                                 The cheap change-signal gate: compare the observed signal to the',
     '                                 last-seen value (operations/state/reg-intel/signal-cache.json).',
     '                                 unchanged → bump scan; moved/no_signal → proceed.',
+    '  fetch-snapshot <CODEX-ID|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD] [--json]',
+    '                                 Snapshot the fetched bytes to _intake/snapshots/, fingerprint',
+    '                                 (source_hash), and detect captured | changed | bytes_identical.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -174,6 +178,43 @@ async function cmdCheckSignal(args) {
   }
 }
 
+async function cmdFetchSnapshot(args) {
+  const { _, flags } = parseArgs(args);
+  const target = _[0];
+  if (!target) { console.error('fetch-snapshot: missing <CODEX-ID|file>'); return 1; }
+  if (typeof flags.from !== 'string') { console.error('fetch-snapshot: --from <fetched-file> is required (the CLI is network-free; the caller fetches)'); return 1; }
+
+  let file = null;
+  let orgRoot = null;
+  if (await exists(resolve(target))) {
+    file = resolve(target);
+    orgRoot = await findOrgRoot(file);
+    if (!orgRoot) { console.error('fetch-snapshot: file is not inside a Transitrix workspace (no transitrix.yaml).'); return 2; }
+  } else {
+    orgRoot = await resolveOrgRoot(undefined, 'fetch-snapshot');
+    if (!orgRoot) return 2;
+    file = await findCodexFile(orgRoot, target);
+    if (!file) { console.error(`fetch-snapshot: no codex artefact with id ${target} under codex/`); return 2; }
+  }
+
+  try {
+    const res = await fetchSnapshot(orgRoot, file, {
+      fromPath: flags.from,
+      today: flags.today ? String(flags.today) : today(),
+      ext: typeof flags.ext === 'string' ? flags.ext : undefined,
+    });
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); return 0; }
+    console.log(`fetch-snapshot  ${res.id}  ->  ${res.outcome}  (proceed: ${res.proceed})`);
+    console.log(`  snapshot: ${res.snapshot}`);
+    console.log(`  source_hash: ${res.source_hash}`);
+    if (res.outcome === 'bytes_identical') console.log('  signal moved, bytes identical — no extraction; reported on the digest.');
+    return 0;
+  } catch (err) {
+    console.error(`fetch-snapshot: ${err.message}`);
+    return 2;
+  }
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -201,6 +242,7 @@ async function main(argv) {
     case 'list-due':     return cmdListDue(args);
     case 'update-scan':  return cmdUpdateScan(args);
     case 'check-signal': return cmdCheckSignal(args);
+    case 'fetch-snapshot': return cmdFetchSnapshot(args);
     case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);

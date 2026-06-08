@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `fetch-snapshot`, `segment`, `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `segment`, `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -80,23 +80,23 @@ npx @transitrix/reg-intel-cli check-signal <CODEX-ID> --accept-no-signal
 
 ## Step 3 — Fetch and snapshot (only if the signal moved)
 
-The CLI fetches the source's `source_url` (or each entry in `monitor_instead[]` when the artefact is static and points at live counterparts) and stores a snapshot in `_intake/snapshots/`:
+The agent/scheduler fetches the source's `source_url` (or each entry in `monitor_instead[]` when the artefact is static and points at live counterparts) and passes the fetched file to the **network-free** CLI via `--from`; the CLI stores a snapshot in `_intake/snapshots/`:
 
 ```
 _intake/snapshots/<CODEX-ID>-<YYYY-MM-DD>.<ext>
 ```
 
-Where `<ext>` follows the source format (`.pdf`, `.html`, `.json`, `.xml`). The full bytes are fingerprinted (`source_hash: sha256:<hex>` — the same convention the ingest pipeline uses for field artefacts) and the snapshot is retained for diff and provenance. If the source was previously snapshotted, the new hash is compared to the prior one: a hash match here (despite a moved signal) means the publisher re-stamped the file without changing its bytes, and the pipeline ends with a "signal moved, bytes identical" entry on the digest.
+Where `<ext>` follows the source format (`.pdf`, `.html`, `.json`, `.xml`). The full bytes are fingerprinted (`source_hash: sha256:<hex>` — the same convention the ingest pipeline uses for field artefacts) and the snapshot is retained for diff and provenance. The new hash is compared to the prior one — the latest prior `_intake/snapshots/` capture, falling back to the last snapshot hash in the committed operations cache (`operations/state/reg-intel/signal-cache.json`) so detection survives a fresh clone / CI checkout. Outcomes: **captured** (first harvest), **changed** (bytes differ — advance to Step 4), **bytes_identical** (the publisher re-stamped the file without changing its bytes — the run ends with a "signal moved, bytes identical" entry on the digest).
 
 **Fetch preferences and failure handling.**
 
 - **Prefer APIs / feeds over HTML scraping.** When a source publishes a JSON / XML / RSS feed (eCFR API, EUR-Lex CELLAR, Federal Register API, …), use it. HTML scraping is the fallback, not the default — feeds are versioned, structured, and far less prone to cosmetic-diff noise.
 - **JS-capable fetch.** Some regulator portals render content via JavaScript; the CLI's fetch supports a headless-browser mode (`--render js`) for these. The mode is opt-in per artefact (recorded as `scan.fetch_mode: js` on the codex YAML) — the cost is real, so the default stays plain HTTP.
 - **Source unreachable.** A fetch that fails (DNS, HTTP 5xx, timeout, captcha wall) does **not** bump `next_scan_due` — the source remains in the due set for the next tick. The failure is reported on the digest with the error reason; repeated failures (≥ 3 consecutive ticks) escalate the source on the digest as `fetch_blocked` so an adopter can intervene (proxy, source URL change, robots.txt etc.).
-- **Cosmetic / sub-threshold diff.** A snapshot whose normative-text region (after stripping headers, footers, pagination, and tracker IDs) does not differ from the previous snapshot is logged as `cosmetic_change` on the digest and does **not** advance to Step 4. The signal moved; the substance did not.
+- **Cosmetic / sub-threshold diff.** A snapshot whose normative-text region (after stripping headers, footers, pagination, and tracker IDs) does not differ from the previous snapshot should be logged as `cosmetic_change` and not advance to Step 4. *This content-aware diff is a later increment*; the CLI today distinguishes only byte-level `changed` vs `bytes_identical` — a byte-identical re-stamp is already caught, but a cosmetic-but-byte-different re-publication still advances and is filtered at the human gate for now.
 
 ```
-npx @transitrix/reg-intel-cli fetch-snapshot <CODEX-ID>
+npx @transitrix/reg-intel-cli fetch-snapshot <CODEX-ID> --from <fetched-file> [--ext <ext>]
 ```
 
 ---
