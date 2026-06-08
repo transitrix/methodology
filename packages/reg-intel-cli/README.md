@@ -4,7 +4,7 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 
 **The one rule:** this CLI *proposes*. It reads the codex registry, runs the change-signal gate, snapshots / segments / classifies regulatory text, and stages a review digest. It **never writes `canon/`** and **never silently flips** an existing `active` canon element. A human admits.
 
-> **Status — all nine run-loop commands live.** `list-due` · `check-signal` · `fetch-snapshot` · `segment` · `classify` · `validate` · `amendment` · `update-scan` · `digest`. Remaining polish: coverage-profile awareness in `validate`, content-aware cosmetic-diff in `fetch-snapshot`, and the operational templates.
+> **Status — all nine run-loop commands live.** `list-due` · `check-signal` · `fetch-snapshot` · `segment` · `classify` · `validate` · `amendment` · `update-scan` · `digest`. Remaining polish: coverage-profile awareness in `validate` (needs a shared coverage resolver — a cross-CLI refactor).
 
 ## Commands
 
@@ -14,7 +14,7 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 | `list-due [org-root] [--as-of YYYY-MM-DD] [--json]` | ✅ | List codex sources due for a scan: `monitoring_needed: true` artefacts whose `scan.next_scan_due <= as-of` (or never scanned), plus the `monitor_instead[]` counterparts of static sources. One run filters by date — not N schedules. |
 | `update-scan <CODEX-ID\|file> [--today YYYY-MM-DD] [--frequency daily\|weekly\|monthly\|quarterly] [--change "<summary>"] [--review]` | ✅ | Write the codex `scan` block (`last_scanned_at`, `next_scan_due` from the cadence, `change_detected`, `change_description`, `review_needed`) — operating state only; never touches any other field. |
 | `check-signal <CODEX-ID\|file> --observed <value> [--method etag\|last_modified\|api_version\|amended_date\|fragment_hash] [--accept-no-signal] [--today YYYY-MM-DD]` | ✅ | The cheap change-signal gate (network-free — caller supplies the observed value). Compares to the last-seen value in `operations/state/reg-intel/signal-cache.json`: `unchanged` → bump scan; `moved` / `no_signal` → proceed. |
-| `fetch-snapshot <CODEX-ID\|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD]` | ✅ | Snapshot the caller-fetched bytes to `_intake/snapshots/<id>-<date>.<ext>`, fingerprint (`source_hash: sha256:…`), and detect `captured` / `changed` / `bytes_identical` (cross-checkout via the committed cache). Network-free — the caller fetches. |
+| `fetch-snapshot <CODEX-ID\|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD]` | ✅ | Snapshot the caller-fetched bytes to `_intake/snapshots/<id>-<date>.<ext>`, fingerprint (`source_hash: sha256:…`), and detect `captured` / `changed` / `cosmetic_change` (bytes differ but normative text unchanged — markup/whitespace/tracker churn) / `bytes_identical` (cross-checkout via the committed cache). Network-free — the caller fetches. |
 | `segment <snapshot> --from <result.json> [--source <CODEX-ID>] [--today YYYY-MM-DD]` | ✅ | Shape the segment agent's `{segments:[…]}` result into proposed `SEGMENT-*` field artefacts under `_intake/processing/segments/` (canonical ids, `text_hash`, `source`/`source_hash` from the snapshot, the field-zone proposed admission record). Network-free; locator-less / text-less segments flagged + skipped. |
 | `classify [segments-dir] --from <result.json> [--today YYYY-MM-DD]` | ✅ | Shape the classify agent's `{candidates:[…]}` into proposed `REQUIREMENT-*` / `CONSTRAINT-*` candidates under `_intake/processing/candidates/` (ids per source slug, `derived_from` → SEGMENT, `obligation_level` + `category`, `ambiguous_alt` on low confidence, `gate_checks` pending). Network-free; bad-kind / no-`derived_from` flagged + skipped. |
 | `validate [org-root] [--json]` | ✅ | Validate staged SEGMENTs + candidates against the contract (`23-segment.md` `SEGMENT-001..008`, ID grammar, candidate field rules; `SEGMENT-002` resolves `source` against `codex/`). Flags with codes + severity, never drops; exit 1 when review is needed. *(Coverage-profile check deferred — see SKILL Step 6.)* |
@@ -35,6 +35,7 @@ packages/reg-intel-cli/
     update-scan.mjs    # write/replace the codex scan block in place (Step 8)
     check-signal.mjs   # the change-signal gate: compare observed vs cached (Step 2)
     snapshot.mjs       # snapshot caller-fetched bytes + source_hash + diff (Step 3)
+    normalize.mjs      # normative-text normalisation for cosmetic-vs-substantive diff
     segment.mjs        # shape the segment agent result into SEGMENT artefacts (Step 4)
     classify.mjs       # shape the classify agent result into REQUIREMENT/CONSTRAINT candidates (Step 5)
     validate.mjs       # contract checks over staged SEGMENTs + candidates (Step 6)

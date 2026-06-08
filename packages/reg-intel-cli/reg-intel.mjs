@@ -223,6 +223,7 @@ async function cmdFetchSnapshot(args) {
     console.log(`  snapshot: ${res.snapshot}`);
     console.log(`  source_hash: ${res.source_hash}`);
     if (res.outcome === 'bytes_identical') console.log('  signal moved, bytes identical — no extraction; reported on the digest.');
+    else if (res.outcome === 'cosmetic_change') console.log('  bytes changed but normative text unchanged (cosmetic) — no extraction; reported on the digest.');
     return 0;
   } catch (err) {
     console.error(`fetch-snapshot: ${err.message}`);
