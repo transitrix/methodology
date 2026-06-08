@@ -141,6 +141,8 @@ npx @transitrix/ingest-cli review-queue <processing/candidates/>   # → review-
 
 The queue is the human gate. It lists every field artefact (with its proposed `source_quality`), every candidate element and relation (with `derived_from`, `extraction_confidence`, and any validation/coverage flags), and the relation *suggestions* that fell below threshold. Schema: [`schemas/review-queue.schema.json`](schemas/review-queue.schema.json).
 
+**The queue is idempotent against canon.** `review-queue` reads `canon/` (read-only — it never writes there) and excludes any candidate already admitted — matched by `id` for elements/assertions, and by the `(type, from, to)` triple for relations. So re-running after admitting one source, or ingesting a second source while the first's candidates still sit in `processing/`, surfaces only the not-yet-admitted candidates instead of re-listing admitted ones for re-approval. Excluded candidates are summarised under `excluded_admitted` for the audit trail.
+
 **Nothing lands in `canon/` from this skill.** A human reviews the queue, confirms or revises each proposed `source_quality`, and runs the canon admission gate (`uniqueness`, `consistency`, `completeness` — [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)) to admit candidates. When ingest is complete for a source, its raw file moves to `_intake/processed/`.
 
 ---
