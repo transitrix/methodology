@@ -8,6 +8,7 @@ import { readFile, writeFile, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { dump, readTopScalar } from './yaml.mjs';
 import { validateCandidate, loadCandidates } from './validate.mjs';
+import { buildCanonIndex, admittedMatch } from './canon.mjs';
 import { parseId } from './ids.mjs';
 import { TYPE_INFO } from './field-artefact.mjs';
 
@@ -31,8 +32,12 @@ async function readFieldArtefact(orgRoot, id) {
 
 export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [] }) {
   const loaded = await loadCandidates(candidatesDir);
+  // Read (never write) canon so the queue is idempotent against it: a candidate that
+  // already passed the human gate is excluded, not re-listed for re-approval.
+  const canon = await buildCanonIndex(orgRoot);
 
   const candidates = [];
+  const excluded_admitted = [];
   const fieldIds = new Set();
   for (const { ref, candidate, parseError } of loaded) {
     if (parseError || !candidate) {
@@ -40,6 +45,8 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
         coverage_flag: 'out_of_profile', validation_flags: [`does not parse: ${parseError || 'null'}`] });
       continue;
     }
+    const already = admittedMatch(candidate, canon);
+    if (already) { excluded_admitted.push({ ref, matched: already }); continue; }
     const v = validateCandidate(candidate, profile);
     for (const d of candidate.derived_from || []) fieldIds.add(d);
     candidates.push({
@@ -61,6 +68,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     coverage_profile: profile || 'full',
     field_artefacts,
     candidates,
+    excluded_admitted,
     relation_suggestions: suggestions,
     gate: { admits_to_canon: false },
   };
