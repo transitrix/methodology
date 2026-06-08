@@ -42,3 +42,17 @@ export function setEntry(cache, sourceId, entry) {
   cache.sources[sourceId] = entry;
   return cache;
 }
+
+// Snapshot state is kept in a separate `snapshots` map (the last captured snapshot
+// hash per source), so the signal gate (`sources`) and the snapshot step
+// (`snapshots`) never overwrite each other's entry. It lets bytes-identical detection
+// survive a fresh clone / CI checkout where the prior _intake/ snapshot is gone.
+export function getSnapshotEntry(cache, sourceId) {
+  return (cache.snapshots && cache.snapshots[sourceId]) || null;
+}
+
+export function setSnapshotEntry(cache, sourceId, entry) {
+  cache.snapshots = cache.snapshots || {};
+  cache.snapshots[sourceId] = entry;
+  return cache;
+}

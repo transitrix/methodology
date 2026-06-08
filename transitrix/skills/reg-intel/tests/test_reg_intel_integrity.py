@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Five parts:
+(the rest of the SKILL.md pipeline lands in later increments). Six parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -23,6 +23,11 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      writes the cache (scan NOT bumped); an unchanged signal bumps the scan cadence; a
      changed signal is 'moved' with the prior value; no signal refuses unless
      --accept-no-signal; a static artefact is rejected.
+  F. fetch-snapshot (Step 3) — snapshots the caller-fetched bytes to _intake/snapshots/
+     and fingerprints them: first harvest is 'captured'; identical bytes are
+     'bytes_identical'; changed bytes are 'changed'; the committed operations cache
+     detects identical bytes even after _intake/ is wiped (cross-checkout); --from is
+     required; a static artefact is rejected.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -370,11 +375,66 @@ def part_e_check_signal():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part F — fetch-snapshot (Step 3) ─────────────────────────────
+
+def part_f_fetch_snapshot():
+    if not shutil.which("node"):
+        print("SKIP Part F: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-snap-")
+    try:
+        org = _codex_org(work)
+        a_file = os.path.join(org, "codex", "external", "eu", "REGULATION-A-1.yaml")
+        snapdir = os.path.join(org, "_intake", "snapshots")
+        v1 = os.path.join(work, "v1.html"); open(v1, "w", encoding="utf-8").write("<html>Article 3 v1</html>")
+        v2 = os.path.join(work, "v2.html"); open(v2, "w", encoding="utf-8").write("<html>Article 3 v2 CHANGED</html>")
+
+        # First harvest → captured; snapshot written; source_hash present.
+        r = run_cli("fetch-snapshot", a_file, "--from", v1, "--today", "2026-06-08", "--json")
+        check(r.returncode == 0, f"F: fetch-snapshot failed: {r.stderr.strip()}")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "captured", "F: first harvest must be 'captured'")
+        check(re.match(r"^sha256:[0-9a-f]{64}$", res.get("source_hash", "")), f"F: source_hash malformed: {res.get('source_hash')!r}")
+        check(os.path.isfile(os.path.join(snapdir, "REGULATION-A-1-2026-06-08.html")), "F: snapshot must be written under _intake/snapshots/")
+
+        # Same bytes, later date → bytes_identical (signal moved, bytes unchanged).
+        r = run_cli("fetch-snapshot", a_file, "--from", v1, "--today", "2026-07-08", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "bytes_identical" and res.get("proceed") is False,
+              "F: re-snapshot of identical bytes must be 'bytes_identical' (no proceed)")
+
+        # Changed bytes → changed.
+        r = run_cli("fetch-snapshot", a_file, "--from", v2, "--today", "2026-08-08", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "changed" and res.get("proceed") is True, "F: changed bytes must be 'changed' (proceed)")
+
+        # Cross-run: wipe _intake/snapshots; the committed operations cache still detects
+        # identical bytes (the reason snapshot state is committed, not in transient _intake/).
+        shutil.rmtree(snapdir, ignore_errors=True)
+        r = run_cli("fetch-snapshot", a_file, "--from", v2, "--today", "2026-09-08", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "bytes_identical",
+              "F: with _intake/ wiped, the committed cache must still detect identical bytes (cross-checkout)")
+
+        # --from required (network-free CLI).
+        r = run_cli("fetch-snapshot", a_file, "--today", "2026-06-08")
+        check(r.returncode != 0 and "--from" in (r.stdout + r.stderr), "F: fetch-snapshot must require --from")
+
+        # Static artefact rejected.
+        s_file = os.path.join(org, "codex", "external", "us", "REGULATION-D-1.yaml")
+        r = run_cli("fetch-snapshot", s_file, "--from", v1, "--today", "2026-06-08")
+        check(r.returncode != 0 and "monitoring_needed: true" in (r.stdout + r.stderr),
+              "F: fetch-snapshot must reject a monitoring_needed: false artefact")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
 part_d_digest()
 part_e_check_signal()
+part_f_fetch_snapshot()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")
