@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/reg-intel/review-digest.schema.json",
+  "title": "Transitrix reg-intel review digest",
+  "description": "The human gate produced by the reg-intel pipeline for one run (SKILL Step 9). Groups the staged run artefacts by codex source — the SEGMENT field artefacts, the proposed REQUIREMENT/CONSTRAINT candidates, and the AMENDMENT field artefacts — alongside each source's scan block. NOTHING in this digest is admitted to canon: a human reads it and flips proposed -> active | rejected. gate.admits_to_canon is always false.",
+  "type": "object",
+  "required": ["generated_by", "org_root", "as_of", "sources", "tally", "gate"],
+  "additionalProperties": true,
+  "properties": {
+    "generated_by": { "type": "string", "description": "Tool identifier that produced the digest (e.g. @transitrix/reg-intel-cli)." },
+    "org_root": { "type": "string", "description": "Path to the adopter organisation root this run scanned." },
+    "run_id": { "type": "string", "description": "Optional caller-supplied identifier for the run." },
+    "as_of": { "type": "string", "description": "Quoted ISO 8601 date the digest was assembled.", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "sources": {
+      "type": "array",
+      "description": "One entry per codex source touched in the run (plus an (unassociated) bucket for artefacts whose source could not be resolved — never dropped).",
+      "items": {
+        "type": "object",
+        "required": ["id", "segments", "candidates", "amendments"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "description": "The codex source id (CODEX-…), or the literal (unassociated)." },
+          "scan": {
+            "type": "object",
+            "description": "The source's scan block at digest time (14-codex.md §3.5). Present only for monitoring_needed: true sources.",
+            "additionalProperties": true,
+            "properties": {
+              "last_scanned_at": { "type": ["string", "null"] },
+              "next_scan_due": { "type": ["string", "null"] },
+              "change_detected": { "type": ["boolean", "null"] },
+              "review_needed": { "type": ["boolean", "null"] }
+            }
+          },
+          "segments": {
+            "type": "array",
+            "description": "SEGMENT field artefacts derived from this source in the run.",
+            "items": {
+              "type": "object",
+              "required": ["id"],
+              "additionalProperties": true,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$" },
+                "locator": { "type": ["string", "null"] },
+                "extraction_confidence": { "type": ["string", "null"], "enum": ["high", "medium", "low", null] }
+              }
+            }
+          },
+          "candidates": {
+            "type": "array",
+            "description": "Proposed REQUIREMENT / CONSTRAINT candidates derived (via a SEGMENT) from this source.",
+            "items": {
+              "type": "object",
+              "required": ["id", "kind"],
+              "additionalProperties": true,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$" },
+                "kind": { "type": "string", "enum": ["requirement", "constraint", "unknown"] },
+                "derived_from": { "type": "array", "items": { "type": "string" } },
+                "extraction_confidence": { "type": ["string", "null"], "enum": ["high", "medium", "low", null] }
+              }
+            }
+          },
+          "amendments": {
+            "type": "array",
+            "description": "AMENDMENT field artefacts recording detected drift on this source.",
+            "items": {
+              "type": "object",
+              "required": ["id"],
+              "additionalProperties": true,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$" },
+                "change_description": { "type": ["string", "null"] },
+                "segment_refs": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tally": {
+      "type": "object",
+      "description": "Run summary counts.",
+      "required": ["sources_touched", "proposed"],
+      "additionalProperties": true,
+      "properties": {
+        "sources_touched": { "type": "integer", "minimum": 0 },
+        "proposed": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "SEGMENT": { "type": "integer", "minimum": 0 },
+            "REQUIREMENT": { "type": "integer", "minimum": 0 },
+            "CONSTRAINT": { "type": "integer", "minimum": 0 },
+            "AMENDMENT": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "review_needed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "description": "Invariant statement for auditors and tooling: this skill admits nothing.",
+      "properties": { "admits_to_canon": { "const": false } },
+      "additionalProperties": true
+    }
+  }
+}

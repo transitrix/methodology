@@ -20,6 +20,7 @@ import { access } from 'node:fs/promises';
 
 import { findOrgRoot, listDue, findCodexFile } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
+import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -57,6 +58,9 @@ function usage() {
     '  update-scan <CODEX-ID|file> [--today YYYY-MM-DD] [--frequency daily|weekly|monthly|quarterly]',
     '              [--change "<summary>"] [--review]',
     '                                 Write the codex scan block (last_scanned_at, next_scan_due, …).',
+    '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
+    '                                 Assemble the human review digest from staged run artefacts',
+    '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
     '',
@@ -127,6 +131,24 @@ async function cmdUpdateScan(args) {
   }
 }
 
+async function cmdDigest(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = await resolveOrgRoot(_[0], 'digest');
+  if (!orgRoot) return 2;
+  const asOf = flags['as-of'] ? String(flags['as-of']) : today();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) { console.error('digest: --as-of must be YYYY-MM-DD'); return 1; }
+
+  const digest = await buildDigest({ orgRoot, asOf, runId: typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined });
+  const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot);
+  await writeDigest(digest, out);
+
+  const t = digest.tally;
+  console.log(`review digest  ->  ${out}`);
+  console.log(`  ${t.sources_touched} source(s) · proposed: SEGMENT ${t.proposed.SEGMENT} / REQUIREMENT ${t.proposed.REQUIREMENT} / CONSTRAINT ${t.proposed.CONSTRAINT} / AMENDMENT ${t.proposed.AMENDMENT} · review_needed ${t.review_needed}`);
+  console.log('  nothing admitted to canon — a human gates this digest.');
+  return 0;
+}
+
 async function main(argv) {
   const [cmd, ...args] = argv;
   if (!cmd || cmd === '--help' || cmd === '-h') { console.log(usage()); return cmd ? 0 : 1; }
@@ -135,6 +157,7 @@ async function main(argv) {
   switch (cmd) {
     case 'list-due':    return cmdListDue(args);
     case 'update-scan': return cmdUpdateScan(args);
+    case 'digest':      return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
       return 1;
