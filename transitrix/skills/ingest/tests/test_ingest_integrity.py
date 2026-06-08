@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Eight parts:
+Deterministic, no-API-key guard. Nine parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -26,6 +26,10 @@ Deterministic, no-API-key guard. Eight parts:
   H. #165 idempotency — review-queue excludes candidates already admitted to canon
      (matched by id for elements/assertions, by (type, from, to) triple for relations),
      so a re-run does not re-list already-admitted items.
+  I. #168 placement — resolve-placement reports a TYPE's ELEMENT_PRIMITIVES §4 mode +
+     layer + folder; review-queue annotates each element candidate with its placement
+     (equals resolve consistently); check-placement flags an admitted element sitting
+     outside its §4 folder.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -610,6 +614,94 @@ def part_h_idempotent():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part I — #168 materialisation/placement resolution ────────────
+
+def part_i_placement():
+    """resolve-placement + review-queue placement + check-placement flag misplaced."""
+    if not shutil.which("node"):
+        print("SKIP Part I: `node` not found.")
+        return
+
+    # I1 — resolve-placement reports §4 mode + layer + folder per TYPE.
+    cases = {
+        "PRODUCT": ("standalone", "02_business/products/"),
+        "APPLICATION": ("standalone", "03_application/applications/"),
+        "ACTOR": ("standalone", "02_business/actors/"),
+        "ROLE": ("standalone", "02_business/roles/"),
+        "PROCESS": ("standalone", "02_business/processes/"),
+        "INTEGRATION": ("view-defined", "03_application/integrations/"),
+    }
+    for t, (mode, folder) in cases.items():
+        r = run_cli("resolve-placement", t)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0 and ("mode: " + mode) in out and folder in out,
+              f"I1: resolve-placement {t} should report mode {mode} + folder {folder}; got {out.strip()!r}")
+    # An unknown / non-catalogue TYPE has no §4 placement.
+    r = run_cli("resolve-placement", "INTERVIEW")
+    check(r.returncode == 1, "I1: a non-catalogue TYPE (INTERVIEW) must have no §4 placement")
+
+    # I2 — review-queue annotates element candidates with their §4 placement; equals
+    # of equal standing (actor/role/process/product) resolve consistently (own folders).
+    work = tempfile.mkdtemp(prefix="ingest-place-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+        fid = "INTERVIEW-x-20260101-1"
+        equals = {
+            "ACTOR.json": ("ACTOR-A-1", "ACTOR", "02_business/actors/"),
+            "ROLE.json": ("ROLE-A-1", "ROLE", "02_business/roles/"),
+            "PROC.json": ("PROCESS-A-1", "PROCESS", "02_business/processes/"),
+            "PROD.json": ("PRODUCT-A-1", "PRODUCT", "02_business/products/"),
+        }
+        for name, (eid, etype, _folder) in equals.items():
+            with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+                json.dump({"kind": "element", "id": eid, "name": eid, "element_type": etype,
+                           "derived_from": [fid], "admitted_to": "pending",
+                           "extraction_confidence": "high"}, fh)
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, f"I2: review-queue failed: {r.stderr.strip()}")
+        q = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-queue.yaml"), encoding="utf-8"))
+        by = {os.path.basename(c["ref"]): c for c in q["candidates"]}
+        for name, (_eid, _etype, folder) in equals.items():
+            pl = by.get(name, {}).get("placement")
+            check(isinstance(pl, dict) and pl.get("mode") == "standalone" and pl.get("folder") == folder,
+                  f"I2: {name} should carry placement mode=standalone folder={folder}; got {pl!r}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    # I3 — check-placement flags an admitted standalone element outside its §4 folder.
+    work = tempfile.mkdtemp(prefix="ingest-place3-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(os.path.join(org, "_intake", "inbox"), exist_ok=True)
+
+        def admit(rel, fname, body):
+            d = os.path.join(org, "canon", "elements", rel)
+            os.makedirs(d, exist_ok=True)
+            with open(os.path.join(d, fname), "w", encoding="utf-8") as fh:
+                fh.write(body)
+
+        # Correct placements first → clean.
+        admit("02_business/products", "PRODUCT-FLEXLINE-1.yaml", 'id: "PRODUCT-FLEXLINE-1"\n')
+        admit("02_business/actors", "ACTOR-ACME-1.yaml", 'id: "ACTOR-ACME-1"\n')
+        r = run_cli("check-placement", org)
+        check(r.returncode == 0, f"I3: a correctly-placed canon should pass check-placement; got: {(r.stdout + r.stderr).strip()}")
+
+        # Misplace an APPLICATION under products/ → flagged.
+        admit("02_business/products", "APPLICATION-CRM-1.yaml", 'id: "APPLICATION-CRM-1"\n')
+        r = run_cli("check-placement", org)
+        out = r.stdout + r.stderr
+        check(r.returncode == 1 and "APPLICATION-CRM-1" in out and "03_application/applications/" in out,
+              f"I3: a standalone element outside its §4 folder must be flagged; got: {out.strip()!r}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -618,6 +710,7 @@ part_e_ig2()
 part_f_ig3()
 part_g_coverage()
 part_h_idempotent()
+part_i_placement()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
