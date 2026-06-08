@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Seven parts:
+Deterministic, no-API-key guard. Eight parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -531,12 +531,16 @@ def part_g_coverage():
         check(bool(q.get("coverage_warning")), "G3: the review queue must carry a coverage_warning for an unresolved profile")
         check(by.get("TS.json") == "in_profile",
               "G3: an unresolved profile defaults permissively to full (no silent drop), but warns")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 # ── Part H — review-queue idempotency against canon (#165) ────────
 
-def part_g_idempotent():
+def part_h_idempotent():
     """review-queue excludes candidates already admitted to canon (by id / REL triple)."""
     if not shutil.which("node"):
-        print("SKIP Part G: `node` not found.")
+        print("SKIP Part H: `node` not found.")
         return
     work = tempfile.mkdtemp(prefix="ingest-idem-")
     try:
