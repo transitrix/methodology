@@ -165,7 +165,8 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
-| `PRODUCT`, `APPLICATION`, `INTEGRATION` | within the catalogue document. |
+| `PRODUCT`, `APPLICATION` | within the organisation's element catalogue (`elements/02_business/` for `PRODUCT`, `elements/03_application/` for `APPLICATION`), one file per element. Both are `standalone` ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §4), so their IDs are org-wide-unique from creation (not document-scoped) — the §1 promotion rule does not apply (they are first-class catalogue elements, never inline). |
+| `INTEGRATION` | within the catalogue document while `view-defined` (nested in an application's `integrations[]`, [`10-applications.md`](views/10-applications.md)); once promoted (§1 promotion rule), within the organisation's element catalogue (`elements/03_application/integrations/`), one file per promoted INTEGRATION. The id is unchanged by promotion (no rename). |
 | `ROLE`, `ACTOR` | within the organisation's element catalogue (`elements/02_business/`). |
 | `SCENARIO` | within the organisation's element catalogue (`elements/05_implementation/scenarios/`), one file per SCENARIO. |
 | `EQUIPMENT`, `INFORMATION_ENTITY` | within the notation document that defines them (today: a Process Blueprint). No organisation-wide catalogue is mandated yet; the TYPEs are registered so the IDs already conform to the canonical grammar and can be promoted to a future catalogue without renaming. |
