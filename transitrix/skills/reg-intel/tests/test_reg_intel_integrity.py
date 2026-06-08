@@ -25,9 +25,10 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      --accept-no-signal; a static artefact is rejected.
   F. fetch-snapshot (Step 3) — snapshots the caller-fetched bytes to _intake/snapshots/
      and fingerprints them: first harvest is 'captured'; identical bytes are
-     'bytes_identical'; changed bytes are 'changed'; the committed operations cache
-     detects identical bytes even after _intake/ is wiped (cross-checkout); --from is
-     required; a static artefact is rejected.
+     'bytes_identical'; markup/whitespace/tracker churn with unchanged normative text is
+     'cosmetic_change'; a substantive change is 'changed'; a binary format falls back to
+     byte-level 'changed'; the committed operations cache detects identical bytes even
+     after _intake/ is wiped (cross-checkout); --from required; a static artefact rejected.
   G. segment (Step 4) — shapes the segment agent result into proposed SEGMENT-* field
      artefacts: source + source_hash from the snapshot, text_hash from the excerpt,
      ids per source slug, a locator-less segment skipped, the proposed admission record;
@@ -447,6 +448,35 @@ def part_f_fetch_snapshot():
         r = run_cli("fetch-snapshot", s_file, "--from", v1, "--today", "2026-06-08")
         check(r.returncode != 0 and "monitoring_needed: true" in (r.stdout + r.stderr),
               "F: fetch-snapshot must reject a monitoring_needed: false artefact")
+
+        # Cosmetic-vs-substantive (isolated org so it does not perturb the sequence above).
+        work_c = tempfile.mkdtemp(prefix="regintel-cosmetic-")
+        try:
+            orgc = _codex_org(work_c)
+            cf = os.path.join(orgc, "codex", "external", "eu", "REGULATION-A-1.yaml")
+            c1 = os.path.join(work_c, "c1.html"); open(c1, "w", encoding="utf-8").write(
+                '<html><body><p class="a">Each controller shall maintain a record.</p></body></html>')
+            # same visible text; differs in whitespace, class, a tracker id, a comment, a script.
+            c2 = os.path.join(work_c, "c2.html"); open(c2, "w", encoding="utf-8").write(
+                '<html>\n <body>\n  <!-- build 4471 -->\n  <p class="b" data-id="x9f8e7d6c5b4a3f21">'
+                'Each controller shall maintain a record.</p>\n  <script>track()</script>\n </body>\n</html>')
+            c3 = os.path.join(work_c, "c3.html"); open(c3, "w", encoding="utf-8").write(
+                '<html><body><p>Each controller shall maintain a DETAILED record within 30 days.</p></body></html>')
+            run_cli("fetch-snapshot", cf, "--from", c1, "--today", "2026-06-08")
+            r = json.loads(run_cli("fetch-snapshot", cf, "--from", c2, "--today", "2026-06-09", "--json").stdout)
+            check(r.get("outcome") == "cosmetic_change" and r.get("proceed") is False,
+                  f"F: markup/whitespace/tracker churn with unchanged normative text must be 'cosmetic_change'; got {r.get('outcome')}")
+            r = json.loads(run_cli("fetch-snapshot", cf, "--from", c3, "--today", "2026-06-10", "--json").stdout)
+            check(r.get("outcome") == "changed" and r.get("proceed") is True,
+                  "F: a substantive normative-text change must be 'changed'")
+            # Binary/unknown format → no normalisation → byte-level 'changed', never a wrong 'cosmetic'.
+            b1 = os.path.join(work_c, "a.pdf"); open(b1, "wb").write(bytes([1, 2, 3, 4]))
+            b2 = os.path.join(work_c, "b.pdf"); open(b2, "wb").write(bytes([1, 2, 3, 5]))
+            run_cli("fetch-snapshot", cf, "--from", b1, "--ext", "pdf", "--today", "2026-07-01")
+            r = json.loads(run_cli("fetch-snapshot", cf, "--from", b2, "--ext", "pdf", "--today", "2026-07-02", "--json").stdout)
+            check(r.get("outcome") == "changed", "F: a binary format must fall back to byte-level 'changed' (no cosmetic verdict)")
+        finally:
+            shutil.rmtree(work_c, ignore_errors=True)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 

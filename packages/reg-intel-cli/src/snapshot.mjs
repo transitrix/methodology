@@ -14,15 +14,17 @@
 // hash in the committed operations cache so detection survives a fresh clone / CI
 // checkout (where _intake/ is gone).
 //
-// Outcomes: captured (first harvest) · changed (bytes differ from prior) ·
-// bytes_identical (signal moved but the publisher re-stamped without changing bytes).
-// Content-aware cosmetic-vs-normative diffing is a later increment.
+// Outcomes: captured (first harvest) · changed (normative text differs from prior) ·
+// cosmetic_change (bytes differ but the normative text is unchanged — a re-publication
+// that touched markup / boilerplate / tracker ids only) · bytes_identical (the
+// publisher re-stamped without changing any bytes).
 
 import { readFile, writeFile, readdir, mkdir, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join, resolve, extname, basename } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
 import { readCache, writeCache, getSnapshotEntry, setSnapshotEntry } from './signal-cache.mjs';
+import { normativeHash } from './normalize.mjs';
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -56,24 +58,41 @@ export async function fetchSnapshot(orgRoot, file, { fromPath, today, ext } = {}
   const hash = sha256(bytes);
 
   const cleanExt = (ext || extname(src).replace(/^\./, '') || 'html').replace(/^\./, '');
+  const normHash = normativeHash(bytes, cleanExt); // null for binary/unknown formats
   const snapDir = join(resolve(orgRoot), '_intake', 'snapshots');
   const snapName = `${id}-${today}.${cleanExt}`;
 
-  // Determine the prior hash: the latest other _intake snapshot, else the committed
-  // operations cache (so detection survives a fresh checkout).
+  // Determine the prior raw + normative hashes: the latest other _intake snapshot
+  // (recomputed from its bytes), else the committed operations cache (so detection
+  // survives a fresh checkout).
   const cache = await readCache(orgRoot);
   const cachedSnap = getSnapshotEntry(cache, id);
   const prior = await priorSnapshot(snapDir, id, snapName);
   let priorHash = null;
-  if (prior) priorHash = sha256(await readFile(prior));
-  else if (cachedSnap && cachedSnap.hash) priorHash = cachedSnap.hash;
+  let priorNorm = null;
+  if (prior) {
+    const pb = await readFile(prior);
+    priorHash = sha256(pb);
+    priorNorm = normativeHash(pb, extname(prior).replace(/^\./, ''));
+  } else if (cachedSnap && cachedSnap.hash) {
+    priorHash = cachedSnap.hash;
+    priorNorm = cachedSnap.norm_hash || null;
+  }
 
   await mkdir(snapDir, { recursive: true });
   await writeFile(join(snapDir, snapName), bytes);
 
-  const outcome = priorHash === null ? 'captured' : (priorHash === hash ? 'bytes_identical' : 'changed');
+  // captured → no prior. bytes_identical → same bytes. cosmetic_change → bytes differ
+  // but the normative text is unchanged (only meaningful when both sides are textual).
+  // changed → the normative text moved (or it can't be normalised, so bytes decide).
+  let outcome;
+  if (priorHash === null) outcome = 'captured';
+  else if (priorHash === hash) outcome = 'bytes_identical';
+  else if (normHash !== null && priorNorm !== null && normHash === priorNorm) outcome = 'cosmetic_change';
+  else outcome = 'changed';
+
   const rel = ['_intake', 'snapshots', snapName].join('/');
-  setSnapshotEntry(cache, id, { hash, file: rel, at: today });
+  setSnapshotEntry(cache, id, { hash, ...(normHash ? { norm_hash: normHash } : {}), file: rel, at: today });
   await writeCache(orgRoot, cache);
 
   return {
