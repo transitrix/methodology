@@ -1,0 +1,19 @@
+# reg-intel-daily.service — example systemd unit for the Transitrix reg-intel daily scan.
+# Pairs with reg-intel-daily.timer (the schedule). ONE service, not one-per-source —
+# reg-intel-daily.sh filters the watched codex sources by next_scan_due internally.
+#
+# Install (user units): copy both files to ~/.config/systemd/user/, then
+#   systemctl --user daemon-reload && systemctl --user enable --now reg-intel-daily.timer
+# Adapt WorkingDirectory to your adopter repo and the script path to where you copied it.
+
+[Unit]
+Description=Transitrix reg-intel daily scan (one task; filters by next_scan_due)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/repos/your-adopter-repo
+ExecStart=/usr/bin/env bash operations/bin/reg-intel-daily.sh %h/repos/your-adopter-repo
+# The scan proposes only; a human reviews _intake/processing/review-digest.yaml and admits.
+# Hardening (optional): ProtectSystem=strict + ReadWritePaths for _intake/ and operations/state/.
