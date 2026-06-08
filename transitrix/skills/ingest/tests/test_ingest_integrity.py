@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """From-scratch pipeline test for the Transitrix Ingest skill + @transitrix/ingest-cli.
 
-Deterministic, no-API-key guard. Seven parts:
+Deterministic, no-API-key guard. Eight parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
      three layer prompts + READMEs exist, the _intake template is present.
@@ -19,7 +19,11 @@ Deterministic, no-API-key guard. Seven parts:
      artefact (no source_quality); downstream REQUIREMENT/ASSERTION candidates cite it.
   F. IG-3 admit-source — admit-source --zone field|codex dispatches; the
      field-artefact / codex-artefact aliases still work; a bad --zone is rejected.
-  G. #165 idempotency — review-queue excludes candidates already admitted to canon
+  G. #164 coverage_profile resolution — a short-form preset (`core`) resolves
+     membership per CP-003 (not blanket out_of_profile); a custom `extends:` + delta
+     map resolves the added TYPE in-profile; an unresolved profile emits a visible
+     WARNING instead of silently defaulting to full.
+  H. #165 idempotency — review-queue excludes candidates already admitted to canon
      (matched by id for elements/assertions, by (type, from, to) triple for relations),
      so a re-run does not re-list already-admitted items.
 
@@ -443,12 +447,100 @@ def part_f_ig3():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part G — review-queue idempotency against canon (#165) ────────
+# ── Part G — #164 coverage_profile resolution ─────────────────────
 
-def part_g_idempotent():
-    """review-queue excludes candidates already admitted to canon (by id / REL triple)."""
+def _coverage_org(manifest_body):
+    """Scaffold an org with a given coverage_profile manifest and a fixed candidate set.
+    Returns (org, work) — caller cleans up work."""
+    work = tempfile.mkdtemp(prefix="ingest-cp-")
+    org = os.path.join(work, "org")
+    os.makedirs(org)
+    run_cli("scaffold-intake", org)
+    with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+        fh.write(manifest_body)
+    cdir = os.path.join(org, "_intake", "processing", "candidates")
+    os.makedirs(cdir, exist_ok=True)
+    fid = "INTERVIEW-x-20260101-1"
+    cset = {
+        "CAP.json": {"kind": "element", "id": "CAPABILITY-X-1", "name": "Cap", "element_type": "CAPABILITY"},
+        "TS.json": {"kind": "element", "id": "TARGET_STATE-X-1", "name": "TS", "element_type": "TARGET_STATE"},
+        "RELemp.json": {"kind": "relation", "rel_kind": "employment", "from": "ACTOR-A-1", "to": "ROLE-B-1"},
+        "RELcon.json": {"kind": "relation", "rel_kind": "contracting", "from": "STAKEHOLDER-A-1", "to": "GOAL-B-1"},
+        "ASSERT.json": {"kind": "assertion", "id": "ASSERTION-X-1", "about": "REQUIREMENT-C-1",
+                        "subject": "PRODUCT-P-1", "status": "compliant"},
+    }
+    for name, obj in cset.items():
+        obj.update({"derived_from": [fid], "admitted_to": "pending", "extraction_confidence": "high"})
+        with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+            json.dump(obj, fh)
+    return org, work, cdir
+
+
+def _flags(org):
+    q = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-queue.yaml"), encoding="utf-8"))
+    by = {os.path.basename(c["ref"]): c.get("coverage_flag") for c in q["candidates"]}
+    return q, by
+
+
+def part_g_coverage():
+    """review-queue resolves preset + custom-profile membership; no silent full fallback."""
     if not shutil.which("node"):
         print("SKIP Part G: `node` not found.")
+        return
+
+    # G1 — short-form preset `core`: membership resolved per CP-003 (not blanket out).
+    org, work, cdir = _coverage_org('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: core\n')
+    try:
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, f"G1: review-queue failed: {r.stderr.strip()}")
+        q, by = _flags(org)
+        check(q.get("coverage_profile") == "core", f"G1: queue coverage_profile should be 'core', got {q.get('coverage_profile')!r}")
+        check(by.get("CAP.json") == "in_profile", "G1: CAPABILITY is in `core` — must be in_profile")
+        check(by.get("TS.json") == "out_of_profile", "G1: TARGET_STATE is not in `core` — must be out_of_profile")
+        check(by.get("RELemp.json") == "in_profile", "G1: employment REL is in `core` — must be in_profile")
+        check(by.get("RELcon.json") == "out_of_profile", "G1: contracting REL is not in `core` — must be out_of_profile")
+        check(by.get("ASSERT.json") == "in_profile", "G1: ASSERTION is never profile-bounded (§2.1) — must be in_profile")
+        check(not q.get("coverage_warning"), "G1: a resolvable preset must not emit a coverage warning")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    # G2 — custom map: core + TARGET_STATE delta → TARGET_STATE now in profile.
+    org, work, cdir = _coverage_org(
+        'transitrix: 1\nmethodology_version: "0.5.0"\n'
+        'coverage_profile:\n  extends: core\n  pinned_to: "0.5.0"\n  layers:\n'
+        '    05_implementation:\n      elements:\n        add: [TARGET_STATE]\n')
+    try:
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, f"G2: review-queue failed: {r.stderr.strip()}")
+        q, by = _flags(org)
+        check(q.get("coverage_profile") == "extends:core", f"G2: coverage_profile should be 'extends:core', got {q.get('coverage_profile')!r}")
+        check(by.get("TS.json") == "in_profile", "G2: TARGET_STATE added via the custom delta — must be in_profile (CP-003)")
+        check(by.get("CAP.json") == "in_profile", "G2: CAPABILITY inherited from core — must be in_profile")
+        check(by.get("RELcon.json") == "out_of_profile", "G2: contracting still out — must be out_of_profile")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+    # G3 — unknown preset: NO silent full fallback — a visible warning is emitted.
+    org, work, cdir = _coverage_org('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: bogus\n')
+    try:
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, f"G3: review-queue failed: {r.stderr.strip()}")
+        check("WARNING" in (r.stdout + r.stderr) and "could not be resolved" in (r.stdout + r.stderr),
+              "G3: an unresolved profile must emit a visible CLI warning, not silently default to full")
+        q, by = _flags(org)
+        check(bool(q.get("coverage_warning")), "G3: the review queue must carry a coverage_warning for an unresolved profile")
+        check(by.get("TS.json") == "in_profile",
+              "G3: an unresolved profile defaults permissively to full (no silent drop), but warns")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+# ── Part H — review-queue idempotency against canon (#165) ────────
+
+def part_h_idempotent():
+    """review-queue excludes candidates already admitted to canon (by id / REL triple)."""
+    if not shutil.which("node"):
+        print("SKIP Part H: `node` not found.")
         return
     work = tempfile.mkdtemp(prefix="ingest-idem-")
     try:
@@ -524,7 +616,8 @@ part_c_ig5()
 part_d_ig1()
 part_e_ig2()
 part_f_ig3()
-part_g_idempotent()
+part_g_coverage()
+part_h_idempotent()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

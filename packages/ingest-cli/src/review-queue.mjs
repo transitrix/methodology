@@ -65,7 +65,8 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
   return {
     generated_by: '@transitrix/ingest-cli',
     org_root: resolve(orgRoot),
-    coverage_profile: profile || 'full',
+    coverage_profile: (profile && profile.display) || 'full',
+    ...(profile && profile.warning ? { coverage_warning: profile.warning } : {}),
     field_artefacts,
     candidates,
     excluded_admitted,

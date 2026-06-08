@@ -41,7 +41,8 @@ packages/ingest-cli/
     convert.mjs        # document -> Markdown (Markitdown shell-out)
     yaml.mjs           # zero-dep YAML emitter + manifest scalar reader
     field-artefact.mjs # emit a field artefact + proposed source_quality
-    coverage.mjs       # read coverage_profile + classify in/out of profile
+    coverage.mjs       # resolve coverage_profile (preset/custom) + classify in/out
+    coverage-presets.mjs # shipped preset membership (COVERAGE_PROFILES §3/§3.1)
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue
     emit-candidates.mjs# shape the agent extraction result into candidates
