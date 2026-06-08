@@ -207,6 +207,8 @@ async function cmdValidate(args) {
   const r = await resolveDir(_[0], 'validate');
   if (r.code) return r.code;
 
+  if (r.profile && r.profile.warning) console.error(`WARNING: ${r.profile.warning}`);
+
   const loaded = await loadCandidates(r.dir);
   if (loaded.length === 0) { console.log(`validate: no candidate *.json files in ${_[0]}`); return 0; }
 
@@ -237,7 +239,9 @@ async function cmdReviewQueue(args) {
   const out = flags.out ? resolve(flags.out) : join(stageDir(r.orgRoot, 'processing'), 'review-queue.yaml');
   await writeReviewQueue(queue, out);
   const flagged = queue.candidates.filter(c => c.validation_flags.length || c.coverage_flag === 'out_of_profile').length;
+  if (queue.coverage_warning) console.error(`WARNING: ${queue.coverage_warning}`);
   console.log(`review queue  ->  ${out}`);
+  console.log(`  coverage_profile: ${queue.coverage_profile}`);
   console.log(`  ${queue.field_artefacts.length} field artefact(s), ${queue.candidates.length} candidate(s) (${flagged} flagged), ${queue.relation_suggestions.length} relation suggestion(s).`);
   console.log('  nothing admitted to canon — a human gates this queue.');
   return 0;

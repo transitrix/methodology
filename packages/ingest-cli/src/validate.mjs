@@ -89,7 +89,7 @@ export function validateCandidate(cand, profile) {
     type = 'ASSERTION';
   }
 
-  const cov = classifyCoverage(profile, type);
+  const cov = classifyCoverage(profile, cand.kind, type);
   return { validation_flags: flags, coverage_flag: cov.flag, coverage_reason: cov.reason };
 }
 

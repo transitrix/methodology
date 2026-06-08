@@ -129,7 +129,9 @@ Every candidate is run through the canonical validators — ID grammar, TYPE reg
 npx @transitrix/ingest-cli validate <processing/candidates/>
 ```
 
-The CLI reads the repo's `coverage_profile` ([COVERAGE_PROFILES](https://raw.githubusercontent.com/transitrix/methodology/main/notations/COVERAGE_PROFILES.md)) and **only** proposes TYPEs / REL kinds the profile allows. Out-of-profile or invalid candidates are **flagged with an actionable reason** — not silently emitted into canon, and not silently dropped. A flagged candidate is a review-queue item, not a rejection.
+The CLI reads the repo's `coverage_profile` ([COVERAGE_PROFILES](https://raw.githubusercontent.com/transitrix/methodology/main/notations/COVERAGE_PROFILES.md)) and **resolves membership** before classifying each candidate: it ships the preset definitions (§3 / §3.1) and resolves all three declared forms — a **short-form preset** (`coverage_profile: core`), a **custom map** (`extends:` a preset + per-layer `add`/`remove`/`disabled` deltas, §4), and the **absent** default (`full`). A TYPE / REL kind in the resolved profile is `in_profile`; one outside it is flagged `out_of_profile` per `CP-003`. `ASSERTION` and codex artefacts are never bounded by the profile (§2.1). Out-of-profile or invalid candidates are **flagged with an actionable reason** — not silently emitted into canon, and not silently dropped. A flagged candidate is a review-queue item, not a rejection.
+
+If a profile is **present but cannot be resolved** (unknown preset, missing `extends:`, malformed), the CLI does **not** silently treat the repo as `full`: it resolves permissively but emits an explicit **WARNING** (in CLI output and as `coverage_warning` in the review queue), so the unreliable coverage signal is visible rather than hidden.
 
 ---
 
