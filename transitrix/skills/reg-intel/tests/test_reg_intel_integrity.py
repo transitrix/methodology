@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Nine parts:
+(operational templates + coverage-in-validate land later). Ten parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -41,6 +41,10 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      (23-segment.md SEGMENT-001..008, ID grammar, candidate field rules): a conformant
      batch passes; a non-codex source flags SEGMENT-002, a bad hash SEGMENT-006, a
      candidate with no derived_from CAND-002; flags-not-drops, exit 1 when review needed.
+  J. amendment (Step 7) — emits a proposed AMENDMENT-* recording source drift: source +
+     detected_at, segment_refs auto-collected from this source's staged SEGMENTs only,
+     likely_impacted hints, motivates [] on first emission; the digest counts it;
+     --change required; a static (monitoring_needed: false) source is rejected.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -622,6 +626,53 @@ def part_i_validate():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part J — amendment (Step 7, source drift) ────────────────────
+
+def part_j_amendment():
+    if not shutil.which("node"):
+        print("SKIP Part J: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-amend-")
+    try:
+        org = _codex_org(work)  # REGULATION-A-1 is a monitoring codex artefact
+        a_file = os.path.join(org, "codex", "external", "eu", "REGULATION-A-1.yaml")
+        seg = os.path.join(org, "_intake", "processing", "segments")
+        os.makedirs(seg, exist_ok=True)
+        # Two SEGMENTs of REGULATION-A-1 (auto segment_refs) + one of another source (excluded).
+        for sid, src in [("SEGMENT-a-1", "REGULATION-A-1"), ("SEGMENT-a-2", "REGULATION-A-1"), ("SEGMENT-z-1", "LAW-OTHER-1")]:
+            open(os.path.join(seg, f"{sid}.yaml"), "w", encoding="utf-8").write(
+                f'id: "{sid}"\ntype: "SEGMENT"\nsource: "{src}"\nlocator: "x"\nzone: "field"\n')
+
+        r = run_cli("amendment", a_file, "--change", "Art.1 wording tightened",
+                    "--likely-impacted", "REQUIREMENT-X-1,PROCESS-Y-1", "--amended-at", "2026-05-21", "--today", "2026-06-08")
+        check(r.returncode == 0, f"J: amendment failed: {r.stderr.strip()}")
+        adir = os.path.join(org, "_intake", "processing", "amendments")
+        files = sorted(os.listdir(adir)) if os.path.isdir(adir) else []
+        check(files == ["AMENDMENT-a-1.yaml"], f"J: one AMENDMENT expected; got {files}")
+        a = yaml.safe_load(open(os.path.join(adir, "AMENDMENT-a-1.yaml"), encoding="utf-8"))
+        check(a.get("type") == "AMENDMENT" and a.get("zone") == "field", "J: AMENDMENT type/zone")
+        check(a.get("source") == "REGULATION-A-1" and a.get("detected_at") == "2026-06-08", "J: source + detected_at")
+        check(sorted(a.get("segment_refs", [])) == ["SEGMENT-a-1", "SEGMENT-a-2"],
+              f"J: segment_refs must auto-collect this source's staged SEGMENTs only; got {a.get('segment_refs')}")
+        check(a.get("likely_impacted") == ["REQUIREMENT-X-1", "PROCESS-Y-1"], "J: likely_impacted hints carried")
+        check(a.get("motivates") == [], "J: motivates must be empty on first emission")
+        check(a.get("admission_state") == "proposed" and a.get("proposed_by") == "reg-intel-scanner", "J: proposed by the scanner")
+
+        # The digest counts the AMENDMENT under its source.
+        r = run_cli("digest", org, "--as-of", "2026-06-08")
+        dg = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-digest.yaml"), encoding="utf-8"))
+        check(dg.get("tally", {}).get("proposed", {}).get("AMENDMENT") == 1, "J: the digest must count the AMENDMENT")
+
+        # Guards: --change required; a static (monitoring_needed: false) source rejected.
+        r = run_cli("amendment", a_file, "--today", "2026-06-08")
+        check(r.returncode != 0 and "change_description is required" in (r.stdout + r.stderr), "J: amendment must require --change")
+        s_file = os.path.join(org, "codex", "external", "us", "REGULATION-D-1.yaml")
+        r = run_cli("amendment", s_file, "--change", "x", "--today", "2026-06-08")
+        check(r.returncode != 0 and "monitoring_needed: true" in (r.stdout + r.stderr), "J: amendment must reject a static source")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
@@ -631,6 +682,7 @@ part_f_fetch_snapshot()
 part_g_segment()
 part_h_classify()
 part_i_validate()
+part_j_amendment()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")

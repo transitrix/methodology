@@ -25,6 +25,7 @@ import { fetchSnapshot } from './src/snapshot.mjs';
 import { emitSegments } from './src/segment.mjs';
 import { emitCandidates } from './src/classify.mjs';
 import { validateStaged } from './src/validate.mjs';
+import { emitAmendment } from './src/amendment.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -79,6 +80,9 @@ function usage() {
     '                                 CONSTRAINT-* candidates under _intake/processing/candidates/.',
     '  validate [org-root] [--json]   Validate staged SEGMENTs + candidates against the contract',
     '                                 (23-segment.md, ID grammar); flags, never drops.',
+    '  amendment <CODEX-ID|file> --change "<what moved>" [--name N] [--amended-at YYYY-MM-DD]',
+    '            [--likely-impacted ID,ID] [--from <result.json>] [--today YYYY-MM-DD]',
+    '                                 Emit a proposed AMENDMENT-* field artefact recording source drift.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -302,6 +306,52 @@ async function cmdValidate(args) {
   return res.reviewed ? 1 : 0;
 }
 
+async function cmdAmendment(args) {
+  const { _, flags } = parseArgs(args);
+  const target = _[0];
+  if (!target) { console.error('amendment: missing <CODEX-ID|file>'); return 1; }
+
+  let file = null;
+  let orgRoot = null;
+  if (await exists(resolve(target))) {
+    file = resolve(target);
+    orgRoot = await findOrgRoot(file);
+    if (!orgRoot) { console.error('amendment: file is not inside a Transitrix workspace (no transitrix.yaml).'); return 2; }
+  } else {
+    orgRoot = await resolveOrgRoot(undefined, 'amendment');
+    if (!orgRoot) return 2;
+    file = await findCodexFile(orgRoot, target);
+    if (!file) { console.error(`amendment: no codex artefact with id ${target} under codex/`); return 2; }
+  }
+
+  let fromResult;
+  if (typeof flags.from === 'string') {
+    try { fromResult = JSON.parse(await readFile(resolve(flags.from), 'utf8')); }
+    catch (err) { console.error(`amendment: --from does not parse as JSON: ${err.message}`); return 2; }
+  }
+  const list = (v) => (typeof v === 'string' ? v.split(',').map((s) => s.trim()).filter(Boolean) : []);
+
+  try {
+    const res = await emitAmendment(orgRoot, file, {
+      changeDescription: typeof flags.change === 'string' ? flags.change : undefined,
+      name: typeof flags.name === 'string' ? flags.name : undefined,
+      amendedAt: typeof flags['amended-at'] === 'string' ? flags['amended-at'] : undefined,
+      likelyImpacted: list(flags['likely-impacted']),
+      segmentRefs: list(flags['segment-refs']),
+      fromResult,
+      today: flags.today ? String(flags.today) : today(),
+    });
+    console.log(`amendment  ${res.id}  (source ${res.source})  ->  ${res.file}`);
+    console.log(`  segment_refs: ${res.segment_refs.length}  likely_impacted: ${res.likely_impacted.length}  motivates: 0 (human fills)`);
+    for (const w of res.warnings) console.log(`  warning: ${w}`);
+    console.log('  proposed — a human adjudicates and authors the canon CHANGE response.');
+    return 0;
+  } catch (err) {
+    console.error(`amendment: ${err.message}`);
+    return 2;
+  }
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -333,6 +383,7 @@ async function main(argv) {
     case 'segment':      return cmdSegment(args);
     case 'classify':     return cmdClassify(args);
     case 'validate':     return cmdValidate(args);
+    case 'amendment':    return cmdAmendment(args);
     case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
