@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `classify` (Step 5), `validate` (Step 6), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `amendment` (Step 7); when the run loop reaches it the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **All nine run-loop commands are live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `classify` (Step 5), `validate` (Step 6), `amendment` (Step 7), `update-scan` (Step 8), and `digest` (Step 9). Remaining polish lands later: coverage-profile awareness in `validate`, content-aware cosmetic-diff in `fetch-snapshot`, and the operational templates.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -208,8 +208,10 @@ Each emitted AMENDMENT carries:
 
 **AMENDMENT is the field-zone TYPE, not `CHANGE-*`.** Canon `CHANGE-*` is reserved for the organisation's **planned delta** (an ArchiMate Gap — what the organisation will do to close the resulting compliance gap), per [`IDS_AND_REFERENCES.md`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md) §3.1. The scanner emits the external fact (AMENDMENT); the human authors the response (canon CHANGE).
 
+The agent supplies the `change_description` (the editorial trail of the diff) and any `likely_impacted` hints; the CLI shapes the AMENDMENT, assigning the canonical id, `detected_at`, the proposed admission record, and — unless overridden — auto-collecting `segment_refs` from the run's staged SEGMENTs **of this source** (the structured replacement for `source_section`). `motivates` is always empty on emission; a human fills it. A static (`monitoring_needed: false`) source is rejected.
+
 ```
-npx @transitrix/reg-intel-cli amendment <CODEX-ID> --since <prior-snapshot>
+npx @transitrix/reg-intel-cli amendment <CODEX-ID> --change "<what moved>" [--likely-impacted ID,ID] [--amended-at YYYY-MM-DD]
 ```
 
 ---
