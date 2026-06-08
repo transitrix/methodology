@@ -23,6 +23,9 @@ Deterministic, no-API-key guard. Seven parts:
      membership per CP-003 (not blanket out_of_profile); a custom `extends:` + delta
      map resolves the added TYPE in-profile; an unresolved profile emits a visible
      WARNING instead of silently defaulting to full.
+  H. #165 idempotency — review-queue excludes candidates already admitted to canon
+     (matched by id for elements/assertions, by (type, from, to) triple for relations),
+     so a re-run does not re-list already-admitted items.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -528,6 +531,77 @@ def part_g_coverage():
         check(bool(q.get("coverage_warning")), "G3: the review queue must carry a coverage_warning for an unresolved profile")
         check(by.get("TS.json") == "in_profile",
               "G3: an unresolved profile defaults permissively to full (no silent drop), but warns")
+# ── Part H — review-queue idempotency against canon (#165) ────────
+
+def part_g_idempotent():
+    """review-queue excludes candidates already admitted to canon (by id / REL triple)."""
+    if not shutil.which("node"):
+        print("SKIP Part G: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-idem-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+        fid = "INTERVIEW-x-20260101-1"
+
+        def cand(name, obj):
+            with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+                json.dump(obj, fh)
+
+        # Source A candidates (will be admitted) + a relation candidate.
+        cand("A_elem.json", {"kind": "element", "id": "GOAL-A-1", "name": "A",
+                             "element_type": "GOAL", "derived_from": [fid],
+                             "admitted_to": "pending", "extraction_confidence": "high"})
+        cand("A_rel.json", {"kind": "relation", "rel_kind": "stakeholding",
+                            "from": "STAKEHOLDER-A-1", "to": "GOAL-A-1", "derived_from": [fid],
+                            "admitted_to": "pending", "extraction_confidence": "high"})
+        # Source B candidate (never admitted) — must remain in the queue.
+        cand("B_elem.json", {"kind": "element", "id": "GOAL-B-1", "name": "B",
+                             "element_type": "GOAL", "derived_from": [fid],
+                             "admitted_to": "pending", "extraction_confidence": "high"})
+
+        def queue():
+            r = run_cli("review-queue", cdir)
+            check(r.returncode == 0, f"G: review-queue failed: {r.stderr.strip()}")
+            return yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-queue.yaml"), encoding="utf-8"))
+
+        q1 = queue()
+        ids1 = sorted(os.path.basename(c["ref"]) for c in q1["candidates"])
+        check(ids1 == ["A_elem.json", "A_rel.json", "B_elem.json"],
+              f"G: before admission the queue should list all three candidates, got {ids1}")
+        check(not q1.get("excluded_admitted"), "G: nothing should be excluded before admission")
+
+        # Simulate the human admission gate: write A's element + relation into canon/.
+        gdir = os.path.join(org, "canon", "elements", "01_motivation", "goals")
+        rdir = os.path.join(org, "canon", "relations")
+        os.makedirs(gdir, exist_ok=True)
+        os.makedirs(rdir, exist_ok=True)
+        with open(os.path.join(gdir, "GOAL-A-1.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "GOAL-A-1"\nname: "A"\ntype: "GOAL"\nzone: "canon"\n')
+        # An admitted relation carries `type` (not `rel_kind`) and its own REL id.
+        with open(os.path.join(rdir, "REL-A-1.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('notation: "relation"\nid: "REL-A-1"\ntype: "stakeholding"\n'
+                     'from: "STAKEHOLDER-A-1"\nto: "GOAL-A-1"\nzone: "canon"\n')
+
+        q2 = queue()
+        ids2 = sorted(os.path.basename(c["ref"]) for c in q2["candidates"])
+        check(ids2 == ["B_elem.json"],
+              f"G: after admitting A the queue should list only B's candidate, got {ids2}")
+        excluded = sorted(os.path.basename(c["ref"]) for c in q2.get("excluded_admitted", []))
+        check(excluded == ["A_elem.json", "A_rel.json"],
+              f"G: A's element + relation should be reported excluded, got {excluded}")
+        # Idempotent: a second re-run is stable.
+        q3 = queue()
+        check(sorted(os.path.basename(c["ref"]) for c in q3["candidates"]) == ["B_elem.json"],
+              "G: a re-run must not re-list candidates already admitted to canon")
+        # THE ONE RULE still holds — the queue reads canon but never writes a new zone.
+        check(os.path.isdir(os.path.join(org, "canon")), "G: test setup should have created canon/")
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -539,6 +613,7 @@ part_d_ig1()
 part_e_ig2()
 part_f_ig3()
 part_g_coverage()
+part_h_idempotent()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

@@ -243,6 +243,9 @@ async function cmdReviewQueue(args) {
   console.log(`review queue  ->  ${out}`);
   console.log(`  coverage_profile: ${queue.coverage_profile}`);
   console.log(`  ${queue.field_artefacts.length} field artefact(s), ${queue.candidates.length} candidate(s) (${flagged} flagged), ${queue.relation_suggestions.length} relation suggestion(s).`);
+  if (queue.excluded_admitted.length) {
+    console.log(`  ${queue.excluded_admitted.length} candidate(s) excluded — already admitted to canon (idempotent re-run).`);
+  }
   console.log('  nothing admitted to canon — a human gates this queue.');
   return 0;
 }
