@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Eight parts:
+(the rest of the SKILL.md pipeline lands in later increments). Nine parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -37,11 +37,16 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      + category carried, low-confidence keeps ambiguous_alt (both classifications),
      bad-kind / no-derived_from skipped, proposed record with gate_checks pending; the
      digest counts them; --from required.
+  I. validate (Step 6) — runs staged SEGMENTs + candidates through the contract checks
+     (23-segment.md SEGMENT-001..008, ID grammar, candidate field rules): a conformant
+     batch passes; a non-codex source flags SEGMENT-002, a bad hash SEGMENT-006, a
+     candidate with no derived_from CAND-002; flags-not-drops, exit 1 when review needed.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
 """
 
+import hashlib
 import json
 import os
 import re
@@ -560,6 +565,63 @@ def part_h_classify():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part I — validate (Step 6, contract checks) ──────────────────
+
+def part_i_validate():
+    if not shutil.which("node"):
+        print("SKIP Part I: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-validate-")
+    try:
+        org = _codex_org(work)  # carries REGULATION-A-1 (a codex artefact)
+        seg = os.path.join(org, "_intake", "processing", "segments")
+        cand = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(seg, exist_ok=True)
+        os.makedirs(cand, exist_ok=True)
+
+        txt = "Each controller shall maintain a record."
+        thash = "sha256:" + hashlib.sha256(txt.encode("utf-8")).hexdigest()
+        # valid SEGMENT — source resolves to the codex REGULATION-A-1, hash matches.
+        open(os.path.join(seg, "SEGMENT-a-1.yaml"), "w", encoding="utf-8").write(
+            f'id: "SEGMENT-a-1"\ntype: "SEGMENT"\nname: "x"\nsource: "REGULATION-A-1"\nlocator: "Art.1"\n'
+            f'text_excerpt: "{txt}"\ntext_hash: "{thash}"\nextracted_at: "2026-06-08"\nzone: "field"\n'
+            'gate_checks:\n  provenance: pending_review\n')
+        # broken SEGMENT — source TYPE not codex (SEGMENT-002), bad text_hash (SEGMENT-006).
+        open(os.path.join(seg, "SEGMENT-bad-1.yaml"), "w", encoding="utf-8").write(
+            'id: "SEGMENT-bad-1"\ntype: "SEGMENT"\nname: "y"\nsource: "GOAL-X-1"\nlocator: "§1"\n'
+            'text_hash: "nothex"\nextracted_at: "2026-06-08"\nzone: "field"\n'
+            'gate_checks:\n  provenance: pending_review\n')
+        # valid candidate.
+        open(os.path.join(cand, "REQUIREMENT-a-1.yaml"), "w", encoding="utf-8").write(
+            'notation: "requirement"\nid: "REQUIREMENT-a-1"\nname: "x"\ndescription: "x"\n'
+            'derived_from:\n  - SEGMENT-a-1\nobligation_level: SHALL\nextraction_confidence: high\n'
+            'zone: "canon"\nadmission_state: proposed\nproposed_at: "2026-06-08"\n')
+        # broken candidate — no derived_from (CAND-002), bad obligation_level (CAND-004).
+        open(os.path.join(cand, "CONSTRAINT-bad-1.yaml"), "w", encoding="utf-8").write(
+            'notation: "constraint"\nid: "CONSTRAINT-bad-1"\nname: "x"\ndescription: "x"\n'
+            'obligation_level: MUSTNT\nzone: "canon"\nadmission_state: proposed\nproposed_at: "2026-06-08"\n')
+
+        r = run_cli("validate", org, "--json")
+        check(r.returncode == 1, f"I: validate must exit 1 when artefacts need review (got {r.returncode})")
+        res = json.loads(r.stdout)
+        by = {it["id"]: it for it in res["items"]}
+        check(not by["SEGMENT-a-1"]["flags"], "I: a conformant SEGMENT must pass clean")
+        check(not by["REQUIREMENT-a-1"]["flags"], "I: a conformant candidate must pass clean")
+        codes = lambda i: {f["code"] for f in by[i]["flags"]}
+        check("SEGMENT-002" in codes("SEGMENT-bad-1"), "I: a non-codex source TYPE must flag SEGMENT-002")
+        check("SEGMENT-006" in codes("SEGMENT-bad-1"), "I: a malformed text_hash must flag SEGMENT-006")
+        check("CAND-002" in codes("CONSTRAINT-bad-1"), "I: a candidate with no derived_from must flag CAND-002")
+        check(res["errors"] >= 2 and res["warnings"] >= 2, f"I: tally must count errors + warnings; got {res['errors']}/{res['warnings']}")
+
+        # A clean-only batch exits 0.
+        os.remove(os.path.join(seg, "SEGMENT-bad-1.yaml"))
+        os.remove(os.path.join(cand, "CONSTRAINT-bad-1.yaml"))
+        r = run_cli("validate", org)
+        check(r.returncode == 0, f"I: a clean batch must exit 0; got {r.returncode}: {(r.stdout + r.stderr)}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
@@ -568,6 +630,7 @@ part_e_check_signal()
 part_f_fetch_snapshot()
 part_g_segment()
 part_h_classify()
+part_i_validate()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")

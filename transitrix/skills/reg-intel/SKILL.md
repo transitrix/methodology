@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `classify` (Step 5), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `validate` (Step 6), `amendment` (Step 7); when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `classify` (Step 5), `validate` (Step 6), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `amendment` (Step 7); when the run loop reaches it the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -180,13 +180,15 @@ npx @transitrix/reg-intel-cli classify <_intake/processing/segments/> --from <re
 
 ## Step 6 — Validate (coverage-profile aware)
 
-Every SEGMENT and every canon candidate is run through the canonical validators — ID grammar, TYPE registry, the SEGMENT / REQUIREMENT / CONSTRAINT field rules ([`SEGMENT-001..008`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/23-segment.md), the REQUIREMENT / CONSTRAINT rules in their specs), and the adopter's **coverage profile** ([COVERAGE_PROFILES](https://raw.githubusercontent.com/transitrix/methodology/main/notations/COVERAGE_PROFILES.md)).
+Every staged SEGMENT and every canon candidate is run through the canonical validators — ID grammar, TYPE registry, and the SEGMENT / REQUIREMENT / CONSTRAINT field rules ([`SEGMENT-001..008`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/23-segment.md), the REQUIREMENT / CONSTRAINT rules in their specs). `SEGMENT-002` resolves each SEGMENT's `source` against the repo's `codex/` (TYPE must be `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`); `SEGMENT-004/005` check `parent` nesting within the staged batch.
 
 ```
-npx @transitrix/reg-intel-cli validate <_intake/processing/>
+npx @transitrix/reg-intel-cli validate [org-root] [--json]
 ```
 
-Out-of-profile or invalid candidates are **flagged with an actionable reason** — not silently emitted, and not silently dropped. A flagged candidate is a review-digest item, not a rejection. The validator is the same `check-notations`-shaped pass the rest of the methodology uses; nothing reg-intel-specific lives in it.
+Out-of-profile or invalid candidates are **flagged with an actionable, coded reason** (e.g. `[SEGMENT-002/error]`) — not silently emitted, and not silently dropped. A flagged artefact is a review-digest item, not a rejection; the command exits `1` when anything needs review, `0` when the batch is clean.
+
+> **Coverage-profile awareness is deferred.** SKILL intent is to also check each candidate's TYPE against the adopter's [coverage profile](https://raw.githubusercontent.com/transitrix/methodology/main/notations/COVERAGE_PROFILES.md). The coverage resolver currently lives only in the ingest CLI; sharing it (a common package) rather than duplicating it is a separate refactor. Until then `validate` covers the contract + grammar checks; coverage is confirmed at the human gate.
 
 ---
 
