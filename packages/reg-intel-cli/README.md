@@ -4,7 +4,7 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 
 **The one rule:** this CLI *proposes*. It reads the codex registry, runs the change-signal gate, snapshots / segments / classifies regulatory text, and stages a review digest. It **never writes `canon/`** and **never silently flips** an existing `active` canon element. A human admits.
 
-> **Status — built incrementally.** The package ships in increments mirroring the ingest-cli roll-out. **Landed: the scheduler core** (`list-due`, `update-scan`) **and the review digest** (`digest`). The rest of the [SKILL.md](../../transitrix/skills/reg-intel/SKILL.md) pipeline (`check-signal`, `fetch-snapshot`, `segment`, `classify`, `validate`, `amendment`) lands in later increments.
+> **Status — built incrementally.** The package ships in increments mirroring the ingest-cli roll-out. **Landed:** the scheduler core (`list-due`, `update-scan`), the change-signal gate (`check-signal`), and the review digest (`digest`). The rest of the [SKILL.md](../../transitrix/skills/reg-intel/SKILL.md) pipeline (`fetch-snapshot`, `segment`, `classify`, `validate`, `amendment`) lands in later increments.
 
 ## Commands
 
@@ -13,8 +13,9 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 | `--version` / `--help` | ✅ | Version (the skill's Step-0 pre-check) and usage. |
 | `list-due [org-root] [--as-of YYYY-MM-DD] [--json]` | ✅ | List codex sources due for a scan: `monitoring_needed: true` artefacts whose `scan.next_scan_due <= as-of` (or never scanned), plus the `monitor_instead[]` counterparts of static sources. One run filters by date — not N schedules. |
 | `update-scan <CODEX-ID\|file> [--today YYYY-MM-DD] [--frequency daily\|weekly\|monthly\|quarterly] [--change "<summary>"] [--review]` | ✅ | Write the codex `scan` block (`last_scanned_at`, `next_scan_due` from the cadence, `change_detected`, `change_description`, `review_needed`) — operating state only; never touches any other field. |
+| `check-signal <CODEX-ID\|file> --observed <value> [--method etag\|last_modified\|api_version\|amended_date\|fragment_hash] [--accept-no-signal] [--today YYYY-MM-DD]` | ✅ | The cheap change-signal gate (network-free — caller supplies the observed value). Compares to the last-seen value in `operations/state/reg-intel/signal-cache.json`: `unchanged` → bump scan; `moved` / `no_signal` → proceed. |
 | `digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]` | ✅ | Assemble the human review digest (`review-digest.yaml`) — staged SEGMENT / candidate / AMENDMENT artefacts grouped by codex source (candidates via `derived_from` → SEGMENT), with each source's scan block + a tally. `gate.admits_to_canon: false`. Schema: [`schemas/review-digest.schema.json`](../../transitrix/skills/reg-intel/schemas/review-digest.schema.json). |
-| `check-signal` / `fetch-snapshot` / `segment` / `classify` / `validate` / `amendment` | ⏳ | Later increments. |
+| `fetch-snapshot` / `segment` / `classify` / `validate` / `amendment` | ⏳ | Later increments. |
 
 `next_scan_due` math: `daily` +1d, `weekly` +7d, `monthly` +1 month, `quarterly` +3 months; month additions clamp to the target month's last day (Jan 31 + monthly → Feb 28/29). All UTC, so results are host-timezone independent. Dates compare as ISO-8601 strings.
 
@@ -28,10 +29,12 @@ packages/reg-intel-cli/
     schedule.mjs       # scan_frequency enum + next_scan_due date math + isDue
     codex.mjs          # discover codex artefacts; the due set (list-due); find by ID
     update-scan.mjs    # write/replace the codex scan block in place (Step 8)
+    check-signal.mjs   # the change-signal gate: compare observed vs cached (Step 2)
+    signal-cache.mjs   # read/write the committed operations/state signal cache
     digest.mjs         # assemble the review digest from staged run artefacts (Step 9)
 ```
 
-The "source registry" is **the codex artefacts the repo already carries** (`14-codex.md` §3.4–3.5), not a separate database — the schedule rides on each codex YAML's `scan` block, so scan history is auditable via git. Zero runtime dependencies, Node ≥ 18.
+The "source registry" is **the codex artefacts the repo already carries** (`14-codex.md` §3.4–3.5), not a separate database — the schedule rides on each codex YAML's `scan` block, so scan history is auditable via git. The change-signal cache is committed operational **state** at `operations/state/reg-intel/signal-cache.json` (`method/team-operations.md` §3.3) — outside the model, disposable, survives clone/CI. Zero runtime dependencies, Node ≥ 18.
 
 ## Tests
 
