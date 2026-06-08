@@ -1,0 +1,15 @@
+# reg-intel-daily.timer — example systemd timer for the Transitrix reg-intel daily scan.
+# Fires reg-intel-daily.service once a day. The per-source cadence lives on each codex
+# artefact's scan.scan_frequency (daily|weekly|monthly|quarterly); this timer is the
+# single daily tick, and list-due decides what is actually due each day.
+
+[Unit]
+Description=Run the Transitrix reg-intel daily scan
+
+[Timer]
+OnCalendar=*-*-* 07:00:00
+Persistent=true
+RandomizedDelaySec=900
+
+[Install]
+WantedBy=timers.target

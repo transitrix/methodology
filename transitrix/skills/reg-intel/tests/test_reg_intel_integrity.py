@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(operational templates + coverage-in-validate land later). Ten parts:
+(coverage-in-validate + cosmetic-diff land later). Eleven parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -45,6 +45,10 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      detected_at, segment_refs auto-collected from this source's staged SEGMENTs only,
      likely_impacted hints, motivates [] on first emission; the digest counts it;
      --change required; a static (monitoring_needed: false) source is rejected.
+  K. operational templates — the templates/ bundle is present (daily driver, systemd
+     service + timer, fetch-recipes, snapshots README); the daily driver invokes the
+     live run-loop commands and is valid bash; fetch-recipes states the API-first rule
+     and names the check-signal methods; the timer defines an OnCalendar schedule.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -683,6 +687,38 @@ part_g_segment()
 part_h_classify()
 part_i_validate()
 part_j_amendment()
+
+
+# ── Part K — operational templates bundle ────────────────────────
+
+def part_k_templates():
+    tdir = os.path.join(SKILL_DIR, "templates")
+    for name in ("README.md", "_intake.snapshots.README.md", "reg-intel-daily.sh",
+                 "reg-intel-daily.service", "reg-intel-daily.timer", "fetch-recipes.md"):
+        check(os.path.isfile(os.path.join(tdir, name)), f"K: templates/{name} missing")
+
+    daily = os.path.join(tdir, "reg-intel-daily.sh")
+    if os.path.isfile(daily):
+        s = open(daily, encoding="utf-8").read()
+        # The driver must drive the run loop through the live CLI commands.
+        for cmd in ("list-due", "check-signal", "fetch-snapshot", "update-scan", "validate", "digest"):
+            check(cmd in s, f"K: reg-intel-daily.sh must invoke `{cmd}`")
+        check("set -euo pipefail" in s, "K: reg-intel-daily.sh should be a strict bash script")
+        check(s.startswith("#!/usr/bin/env bash"), "K: reg-intel-daily.sh needs a bash shebang")
+
+    recipes = os.path.join(tdir, "fetch-recipes.md")
+    if os.path.isfile(recipes):
+        rs = open(recipes, encoding="utf-8").read()
+        check("Prefer APIs" in rs or "prefer APIs" in rs.lower(), "K: fetch-recipes must state the API-first rule")
+        for m in ("etag", "last_modified", "api_version", "amended_date", "fragment_hash"):
+            check(m in rs, f"K: fetch-recipes must name the check-signal method {m}")
+
+    timer = os.path.join(tdir, "reg-intel-daily.timer")
+    if os.path.isfile(timer):
+        check("OnCalendar" in open(timer, encoding="utf-8").read(), "K: the timer must define an OnCalendar schedule")
+
+
+part_k_templates()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")
