@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Four parts:
+(the rest of the SKILL.md pipeline lands in later increments). Five parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -18,6 +18,11 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      staged SEGMENT / candidate / AMENDMENT artefacts by codex source (candidates via
      derived_from -> segment), surfaces orphans under (unassociated), tallies, and is
      always gated (admits_to_canon: false) — even on an empty run.
+  E. check-signal (Step 2, the change-signal gate) — compares an observed signal to the
+     last-seen value in the operations signal-cache: first observation is 'moved' and
+     writes the cache (scan NOT bumped); an unchanged signal bumps the scan cadence; a
+     changed signal is 'moved' with the prior value; no signal refuses unless
+     --accept-no-signal; a static artefact is rejected.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -299,10 +304,77 @@ def part_d_digest():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part E — check-signal (Step 2, the change-signal gate) ───────
+
+def part_e_check_signal():
+    if not shutil.which("node"):
+        print("SKIP Part E: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-signal-")
+    try:
+        org = _codex_org(work)
+        a_file = os.path.join(org, "codex", "external", "eu", "REGULATION-A-1.yaml")  # monthly, due 2026-05-01
+        cache = os.path.join(org, "operations", "state", "reg-intel", "signal-cache.json")
+
+        def scan_of(f):
+            return yaml.safe_load(open(f, encoding="utf-8")).get("scan", {})
+
+        before_due = scan_of(a_file).get("next_scan_due")
+
+        # First observation, no cache yet → moved; cache is written to the operations
+        # state location; the scan block is NOT bumped (the full pass does Step 8).
+        r = run_cli("check-signal", a_file, "--observed", "etag-v1", "--method", "etag", "--today", "2026-06-08", "--json")
+        check(r.returncode == 0, f"E: check-signal failed: {r.stderr.strip()}")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "moved" and res.get("proceed") is True, "E: first observation must be 'moved'")
+        check(os.path.isfile(cache), "E: signal cache must be written under operations/state/reg-intel/")
+        c = json.load(open(cache, encoding="utf-8"))
+        check(c.get("sources", {}).get("REGULATION-A-1", {}).get("value") == "etag-v1",
+              "E: the cache must record the observed signal value")
+        check(scan_of(a_file).get("next_scan_due") == before_due, "E: a moved signal must NOT bump the scan block (that is Step 8)")
+
+        # Same value again → unchanged; the scan block IS bumped (monthly cadence).
+        r = run_cli("check-signal", a_file, "--observed", "etag-v1", "--method", "etag", "--today", "2026-06-08", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "unchanged" and res.get("proceed") is False, "E: an unchanged signal must be 'unchanged' (no proceed)")
+        check(scan_of(a_file).get("next_scan_due") == "2026-07-08", f"E: unchanged must bump next_scan_due by the cadence; got {scan_of(a_file).get('next_scan_due')}")
+        check(scan_of(a_file).get("change_detected") is False, "E: unchanged must leave change_detected false")
+
+        # A new value → moved again, with the prior value reported.
+        r = run_cli("check-signal", a_file, "--observed", "etag-v2", "--method", "etag", "--today", "2026-06-09", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "moved" and res.get("previous") == "etag-v1",
+              f"E: a changed signal must be 'moved' with previous=etag-v1; got {res}")
+
+        # No observed value + no opt-in → refuse (never guess).
+        r = run_cli("check-signal", a_file, "--today", "2026-06-08")
+        check(r.returncode != 0 and "no observed signal" in (r.stdout + r.stderr),
+              "E: check-signal with no signal and no --accept-no-signal must refuse")
+        # --accept-no-signal → degrade to proceed.
+        r = run_cli("check-signal", a_file, "--accept-no-signal", "--today", "2026-06-08", "--json")
+        res = json.loads(r.stdout)
+        check(res.get("outcome") == "no_signal" and res.get("proceed") is True, "E: --accept-no-signal must degrade to no_signal/proceed")
+
+        # A static (monitoring_needed: false) artefact has no signal gate.
+        s_file = os.path.join(org, "codex", "external", "us", "REGULATION-D-1.yaml")
+        r = run_cli("check-signal", s_file, "--observed", "x", "--today", "2026-06-08")
+        check(r.returncode != 0 and "monitoring_needed: true" in (r.stdout + r.stderr),
+              "E: check-signal must reject a monitoring_needed: false artefact")
+
+        # Resolve by CODEX-ID (cwd in org).
+        r = subprocess.run(["node", CLI, "check-signal", "POLICY-C-1", "--observed", "v", "--today", "2026-06-08", "--json"],
+                           capture_output=True, text=True, cwd=org)
+        check(r.returncode == 0 and json.loads(r.stdout).get("id") == "POLICY-C-1",
+              f"E: check-signal by CODEX-ID failed: {(r.stdout + r.stderr).strip()}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
 part_d_digest()
+part_e_check_signal()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")

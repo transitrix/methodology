@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments: **the scheduler core is live** — `list-due` (Step 1) and `update-scan` (Step 8). The remaining subcommands (`check-signal`, `fetch-snapshot`, `segment`, `classify`, `validate`, `amendment`, `digest`) are not yet published; when the run loop reaches one of them, the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `fetch-snapshot`, `segment`, `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -56,21 +56,24 @@ Emits the set of codex artefacts whose `scan.next_scan_due <= today` (or the sup
 
 Before any fetch of the full source body, the CLI runs a cheap signal check on each due artefact:
 
-| Signal source | What the agent compares |
+| Signal source (`--method`) | What is compared |
 |---|---|
-| HTTP `ETag` / `Last-Modified` response headers | last seen values, stored on the codex artefact alongside the `scan` block |
-| API "updated" / version field (where the source offers a feed or JSON endpoint) | last seen value |
-| Source's own "last amended" date (where the page exposes one) | last seen value |
-| Hash of a known cheap-to-fetch fragment (TOC, masthead) | last seen hash |
+| HTTP `ETag` / `Last-Modified` response headers (`etag` / `last_modified`) | last-seen value in the signal cache |
+| API "updated" / version field (`api_version`) | last-seen value |
+| Source's own "last amended" date (`amended_date`) | last-seen value |
+| Hash of a known cheap-to-fetch fragment — TOC, masthead (`fragment_hash`) | last-seen hash |
 
-If **no signal source is available** (a plain HTML page with no ETag, no API, no published "last amended" date), the gate degrades to "always proceed to fetch" — the absence of a signal source is recorded on the artefact so adopters can prioritise fixing it.
+The last-seen values live in the **operations signal-cache** at `operations/state/reg-intel/signal-cache.json` — committed operational **state** (per [`method/team-operations.md`](https://raw.githubusercontent.com/transitrix/methodology/main/method/team-operations.md) §3.3), **not** on the codex artefact (the `14-codex.md` §3.5 `scan` block stays closed) and **not** in transient `_intake/` (the cache must survive a fresh clone / CI checkout for the gate to pay off). The cache is disposable — if it is lost, the gate degrades to "treat as moved / always fetch", never wrong.
 
-If the signal **has not moved**: bump `scan.last_scanned_at` to today and `scan.next_scan_due` to today + `scan_frequency`. No SEGMENT / CLASSIFY pass. No AMENDMENT. The artefact is reported in the run's "checked, unchanged" tally and dropped from the rest of the pipeline.
+The CLI is **network-free**: the agent/scheduler does the cheap fetch and passes the observed value in via `--observed`; the CLI does the comparison and the state update. With **no signal source available** (a plain HTML page with no ETag, no API, no published "last amended" date), pass `--accept-no-signal` — the gate degrades to "proceed to fetch".
 
-If the signal **has moved**: proceed to Step 3. The signal change alone is not yet an AMENDMENT — a cosmetic re-publication can move `Last-Modified` without changing any normative text. The AMENDMENT is decided in Step 5 against the snapshot diff, not against the signal.
+If the signal **has not moved**: the CLI bumps `scan.last_scanned_at` to today and `scan.next_scan_due` to today + `scan_frequency`. No SEGMENT / CLASSIFY pass, no AMENDMENT — the artefact is reported "checked, unchanged" and dropped from the rest of the pipeline.
+
+If the signal **has moved** (or there is no cached baseline yet): proceed to Step 3, and the cache baseline advances to the observed value so the next run detects the next move. The signal change alone is not yet an AMENDMENT — a cosmetic re-publication can move `Last-Modified` without changing any normative text. The AMENDMENT is decided in Step 5 against the snapshot diff, not against the signal. (The scan block is bumped by Step 8 once the moved source's pass completes, not by the gate.)
 
 ```
-npx @transitrix/reg-intel-cli check-signal <CODEX-ID> [--accept-no-signal]
+npx @transitrix/reg-intel-cli check-signal <CODEX-ID> --observed <value> [--method etag|last_modified|api_version|amended_date|fragment_hash]
+npx @transitrix/reg-intel-cli check-signal <CODEX-ID> --accept-no-signal
 ```
 
 ---

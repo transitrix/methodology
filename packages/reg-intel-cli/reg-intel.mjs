@@ -20,6 +20,7 @@ import { access } from 'node:fs/promises';
 
 import { findOrgRoot, listDue, findCodexFile } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
+import { checkSignal } from './src/check-signal.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -58,6 +59,11 @@ function usage() {
     '  update-scan <CODEX-ID|file> [--today YYYY-MM-DD] [--frequency daily|weekly|monthly|quarterly]',
     '              [--change "<summary>"] [--review]',
     '                                 Write the codex scan block (last_scanned_at, next_scan_due, …).',
+    '  check-signal <CODEX-ID|file> --observed <value> [--method etag|last_modified|api_version|amended_date|fragment_hash]',
+    '               [--accept-no-signal] [--today YYYY-MM-DD]',
+    '                                 The cheap change-signal gate: compare the observed signal to the',
+    '                                 last-seen value (operations/state/reg-intel/signal-cache.json).',
+    '                                 unchanged → bump scan; moved/no_signal → proceed.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -131,6 +137,43 @@ async function cmdUpdateScan(args) {
   }
 }
 
+async function cmdCheckSignal(args) {
+  const { _, flags } = parseArgs(args);
+  const target = _[0];
+  if (!target) { console.error('check-signal: missing <CODEX-ID|file>'); return 1; }
+
+  let file = null;
+  let orgRoot = null;
+  if (await exists(resolve(target))) {
+    file = resolve(target);
+    orgRoot = await findOrgRoot(file);
+    if (!orgRoot) { console.error('check-signal: file is not inside a Transitrix workspace (no transitrix.yaml).'); return 2; }
+  } else {
+    orgRoot = await resolveOrgRoot(undefined, 'check-signal');
+    if (!orgRoot) return 2;
+    file = await findCodexFile(orgRoot, target);
+    if (!file) { console.error(`check-signal: no codex artefact with id ${target} under codex/`); return 2; }
+  }
+
+  try {
+    const res = await checkSignal(orgRoot, file, {
+      observed: typeof flags.observed === 'string' ? flags.observed : null,
+      method: typeof flags.method === 'string' ? flags.method : null,
+      acceptNoSignal: flags['accept-no-signal'] === true || flags['accept-no-signal'] === 'true',
+      today: flags.today ? String(flags.today) : today(),
+    });
+    if (flags.json) { console.log(JSON.stringify(res, null, 2)); return 0; }
+    console.log(`check-signal  ${res.id}  ->  ${res.outcome}  (proceed: ${res.proceed})`);
+    if (res.outcome === 'moved') console.log(`  signal moved [${res.method}] — fetch + segment/classify next. previous: ${res.previous ?? '(none)'}`);
+    else if (res.outcome === 'unchanged') console.log(`  signal unchanged [${res.method}] — scan bumped to next_scan_due ${res.scan.next_scan_due}; no extraction.`);
+    else console.log('  no cheap signal available — proceeding to fetch (degraded gate).');
+    return 0;
+  } catch (err) {
+    console.error(`check-signal: ${err.message}`);
+    return 2;
+  }
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -155,9 +198,10 @@ async function main(argv) {
   if (cmd === '--version' || cmd === '-v') { console.log(await version()); return 0; }
 
   switch (cmd) {
-    case 'list-due':    return cmdListDue(args);
-    case 'update-scan': return cmdUpdateScan(args);
-    case 'digest':      return cmdDigest(args);
+    case 'list-due':     return cmdListDue(args);
+    case 'update-scan':  return cmdUpdateScan(args);
+    case 'check-signal': return cmdCheckSignal(args);
+    case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
       return 1;
