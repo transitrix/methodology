@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
-Deterministic, no-API-key, no-network guard for the SCHEDULER CORE — the first
-increment of the CLI (the rest of the SKILL.md pipeline lands in later increments).
-Three parts:
+Deterministic, no-API-key, no-network guard for the CLI increments landed so far
+(the rest of the SKILL.md pipeline lands in later increments). Four parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -15,6 +14,10 @@ Three parts:
   C. update-scan (Step 8) — writes the codex scan block with correct cadence math
      (clamping month-ends), sets change/review flags, preserves every other field, and
      refuses a static (monitoring_needed: false) artefact and a missing cadence.
+  D. digest (Step 9, the human gate) — the digest schema parses; the digest groups
+     staged SEGMENT / candidate / AMENDMENT artefacts by codex source (candidates via
+     derived_from -> segment), surfaces orphans under (unassociated), tallies, and is
+     always gated (admits_to_canon: false) — even on an empty run.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -215,14 +218,96 @@ def part_c_update_scan():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part D — digest (Step 9, the human gate) ─────────────────────
+
+def part_d_digest():
+    if not shutil.which("node"):
+        print("SKIP Part D: `node` not found.")
+        return
+
+    # The digest schema ships with the bundle and parses.
+    schema = os.path.join(SKILL_DIR, "schemas", "review-digest.schema.json")
+    if check(os.path.isfile(schema), "review-digest.schema.json missing from bundle"):
+        try:
+            import json as _json
+            _json.load(open(schema, encoding="utf-8"))
+        except Exception as e:  # noqa: BLE001
+            check(False, f"review-digest.schema.json does not parse: {e}")
+
+    work = tempfile.mkdtemp(prefix="regintel-digest-")
+    try:
+        org = _codex_org(work)
+        proc = os.path.join(org, "_intake", "processing")
+        for sub in ("segments", "candidates", "amendments"):
+            os.makedirs(os.path.join(proc, sub), exist_ok=True)
+
+        def w(rel, body):
+            with open(os.path.join(proc, rel), "w", encoding="utf-8") as fh:
+                fh.write(body)
+
+        # Give REGULATION-A-1 a scan block + a full set of run artefacts.
+        run_cli("update-scan", os.path.join(org, "codex", "external", "eu", "REGULATION-A-1.yaml"),
+                "--today", "2026-06-08", "--change", "Art 3 changed", "--review")
+        w("segments/SEGMENT-a-1.yaml",
+          'id: "SEGMENT-a-1"\nsource: "REGULATION-A-1"\nlocator: "Art.3(1)"\nextraction_confidence: high\nzone: "field"\n')
+        w("candidates/REQUIREMENT-a-1.yaml",
+          'id: "REQUIREMENT-a-1"\nderived_from: [SEGMENT-a-1]\nextraction_confidence: medium\nadmission_state: proposed\n')
+        w("candidates/CONSTRAINT-a-1.yaml",
+          'id: "CONSTRAINT-a-1"\nderived_from:\n  - SEGMENT-a-1\nextraction_confidence: high\n')
+        w("amendments/AMENDMENT-a-1.yaml",
+          'id: "AMENDMENT-a-1"\nsource: "REGULATION-A-1"\nchange_description: "Article 3 amended"\nsegment_refs: [SEGMENT-a-1]\n')
+        # An orphan segment with no source must surface, not vanish.
+        w("segments/SEGMENT-orphan-1.yaml", 'id: "SEGMENT-orphan-1"\nlocator: "§1"\nextraction_confidence: low\n')
+
+        r = run_cli("digest", org, "--run-id", "run-1", "--as-of", "2026-06-08")
+        check(r.returncode == 0, f"D: digest failed: {r.stderr.strip()}")
+        dg = yaml.safe_load(open(os.path.join(proc, "review-digest.yaml"), encoding="utf-8"))
+
+        check(dg.get("gate", {}).get("admits_to_canon") is False, "D: digest gate.admits_to_canon must be False")
+        check(dg.get("run_id") == "run-1" and dg.get("as_of") == "2026-06-08", "D: digest run_id / as_of not carried")
+        by = {s["id"]: s for s in dg.get("sources", [])}
+
+        a = by.get("REGULATION-A-1")
+        if check(a is not None, "D: REGULATION-A-1 must appear as a source in the digest"):
+            check(a.get("scan", {}).get("review_needed") is True, "D: source scan block (review_needed) must be carried")
+            check([s["id"] for s in a["segments"]] == ["SEGMENT-a-1"], "D: SEGMENT must group under its source")
+            cands = sorted((c["id"], c["kind"]) for c in a["candidates"])
+            check(cands == [("CONSTRAINT-a-1", "constraint"), ("REQUIREMENT-a-1", "requirement")],
+                  f"D: candidates must group under the source via derived_from->segment, with kinds; got {cands}")
+            check([m["id"] for m in a["amendments"]] == ["AMENDMENT-a-1"], "D: AMENDMENT must group under its source")
+
+        check("(unassociated)" in by and [s["id"] for s in by["(unassociated)"]["segments"]] == ["SEGMENT-orphan-1"],
+              "D: an artefact with no resolvable source must surface under (unassociated), never be dropped")
+
+        t = dg.get("tally", {})
+        check(t.get("proposed", {}) == {"SEGMENT": 2, "REQUIREMENT": 1, "CONSTRAINT": 1, "AMENDMENT": 1},
+              f"D: tally.proposed wrong: {t.get('proposed')}")
+        check(t.get("review_needed") == 1, f"D: tally.review_needed wrong: {t.get('review_needed')}")
+
+        # An empty run (no artefacts) still produces a valid, gated digest.
+        work2 = tempfile.mkdtemp(prefix="regintel-digest-empty-")
+        try:
+            org2 = _codex_org(work2)
+            r = run_cli("digest", org2, "--as-of", "2026-06-08")
+            check(r.returncode == 0, "D: digest on an empty run must succeed")
+            dg2 = yaml.safe_load(open(os.path.join(org2, "_intake", "processing", "review-digest.yaml"), encoding="utf-8"))
+            check(dg2.get("tally", {}).get("proposed", {}).get("SEGMENT") == 0, "D: empty run must tally zero segments")
+            check(dg2.get("gate", {}).get("admits_to_canon") is False, "D: empty digest still gates")
+        finally:
+            shutil.rmtree(work2, ignore_errors=True)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
+part_d_digest()
 
 if _failures:
-    print("FAIL - Transitrix Reg-Intel skill + CLI scheduler-core test:")
+    print("FAIL - Transitrix Reg-Intel skill + CLI test:")
     for f in _failures:
         print(f"  - {f}")
     sys.exit(1)
-print("PASS - Transitrix Reg-Intel skill + CLI scheduler-core test: all checks passed.")
+print("PASS - Transitrix Reg-Intel skill + CLI test: all checks passed.")
 sys.exit(0)
