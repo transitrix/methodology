@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
-> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
+> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the field→canon pipeline against it. It runs **agent-neutrally** under Claude and GitHub Copilot — all heavy logic is in the CLI, and this `SKILL.md` only sequences it.
 
@@ -147,13 +147,22 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 **Nothing lands in `canon/` from this skill.** A human reviews the queue, confirms or revises each proposed `source_quality`, and runs the canon admission gate (`uniqueness`, `consistency`, `completeness` — [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)) to admit candidates. When ingest is complete for a source, its raw file moves to `_intake/processed/`.
 
+### Placement is deterministic — pinned to ELEMENT_PRIMITIVES §4
+
+Where an admitted element lands is **not** a judgement call. Every element TYPE has a canonical **materialisation mode + layer + folder** in [`ELEMENT_PRIMITIVES.md` §4](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md); the CLI resolves it so equals are treated equally — `ACTOR`, `ROLE`, `PROCESS`, `PRODUCT`, `APPLICATION` are all `standalone` and each gets its own per-TYPE folder, never inline-by-accident.
+
+- The review queue annotates each element candidate with its resolved `placement` (`mode`, `layer`, `folder`). Admit a `standalone` element to exactly that folder, one file per element.
+- Check any TYPE on demand: `npx @transitrix/ingest-cli resolve-placement <TYPE>`.
+- **Honour the §1 promotion rule explicitly.** A `view-defined` / `contained` TYPE (`INTEGRATION`, `STEP`, `EQUIPMENT`, `INFORMATION_ENTITY`, registry rows) stays **inline** in its host/view document and is promoted to its own catalogue file **only when a second document references it** — the id never changes on promotion. Do not pre-create a standalone file for a still-single-reference element.
+- After admitting, verify placement: `npx @transitrix/ingest-cli check-placement [org-root]` flags any admitted element sitting outside its §4 folder (and any `view-defined` TYPE wrongly given its own catalogue file). Read-only over `canon/`.
+
 ---
 
 ## The CLI
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
 
-The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`.
+The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `check-placement`, `resolve-placement`.
 
 ---
 

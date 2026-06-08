@@ -9,6 +9,7 @@ import { join, resolve } from 'node:path';
 import { dump, readTopScalar } from './yaml.mjs';
 import { validateCandidate, loadCandidates } from './validate.mjs';
 import { buildCanonIndex, admittedMatch } from './canon.mjs';
+import { resolvePlacement } from './placement.mjs';
 import { parseId } from './ids.mjs';
 import { TYPE_INFO } from './field-artefact.mjs';
 
@@ -49,12 +50,16 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     if (already) { excluded_admitted.push({ ref, matched: already }); continue; }
     const v = validateCandidate(candidate, profile);
     for (const d of candidate.derived_from || []) fieldIds.add(d);
+    // Surface the deterministic §4 placement (mode + layer + folder) for an element
+    // candidate, so the human gate places it consistently instead of by judgement.
+    const place = candidate.kind === 'element' ? resolvePlacement(candidate.element_type) : null;
     candidates.push({
       ref,
       kind: candidate.kind,
       extraction_confidence: candidate.extraction_confidence ?? null,
       coverage_flag: v.coverage_flag,
       ...(v.coverage_reason ? { coverage_reason: v.coverage_reason } : {}),
+      ...(place ? { placement: { mode: place.mode, layer: place.layer, folder: place.folder, ...(place.promotable ? { promotable: true } : {}) } } : {}),
       validation_flags: v.validation_flags,
     });
   }

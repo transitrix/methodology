@@ -24,6 +24,7 @@ import { readCoverageProfile } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
+import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -68,6 +69,8 @@ function usage() {
     '  validate <candidates-dir>      Validate candidate *.json against the contract + coverage profile',
     '  review-queue <candidates-dir>  Assemble the human review queue (writes review-queue.yaml)',
     '                 [--out <path>]',
+    '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
+    '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
   ].join('\n');
@@ -277,6 +280,35 @@ async function cmdEmitCandidates(args) {
   }
 }
 
+// Print the canonical §4 placement (mode + layer + folder) for a TYPE.
+async function cmdResolvePlacement(args) {
+  const { _ } = parseArgs(args);
+  const type = _[0] ? String(_[0]).toUpperCase() : null;
+  if (!type) { console.error('resolve-placement: missing <TYPE>'); return 1; }
+  const p = resolvePlacement(type);
+  if (!p) { console.error(`resolve-placement: ${type} has no ELEMENT_PRIMITIVES §4 placement (not a catalogue element TYPE).`); return 1; }
+  console.log(`${type}  mode: ${p.mode}  layer: ${p.layer ?? '—'}  folder: ${p.folder ?? '(inline — no catalogue folder)'}${p.promotable ? '  (promotable, §1 rule)' : ''}`);
+  return 0;
+}
+
+// Flag admitted elements sitting outside their §4 folder (read-only over canon/).
+async function cmdCheckPlacement(args) {
+  const { _ } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('check-placement: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const { scanned, findings } = await checkCanonPlacement(orgRoot);
+  if (findings.length === 0) {
+    console.log(`check-placement  ${scanned} catalogue element(s) scanned — all sit in their ELEMENT_PRIMITIVES §4 folder.`);
+    return 0;
+  }
+  console.error(`check-placement  ${findings.length} of ${scanned} element(s) misplaced (ELEMENT_PRIMITIVES §4):`);
+  for (const f of findings) console.error(`  FLAG  ${f.id}\n          - ${f.reason}`);
+  return 1;
+}
+
 async function main(argv) {
   const [cmd, ...args] = argv;
 
@@ -292,6 +324,8 @@ async function main(argv) {
     case 'emit-candidates': return cmdEmitCandidates(args);
     case 'validate':        return cmdValidate(args);
     case 'review-queue':    return cmdReviewQueue(args);
+    case 'check-placement': return cmdCheckPlacement(args);
+    case 'resolve-placement': return cmdResolvePlacement(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
       return 1;

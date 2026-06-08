@@ -36,10 +36,16 @@ function dumpMap(obj, indent) {
       lines.push(`${pad}${k}:`);
       for (const item of v) {
         if (isPlainObject(item)) {
-          const sub = dumpMap(item, indent + 1);
-          // First entry shares the "- " marker; subsequent entries align under it.
-          lines.push(`${pad}  - ${sub[0].trimStart()}`);
-          for (let i = 1; i < sub.length; i++) lines.push(`${pad}    ${sub[i].trimStart()}`);
+          // Render the item one list-level deep so its keys (and any NESTED maps) keep
+          // their relative indentation; the first key shares the "- " marker. Earlier
+          // this trimStart()ed every sub-line and re-padded flat, which collapsed a
+          // nested object inside a list item — fine for scalar-only items, wrong once
+          // an item carries a sub-map (e.g. a candidate's `placement`).
+          const itemIndent = indent + 2;
+          const sub = dumpMap(item, itemIndent);
+          const childPad = '  '.repeat(itemIndent);
+          lines.push(`${pad}  - ${sub[0].slice(childPad.length)}`);
+          for (let i = 1; i < sub.length; i++) lines.push(sub[i]);
         } else {
           lines.push(`${pad}  - ${scalar(item)}`);
         }

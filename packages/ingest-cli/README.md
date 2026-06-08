@@ -28,7 +28,9 @@ transitrix-ingest <command> [args]
 | `field-artefact <md> --type --role --date` | ✅ | Emit a field artefact with provenance + proposed `source_quality`; retain the raw source in `_intake/processed/`. |
 | `emit-candidates <field-artefact> --from <result.json>` | ✅ | Shape the agent's extraction result into candidates (entity-strong, relation-conservative; non-`high` relations become suggestions). |
 | `validate <candidates-dir>` | ✅ | Validate candidate `*.json` against the contract (in code) + coverage profile; flags, never drops. |
-| `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`. |
+| `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`; annotates each element candidate with its §4 `placement`. |
+| `resolve-placement <TYPE>` | ✅ | Print a TYPE's `ELEMENT_PRIMITIVES.md` §4 materialisation mode + layer + folder. |
+| `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
 
 ## Layout
 
@@ -43,6 +45,7 @@ packages/ingest-cli/
     field-artefact.mjs # emit a field artefact + proposed source_quality
     coverage.mjs       # resolve coverage_profile (preset/custom) + classify in/out
     coverage-presets.mjs # shipped preset membership (COVERAGE_PROFILES §3/§3.1)
+    placement.mjs      # TYPE -> materialisation mode/layer/folder (ELEMENT_PRIMITIVES §4)
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue
     emit-candidates.mjs# shape the agent extraction result into candidates
