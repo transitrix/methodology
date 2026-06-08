@@ -17,7 +17,7 @@ The Transitrix model (`canon/`, `field/`, `codex/`) describes the **enterprise**
 
 A team applying Transitrix also accumulates a second, smaller body of artefacts that describe how **the team itself** is operating: the choices it has made about its own setup, and the units of work it currently has in flight. Those are statements *about the team*.
 
-This is the **Team Operations** convention. It defines a folder, two file shapes, and one linking rule — nothing more.
+This is the **Team Operations** convention. It defines a folder, its file shapes — two human-authored **record** shapes (ADR, WI) and a machine- or human-written **operational config/state** area — and one linking rule. Nothing more.
 
 **Hard distinctions to preserve:**
 
@@ -33,19 +33,25 @@ The adopter instantiates the convention at:
 ```
 organizations/<org>/operations/
 ├── README.md                      # Local rules (~1 screen)
-├── decisions/                     # Architecture decision records
+├── decisions/                     # Architecture decision records (human-authored)
 │   ├── ADR-0001-<slug>.md
 │   ├── ADR-0002-<slug>.md
 │   └── …
-└── work-items/                    # Team work items
-    ├── WI-0001-<slug>.md
-    ├── WI-0002-<slug>.md
-    └── …
+├── work-items/                    # Team work items (human-authored)
+│   ├── WI-0001-<slug>.md
+│   ├── WI-0002-<slug>.md
+│   └── …
+├── config/                        # Operational settings, per tool/process (human-authored)
+│   └── <domain>/…
+└── state/                         # Operational state, per tool/process (machine-written; committed)
+    └── <domain>/…                 # e.g. reg-intel/signal-cache.json
 ```
 
 `operations/` is a **sibling** of `canon/`, `field/`, and `codex/` — not a zone. It is excluded from canon validation: the linter does not walk it, and `transitrix.yaml`'s `zones:` list does not include it.
 
-## 3. The two file shapes
+## 3. The file shapes
+
+The convention provides two human-authored **record** shapes (§3.1 ADR, §3.2 WI) and an operational **config/state** area (§3.3) for structured data a tool or process reads and writes.
 
 ### 3.1 Architecture Decision Record (`ADR-…`)
 
@@ -106,6 +112,17 @@ relates_to:                  # optional — model IDs the work concerns
 
 Body — free-form Markdown. A short outcome statement and a checklist is usually enough; substantive discussion that leads to a course change is captured as an ADR, not as a long Work Item description.
 
+### 3.3 Operational config and state (`config/`, `state/`)
+
+A third area of `operations/`, distinct in *kind* from the ADR/WI records above: **structured operational data** a tool or process reads and writes, not human-authored prose. It has two halves — the **config/state split**:
+
+- **Config — `operations/config/<domain>/…` — human-authored operational *settings*.** Durable, intentional choices about how a tool or process the team runs is configured (cadences, toggles, the curated lists a team maintains to drive an operating activity). Hand-edited and reviewed like any other committed file. Format is the tool's own structured data (YAML / JSON).
+- **State — `operations/state/<domain>/…` — machine-written operational *state*.** The current operational data a tool maintains **across runs** — caches, cursors, last-seen change signals, run bookkeeping. Written by tooling, not hand-edited. It is **committed** (so it survives a fresh clone / CI checkout — the reason it cannot live in the transient `_intake/` workspace), **churny** (frequent, expected diffs), and **disposable / correctness-non-critical**: a consumer MUST tolerate it being absent or stale and regenerate or degrade gracefully. It is never a source of truth about the enterprise.
+
+`<domain>` is the tool or process that owns the data (e.g. `reg-intel`). *Worked example:* the reg-intel change-signal gate persists its last-seen `ETag` / `Last-Modified` / version values at `operations/state/reg-intel/signal-cache.json` — committed so a scheduled scan in a fresh checkout can cheaply tell whether a source moved, yet never part of the model and safe to delete (the gate then simply degrades to "always fetch").
+
+Like the rest of `operations/`, both areas sit **outside** the zone model and the canonical ID grammar, are **not** walked by the doc-lint (`scripts/check-notations.mjs`), and carry no admission gate. Unlike ADR/WI they carry no `id:` and no status vocabulary — they are addressed by **path**, and the *internal* shape of each file is owned by the tool that writes it, not by this convention. This convention fixes only **where** such data lives (`config/` vs `state/`) and the contract that `state/` is committed-but-disposable; a tool-specific config/state split conforms to this home rather than inventing its own location.
+
 ## 4. The linking rule — `relates_to:`
 
 Both file shapes carry an optional `relates_to:` list of **model entity IDs** the artefact concerns — Goals, Capabilities, Activities, Changes, Roles, and so on, drawn from the canonical TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §3.
@@ -119,6 +136,8 @@ If a Work Item or ADR references a model ID that does not resolve (typo, deleted
 `ADR-` and `WI-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…` and `WI-…` carry zero-padded four-digit sequences (`ADR-0001`, `WI-0042`) and are unique within their own folder, not globally. They cannot be cross-referenced from inside the model.
 
 This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions.
+
+Operational config/state files (§3.3) carry **no** identifier at all — they are addressed by **path** (`operations/state/<domain>/<name>`), not by a sequenced `ADR-`/`WI-` id and not by a model ID. They are never cross-referenced from inside the model.
 
 ## 6. Status vocabularies
 
@@ -144,7 +163,7 @@ This is intentional: the team-operations namespace is a different *kind* of iden
 
 Each adopter writes a short local README inside `operations/` covering:
 
-- The two file shapes the convention provides (ADR, WI) — point at this canonical doc rather than restating the schema.
+- The file shapes the convention provides (the ADR and WI records; the `config/`+`state/` operational-data area) — point at this canonical doc rather than restating the schema.
 - The team's local **decision-making process** — when an ADR is required, who signs off, where supersedes are recorded.
 - The team's local **work-item flow** — how items are opened, who reviews, how items move through `proposed → in_progress → done`.
 
@@ -168,7 +187,8 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 - **Not a ticket tracker.** Work Items are short, current, and few. A team that needs grooming, sprints, burn-down, and prioritisation has outgrown this convention and should use its existing tracker.
 - **Not a forum.** Long discussions belong in the PR that proposes the ADR, not in the ADR body.
 - **Not a versioned spec.** ADRs are decisions, not contracts; they do not carry `valid_from`/`valid_to` and they are not admitted to canon.
-- **Not a Transitrix Studio-rendered notation.** Operations files are plain Markdown — no rendering pipeline, no notation header, no extension convention.
+- **Not a Transitrix Studio-rendered notation.** Operations files are plain Markdown — no rendering pipeline, no notation header, no extension convention. (The §3.3 config/state area is the one place `operations/` holds structured data rather than Markdown — but it is still un-rendered and un-linted.)
+- **Not a database of record.** `operations/state/` (§3.3) is a tool's committed working cache, not a source of truth. Anything correctness-critical belongs in the model or must be re-derivable; losing a state file must never lose model truth.
 
 ## 10. References
 
