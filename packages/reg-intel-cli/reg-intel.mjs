@@ -24,6 +24,7 @@ import { checkSignal } from './src/check-signal.mjs';
 import { fetchSnapshot } from './src/snapshot.mjs';
 import { emitSegments } from './src/segment.mjs';
 import { emitCandidates } from './src/classify.mjs';
+import { validateStaged } from './src/validate.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,8 @@ function usage() {
     '  classify [segments-dir] --from <result.json> [--today YYYY-MM-DD]',
     '                                 Shape the classify agent result into proposed REQUIREMENT-* /',
     '                                 CONSTRAINT-* candidates under _intake/processing/candidates/.',
+    '  validate [org-root] [--json]   Validate staged SEGMENTs + candidates against the contract',
+    '                                 (23-segment.md, ID grammar); flags, never drops.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -280,6 +283,25 @@ async function cmdClassify(args) {
   }
 }
 
+async function cmdValidate(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = await resolveOrgRoot(_[0], 'validate');
+  if (!orgRoot) return 2;
+
+  const res = await validateStaged(orgRoot);
+  if (flags.json) { console.log(JSON.stringify(res, null, 2)); return res.reviewed ? 1 : 0; }
+
+  if (res.total === 0) { console.log('validate: no staged SEGMENTs or candidates under _intake/processing/.'); return 0; }
+  for (const it of res.items) {
+    if (!it.flags.length) { console.log(`ok     ${it.id}`); continue; }
+    console.log(`FLAG   ${it.id}`);
+    for (const fl of it.flags) console.log(`         - [${fl.code}/${fl.severity}] ${fl.message}`);
+  }
+  console.log(`\n${res.total} artefact(s); ${res.reviewed} need review (${res.errors} error(s), ${res.warnings} warning(s)).`);
+  console.log('  flagged artefacts are review-digest items, not rejections — a human gates them.');
+  return res.reviewed ? 1 : 0;
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -310,6 +332,7 @@ async function main(argv) {
     case 'fetch-snapshot': return cmdFetchSnapshot(args);
     case 'segment':      return cmdSegment(args);
     case 'classify':     return cmdClassify(args);
+    case 'validate':     return cmdValidate(args);
     case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
