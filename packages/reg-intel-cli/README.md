@@ -4,7 +4,7 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 
 **The one rule:** this CLI *proposes*. It reads the codex registry, runs the change-signal gate, snapshots / segments / classifies regulatory text, and stages a review digest. It **never writes `canon/`** and **never silently flips** an existing `active` canon element. A human admits.
 
-> **Status — built incrementally.** The package ships in increments mirroring the ingest-cli roll-out. **Landed:** the scheduler core (`list-due`, `update-scan`), the change-signal gate (`check-signal`), the snapshot step (`fetch-snapshot`), and the review digest (`digest`). The rest of the [SKILL.md](../../transitrix/skills/reg-intel/SKILL.md) pipeline (`segment`, `classify`, `validate`, `amendment`) lands in later increments.
+> **Status — built incrementally.** The package ships in increments mirroring the ingest-cli roll-out. **Landed:** the scheduler core (`list-due`, `update-scan`), the change-signal gate (`check-signal`), the snapshot step (`fetch-snapshot`), the SEGMENT shaper (`segment`), and the review digest (`digest`). The rest of the [SKILL.md](../../transitrix/skills/reg-intel/SKILL.md) pipeline (`classify`, `validate`, `amendment`) lands in later increments.
 
 ## Commands
 
@@ -15,8 +15,9 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 | `update-scan <CODEX-ID\|file> [--today YYYY-MM-DD] [--frequency daily\|weekly\|monthly\|quarterly] [--change "<summary>"] [--review]` | ✅ | Write the codex `scan` block (`last_scanned_at`, `next_scan_due` from the cadence, `change_detected`, `change_description`, `review_needed`) — operating state only; never touches any other field. |
 | `check-signal <CODEX-ID\|file> --observed <value> [--method etag\|last_modified\|api_version\|amended_date\|fragment_hash] [--accept-no-signal] [--today YYYY-MM-DD]` | ✅ | The cheap change-signal gate (network-free — caller supplies the observed value). Compares to the last-seen value in `operations/state/reg-intel/signal-cache.json`: `unchanged` → bump scan; `moved` / `no_signal` → proceed. |
 | `fetch-snapshot <CODEX-ID\|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD]` | ✅ | Snapshot the caller-fetched bytes to `_intake/snapshots/<id>-<date>.<ext>`, fingerprint (`source_hash: sha256:…`), and detect `captured` / `changed` / `bytes_identical` (cross-checkout via the committed cache). Network-free — the caller fetches. |
+| `segment <snapshot> --from <result.json> [--source <CODEX-ID>] [--today YYYY-MM-DD]` | ✅ | Shape the segment agent's `{segments:[…]}` result into proposed `SEGMENT-*` field artefacts under `_intake/processing/segments/` (canonical ids, `text_hash`, `source`/`source_hash` from the snapshot, the field-zone proposed admission record). Network-free; locator-less / text-less segments flagged + skipped. |
 | `digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]` | ✅ | Assemble the human review digest (`review-digest.yaml`) — staged SEGMENT / candidate / AMENDMENT artefacts grouped by codex source (candidates via `derived_from` → SEGMENT), with each source's scan block + a tally. `gate.admits_to_canon: false`. Schema: [`schemas/review-digest.schema.json`](../../transitrix/skills/reg-intel/schemas/review-digest.schema.json). |
-| `segment` / `classify` / `validate` / `amendment` | ⏳ | Later increments. |
+| `classify` / `validate` / `amendment` | ⏳ | Later increments. |
 
 `next_scan_due` math: `daily` +1d, `weekly` +7d, `monthly` +1 month, `quarterly` +3 months; month additions clamp to the target month's last day (Jan 31 + monthly → Feb 28/29). All UTC, so results are host-timezone independent. Dates compare as ISO-8601 strings.
 
@@ -32,6 +33,7 @@ packages/reg-intel-cli/
     update-scan.mjs    # write/replace the codex scan block in place (Step 8)
     check-signal.mjs   # the change-signal gate: compare observed vs cached (Step 2)
     snapshot.mjs       # snapshot caller-fetched bytes + source_hash + diff (Step 3)
+    segment.mjs        # shape the segment agent result into SEGMENT artefacts (Step 4)
     signal-cache.mjs   # read/write the committed operations/state cache (signals + snapshots)
     digest.mjs         # assemble the review digest from staged run artefacts (Step 9)
 ```

@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `segment`, `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -125,8 +125,10 @@ Each emitted SEGMENT carries:
 
 SEGMENTs are emitted to `_intake/processing/segments/` first; the CLI moves them to `field/segments/` only after the validator pass in Step 6. They are never auto-admitted.
 
+The CLI is network-free here too: the agent runs the [`segment` prompt](prompts/segment.md) over the snapshot and emits `{ segments: [...] }`; the CLI shapes that result into SEGMENT artefacts (assigning canonical ids per the source slug, the field-zone `proposed` admission record, `text_hash` from the excerpt, and `source` / `source_hash` derived from the snapshot). A segment missing a locator or any text is flagged and skipped, never silently emitted.
+
 ```
-npx @transitrix/reg-intel-cli segment <_intake/snapshots/<CODEX-ID>-<DATE>.<ext>>
+npx @transitrix/reg-intel-cli segment <_intake/snapshots/<CODEX-ID>-<DATE>.<ext>> --from <result.json> [--source <CODEX-ID>]
 ```
 
 ---
