@@ -22,6 +22,7 @@ import { findOrgRoot, listDue, findCodexFile } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
 import { checkSignal } from './src/check-signal.mjs';
 import { fetchSnapshot } from './src/snapshot.mjs';
+import { emitSegments } from './src/segment.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -68,6 +69,9 @@ function usage() {
     '  fetch-snapshot <CODEX-ID|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD] [--json]',
     '                                 Snapshot the fetched bytes to _intake/snapshots/, fingerprint',
     '                                 (source_hash), and detect captured | changed | bytes_identical.',
+    '  segment <snapshot> --from <result.json> [--source <CODEX-ID>] [--today YYYY-MM-DD]',
+    '                                 Shape the segment agent result into proposed SEGMENT-* field',
+    '                                 artefacts under _intake/processing/segments/.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -215,6 +219,35 @@ async function cmdFetchSnapshot(args) {
   }
 }
 
+async function cmdSegment(args) {
+  const { _, flags } = parseArgs(args);
+  const snapshot = _[0];
+  if (typeof flags.from !== 'string') { console.error('segment: --from <result.json> is required (the segment agent output)'); return 1; }
+  const fromPath = resolve(flags.from);
+  if (!(await exists(fromPath))) { console.error(`segment: --from file not found: ${flags.from}`); return 2; }
+
+  const anchor = snapshot ? resolve(snapshot) : process.cwd();
+  const orgRoot = await findOrgRoot(anchor);
+  if (!orgRoot) { console.error('segment: not inside a Transitrix workspace (no transitrix.yaml); pass a <snapshot> inside one.'); return 2; }
+
+  try {
+    const res = await emitSegments({
+      orgRoot,
+      snapshotPath: snapshot ? resolve(snapshot) : undefined,
+      resultPath: fromPath,
+      source: typeof flags.source === 'string' ? flags.source : undefined,
+      today: flags.today ? String(flags.today) : today(),
+    });
+    console.log(`segment  source ${res.source}  ->  ${res.segments.length} SEGMENT(s) -> ${res.dir}`);
+    for (const f of res.flags) console.log(`  flag: ${f}`);
+    console.log('  segments are proposed — nothing admitted to the field zone.');
+    return 0;
+  } catch (err) {
+    console.error(`segment: ${err.message}`);
+    return 2;
+  }
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -243,6 +276,7 @@ async function main(argv) {
     case 'update-scan':  return cmdUpdateScan(args);
     case 'check-signal': return cmdCheckSignal(args);
     case 'fetch-snapshot': return cmdFetchSnapshot(args);
+    case 'segment':      return cmdSegment(args);
     case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);

@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Six parts:
+(the rest of the SKILL.md pipeline lands in later increments). Seven parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -28,6 +28,10 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      'bytes_identical'; changed bytes are 'changed'; the committed operations cache
      detects identical bytes even after _intake/ is wiped (cross-checkout); --from is
      required; a static artefact is rejected.
+  G. segment (Step 4) — shapes the segment agent result into proposed SEGMENT-* field
+     artefacts: source + source_hash from the snapshot, text_hash from the excerpt,
+     ids per source slug, a locator-less segment skipped, the proposed admission record;
+     the digest counts them; --from required; ordinals continue across runs.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -429,12 +433,71 @@ def part_f_fetch_snapshot():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part G — segment (Step 4, shape the agent result) ────────────
+
+def part_g_segment():
+    if not shutil.which("node"):
+        print("SKIP Part G: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-segment-")
+    try:
+        org = _codex_org(work)
+        snapdir = os.path.join(org, "_intake", "snapshots")
+        os.makedirs(snapdir, exist_ok=True)
+        snap = os.path.join(snapdir, "REGULATION-GDPR-2016-1-2026-06-08.html")
+        open(snap, "w", encoding="utf-8").write("<html>Art 30</html>")
+        res = os.path.join(work, "segres.json")
+        json.dump({"segments": [
+            {"locator": "Art.30(1)", "text_excerpt": "Each controller shall maintain a record.",
+             "obligation_signal": "shall", "extraction_confidence": "high"},
+            {"locator": "Art.30(1)(b)", "text_excerpt": "the purposes of the processing;",
+             "obligation_signal": "shall", "extraction_confidence": "medium"},
+            {"locator": None, "text_excerpt": "orphan — no locator"},
+        ]}, open(res, "w", encoding="utf-8"))
+
+        r = run_cli("segment", snap, "--from", res, "--today", "2026-06-08")
+        check(r.returncode == 0, f"G: segment failed: {r.stderr.strip()}")
+        sdir = os.path.join(org, "_intake", "processing", "segments")
+        files = sorted(f for f in os.listdir(sdir)) if os.path.isdir(sdir) else []
+        check(files == ["SEGMENT-gdpr_2016-1.yaml", "SEGMENT-gdpr_2016-2.yaml"],
+              f"G: segment must emit 2 SEGMENTs (the locator-less one skipped), ids per source slug; got {files}")
+
+        d = yaml.safe_load(open(os.path.join(sdir, "SEGMENT-gdpr_2016-1.yaml"), encoding="utf-8"))
+        check(d.get("type") == "SEGMENT" and d.get("zone") == "field", "G: SEGMENT type/zone")
+        check(d.get("source") == "REGULATION-GDPR-2016-1", "G: source derived from the snapshot filename")
+        check(d.get("locator") == "Art.30(1)", "G: locator carried")
+        check(d.get("admission_state") == "proposed" and d.get("proposed_by") == "reg-intel-scanner",
+              "G: SEGMENT must be emitted proposed, by the scanner")
+        check(d.get("gate_checks", {}).get("provenance") == "pending_review", "G: gate_checks.provenance pending_review")
+        check(re.match(r"^sha256:[0-9a-f]{64}$", d.get("text_hash", "")), "G: text_hash computed from the excerpt")
+        check(re.match(r"^sha256:[0-9a-f]{64}$", d.get("source_hash", "")), "G: source_hash from the snapshot bytes")
+        check(d.get("extraction_confidence") == "high", "G: extraction_confidence (review flag) carried")
+
+        # The digest already built consumes the staged SEGMENTs end-to-end.
+        r = run_cli("digest", org, "--as-of", "2026-06-08")
+        dg = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-digest.yaml"), encoding="utf-8"))
+        check(dg.get("tally", {}).get("proposed", {}).get("SEGMENT") == 2, "G: the digest must count the 2 staged SEGMENTs")
+
+        # --from is required.
+        r = run_cli("segment", snap, "--today", "2026-06-08")
+        check(r.returncode != 0 and "--from" in (r.stdout + r.stderr), "G: segment must require --from")
+
+        # Ordinals continue on a second run (append, not overwrite).
+        r = run_cli("segment", snap, "--from", res, "--today", "2026-06-09")
+        files2 = sorted(os.listdir(sdir))
+        check("SEGMENT-gdpr_2016-3.yaml" in files2 and "SEGMENT-gdpr_2016-4.yaml" in files2,
+              f"G: a second run must continue the ordinal sequence; got {files2}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
 part_d_digest()
 part_e_check_signal()
 part_f_fetch_snapshot()
+part_g_segment()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")
