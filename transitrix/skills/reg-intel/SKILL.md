@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **data-collection process** for the regulatory side of a Transitrix repository: it turns watched **codex sources** (laws, regulations, policies, internal standards) into `field`-zone evidence — `SEGMENT-*` chunks of the source text, `AMENDMENT-*` records when a watched source has drifted — and into `proposed` `REQUIREMENT-*` / `CONSTRAINT-*` canon candidates, then routes everything through a human review digest. It is the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT / REQUIREMENT notation work — the part that watches the registry, runs the change-signal gate, slices and classifies the text, and stages the human gate.
 
-> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `classify`, `validate`, `amendment`; when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
+> **Status — building.** This `SKILL.md` is the agent-neutral protocol. The deterministic CLI ([`@transitrix/reg-intel-cli`](../../../packages/reg-intel-cli/README.md)) ships in increments. **Live:** `list-due` (Step 1), `check-signal` (Step 2), `fetch-snapshot` (Step 3), `segment` (Step 4), `classify` (Step 5), `update-scan` (Step 8), and `digest` (Step 9). **Not yet published:** `validate` (Step 6), `amendment` (Step 7); when the run loop reaches one of them the CLI reports `unknown command` and the skill defers to manual extraction for that step rather than hand-rolling the pipeline.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the regulatory-intelligence pipeline against it. It is designed to run **agent-neutrally** under Claude and GitHub Copilot — all heavy logic lives in the CLI, and this `SKILL.md` only sequences it.
 
@@ -168,10 +168,12 @@ Each candidate carries:
 - an `extraction_confidence` flag (`high | medium | low`) — separate from `source_quality` (see [§ Two axes of trust](#two-axes-of-trust-never-merged) below);
 - the canon admission record with `admission_state: proposed`, `proposed_by: reg-intel-scanner`, and `gate_checks` left for the human to complete.
 
-**Ambiguity is not silently resolved.** A segment that the classifier cannot confidently place is emitted with `extraction_confidence: low` and surfaced on the digest with both the CONSTRAINT and REQUIREMENT shapes flagged — the human picks. Forcing a deterministic answer on an ambiguous obligation is the path to a quietly wrong canon.
+**Ambiguity is not silently resolved.** A segment that the classifier cannot confidently place is emitted with `extraction_confidence: low` and `ambiguous_alt` carrying the other shape — surfaced on the digest with both the CONSTRAINT and REQUIREMENT classifications — the human picks. Forcing a deterministic answer on an ambiguous obligation is the path to a quietly wrong canon.
+
+Network-free: the agent runs the [`classify` prompt](prompts/classify.md) over the staged SEGMENTs and emits `{ candidates: [...] }`; the CLI shapes that into proposed `REQUIREMENT-*` / `CONSTRAINT-*` candidates (canonical ids per the source slug, `derived_from` citing the SEGMENT, `obligation_level` + `category`, `gate_checks` left `pending` for the human). A candidate is a **pre-admission draft**: `derived_from` cites the SEGMENT (a human resolves it to the codex source at admission, per [`15-requirement.md`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/15-requirement.md)), and `obligation_level` is carried as extraction metadata (REQUIREMENT v1 defers it, `15-requirement.md` §5). A candidate with an unknown kind or no `derived_from` is flagged and skipped.
 
 ```
-npx @transitrix/reg-intel-cli classify <_intake/processing/segments/>
+npx @transitrix/reg-intel-cli classify <_intake/processing/segments/> --from <result.json>
 ```
 
 ---

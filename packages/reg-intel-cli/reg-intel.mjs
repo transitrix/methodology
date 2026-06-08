@@ -23,6 +23,7 @@ import { updateScan } from './src/update-scan.mjs';
 import { checkSignal } from './src/check-signal.mjs';
 import { fetchSnapshot } from './src/snapshot.mjs';
 import { emitSegments } from './src/segment.mjs';
+import { emitCandidates } from './src/classify.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -72,6 +73,9 @@ function usage() {
     '  segment <snapshot> --from <result.json> [--source <CODEX-ID>] [--today YYYY-MM-DD]',
     '                                 Shape the segment agent result into proposed SEGMENT-* field',
     '                                 artefacts under _intake/processing/segments/.',
+    '  classify [segments-dir] --from <result.json> [--today YYYY-MM-DD]',
+    '                                 Shape the classify agent result into proposed REQUIREMENT-* /',
+    '                                 CONSTRAINT-* candidates under _intake/processing/candidates/.',
     '  digest [org-root] [--run-id <id>] [--as-of YYYY-MM-DD] [--out <path>]',
     '                                 Assemble the human review digest from staged run artefacts',
     '                                 (review-digest.yaml). Nothing is admitted — a human gates it.',
@@ -248,6 +252,34 @@ async function cmdSegment(args) {
   }
 }
 
+async function cmdClassify(args) {
+  const { _, flags } = parseArgs(args);
+  if (typeof flags.from !== 'string') { console.error('classify: --from <result.json> is required (the classify agent output)'); return 1; }
+  const fromPath = resolve(flags.from);
+  if (!(await exists(fromPath))) { console.error(`classify: --from file not found: ${flags.from}`); return 2; }
+
+  const segmentsDir = _[0] ? resolve(_[0]) : undefined;
+  const anchor = segmentsDir || process.cwd();
+  const orgRoot = await findOrgRoot(anchor);
+  if (!orgRoot) { console.error('classify: not inside a Transitrix workspace (no transitrix.yaml); pass the <segments-dir> inside one.'); return 2; }
+
+  try {
+    const res = await emitCandidates({
+      orgRoot,
+      resultPath: fromPath,
+      segmentsDir,
+      today: flags.today ? String(flags.today) : today(),
+    });
+    console.log(`classify  ${res.candidates.length} candidate(s) (REQUIREMENT ${res.requirements} / CONSTRAINT ${res.constraints}) -> ${res.dir}`);
+    for (const f of res.flags) console.log(`  flag: ${f}`);
+    console.log('  candidates are proposed — nothing admitted to canon.');
+    return 0;
+  } catch (err) {
+    console.error(`classify: ${err.message}`);
+    return 2;
+  }
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -277,6 +309,7 @@ async function main(argv) {
     case 'check-signal': return cmdCheckSignal(args);
     case 'fetch-snapshot': return cmdFetchSnapshot(args);
     case 'segment':      return cmdSegment(args);
+    case 'classify':     return cmdClassify(args);
     case 'digest':       return cmdDigest(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);

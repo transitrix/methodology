@@ -2,7 +2,7 @@
 """From-scratch integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
 
 Deterministic, no-API-key, no-network guard for the CLI increments landed so far
-(the rest of the SKILL.md pipeline lands in later increments). Seven parts:
+(the rest of the SKILL.md pipeline lands in later increments). Eight parts:
 
   A. Bundle integrity — SKILL.md + README.md present and frontmatter parses; the CLI
      package.json parses and declares its bin; the entry point exists; `--version`
@@ -32,6 +32,11 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      artefacts: source + source_hash from the snapshot, text_hash from the excerpt,
      ids per source slug, a locator-less segment skipped, the proposed admission record;
      the digest counts them; --from required; ordinals continue across runs.
+  H. classify (Step 5) — shapes the classify agent result into proposed REQUIREMENT-* /
+     CONSTRAINT-* candidates: kind→TYPE, derived_from cites the SEGMENT, obligation_level
+     + category carried, low-confidence keeps ambiguous_alt (both classifications),
+     bad-kind / no-derived_from skipped, proposed record with gate_checks pending; the
+     digest counts them; --from required.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -491,6 +496,70 @@ def part_g_segment():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part H — classify (Step 5, REQUIREMENT/CONSTRAINT candidates) ─
+
+def part_h_classify():
+    if not shutil.which("node"):
+        print("SKIP Part H: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-classify-")
+    try:
+        org = _codex_org(work)
+        sdir = os.path.join(org, "_intake", "processing", "segments")
+        os.makedirs(sdir, exist_ok=True)
+        # A staged SEGMENT the candidates derive from.
+        open(os.path.join(sdir, "SEGMENT-gdpr_2016-1.yaml"), "w", encoding="utf-8").write(
+            'id: "SEGMENT-gdpr_2016-1"\ntype: "SEGMENT"\nsource: "REGULATION-GDPR-2016-1"\nlocator: "Art.30(1)"\nzone: "field"\n')
+        res = os.path.join(work, "cls.json")
+        json.dump({"candidates": [
+            {"kind": "requirement", "category": "DOCUMENTATION", "obligation_level": "SHALL",
+             "derived_from": ["SEGMENT-gdpr_2016-1"], "source_text": "Each controller shall maintain a record.",
+             "extraction_confidence": "high"},
+            {"kind": "constraint", "category": "PRODUCT", "obligation_level": "SHALL_NOT",
+             "derived_from": ["SEGMENT-gdpr_2016-1"], "source_text": "A device may not be distributed without approval.",
+             "extraction_confidence": "medium"},
+            {"kind": "requirement", "derived_from": ["SEGMENT-gdpr_2016-1"], "source_text": "ambiguous",
+             "extraction_confidence": "low", "ambiguous_alt": {"kind": "constraint", "category": "DEFINITIONAL"}},
+            {"kind": "bogus", "derived_from": ["SEGMENT-gdpr_2016-1"], "source_text": "x"},
+            {"kind": "requirement", "derived_from": [], "source_text": "no derived_from"},
+        ]}, open(res, "w", encoding="utf-8"))
+
+        r = run_cli("classify", sdir, "--from", res, "--today", "2026-06-08")
+        check(r.returncode == 0, f"H: classify failed: {r.stderr.strip()}")
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        files = sorted(os.listdir(cdir)) if os.path.isdir(cdir) else []
+        check(files == ["CONSTRAINT-gdpr_2016-1.yaml", "REQUIREMENT-gdpr_2016-1.yaml", "REQUIREMENT-gdpr_2016-2.yaml"],
+              f"H: classify must emit 2 REQUIREMENT + 1 CONSTRAINT (bogus + no-derived_from skipped); got {files}")
+
+        req = yaml.safe_load(open(os.path.join(cdir, "REQUIREMENT-gdpr_2016-1.yaml"), encoding="utf-8"))
+        check(req.get("notation") == "requirement" and req.get("zone") == "canon", "H: candidate notation/zone")
+        check(req.get("admission_state") == "proposed" and req.get("proposed_by") == "reg-intel-scanner",
+              "H: candidate must be proposed, by the scanner")
+        check(req.get("derived_from") == ["SEGMENT-gdpr_2016-1"], "H: derived_from cites the SEGMENT")
+        check(req.get("obligation_level") == "SHALL" and req.get("category") == "DOCUMENTATION", "H: obligation_level + category carried")
+        check(req.get("gate_checks", {}).get("uniqueness") == "pending", "H: gate_checks left pending for the human")
+
+        # The low-confidence candidate keeps both classifications via ambiguous_alt.
+        low = yaml.safe_load(open(os.path.join(cdir, "REQUIREMENT-gdpr_2016-2.yaml"), encoding="utf-8"))
+        check(low.get("extraction_confidence") == "low" and low.get("ambiguous_alt", {}).get("kind") == "constraint",
+              "H: a low-confidence candidate must surface ambiguous_alt (both classifications)")
+        # A high-confidence candidate carries no ambiguous_alt.
+        check("ambiguous_alt" not in req, "H: a confident candidate must not carry ambiguous_alt")
+
+        # End-to-end: the digest counts the candidates under their source (via SEGMENT).
+        r = run_cli("digest", org, "--as-of", "2026-06-08")
+        dg = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-digest.yaml"), encoding="utf-8"))
+        prop = dg.get("tally", {}).get("proposed", {})
+        check(prop.get("REQUIREMENT") == 2 and prop.get("CONSTRAINT") == 1,
+              f"H: the digest must count the candidates; got {prop}")
+
+        # --from is required.
+        r = run_cli("classify", sdir, "--today", "2026-06-08")
+        check(r.returncode != 0 and "--from" in (r.stdout + r.stderr), "H: classify must require --from")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_list_due()
 part_c_update_scan()
@@ -498,6 +567,7 @@ part_d_digest()
 part_e_check_signal()
 part_f_fetch_snapshot()
 part_g_segment()
+part_h_classify()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")
