@@ -13,8 +13,8 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 ```
 
 - **TYPE** — uppercase entity-type prefix from the registry in §3. The prefix names *what kind of thing* the ID refers to. The TYPE segment is composed of uppercase letters `A`–`Z`, digits `0`–`9`, and the underscore `_`; it MUST start with a letter. The underscore allows multi-word TYPE names — `PROCESS_BLUEPRINT` (the first registered TYPE to use one, decided 2026-05-21) and `INFORMATION_ENTITY` (registered alongside it).
-- **Middle segments** — optional, notation-specific. Add for disambiguation (a domain code, a period, a programme name). The grammar fixes only the start and the end of an ID; a notation MAY define one or more middle segments where needed.
-- **INTEGER** — terminal positive integer, ≥ 1, **no leading zeros**. Sorting and comparison MUST parse it numerically, never lexically. There is no fixed width and no upper bound.
+- **Middle segments** — optional, notation-specific. Add for disambiguation (a domain code, a period, a programme name). The grammar fixes only the start and the end of an ID; a notation MAY define one or more middle segments where needed. A middle segment may be alphanumeric or purely numeric, and a numeric middle segment **MAY carry leading zeros** where it is a zero-padded date or period component — e.g. the month and day of an ISO date, `INTERVIEW-cfo-onboarding-2026-04-15-1` (`04`, `15`). The no-leading-zeros rule below constrains the **terminal** integer only; middle segments are labels, not the sort key.
+- **INTEGER** — terminal positive integer, ≥ 1, **no leading zeros** — this constraint applies to the **terminal** integer only (it is the numeric sort key; numeric middle segments are exempt, see above). Sorting and comparison MUST parse it numerically, never lexically. There is no fixed width and no upper bound.
 
 **Examples:**
 
@@ -23,7 +23,8 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 | `FACTOR-1` | FACTOR | — | 1 | minimal form |
 | `GOAL-RETENTION-12` | GOAL | RETENTION | 12 | one middle segment |
 | `ACTIVITY-Q3-2026-7` | ACTIVITY | Q3, 2026 | 7 | two middle segments |
-| `FACTOR-CHURN-001` | — | — | — | **invalid** — leading zero. Use `FACTOR-CHURN-1`. |
+| `INTERVIEW-cfo-onboarding-2026-04-15-1` | INTERVIEW | cfo, onboarding, 2026, 04, 15 | 1 | zero-padded ISO-date middle segments (`04`, `15`) are valid — the ban is terminal-only |
+| `FACTOR-CHURN-001` | — | — | — | **invalid** — leading zero on the *terminal* integer. Use `FACTOR-CHURN-1`. |
 | `factor-1` | — | — | — | **invalid** — TYPE must be uppercase. |
 | `FACTOR-` | — | — | — | **invalid** — missing terminal integer. |
 | `PROCESS_BLUEPRINT-FULFIL-1` | PROCESS_BLUEPRINT | FULFIL | 1 | underscore in TYPE — permitted |
