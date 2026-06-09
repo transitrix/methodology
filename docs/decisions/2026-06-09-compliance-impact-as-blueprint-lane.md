@@ -1,10 +1,10 @@
 ---
-status: Proposed
+status: Accepted
 date: 2026-06-09
 scope: repo
 supersedes: []
 superseded_by: []
-tags: [process-blueprint, compliance-impact, view-config, lanes, obligations, assertion, requirement, codex, stage-level, derived-view, novelty, deadline, gap, entry-modes, renderer, ux, operational-settings]
+tags: [process-blueprint, compliance-impact, view-config, lanes, obligations, assertion, requirement, codex, stage-level, derived-view, novelty, deadline, gap, entry-modes, renderer, ux, operational-settings, user-settings]
 ---
 
 # Compliance impact as a configurable Process-Blueprint lane
@@ -25,9 +25,9 @@ So "the laws under each stage" is a **derived** projection of assertions onto th
 
 ## Decision
 
-(Recommended; `status: Proposed` — gated. Direction set with Valerii 2026-06-09; one config-layering point remains open below.)
+(Accepted — Valerii, 2026-06-09. All open points resolved; see the Decision record.)
 
-1. **The Process Blueprint view becomes lane-configurable.** A configuration selects which aspect lanes render (systems, actors, equipment, business_objects, compliance, …) — each individually show/hide-able — rather than always drawing every lane. This is a *rendering* configuration; it does not change the blueprint's stored data. (Where that configuration lives — versioned report definition vs operational display preference — see §6 and Open points.)
+1. **The Process Blueprint view becomes lane-configurable.** A configuration selects which aspect lanes render (systems, actors, equipment, business_objects, compliance, …) — each individually show/hide-able — rather than always drawing every lane. This is a *rendering* configuration; it does not change the blueprint's stored data. (Where that configuration lives — versioned report definition vs per-user local display preference — see §6.)
 
 2. **Compliance / obligations is one such lane — derived, not stored.** When enabled, the compliance lane is computed per stage: gather the `ASSERTION`s whose `realised_via` hits the stage, lift each via `REQUIREMENT.derived_from` to its codex (law), and show the impacting laws beneath that stage. No compliance data is written into the blueprint canon; the lane is a projection. This is the blueprint-shaped realisation of the compliance-impact view, and it reuses the report view-config mechanism from `docs/decisions/2026-06-09-report-skill-over-declarative-views.md` (parameters live in a versioned view-config; render is deterministic).
 
@@ -42,34 +42,34 @@ So "the laws under each stage" is a **derived** projection of assertions onto th
 
 5. **Jurisdiction & filters from the report definition.** The compliance lane honours the existing compliance-impact filters (e.g. jurisdiction via `derived_from`), so a blueprint can be drawn for one regime or several.
 
-6. **Config layering — report *definition* vs operational *display* (recommended split).** Two kinds of configuration are deliberately kept apart:
-   - **Report definition** (audit-relevant, versioned) — *what obligations the report is about*: scope, jurisdiction filter, the obligation/stage selection. Lives in the named, versioned view-config (the report-skill mechanism), so a compliance report is reproducible and diffable — which is also what makes the §3 "new since last" signal well-defined.
-   - **Operational display preferences** (not canon, not normative) — *which lanes are toggled on*, decoration preferences, and similar view ergonomics. These are operational/tool settings, not part of the obligation audit trail, and need not be versioned as canon. A *named* report may, however, pin its lane-set into its own definition so it re-renders identically.
-   The compliance lane's **semantics** (its derivation and the §3 decoration vocabulary) stay normative in the compliance-impact view spec; only the per-view *toggle* is operational. *(Direction leaning — to confirm at the gate, see Open points.)*
+6. **Config layering — report *definition* (shared, versioned) vs display *preferences* (per-user, local).** Two kinds of configuration are kept apart:
+   - **Report definition** (audit-relevant, versioned, shared) — *what obligations the report is about*: scope, jurisdiction filter, the obligation/stage selection. Lives in the named, versioned view-config (the report-skill mechanism), so a compliance report is reproducible and diffable — which is also what makes the §3 "new since last" signal well-defined. A *named* report may pin its lane-set here so it re-renders identically for everyone.
+   - **Display preferences** (per-user, local, never committed) — *which lanes a person toggles on for themselves*, decoration preferences, and similar view ergonomics. They are individual and **not shared**: they live as local files in a dedicated settings folder that is itself **tracked by a `.gitkeep`** (so the folder's location is defined in the repo) while **its contents are `.gitignore`d** — the folder therefore appears **empty to every other user**, and each person keeps their own preferences locally. The exact folder name/location is an implementation detail of the operational/tooling layer, not `notations/`.
 
-## Open points (for the gate)
+   The compliance lane's **semantics** (its derivation and the §3 decoration vocabulary) stay normative in the compliance-impact view spec; only the per-user *toggle* is a local preference.
 
-- **Config layering / operational-settings home (Decision §6).** Confirm the definition-vs-display split (and that a named report pins its lane-set), and decide where operational display preferences live (a per-repo/per-user operational settings surface, distinct from canon and from the `notations/` view spec). Relates to the broader operational-constants / config-vs-state separation already under discussion.
+## Open points
 
-*(Resolved 2026-06-09: the deadline data source — `REQUIREMENT.deadline` (external regulatory date) + temporal status; see Decision §3 and the Decision record.)*
+None — both prior open points were resolved on 2026-06-09 (deadline source → `REQUIREMENT.deadline`; operational-settings home → per-user local files in a `.gitkeep`-tracked, `.gitignore`d-contents folder). See the Decision record.
 
 ## Alternatives considered
 
 - **A — Bake an `obligations` aspect into the Process Blueprint notation (stored).** Rejected: couples the blueprint canon to the compliance model and duplicates data already derivable from assertions; the lane should be computed, not authored.
 - **B — A separate "compliance blueprint" notation.** Rejected: duplicates the stage layout and grows the notation count for what is a rendering of an existing view.
 - **C — Keep only the flat matrix.** Rejected: the stage-by-stage "where does each law bite" question is exactly what the blueprint shape answers and the matrix does not.
-- **D — Put lane-visibility toggles in the versioned report definition.** Not chosen as the default: which lanes a viewer toggles is a display ergonomic, not obligation data; keeping it out of the versioned definition avoids churn in the audit trail. (A named report may still pin its lane-set — §6.)
+- **D — Put lane-visibility toggles in the versioned report definition (for everyone).** Not chosen as the default: a personal toggle is a display ergonomic, not obligation data; keeping casual toggles out of the versioned definition avoids churn in the audit trail. (A *named* report may still pin its lane-set — §6.)
+- **E — Commit per-user display preferences to the repo.** Rejected: preferences are individual; committing them creates noise and cross-user conflicts. They stay local and `.gitignore`d, with only a `.gitkeep`-tracked empty folder shared.
 
 ## Consequences
 
 - **Methodology:** the compliance-impact view spec gains the blueprint-lane layout + the §3 decoration vocabulary; depends on `ASSERTION.realised_via` resolving at stage / step grain, `ASSERTION.status`, `REQUIREMENT.derived_from` → codex, and `REQUIREMENT.deadline` + a temporal obligation status (`past_due` / `in_force` / `upcoming`).
 - **No blueprint canon change:** the Process Blueprint data model is untouched; only its view / rendering gains lane toggles.
-- **Operational-settings surface:** the recommended split (Decision §6) implies a small operational/display-preferences home distinct from canon — to be specified with the operational-config work, not in `notations/`.
-- **Render side (Studio / DSM):** the blueprint renderer learns lane toggles, the derived compliance lane, the three stacking decorations (dashed = new, gap fill, deadline badge), and cell expansion. Builds on the interim compliance-impact renderer already in progress. A local ADR in those repos cross-references this one.
-- **Reproducibility:** because the report definition is a versioned view-config, a blueprint-compliance report re-renders identically and diffs over time — the foundation for the "new since last" signal.
+- **Operational-settings surface:** a **per-user, local** display-preferences folder, kept by a `.gitkeep` with `.gitignore`d contents (empty for others); preferences are never committed. The exact folder name/location is an implementation detail for the view/tooling layer, not `notations/`. Defined alongside the broader operational-config work.
+- **Render side (Studio / DSM):** the blueprint renderer learns lane toggles, the derived compliance lane, the three stacking decorations (dashed = new, gap fill, deadline badge), and cell expansion; it reads display preferences from the local settings folder and the report definition from the versioned view-config. Builds on the interim compliance-impact renderer already in progress. A local ADR in those repos cross-references this one.
+- **Reproducibility:** because the report definition is a versioned view-config, a blueprint-compliance report re-renders identically and diffs over time — the foundation for the "new since last" signal. Per-user display tweaks do not affect the shared definition.
 
 ### Decision record
 
 - **Proposed by Win-Claude, 2026-06-09**, from a report-shape discussion with Valerii: render compliance impact in Process-Blueprint form with a configurable, derived law lane and optional assertion/requirement drill-down.
-- **Refined with Valerii, 2026-06-09:** cell decoration is three orthogonal signals — *new* (since last snapshot; dashed border), *known gap* (`ASSERTION.status` non-conformance), and *gap with a deadline* (urgent); lane-visibility config leans toward operational display settings (a named report may pin its lane-set), kept separate from the versioned report definition.
-- **Refined with Valerii, 2026-06-09 (UX use-case review):** deadline data source resolved → `REQUIREMENT.deadline` (external regulatory date; an internal `ASSERTION` remediation target is a separate optional overlay), surfaced via a temporal status (`past_due` / `in_force` / `upcoming`). Adopted the three entry-modes framing (by object / by obligation / by event). One open point remains: the operational-settings home for display preferences.
+- **Refined with Valerii, 2026-06-09:** cell decoration is three orthogonal signals — *new* (since last snapshot; dashed border), *known gap* (`ASSERTION.status` non-conformance), and *gap with a deadline* (urgent); deadline source = `REQUIREMENT.deadline` (external regulatory date; an internal `ASSERTION` remediation target is a separate optional overlay) surfaced via a temporal status (`past_due` / `in_force` / `upcoming`); adopted the three entry-modes framing (by object / by obligation / by event).
+- **Accepted by Valerii, 2026-06-09:** display preferences (lane toggles, decoration prefs) are **per-user and local** — kept in a dedicated settings folder tracked by `.gitkeep` while its contents are `.gitignore`d (empty for other users), never committed, not canon. Named reports still pin their lane-set in the versioned report definition. With this and the deadline-source resolution, all open points are closed and the ADR is **Accepted**.
