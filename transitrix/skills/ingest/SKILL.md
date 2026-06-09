@@ -65,7 +65,7 @@ Office documents are converted to Markdown with **MS Markitdown** before extract
 npx @transitrix/ingest-cli convert <_intake/inbox/file>   # → _intake/processing/<file>.md
 ```
 
-If Markitdown is not installed the CLI exits with an actionable message naming the install step. Conversion is the only point of contact with Markitdown — the rest of the pipeline is pure Node and runs identically under either agent.
+Markitdown is a Python tool (`pip install "markitdown[all]"`); install it into the environment you run the CLI from, and if you use a virtualenv, activate it first. The CLI looks for the `markitdown` console-script and **falls back to `python -m markitdown` / `python3 -m markitdown`** — so it still works inside a venv where only the interpreter is on PATH. On Windows, if `markitdown`/`npx` are blocked by the PowerShell execution policy, run `python -m markitdown` directly or `Set-ExecutionPolicy -Scope Process RemoteSigned`. If Markitdown cannot be reached at all the CLI exits with an actionable message naming the install step. Conversion is the only point of contact with Markitdown — the rest of the pipeline is pure Node and runs identically under either agent.
 
 ---
 
