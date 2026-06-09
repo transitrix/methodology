@@ -392,6 +392,22 @@ def part_e_ig2():
               "IG-2: ASSERTION candidate does not cite the codex LAW: %r" % ass.get("derived_from"))
         r = run_cli("validate", cdir)
         check(r.returncode == 0, "IG-2: codex-derived candidates did not validate clean: %s" % (r.stdout + r.stderr))
+
+        # F13 — the review queue resolves the codex source (not only field/): the LAW the
+        # candidates cite is surfaced as a found, authoritative codex artefact.
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, "F13: review-queue failed on codex-derived candidates: %s" % (r.stderr or r.stdout))
+        rq = os.path.join(org, "_intake", "processing", "review-queue.yaml")
+        if check(os.path.isfile(rq), "F13: review-queue.yaml was not created"):
+            q = yaml.safe_load(open(rq, encoding="utf-8"))
+            fas = q.get("field_artefacts") or []
+            law = next((fa for fa in fas if fa.get("id") == "LAW-conveyor_safety-1"), None)
+            if check(law is not None, "F13: review queue did not list the cited codex LAW source"):
+                check(law.get("zone") == "codex", "F13: codex source not marked zone:codex (got %r)" % law.get("zone"))
+                check(law.get("found") is True, "F13: codex source did not resolve (found != True)")
+                check(law.get("authoritative") is True, "F13: codex source not marked authoritative")
+                check("proposed_source_quality" not in law,
+                      "F13: codex source must carry no proposed_source_quality (authoritative by construction)")
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
