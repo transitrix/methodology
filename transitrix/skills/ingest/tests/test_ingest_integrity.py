@@ -795,6 +795,67 @@ def part_j_duplicate_source():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part K — F3 suggest-profile (discovery) ──────────────────────
+
+def part_k_suggest_profile():
+    """suggest-profile proposes a delta for out-of-profile TYPEs (read-only); an
+    in-profile TYPE is not flagged; under `full` nothing is proposed."""
+    if not shutil.which("node"):
+        print("SKIP Part K: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-f3-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: core\n')
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+        fid = "INTERVIEW-x-20260101-1"
+
+        def cand(name, obj):
+            with open(os.path.join(cdir, name), "w", encoding="utf-8") as fh:
+                json.dump({**obj, "derived_from": [fid], "admitted_to": "pending",
+                           "extraction_confidence": "high"}, fh)
+
+        # PRODUCT is out of `core`; GOAL is in `core`.
+        cand("PRODUCT.json", {"kind": "element", "id": "PRODUCT-X-1", "name": "x", "element_type": "PRODUCT"})
+        cand("GOAL.json", {"kind": "element", "id": "GOAL-X-1", "name": "g", "element_type": "GOAL"})
+
+        r = run_cli("suggest-profile", cdir)
+        check(r.returncode == 0, "F3: suggest-profile failed: %s" % (r.stderr or r.stdout))
+        rep = yaml.safe_load(r.stdout)
+        oop = {e["type"] for e in rep.get("out_of_profile", {}).get("elements", [])}
+        check("PRODUCT" in oop, "F3: PRODUCT (out of core) was not surfaced: %r" % sorted(oop))
+        check("GOAL" not in oop, "F3: GOAL (in core) must not be surfaced as out-of-profile")
+        delta = rep.get("proposed_delta") or {}
+        check(delta.get("extends") == "core", "F3: proposed delta should extend the active base: %r" % delta.get("extends"))
+        add = (delta.get("layers", {}).get("02_business", {}).get("elements", {}) or {}).get("add", [])
+        check("PRODUCT" in add, "F3: PRODUCT not placed under 02_business in the proposed delta: %r" % delta)
+
+        # Under `full`, nothing is out of profile → no delta proposed.
+        org2 = os.path.join(work, "org2")
+        os.makedirs(org2)
+        run_cli("scaffold-intake", org2)
+        with open(os.path.join(org2, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+        cdir2 = os.path.join(org2, "_intake", "processing", "candidates")
+        os.makedirs(cdir2, exist_ok=True)
+        with open(os.path.join(cdir2, "PRODUCT.json"), "w", encoding="utf-8") as fh:
+            json.dump({"kind": "element", "id": "PRODUCT-Y-1", "name": "y", "element_type": "PRODUCT",
+                       "derived_from": [fid], "admitted_to": "pending", "extraction_confidence": "high"}, fh)
+        r = run_cli("suggest-profile", cdir2)
+        check(r.returncode == 0, "F3: suggest-profile (full) failed: %s" % (r.stderr or r.stdout))
+        rep2 = yaml.safe_load(r.stdout)
+        check(not rep2.get("out_of_profile", {}).get("elements"),
+              "F3: under `full` no element should be out of profile")
+        check("proposed_delta" not in rep2, "F3: under `full` no delta should be proposed")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -805,6 +866,7 @@ part_g_coverage()
 part_h_idempotent()
 part_i_placement()
 part_j_duplicate_source()
+part_k_suggest_profile()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

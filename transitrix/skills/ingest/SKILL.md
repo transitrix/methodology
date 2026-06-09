@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
-> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
+> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the field→canon pipeline against it. It runs **agent-neutrally** under Claude and GitHub Copilot — all heavy logic is in the CLI, and this `SKILL.md` only sequences it.
 
@@ -135,6 +135,14 @@ The CLI reads the repo's `coverage_profile` ([COVERAGE_PROFILES](https://raw.git
 
 If a profile is **present but cannot be resolved** (unknown preset, missing `extends:`, malformed), the CLI does **not** silently treat the repo as `full`: it resolves permissively but emits an explicit **WARNING** (in CLI output and as `coverage_warning` in the review queue), so the unreliable coverage signal is visible rather than hidden.
 
+When a corpus keeps surfacing the same out-of-profile TYPE, **`suggest-profile`** turns that signal into a concrete proposal instead of a manual profile edit:
+
+```
+npx @transitrix/ingest-cli suggest-profile <processing/candidates/>   # read-only; prints to stdout
+```
+
+It scans the candidates, collects the out-of-profile element TYPEs and relation kinds, and prints a paste-ready `coverage_profile` delta (`extends:` the active base + the TYPEs grouped under their layer). It **never widens the profile itself** — the profile is the guardrail; the human reviews the proposal and edits `transitrix.yaml` deliberately. TYPEs whose layer the CLI cannot derive are listed under `unplaceable` to site by hand.
+
 ---
 
 ## Step 6 — Produce the review queue
@@ -164,7 +172,7 @@ Where an admitted element lands is **not** a judgement call. Every element TYPE 
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
 
-The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `check-placement`, `resolve-placement`.
+The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement`.
 
 ---
 

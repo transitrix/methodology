@@ -16,15 +16,17 @@ import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
-import { scaffoldIntake, findOrgRoot, stageDir } from './src/intake.mjs';
+import { scaffoldIntake, findOrgRoot, stageDir, readManifestText } from './src/intake.mjs';
 import { convert, ConvertError } from './src/convert.mjs';
 import { emitFieldArtefact } from './src/field-artefact.mjs';
 import { validateCandidate, loadCandidates } from './src/validate.mjs';
-import { readCoverageProfile } from './src/coverage.mjs';
+import { readCoverageProfile, parseProfileDecl } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
+import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
+import { dump } from './src/yaml.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -70,6 +72,7 @@ function usage() {
     '  validate <candidates-dir>      Validate candidate *.json against the contract + coverage profile',
     '  review-queue <candidates-dir>  Assemble the human review queue (writes review-queue.yaml)',
     '                 [--out <path>]',
+    '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
     '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
@@ -291,6 +294,23 @@ async function cmdEmitCandidates(args) {
   }
 }
 
+// Discovery: scan candidates for out-of-profile TYPEs and PROPOSE a coverage delta.
+// Read-only — prints a paste-ready suggestion to stdout, never widens the profile.
+async function cmdSuggestProfile(args) {
+  const { _ } = parseArgs(args);
+  const r = await resolveDir(_[0], 'suggest-profile');
+  if (r.code) return r.code;
+
+  const loaded = await loadCandidates(r.dir);
+  if (loaded.length === 0) { console.error(`suggest-profile: no candidate *.json files in ${_[0]}`); return 0; }
+
+  const decl = parseProfileDecl((await readManifestText(r.orgRoot)) || '');
+  const baseName = decl.kind === 'short' ? decl.name : decl.kind === 'custom' ? decl.extends : 'full';
+  const report = buildProfileSuggestion(loaded, r.profile, baseName);
+  process.stdout.write(dump(report));
+  return 0;
+}
+
 // Print the canonical §4 placement (mode + layer + folder) for a TYPE.
 async function cmdResolvePlacement(args) {
   const { _ } = parseArgs(args);
@@ -335,6 +355,7 @@ async function main(argv) {
     case 'emit-candidates': return cmdEmitCandidates(args);
     case 'validate':        return cmdValidate(args);
     case 'review-queue':    return cmdReviewQueue(args);
+    case 'suggest-profile': return cmdSuggestProfile(args);
     case 'check-placement': return cmdCheckPlacement(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
     default:
