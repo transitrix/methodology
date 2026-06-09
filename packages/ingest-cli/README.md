@@ -11,7 +11,7 @@ The CLI **proposes**. It writes field artefacts, candidates, and a review queue 
 ## Design
 
 - Pure Node ESM, **no dependencies**. `npx`-able with zero install footprint.
-- **MS Markitdown** is the only external touchpoint, shelled out from the `convert` command alone (Office → Markdown). The rest of the pipeline is pure Node.
+- **MS Markitdown** is the only external touchpoint, shelled out from the `convert` command alone (Office → Markdown). The rest of the pipeline is pure Node. Install it with `pip install "markitdown[all]"`; `convert` looks for the `markitdown` console-script and falls back to `python -m markitdown` / `python3 -m markitdown`, so it works inside a venv where only the interpreter is on PATH. On Windows, if `markitdown`/`npx` are blocked by the PowerShell execution policy, run `python -m markitdown` directly or `Set-ExecutionPolicy -Scope Process RemoteSigned`.
 - Exit codes: `0` ok · `1` usage / findings that need review · `2` error.
 
 ## Commands
