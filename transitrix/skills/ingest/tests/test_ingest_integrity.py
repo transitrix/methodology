@@ -718,6 +718,83 @@ def part_i_placement():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part J — F1 duplicate-source detection ───────────────────────
+
+def part_j_duplicate_source():
+    """admit-source dedups by source_hash (skip w/o --force, admit w/ --force);
+    processed/ basename collisions don't clobber; review-queue surfaces duplicate-by-hash."""
+    if not shutil.which("node"):
+        print("SKIP Part J: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-f1-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        inbox = os.path.join(org, "_intake", "inbox")
+        processed = os.path.join(org, "_intake", "processed")
+        fdir = os.path.join(org, "field", "interviews")
+
+        def yamls():
+            return sorted(f for f in os.listdir(fdir) if f.endswith(".yaml")) if os.path.isdir(fdir) else []
+
+        def drop_and_admit(content, *extra):
+            # (re)drop the raw under a fixed basename, convert (passthrough), admit
+            with open(os.path.join(inbox, "src.md"), "w", encoding="utf-8") as fh:
+                fh.write(content)
+            run_cli("convert", os.path.join(inbox, "src.md"))
+            md = os.path.join(org, "_intake", "processing", "src.md")
+            return run_cli("admit-source", md, "--zone", "field", "--type", "INTERVIEW",
+                           "--role", "ops", "--date", "2026-01-01", "--slug", "ops",
+                           "--admitted-at", "2026-01-02", *extra)
+
+        # 1. First admit → exactly one artefact.
+        r = drop_and_admit("AAA\n")
+        check(r.returncode == 0, "F1: first admit failed: %s" % (r.stderr or r.stdout))
+        check(len(yamls()) == 1, "F1: first admit should mint exactly one field artefact, got %r" % yamls())
+
+        # 2. Re-admit identical content WITHOUT --force → skipped, no second artefact.
+        r = drop_and_admit("AAA\n")
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "F1: a duplicate re-ingest must not error (exit %d): %s" % (r.returncode, out))
+        check("skip" in out.lower() and "force" in out.lower(),
+              "F1: duplicate was not reported as skipped: %r" % out)
+        check(len(yamls()) == 1, "F1: a duplicate must not mint a second artefact, got %r" % yamls())
+
+        # 3. Re-admit identical content WITH --force → a second artefact (distinct id).
+        r = drop_and_admit("AAA\n", "--force")
+        check(r.returncode == 0, "F1: --force admit failed: %s" % (r.stderr or r.stdout))
+        ids = [os.path.splitext(x)[0] for x in yamls()]
+        check(len(ids) == 2, "F1: --force should mint a second artefact, got %r" % ids)
+
+        # processed/ basename collision: the original raw is retained unchanged, the
+        # second lands under a disambiguated name (not clobbered).
+        psrc = os.path.join(processed, "src.md")
+        check(os.path.isfile(psrc) and open(psrc, encoding="utf-8").read() == "AAA\n",
+              "F1: original processed/src.md must survive the collision unchanged")
+        check(len([f for f in os.listdir(processed) if f.startswith("src")]) >= 2,
+              "F1: the second raw must be retained under a disambiguated name")
+
+        # 4. review-queue surfaces the two same-hash artefacts as a duplicate cluster.
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+        with open(os.path.join(cdir, "GOAL-DUP-1.json"), "w", encoding="utf-8") as fh:
+            json.dump({"kind": "element", "id": "GOAL-DUP-1", "name": "x", "element_type": "GOAL",
+                       "derived_from": ids, "admitted_to": "pending",
+                       "extraction_confidence": "high"}, fh)
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, "F1: review-queue failed: %s" % (r.stderr or r.stdout))
+        q = yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-queue.yaml"), encoding="utf-8"))
+        dups = q.get("duplicate_sources") or []
+        check(any(sorted(c.get("ids", [])) == sorted(ids) for c in dups),
+              "F1: review-queue did not surface the duplicate-by-hash cluster: %r" % dups)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -727,6 +804,7 @@ part_f_ig3()
 part_g_coverage()
 part_h_idempotent()
 part_i_placement()
+part_j_duplicate_source()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

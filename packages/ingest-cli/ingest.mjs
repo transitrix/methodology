@@ -63,6 +63,7 @@ function usage() {
     '                        [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
     '                 codex: --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD',
     '                        [--jurisdiction J] [--source-authority A] [--issuing-authority A] [--slug SL] [--monitoring]',
+    '                 [--force]  admit even if an identical source (same source_hash) is already admitted',
     '  field-artefact / codex-artefact        Deprecated aliases of admit-source --zone field|codex',
     '  emit-candidates <field-artefact> --from <result.json> [--candidates-dir <dir>]',
     '                                 Shape the agent extraction result into candidates',
@@ -135,6 +136,7 @@ async function cmdFieldArtefact(args) {
       slug: flags.slug,
       admittedAt: flags['admitted-at'] || today(),
       name: flags.name,
+      force: flags.force === true || flags.force === 'true',
     });
     console.log(`field artefact  ${res.id}  ->  ${res.outPath}`);
     console.log(`  proposed source_quality: ${res.proposedSQ} (confirm at admission)`);
@@ -142,6 +144,10 @@ async function cmdFieldArtefact(args) {
     if (res.sourceHash) console.log(`  source_hash:         ${res.sourceHash}`);
     return 0;
   } catch (err) {
+    if (err.duplicate) {
+      console.log(`field artefact  skipped — ${err.message}`);
+      return 0;
+    }
     console.error(`field-artefact: ${err.message}`);
     return 2;
   }
@@ -173,6 +179,7 @@ async function cmdCodexArtefact(args) {
       monitoring: flags.monitoring === true || flags.monitoring === 'true',
       slug: flags.slug,
       name: flags.name,
+      force: flags.force === true || flags.force === 'true',
     });
     console.log(`codex artefact  ${res.id}  ->  ${res.outPath}`);
     console.log(`  zone: codex (${res.scope}) — authoritative by construction; derive obligations as REQUIREMENT + ASSERTION candidates`);
@@ -180,6 +187,10 @@ async function cmdCodexArtefact(args) {
     if (res.sourceHash) console.log(`  source_hash:       ${res.sourceHash}`);
     return 0;
   } catch (err) {
+    if (err.duplicate) {
+      console.log(`codex artefact  skipped — ${err.message}`);
+      return 0;
+    }
     console.error(`codex-artefact: ${err.message}`);
     return 2;
   }

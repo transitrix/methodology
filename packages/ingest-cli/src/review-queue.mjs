@@ -110,12 +110,27 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
   const field_artefacts = [];
   for (const id of [...fieldIds].sort()) field_artefacts.push(await readSourceArtefact(orgRoot, id));
 
+  // Surface duplicate-by-hash: two source artefacts sharing a source_hash are the same
+  // content admitted twice (e.g. via `admit-source --force`). Flag the clusters so the
+  // human can collapse the duplicates before admitting candidates derived from both.
+  const byHash = new Map();
+  for (const fa of field_artefacts) {
+    if (!fa.source_hash || !fa.id) continue;
+    if (!byHash.has(fa.source_hash)) byHash.set(fa.source_hash, []);
+    byHash.get(fa.source_hash).push(fa.id);
+  }
+  const duplicate_sources = [];
+  for (const [source_hash, ids] of byHash) {
+    if (ids.length > 1) duplicate_sources.push({ source_hash, ids: ids.sort() });
+  }
+
   return {
     generated_by: '@transitrix/ingest-cli',
     org_root: resolve(orgRoot),
     coverage_profile: (profile && profile.display) || 'full',
     ...(profile && profile.warning ? { coverage_warning: profile.warning } : {}),
     field_artefacts,
+    ...(duplicate_sources.length ? { duplicate_sources } : {}),
     candidates,
     excluded_admitted,
     relation_suggestions: suggestions,
