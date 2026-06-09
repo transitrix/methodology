@@ -104,6 +104,9 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
       ...(v.coverage_reason ? { coverage_reason: v.coverage_reason } : {}),
       ...(place ? { placement: { mode: place.mode, layer: place.layer, folder: place.folder, ...(place.promotable ? { promotable: true } : {}) } } : {}),
       validation_flags: v.validation_flags,
+      // Pass through entity_match proposal (F8) — the human gate decides whether
+      // this candidate is a duplicate of an existing element or genuinely new.
+      ...(candidate.entity_match ? { entity_match: candidate.entity_match } : {}),
     });
   }
 
@@ -124,6 +127,16 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     if (ids.length > 1) duplicate_sources.push({ source_hash, ids: ids.sort() });
   }
 
+  // Entity-match proposals (F8): cluster candidates that matched an existing canon
+  // element by name or alias. Propose, never auto-merge — the human gate decides.
+  const entity_match_proposals = candidates
+    .filter(c => c.entity_match)
+    .map(c => ({
+      candidate_ref: c.ref,
+      matched_on: c.entity_match.matched_on,
+      proposed_existing_id: c.entity_match.proposed_existing_id,
+    }));
+
   return {
     generated_by: '@transitrix/ingest-cli',
     org_root: resolve(orgRoot),
@@ -131,6 +144,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     ...(profile && profile.warning ? { coverage_warning: profile.warning } : {}),
     field_artefacts,
     ...(duplicate_sources.length ? { duplicate_sources } : {}),
+    ...(entity_match_proposals.length ? { entity_match_proposals } : {}),
     candidates,
     excluded_admitted,
     relation_suggestions: suggestions,

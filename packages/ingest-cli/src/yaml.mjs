@@ -69,6 +69,27 @@ export function dump(obj) {
 // Read a single top-level scalar key from manifest-style YAML text (e.g.
 // `coverage_profile: full`). Returns the unquoted string, or null if the key is
 // absent or its value is a block/map (not a top-level scalar). Intentionally tiny.
+// Read a top-level list key from YAML text. Returns [] if absent or not a list.
+// Understands the minimal block-list shapes this CLI emits and that adopter canon
+// files carry — `key:\n  - item\n  - item`. Does NOT handle inline lists (`[a, b]`).
+export function readTopList(text, key) {
+  if (typeof text !== 'string') return [];
+  // Normalise CRLF so the regex works on both Windows and Unix line endings.
+  const norm = text.replace(/\r\n/g, '\n');
+  const re = new RegExp(`^${key}:[ \\t]*\\n((?:[ \\t]+-[^\\n]*\\n?)*)`, 'm');
+  const m = norm.match(re);
+  if (!m) return [];
+  return m[1].replace(/\r/g, '').split('\n')
+    .map(l => l.replace(/^\s*-\s*/, '').trim())
+    .filter(Boolean)
+    .map(v => {
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        return v.slice(1, -1);
+      }
+      return v;
+    });
+}
+
 export function readTopScalar(text, key) {
   if (typeof text !== 'string') return null;
   const re = new RegExp(`^${key}:[ \\t]*(.+?)[ \\t]*$`, 'm');

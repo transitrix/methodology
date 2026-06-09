@@ -62,7 +62,16 @@
           "pattern": "^[A-Z][A-Z0-9_]*$"
         },
         "valid_from": { "type": ["string", "null"], "description": "Lifecycle anchor (CONTRACT.md §7). `pending` or a date when known." },
-        "valid_to": { "type": ["string", "null"] }
+        "valid_to": { "type": ["string", "null"] },
+        "entity_match": {
+          "type": "object",
+          "description": "Present when the candidate's name matches an existing canon element's name or alias (F8 cross-source entity resolution). Propose, never auto-merge — the human gate decides whether this candidate is a duplicate of the existing element or genuinely new.",
+          "required": ["proposed_existing_id", "matched_on"],
+          "properties": {
+            "proposed_existing_id": { "type": "string", "description": "Canonical ID of the existing element this candidate may be referring to." },
+            "matched_on": { "type": "string", "enum": ["name", "alias"], "description": "Whether the match was on the element's primary name or one of its aliases." }
+          }
+        }
       },
       "required": ["id", "name", "element_type"]
     },

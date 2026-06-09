@@ -21,6 +21,10 @@ import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
 import { isValidId } from './ids.mjs';
+import { buildCanonIndex } from './canon.mjs';
+
+// Normalise a name/alias string for case-insensitive entity-match lookup (F8).
+function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
 
 const REL_THRESHOLD = 'high';
 const CONFIDENCE_RANK = { low: 0, medium: 1, high: 2 };
@@ -157,6 +161,21 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
 
   const { candidates, suggestions } = shapeCandidates(derivedFrom, result);
   const warnings = collectIdWarnings(candidates);
+
+  // Entity-match proposals (F8): for each element candidate whose name matches an
+  // existing canon element (by name or alias), attach a proposal — propose, NEVER
+  // auto-merge. The human gate in the review queue decides whether it is a duplicate
+  // (→ reference the existing id) or genuinely new (→ admit with a fresh id).
+  const canonIndex = await buildCanonIndex(resolve(orgRoot));
+  for (const c of candidates) {
+    if (c.kind !== 'element' || !c.name) continue;
+    const match = canonIndex.nameMap.get(normName(c.name));
+    // Exclude corroboration: if the candidate's own id matches the existing id, the
+    // candidate IS the same element being emitted again — no match proposal needed.
+    if (match && match.id !== c.id) {
+      c.entity_match = { proposed_existing_id: match.id, matched_on: match.matched_on };
+    }
+  }
 
   const dir = candidatesDir || join(resolve(orgRoot), '_intake', 'processing', 'candidates');
   await mkdir(dir, { recursive: true });
