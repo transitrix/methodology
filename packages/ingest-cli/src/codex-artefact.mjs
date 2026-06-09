@@ -13,11 +13,11 @@
 // flow's admission to field/. This command NEVER writes canon/.
 
 import { readFile, writeFile, mkdir, readdir, rename, access } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
 import { join, resolve, basename, extname } from 'node:path';
 import { isValidId, makeId, slugSegment, parseId } from './ids.mjs';
 import { dump } from './yaml.mjs';
 import { stageDir } from './intake.mjs';
+import { hashFile, findDuplicateSource, DuplicateSourceError } from './source-hash.mjs';
 
 // CODEX TYPE -> sub-zone (14-codex.md §2).
 const TYPE_INFO = {
@@ -57,7 +57,7 @@ async function findRaw(orgRoot, mdPath) {
 export async function emitCodexArtefact(opts) {
   const {
     orgRoot, mdPath, type, jurisdiction, effectiveDate, sourceAuthority,
-    issuingAuthority, admittedAt, admittedBy, monitoring, slug, name,
+    issuingAuthority, admittedAt, admittedBy, monitoring, slug, name, force = false,
   } = opts;
 
   const info = TYPE_INFO[type];
@@ -75,6 +75,18 @@ export async function emitCodexArtefact(opts) {
     codexDir = join(resolve(orgRoot), 'codex', 'internal');
   }
 
+  // Fingerprint the raw bytes up front and refuse a duplicate re-ingest (same content
+  // already admitted to codex/) unless --force — before minting an id or snapshotting.
+  const raw = await findRaw(orgRoot, mdPath);
+  let sourceHash = null;
+  if (raw) {
+    sourceHash = await hashFile(raw);
+    if (!force) {
+      const dup = await findDuplicateSource(orgRoot, 'codex', sourceHash);
+      if (dup) throw new DuplicateSourceError(dup.id, sourceHash);
+    }
+  }
+
   const seg = slug ? slugSegment(slug) : slugSegment(name);
   if (!seg) throw new Error('could not derive an ID segment from --slug/--name; pass --slug');
   const middle = [seg];
@@ -82,14 +94,11 @@ export async function emitCodexArtefact(opts) {
   const id = makeId(type, middle, ordinal);
   if (!isValidId(id)) throw new Error(`generated an invalid ID: ${id}`);
 
-  // Snapshot the raw bytes into the codex sources/ subfolder (audit trail) + fingerprint.
-  const raw = await findRaw(orgRoot, mdPath);
+  // Snapshot the raw bytes into the codex sources/ subfolder (audit trail). The snapshot
+  // name is keyed by the unique id, so it never collides across distinct sources.
   let snapshotFile = null;
   let snapshotDate = null;
-  let sourceHash = null;
   if (raw) {
-    const bytes = await readFile(raw);
-    sourceHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
     snapshotDate = admittedAt;
     const sourcesDir = join(codexDir, 'sources');
     await mkdir(sourcesDir, { recursive: true });

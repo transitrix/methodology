@@ -49,6 +49,19 @@
         "additionalProperties": true
       }
     },
+    "duplicate_sources": {
+      "type": "array",
+      "description": "Optional. Clusters of source artefacts that share a source_hash — the same content admitted more than once (e.g. via admit-source --force). Present only when at least one cluster exists; the human collapses duplicates before admitting candidates derived from both.",
+      "items": {
+        "type": "object",
+        "required": ["source_hash", "ids"],
+        "properties": {
+          "source_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "ids": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+        },
+        "additionalProperties": false
+      }
+    },
     "candidates": {
       "type": "array",
       "description": "Canon candidates awaiting the human admission gate. Each conforms to candidate.schema.json; the queue references them and surfaces their flags.",

@@ -7,11 +7,11 @@
 // never touches canon/.
 
 import { readFile, writeFile, mkdir, readdir, rename, access } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
 import { join, resolve, basename, extname } from 'node:path';
 import { isValidId, makeId, slugSegment, parseId } from './ids.mjs';
 import { dump } from './yaml.mjs';
 import { INTAKE, stageDir } from './intake.mjs';
+import { hashFile, shortHash, findDuplicateSource, DuplicateSourceError } from './source-hash.mjs';
 
 // Field TYPE → field/ subfolder and body-block key.
 const TYPE_INFO = {
@@ -60,7 +60,7 @@ async function findRaw(orgRoot, mdPath) {
 export async function emitFieldArtefact(opts) {
   const {
     orgRoot, mdPath, type, role, date,
-    setting, capturedBy, sourceQuality, slug, admittedAt, name,
+    setting, capturedBy, sourceQuality, slug, admittedAt, name, force = false,
   } = opts;
 
   const info = TYPE_INFO[type];
@@ -68,6 +68,18 @@ export async function emitFieldArtefact(opts) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) throw new Error('--date must be YYYY-MM-DD');
   if (sourceQuality && !SOURCE_QUALITY.has(sourceQuality)) {
     throw new Error(`--source-quality must be one of ${[...SOURCE_QUALITY].join(', ')}`);
+  }
+
+  // Fingerprint the raw bytes up front and refuse a duplicate re-ingest (same content
+  // already admitted to field/) unless --force — before minting an id or moving anything.
+  const raw = await findRaw(orgRoot, mdPath);
+  let sourceHash = null;
+  if (raw) {
+    sourceHash = await hashFile(raw);
+    if (!force) {
+      const dup = await findDuplicateSource(orgRoot, 'field', sourceHash);
+      if (dup) throw new DuplicateSourceError(dup.id, sourceHash);
+    }
   }
 
   const seg = slug ? slugSegment(slug) : slugSegment(role);
@@ -83,19 +95,20 @@ export async function emitFieldArtefact(opts) {
   const body = await readFile(mdPath, 'utf8');
   const proposedSQ = sourceQuality || DEFAULT_SQ[type];
 
-  // Move the raw source into processed/ and record a traceable pointer + SHA-256.
-  // The hash gives the artefact tamper-evidence (a re-saved "same" file is detected
-  // by mismatch) and a stable provenance fingerprint independent of the path.
-  const raw = await findRaw(orgRoot, mdPath);
+  // Move the raw source into processed/ and record a traceable pointer. If a file of the
+  // same basename is already there (a different source that happens to share a name —
+  // a re-ingest of identical content is caught above), disambiguate with the content
+  // hash instead of overwriting, so no prior source is silently clobbered.
   let rawSource = null;
-  let sourceHash = null;
   if (raw) {
-    const bytes = await readFile(raw);
-    sourceHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
-    const dest = join(stageDir(orgRoot, 'processed'), basename(raw));
-    await mkdir(stageDir(orgRoot, 'processed'), { recursive: true });
+    const processedDir = stageDir(orgRoot, 'processed');
+    await mkdir(processedDir, { recursive: true });
+    let dest = join(processedDir, basename(raw));
+    if (await exists(dest)) {
+      dest = join(processedDir, `${basename(raw, extname(raw))}__${shortHash(sourceHash)}${extname(raw)}`);
+    }
     await rename(raw, dest);
-    rawSource = join(INTAKE, 'processed', basename(raw)).replace(/\\/g, '/');
+    rawSource = join(INTAKE, 'processed', basename(dest)).replace(/\\/g, '/');
   }
 
   const artefact = {
