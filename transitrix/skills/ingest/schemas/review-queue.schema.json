@@ -26,18 +26,36 @@
     },
     "field_artefacts": {
       "type": "array",
-      "description": "Field artefacts emitted in this batch, each with its PROPOSED source_quality for the human to confirm.",
+      "description": "Source artefacts the candidates in this batch derive from. A FIELD artefact (interview/survey/observation/draft) carries a PROPOSED source_quality for the human to confirm; a CODEX artefact (law/regulation/policy/standard) is authoritative by construction and carries no source_quality (zone: codex, authoritative: true).",
       "items": {
         "type": "object",
-        "required": ["id", "proposed_source_quality"],
+        "required": ["id"],
         "properties": {
           "id": {
             "type": "string",
             "pattern": "^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$"
           },
-          "proposed_source_quality": {
+          "zone": {
             "type": "string",
-            "enum": ["authoritative", "corroborated", "single_source", "unverified"]
+            "enum": ["field", "codex"],
+            "description": "Which zone the artefact was resolved from. Omitted on a field artefact for backward compatibility."
+          },
+          "found": {
+            "type": "boolean",
+            "description": "Whether the cited artefact resolved to a file on disk."
+          },
+          "proposed_source_quality": {
+            "type": ["string", "null"],
+            "enum": ["authoritative", "corroborated", "single_source", "unverified", null],
+            "description": "Field-zone only — the proposed trust level for the human to confirm. Absent on a codex artefact (authoritative by construction)."
+          },
+          "authoritative": {
+            "type": "boolean",
+            "description": "Codex-zone only — true; a codex source needs no source_quality confirmation."
+          },
+          "effective_date": {
+            "type": "string",
+            "description": "Codex-zone only — the source's effective date."
           },
           "raw_source": { "type": "string" },
           "source_hash": {
