@@ -902,6 +902,56 @@ def part_l_repo_check():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part M — F14 ID-grammar: emit-time surfacing + date-stamp middles ─
+
+def part_m_id_grammar():
+    """F14: emit-candidates surfaces an ID-grammar violation at emit time; a zero-padded
+    ISO-date MIDDLE segment is valid (the no-leading-zero ban is terminal-only)."""
+    if not shutil.which("node"):
+        print("SKIP Part M: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-f14-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        # The field id itself carries zero-padded ISO-date middles (04, 15) — must be valid.
+        fid = "INTERVIEW-ops-2026-04-15-1"
+        with open(os.path.join(fdir, fid + ".yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "%s"\nname: "x"\ntype: "INTERVIEW"\nzone: "field"\nnotes: "x"\n' % fid)
+
+        res = os.path.join(work, "res.json")
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({"elements": [
+                {"id": "GOAL-CHURN-001", "name": "bad", "element_type": "GOAL", "extraction_confidence": "high"},
+                {"id": "CHANGE-rollout-2026-04-15-1", "name": "ok", "element_type": "CHANGE", "extraction_confidence": "high"},
+            ], "relations": [], "assertions": []}, fh)
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        r = run_cli("emit-candidates", os.path.join(fdir, fid + ".yaml"), "--from", res, "--candidates-dir", cdir)
+        out = r.stdout + r.stderr
+        # F14(a): the terminal-leading-zero id is surfaced as a warning at emit time.
+        # (Assert without the section sign — Windows subprocess decoding mangles non-ASCII.)
+        check("WARNING" in out and "GOAL-CHURN-001" in out and "ID grammar" in out,
+              "F14(a): emit-candidates did not warn on the invalid id at emit time: %r" % out)
+        # F14(b): a zero-padded ISO-date MIDDLE segment is valid — never warned.
+        check("CHANGE-rollout-2026-04-15-1" not in out,
+              "F14(b): a zero-padded ISO-date MIDDLE segment must be valid, not warned: %r" % out)
+
+        # validate agrees: terminal-leading-zero flagged, date-stamped id is not a grammar violation.
+        r = run_cli("validate", cdir)
+        vout = r.stdout + r.stderr
+        check("violates the ID grammar: GOAL-CHURN-001" in vout,
+              "F14(a): validate did not flag the terminal-leading-zero id")
+        check("violates the ID grammar: CHANGE-rollout-2026-04-15-1" not in vout,
+              "F14(b): the date-stamped id must not be flagged for ID grammar")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -914,6 +964,7 @@ part_i_placement()
 part_j_duplicate_source()
 part_k_suggest_profile()
 part_l_repo_check()
+part_m_id_grammar()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

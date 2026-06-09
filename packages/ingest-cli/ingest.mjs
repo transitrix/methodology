@@ -288,6 +288,7 @@ async function cmdEmitCandidates(args) {
     console.log(`emit-candidates  derived_from ${res.derivedFrom}`);
     console.log(`  ${res.candidates.length} candidate(s) -> ${res.dir}`);
     console.log(`  ${res.suggestions.length} relation suggestion(s) held back (relation-conservative) -> ${res.suggPath}`);
+    for (const w of res.warnings || []) console.error(`  WARNING: ${w}`);
     console.log('  candidates are pending — nothing admitted to canon.');
     return 0;
   } catch (err) {

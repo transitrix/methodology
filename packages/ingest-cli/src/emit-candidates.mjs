@@ -20,6 +20,7 @@
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
+import { isValidId } from './ids.mjs';
 
 const REL_THRESHOLD = 'high';
 const CONFIDENCE_RANK = { low: 0, medium: 1, high: 2 };
@@ -94,6 +95,25 @@ export function shapeCandidates(derivedFrom, result) {
   return { candidates, suggestions };
 }
 
+// Surface ID-grammar violations at emit time (F14): an element/assertion id or a
+// relation endpoint that breaks the canonical grammar (IDS_AND_REFERENCES §1) is caught
+// here, one step earlier than `validate`, so the agent sees it as soon as candidates are
+// shaped. Pure — returns a list of human-readable warnings; nothing is dropped (the
+// candidate is still written and the human gate / `validate` still flags it).
+export function collectIdWarnings(candidates) {
+  const warnings = [];
+  for (const c of candidates) {
+    if ((c.kind === 'element' || c.kind === 'assertion') && !isValidId(c.id)) {
+      warnings.push(`${c.kind} id violates the ID grammar (IDS §1): ${c.id}`);
+    }
+    if (c.kind === 'relation') {
+      if (!isValidId(c.from)) warnings.push(`relation "from" violates the ID grammar (IDS §1): ${c.from}`);
+      if (!isValidId(c.to)) warnings.push(`relation "to" violates the ID grammar (IDS §1): ${c.to}`);
+    }
+  }
+  return warnings;
+}
+
 function candidateFilename(c, index) {
   if ((c.kind === 'element' || c.kind === 'assertion') && c.id) return `${safeName(c.id)}.json`;
   if (c.kind === 'relation') return `REL_${safeName(c.rel_kind)}__${safeName(c.from)}__${safeName(c.to)}.json`;
@@ -136,6 +156,7 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   catch (err) { throw new Error(`could not read extraction result ${resultPath}: ${err.message}`); }
 
   const { candidates, suggestions } = shapeCandidates(derivedFrom, result);
+  const warnings = collectIdWarnings(candidates);
 
   const dir = candidatesDir || join(resolve(orgRoot), '_intake', 'processing', 'candidates');
   await mkdir(dir, { recursive: true });
@@ -156,7 +177,7 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   const suggPath = join(resolve(orgRoot), '_intake', 'processing', 'relation-suggestions.json');
   await writeFile(suggPath, JSON.stringify(suggestions, null, 2) + '\n', 'utf8');
 
-  return { derivedFrom, dir, candidates, suggestions, suggPath };
+  return { derivedFrom, dir, candidates, suggestions, suggPath, warnings };
 }
 
 export { REL_THRESHOLD };
