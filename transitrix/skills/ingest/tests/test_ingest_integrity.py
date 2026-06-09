@@ -30,6 +30,9 @@ Deterministic, no-API-key guard. Nine parts:
      layer + folder; review-queue annotates each element candidate with its placement
      (equals resolve consistently); check-placement flags an admitted element sitting
      outside its §4 folder.
+  N. F8 entity resolution — emit-candidates attaches entity_match when a candidate's
+     name matches an existing canon element by primary name or alias; genuinely new
+     candidates get no proposal; review-queue surfaces entity_match_proposals.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -952,6 +955,95 @@ def part_m_id_grammar():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part N – F8 entity resolution: entity-match proposals ──
+
+def part_n_entity_resolution():
+    """F8: emit-candidates proposes an entity match when a new candidate's name matches
+    an existing canon element's name or alias; review-queue surfaces entity_match_proposals.
+    A candidate whose name matches nothing in canon gets no proposal (no false positives).
+    Corroboration (candidate id == existing id) is not flagged as a match."""
+    if not shutil.which("node"):
+        print("SKIP Part N: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-f8-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        # Canon element with a name and two aliases.
+        canon_dir = os.path.join(org, "canon", "elements", "02_business", "actors")
+        os.makedirs(canon_dir, exist_ok=True)
+        with open(os.path.join(canon_dir, "ACTOR-ACME-1.yaml"), "w", encoding="utf-8") as fh:
+            fh.write(
+                'notation: actor\nid: ACTOR-ACME-1\nname: "Acme Logistics"\n'
+                'aliases:\n  - "ACME"\n  - "Acme Logistics Ltd."\n'
+                'zone: canon\nadmitted_at: "2026-01-01"\nadmitted_by: "v.test"\n'
+                'gate_checks:\n  uniqueness: pass\n  consistency: pass\n  completeness: pass\n'
+                'valid_from: "2026-01-01"\nvalid_to: null\n'
+            )
+
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        fid = "INTERVIEW-partner-2026-06-09-1"
+        with open(os.path.join(fdir, fid + ".yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "%s"\nname: "Partner interview"\ntype: "INTERVIEW"\nzone: "field"\nnotes: "x"\n' % fid)
+
+        res = os.path.join(work, "res.json")
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({"elements": [
+                # Matches by primary name -- should get entity_match (matched_on: name)
+                {"id": "ACTOR-NEW-1", "name": "Acme Logistics", "element_type": "ACTOR", "extraction_confidence": "high"},
+                # Matches by alias -- should get entity_match (matched_on: alias)
+                {"id": "ACTOR-NEW-2", "name": "ACME", "element_type": "ACTOR", "extraction_confidence": "high"},
+                # Genuinely new -- no entity_match
+                {"id": "ACTOR-NEW-3", "name": "Totally New Actor", "element_type": "ACTOR", "extraction_confidence": "high"},
+            ], "relations": [], "assertions": []}, fh)
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        run_cli("emit-candidates", os.path.join(fdir, fid + ".yaml"), "--from", res, "--candidates-dir", cdir)
+
+        # Verify entity_match on candidate JSON files.
+        name_cand_path = os.path.join(cdir, "ACTOR-NEW-1.json")
+        alias_cand_path = os.path.join(cdir, "ACTOR-NEW-2.json")
+        new_cand_path  = os.path.join(cdir, "ACTOR-NEW-3.json")
+        name_cand  = json.loads(open(name_cand_path,  encoding="utf-8").read())
+        alias_cand = json.loads(open(alias_cand_path, encoding="utf-8").read())
+        new_cand   = json.loads(open(new_cand_path,   encoding="utf-8").read())
+
+        check("entity_match" in name_cand and name_cand["entity_match"]["proposed_existing_id"] == "ACTOR-ACME-1",
+              "F8: emit-candidates did not attach entity_match for a name-matched candidate")
+        check(name_cand.get("entity_match", {}).get("matched_on") == "name",
+              "F8: matched_on should be 'name' for a primary-name match")
+        check("entity_match" in alias_cand and alias_cand["entity_match"]["proposed_existing_id"] == "ACTOR-ACME-1",
+              "F8: emit-candidates did not attach entity_match for an alias-matched candidate")
+        check(alias_cand.get("entity_match", {}).get("matched_on") == "alias",
+              "F8: matched_on should be 'alias' for an alias match")
+        check("entity_match" not in new_cand,
+              "F8: emit-candidates must not propose entity_match for a genuinely new element")
+
+        # Review-queue surfaces entity_match_proposals.
+        rq_path = os.path.join(org, "_intake", "processing", "review-queue.yaml")
+        run_cli("review-queue", cdir)
+        with open(rq_path, encoding="utf-8") as fh:
+            rq_text = fh.read()
+
+        check("entity_match_proposals" in rq_text,
+              "F8: review-queue did not emit an entity_match_proposals section")
+        check("ACTOR-ACME-1" in rq_text,
+              "F8: review-queue entity_match_proposals must name the proposed_existing_id")
+        # Both the name-match and alias-match should appear (2 proposals).
+        check(rq_text.count("ACTOR-ACME-1") >= 2,
+              "F8: expected at least 2 entity_match_proposals (one per matched candidate)")
+        # The queue candidates must also carry entity_match inline for the matching ones.
+        check(rq_text.count("entity_match") >= 3,
+              "F8: review-queue should carry entity_match on 2 candidates + entity_match_proposals block")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -965,6 +1057,7 @@ part_j_duplicate_source()
 part_k_suggest_profile()
 part_l_repo_check()
 part_m_id_grammar()
+part_n_entity_resolution()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

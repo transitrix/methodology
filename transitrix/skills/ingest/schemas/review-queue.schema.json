@@ -80,6 +80,20 @@
         "additionalProperties": false
       }
     },
+    "entity_match_proposals": {
+      "type": "array",
+      "description": "Optional. Candidates whose name matched an existing canon element's name or alias (F8 cross-source entity resolution). Surfaced for the human gate: decide whether each candidate is a duplicate of the existing element (reference its id) or genuinely new (admit with a fresh id). Propose, never auto-merge. Present only when at least one match exists.",
+      "items": {
+        "type": "object",
+        "required": ["candidate_ref", "matched_on", "proposed_existing_id"],
+        "properties": {
+          "candidate_ref": { "type": "string", "description": "Path to the candidate file." },
+          "matched_on": { "type": "string", "enum": ["name", "alias"], "description": "Whether the match was on the existing element's primary name or one of its aliases." },
+          "proposed_existing_id": { "type": "string", "description": "Canonical ID of the existing element this candidate may be referring to." }
+        },
+        "additionalProperties": false
+      }
+    },
     "candidates": {
       "type": "array",
       "description": "Canon candidates awaiting the human admission gate. Each conforms to candidate.schema.json; the queue references them and surfaces their flags.",
