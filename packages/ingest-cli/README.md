@@ -32,6 +32,10 @@ transitrix-ingest <command> [args]
 | `resolve-placement <TYPE>` | ✅ | Print a TYPE's `ELEMENT_PRIMITIVES.md` §4 materialisation mode + layer + folder. |
 | `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
 
+## Upgrading
+
+After pulling a new methodology version, reinstall the CLI before running the pipeline. A cached or globally-installed binary from a prior release does not auto-update and may run stale validators, a stale profile resolver, or stale review-queue logic. Re-run your install command and verify `transitrix-ingest --version` reflects the new release.
+
 ## Layout
 
 ```
