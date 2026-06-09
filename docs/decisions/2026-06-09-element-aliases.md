@@ -1,5 +1,5 @@
 ---
-status: Proposed
+status: Accepted
 date: 2026-06-09
 scope: repo
 supersedes: []
@@ -9,10 +9,11 @@ tags: [element-aliases, alternative-names, entity-resolution, element-primitives
 
 # Canonical home for element aliases / alternative names
 
-> **Status: Proposed — direction not yet chosen.** This ADR frames the choice
-> between an additive `aliases:` field and a standalone alias registry, and
-> records the trade-offs. It does **not** decide; Valerii gates the resolution
-> direction. No canon / spec edits follow until the direction is set.
+> **Status: Accepted — Option A (additive `aliases:` field) chosen 2026-06-09.**
+> `name` remains the sole canonical label; `aliases[]` is non-authoritative
+> also-known-as data out of scope of the §3 no-alias rule. Implementation follows:
+> `ELEMENT_PRIMITIVES.md` §3 is updated in the same commit; F8 entity resolution
+> lands as a separate PR.
 
 ## Context
 
@@ -184,7 +185,26 @@ The consequences below are common to both live options; the items marked
 
 ### Decision record
 
-- **Open — awaiting Valerii.** Choose Option A (additive `aliases:` field) or
-  Option B (standalone alias registry), and state the F-3 boundary (scope vs
-  relax). Implementation PRs follow the chosen direction; the F8 cross-source
-  entity-resolution work is gated on this.
+- **Accepted 2026-06-09 — Option A: additive `aliases:` field.**
+
+  Direction: add an optional `aliases:` list of strings to the `standalone`
+  element envelope (all `standalone` TYPEs; the field is universally optional so
+  the set of TYPEs that carry aliases in practice is an adopter decision, not a
+  per-TYPE schema constraint).
+
+  F-3 boundary: **scopes** — `aliases[]` is non-authoritative also-known-as
+  data; `name` stays the sole canonical label. The §3 no-alias rule forbids a
+  *second authoritative label*; a non-authoritative match-hint list is outside
+  that scope. `ELEMENT_PRIMITIVES.md` §3 is updated to state this explicitly,
+  and the `name` row's wording is tightened so the rule and the new construct
+  do not read as contradictory.
+
+  New cross-catalogue uniqueness gate: an `aliases[]` entry must not collide
+  with any other element's `name` or `aliases[]` entry in the same catalogue
+  (flagged at canon admission; a new `ELEM-*` gate — separate implementation
+  sub-task). The gate is a consequence of both options and must land before any
+  element with aliases is admitted to canon.
+
+  Implementation order: spec update (`ELEMENT_PRIMITIVES.md` §3) →
+  F8 entity resolution in `emit-candidates` + `review-queue` →
+  cross-catalogue uniqueness gate (admission side).
