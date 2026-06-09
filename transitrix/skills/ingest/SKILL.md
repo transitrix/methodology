@@ -34,6 +34,8 @@ npx @transitrix/ingest-cli --version
 
 Also confirm you are operating inside a Transitrix adopter repository (a `transitrix.yaml` manifest at the repo root; see [MANIFEST](https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md)). If there is no repo yet, the user wants `/transitrix:onboard` first.
 
+> **After a methodology upgrade** — reinstall the CLI before running the pipeline. A cached or globally-installed binary from a prior release does not auto-update; it may run against stale validators, a stale profile resolver, or stale `review-queue` logic. Re-run your install command and confirm the version above reflects the new release.
+
 ---
 
 ## Step 1 — Scaffold the intake folder
