@@ -1,5 +1,5 @@
 ---
-status: Proposed
+status: Accepted
 date: 2026-06-09
 scope: repo
 supersedes: []
@@ -22,7 +22,7 @@ Surfaced 2026-06-09 while discussing report UX. Within the Transitrix family; no
 
 ## Decision
 
-(Recommended direction; `status: Proposed` — the resolution is gated.)
+(Accepted — Valerii, 2026-06-09; delivered in sequence per Decision §7 and the Decision record.)
 
 1. **The parameter object of a report is a declarative view-config artefact, not chat state.** Every report parameter — filters (e.g. jurisdiction, status, severity), scope (e.g. a single law or product), grouping columns, ordering — is expressed in a view-config and versioned in the repository. This is the existing report-config shape under `notations/views/`, not a new concept.
 
@@ -36,21 +36,29 @@ Surfaced 2026-06-09 while discussing report UX. Within the Transitrix family; no
 
 6. **Tooling, not normative canon (for now).** The report skill and its renderer CLI are *tooling*, like the ingest skill and its CLI — kept in-repo until a tooling-extraction point and **not described in `notations/`**. The only normative surface this decision leans on is the existing view-config (report-config) shape, which already lives in `notations/views/`. If reports later become a public-facing narrative ("ask your repository for a compliance report"), the external wording is decided separately from this mechanism.
 
+7. **Sequenced delivery (Valerii, 2026-06-09).** Build in three steps, not at once:
+   - **Step 1 — render path first.** Land the deterministic view export CLI rendering from a *named, saved* view-config, and **pin each relevant view spec's defaults** (so the skill has a well-defined fallback and a meaningful "what I assumed" message). This banks the reproducibility/audit win at the smallest surface and is independently useful to power users.
+   - **Step 2 — thin skill next.** Add the report skill in `skills/` as a layer over that CLI (parameter elicitation, defaults-stating, named-config materialisation).
+   - **Step 3 — extraction deferred.** Do **not** stand up a separate tooling repo now; when the ingest tooling is extracted to its own repo, the report tooling moves with it — one extraction event, not two.
+
 ## Alternatives considered
 
 - **A — Conversational-only, ephemeral reports (no artefact).** Rejected: not reproducible or auditable; compliance reporting needs a versioned parameter record. A chat transcript is not an audit trail.
 - **B — Fat skill that renders in-agent.** Rejected: non-deterministic, drifts from canonical view semantics, and is not portable across agent runtimes. Rendering must stay in the deterministic CLI/library.
-- **C — Config-only, no skill (the user hand-writes a view-config and runs the CLI).** Not rejected as a path — it remains the power-user escape hatch, and the skill writes exactly the same artefact a human would — but rejected as the *only* path: too high-friction for the "just ask in chat" UX this decision is about.
+- **C — Config-only, no skill (the user hand-writes a view-config and runs the CLI).** Not rejected as a path — it remains the power-user escape hatch, and the skill writes exactly the same artefact a human would — but rejected as the *only* path: too high-friction for the "just ask in chat" UX this decision is about. (It is, however, what Step 1 ships first.)
 - **D — A GUI parameter form in the visual consumers.** Complementary, not competing: a visual editor can edit the same view-config. Out of scope here; this ADR is about the conversational + CLI path.
+- **E — Stand up a dedicated report-tooling repo now.** Rejected (Valerii, 2026-06-09): pulls forward the tooling-extraction work that is deliberately deferred; the report tooling rides the ingest extraction instead (Decision §7 step 3).
 
 ## Consequences
 
 - **New tooling, not new canon:** a `report`/`view` skill in `skills/` plus the renderer CLI subcommands; the skill orchestrates, the CLI renders. No `notations/` change beyond relying on the existing report-config shape.
 - **Reproducibility and audit:** every report has a committed config; "the same report next quarter" is a re-render, and the report definition is diffable and attributable.
-- **Defaults must be specified per view.** For the skill's "state what I assumed" behaviour to be well-defined, each view spec must declare its defaults explicitly. This is a small follow-on for the view specs that don't yet pin defaults.
+- **Defaults must be specified per view.** For the skill's "state what I assumed" behaviour to be well-defined, each view spec must declare its defaults explicitly. This is the Step-1 follow-on for the view specs that don't yet pin defaults.
 - **Within-family consumers:** the visual consumers (Studio / DSM) render the same view-configs; a local ADR in those repos should cross-reference this one. Stays within the Transitrix family — no hub ADR.
 - **Portability cost:** the skill must stay thin and script-backed to load under more than one agent runtime — the same constraint the ingest skill carries.
+- **Sequencing consequence:** the chat-report UX (Step 2) lands after the render path (Step 1); until then the power-user CLI + named-config path is the supported route. Acceptable — Step 1 already delivers the compliance-critical reproducibility win.
 
 ### Decision record
 
-- **Proposed by Win-Claude, 2026-06-09**, from a report-UX discussion. Open point for the resolution gate: confirm the "view-config is the parameter artefact + thin skill over a deterministic renderer CLI" direction, and decide whether the report skill ships in-repo now or waits for the tooling-extraction repo (consistent with how the ingest tooling is treated).
+- **Proposed by Win-Claude, 2026-06-09**, from a report-UX discussion.
+- **Accepted by Valerii, 2026-06-09:** direction confirmed (view-config as the parameter artefact + thin skill over a deterministic renderer CLI). Delivery sequenced CLI-first then thin skill (Decision §7); no standalone tooling repo now — report tooling rides the ingest tooling-extraction. Open point resolved.
