@@ -856,6 +856,52 @@ def part_k_suggest_profile():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part L — F2 repo-check (data-free doctor) ────────────────────
+
+def part_l_repo_check():
+    """repo-check emits a data-free health report: per-zone/TYPE counts, adoption level,
+    integrity flags (invalid ids, misplaced canon elements); never names an object."""
+    if not shutil.which("node"):
+        print("SKIP Part L: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-f2-")
+    try:
+        org = os.path.join(work, "org")
+        goals = os.path.join(org, "canon", "elements", "01_motivation", "goals")
+        os.makedirs(goals)
+        os.makedirs(os.path.join(org, "field", "interviews"))
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: core\n')
+        for gid in ("GOAL-A-1", "GOAL-B-1"):
+            with open(os.path.join(goals, gid + ".yaml"), "w", encoding="utf-8") as fh:
+                fh.write('id: "%s"\nname: "x"\nzone: "canon"\n' % gid)
+        # A PRODUCT sitting in goals/ → misplaced; a leading-zero field id → invalid.
+        with open(os.path.join(goals, "PRODUCT-MIS-1.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "PRODUCT-MIS-1"\nname: "z"\nzone: "canon"\n')
+        with open(os.path.join(org, "field", "interviews", "bad.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "INTERVIEW-007"\nname: "b"\nzone: "field"\n')
+
+        r = run_cli("repo-check", org)
+        check(r.returncode == 0, "F2: repo-check failed: %s" % (r.stderr or r.stdout))
+        rep = yaml.safe_load(r.stdout)
+
+        check(rep.get("manifest_present") is True, "F2: manifest_present should be True")
+        check(rep.get("methodology_version") == "0.5.0", "F2: methodology_version not read: %r" % rep.get("methodology_version"))
+        check(rep.get("coverage_profile") == "core", "F2: coverage_profile not resolved: %r" % rep.get("coverage_profile"))
+        ct = rep.get("zones", {}).get("canon", {}).get("types", {})
+        check(ct.get("GOAL") == 2 and ct.get("PRODUCT") == 1, "F2: canon TYPE counts wrong: %r" % ct)
+        integ = rep.get("integrity", {})
+        check(integ.get("invalid_ids") == 1, "F2: invalid_ids should be 1 (the leading-zero field id): %r" % integ.get("invalid_ids"))
+        check(integ.get("misplaced_canon_elements") == 1, "F2: misplaced_canon_elements should be 1: %r" % integ.get("misplaced_canon_elements"))
+        check(bool(rep.get("adoption_level")), "F2: adoption_level missing")
+        # Data-free guarantee: the report must not carry any object id/name.
+        blob = json.dumps(rep)
+        for leak in ("GOAL-A-1", "GOAL-B-1", "PRODUCT-MIS-1", "INTERVIEW-007"):
+            check(leak not in blob, "F2: report leaked an object id (%s) — must be data-free" % leak)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -867,6 +913,7 @@ part_h_idempotent()
 part_i_placement()
 part_j_duplicate_source()
 part_k_suggest_profile()
+part_l_repo_check()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

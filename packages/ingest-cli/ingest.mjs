@@ -26,6 +26,7 @@ import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
+import { repoCheck } from './src/repo-check.mjs';
 import { dump } from './src/yaml.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -73,6 +74,7 @@ function usage() {
     '  review-queue <candidates-dir>  Assemble the human review queue (writes review-queue.yaml)',
     '                 [--out <path>]',
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
+    '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
     '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
@@ -311,6 +313,15 @@ async function cmdSuggestProfile(args) {
   return 0;
 }
 
+// Read-only "doctor": emit a short, data-free health report for an adopter repo.
+async function cmdRepoCheck(args) {
+  const { _ } = parseArgs(args);
+  const orgRoot = _[0] ? resolve(_[0]) : (await findOrgRoot(process.cwd()) || process.cwd());
+  const report = await repoCheck(orgRoot);
+  process.stdout.write(dump(report));
+  return 0;
+}
+
 // Print the canonical §4 placement (mode + layer + folder) for a TYPE.
 async function cmdResolvePlacement(args) {
   const { _ } = parseArgs(args);
@@ -356,6 +367,7 @@ async function main(argv) {
     case 'validate':        return cmdValidate(args);
     case 'review-queue':    return cmdReviewQueue(args);
     case 'suggest-profile': return cmdSuggestProfile(args);
+    case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
     default:
