@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -533,3 +533,113 @@ A scheduled validator pass computes freshness across canon and **reports** — i
 - **`source_quality` as a first-class entity.** Today it is a label on a field artefact's provenance, not a referenced source record. Promoting sources to entities is a later concern.
 - **Automatic reaffirmation.** Bumping `admitted_at` is a deliberate human / tool gate action; nothing reaffirms canon on its own.
 - **Importance-weighting the mean.** v1 weights every rendered element equally; weighting by element importance is deferred.
+
+---
+
+## 12. Extensions — open attribute bag
+
+Real source material carries fields that map to no defined schema field of the entity being ingested. Dropping them loses information; inventing ad-hoc top-level keys pollutes the schema and trips the validator. Every entity type therefore carries one reserved **open key-value bag**, `extensions:`, that holds source-derived fields the schema does not define. It is the zero-information-loss escape hatch for a *known* entity; the parallel escape hatch for an *unknown whole object* is the unresolved holding area (§13).
+
+```yaml
+type: PRODUCT
+id: PROD-001
+name: Widget Pro
+# … standard schema fields …
+extensions:
+  materials:
+    - "Steel 316L"
+    - "Rubber gasket B12"
+  source_table: product_equipment_matrix
+  source_field: materials
+```
+
+### 12.1 Rules
+
+- `extensions:` is **optional** on every entity type and, when present, is a **map** (an open key-value bag). Its keys are free-form; its values may be any YAML value (scalar, list, map).
+- The validator **passes `extensions:` through untouched** — it never raises an unknown-field error for `extensions:` itself or for any key nested under it, and it does not constrain their shape (`EXT-001`).
+- `extensions:` is for fields the schema does **not** define. A field the entity's notation already defines belongs in its defined place, never relocated into `extensions:` to dodge a schema rule (`EXT-002`).
+- `extensions:` carries no admission, lifecycle, or confidence semantics of its own — it rides on its host entity and shares the host's admission record (§6) and lifecycle (§7).
+
+| Rule | Severity | Description |
+|---|---|---|
+| `EXT-001` | accepted | `extensions:` and every key nested under it are accepted without schema validation — the validator never raises an unknown-field error for them. The pass-through guarantee. |
+| `EXT-002` | warning | A key under `extensions:` collides with a field the entity's notation already defines — the value probably belongs in its defined place, not in the open bag. |
+
+### 12.2 Distinction from versioned attributes and unresolved objects
+
+`extensions:` holds **schema-undefined fields of a known entity**, stored inline on that entity. It is distinct from:
+
+- the **versioned-attribute sidecar** (§9) — for *defined* fields whose value changes over time;
+- the **unresolved holding area** (§13) — for a *whole object* whose TYPE is unknown, not merely an extra field on a known one.
+
+The full routing decision (known object / unknown field / unknown object / law-or-standard) lives in the ingest skill ([`transitrix/skills/ingest/SKILL.md`](../transitrix/skills/ingest/SKILL.md)); §13.3 restates its canon-side summary.
+
+---
+
+## 13. Unresolved holding area — `canon/unresolved/`
+
+Ingestion sometimes surfaces a standalone object whose TYPE matches no known entity — not a `PRODUCT`, `ACTIVITY`, `CHANGE`, …, and not merely an attribute of a known object (that would be an `extensions:` key, §12). Discarding it loses information; admitting it under some guessed TYPE corrupts canon. Such objects land in a reserved holding area, **`canon/unresolved/`**, with their ingestion provenance preserved, pending human resolution.
+
+```yaml
+# canon/unresolved/UNRES-001.yaml
+ingest_status: unresolved
+ingest_source: product_equipment_matrix.xlsx
+ingest_field: materials
+ingest_date: "2026-06-10"        # quoted ISO 8601 per §4
+related_to:
+  - PROD-001
+data:
+  - "Steel 316L"
+  - "Rubber gasket B12"
+```
+
+### 13.1 Not admitted canon
+
+`canon/unresolved/` sits under the `canon/` path but is **not admitted canon**. Its entries:
+
+- carry **no admission record** (§6) — no `admitted_by`, no `gate_checks`; `ingest_status: unresolved` marks them as pre-admission;
+- are **excluded from every derived view and cross-cutting check**, exactly as an `admission_state: proposed` artefact is (§6.1) — an unresolved entry never renders in a view and never counts toward coverage (e.g. `REQ-COVERAGE-001`);
+- carry **no lifecycle** (§7) — they are not yet elements.
+
+The zone trust contract (§5 — canon is "validated, internally consistent, unique") therefore still holds for *admitted* canon: an unresolved entry is staged adjacent to canon, not part of it. It takes the `canon/` prefix because resolution is expected to move most entries into admitted canon — but until a human resolves each one, it is outside the admitted set. This mirrors the "propose, never write admitted canon" rule the ingest skill is built on.
+
+### 13.2 Fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `ingest_status` | yes | string | Always `unresolved` for an entry in this folder — the marker that excludes it from admitted canon. |
+| `ingest_source` | yes | string | The source the object came from (file name or field-artefact id). |
+| `ingest_field` | yes | string | The source field / column / path the object was extracted from. |
+| `ingest_date` | yes | string | Quoted ISO 8601 date (§4) the object was ingested. |
+| `related_to` | recommended | list | Typed IDs of known canon objects this unresolved object appears related to (e.g. the `PRODUCT` a materials list hangs off). |
+| `data` | yes | any | The raw extracted payload, preserved verbatim for the reviewer. |
+
+### 13.3 Resolution — the ingestion decision matrix
+
+Human review resolves each entry to exactly one outcome. The full ingestion-routing matrix:
+
+| Situation | Action |
+|---|---|
+| Known object, unknown fields | `extensions:` on the object (§12) |
+| Unknown fields that are clearly attributes of a known object | `extensions:` on the parent (§12) |
+| Object is a law / rule / standard | `codex` zone (§5) — *not* `canon/unresolved/` |
+| Standalone object, unknown TYPE | `canon/unresolved/` (§13) |
+| Same unknown TYPE recurs across ingestions | Propose a new entity TYPE in the methodology (a proposal, not an in-repo resolution) |
+
+Resolving one `canon/unresolved/` entry means exactly one of:
+
+- **promote** — the object is a real entity of a (possibly new) TYPE; admit it through the normal admission gate (§6) and delete the unresolved entry;
+- **fold** — the object is actually an attribute of a known entity; move it into that entity's `extensions:` (§12) and delete the unresolved entry;
+- **discard** — the object carries no modelling value; delete it.
+
+`codex` is for laws, internal rules, and standards only (§5) — never a destination for a generic untyped ingested object.
+
+### 13.4 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `UNRES-001` | error | A file under `canon/unresolved/` is missing a required field (`ingest_status`, `ingest_source`, `ingest_field`, `ingest_date`, or `data`). |
+| `UNRES-002` | error | A file under `canon/unresolved/` carries an admission record (`admitted_by` / `gate_checks` / `admission_state: active`) — an unresolved entry is by definition not admitted; resolve it (§13.3) instead. |
+| `UNRES-003` | warning | A `related_to` entry does not resolve to a known canon object. Cross-cutting (requires the full catalogue). |
+
+The shared header rules (`HDR-001..004`, §2) do **not** apply to `canon/unresolved/` files — they are pre-admission holding records, not notation documents, and carry no `notation:` header.

@@ -10,7 +10,7 @@ This directory is the **`ingest` skill** within the `transitrix` plugin (the plu
 
 ## The one rule
 
-**Propose, never write canon.** The skill emits `field` artefacts and canon *candidates*, runs them through the existing validators, and produces a review queue. It never writes into `canon/`. Admission stays a deliberate, auditable human gate (`admitted_by`). A hallucinated element or relation reaching canon unreviewed is the worst-case failure; every design choice here exists to prevent it.
+**Propose, never write admitted canon.** The skill emits `field` artefacts and canon *candidates*, runs them through the existing validators, and produces a review queue. It never writes **admitted** canon (anything carrying an admission record). Admission stays a deliberate, auditable human gate (`admitted_by`). A hallucinated element or relation reaching canon unreviewed is the worst-case failure; every design choice here exists to prevent it. The `canon/unresolved/` holding area ([SKILL.md Step 7](SKILL.md)) is the one place the pipeline parks data under the `canon/` path — but those entries are explicitly *non-admitted* (no admission record, excluded from every view), so the rule holds.
 
 ## Two axes of trust, never merged
 
@@ -74,7 +74,7 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 
 ## What this skill does NOT do
 
-- It does **not** write to `canon/`. It emits candidates and a review queue; a human admits.
+- It does **not** write **admitted** canon. It emits candidates and a review queue; a human admits. Zero information loss is preserved without admitting anything: schema-undefined fields ride along in an `extensions:` bag ([CONTRACT §12](../../../notations/CONTRACT.md)) and untyped objects are parked, non-admitted, in `canon/unresolved/` ([CONTRACT §13](../../../notations/CONTRACT.md), [SKILL.md Step 7](SKILL.md)).
 - It does **not** ship the methodology canon. It reads the published specs (via `WebFetch`).
 - It does **not** fold `extraction_confidence` into `source_quality`, or persist either extraction-confidence value into canon.
 - It does **not** emit TYPEs or REL kinds outside the adopter's coverage profile — out-of-profile material is flagged for review, never silently emitted or dropped.
