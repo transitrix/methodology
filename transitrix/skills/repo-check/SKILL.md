@@ -47,7 +47,7 @@ It prints a YAML report to stdout:
 - `zones` — for each of `canon` / `field` / `codex`: whether present, file count, and a per-**TYPE** count (TYPE vocabulary only — the prefix of a grammar-valid id; a malformed id is counted under `invalid_ids`, never by name).
 - `adoption_level` — a coarse indicator derived from how populated `canon` is (`empty` → `seeded` → `in use` → `established`).
 - `integrity` — `invalid_ids`, `misplaced_canon_elements` (elements outside their `ELEMENT_PRIMITIVES` §4 folder), `canon_elements_scanned`, and a `red_flags` list of short status strings.
-- `tooling` — the CLI's pinned presets version.
+- `tooling` — `cli_presets_version` (the methodology version the CLI's built-in presets target), `methodology_version_match` (whether that matches the version declared in `transitrix.yaml`), and `ok` (`false` when there is a version mismatch).
 
 ---
 
@@ -58,5 +58,6 @@ Summarise the `adoption_level` and any `red_flags` for the user in plain languag
 - invalid IDs → fix the offending ids by hand (the report does not name them — by design; locate them with the validators or `git grep` locally).
 - misplaced canon elements → `npx @transitrix/ingest-cli check-placement [org-root]` lists them locally (that command **does** name ids — keep its output local, it is not the data-free report).
 - unresolved `coverage_profile` → fix `transitrix.yaml` per `COVERAGE_PROFILES.md` (CP-001).
+- `tooling.ok: false` / version mismatch → the installed CLI binary targets a different methodology version than `transitrix.yaml` declares. Reinstall the CLI (see the adopter upgrade procedure in `RELEASING.md`) and re-run `repo-check` to confirm the flag clears.
 
 Nothing here mutates the repo; re-running is always safe and gives the same answer for the same tree.
