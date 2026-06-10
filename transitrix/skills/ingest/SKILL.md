@@ -123,6 +123,17 @@ Schema: [`schemas/candidate.schema.json`](schemas/candidate.schema.json).
 
 These are different questions with different fixes (get a better source vs. re-read the document). The schemas keep them in separate fields; collapsing them is a defect.
 
+### Tiered approval — routing by `extraction_confidence`
+
+`extraction_confidence` also drives **reviewer-authority routing** (tiered approval — [CONTRACT §6.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)). Admitted canon carries a `reviewer_authority` tier, `ai_reviewed` < `expert_confirmed`, and the tier a draft is eligible for is decided by its extraction confidence:
+
+- **High `extraction_confidence`** → the draft is eligible for tool admission to **`ai_reviewed`** — the lower canon tier, marked as reviewed by a tool (`admitted_by` = the tool id), surfaced distinctly in views and coverage. The threshold is **adopter-configured** in the manifest (`transitrix.yaml`); below it, nothing auto-admits.
+- **Medium / low `extraction_confidence`** → routed to the **expert review queue** unchanged. Tool admission is forbidden; a human admits to **`expert_confirmed`**.
+
+The hard rule is unchanged in spirit (see [the one rule](#the-one-rule-that-governs-everything)): **a tool never writes `expert_confirmed`.** It may only mark the lower tier and route the draft; the human gate keeps exclusive authority over the top tier. `ai_reviewed` is still admitted canon — it is *provisional confirmation*, not a bypass — so it must clear the same structural validators (Step 5) before admission.
+
+> **Not yet wired into the CLI.** This routing is the **defined policy**; the current `@transitrix/ingest-cli` still only *proposes* (it never auto-admits), and the manifest `extraction_confidence` threshold schema is a downstream follow-up (per the ADR's out-of-scope). Until both land, every candidate continues through the human gate (Step 6); the tier is recorded by whoever admits.
+
 ---
 
 ## Step 5 — Validate (coverage-profile aware)
