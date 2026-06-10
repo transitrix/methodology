@@ -16,6 +16,7 @@ import { readManifestText } from './intake.mjs';
 import { readTopScalar } from './yaml.mjs';
 import { readCoverageProfile } from './coverage.mjs';
 import { checkCanonPlacement } from './placement.mjs';
+import { buildCanonIndex } from './canon.mjs';
 import { isValidId } from './ids.mjs';
 import { PRESETS_VERSION } from './coverage-presets.mjs';
 
@@ -82,6 +83,11 @@ export async function repoCheck(orgRoot) {
 
   const placement = await checkCanonPlacement(root);
 
+  // ELEM-ALIAS-001 (ELEMENT_PRIMITIVES §9) — a name/alias claimed by two different
+  // elements makes F8 entity resolution ambiguous. Count only (data-free); the colliding
+  // values themselves are org content and never emitted in this report.
+  const aliasCollisions = (await buildCanonIndex(root)).collisions.length;
+
   const declaredVersion = manifestText ? (readTopScalar(manifestText, 'methodology_version') || null) : null;
   // Version-currency check (F11.2): flag when the CLI's built-in presets were built for a
   // different methodology version than the one declared in transitrix.yaml. A mismatch means
@@ -91,6 +97,7 @@ export async function repoCheck(orgRoot) {
   const red_flags = [];
   if (totalInvalid > 0) red_flags.push(`${totalInvalid} artefact(s) with an id that violates the canonical grammar (IDS_AND_REFERENCES §1)`);
   if (placement.findings.length > 0) red_flags.push(`${placement.findings.length} canon element(s) outside their ELEMENT_PRIMITIVES §4 folder`);
+  if (aliasCollisions > 0) red_flags.push(`${aliasCollisions} name/alias collision(s) across canon (ELEM-ALIAS-001) — a surface form is claimed by two elements, making entity resolution ambiguous`);
   if (profile.unresolved) red_flags.push('coverage_profile is present but could not be resolved — coverage flags are not authoritative');
   if (!manifestText) red_flags.push('no transitrix.yaml manifest at the repo root — not a recognised adopter repo');
   if (!versionMatch) red_flags.push(`methodology_version in transitrix.yaml (${declaredVersion}) does not match the CLI built-in presets version (${PRESETS_VERSION}) — reinstall @transitrix/ingest-cli after a methodology upgrade`);
@@ -107,6 +114,7 @@ export async function repoCheck(orgRoot) {
       invalid_ids: totalInvalid,
       misplaced_canon_elements: placement.findings.length,
       canon_elements_scanned: placement.scanned,
+      alias_collisions: aliasCollisions,
       red_flags,
     },
     tooling: {
