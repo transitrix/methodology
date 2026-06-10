@@ -46,16 +46,17 @@ When an adopter repo moves from one methodology version to another, **three arte
    ```
 3. **Re-validate canon** to confirm the migrated artefacts are still valid:
    ```
-   npx @transitrix/ingest-cli validate <candidates-dir>
+   transitrix-ingest validate <candidates-dir>
    ```
-4. **Reinstall `@transitrix/ingest-cli`** — the installed binary does not auto-update; it remains pinned to the version it was installed from. Re-run your install command and confirm `--version` reflects the new release:
+4. **Reinstall `@transitrix/ingest-cli`** — the installed binary does not auto-update; it remains pinned to the version it was installed from. Re-run your install command and confirm `--version` reflects the new release. Pre-1.0 the package is not yet on npm, so the install is local from a fresh checkout of this repo:
    ```
-   npm install -g @transitrix/ingest-cli   # or npx/local install per your project setup
-   npx @transitrix/ingest-cli --version
+   npm install -g ./packages/ingest-cli   # or `npm link` from inside the package
+   transitrix-ingest --version
    ```
+   Once the CLI is published from its own tooling repo at the ~1.0 extraction, `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli --version`) becomes the equivalent shorthand.
 5. **Run `repo-check`** to confirm version currency:
    ```
-   npx @transitrix/ingest-cli repo-check [org-root]
+   transitrix-ingest repo-check [org-root]
    ```
    A clean run shows `tooling.ok: true` and no version-mismatch red flag. If `tooling.ok: false` still appears, the installed binary is still the old version — repeat step 4.
 6. **Re-resolve the coverage profile** (if the new release changed the preset vocabulary — see `COVERAGE_PROFILES.md` §7 for what changes between versions). Fix `transitrix.yaml` if needed, then re-run `repo-check` to clear any `coverage_warning`.

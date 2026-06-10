@@ -2,7 +2,19 @@
 
 The deterministic CLI behind the **ingest skill** (`transitrix/skills/ingest/`, `/transitrix:ingest`). The skill's `SKILL.md` shells out to this CLI; it never reimplements the logic, so behaviour is identical under Claude and GitHub Copilot.
 
-It lives here — a standalone package at the repo root, **outside** the skill bundle and the plugin payload — because it is consumed as a **published package** (`npx @transitrix/ingest-cli`), not vendored into the skill directory and not referenced by a repo-relative sibling path (which would dangle when only the skill directory ships into a Copilot `.github/skills/` install).
+It lives here — a standalone package at the repo root, **outside** the skill bundle and the plugin payload — because it is consumed as a **standalone package**, not vendored into the skill directory and not referenced by a repo-relative sibling path (which would dangle when only the skill directory ships into a Copilot `.github/skills/` install).
+
+## Install (pre-1.0)
+
+The package is not yet published to npm; the planned npm publish rides the ~1.0 extraction to its own tooling repo (`IG-7`). Today the install is local from this checkout:
+
+```
+npm install -g ./packages/ingest-cli   # provides the `transitrix-ingest` bin globally
+# or, from inside packages/ingest-cli/:
+npm link
+```
+
+The local install resolves the `transitrix-ingest` invocations used throughout the ingest and repo-check skills. Once the package ships to npm the equivalent shorthand becomes `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli <command>`) — the two forms invoke the same binary, with identical subcommands and flags.
 
 ## The one rule
 
