@@ -2,7 +2,7 @@
 // processed flow. _intake/ is operational, NOT a zone (CONTRACT.md §5 zones stay
 // parallel beside it). All moves are deterministic; nothing here touches canon/.
 
-import { mkdir, rename, access, readFile } from 'node:fs/promises';
+import { mkdir, rename, access, readFile, writeFile } from 'node:fs/promises';
 import { join, dirname, resolve, basename } from 'node:path';
 
 export const INTAKE = '_intake';
@@ -14,6 +14,12 @@ async function exists(p) {
 
 // Create _intake/{inbox,processing,processed} under orgRoot. Idempotent — never
 // overwrites existing content. Returns { created: [...], existing: [...] }.
+//
+// _intake/ is a PER-USER, PRIVATE workspace: its working files are git-ignored
+// and not shared (CONTRACT §13.1 — model content lives in shared canon/, never
+// here). A committed `.gitkeep` in each stage keeps the folder skeleton in
+// version control while `.gitignore` ignores the contents; the adopter's
+// .gitignore pairs `_intake/<stage>/*` with `!_intake/**/.gitkeep`.
 export async function scaffoldIntake(orgRoot) {
   const root = resolve(orgRoot);
   const created = [];
@@ -22,6 +28,9 @@ export async function scaffoldIntake(orgRoot) {
     const dir = join(root, INTAKE, stage);
     if (await exists(dir)) existing.push(join(INTAKE, stage));
     else { await mkdir(dir, { recursive: true }); created.push(join(INTAKE, stage)); }
+    // Always ensure the .gitkeep exists (idempotent — never clobbers content).
+    const keep = join(dir, '.gitkeep');
+    if (!(await exists(keep))) await writeFile(keep, '', 'utf8');
   }
   return { created, existing };
 }

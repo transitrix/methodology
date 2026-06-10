@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -533,3 +533,125 @@ A scheduled validator pass computes freshness across canon and **reports** — i
 - **`source_quality` as a first-class entity.** Today it is a label on a field artefact's provenance, not a referenced source record. Promoting sources to entities is a later concern.
 - **Automatic reaffirmation.** Bumping `admitted_at` is a deliberate human / tool gate action; nothing reaffirms canon on its own.
 - **Importance-weighting the mean.** v1 weights every rendered element equally; weighting by element importance is deferred.
+
+---
+
+## 12. Extensions — open attribute bag
+
+Real source material carries fields that map to no defined schema field of the entity being ingested. Dropping them loses information; inventing ad-hoc top-level keys pollutes the schema and trips the validator. Every entity type therefore carries one reserved **open key-value bag**, `extensions:`, that holds source-derived fields the schema does not define. It is the zero-information-loss escape hatch for a *known* entity; the parallel escape hatch for an *unknown whole object* is the unresolved holding area (§13).
+
+```yaml
+type: PRODUCT
+id: PROD-001
+name: Widget Pro
+# … standard schema fields …
+extensions:
+  materials:
+    - "Steel 316L"
+    - "Rubber gasket B12"
+  source_table: product_equipment_matrix
+  source_field: materials
+```
+
+### 12.1 Rules
+
+- `extensions:` is **optional** on every entity type and, when present, is a **map** (an open key-value bag). Its keys are free-form; its values may be any YAML value (scalar, list, map).
+- The validator **passes `extensions:` through untouched** — it never raises an unknown-field error for `extensions:` itself or for any key nested under it, and it does not constrain their shape (`EXT-001`).
+- `extensions:` is for fields the schema does **not** define. A field the entity's notation already defines belongs in its defined place, never relocated into `extensions:` to dodge a schema rule (`EXT-002`).
+- `extensions:` carries no admission, lifecycle, or confidence semantics of its own — it rides on its host entity and shares the host's admission record (§6) and lifecycle (§7).
+
+| Rule | Severity | Description |
+|---|---|---|
+| `EXT-001` | accepted | `extensions:` and every key nested under it are accepted without schema validation — the validator never raises an unknown-field error for them. The pass-through guarantee. |
+| `EXT-002` | warning | A key under `extensions:` collides with a field the entity's notation already defines — the value probably belongs in its defined place, not in the open bag. |
+
+### 12.2 Distinction from versioned attributes and unresolved objects
+
+`extensions:` holds **schema-undefined fields of a known entity**, stored inline on that entity. It is distinct from:
+
+- the **versioned-attribute sidecar** (§9) — for *defined* fields whose value changes over time;
+- the **unresolved holding area** (§13) — for a *whole object* whose TYPE is unknown, not merely an extra field on a known one.
+
+The full routing decision (known object / unknown field / unknown object / law-or-standard) lives in the ingest skill ([`transitrix/skills/ingest/SKILL.md`](../transitrix/skills/ingest/SKILL.md)); §13.3 restates its canon-side summary.
+
+---
+
+## 13. Unresolved holding area — `canon/unresolved/`
+
+Ingestion sometimes surfaces a standalone object whose TYPE matches no known entity — not a `PRODUCT`, `ACTIVITY`, `CHANGE`, …, and not merely an attribute of a known object (that would be an `extensions:` key, §12). Discarding it loses information; admitting it under some guessed TYPE corrupts canon. Such objects land in a reserved holding area, **`canon/unresolved/`**, with their ingestion provenance preserved, pending human resolution.
+
+```yaml
+# canon/unresolved/UNRES-001.yaml
+ingest_status: unresolved
+ingest_source: product_equipment_matrix.xlsx
+ingest_field: materials
+ingest_date: "2026-06-10"        # quoted ISO 8601 per §4
+related_to:
+  - PROD-001
+data:
+  - "Steel 316L"
+  - "Rubber gasket B12"
+```
+
+### 13.1 Type resolution is orthogonal to admission
+
+An unresolved object is **not** low-trust raw material. Its content may be entirely accurate — drawn from an authoritative system of record, validated, and canonical in every respect **except that its TYPE is not yet resolved**. "Unresolved" names exactly one gap: the object's TYPE is unknown. It says nothing about whether the content is true.
+
+Type resolution is therefore a **second axis, orthogonal to admission** (§6) — exactly as reviewer authority (§6.2) is orthogonal to admission state (§6.1):
+
+| Axis | States | Question |
+|---|---|---|
+| admission (§6) | `proposed` → `active` | Is the content validated and admitted? |
+| type resolution (§13) | `unresolved` → typed | Is the object's TYPE known? |
+
+The two move independently. An entry in `canon/unresolved/` MAY carry a full admission record — `admitted_by`, `gate_checks`, `source_quality` (§11.2), even a lifecycle (§7) — i.e. it can be **admitted-but-untyped**: a human has confirmed the content is accurate, but no TYPE has been assigned. It MAY equally be `proposed`-but-untyped (freshly ingested, content not yet reviewed). Both live here; the admission record, when present, is honoured exactly as it is on typed canon.
+
+**Why it is segregated from typed canon — TYPE, not trust.** The canon machinery is **TYPE-keyed**: a canonical id is `<TYPE>-<INTEGER>` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), placement is per-TYPE ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §4), and relations (§17) and derived views dispatch on TYPE. An object with no resolved TYPE cannot take a canonical id, cannot be placed in a per-TYPE folder, and cannot be rendered by a TYPE-keyed view. It is held in `canon/unresolved/` — fully part of canon's *knowledge*, but outside the *typed* machinery — until its TYPE is resolved (§13.3), at which point it earns a `<TYPE>-N` id and moves to its per-TYPE folder.
+
+**Exclusion is from typed derived views, not from canon.** An unresolved entry does not render in a TYPE-keyed view and is not counted by TYPE-scoped coverage (e.g. `REQ-COVERAGE-001`) — that machinery operates on a resolved TYPE the entry does not yet have. Its content is still authoritative canon; it is simply invisible to anything that needs a TYPE. Every tool that walks *typed* canon (the canon index, coverage, placement check, renderers) MUST therefore skip `canon/unresolved/` so an untyped entry is never mistaken for a typed element.
+
+**It lives in shared, committed canon — never in `_intake/`.** Because an unresolved object carries real model knowledge, it cannot sit in the per-user, private `_intake/` workspace, whose contents are not shared with other modellers. It is committed to `canon/unresolved/` so the whole team sees and can resolve it. This is the opposite of a *candidate*, which is a pre-model extraction proposal that stages privately in `_intake/processing/` until a human admits it.
+
+### 13.2 Fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `ingest_status` | yes | string | Always `unresolved` for an entry in this folder — the marker of the **type-resolution** axis (§13.1), independent of admission. It records that the TYPE is unknown, not that the content is untrusted. |
+| `ingest_source` | yes | string | The source the object came from (file name or field-artefact id). |
+| `ingest_field` | yes | string | The source field / column / path the object was extracted from. |
+| `ingest_date` | yes | string | Quoted ISO 8601 date (§4) the object was ingested. |
+| `related_to` | recommended | list | Typed IDs of known canon objects this unresolved object appears related to (e.g. the `PRODUCT` a materials list hangs off). |
+| `data` | yes | any | The extracted payload, preserved verbatim for the reviewer. |
+
+An unresolved entry MAY **also** carry any field a typed canon element would — an admission record (§6: `admitted_by`, `gate_checks`, `admission_state`), a `source_quality` (§11.2), and a lifecycle (§7) — when it is *admitted-but-untyped* (§13.1). Those fields keep their normal meaning; the entry simply has no resolved TYPE and therefore no `<TYPE>-N` id. It does **not** carry a `notation:` header (it is not a notation document) and is not given a typed canonical id until it is resolved (§13.3).
+
+### 13.3 Resolution — the ingestion decision matrix
+
+Human review resolves each entry to exactly one outcome. The full ingestion-routing matrix:
+
+| Situation | Action |
+|---|---|
+| Known object, unknown fields | `extensions:` on the object (§12) |
+| Unknown fields that are clearly attributes of a known object | `extensions:` on the parent (§12) |
+| Object is a law / rule / standard | `codex` zone (§5) — *not* `canon/unresolved/` |
+| Standalone object, unknown TYPE | `canon/unresolved/` (§13) |
+| Same unknown TYPE recurs across ingestions | Propose a new entity TYPE in the methodology (a proposal, not an in-repo resolution) |
+
+Resolving one `canon/unresolved/` entry means exactly one of:
+
+- **promote** — the object is a real entity of a (possibly new) TYPE; admit it through the normal admission gate (§6) and delete the unresolved entry;
+- **fold** — the object is actually an attribute of a known entity; move it into that entity's `extensions:` (§12) and delete the unresolved entry;
+- **discard** — the object carries no modelling value; delete it.
+
+`codex` is for laws, internal rules, and standards only (§5) — never a destination for a generic untyped ingested object.
+
+### 13.4 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `UNRES-001` | error | A file under `canon/unresolved/` is missing a required field (`ingest_status`, `ingest_source`, `ingest_field`, `ingest_date`, or `data`). |
+| `UNRES-002` | error | A file under `canon/unresolved/` carries a TYPE-resolved canonical id (`<TYPE>-<INTEGER>` whose TYPE is registered, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1) — its TYPE is resolved, so it must move to its per-TYPE canon folder (§13.3), not linger in the holding area. (An admission record is **not** an error here — an entry may be admitted-but-untyped, §13.1.) |
+| `UNRES-003` | warning | A `related_to` entry does not resolve to a known canon object. Cross-cutting (requires the full catalogue). |
+| `UNRES-004` | error | A typed canon walker (canon index, coverage, placement, renderer) counts a `canon/unresolved/` entry as a typed element — the holding area MUST be skipped by TYPE-keyed machinery (§13.1). A tooling rule, enforced by the validator's catalogue load. |
+
+The shared header rules (`HDR-001..004`, §2) do **not** apply to `canon/unresolved/` files — an unresolved entry has no resolved TYPE and therefore no `notation:` header, regardless of its admission state.

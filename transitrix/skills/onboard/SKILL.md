@@ -86,7 +86,7 @@ The adopter manifest's `zones:` field selects which of `canon` / `field` / `code
 
 Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. The codex and field templates ship with this record pre-filled with placeholders.
 
-### .gitignore
+### .gitignore — and the private `_intake/` workspace
 
 Initialise `.gitignore`:
 
@@ -94,7 +94,20 @@ Initialise `.gitignore`:
 node_modules/
 .vscode/settings.json
 .transitrix-cache/
+
+# _intake/ — the ingest skill's operational workspace (scaffolded later by
+# `transitrix-ingest scaffold-intake`). It is a PER-USER, PRIVATE area: its
+# contents are NOT shared with other modellers, so nothing that participates in
+# the model may live there. Ignore the working files, but commit a .gitkeep in
+# each subfolder so the inbox/ → processing/ → processed/ skeleton persists for
+# everyone who clones the repo.
+_intake/inbox/*
+_intake/processing/*
+_intake/processed/*
+!_intake/**/.gitkeep
 ```
+
+**Why `_intake/` is private and `canon/` is shared.** `_intake/` holds raw dropped files and in-flight extraction candidates — a private scratch space, not version-of-record. Model content is the opposite: it is committed and shared. This includes `canon/unresolved/` — the holding area for objects ingestion could not yet TYPE ([`notations/CONTRACT.md`](https://github.com/transitrix/methodology/blob/main/notations/CONTRACT.md) §13). An unresolved object is still real model knowledge (it may even be admitted-accurate, only its TYPE is open), so it must be committed to shared `canon/unresolved/`, **never** left in the private `_intake/`. When the ingest skill scaffolds `_intake/`, it drops the `.gitkeep` files; if a user creates the folders by hand, add an empty `.gitkeep` to each of `inbox/`, `processing/`, `processed/`.
 
 Don't run `git init` unless the user asked for it.
 

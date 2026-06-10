@@ -22,6 +22,21 @@ A source file moves `inbox/ → processing/ → processed/`:
 - **Nothing is admitted to canon from `_intake/`.** The pipeline only proposes. A human reviews the queue, confirms or revises each proposed `source_quality`, and runs the canon admission gate (`uniqueness`, `consistency`, `completeness`) to admit candidates into `canon/`.
 - **`_intake/` is not version-of-record.** It is a workspace. The durable records are the `field/` artefact (citing the retained raw file) and, after human admission, the `canon/` elements that cite the field artefact via `derived_from`.
 
+## Private — not shared
+
+`_intake/` is a **per-user, private workspace**: its working files (`inbox/`, `processing/`, `processed/`) are **not shared** with other modellers and are **git-ignored**. Because of that, nothing that participates in the model may live here — an object that is part of the model must be committed to a shared zone. In particular, a standalone object ingestion could not yet TYPE goes to the shared, committed `canon/unresolved/` holding area (CONTRACT §13), **never** left sitting in `_intake/`.
+
+To keep the folder skeleton in version control while ignoring its contents, each subfolder carries a committed **`.gitkeep`** file, and the repo `.gitignore` ignores the contents but not the `.gitkeep`:
+
+```
+_intake/inbox/*
+_intake/processing/*
+_intake/processed/*
+!_intake/**/.gitkeep
+```
+
+`scaffold-intake` creates the `.gitkeep` files; if you make the folders by hand, add an empty `.gitkeep` to each.
+
 ## Status
 
 In the current methodology version the `_intake/` convention is defined by the ingest skill (skill-local). It is not yet a reserved org-structure convention in the methodology `MANIFEST.md` / `CONTRACT.md`; that promotion is a separate decision taken once the skill stabilises.

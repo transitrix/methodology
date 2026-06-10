@@ -17,7 +17,7 @@ The methodology is canon at `github.com/transitrix/methodology`; this skill is t
 
 ## The one rule that governs everything
 
-**Propose, never write canon.** This skill emits `field` artefacts and canon *candidates* and runs them through the existing validators. It MUST NOT write into `canon/`. Admission to canon stays a deliberate, auditable human gate (`admitted_by`). A hallucinated element or relation reaching canon unreviewed is the worst-case failure, and the whole design exists to prevent it. Every step below is built around keeping that gate intact.
+**Propose, never write admitted canon.** This skill emits `field` artefacts and canon *candidates* and runs them through the existing validators. It MUST NOT write **admitted** canon — admitted elements, views, or anything carrying an admission record. Admission stays a deliberate, auditable human gate (`admitted_by`). (The skill MAY write `proposed` — non-admitted — entries to the `canon/unresolved/` holding area, Step 7; it never writes an admission record there. An *admitted-but-untyped* entry, §13.1, is written only by the human gate. So this rule is not weakened.) A hallucinated element or relation reaching canon unreviewed is the worst-case failure, and the whole design exists to prevent it. Every step below is built around keeping that gate intact.
 
 ---
 
@@ -57,7 +57,7 @@ Also confirm you are operating inside a Transitrix adopter repository (a `transi
 transitrix-ingest scaffold-intake <org-root>
 ```
 
-Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
+Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. `_intake/` is a **per-user, private workspace** — its contents are git-ignored and not shared with other modellers, so nothing that participates in the model lives here (an untyped object goes to the shared `canon/unresolved/`, Step 7, never to `_intake/`). `scaffold-intake` drops a `.gitkeep` in each of `inbox/` / `processing/` / `processed/` so the folder skeleton stays in version control while the working files are ignored — the adopter's `.gitignore` carries `_intake/inbox/*`, `_intake/processing/*`, `_intake/processed/*` and `!_intake/**/.gitkeep` (the onboarding skill seeds these). In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
 
 ---
 
@@ -183,6 +183,51 @@ Where an admitted element lands is **not** a judgement call. Every element TYPE 
 
 ---
 
+## Step 7 — Zero information loss (`extensions:` and `canon/unresolved/`)
+
+Real source rows always carry more than the schema defines. Two mechanisms ([CONTRACT §12](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md) / [§13](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)) guarantee nothing is silently dropped — the pipeline never discards source data it cannot map, and it never guesses a TYPE to make the data fit.
+
+**Mechanism 1 — `extensions:` on a known entity.** When a candidate IS a known entity (`PRODUCT`, `ROLE`, …) but the source row has fields that map to no schema field, those fields are preserved in an open `extensions:` bag on the candidate. They ride through admission verbatim onto the entity — the validator passes `extensions:` through untouched (`EXT-001`), so an extended entity validates cleanly.
+
+```yaml
+type: PRODUCT
+id: PROD-001
+name: Widget Pro
+extensions:
+  materials: ["Steel 316L", "Rubber gasket B12"]
+  source_table: product_equipment_matrix
+```
+
+**Mechanism 2 — `canon/unresolved/` for an untyped object.** When the object itself has no known TYPE — and is not merely an attribute of a known object — it is parked in `canon/unresolved/` with its ingestion provenance, **never** force-fitted to a TYPE and **never** dropped.
+
+```yaml
+# canon/unresolved/UNRES-001.yaml
+ingest_status: unresolved
+ingest_source: product_equipment_matrix.xlsx
+ingest_field: materials
+ingest_date: "2026-06-10"
+related_to: [PROD-001]
+data: ["Steel 316L", "Rubber gasket B12"]
+```
+
+`canon/unresolved/` holds **canon-grade content whose only gap is an unresolved TYPE** — *not* low-trust material ([CONTRACT §13.1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)). Type resolution is a second axis, orthogonal to admission: an entry MAY be `proposed`-untyped (just ingested) or **admitted-but-untyped** (a human confirmed the content is accurate, but no TYPE is assigned yet). It is segregated from typed canon only because the canon machinery is TYPE-keyed (`<TYPE>-N` ids, per-TYPE placement, TYPE-keyed views) — so an untyped entry never renders in a typed view and is skipped by every typed canon walker, while its content stays authoritative. Because it carries real model knowledge it lives in **shared, committed `canon/unresolved/`**, never in the per-user, private `_intake/` workspace. The skill itself only ever *emits* `proposed` (non-admitted) entries here; admitting one to admitted-but-untyped is the human gate's act — so [the one rule](#the-one-rule-that-governs-everything) holds.
+
+**Routing — which mechanism applies:**
+
+| Situation | Action |
+|---|---|
+| Known object, unknown fields | `extensions:` on the object |
+| Unknown fields clearly belonging to a known object | `extensions:` on the parent |
+| Object is a law / rule / standard | `codex` zone (Step 3 codex route) — *never* `canon/unresolved/` |
+| Standalone object, unknown TYPE | `canon/unresolved/` |
+| Same unknown TYPE recurs across ingestions | Propose a new entity TYPE in the methodology |
+
+The reviewer resolves each `canon/unresolved/` entry to exactly one of **promote** (admit as a real TYPE through the §6 gate), **fold** (move into a parent's `extensions:`), or **discard**.
+
+> **CLI wiring is a follow-up.** This step is the **defined protocol**; the current `@transitrix/ingest-cli` carries `extensions:` through `emit-candidates` (the candidate schema accepts it) but does **not yet** auto-emit `canon/unresolved/` files — surfacing untyped objects from extraction and writing the holding-area files is the next increment (the extraction prompts and `emit-candidates` gain an `unresolved` channel, with its own fixture test). Until it lands, an untyped object is recorded as an `extraction_notes` flag on the nearest candidate / in the review queue, and the reviewer creates the `canon/unresolved/` entry by hand per the shape above.
+
+---
+
 ## The CLI
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
@@ -203,7 +248,7 @@ This skill is one shared `SKILL.md` in the converged **Agent Skills** format. It
 
 ## What this skill does NOT do
 
-- It does **not** write to `canon/`. Ever. It emits candidates and a review queue; a human admits.
+- It does **not** write **admitted** canon. Ever. It emits candidates and a review queue; a human admits. (It MAY emit `proposed`, non-admitted entries to `canon/unresolved/` — Step 7 — but the admission record on an admitted-but-untyped entry is written only by the human gate.)
 - It does **not** ship the methodology canon. It reads the published specs (via `WebFetch` when deeper than this protocol).
 - It does **not** fold `extraction_confidence` into `source_quality`, or persist either extraction-confidence value into canon.
 - It does **not** emit TYPEs or REL kinds outside the adopter's coverage profile — out-of-profile material is flagged for review.

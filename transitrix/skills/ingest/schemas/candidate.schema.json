@@ -43,6 +43,11 @@
       "type": "array",
       "description": "Actionable reasons a candidate did not validate cleanly (ID grammar, TYPE registry, closed REL kinds, lifecycle). Each flag routes the candidate to the review queue rather than rejecting it.",
       "items": { "type": "string" }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Open key-value bag for source-derived fields the entity's schema does not define (CONTRACT.md §12). Carried verbatim from candidate to admitted entity so no source information is lost. Pass-through: keys are free-form, values may be any shape, and the validator never raises an unknown-field error for them (EXT-001).",
+      "additionalProperties": true
     }
   },
   "oneOf": [
