@@ -17,7 +17,7 @@ capability_map:
   assessment_date: "2026-06-10"
 
   capabilities:
-    - id: CAPABILITY-V1
+    - id: V1
       name: "Order Management"
       type: domain
       current_maturity: 2
@@ -31,14 +31,14 @@ capability_map:
       valid_from: "2026-05-26"
       valid_to: null
       children:
-        - id: CAPABILITY-V1.1
+        - id: V1.1
           name: "Order Intake"
           type: domain
           current_maturity: 3
           target_maturity: 3
           valid_from: "2026-05-26"
           valid_to: null
-        - id: CAPABILITY-V1.2
+        - id: V1.2
           name: "Order Fulfilment"
           type: domain
           current_maturity: 2
@@ -47,7 +47,7 @@ capability_map:
           valid_from: "2026-05-26"
           valid_to: null
 
-    - id: CAPABILITY-V2
+    - id: V2
       name: "Customer Relationship Management"
       type: domain
       current_maturity: 2
@@ -58,7 +58,7 @@ capability_map:
       valid_from: "2026-05-26"
       valid_to: null
 
-    - id: CAPABILITY-H1
+    - id: H1
       name: "Compliance & Data Protection"
       type: supporting
       description: >
