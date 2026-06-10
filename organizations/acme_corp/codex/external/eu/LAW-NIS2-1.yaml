@@ -1,0 +1,30 @@
+# Codex entry — EU directive. Schema: notations/CONTRACT.md §6 + notations/elements/14-codex.md.
+
+notation: codex
+id: LAW-NIS2-1
+name: "NIS2 Directive (EU) 2022/2555"
+type: DIRECTIVE
+description: >
+  EU directive on measures for a high common level of cybersecurity across the
+  Union. Requires essential and important entities to adopt risk-management
+  measures, report significant incidents within 24 hours, and address
+  supply-chain cybersecurity risks.
+jurisdiction: eu
+effective_date: "2023-01-16"
+transposition_deadline: "2024-10-17"
+source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022L2555"
+monitoring_needed: true
+scan_frequency: quarterly
+
+# Admission record (CONTRACT.md §6)
+zone: codex
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2023-01-16"
+valid_to: null

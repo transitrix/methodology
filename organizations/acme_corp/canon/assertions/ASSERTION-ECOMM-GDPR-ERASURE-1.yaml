@@ -1,0 +1,41 @@
+# Assertion — GDPR erasure × E-Commerce Platform.
+# Schema: notations/elements/16-assertion.md §2.
+# Demo note: non_compliant — demonstrates gap card in compliance matrix.
+
+notation: assertion
+id: ASSERTION-ECOMM-GDPR-ERASURE-1
+about: REQUIREMENT-GDPR-DATA-ERASURE-1
+subject: PRODUCT-ECOMM-1
+
+realised_via:
+  - STAGE-1    # Receive order — personal data captured
+  - STAGE-3    # Pick & pack — personal data read from CRM
+  - STAGE-4    # Ship — personal data transmitted to carrier
+
+status: non_compliant
+
+evidence:
+  - kind: note
+    text: >
+      Erasure requests are processed in the active-order database and CRM
+      within the 30-day window. KNOWN GAP: the order-history archive
+      (cold storage, 7-year fiscal retention) is not covered by the erasure
+      pipeline. Remediation target Q3 2026 — overdue since Q1 2026.
+      Supervisor pre-audit commitment flag active.
+
+assessed_at: "2026-05-15"
+assessed_by: ROLE-DPO-1
+next_review_at: "2026-07-15"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-15"
+valid_to: null

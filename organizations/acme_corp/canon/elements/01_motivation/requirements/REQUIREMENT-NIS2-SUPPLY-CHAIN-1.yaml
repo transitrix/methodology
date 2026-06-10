@@ -1,0 +1,25 @@
+# Requirement — NIS2 supply chain. Schema: notations/ELEMENT_PRIMITIVES.md §7.2.
+
+notation: requirement
+id: REQUIREMENT-NIS2-SUPPLY-CHAIN-1
+name: "Supply-chain cybersecurity risk management (NIS2 Art. 21)"
+description: >
+  Essential and important entities must address risks in supply chains by
+  assessing cybersecurity practices of direct suppliers and service providers,
+  and including contractual security requirements.
+severity: medium
+derived_from:
+  - LAW-NIS2-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2023-01-16"
+valid_to: null

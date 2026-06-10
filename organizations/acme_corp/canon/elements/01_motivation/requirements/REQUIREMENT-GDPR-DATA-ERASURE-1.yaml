@@ -1,0 +1,26 @@
+# Requirement — GDPR right to erasure. Schema: notations/ELEMENT_PRIMITIVES.md §7.2.
+
+notation: requirement
+id: REQUIREMENT-GDPR-DATA-ERASURE-1
+name: "Right to erasure — respond within 30 days (GDPR Art. 17)"
+description: >
+  On a verified request from a data subject, the controller must erase all
+  personal data relating to that subject within 30 calendar days. Applies to
+  every system holding personal data of EU residents.
+severity: high
+derived_from:
+  - LAW-GDPR-1
+deadline: "2025-12-31"   # past due — supervisory authority pre-audit commitment
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null

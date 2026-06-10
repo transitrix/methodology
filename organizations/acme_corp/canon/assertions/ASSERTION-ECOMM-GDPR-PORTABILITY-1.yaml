@@ -1,0 +1,38 @@
+# Assertion — GDPR portability × E-Commerce Platform.
+# Schema: notations/elements/16-assertion.md §2.
+# Demo note: compliant — demonstrates a green cell in the matrix.
+
+notation: assertion
+id: ASSERTION-ECOMM-GDPR-PORTABILITY-1
+about: REQUIREMENT-GDPR-PORTABILITY-1
+subject: PRODUCT-ECOMM-1
+
+realised_via:
+  - STAGE-5    # Confirm delivery & close — export available post-order
+
+status: compliant
+
+evidence:
+  - kind: note
+    text: >
+      Self-service data export is available in account settings. Export
+      covers order history, personal profile, and consent records in JSON
+      and CSV formats. Delivered within 72 h of request; 30-day deadline
+      met consistently. Verified in Q1 2026 internal audit — no exceptions.
+
+assessed_at: "2026-05-20"
+assessed_by: ROLE-DPO-1
+next_review_at: "2026-11-01"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-20"
+valid_to: null
