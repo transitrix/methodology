@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-06-10
 scope: repo
 supersedes: none
@@ -162,6 +162,10 @@ that flags disagreement.
   premise. Recorded only to make the cost of inaction explicit: every row /
   artefact pair can drift, and "what do we monitor?" stays a question with
   two answers.
+
+## Decision record
+
+- **Option A chosen — Valerii, 2026-06-10.** Split by lifecycle stage: REGISTRY owns curated source list and harvesting prioritisation; codex artefact owns monitoring of the already-ingested source (its `scan` block, its `source_url` as the authoritative watch target). A REGISTRY row adds a `codex_id` link once the source is admitted; scan state defers to the codex `scan` block from that point. A validator gate flags rows where the row's `source_url` disagrees with the linked codex artefact's `source_url`.
 
 ## Consequences
 
