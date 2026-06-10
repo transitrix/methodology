@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-06-10
 scope: repo
 supersedes: none
@@ -215,6 +215,11 @@ a tool, paired with a validation rule that flags any catalogue scan over
   premise. F19 is precisely this gap: the long tail of
   high-`extraction_confidence` drafts cannot pass the gate at expert pace, so
   the gate either bottlenecks the pipeline or silently lowers its bar.
+
+## Decision record
+
+- **Option A chosen — Valerii, 2026-06-10.** New field `reviewer_authority: ai_reviewed | expert_confirmed` on the admission record, orthogonal to `admission_state` and to the existing two trust signals (`source_quality`, `extraction_confidence`). Both tiers are `admission_state: active` (both are canon). Absent field ⇒ `expert_confirmed` (back-compat; no migration needed).
+- **Cross-cutting dependency rule — Valerii, 2026-06-10.** An `expert_confirmed` artefact MAY depend on an `ai_reviewed` artefact. The lower tier is canon; the dependency is allowed. Views surface the **weakest-link** authority level of the full dependency chain (the chain's displayed reviewer authority = minimum of all nodes in the chain). No `ADMIT-005`-extension to forbid cross-tier dependencies.
 
 ## Consequences
 
