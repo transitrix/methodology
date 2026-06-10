@@ -11,5 +11,6 @@ implementation PRs follow) · **Superseded** (replaced by a later ADR).
 
 | Date | Decision | Status | Scope |
 |---|---|---|---|
+| 2026-06-10 | [Source-of-truth for monitored sources — codex `scan` vs REGISTRY](2026-06-10-codex-registry-monitoring-source-of-truth.md) | Proposed | repo |
 | 2026-06-09 | [Canonical home for element aliases / alternative names](2026-06-09-element-aliases.md) | Proposed | repo |
 | 2026-06-08 | [EQUIPMENT and BUSINESS_OBJECT become first-class catalogued elements](2026-06-08-equipment-catalogued-element.md) | Accepted | repo |
