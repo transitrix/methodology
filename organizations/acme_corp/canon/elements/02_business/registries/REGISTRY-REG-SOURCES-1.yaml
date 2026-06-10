@@ -16,9 +16,10 @@ rows:
     type: regulation
     jurisdiction: EU
     citation: "Regulation (EU) 2016/679 (General Data Protection Regulation), consolidated text"
-    source_url: "https://eur-lex.europa.eu/eli/reg/2016/679/oj"
+    codex_id: LAW-GDPR-1                   # admitted as a codex artefact → codex is authoritative (ADR 2026-06-10, Option A)
+    source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679"  # harvesting hint; MUST match LAW-GDPR-1.source_url (REG-001)
     monitoring_needed: true
-    change_signal_method: version-date    # consolidated text carries a dated version stamp
+    change_signal_method: version-date    # harvesting hint pre-admission; superseded by the codex scan block once linked
     # scan_frequency omitted → registry default (P90D)
 
   - id: SOURCE-EU-AI-ACT-1

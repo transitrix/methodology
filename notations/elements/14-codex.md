@@ -106,13 +106,13 @@ A static artefact (Final Rule, published once) omits the `scan` block and instea
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). |
-| `source_url` | no | string | Canonical online location of the source document. Informational for static artefacts; the fetch target for the scanner agent (see §3.5) on live artefacts. |
+| `source_url` | no | string | Canonical online location of the source document. Informational for static artefacts; the fetch target for the scanner agent (see §3.5) on live artefacts. For an admitted source this is the **authoritative watch target** — when a `REGISTRY` row points at this artefact (via its `codex_id`), this `source_url` wins over the row's and the two MUST agree ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, rule `REG-001`; ADR 2026-06-10). |
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
 | `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). Required-together with `snapshot_file`. |
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
 | `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
 | `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
-| `scan` | no | map | Scanner-agent metadata — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. See §3.5. |
+| `scan` | no | map | Scanner-agent metadata — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. The **authoritative runtime scan state** for an admitted source: once a `REGISTRY` row links this artefact via `codex_id`, scan state defers here (the row's `scan_frequency` / `change_signal_method` are superseded — [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, ADR 2026-06-10). See §3.5. |
 
 ### 3.1 Snapshots
 
@@ -213,9 +213,11 @@ scan:
 | `change_description` | no | string \| null | Free-text summary of what the agent observed when `change_detected: true`. `null` (or omitted) when no change. |
 | `review_needed` | yes | boolean | `true` when a change has been detected but not yet adjudicated by a human. Resets to `false` once the human creates the new / amended artefact. |
 
-**Agent workflow.** A scanner agent operating against a `monitoring_needed: true` artefact:
+**Which `source_url` the agent reads (source-of-truth split, ADR 2026-06-10, Option A).** For an **admitted** source the codex artefact is authoritative: the agent reads *this artefact's* `source_url` and maintains *this artefact's* `scan` block. For a source still on the watchlist but **not yet admitted** — a `REGISTRY` row of `type: regulatory_source` with no `codex_id` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20) — there is no codex artefact yet, so the agent reads the **REGISTRY row's** `source_url` and tracks state in the registry runstate sidecar. Once the source is admitted and the row gains a `codex_id`, monitoring moves here; rule `REG-001` flags any lingering `source_url` disagreement between the row and this artefact.
 
-1. Fetches the content at `source_url` (or, when the artefact opts to monitor counterparts, the URLs in `monitor_instead[].url`).
+**Agent workflow.** A scanner agent operating against an admitted `monitoring_needed: true` artefact:
+
+1. Fetches the content at this artefact's `source_url` (or, when the artefact opts to monitor counterparts, the URLs in `monitor_instead[].url`).
 2. Compares the freshly-fetched content to the previously-captured `snapshot_file` (or the agent's prior fetch if no snapshot exists yet).
 3. If content has changed: sets `change_detected: true`, populates `change_description`, sets `review_needed: true`.
 4. Updates `last_scanned_at` to today and `next_scan_due` to today + `scan_frequency`.
