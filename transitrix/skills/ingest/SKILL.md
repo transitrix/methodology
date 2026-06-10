@@ -17,7 +17,7 @@ The methodology is canon at `github.com/transitrix/methodology`; this skill is t
 
 ## The one rule that governs everything
 
-**Propose, never write admitted canon.** This skill emits `field` artefacts and canon *candidates* and runs them through the existing validators. It MUST NOT write **admitted** canon — admitted elements, views, or anything carrying an admission record. Admission stays a deliberate, auditable human gate (`admitted_by`). (The `canon/unresolved/` holding area, Step 7, is explicitly *non-admitted* staging — entries carry no admission record and are excluded from every view; it is not an exception to this rule.) A hallucinated element or relation reaching canon unreviewed is the worst-case failure, and the whole design exists to prevent it. Every step below is built around keeping that gate intact.
+**Propose, never write admitted canon.** This skill emits `field` artefacts and canon *candidates* and runs them through the existing validators. It MUST NOT write **admitted** canon — admitted elements, views, or anything carrying an admission record. Admission stays a deliberate, auditable human gate (`admitted_by`). (The skill MAY write `proposed` — non-admitted — entries to the `canon/unresolved/` holding area, Step 7; it never writes an admission record there. An *admitted-but-untyped* entry, §13.1, is written only by the human gate. So this rule is not weakened.) A hallucinated element or relation reaching canon unreviewed is the worst-case failure, and the whole design exists to prevent it. Every step below is built around keeping that gate intact.
 
 ---
 
@@ -57,7 +57,7 @@ Also confirm you are operating inside a Transitrix adopter repository (a `transi
 transitrix-ingest scaffold-intake <org-root>
 ```
 
-Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
+Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. `_intake/` is a **per-user, private workspace** — its contents are git-ignored and not shared with other modellers, so nothing that participates in the model lives here (an untyped object goes to the shared `canon/unresolved/`, Step 7, never to `_intake/`). `scaffold-intake` drops a `.gitkeep` in each of `inbox/` / `processing/` / `processed/` so the folder skeleton stays in version control while the working files are ignored — the adopter's `.gitignore` carries `_intake/inbox/*`, `_intake/processing/*`, `_intake/processed/*` and `!_intake/**/.gitkeep` (the onboarding skill seeds these). In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
 
 ---
 
@@ -210,7 +210,7 @@ related_to: [PROD-001]
 data: ["Steel 316L", "Rubber gasket B12"]
 ```
 
-`canon/unresolved/` is **not admitted canon** — entries carry no admission record, never render in a view, and never count toward coverage ([CONTRACT §13.1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)). It is a holding area the human gate works down, so [the one rule](#the-one-rule-that-governs-everything) — propose, never write *admitted* canon — is intact.
+`canon/unresolved/` holds **canon-grade content whose only gap is an unresolved TYPE** — *not* low-trust material ([CONTRACT §13.1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)). Type resolution is a second axis, orthogonal to admission: an entry MAY be `proposed`-untyped (just ingested) or **admitted-but-untyped** (a human confirmed the content is accurate, but no TYPE is assigned yet). It is segregated from typed canon only because the canon machinery is TYPE-keyed (`<TYPE>-N` ids, per-TYPE placement, TYPE-keyed views) — so an untyped entry never renders in a typed view and is skipped by every typed canon walker, while its content stays authoritative. Because it carries real model knowledge it lives in **shared, committed `canon/unresolved/`**, never in the per-user, private `_intake/` workspace. The skill itself only ever *emits* `proposed` (non-admitted) entries here; admitting one to admitted-but-untyped is the human gate's act — so [the one rule](#the-one-rule-that-governs-everything) holds.
 
 **Routing — which mechanism applies:**
 
@@ -248,7 +248,7 @@ This skill is one shared `SKILL.md` in the converged **Agent Skills** format. It
 
 ## What this skill does NOT do
 
-- It does **not** write **admitted** canon. Ever. It emits candidates and a review queue; a human admits. (`canon/unresolved/` — Step 7 — is non-admitted staging, not admitted canon.)
+- It does **not** write **admitted** canon. Ever. It emits candidates and a review queue; a human admits. (It MAY emit `proposed`, non-admitted entries to `canon/unresolved/` — Step 7 — but the admission record on an admitted-but-untyped entry is written only by the human gate.)
 - It does **not** ship the methodology canon. It reads the published specs (via `WebFetch` when deeper than this protocol).
 - It does **not** fold `extraction_confidence` into `source_quality`, or persist either extraction-confidence value into canon.
 - It does **not** emit TYPEs or REL kinds outside the adopter's coverage profile — out-of-profile material is flagged for review.

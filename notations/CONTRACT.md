@@ -593,26 +593,37 @@ data:
   - "Rubber gasket B12"
 ```
 
-### 13.1 Not admitted canon
+### 13.1 Type resolution is orthogonal to admission
 
-`canon/unresolved/` sits under the `canon/` path but is **not admitted canon**. Its entries:
+An unresolved object is **not** low-trust raw material. Its content may be entirely accurate — drawn from an authoritative system of record, validated, and canonical in every respect **except that its TYPE is not yet resolved**. "Unresolved" names exactly one gap: the object's TYPE is unknown. It says nothing about whether the content is true.
 
-- carry **no admission record** (§6) — no `admitted_by`, no `gate_checks`; `ingest_status: unresolved` marks them as pre-admission;
-- are **excluded from every derived view and cross-cutting check**, exactly as an `admission_state: proposed` artefact is (§6.1) — an unresolved entry never renders in a view and never counts toward coverage (e.g. `REQ-COVERAGE-001`);
-- carry **no lifecycle** (§7) — they are not yet elements.
+Type resolution is therefore a **second axis, orthogonal to admission** (§6) — exactly as reviewer authority (§6.2) is orthogonal to admission state (§6.1):
 
-The zone trust contract (§5 — canon is "validated, internally consistent, unique") therefore still holds for *admitted* canon: an unresolved entry is staged adjacent to canon, not part of it. It takes the `canon/` prefix because resolution is expected to move most entries into admitted canon — but until a human resolves each one, it is outside the admitted set. This mirrors the "propose, never write admitted canon" rule the ingest skill is built on.
+| Axis | States | Question |
+|---|---|---|
+| admission (§6) | `proposed` → `active` | Is the content validated and admitted? |
+| type resolution (§13) | `unresolved` → typed | Is the object's TYPE known? |
+
+The two move independently. An entry in `canon/unresolved/` MAY carry a full admission record — `admitted_by`, `gate_checks`, `source_quality` (§11.2), even a lifecycle (§7) — i.e. it can be **admitted-but-untyped**: a human has confirmed the content is accurate, but no TYPE has been assigned. It MAY equally be `proposed`-but-untyped (freshly ingested, content not yet reviewed). Both live here; the admission record, when present, is honoured exactly as it is on typed canon.
+
+**Why it is segregated from typed canon — TYPE, not trust.** The canon machinery is **TYPE-keyed**: a canonical id is `<TYPE>-<INTEGER>` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), placement is per-TYPE ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §4), and relations (§17) and derived views dispatch on TYPE. An object with no resolved TYPE cannot take a canonical id, cannot be placed in a per-TYPE folder, and cannot be rendered by a TYPE-keyed view. It is held in `canon/unresolved/` — fully part of canon's *knowledge*, but outside the *typed* machinery — until its TYPE is resolved (§13.3), at which point it earns a `<TYPE>-N` id and moves to its per-TYPE folder.
+
+**Exclusion is from typed derived views, not from canon.** An unresolved entry does not render in a TYPE-keyed view and is not counted by TYPE-scoped coverage (e.g. `REQ-COVERAGE-001`) — that machinery operates on a resolved TYPE the entry does not yet have. Its content is still authoritative canon; it is simply invisible to anything that needs a TYPE. Every tool that walks *typed* canon (the canon index, coverage, placement check, renderers) MUST therefore skip `canon/unresolved/` so an untyped entry is never mistaken for a typed element.
+
+**It lives in shared, committed canon — never in `_intake/`.** Because an unresolved object carries real model knowledge, it cannot sit in the per-user, private `_intake/` workspace, whose contents are not shared with other modellers. It is committed to `canon/unresolved/` so the whole team sees and can resolve it. This is the opposite of a *candidate*, which is a pre-model extraction proposal that stages privately in `_intake/processing/` until a human admits it.
 
 ### 13.2 Fields
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `ingest_status` | yes | string | Always `unresolved` for an entry in this folder — the marker that excludes it from admitted canon. |
+| `ingest_status` | yes | string | Always `unresolved` for an entry in this folder — the marker of the **type-resolution** axis (§13.1), independent of admission. It records that the TYPE is unknown, not that the content is untrusted. |
 | `ingest_source` | yes | string | The source the object came from (file name or field-artefact id). |
 | `ingest_field` | yes | string | The source field / column / path the object was extracted from. |
 | `ingest_date` | yes | string | Quoted ISO 8601 date (§4) the object was ingested. |
 | `related_to` | recommended | list | Typed IDs of known canon objects this unresolved object appears related to (e.g. the `PRODUCT` a materials list hangs off). |
-| `data` | yes | any | The raw extracted payload, preserved verbatim for the reviewer. |
+| `data` | yes | any | The extracted payload, preserved verbatim for the reviewer. |
+
+An unresolved entry MAY **also** carry any field a typed canon element would — an admission record (§6: `admitted_by`, `gate_checks`, `admission_state`), a `source_quality` (§11.2), and a lifecycle (§7) — when it is *admitted-but-untyped* (§13.1). Those fields keep their normal meaning; the entry simply has no resolved TYPE and therefore no `<TYPE>-N` id. It does **not** carry a `notation:` header (it is not a notation document) and is not given a typed canonical id until it is resolved (§13.3).
 
 ### 13.3 Resolution — the ingestion decision matrix
 
@@ -639,7 +650,8 @@ Resolving one `canon/unresolved/` entry means exactly one of:
 | Rule | Severity | Description |
 |---|---|---|
 | `UNRES-001` | error | A file under `canon/unresolved/` is missing a required field (`ingest_status`, `ingest_source`, `ingest_field`, `ingest_date`, or `data`). |
-| `UNRES-002` | error | A file under `canon/unresolved/` carries an admission record (`admitted_by` / `gate_checks` / `admission_state: active`) — an unresolved entry is by definition not admitted; resolve it (§13.3) instead. |
+| `UNRES-002` | error | A file under `canon/unresolved/` carries a TYPE-resolved canonical id (`<TYPE>-<INTEGER>` whose TYPE is registered, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1) — its TYPE is resolved, so it must move to its per-TYPE canon folder (§13.3), not linger in the holding area. (An admission record is **not** an error here — an entry may be admitted-but-untyped, §13.1.) |
 | `UNRES-003` | warning | A `related_to` entry does not resolve to a known canon object. Cross-cutting (requires the full catalogue). |
+| `UNRES-004` | error | A typed canon walker (canon index, coverage, placement, renderer) counts a `canon/unresolved/` entry as a typed element — the holding area MUST be skipped by TYPE-keyed machinery (§13.1). A tooling rule, enforced by the validator's catalogue load. |
 
-The shared header rules (`HDR-001..004`, §2) do **not** apply to `canon/unresolved/` files — they are pre-admission holding records, not notation documents, and carry no `notation:` header.
+The shared header rules (`HDR-001..004`, §2) do **not** apply to `canon/unresolved/` files — an unresolved entry has no resolved TYPE and therefore no `notation:` header, regardless of its admission state.
