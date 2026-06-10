@@ -1,0 +1,33 @@
+# Coverage-metric view — acme_corp EU (GDPR + NIS2).
+# Opens in Transitrix Studio; notation spec: notations/views/22-coverage-metric.md.
+
+notation: coverage-metric
+spec_version: "0.1"
+
+coverage_metric:
+  id: COVERAGE_METRIC-ACME-EU-1
+  name: "acme_corp — EU Coverage Metric (GDPR + NIS2)"
+  description: >
+    Measures assertion coverage per law for acme_corp EU compliance.
+    Groups requirements by their source codex and shows the proportion
+    that are compliant, partial, under review, non-compliant, or gap
+    (no assertion filed).
+  date: "2026-06-10"
+  version: "0.1"
+  author: "v.korobeinikov"
+
+  scope:
+    jurisdictions:
+      - eu
+    codex:
+      - LAW-GDPR-1
+      - LAW-NIS2-1
+    subjects:
+      products:
+        - PRODUCT-ECOMM-1
+        - PRODUCT-SUPPORT-1
+
+  thresholds:
+    green: 0.80
+    amber: 0.50
+    red: 0.00

@@ -1,0 +1,28 @@
+# Compliance-impact view — acme_corp EU (GDPR + NIS2).
+# Opens in Transitrix Studio; notation spec: notations/views/21-compliance-impact.md.
+
+notation: compliance-impact
+spec_version: "0.1"
+
+view:
+  id: COMPLIANCE_IMPACT-ACME-EU-1
+  name: "acme_corp — EU Compliance Impact (GDPR + NIS2)"
+  description: >
+    Obligation × product matrix scoped to the EU jurisdiction (GDPR and NIS2).
+    Shows which regulatory requirements bind each product and the current
+    compliance status. Gaps (no assertion) appear as empty cells.
+    Deadline decorations indicate overdue or imminent remediation targets.
+  snapshot_at: "2026-06-10"
+
+  subjects:
+    products:
+      - PRODUCT-ECOMM-1
+      - PRODUCT-SUPPORT-1
+
+  obligations:
+    filter:
+      derived_from_codex:
+        - LAW-GDPR-1
+        - LAW-NIS2-1
+
+  order_rows_by: id
