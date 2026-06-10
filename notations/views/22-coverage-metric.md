@@ -109,6 +109,7 @@ view:
   coverage_rule:
     counts_as_covered: "any-active-assertion"   # any-active-assertion (default) | any-non-na-assertion
     treat_proposed_as: "hidden"                 # hidden | shown-distinct (default: hidden, per ASSERTION §2.2)
+    treat_ai_reviewed_as: "shown-distinct"      # shown-distinct | shown-same | hidden (default: shown-distinct — counts toward coverage, per CONTRACT §6.2)
 
   # Empty-cell labels — see §5.3 for the canonical strings.
   empty_cells:
@@ -146,6 +147,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.grouping.columns` | no | string | `regime` | Column dimension: `regime` (one column per codex artefact), `jurisdiction` (one column per jurisdiction; collapses all regimes from the same jurisdiction). |
 | `view.coverage_rule.counts_as_covered` | no | string | `any-active-assertion` | Defines which admitted `ASSERTION`s count a (subject, regime) pair as **covered**: `any-active-assertion` (an admitted assertion with any `status` value, including `n_a`; means *the model has considered the regime against the subject*) or `any-non-na-assertion` (only admitted assertions with `status` in `{compliant, partial, non_compliant, under_review}`; means *the model carries a substantive obligation, not just an n/a exclusion*). |
 | `view.coverage_rule.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to coverage) or `shown-distinct` (rendered as a distinct partial-coverage marker so a reviewer sees the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
+| `view.coverage_rule.treat_ai_reviewed_as` | no | string | `shown-distinct` | How to count admitted `ASSERTION`s carrying `reviewer_authority: ai_reviewed` ([CONTRACT.md](../CONTRACT.md) §6.2): `shown-distinct` (**counts toward coverage**, rendered as a distinct AI-reviewed marker), `shown-same` (counts identically to `expert_confirmed`), or `hidden` (does not count toward coverage). Both tiers are admitted canon, so by **default `ai_reviewed` counts toward coverage**, shown distinct — an adopter who wants an expert-only coverage figure sets `hidden`. Coverage resting on a dependency chain containing an `ai_reviewed` node is reported at the **weakest-link** authority (§6.2). |
 | `view.empty_cells.not_yet_modelled_label` | no | string | `"Not yet modelled"` (§5.3) | Label for cells where coverage is zero **and** no admitted `ASSERTION` with `status: n_a` exists from the regime against the subject. |
 | `view.empty_cells.no_obligation_asserted_label` | no | string | `"No obligation asserted (modelled fact)"` (§5.3) | Label for cells where coverage is zero **and** every admitted `ASSERTION` from the regime against the subject has `status: n_a` (a modelled exclusion). |
 | `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `gap-count-desc` (largest modelling gap first — drives harvesting prioritisation), `gap-count-asc`. |
@@ -256,7 +258,7 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COVMET-002` | error | `view.subjects` is empty (neither `products` nor `processes` present). |
 | `COVMET-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.regimes.include` does not resolve to an admitted canonical element of the expected TYPE. A value in `view.regimes.include` whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` is the same error. |
 | `COVMET-004` | error | `view.grouping.rows`, `view.grouping.subject_grain`, or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
-| `COVMET-005` | error | `view.coverage_rule.counts_as_covered` or `view.coverage_rule.treat_proposed_as` is set to a value outside its enumeration. |
+| `COVMET-005` | error | `view.coverage_rule.counts_as_covered`, `view.coverage_rule.treat_proposed_as`, or `view.coverage_rule.treat_ai_reviewed_as` is set to a value outside its enumeration (the last per CONTRACT §6.2: `shown-distinct` \| `shown-same` \| `hidden`). |
 | `COVMET-006` | warning | `view.regimes.filter.jurisdiction` contains a value that is not ISO 3166-1 alpha-2, `eu`, or `intl` (the only values codex external artefacts permit, [14-codex.md](../elements/14-codex.md) §3). |
 | `COVMET-007` | warning | Both `view.regimes.include` and `view.regimes.filter` are present (the include wins; the filter is silently ignored). |
 | `COVMET-008` | warning | The view selects zero regimes after applying `include` / `filter` — the rendered matrix will have no columns. Usually indicates a typo or that no codex artefacts of the requested kind have been admitted. |

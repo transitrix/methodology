@@ -132,6 +132,7 @@ derived_from:
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `admission_state` | no | string | `proposed` \| `active` \| `rejected`. **Absent ⇒ `active`** — human-authored canon is admitted by construction, so existing files need no change (back-compat). |
+| `reviewer_authority` | no | string | `ai_reviewed` \| `expert_confirmed` — the authority **tier** of the reviewer who admitted the artefact (tiered approval, §6.2). **Absent ⇒ `expert_confirmed`** (back-compat: every artefact admitted before this axis existed is treated as expert-confirmed; no migration). Only meaningful with `admission_state: active`; both tiers are admitted canon. A **tool** writes `ai_reviewed`, a **human** writes `expert_confirmed` (`ADMIT-007`). Orthogonal to `admission_state` and to the two trust signals (`source_quality`, `extraction_confidence`); never folded into the §11.4 confidence formula (§11.4). |
 | `proposed_at` | when `proposed` / `rejected` | string | Date the automated harvest emitted the draft — quoted ISO 8601 (§4). |
 | `proposed_by` | when `proposed` / `rejected` | string | The tool / harvest identifier that emitted the draft. A human never writes `proposed`. |
 | `rejected_at` | when `rejected` | string | Date a human refused the draft. |
@@ -168,8 +169,39 @@ For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitte
 | `ADMIT-003` | error | `admission_state` is `active` or absent, but `admitted_at` / `admitted_by` are missing or any `gate_checks` entry is not `pass`. |
 | `ADMIT-004` | error | `admission_state: rejected` but `rejected_at` / `rejected_by` are missing. |
 | `ADMIT-005` | warning | An `active` artefact cross-references a `proposed` or `rejected` artefact — admitted canon must not depend on un-admitted drafts. Cross-cutting (requires the full catalogue). |
+| `ADMIT-006` | error | `reviewer_authority` is present and not one of `ai_reviewed` / `expert_confirmed` (§6.2). |
+| `ADMIT-007` | error | The admitter does not match the tier: `reviewer_authority: ai_reviewed` but `admitted_by` identifies a human, or `reviewer_authority: expert_confirmed` but `admitted_by` identifies a tool. A tool writes `ai_reviewed`; a human writes `expert_confirmed` (§6.2). |
 
 This lifecycle is what an automated regulatory-intelligence collector (a separate task) depends on: the collector emits `proposed` drafts plus a review digest, and the human gate admits or rejects. The per-TYPE specs note it where relevant ([15-requirement.md](elements/15-requirement.md), [16-assertion.md](elements/16-assertion.md)).
+
+### 6.2 Reviewer authority — tiered approval
+
+Admission carries a second, orthogonal axis: *who confirmed it*. The single human gate (§6.1) records only *who* admitted; it cannot distinguish a draft an AI reviewer ticked from one a domain expert confirmed, so the only safe default is to hold everything behind the expert gate — which does not scale to a source that yields hundreds of `REQUIREMENT` / `ASSERTION` candidates. `reviewer_authority` grades the **authority tier** of the reviewer, independent of `admission_state` (gate progress) and of the two trust signals (`source_quality`, `extraction_confidence` — §11). (ADR [`docs/decisions/2026-06-10-tiered-approval-reviewer-authority.md`](../docs/decisions/2026-06-10-tiered-approval-reviewer-authority.md).)
+
+The tiers are ordinal — `ai_reviewed` < `expert_confirmed` — and **both are admitted canon** (`admission_state: active`); the axis adds **no** new exclusion from derived views. Write authority is strict:
+
+- **`ai_reviewed`** — written **only** by a tool acting as reviewer (the ingest skill, an automated cross-check). The tool fills `admitted_by` with its tool id. A tool MAY admit a high-`extraction_confidence` draft straight to this tier; it may **never** write `expert_confirmed`.
+- **`expert_confirmed`** — written **only** by a human reviewer. Absent `reviewer_authority` ⇒ `expert_confirmed`.
+
+This keeps **"propose, never write the expert tier"**: the human gate retains exclusive authority over the top tier, so the core invariant (a tool never mints expert-confirmed canon unreviewed) holds. An `ai_reviewed` active record:
+
+```yaml
+zone: canon
+admission_state: active
+reviewer_authority: ai_reviewed
+admitted_at: "2026-06-10"
+admitted_by: "ingest-reviewer-claude"   # a tool id — ADMIT-007
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+derived_from:
+  - REGULATION-GDPR-2016-1
+```
+
+**Cross-tier dependencies — weakest link.** An `expert_confirmed` artefact MAY depend on an `ai_reviewed` one: the lower tier is canon, so the dependency is allowed and `ADMIT-005` is **not** extended to forbid it. Views surface the **weakest-link** authority of the dependency chain — the displayed reviewer authority of a chain is the *minimum* tier over all of its nodes, so a single `ai_reviewed` node anywhere in the chain makes the whole chain read `ai_reviewed`. Rendering the weakest-link chain in Studio / DSM is a separate follow-up; this section defines the rule.
+
+The routing that decides which drafts a tool may auto-admit to `ai_reviewed` (high `extraction_confidence`) versus send to the expert queue (medium / low) is a **skill-level** rule, not a CONTRACT one — it lives in the ingest skill ([transitrix/skills/ingest/SKILL.md](../transitrix/skills/ingest/SKILL.md)). The CONTRACT defines the tiers; the skill defines the routing.
 
 ---
 
@@ -462,6 +494,8 @@ confidence(element)   = source_trust(element) · freshness(element)
 ```
 
 Source trust takes the **best** available source (`max`): an element corroborated by an authoritative source is not dragged down by an additional weaker one — extra weak sources add nothing, they do not subtract. Multiplying by freshness then ages that trust: an `authoritative`-but-long-unreaffirmed element scores `1.0 · floor`, while a `single_source`-but-fresh element scores `0.5 · 1.0`.
+
+**`reviewer_authority` is not folded into this formula.** The reviewer-authority tier (§6.2 — `ai_reviewed` vs `expert_confirmed`) is a property of the *review*, not of the *statement*; source trust and freshness are properties of the statement. It is surfaced as a qualitative label **alongside** the numeric confidence band, never multiplied into it — the same separation §11.1 keeps between the two existing signals. An adopter reads "confidence 0.5, ai_reviewed", not a single blended number.
 
 ### 11.5 Unsourced elements
 

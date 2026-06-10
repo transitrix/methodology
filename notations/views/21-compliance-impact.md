@@ -105,6 +105,7 @@ view:
   status_display:
     show: ["compliant", "partial", "non_compliant", "under_review", "n_a"]
     treat_proposed_as: "hidden"  # hidden | shown-distinct (default: hidden, per ASSERTION §2.2)
+    treat_ai_reviewed_as: "shown-distinct"  # shown-distinct | shown-same | hidden (default: shown-distinct, per CONTRACT §6.2)
 
   # Empty-cell labels — see §5 for the canonical strings.
   empty_cells:
@@ -136,6 +137,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.grouping.columns` | no | string | `product-stage-task` | Column dimension: `product-stage-task` (the finest grain), `product-stage`, `product`. |
 | `view.status_display.show` | no | list | all five (`compliant`, `partial`, `non_compliant`, `under_review`, `n_a`) | Which `ASSERTION.status` values to render. |
 | `view.status_display.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to the cell) or `shown-distinct` (rendered with a distinct marker so a reviewer can see the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
+| `view.status_display.treat_ai_reviewed_as` | no | string | `shown-distinct` | How to handle admitted `ASSERTION`s carrying `reviewer_authority: ai_reviewed` ([CONTRACT.md](../CONTRACT.md) §6.2): `shown-distinct` (rendered with a distinct marker so the AI-reviewed tier is visible alongside expert-confirmed canon), `shown-same` (treated identically to `expert_confirmed`), or `hidden` (the AI-reviewed assertion contributes nothing to the cell). Both tiers are admitted canon, so the default surfaces the AI-reviewed tier distinctly rather than hiding it. A cell whose impact rests on an `ai_reviewed` assertion (or a dependency chain containing one) renders at the **weakest-link** authority (§6.2). |
 | `view.empty_cells.no_obligation_label` | no | string | `"No mapped obligation (current model)"` (§5) | Label for cells where no admitted ASSERTION binds the (obligation, subject-cell) pair. |
 | `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `regime`, `jurisdiction`. |
 | `view.order_columns_by` | no | string | `process-order` | Column ordering key: `process-order` (each process's stages and tasks in flow order, then the next process), `id`, `name`. |
@@ -242,6 +244,7 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COMPIMP-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.obligations.include` / `view.obligations.filter.derived_from_codex` does not resolve to an admitted canonical element of the expected TYPE. |
 | `COMPIMP-004` | error | `view.grouping.rows` or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
 | `COMPIMP-005` | error | `view.status_display.treat_proposed_as` is set to a value outside `{hidden, shown-distinct}`. |
+| `COMPIMP-006` | error | `view.status_display.treat_ai_reviewed_as` is set to a value outside `{shown-distinct, shown-same, hidden}` (CONTRACT §6.2). |
 | `COMPIMP-006` | warning | `view.empty_cells.no_obligation_label` overrides the default but is one of the legacy strings the §5.3 distinction was introduced to retire (e.g. "No direct obligation", "Not applicable" used for the empty case). |
 | `COMPIMP-007` | warning | Both `view.obligations.include` and `view.obligations.filter` are present (the include wins; the filter is silently ignored). |
 | `COMPIMP-008` | warning | The view selects zero obligations after applying `include` / `filter` — the rendered matrix will have no rows. Usually indicates a typo in a codex reference. |
