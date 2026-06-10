@@ -1,0 +1,67 @@
+# FGCA chain — EU market entry under GDPR/NIS2.
+# Notation spec: notations/views/02-fgca.md. Inline elements carry CONTRACT.md §7
+# lifecycle; the view itself does not.
+
+notation: fgca
+spec_version: "0.1"
+
+id: FGCA-EU-1
+name: "EU Expansion 2026 — compliance-driven"
+description: >
+  Factor → Goal → Change → Activity chain for EU market entry. The closing EU
+  regulatory window drives a market-presence goal; the required transformation is
+  an EU-localised, GDPR-conformant platform; activities deliver it.
+period: "2026"
+date: "2026-06-10"
+author: "Acme Strategy Office"
+
+factors:
+  - id: FACTOR-EU-REG-1
+    name: "EU regulatory window for market entry"
+    type: external
+    category: legal
+    references_constraint: [CONSTRAINT-GDPR-RESIDENCY-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+  - id: FACTOR-COMP-1
+    name: "Competitive pressure"
+    type: external
+    category: economic
+    valid_from: "2026-05-26"
+    valid_to: null
+
+goals:
+  - id: GOAL-EU-1
+    name: "Launch in 3 EU markets"
+    factors: [FACTOR-EU-REG-1, FACTOR-COMP-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+
+changes:
+  - id: CHANGE-EU-CRM-1
+    name: "Stand up EU-localised CRM and payment processing"
+    goals: [GOAL-EU-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+  - id: CHANGE-ONBOARD-1
+    name: "Rework customer onboarding for GDPR consent capture"
+    goals: [GOAL-EU-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+
+activities:
+  - id: ACTIVITY-CRM-EU-1
+    name: "Implement EU-localised CRM rollout"
+    changes: [CHANGE-EU-CRM-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+  - id: ACTIVITY-BUILD-1
+    name: "Build & test EU compliance controls"
+    changes: [CHANGE-EU-CRM-1, CHANGE-ONBOARD-1]
+    valid_from: "2026-05-26"
+    valid_to: null
+  - id: ACTIVITY-LAUNCH-1
+    name: "Launch in EU markets"
+    changes: [CHANGE-EU-CRM-1]
+    valid_from: "2026-05-26"
+    valid_to: null

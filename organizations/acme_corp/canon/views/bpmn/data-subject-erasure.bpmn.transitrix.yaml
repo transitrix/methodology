@@ -1,0 +1,96 @@
+# Detailed BPMN flow for PROCESS-DSR-HANDLE-1 — GDPR right-to-erasure (Art. 17).
+# Compiled to BPMN 2.0 XML by Transitrix Studio. Node ids are file-local labels
+# (POOL-/LANE-/SE-/TASK-/GW-/EE-) per IDS_AND_REFERENCES.md §3.3 — not canonical
+# elements, so this file bears no primitive lifecycle.
+
+notation: bpmn
+spec_version: "0.1"
+
+process:
+  id: PROCESS-DSR-HANDLE-1
+  name: "Data Subject Erasure Request (GDPR Art. 17)"
+  pools:
+    - id: POOL-DSR
+      name: "Data Subject Request Handling"
+      lanes:
+        - id: LANE-SUPPORT
+          name: "Customer Support"
+          elements:
+            - id: SE-REQUEST
+              type: startEvent
+              name: "Erasure request received"
+            - id: TASK-VERIFY-IDENTITY
+              type: userTask
+              name: "Verify data-subject identity"
+            - id: GW-VERIFIED
+              type: exclusiveGateway
+              name: "Identity verified?"
+            - id: TASK-REJECT
+              type: userTask
+              name: "Reject request & notify subject"
+            - id: EE-REJECTED
+              type: endEvent
+              name: "Request rejected"
+            - id: TASK-CONFIRM
+              type: userTask
+              name: "Confirm erasure & notify subject"
+        - id: LANE-DPO
+          name: "Data Protection Officer"
+          elements:
+            - id: TASK-LOG-REQUEST
+              type: task
+              name: "Log request in DSR register"
+            - id: GW-ARCHIVE
+              type: exclusiveGateway
+              name: "Personal data in cold-storage archive?"
+            - id: TASK-FLAG-GAP
+              type: task
+              name: "Flag archive exception for manual review"
+            - id: TASK-RECORD-CLOSURE
+              type: task
+              name: "Record completion within 30-day window"
+            - id: EE-CLOSED
+              type: endEvent
+              name: "Request closed & evidenced"
+        - id: LANE-OPS
+          name: "Operations & Engineering"
+          elements:
+            - id: TASK-LOCATE
+              type: task
+              name: "Locate personal data across systems"
+            - id: TASK-ERASE-ACTIVE
+              type: task
+              name: "Erase from active OMS & CRM"
+  flows:
+    - from: SE-REQUEST
+      to: TASK-VERIFY-IDENTITY
+    - from: TASK-VERIFY-IDENTITY
+      to: GW-VERIFIED
+    - from: GW-VERIFIED
+      to: TASK-REJECT
+      condition: "identity not verified"
+      default: true
+    - from: TASK-REJECT
+      to: EE-REJECTED
+    - from: GW-VERIFIED
+      to: TASK-LOG-REQUEST
+      condition: "identity verified"
+    - from: TASK-LOG-REQUEST
+      to: TASK-LOCATE
+    - from: TASK-LOCATE
+      to: TASK-ERASE-ACTIVE
+    - from: TASK-ERASE-ACTIVE
+      to: GW-ARCHIVE
+    - from: GW-ARCHIVE
+      to: TASK-FLAG-GAP
+      condition: "data present in 7-year archive (known gap)"
+    - from: GW-ARCHIVE
+      to: TASK-CONFIRM
+      condition: "active systems only"
+      default: true
+    - from: TASK-FLAG-GAP
+      to: TASK-CONFIRM
+    - from: TASK-CONFIRM
+      to: TASK-RECORD-CLOSURE
+    - from: TASK-RECORD-CLOSURE
+      to: EE-CLOSED

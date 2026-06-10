@@ -1,0 +1,41 @@
+# Products catalogue — the EU-facing portfolio that the compliance views bind to.
+# Notation spec: notations/views/09-products.md. Each inline product carries
+# CONTRACT.md §7 lifecycle, distinct from operational `status`.
+
+notation: products
+spec_version: "0.1"
+
+products_catalogue:
+  id: PRODUCTS_CAT-EU-1
+  name: "Acme Corp — EU Products Portfolio"
+  description: "Products and services in scope for EU GDPR/NIS2 compliance."
+  version: "1.0"
+  updated_at: "2026-06-10"
+
+  products:
+    - product_id: PRODUCT-ECOMM-1
+      name: "E-Commerce Platform"
+      type: "digital_product"
+      domain: "Digital"
+      owner_role: ROLE-PROD-1
+      status: "Active"
+      maturity: 3
+      description: "Online storefront and order management for end customers; primary GDPR data controller surface."
+      capabilities: ["CAPABILITY-V1", "CAPABILITY-V2", "CAPABILITY-H1"]
+      processes: ["PROCESS-ORD-FULFILL-1", "PROCESS-DSR-HANDLE-1"]
+      supporting_apps: ["APPLICATION-OMS-1", "APPLICATION-CRM-1"]
+      valid_from: "2026-05-26"
+      valid_to: null
+
+    - product_id: PRODUCT-SUPPORT-1
+      name: "Customer Support Service"
+      type: "service"
+      domain: "Operations"
+      owner_role: ROLE-CS-1
+      status: "Active"
+      maturity: 2
+      description: "Tier-1 and Tier-2 support; first point of contact for data-subject requests."
+      capabilities: ["CAPABILITY-H1"]
+      processes: ["PROCESS-CS-RESOLVE-1", "PROCESS-DSR-HANDLE-1"]
+      valid_from: "2026-05-26"
+      valid_to: null
