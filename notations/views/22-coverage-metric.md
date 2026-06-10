@@ -130,29 +130,50 @@ The document carries the canonical envelope (`notation:` header, `spec_version:`
 
 ## 4. Fields
 
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `view.id` | yes | string | View identifier, canonical-grammar (`COVERAGE_METRIC-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COVERAGE_METRIC` document-level TYPE). |
-| `view.name` | yes | string | Human-readable name shown in the renderer. |
-| `view.description` | no | string | Short description of the purpose of this view (which subjects, which regimes, why). |
-| `view.subjects.products` | one of `products` / `processes` (at least one) | list | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
-| `view.subjects.processes` | one of `products` / `processes` (at least one) | list | Explicit list of `PROCESS-…` IDs to count over, in addition to (or instead of) the processes derived from `products`. |
-| `view.regimes.include` | one of `include` / `filter` | list | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../elements/14-codex.md)). |
-| `view.regimes.filter` | one of `include` / `filter` | object | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
-| `view.grouping.rows` | no | string | Row dimension: `subject` (one row per subject at `subject_grain`), `regime` (one row per regime). Default `subject`. |
-| `view.grouping.subject_grain` | no | string | Subject grain when `rows: subject` or when the matrix is per-subject: `product` (one row per `PRODUCT`), `product-stage` (one row per stage of each process), `task` (one row per flow step). Default `task`. |
-| `view.grouping.columns` | no | string | Column dimension: `regime` (one column per codex artefact), `jurisdiction` (one column per jurisdiction; collapses all regimes from the same jurisdiction). Default `regime`. |
-| `view.coverage_rule.counts_as_covered` | no | string | Defines which admitted `ASSERTION`s count a (subject, regime) pair as **covered**: `any-active-assertion` (default — an admitted assertion with any `status` value, including `n_a`; means *the model has considered the regime against the subject*) or `any-non-na-assertion` (only admitted assertions with `status` in `{compliant, partial, non_compliant, under_review}`; means *the model carries a substantive obligation, not just an n/a exclusion*). |
-| `view.coverage_rule.treat_proposed_as` | no | string | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (default; the proposed assertion contributes nothing to coverage) or `shown-distinct` (rendered as a distinct partial-coverage marker so a reviewer sees the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
-| `view.empty_cells.not_yet_modelled_label` | no | string | Label for cells where coverage is zero **and** no admitted `ASSERTION` with `status: n_a` exists from the regime against the subject. Default — the canonical "Not yet modelled" string (§5.3). |
-| `view.empty_cells.no_obligation_asserted_label` | no | string | Label for cells where coverage is zero **and** every admitted `ASSERTION` from the regime against the subject has `status: n_a` (a modelled exclusion). Default — the canonical "No obligation asserted (modelled fact)" string (§5.3). |
-| `view.order_rows_by` | no | string | Row ordering key: `id`, `name`, `gap-count-desc` (largest modelling gap first — drives harvesting prioritisation), `gap-count-asc`. Default `id`. |
-| `view.order_columns_by` | no | string | Column ordering key: `id`, `name`, `jurisdiction`. Default `id`. |
-| `view.summary.show_per_regime_total` | no | bool | When true, render a per-regime total row: total gap count, total covered count, gap rate. Default `true`. |
-| `view.summary.show_per_subject_total` | no | bool | When true, render a per-subject total column with the same totals. Default `true`. |
-| `view.summary.show_grand_total` | no | bool | When true, render a grand-total cell (sum across all subjects × regimes). Default `true`. |
+Every field carries an explicit default, so a view with only the required envelope (`view.id`, `view.name`) renders deterministically — see §4.1.
+
+| Field | Required | Type | Default | Semantics |
+|---|---|---|---|---|
+| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COVERAGE_METRIC-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COVERAGE_METRIC` document-level TYPE). |
+| `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
+| `view.description` | no | string | empty | Short description of the purpose of this view (which subjects, which regimes, why). |
+| `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
+| `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to count over, in addition to (or instead of) the processes derived from `products`. |
+| `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../elements/14-codex.md)). |
+| `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
+| `view.grouping.rows` | no | string | `subject` | Row dimension: `subject` (one row per subject at `subject_grain`), `regime` (one row per regime). |
+| `view.grouping.subject_grain` | no | string | `task` | Subject grain when `rows: subject` or when the matrix is per-subject: `product` (one row per `PRODUCT`), `product-stage` (one row per stage of each process), `task` (one row per flow step). |
+| `view.grouping.columns` | no | string | `regime` | Column dimension: `regime` (one column per codex artefact), `jurisdiction` (one column per jurisdiction; collapses all regimes from the same jurisdiction). |
+| `view.coverage_rule.counts_as_covered` | no | string | `any-active-assertion` | Defines which admitted `ASSERTION`s count a (subject, regime) pair as **covered**: `any-active-assertion` (an admitted assertion with any `status` value, including `n_a`; means *the model has considered the regime against the subject*) or `any-non-na-assertion` (only admitted assertions with `status` in `{compliant, partial, non_compliant, under_review}`; means *the model carries a substantive obligation, not just an n/a exclusion*). |
+| `view.coverage_rule.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to coverage) or `shown-distinct` (rendered as a distinct partial-coverage marker so a reviewer sees the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
+| `view.empty_cells.not_yet_modelled_label` | no | string | `"Not yet modelled"` (§5.3) | Label for cells where coverage is zero **and** no admitted `ASSERTION` with `status: n_a` exists from the regime against the subject. |
+| `view.empty_cells.no_obligation_asserted_label` | no | string | `"No obligation asserted (modelled fact)"` (§5.3) | Label for cells where coverage is zero **and** every admitted `ASSERTION` from the regime against the subject has `status: n_a` (a modelled exclusion). |
+| `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `gap-count-desc` (largest modelling gap first — drives harvesting prioritisation), `gap-count-asc`. |
+| `view.order_columns_by` | no | string | `id` | Column ordering key: `id`, `name`, `jurisdiction`. |
+| `view.summary.show_per_regime_total` | no | bool | `true` | When true, render a per-regime total row: total gap count, total covered count, gap rate. |
+| `view.summary.show_per_subject_total` | no | bool | `true` | When true, render a per-subject total column with the same totals. |
+| `view.summary.show_grand_total` | no | bool | `true` | When true, render a grand-total cell (sum across all subjects × regimes). |
+
+¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer counts coverage over **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the scope.
+
+² **`regimes`** — both keys are optional and only ever *narrow* the regime axis. Omitting them enumerates every codex artefact in the `codex/` zone as a regime column. If both `include` and `filter` are present, `include` wins and `filter` is ignored.
 
 All references in `view.subjects.*` and `view.regimes.include` / `view.regimes.filter` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
+
+### 4.1 Zero-configuration default
+
+A view that carries only the required envelope —
+
+```yaml
+notation: coverage-metric
+spec_version: "0.1"
+methodology_version: "0.5.0"
+view:
+  id: COVERAGE_METRIC-ALL-1
+  name: "Full coverage metric"
+```
+
+— renders **deterministically**: per-regime coverage over **every `PRODUCT` in canon** against **every codex artefact** in the `codex/` zone, rows `subject` at `task` grain, columns by `regime`, `any-active-assertion` coverage rule, proposed assertions hidden, all three summary totals shown, rows and columns ordered by `id`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user. Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
 ---
 

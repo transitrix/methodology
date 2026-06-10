@@ -121,24 +121,45 @@ The document carries the canonical envelope (`notation:` header, `spec_version:`
 
 ## 4. Fields
 
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `view.id` | yes | string | View identifier, canonical-grammar (`COMPLIANCE_IMPACT-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COMPLIANCE_IMPACT` document-level TYPE). |
-| `view.name` | yes | string | Human-readable name shown in the renderer. |
-| `view.description` | no | string | Short description of the purpose of this view (which obligations and subjects, why). |
-| `view.subjects.products` | one of `products` / `processes` (at least one) | list | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
-| `view.subjects.processes` | one of `products` / `processes` (at least one) | list | Explicit list of `PROCESS-…` IDs to display, in addition to (or instead of) the processes derived from `products`. |
-| `view.obligations.include` | one of `include` / `filter` | list | Explicit list of `REQUIREMENT-…` IDs to render, in row-order. |
-| `view.obligations.filter` | one of `include` / `filter` | object | Declarative filter — `derived_from_codex: [LAW-… \| REGULATION-… \| POLICY-… \| INTERNAL_STANDARD-…]`, `jurisdiction: …`, `regime: …`. The renderer resolves the filter against the `REQUIREMENT` catalogue at render time, following each requirement's `derived_from` to its codex source. |
-| `view.grouping.rows` | no | string | Row dimension: `obligation` (one row per `REQUIREMENT`), `stage` (one row per process stage), `task` (one row per task / flow step). Default `obligation`. |
-| `view.grouping.columns` | no | string | Column dimension: `product-stage-task` (the finest grain), `product-stage`, `product`. Default `product-stage-task`. |
-| `view.status_display.show` | no | list | Which `ASSERTION.status` values to render. Default — all five (`compliant`, `partial`, `non_compliant`, `under_review`, `n_a`). |
-| `view.status_display.treat_proposed_as` | no | string | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (default; the proposed assertion contributes nothing to the cell) or `shown-distinct` (rendered with a distinct marker so a reviewer can see the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
-| `view.empty_cells.no_obligation_label` | no | string | Label for cells where no admitted ASSERTION binds the (obligation, subject-cell) pair. Default — the canonical "No mapped obligation (current model)" string (§5). |
-| `view.order_rows_by` | no | string | Row ordering key: `id`, `name`, `regime`, `jurisdiction`. Default `id`. |
-| `view.order_columns_by` | no | string | Column ordering key: `process-order` (each process's stages and tasks in flow order, then the next process), `id`, `name`. Default `process-order`. |
+Every field carries an explicit default, so a view with only the required envelope (`view.id`, `view.name`) renders deterministically — see §4.1.
+
+| Field | Required | Type | Default | Semantics |
+|---|---|---|---|---|
+| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COMPLIANCE_IMPACT-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COMPLIANCE_IMPACT` document-level TYPE). |
+| `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
+| `view.description` | no | string | empty | Short description of the purpose of this view (which obligations and subjects, why). |
+| `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
+| `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to display, in addition to (or instead of) the processes derived from `products`. |
+| `view.obligations.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of `REQUIREMENT-…` IDs to render, in row-order. |
+| `view.obligations.filter` | no ² | object | **no filter — every `REQUIREMENT` bearing on the subjects** | Declarative filter — `derived_from_codex: [LAW-… \| REGULATION-… \| POLICY-… \| INTERNAL_STANDARD-…]`, `jurisdiction: …`, `regime: …`. The renderer resolves the filter against the `REQUIREMENT` catalogue at render time, following each requirement's `derived_from` to its codex source. |
+| `view.grouping.rows` | no | string | `obligation` | Row dimension: `obligation` (one row per `REQUIREMENT`), `stage` (one row per process stage), `task` (one row per task / flow step). |
+| `view.grouping.columns` | no | string | `product-stage-task` | Column dimension: `product-stage-task` (the finest grain), `product-stage`, `product`. |
+| `view.status_display.show` | no | list | all five (`compliant`, `partial`, `non_compliant`, `under_review`, `n_a`) | Which `ASSERTION.status` values to render. |
+| `view.status_display.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to the cell) or `shown-distinct` (rendered with a distinct marker so a reviewer can see the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
+| `view.empty_cells.no_obligation_label` | no | string | `"No mapped obligation (current model)"` (§5) | Label for cells where no admitted ASSERTION binds the (obligation, subject-cell) pair. |
+| `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `regime`, `jurisdiction`. |
+| `view.order_columns_by` | no | string | `process-order` | Column ordering key: `process-order` (each process's stages and tasks in flow order, then the next process), `id`, `name`. |
+
+¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer scopes the view to **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the view to a product family or specific processes. (This matches the shipped renderer, which auto-fills the product set from canon when `subjects.products` is empty.)
+
+² **`obligations`** — both keys are optional and only ever *narrow* the row set. Omitting them renders every `REQUIREMENT` bearing on the named subjects (the full matrix). If both `include` and `filter` are present, `include` wins and `filter` is ignored.
 
 All references in `view.subjects.*`, `view.obligations.include`, and `view.obligations.filter.derived_from_codex` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
+
+### 4.1 Zero-configuration default
+
+A view that carries only the required envelope —
+
+```yaml
+notation: compliance-impact
+spec_version: "0.1"
+methodology_version: "0.5.0"
+view:
+  id: COMPLIANCE_IMPACT-ALL-1
+  name: "Full compliance matrix"
+```
+
+— renders **deterministically**: the full obligation × subject matrix over every `PRODUCT` in canon and every `REQUIREMENT` that bears on them, grouped `obligation` × `product-stage-task`, all five statuses shown, proposed assertions hidden, rows ordered by `id`, columns in `process-order`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user as "full matrix, no filters". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
 ---
 
