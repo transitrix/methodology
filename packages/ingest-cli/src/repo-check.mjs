@@ -82,16 +82,23 @@ export async function repoCheck(orgRoot) {
 
   const placement = await checkCanonPlacement(root);
 
+  const declaredVersion = manifestText ? (readTopScalar(manifestText, 'methodology_version') || null) : null;
+  // Version-currency check (F11.2): flag when the CLI's built-in presets were built for a
+  // different methodology version than the one declared in transitrix.yaml. A mismatch means
+  // the CLI binary is stale and needs to be reinstalled after a methodology upgrade.
+  const versionMatch = !declaredVersion || declaredVersion === PRESETS_VERSION;
+
   const red_flags = [];
   if (totalInvalid > 0) red_flags.push(`${totalInvalid} artefact(s) with an id that violates the canonical grammar (IDS_AND_REFERENCES §1)`);
   if (placement.findings.length > 0) red_flags.push(`${placement.findings.length} canon element(s) outside their ELEMENT_PRIMITIVES §4 folder`);
   if (profile.unresolved) red_flags.push('coverage_profile is present but could not be resolved — coverage flags are not authoritative');
   if (!manifestText) red_flags.push('no transitrix.yaml manifest at the repo root — not a recognised adopter repo');
+  if (!versionMatch) red_flags.push(`methodology_version in transitrix.yaml (${declaredVersion}) does not match the CLI built-in presets version (${PRESETS_VERSION}) — reinstall @transitrix/ingest-cli after a methodology upgrade`);
 
   return {
     generated_by: '@transitrix/ingest-cli',
     manifest_present: Boolean(manifestText),
-    methodology_version: manifestText ? (readTopScalar(manifestText, 'methodology_version') || null) : null,
+    methodology_version: declaredVersion,
     coverage_profile: profile.display,
     ...(profile.warning ? { coverage_warning: profile.warning } : {}),
     zones,
@@ -104,7 +111,8 @@ export async function repoCheck(orgRoot) {
     },
     tooling: {
       cli_presets_version: PRESETS_VERSION,
-      ok: true,
+      methodology_version_match: versionMatch,
+      ok: versionMatch,
     },
     note: 'Data-free — aggregate counts and statuses only; no object ids, names, or contents. Safe to share externally. Read-only: repo-check never writes a zone.',
   };

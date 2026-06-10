@@ -33,6 +33,37 @@ For every release, in order:
 
 ---
 
+## Adopter upgrade procedure
+
+When an adopter repo moves from one methodology version to another, **three artefacts must move together** — specs, skill bundle, and CLI — in this order:
+
+1. **Bump `methodology_version`** in the adopter's `transitrix.yaml` to the new version string.
+2. **Run the migration recipe** (MAJOR bump only) from `migrations/<prev>-to-<this>/` in this repo:
+   ```
+   node migrations/<prev>-to-<this>/codemod.mjs <adopter-root> --dry-run   # preview
+   node migrations/<prev>-to-<this>/codemod.mjs <adopter-root>              # apply
+   node migrations/<prev>-to-<this>/validate.mjs <adopter-root>             # post-check
+   ```
+3. **Re-validate canon** to confirm the migrated artefacts are still valid:
+   ```
+   npx @transitrix/ingest-cli validate <candidates-dir>
+   ```
+4. **Reinstall `@transitrix/ingest-cli`** — the installed binary does not auto-update; it remains pinned to the version it was installed from. Re-run your install command and confirm `--version` reflects the new release:
+   ```
+   npm install -g @transitrix/ingest-cli   # or npx/local install per your project setup
+   npx @transitrix/ingest-cli --version
+   ```
+5. **Run `repo-check`** to confirm version currency:
+   ```
+   npx @transitrix/ingest-cli repo-check [org-root]
+   ```
+   A clean run shows `tooling.ok: true` and no version-mismatch red flag. If `tooling.ok: false` still appears, the installed binary is still the old version — repeat step 4.
+6. **Re-resolve the coverage profile** (if the new release changed the preset vocabulary — see `COVERAGE_PROFILES.md` §7 for what changes between versions). Fix `transitrix.yaml` if needed, then re-run `repo-check` to clear any `coverage_warning`.
+
+Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; steps 5–6 confirm the three artefacts are in sync. Skipping step 4 leaves the CLI binary stale — it will run against new artefacts with old validators and a mismatched coverage-preset vocabulary.
+
+---
+
 ## What this file does NOT cover
 
 - **Compatibility semantics** — what each bump promises adopters. See [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.
