@@ -1,0 +1,46 @@
+# Nested block diagram — where personal data lives across Acme systems. This is
+# the data-residency / erasure-scope map behind the GDPR coverage metric: the
+# cold-storage archive (bottom-right) is the known erasure gap.
+# Notation spec: notations/views/08-blocks.md. Document-local labels bear no
+# lifecycle; canonical-id blocks (APPLICATION-…) bear it on their element file.
+
+notation: blocks
+spec_version: "0.1"
+
+nested_blocks:
+  id: BLOCKS-PERSONAL-DATA-1
+  name: "Personal-data landscape"
+  description: "Systems and stores holding EU-resident personal data, grouped by erasure reachability."
+  version: "0.1"
+  date: "2026-06-10"
+  author: "Acme Compliance Office"
+
+  blocks:
+    - id: ACTIVE_SYSTEMS
+      name: "Active systems (erasure-reachable, in 30-day window)"
+      children:
+        - id: APPLICATION-OMS-1
+          name: "Order Management System"
+          children:
+            - id: OMS_ORDERS
+              name: "Active orders"
+            - id: OMS_PAYMENTS
+              name: "Payment tokens"
+        - id: APPLICATION-CRM-1
+          name: "CRM System"
+          children:
+            - id: CRM_CONTACTS
+              name: "Customer contacts"
+            - id: CRM_CONSENT
+              name: "Consent records"
+
+    - id: ARCHIVE
+      name: "Cold storage (7-year fiscal retention — KNOWN ERASURE GAP)"
+      children:
+        - id: ORDER_ARCHIVE
+          name: "Order history archive"
+          children:
+            - id: ARCHIVE_PII
+              name: "Personal data (not erasure-reachable)"
+            - id: ARCHIVE_INVOICES
+              name: "Invoices"

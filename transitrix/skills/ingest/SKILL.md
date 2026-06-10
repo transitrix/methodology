@@ -26,11 +26,13 @@ The methodology is canon at `github.com/transitrix/methodology`; this skill is t
 The deterministic work (document conversion, coverage-profile read, validator pass, artefact + candidate emission, `_intake/` moves) is done by the CLI, never reimplemented in the agent. Confirm it is available:
 
 ```
-npx @transitrix/ingest-cli --version
+transitrix-ingest --version             # primary — local install
+# or, once the package is published to npm:
+npx @transitrix/ingest-cli --version    # equivalent — same binary
 ```
 
-- **Present** → proceed.
-- **Absent** → the CLI is not installed (or not published) in this environment. Stop and tell the user; do not hand-roll the pipeline, because hand-rolled extraction has no deterministic validator gate and risks the one rule above.
+- **Present** under either name → proceed. Use whichever form resolved; both invoke the same CLI, and the rest of this protocol shows the primary form. If only the `npx` form is reachable, substitute it for `transitrix-ingest` in the commands below — the subcommands and flags are identical.
+- **Absent** under both → the CLI is not installed in this environment. Stop and tell the user; do not hand-roll the pipeline, because hand-rolled extraction has no deterministic validator gate and risks the one rule above. Pre-1.0 the package is **not yet on npm**, so the expected install path is local: clone the methodology repo and `npm install -g ./packages/ingest-cli` (which provides the `transitrix-ingest` bin); the `npx @transitrix/ingest-cli` form starts to resolve once the CLI is published from its own tooling repo at the ~1.0 extraction.
 
 Also confirm you are operating inside a Transitrix adopter repository (a `transitrix.yaml` manifest at the repo root; see [MANIFEST](https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md)). If there is no repo yet, the user wants `/transitrix:onboard` first.
 
@@ -52,7 +54,7 @@ Also confirm you are operating inside a Transitrix adopter repository (a `transi
 ```
 
 ```
-npx @transitrix/ingest-cli scaffold-intake <org-root>
+transitrix-ingest scaffold-intake <org-root>
 ```
 
 Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
@@ -64,7 +66,7 @@ Idempotent — it never overwrites existing intake content. A source file flows 
 Office documents are converted to Markdown with **MS Markitdown** before extraction (per project convention), unless illustrations must be preserved. The CLI shells out to Markitdown; `.md` / `.txt` inputs pass through unchanged.
 
 ```
-npx @transitrix/ingest-cli convert <_intake/inbox/file>   # → _intake/processing/<file>.md
+transitrix-ingest convert <_intake/inbox/file>   # → _intake/processing/<file>.md
 ```
 
 Markitdown is a Python tool (`pip install "markitdown[all]"`); install it into the environment you run the CLI from, and if you use a virtualenv, activate it first. The CLI looks for the `markitdown` console-script and **falls back to `python -m markitdown` / `python3 -m markitdown`** — so it still works inside a venv where only the interpreter is on PATH. On Windows, if `markitdown`/`npx` are blocked by the PowerShell execution policy, run `python -m markitdown` directly or `Set-ExecutionPolicy -Scope Process RemoteSigned`. If Markitdown cannot be reached at all the CLI exits with an actionable message naming the install step. Conversion is the only point of contact with Markitdown — the rest of the pipeline is pure Node and runs identically under either agent.
@@ -76,7 +78,7 @@ Markitdown is a Python tool (`pip install "markitdown[all]"`); install it into t
 Each converted document becomes one `field` artefact carrying a complete **admission record** — provenance (who / when / in what setting) and a **proposed** `source_quality`. The field artefact is what lives in `field/`; the original raw bytes stay in `_intake/processed/` so the artefact is traceable to its source.
 
 ```
-npx @transitrix/ingest-cli admit-source --zone field <processing/file.md> \
+transitrix-ingest admit-source --zone field <processing/file.md> \
     --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role "<role>" --date YYYY-MM-DD
 ```
 
@@ -95,7 +97,7 @@ The same `source_hash` deduplicates: if the identical content was already admitt
 
 The skill **proposes**; a human **confirms**. Never silently bake a higher trust than the source warrants.
 
-**Codex sources — laws, regulations, policies, standards — take the parallel `codex` route:** `npx @transitrix/ingest-cli admit-source --zone codex <processing/file.md> --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION) or `codex/internal/` (POLICY/INTERNAL_STANDARD) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`.
+**Codex sources — laws, regulations, policies, standards — take the parallel `codex` route:** `transitrix-ingest admit-source --zone codex <processing/file.md> --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION) or `codex/internal/` (POLICY/INTERNAL_STANDARD) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`.
 
 ---
 
@@ -109,7 +111,7 @@ The agent runs the per-layer extraction prompts in [`prompts/`](prompts/) over t
 - carries an **`extraction_confidence`** flag (`high | medium | low`) — see the two-axes rule below.
 
 ```
-npx @transitrix/ingest-cli emit-candidates <field/artefact.yaml>   # → _intake/processing/candidates/
+transitrix-ingest emit-candidates <field/artefact.yaml>   # → _intake/processing/candidates/
 ```
 
 Schema: [`schemas/candidate.schema.json`](schemas/candidate.schema.json).
@@ -123,6 +125,17 @@ Schema: [`schemas/candidate.schema.json`](schemas/candidate.schema.json).
 
 These are different questions with different fixes (get a better source vs. re-read the document). The schemas keep them in separate fields; collapsing them is a defect.
 
+### Tiered approval — routing by `extraction_confidence`
+
+`extraction_confidence` also drives **reviewer-authority routing** (tiered approval — [CONTRACT §6.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)). Admitted canon carries a `reviewer_authority` tier, `ai_reviewed` < `expert_confirmed`, and the tier a draft is eligible for is decided by its extraction confidence:
+
+- **High `extraction_confidence`** → the draft is eligible for tool admission to **`ai_reviewed`** — the lower canon tier, marked as reviewed by a tool (`admitted_by` = the tool id), surfaced distinctly in views and coverage. The threshold is **adopter-configured** in the manifest (`transitrix.yaml`); below it, nothing auto-admits.
+- **Medium / low `extraction_confidence`** → routed to the **expert review queue** unchanged. Tool admission is forbidden; a human admits to **`expert_confirmed`**.
+
+The hard rule is unchanged in spirit (see [the one rule](#the-one-rule-that-governs-everything)): **a tool never writes `expert_confirmed`.** It may only mark the lower tier and route the draft; the human gate keeps exclusive authority over the top tier. `ai_reviewed` is still admitted canon — it is *provisional confirmation*, not a bypass — so it must clear the same structural validators (Step 5) before admission.
+
+> **Not yet wired into the CLI.** This routing is the **defined policy**; the current `@transitrix/ingest-cli` still only *proposes* (it never auto-admits), and the manifest `extraction_confidence` threshold schema is a downstream follow-up (per the ADR's out-of-scope). Until both land, every candidate continues through the human gate (Step 6); the tier is recorded by whoever admits.
+
 ---
 
 ## Step 5 — Validate (coverage-profile aware)
@@ -130,7 +143,7 @@ These are different questions with different fixes (get a better source vs. re-r
 Every candidate is run through the canonical validators — ID grammar, TYPE registry, closed REL kinds, lifecycle fields — and the adopter's **coverage profile**.
 
 ```
-npx @transitrix/ingest-cli validate <processing/candidates/>
+transitrix-ingest validate <processing/candidates/>
 ```
 
 The CLI reads the repo's `coverage_profile` ([COVERAGE_PROFILES](https://raw.githubusercontent.com/transitrix/methodology/main/notations/COVERAGE_PROFILES.md)) and **resolves membership** before classifying each candidate: it ships the preset definitions (§3 / §3.1) and resolves all three declared forms — a **short-form preset** (`coverage_profile: core`), a **custom map** (`extends:` a preset + per-layer `add`/`remove`/`disabled` deltas, §4), and the **absent** default (`full`). A TYPE / REL kind in the resolved profile is `in_profile`; one outside it is flagged `out_of_profile` per `CP-003`. `ASSERTION` and codex artefacts are never bounded by the profile (§2.1). Out-of-profile or invalid candidates are **flagged with an actionable reason** — not silently emitted into canon, and not silently dropped. A flagged candidate is a review-queue item, not a rejection.
@@ -140,7 +153,7 @@ If a profile is **present but cannot be resolved** (unknown preset, missing `ext
 When a corpus keeps surfacing the same out-of-profile TYPE, **`suggest-profile`** turns that signal into a concrete proposal instead of a manual profile edit:
 
 ```
-npx @transitrix/ingest-cli suggest-profile <processing/candidates/>   # read-only; prints to stdout
+transitrix-ingest suggest-profile <processing/candidates/>   # read-only; prints to stdout
 ```
 
 It scans the candidates, collects the out-of-profile element TYPEs and relation kinds, and prints a paste-ready `coverage_profile` delta (`extends:` the active base + the TYPEs grouped under their layer). It **never widens the profile itself** — the profile is the guardrail; the human reviews the proposal and edits `transitrix.yaml` deliberately. TYPEs whose layer the CLI cannot derive are listed under `unplaceable` to site by hand.
@@ -150,7 +163,7 @@ It scans the candidates, collects the out-of-profile element TYPEs and relation 
 ## Step 6 — Produce the review queue
 
 ```
-npx @transitrix/ingest-cli review-queue <processing/candidates/>   # → review-queue.yaml
+transitrix-ingest review-queue <processing/candidates/>   # → review-queue.yaml
 ```
 
 The queue is the human gate. It lists every field artefact (with its proposed `source_quality`), every candidate element and relation (with `derived_from`, `extraction_confidence`, and any validation/coverage flags), and the relation *suggestions* that fell below threshold. Schema: [`schemas/review-queue.schema.json`](schemas/review-queue.schema.json).
@@ -164,9 +177,9 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 Where an admitted element lands is **not** a judgement call. Every element TYPE has a canonical **materialisation mode + layer + folder** in [`ELEMENT_PRIMITIVES.md` §4](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md); the CLI resolves it so equals are treated equally — `ACTOR`, `ROLE`, `PROCESS`, `PRODUCT`, `APPLICATION` are all `standalone` and each gets its own per-TYPE folder, never inline-by-accident.
 
 - The review queue annotates each element candidate with its resolved `placement` (`mode`, `layer`, `folder`). Admit a `standalone` element to exactly that folder, one file per element.
-- Check any TYPE on demand: `npx @transitrix/ingest-cli resolve-placement <TYPE>`.
+- Check any TYPE on demand: `transitrix-ingest resolve-placement <TYPE>`.
 - **Honour the §1 promotion rule explicitly.** A `view-defined` / `contained` TYPE (`INTEGRATION`, `STEP`, `EQUIPMENT`, `INFORMATION_ENTITY`, registry rows) stays **inline** in its host/view document and is promoted to its own catalogue file **only when a second document references it** — the id never changes on promotion. Do not pre-create a standalone file for a still-single-reference element.
-- After admitting, verify placement: `npx @transitrix/ingest-cli check-placement [org-root]` flags any admitted element sitting outside its §4 folder (and any `view-defined` TYPE wrongly given its own catalogue file). Read-only over `canon/`.
+- After admitting, verify placement: `transitrix-ingest check-placement [org-root]` flags any admitted element sitting outside its §4 folder (and any `view-defined` TYPE wrongly given its own catalogue file). Read-only over `canon/`.
 
 ---
 
@@ -174,7 +187,7 @@ Where an admitted element lands is **not** a judgement call. Every element TYPE 
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
 
-The CLI is resolved as a **published package** (installed/invoked via `npx`), not vendored per skill and not referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement`.
+The CLI is resolved as a **standalone package** — installed locally (it provides the `transitrix-ingest` bin) and, once published from its own tooling repo at the ~1.0 extraction, equivalently via `npx @transitrix/ingest-cli`. It is **not** vendored per skill and **not** referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement`.
 
 ---
 

@@ -10,6 +10,9 @@
 notation: application
 id: APPLICATION-OMS-1
 name: "Order Management System"
+aliases:                                # non-authoritative also-known-as forms (ELEMENT_PRIMITIVES §3) — exercises the ELEM-ALIAS-001 gate
+  - "OMS"
+  - "Order Mgmt System"
 type: application                       # application | integration | platform | data_store
 domain: "Operations"
 description: >

@@ -1,0 +1,71 @@
+# Activity-on-Node network (PSND) — the GDPR remediation programme schedule.
+# Notation spec: notations/views/07-activities.md. Inline activities carry
+# CONTRACT.md §7 lifecycle, distinct from the schedule fields (start_date / duration_days).
+
+notation: activities
+spec_version: "0.1"
+
+title: "GDPR Remediation Programme 2026"
+description: |
+  Critical path for closing the EU data-protection gaps surfaced by the 2026
+  gap assessment — including the cold-storage archive erasure gap that holds
+  ASSERTION-ECOMM-GDPR-ERASURE-1 in a non_compliant state.
+version: "0.1"
+date: "2026-06-10"
+author: "Acme Compliance Office"
+
+activities:
+  - id: ACTIVITY-GDPR-GAP-1
+    name: "GDPR & NIS2 gap assessment"
+    duration_days: 15
+    start_date: "2026-03-01"
+    predecessors: []
+    goals: [GOAL-EU-1]
+    owner: ROLE-DPO-1
+    valid_from: "2026-05-26"
+    valid_to: null
+
+  - id: ACTIVITY-GDPR-ERASURE-PIPELINE-1
+    name: "Extend erasure pipeline to cold-storage archive"
+    duration_days: 30
+    start_date: "2026-06-15"
+    predecessors: [ACTIVITY-GDPR-GAP-1]
+    goals: [GOAL-EU-1]
+    delivers_changes: [CHANGE-EU-CRM-1]
+    owner: ROLE-TECH-1
+    valid_from: "2026-05-26"
+    valid_to: null
+
+  - id: ACTIVITY-GDPR-DSR-WORKFLOW-1
+    name: "Stand up data-subject-request workflow"
+    duration_days: 20
+    start_date: "2026-06-15"
+    predecessors: [ACTIVITY-GDPR-GAP-1]
+    goals: [GOAL-EU-1]
+    owner: ROLE-DPO-1
+    valid_from: "2026-05-26"
+    valid_to: null
+
+  - id: ACTIVITY-GDPR-CONSENT-1
+    name: "Rework onboarding consent capture"
+    duration_days: 18
+    start_date: "2026-06-20"
+    predecessors: [ACTIVITY-GDPR-GAP-1]
+    goals: [GOAL-EU-1]
+    delivers_changes: [CHANGE-ONBOARD-1]
+    owner: ROLE-SALES-1
+    valid_from: "2026-05-26"
+    valid_to: null
+
+  - id: ACTIVITY-GDPR-AUDIT-1
+    name: "Supervisory-authority pre-audit"
+    duration_days: 5
+    start_date: "2026-08-15"
+    predecessors:
+      - ACTIVITY-GDPR-ERASURE-PIPELINE-1
+      - ACTIVITY-GDPR-DSR-WORKFLOW-1
+      - ACTIVITY-GDPR-CONSENT-1
+    goals: [GOAL-EU-1]
+    owner: ROLE-DPO-1
+    valid_from: "2026-05-26"
+    valid_to: null

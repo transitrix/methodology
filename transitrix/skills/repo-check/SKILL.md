@@ -26,18 +26,20 @@ This directory is the **`repo-check` skill** within the `transitrix` plugin (the
 The work is done by the CLI, never reimplemented in the agent:
 
 ```
-npx @transitrix/ingest-cli --version
+transitrix-ingest --version             # primary — local install
+# or, once the package is published to npm:
+npx @transitrix/ingest-cli --version    # equivalent — same binary
 ```
 
-- **Present** → proceed.
-- **Absent** → tell the user to install `@transitrix/ingest-cli`; do not hand-roll the scan.
+- **Present** under either name → proceed. Use whichever form resolved (the subcommands and flags below are identical between the two).
+- **Absent** under both → tell the user to install the CLI; do not hand-roll the scan. Pre-1.0 the package is **not yet on npm**, so the expected install path is local: clone the methodology repo and `npm install -g ./packages/ingest-cli` (which provides the `transitrix-ingest` bin); the `npx @transitrix/ingest-cli` form starts to resolve once the CLI is published from its own tooling repo at the ~1.0 extraction.
 
 ---
 
 ## Step 1 — Run the doctor
 
 ```
-npx @transitrix/ingest-cli repo-check [org-root]    # defaults to the current repo
+transitrix-ingest repo-check [org-root]    # defaults to the current repo
 ```
 
 It prints a YAML report to stdout:
@@ -56,7 +58,7 @@ It prints a YAML report to stdout:
 Summarise the `adoption_level` and any `red_flags` for the user in plain language, and point at the relevant repair command:
 
 - invalid IDs → fix the offending ids by hand (the report does not name them — by design; locate them with the validators or `git grep` locally).
-- misplaced canon elements → `npx @transitrix/ingest-cli check-placement [org-root]` lists them locally (that command **does** name ids — keep its output local, it is not the data-free report).
+- misplaced canon elements → `transitrix-ingest check-placement [org-root]` lists them locally (that command **does** name ids — keep its output local, it is not the data-free report).
 - unresolved `coverage_profile` → fix `transitrix.yaml` per `COVERAGE_PROFILES.md` (CP-001).
 - `tooling.ok: false` / version mismatch → the installed CLI binary targets a different methodology version than `transitrix.yaml` declares. Reinstall the CLI (see the adopter upgrade procedure in `RELEASING.md`) and re-run `repo-check` to confirm the flag clears.
 

@@ -1,0 +1,35 @@
+# Worked example — PROCESS element primitive (compliance / management process).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.5 + envelope §3.
+# Data-subject-request handling: the GDPR Art. 15-22 rights workflow.
+# Detailed flow lives in canon/views/bpmn/data-subject-erasure.bpmn.transitrix.yaml.
+
+notation: process
+id: PROCESS-DSR-HANDLE-1
+name: "Data Subject Request Handling"
+owner_role: ROLE-DPO-1
+maturity: 2
+bpmn_file: "canon/views/bpmn/data-subject-erasure.bpmn.transitrix.yaml"
+description: >
+  Receive, verify, and fulfil data-subject rights requests (access, erasure,
+  portability) within the GDPR statutory window. Coordinates erasure across the
+  active-order database, CRM, and the cold-storage order archive.
+
+# Participants — the lanes (ROLE-… / ACTOR-…), in rendered top-to-bottom order.
+# Lane captions derive from each referenced element's `name`. All resolve in canon.
+participants:
+  - ROLE-CS-1
+  - ROLE-DPO-1
+  - ROLE-OPS-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

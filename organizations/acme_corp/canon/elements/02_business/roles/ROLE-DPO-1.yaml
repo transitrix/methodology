@@ -1,0 +1,26 @@
+# Worked example — ROLE element primitive (Data Protection Officer).
+# Schema: notations/ELEMENT_PRIMITIVES.md §7.9 + envelope §3.
+# Accountable party for GDPR/NIS2 compliance; referenced as assessed_by on
+# ASSERTION-… records and as owner_role / actor across the compliance views.
+
+notation: role
+id: ROLE-DPO-1
+name: "Data Protection Officer"
+responsibility_area: "Compliance & Data Protection"
+description: >
+  Accountable for the organisation's GDPR and NIS2 obligations: maintains the
+  data-subject-request register, owns compliance assertions and their evidence,
+  and is the point of contact for the supervisory authority.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-05-26"
+valid_to: null

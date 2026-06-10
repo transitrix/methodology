@@ -1,0 +1,37 @@
+# Single-project narrative card for the GDPR remediation programme.
+# Notation spec: notations/views/18-activity-card.md. Binds to a project Activity
+# and adds narrative milestones; the motivation chain and child activities are
+# pulled by reference from the FGCA and Activities documents, not duplicated here.
+
+notation: activity-card
+spec_version: "0.1"
+
+activity_card:
+  id: ACTIVITY_CARD-GDPR-REMEDIATION-1
+  project: ACTIVITY-CRM-EU-1
+
+  description: >
+    Programme of work closing the EU data-protection gaps surfaced by the 2026
+    gap assessment: extending the erasure pipeline to the cold-storage archive,
+    standing up data-subject-request handling, and reworking onboarding consent.
+    Spans 2026-Q2 through 2026-Q4 and clears the supervisory-authority pre-audit.
+
+  milestones:
+    - id: MILESTONE-GDPR-ERASURE-CLOSED-1
+      name: "Cold-storage archive erasure gap closed"
+      date: "2026-09-15"
+      description: >
+        Erasure pipeline extended to the 7-year order-history archive, moving
+        ASSERTION-ECOMM-GDPR-ERASURE-1 out of non_compliant. Hard gate for the
+        pre-audit.
+      delivers_changes:
+        - CHANGE-EU-CRM-1
+
+    - id: MILESTONE-GDPR-PREAUDIT-1
+      name: "Supervisory-authority pre-audit cleared"
+      date: "2026-10-31"
+      description: >
+        Data Protection Officer presents closed gaps and the DSR workflow to the
+        supervisory authority; EU go-live proceeds under the new regime.
+      delivers_changes:
+        - CHANGE-EU-CRM-1

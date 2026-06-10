@@ -1,0 +1,51 @@
+# Scenario — EU go-live under full GDPR/NIS2 compliance. Notation spec:
+# notations/views/11-scenarios.md. The inline scenario entry carries CONTRACT.md §7
+# lifecycle; the referenced goals/capabilities/activities/products/processes/apps
+# carry theirs on their own element files.
+
+notation: scenarios
+spec_version: "0.1"
+title: "EU Go-Live 2026"
+description: "Target scenario: live in three EU markets with all compliance gaps closed."
+version: "1.0"
+date: "2026-06-10"
+
+scenario:
+  id: SCENARIO-EU-GOLIVE-1
+  name: "EU Go-Live 2026"
+  description: "Three EU markets live with GDPR/NIS2 obligations fully satisfied and the erasure-archive gap closed."
+  status: Active
+  created_at: "2026-06-10"
+  valid_from: "2026-05-26"
+  valid_to: null
+
+  vision: |
+    By Q4 2026 Acme Corp operates in three EU markets. Every data-subject request
+    is fulfilled within the statutory window across both active systems and the
+    cold-storage archive, and the supervisory-authority pre-audit is cleared.
+
+  goals:
+    - goal_id: GOAL-EU-1
+    - goal_id: GOAL-REVENUE-1
+
+  capabilities:
+    - capability_id: CAPABILITY-V1
+    - capability_id: CAPABILITY-V2
+    - capability_id: CAPABILITY-H1
+
+  activities:
+    - activity_id: ACTIVITY-CRM-EU-1
+    - activity_id: ACTIVITY-GDPR-ERASURE-PIPELINE-1
+    - activity_id: ACTIVITY-GDPR-DSR-WORKFLOW-1
+
+  products:
+    - product_id: PRODUCT-ECOMM-1
+    - product_id: PRODUCT-SUPPORT-1
+
+  processes:
+    - process_id: PROCESS-ORD-FULFILL-1
+    - process_id: PROCESS-DSR-HANDLE-1
+
+  applications:
+    - app_id: APPLICATION-OMS-1
+    - app_id: APPLICATION-CRM-1

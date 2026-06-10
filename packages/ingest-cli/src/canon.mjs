@@ -13,6 +13,13 @@
 //     Built from every canon element's `name` + `aliases[]` (Option A ADR).
 //     Used by emit-candidates to propose linking a new candidate to an existing
 //     element (propose, never auto-merge -- the human gate decides).
+//
+// Alias-uniqueness gate (ELEM-ALIAS-001, ELEMENT_PRIMITIVES §9):
+//   - collisions: [{ value, a, b }] -- a normalised name/alias that two DIFFERENT
+//     element ids both claim. Cross-catalogue check (needs the whole catalogue, not
+//     one file), so it is collected here as the nameMap is built. A value shared
+//     within a single element's own name/aliases is NOT a collision. repo-check
+//     surfaces the count (data-free) as an integrity red flag.
 
 import { readdir, readFile, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -42,19 +49,38 @@ async function walkYaml(dir) {
 function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
 
 // Build a read-only index of canon/ for one org root.
-// Returns { ids: Set, rels: Set, nameMap: Map }.
-//   ids     -- admitted element/assertion IDs (for review-queue idempotency).
-//   rels    -- admitted relation triple keys (for review-queue idempotency).
-//   nameMap -- normalised(name|alias) -> { id, matched_on: 'name'|'alias' }.
-//              Used by emit-candidates for cross-source entity-match proposals (F8).
+// Returns { ids: Set, rels: Set, nameMap: Map, collisions: [] }.
+//   ids        -- admitted element/assertion IDs (for review-queue idempotency).
+//   rels       -- admitted relation triple keys (for review-queue idempotency).
+//   nameMap    -- normalised(name|alias) -> { id, matched_on: 'name'|'alias' }.
+//                 Used by emit-candidates for cross-source entity-match proposals (F8).
+//   collisions -- [{ value, a, b }] for the ELEM-ALIAS-001 uniqueness gate (§9):
+//                 a normalised name/alias claimed by two DIFFERENT ids.
 //              An absent canon/ yields an empty index (no exclusions, no proposals) --
 //              the common case on a fresh adopter, unaffecting existing tests.
 export async function buildCanonIndex(orgRoot) {
   const ids = new Set();
   const rels = new Set();
   const nameMap = new Map();
+  const collisions = [];
   const canonDir = join(resolve(orgRoot), 'canon');
-  if (!(await exists(canonDir))) return { ids, rels, nameMap };
+  if (!(await exists(canonDir))) return { ids, rels, nameMap, collisions };
+
+  // Record one surface form for `id`. First writer wins the nameMap slot (F8 match
+  // target). ELEM-ALIAS-001 fires when a DIFFERENT id claims the same value AND an
+  // alias is on at least one side: an alias must not collide with another element's
+  // name or alias. Two different elements legitimately sharing a `name` is NOT a
+  // collision — names are unique only within a TYPE catalogue (§8), so a Stakeholder
+  // and an Actor both named "Operations" is allowed. The same id re-using a value
+  // (an alias equal to its own name) is benign and recorded once.
+  const claim = (value, id, matched_on) => {
+    const key = normName(value);
+    if (!key) return;
+    const prev = nameMap.get(key);
+    if (!prev) { nameMap.set(key, { id, matched_on }); return; }
+    if (prev.id === id) return;
+    if (matched_on === 'alias' || prev.matched_on === 'alias') collisions.push({ value, a: prev.id, b: id });
+  };
 
   for (const file of await walkYaml(canonDir)) {
     let text;
@@ -63,15 +89,10 @@ export async function buildCanonIndex(orgRoot) {
     const id = readTopScalar(text, 'id');
     if (id) {
       ids.add(id);
-      // Entity-match map (F8): index name + aliases for cross-source proposals.
-      // Only element-like files (those with both id and name) produce entries.
-      const name = readTopScalar(text, 'name');
-      const nn = normName(name);
-      if (nn && !nameMap.has(nn)) nameMap.set(nn, { id, matched_on: 'name' });
-      for (const alias of readTopList(text, 'aliases')) {
-        const na = normName(alias);
-        if (na && !nameMap.has(na)) nameMap.set(na, { id, matched_on: 'alias' });
-      }
+      // Entity-match map (F8) + alias-uniqueness gate (ELEM-ALIAS-001): index name +
+      // aliases. Only element-like files (those with both id and name) produce entries.
+      claim(readTopScalar(text, 'name'), id, 'name');
+      for (const alias of readTopList(text, 'aliases')) claim(alias, id, 'alias');
     }
 
     // A first-class relation is identified by its endpoints + kind, not its id --
@@ -81,7 +102,7 @@ export async function buildCanonIndex(orgRoot) {
     const kind = readTopScalar(text, 'type');
     if (from && to && kind) rels.add(relKey(kind, from, to));
   }
-  return { ids, rels, nameMap };
+  return { ids, rels, nameMap, collisions };
 }
 
 // Is this candidate already admitted to canon, per the index? Returns the matched
