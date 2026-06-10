@@ -69,6 +69,11 @@ export function validateCandidate(cand, profile) {
     if (!cand.name) flags.push('element is missing name');
     if (!isValidType(cand.element_type)) flags.push(`element_type is not a valid TYPE: ${cand.element_type}`);
     type = cand.element_type;
+    // BOBJ-D001 — INFORMATION_ENTITY is a deprecated alias for BUSINESS_OBJECT (ADR 2026-06-08).
+    // Warn (not error) so existing pipelines keep working during the one-release alias window.
+    if (type === 'INFORMATION_ENTITY') {
+      flags.push('BOBJ-D001 [deprecation]: INFORMATION_ENTITY is a deprecated alias; rename element_type to BUSINESS_OBJECT and update the id prefix (INFORMATION_ENTITY- → BUSINESS_OBJECT-)');
+    }
   } else if (cand.kind === 'relation') {
     if (!cand.rel_kind) flags.push('relation is missing rel_kind');
     else if (!CLOSED_REL_KINDS.has(cand.rel_kind)) flags.push(`rel_kind is not a closed REL kind (17-relations.md §3): ${cand.rel_kind}`);

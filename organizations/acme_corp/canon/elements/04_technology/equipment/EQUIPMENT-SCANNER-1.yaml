@@ -1,0 +1,12 @@
+notation: equipment
+id: EQUIPMENT-SCANNER-1
+name: "Barcode scanner"
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "example"
+gate_checks:
+  completeness: "recorded"
+valid_from: "2026-01-01"
+valid_to: null
+type: device
+description: "Handheld barcode scanner used in the warehouse — Pick & pack and Ship stages of the order-fulfilment value chain."
