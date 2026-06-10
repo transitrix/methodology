@@ -224,7 +224,7 @@ data: ["Steel 316L", "Rubber gasket B12"]
 
 The reviewer resolves each `canon/unresolved/` entry to exactly one of **promote** (admit as a real TYPE through the §6 gate), **fold** (move into a parent's `extensions:`), or **discard**.
 
-> **CLI wiring is a follow-up.** This step is the **defined protocol**; the current `@transitrix/ingest-cli` carries `extensions:` through `emit-candidates` (the candidate schema accepts it) but does **not yet** auto-emit `canon/unresolved/` files — surfacing untyped objects from extraction and writing the holding-area files is the next increment (the extraction prompts and `emit-candidates` gain an `unresolved` channel, with its own fixture test). Until it lands, an untyped object is recorded as an `extraction_notes` flag on the nearest candidate / in the review queue, and the reviewer creates the `canon/unresolved/` entry by hand per the shape above.
+> **Wired in the CLI.** `emit-candidates` does both mechanically from the extraction result: it carries each element's `extensions:` onto its candidate (verbatim, `EXT-001`), and it shapes the result's `unresolved[]` items into `canon/unresolved/UNRES-NNN.yaml` holding files (the §13.2 fields; non-admitted — no admission record). An item missing `ingest_field` / `data` is dropped with a warning, never emitted malformed. `validate` flags `EXT-002` (an `extensions:` key shadowing a defined field); `repo-check` reports the holding count and flags malformed entries (`UNRES-001..003`); and every typed canon walker (`buildCanonIndex`, `check-placement`, `repo-check`'s typed tally) skips `canon/unresolved/` so an untyped entry is never counted as a typed element (`UNRES-004`).
 
 ---
 

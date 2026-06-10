@@ -34,6 +34,16 @@ const CLOSED_REL_KINDS = new Set([
 const ASSERTION_STATUS = new Set(['compliant', 'partial', 'non_compliant', 'under_review', 'n_a']);
 const ASSERTION_SUBJECT_TYPES = new Set(['PRODUCT', 'PROCESS', 'CAPABILITY']);
 
+// Fields the candidate / entity shape already defines — a key under `extensions:` that
+// collides with one of these is probably a defined field relocated into the open bag to
+// dodge a rule (EXT-002, CONTRACT §12.1). `extensions:` is for SCHEMA-UNDEFINED fields.
+const DEFINED_FIELDS = new Set([
+  'kind', 'id', 'name', 'element_type', 'type', 'aliases',
+  'rel_kind', 'from', 'to', 'about', 'subject', 'status', 'realised_via', 'evidence',
+  'derived_from', 'admitted_to', 'extraction_confidence', 'extraction_notes',
+  'valid_from', 'valid_to', 'entity_match', 'coverage_flag', 'validation_flags', 'extensions',
+]);
+
 function typeOf(id) { return typeof id === 'string' ? id.split('-')[0] : null; }
 
 // Validate one candidate against `profile`. Returns
@@ -61,6 +71,21 @@ export function validateCandidate(cand, profile) {
   // Two-axes separation: source trust lives on the FIELD artefact, never on a candidate.
   if ('source_quality' in cand) {
     flags.push('source_quality must not appear on a candidate — it belongs on the field artefact (CONTRACT §11)');
+  }
+
+  // Extensions (CONTRACT §12): an open key-value bag for SCHEMA-UNDEFINED source fields.
+  // Pass-through (EXT-001) — its keys are never schema-validated. Two guards only: it
+  // must be a map, and a key must not shadow a defined field (EXT-002, warning).
+  if ('extensions' in cand) {
+    if (typeof cand.extensions !== 'object' || cand.extensions === null || Array.isArray(cand.extensions)) {
+      flags.push('extensions must be a map — an open key-value bag (CONTRACT §12.1)');
+    } else {
+      for (const k of Object.keys(cand.extensions)) {
+        if (DEFINED_FIELDS.has(k)) {
+          flags.push(`EXT-002 [warning]: extensions key "${k}" collides with a defined field — put it in its defined place, not the open bag (CONTRACT §12.1)`);
+        }
+      }
+    }
   }
 
   let type = null;

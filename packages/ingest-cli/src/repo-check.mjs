@@ -17,6 +17,7 @@ import { readTopScalar } from './yaml.mjs';
 import { readCoverageProfile } from './coverage.mjs';
 import { checkCanonPlacement } from './placement.mjs';
 import { buildCanonIndex } from './canon.mjs';
+import { isUnresolvedPath, checkUnresolved } from './unresolved.mjs';
 import { isValidId } from './ids.mjs';
 import { PRESETS_VERSION } from './coverage-presets.mjs';
 
@@ -43,6 +44,9 @@ async function tallyZone(orgRoot, zone) {
   const tally = { files: 0, with_id: 0, invalid_ids: 0, types: {} };
   if (!(await exists(dir))) return { present: false, ...tally };
   for (const file of await walkYaml(dir)) {
+    // §13: canon/unresolved/ is a NON-admitted holding area, not typed canon — keep it
+    // out of the typed tally / adoption count (UNRES-004). It is reported separately.
+    if (isUnresolvedPath(file)) continue;
     tally.files++;
     let text;
     try { text = await readFile(file, 'utf8'); } catch { continue; }
@@ -86,7 +90,13 @@ export async function repoCheck(orgRoot) {
   // ELEM-ALIAS-001 (ELEMENT_PRIMITIVES §9) — a name/alias claimed by two different
   // elements makes F8 entity resolution ambiguous. Count only (data-free); the colliding
   // values themselves are org content and never emitted in this report.
-  const aliasCollisions = (await buildCanonIndex(root)).collisions.length;
+  const canonIndex = await buildCanonIndex(root);
+  const aliasCollisions = canonIndex.collisions.length;
+
+  // §13 holding area — count entries and flag malformed ones (UNRES-001..003). Data-free:
+  // aggregate counts only, never a filename, id, or payload.
+  const unresolved = await checkUnresolved(root, canonIndex.ids);
+  const unresolvedMalformed = unresolved['UNRES-001'] + unresolved['UNRES-002'] + unresolved['UNRES-003'];
 
   const declaredVersion = manifestText ? (readTopScalar(manifestText, 'methodology_version') || null) : null;
   // Version-currency check (F11.2): flag when the CLI's built-in presets were built for a
@@ -98,6 +108,7 @@ export async function repoCheck(orgRoot) {
   if (totalInvalid > 0) red_flags.push(`${totalInvalid} artefact(s) with an id that violates the canonical grammar (IDS_AND_REFERENCES §1)`);
   if (placement.findings.length > 0) red_flags.push(`${placement.findings.length} canon element(s) outside their ELEMENT_PRIMITIVES §4 folder`);
   if (aliasCollisions > 0) red_flags.push(`${aliasCollisions} name/alias collision(s) across canon (ELEM-ALIAS-001) — a surface form is claimed by two elements, making entity resolution ambiguous`);
+  if (unresolvedMalformed > 0) red_flags.push(`${unresolvedMalformed} malformed canon/unresolved/ holding entr(y/ies) (CONTRACT §13 — UNRES-001 missing field / UNRES-002 typed id should move / UNRES-003 dangling related_to)`);
   if (profile.unresolved) red_flags.push('coverage_profile is present but could not be resolved — coverage flags are not authoritative');
   if (!manifestText) red_flags.push('no transitrix.yaml manifest at the repo root — not a recognised adopter repo');
   if (!versionMatch) red_flags.push(`methodology_version in transitrix.yaml (${declaredVersion}) does not match the CLI built-in presets version (${PRESETS_VERSION}) — reinstall @transitrix/ingest-cli after a methodology upgrade`);
@@ -115,6 +126,8 @@ export async function repoCheck(orgRoot) {
       misplaced_canon_elements: placement.findings.length,
       canon_elements_scanned: placement.scanned,
       alias_collisions: aliasCollisions,
+      unresolved_holding: unresolved.count,
+      unresolved_malformed: unresolvedMalformed,
       red_flags,
     },
     tooling: {

@@ -69,6 +69,7 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 | **Skeleton** ✓ landed | `SKILL.md`, JSON schemas, `_intake/` convention, plugin wiring. |
 | **CLI** ✓ landed | `@transitrix/ingest-cli` — the deterministic subcommands (`scaffold-intake`, `convert`, `admit-source`/`field-artefact`/`codex-artefact`, `emit-candidates`, `validate`, `review-queue`) + the forked extraction prompts in `prompts/`. |
 | **Tests + CI** ✓ landed | A no-API-key integrity test (bundle + dry CLI run on a fixture) and a weekly LLM-drive, plus a workflow — mirroring the onboarding skill's test harness. |
+| **Zero information loss** ✓ landed | `extensions:` carry-through + `canon/unresolved/` emission (CONTRACT §12/§13). `emit-candidates` carries `extensions:` onto candidates and parks untyped objects in `canon/unresolved/`; `validate` enforces `EXT-002`; `repo-check` reports the holding count; typed canon walkers skip the holding area (`UNRES-004`). Covered by Part O of the integrity test. |
 
 ---
 
