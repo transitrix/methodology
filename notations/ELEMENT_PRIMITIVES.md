@@ -430,13 +430,35 @@ Already shipped (worked example `RULE-DUAL-APPROVAL-1`).
 
 Already shipped (worked example `CONSTRAINT-GDPR-RESIDENCY-1`). Same field set as `RULE` (§7.12) — `statement`, `applies_to`, `source`, `owner_role`, `severity`, `rationale` — distinguished from `RULE` by layer (motivation vs business) and from `REQUIREMENT` by the form of the obligation ([elements/15-requirement.md](elements/15-requirement.md) §1: CONSTRAINT = restriction, REQUIREMENT = positive obligation).
 
-### 7.14 View-defined TYPEs (no standalone schema in v1)
+### 7.14 `EQUIPMENT` — `04_technology/equipment/`
 
-`EQUIPMENT`, `INFORMATION_ENTITY` have no standalone element-file schema. Their per-element fields are owned by their view spec: [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3. Each inline entry carries its own `valid_from` / `valid_to` per [CONTRACT.md](CONTRACT.md) §7.1.
+Physical instrument, device, or facility a process stage depends on (ArchiMate Physical element). Promoted from Process Blueprint view-defined to first-class standalone in the `04_technology` layer (ADR 2026-06-08; first catalogued TYPE for this layer).
 
-`SCENARIO` was view-defined in v0.x and is now standalone — its per-element schema is §7.18; the scenarios view ([views/11-scenarios.md](views/11-scenarios.md)) is a report-configuration surface over the `SCENARIO` catalogue, not a content home.
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `type` | no | string | Physical sub-kind: `device` \| `vehicle` \| `instrument` \| `facility` \| `infrastructure`. Open enum — extend as needed. |
+| `description` | recommended | string | What the equipment is and how it is used. |
+| `owner_role` | no | string | `ROLE-…` responsible for the equipment. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9), not inline. |
 
-### 7.15 `STAKEHOLDER` — `01_motivation/stakeholders/`
+An `equipment[]` entry in a Process Blueprint that carries an `id` resolves to the matching `EQUIPMENT` catalogue record ([views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3); a free-form entry without an `id` stays document-local (backward-compatible). EQUIPMENT IDs must conform to the canonical grammar with no leading zeros (`EQUIPMENT-…-<INTEGER>`).
+
+### 7.15 `BUSINESS_OBJECT` — `02_business/business-objects/`
+
+Passive information element at the business value-chain grain — an ArchiMate **Business Object** (a concept used within a business domain). Replaces `INFORMATION_ENTITY` (promoted from view-defined, renamed for ArchiMate alignment; ADR 2026-06-08).
+
+**Scope note.** `BUSINESS_OBJECT` covers the business-layer concept ("customer order", "customs declaration", "invoice"). An application-layer data structure is a Data Object; a document's perceptible form is a Representation. Both are out-of-scope for this TYPE at the blueprint grain.
+
+**Deprecated alias.** `INFORMATION_ENTITY` is accepted as an alias for one release (validator emits `BOBJ-D001` warning); it will be removed in the following release. Migrate: rename `element_type: INFORMATION_ENTITY` → `BUSINESS_OBJECT`, rename ID prefix `INFORMATION_ENTITY-` → `BUSINESS_OBJECT-`, rename the blueprint array field `information_entities[]` → `business_objects[]`.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `type` | no | string | Information sub-kind: `record` \| `document` \| `concept` \| `data_artifact`. Open enum — extend as needed. |
+| `description` | recommended | string | What business information this represents. |
+| `owner_role` | no | string | `ROLE-…` responsible for maintaining it. **Time-varying** — sidecar, not inline. |
+
+A `business_objects[]` entry in a Process Blueprint that carries an `id` resolves to the matching `BUSINESS_OBJECT` catalogue record; a free-form entry stays document-local. BUSINESS_OBJECT IDs use the prefix `BUSINESS_OBJECT-`.
+
+### 7.16 `STAKEHOLDER` — `01_motivation/stakeholders/`
 
 Motivation-layer interest primitive — the stake profile, with identity referenced from an `ACTOR`. Full spec: [elements/20-stakeholders.md](elements/20-stakeholders.md).
 
@@ -451,7 +473,7 @@ Motivation-layer interest primitive — the stake profile, with identity referen
 
 Stake in a specific `GOAL` / `ACTIVITY` / `CAPABILITY` is a `stakeholding` relation ([elements/17-relations.md](elements/17-relations.md) §3), not an inline field.
 
-### 7.16 `ASSESSMENT` — `01_motivation/assessments/`
+### 7.17 `ASSESSMENT` — `01_motivation/assessments/`
 
 Motivation-layer **finding** primitive — a dated finding/judgement about the state of a `FACTOR` (driver). **ArchiMate mapping: Assessment**, assessing a **Driver** (the `FACTOR` it references). An assessment is a *found fact* ("support response time 8h, degrading"), not a recommendation; it justifies its own element by **temporality** — one driver accrues many assessments over time, each separately dated and lifecycled.
 
@@ -467,7 +489,7 @@ Motivation-layer **finding** primitive — a dated finding/judgement about the s
 
 No view inline shape: `ASSESSMENT` is standalone-only — it is not authored inline inside any view document.
 
-### 7.17 `TARGET_STATE` — `05_implementation/target-states/`
+### 7.18 `TARGET_STATE` — `05_implementation/target-states/`
 
 Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target state is the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more `GOAL`s are met. It is what an architect *varies* when offering the customer solution options — making it a first-class addressable element, not an inline fragment of a goal or a scenario. The path from today's state to a target state is a `SCENARIO`; the goals a target state satisfies are carried as a separate `REL` kind (`target_state_satisfies_goal`, [elements/17-relations.md](elements/17-relations.md) §3), never inline here.
 
@@ -481,13 +503,13 @@ Implementation-layer end-state primitive — an ArchiMate **Plateau**. A target 
 
 - **Composition lists are inline.** The target state *is* its composition; the lists name the structural primitives present in the state, not relationships that vary independently. They are timeless on the element file — the element's own `valid_from` / `valid_to` (§3 envelope) carry the lifecycle of the state as a whole.
 - **Goal satisfaction is a `REL`, not an inline field.** The `TARGET_STATE → GOAL` satisfaction relation is M:N and lives as a first-class time-aware `REL` kind — `target_state_satisfies_goal` ([elements/17-relations.md](elements/17-relations.md) §3, with optional `degree: partial | full`). Do not add a `goals:` field to this element. A view that needs the goals a given target state satisfies reads `canon/relations/` for REL files with `type: target_state_satisfies_goal` and `from: TARGET_STATE-…`; the reverse lookup (target states that reach a given goal) matches on `to: GOAL-…`.
-- **Scenarios point at target states, not the other way around.** A `SCENARIO` is a *path* — the change sequence that reaches a target state. The `arrives_at` reference lives on the scenario (§7.18); this element carries no `scenarios:` back-reference. A view that needs "which scenarios reach this target state?" scans the `SCENARIO` catalogue for entries whose `arrives_at` equals this `TARGET_STATE-…`.
+- **Scenarios point at target states, not the other way around.** A `SCENARIO` is a *path* — the change sequence that reaches a target state. The `arrives_at` reference lives on the scenario (§7.19); this element carries no `scenarios:` back-reference. A view that needs "which scenarios reach this target state?" scans the `SCENARIO` catalogue for entries whose `arrives_at` equals this `TARGET_STATE-…`.
 
 No subtype vocabulary on `type`. (`base` / `intermediate` / `final` is one classification an organisation might use; v1 leaves it open.) The composition lists are the only required content for a target state to be useful — name + composition is enough to render it as a structural snapshot.
 
 There is no dedicated view spec in v1 — a target state is a *content element*, rendered as part of a Scenarios view (a path landing on it) and referenced as a composition fragment from any structural view that wants to scope itself to one state.
 
-### 7.18 `SCENARIO` — `05_implementation/scenarios/`
+### 7.19 `SCENARIO` — `05_implementation/scenarios/`
 
 Implementation-layer **path** primitive — the ordered set of steps (`ACTIVITY` / `CHANGE` — Work Packages + Gaps) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s. ArchiMate framing: *Course of Action* realised by Work Packages and Gaps (§6.1). A scenario is *the path*, not the destination; the destination (`TARGET_STATE`, §7.17) and the intent (`GOAL`) are separate elements that the scenario references. Multiple scenarios may reach the same target state (alternative paths), and one scenario reaches exactly one target state.
 
@@ -507,7 +529,7 @@ Implementation-layer **path** primitive — the ordered set of steps (`ACTIVITY`
 
 No subtype vocabulary on `type`. There is no dedicated view spec in v1 — a scenario is a *content element*. The scenarios view ([views/11-scenarios.md](views/11-scenarios.md)) renders the catalogue (ordering, filtering, comparison side-by-side); it is a report-configuration surface over the `SCENARIO` elements, not a content home.
 
-### 7.19 `REGISTRY` — `02_business/registries/`
+### 7.20 `REGISTRY` — `02_business/registries/`
 
 Business-layer **operating-configuration** primitive — a curated, **org-authored** list the organisation maintains to drive an operating activity. It is model content (a real, authoritative thing the organisation keeps), but it is neither intent nor an externally-given constraint: it is the configuration the org authors to decide *how it operates*. The placement rationale (why not motivation / codex / Field / `RULE` / the team `operations/` folder) is in §4.1. There is no clean ArchiMate concept for it; it is a methodology operating-configuration primitive on the business layer.
 
@@ -550,7 +572,7 @@ REGISTRY-<…>.runstate.yaml   # per-row operating state — machine-written, NO
 
 Inline shape: no view spec in v1 — a registry is a content element, authored directly as the element file. A render-able "what are we watching / what changed" view is a separate report-configuration concern (out of scope here).
 
-### 7.20 `STEP` — `02_business/steps/` (promoted; contained-in-`PROCESS` in v1)
+### 7.21 `STEP` — `02_business/steps/` (promoted; contained-in-`PROCESS` in v1)
 
 A process-flow **step** — a single node (task / event / gateway) in a `PROCESS` element's `flow.steps[]` (§7.5). A step's **definition home is the `PROCESS` element**, where it is authored inline and is canonical **by containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). This subsection defines the **standalone element-file shape** a step takes **when promoted**, so promotion is mechanical, not a redesign (§4.1).
 
@@ -597,7 +619,10 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `ELEM-001` | error | `id` is missing or does not match the canonical grammar for the file's TYPE ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1/§2), or a required envelope field (§3: `notation`, `name`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `ELEM-002` | error | The element's `type` (subtype) value is outside the controlled vocabulary §7 defines for its TYPE, or a required `type` (PRODUCT, APPLICATION) is missing. |
 | `ELEM-003` | error | A `standalone` element file's folder placement does not match its TYPE's mandated `canon/elements/<NN>_<layer>/<plural-type>/` (§4, §6), or a present `layer:` field disagrees with the folder. |
-| `ELEM-004` | error | A `view-defined` TYPE (`EQUIPMENT`, `INFORMATION_ENTITY`) appears as a standalone file under `canon/elements/`. In v1 these have no standalone element-file schema (§4). |
+| `ELEM-004` | error | Reserved / retired — `EQUIPMENT` and `INFORMATION_ENTITY` are no longer view-defined (ADR 2026-06-08). Use `EQUIP-001` / `BOBJ-001` for placement checks on these TYPEs. |
+| `EQUIP-001` | error | An `EQUIPMENT` element file is not located under its mandated `canon/elements/04_technology/equipment/` folder (§4). |
+| `BOBJ-001` | error | A `BUSINESS_OBJECT` element file is not located under its mandated `canon/elements/02_business/business-objects/` folder (§4). |
+| `BOBJ-D001` | warning | An element candidate carries `element_type: INFORMATION_ENTITY` or an `INFORMATION_ENTITY-…` id prefix — the deprecated alias for `BUSINESS_OBJECT`. The validator flags it and continues; hard error in the following release. Rename `element_type` to `BUSINESS_OBJECT`, update the id prefix, and rename `information_entities[]` → `business_objects[]` in blueprints. |
 | `ELEM-005` | warning | A `standalone` element carries inline a field declared `time_varying` (§7) or a cross-reference of a kind declared first-class time-aware ([elements/17](elements/17-relations.md)) — it belongs in the sidecar (`VERSIONED-004`) or a `REL-…` file (`REL-004`) respectively. Surfaced here for discoverability; the authoritative codes are `VERSIONED-004` / `REL-004`. |
 
 ---

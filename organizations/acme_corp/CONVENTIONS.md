@@ -32,7 +32,9 @@ Use exactly these prefixes; the abbreviated forms `ACT`, `CHG`, `FAC`, `CAP`, `S
 | `CHANGE` | business transformation (BDN change layer) | `05_implementation/changes/` |
 | `ACTIVITY` | initiative / workstream | `05_implementation/activities/` |
 
-`SCENARIO`, `ISSUE`, `EQUIPMENT`, `INFORMATION_ENTITY` are **view-defined** (live inside their view document, not as standalone element files) — see [`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §4.
+`SCENARIO`, `ISSUE` are **view-defined** (live inside their view document, not as standalone element files) — see [`ELEMENT_PRIMITIVES.md`](../../notations/ELEMENT_PRIMITIVES.md) §4.
+
+`EQUIPMENT` is catalogued at `canon/elements/04_technology/equipment/`; `BUSINESS_OBJECT` (replaces `INFORMATION_ENTITY`, deprecated alias for one release) is catalogued at `canon/elements/02_business/business-objects/` — both are first-class standalone elements as of ADR 2026-06-08.
 
 **Document-level types** — the view file's own ID; the TYPE names the notation
 

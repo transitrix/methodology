@@ -50,9 +50,13 @@ export const PLACEMENT = {
   ACTIVITY:           { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/activities/' },
   TARGET_STATE:       { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/target-states/' },
   SCENARIO:           { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/scenarios/' },
-  // view-defined, document-local (no own catalogue folder in v1)
-  EQUIPMENT:          { mode: 'view-defined', layer: null,               folder: null, promotable: true },
-  INFORMATION_ENTITY: { mode: 'view-defined', layer: null,               folder: null, promotable: true },
+  // 04_technology — first catalogued TYPE in this layer (ADR 2026-06-08)
+  EQUIPMENT:          { mode: 'standalone',   layer: '04_technology',    folder: '04_technology/equipment/' },
+  // 02_business (ADR 2026-06-08 — replaces INFORMATION_ENTITY)
+  BUSINESS_OBJECT:    { mode: 'standalone',   layer: '02_business',      folder: '02_business/business-objects/' },
+  // Deprecated alias — one release only; resolved to BUSINESS_OBJECT placement.
+  // BOBJ-D001 warning is emitted at emit-candidates and validate when this alias is encountered.
+  INFORMATION_ENTITY: { mode: 'standalone',   layer: '02_business',      folder: '02_business/business-objects/', deprecated: true, replacedBy: 'BUSINESS_OBJECT' },
 };
 
 // TYPE prefix of an id (the segment before the first '-'). Capability V/H addresses

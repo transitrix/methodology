@@ -1,0 +1,12 @@
+notation: business_object
+id: BUSINESS_OBJECT-CUST-ORDER-1
+name: "Customer order"
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "example"
+gate_checks:
+  completeness: "recorded"
+valid_from: "2026-01-01"
+valid_to: null
+type: record
+description: "A customer-placed order record produced at the Receive order stage and consumed through Pick & pack and Ship."
