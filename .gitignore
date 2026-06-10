@@ -6,13 +6,18 @@
 # ARCHIVE FOLDERS (never commit to remote)
 # ============================================================================
 
-# Archive folders across entire project tree
-0.archive/
-**/0.archive/
+# Archive folders across entire project tree (all name + case variants)
+# Match anywhere in the tree, and ignore the entire folder contents.
 **/.archive/
-./0.archive/
-0. archive/
+**/0.archive/
 **/0. archive/
+**/0. Archive/
+**/0.Archive/
+.archive/
+0.archive/
+0. archive/
+0. Archive/
+0.Archive/
 
 # ============================================================================
 # AGENT RULES FILES (configuration, not for version control)
