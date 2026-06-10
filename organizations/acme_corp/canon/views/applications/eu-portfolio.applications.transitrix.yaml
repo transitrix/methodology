@@ -1,0 +1,47 @@
+# Applications catalogue — systems supporting the EU portfolio, with the OMS → CRM
+# integration that propagates erasure events. Notation spec: notations/views/10-applications.md.
+# Each inline entry carries CONTRACT.md §7 lifecycle; nested integrations share the parent's.
+
+notation: applications
+spec_version: "0.1"
+
+applications_catalogue:
+  id: APPLICATIONS_CAT-EU-1
+  name: "Acme Corp — EU Applications Portfolio"
+  description: "Applications and integrations in operation for the EU portfolio."
+  version: "1.0"
+  updated_at: "2026-06-10"
+
+  applications:
+    - app_id: APPLICATION-OMS-1
+      name: "Order Management System"
+      type: "application"
+      domain: "Operations"
+      owner_role: ROLE-TECH-1
+      vendor: "Internal"
+      status: "Active"
+      maturity: 3
+      description: "Core system for order lifecycle management; holds active-order personal data."
+      capabilities: ["CAPABILITY-V1"]
+      products: ["PRODUCT-ECOMM-1"]
+      integrations:
+        - target: "APPLICATION-CRM-1"
+          direction: "outbound"
+          protocol: "REST"
+          description: "Propagates order and erasure events to CRM"
+      valid_from: "2026-05-26"
+      valid_to: null
+
+    - app_id: APPLICATION-CRM-1
+      name: "CRM System"
+      type: "application"
+      domain: "Sales"
+      owner_role: ROLE-SALES-1
+      vendor: "Salesforce"
+      status: "Active"
+      maturity: 2
+      description: "Customer relationship and consent management; holds contact and consent personal data."
+      capabilities: ["CAPABILITY-V2"]
+      products: ["PRODUCT-ECOMM-1"]
+      valid_from: "2026-05-26"
+      valid_to: null

@@ -1,0 +1,78 @@
+# Value-chain blueprint for order fulfilment — defines the STAGE-1..STAGE-5 that
+# ASSERTION-ECOMM-GDPR-ERASURE-1 references via `realised_via`. Notation spec:
+# notations/views/13-process-blueprint.md. stages/systems/actors are document-local;
+# business_objects[] carry CONTRACT.md §7 lifecycle.
+
+notation: process-blueprint
+spec_version: "0.1"
+
+process_blueprint:
+  id: PROCESS_BLUEPRINT-FULFIL-1
+  name: "Order fulfilment — operational blueprint"
+  description: |
+    End-to-end order fulfilment value chain. Personal data is captured at
+    STAGE-1, read at STAGE-3, and transmitted to the carrier at STAGE-4 — the
+    three stages a GDPR erasure request must reach (see
+    ASSERTION-ECOMM-GDPR-ERASURE-1).
+  period: "2026"
+  version: "0.1"
+  date: "2026-06-10"
+  author: "Acme Compliance Office"
+  process: PROCESS-ORD-FULFILL-1
+
+  stages:
+    - id: STAGE-1
+      name: "Receive order"
+      goal: "Capture a validated customer order with consent recorded."
+      result: "Validated order in OMS with personal data captured and consent logged."
+    - id: STAGE-2
+      name: "Allocate inventory"
+      goal: "Reserve stock to satisfy the order."
+      result: "Reservation lines linked to the order."
+    - id: STAGE-3
+      name: "Pick & pack"
+      goal: "Assemble the physical order; personal data read from CRM for labelling."
+      result: "Packed shipment scanned out and ready for carrier handover."
+    - id: STAGE-4
+      name: "Ship"
+      goal: "Hand the shipment to the carrier; personal data transmitted on the label."
+      result: "In-transit shipment with tracking number sent to the customer."
+    - id: STAGE-5
+      name: "Confirm delivery & close"
+      goal: "Confirm delivery, settle payment, and archive the order."
+      result: "Closed order; record written to the 7-year cold-storage archive."
+
+  systems:
+    - id: APPLICATION-OMS-1
+      name: "Order Management System"
+      stages: [STAGE-1, STAGE-2, STAGE-3, STAGE-4, STAGE-5]
+    - id: APPLICATION-CRM-1
+      name: "CRM System"
+      stages: [STAGE-1, STAGE-3]
+
+  actors:
+    - id: ROLE-CS-1
+      name: "Customer Support Lead"
+      stages: [STAGE-1, STAGE-5]
+    - id: ROLE-OPS-1
+      name: "Operations Lead"
+      stages: [STAGE-2, STAGE-3, STAGE-4]
+    - id: ROLE-DPO-1
+      name: "Data Protection Officer"
+      stages: [STAGE-1, STAGE-5]
+
+  business_objects:
+    - id: BUSINESS_OBJECT-CUST-ORDER-1
+      name: "Customer order"
+      stages: [STAGE-1, STAGE-2, STAGE-3, STAGE-4, STAGE-5]
+      valid_from: "2026-05-26"
+      valid_to: null
+    - name: "Personal data record"
+      description: "EU-resident personal data; subject to GDPR erasure across STAGE-1, STAGE-3, STAGE-4."
+      stages: [STAGE-1, STAGE-3, STAGE-4]
+      valid_from: "2026-05-26"
+      valid_to: null
+    - name: "Consent record"
+      stages: [STAGE-1]
+      valid_from: "2026-05-26"
+      valid_to: null

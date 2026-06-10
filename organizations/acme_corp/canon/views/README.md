@@ -20,6 +20,9 @@ See [`method/methodology.md` §6](../../../method/methodology.md) for the full n
 | [`applications/`](applications/) | Applications view | `*.applications.transitrix.yaml` | Filtered views over Application elements |
 | [`scenarios/`](scenarios/) | Scenarios | `*.scenarios.transitrix.yaml` | Alternative strategic development paths |
 | [`process-blueprint/`](process-blueprint/) | Process Blueprint | `*.process-blueprint.transitrix.yaml` | Wide value-chain blueprint with stage aspects |
+| [`activity-card/`](activity-card/) | Activity card | `*.activity-card.transitrix.yaml` | Single-project narrative card with milestones |
+| [`compliance-impact/`](compliance-impact/) | Compliance impact | `*.compliance-impact.transitrix.yaml` | Obligation × subject matrix with status |
+| [`coverage-metric/`](coverage-metric/) | Coverage metric | `*.coverage-metric.transitrix.yaml` | Assertion-coverage breakdown per regime |
 | [`issues/`](issues/) | Issues register | `*.issues.transitrix.yaml` | Issue register with parent/child nesting |
 
 ## Naming

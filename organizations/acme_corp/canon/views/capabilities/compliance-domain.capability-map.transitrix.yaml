@@ -1,0 +1,74 @@
+# Capability map — core domains plus the cross-cutting Compliance & Data
+# Protection capability, with CMMI maturity overlay. Notation spec:
+# notations/views/05-capability-map.md. Every inline capability (recursively)
+# carries `type` and CONTRACT.md §7 lifecycle.
+
+notation: capability-map
+spec_version: "0.1"
+title: "Acme Corp — Capability Map with Compliance Overlay"
+description: "Core business capabilities and the cross-cutting compliance capability, with current and target CMMI maturity."
+version: "1.0"
+date: "2026-06-10"
+
+capability_map:
+  id: CAPABILITY_MAP-COMPLIANCE-1
+  name: "Compliance-Domain Capability Map"
+  description: "Business capabilities with current and target maturity, highlighting the data-protection gap."
+  assessment_date: "2026-06-10"
+
+  capabilities:
+    - id: CAPABILITY-V1
+      name: "Order Management"
+      type: domain
+      current_maturity: 2
+      target_maturity: 3
+      target_date: "2026-12-31"
+      owner_role: ROLE-OPS-1
+      business_process: PROCESS-ORD-FULFILL-1
+      applications:
+        - APPLICATION-OMS-1
+        - APPLICATION-CRM-1
+      valid_from: "2026-05-26"
+      valid_to: null
+      children:
+        - id: CAPABILITY-V1.1
+          name: "Order Intake"
+          type: domain
+          current_maturity: 3
+          target_maturity: 3
+          valid_from: "2026-05-26"
+          valid_to: null
+        - id: CAPABILITY-V1.2
+          name: "Order Fulfilment"
+          type: domain
+          current_maturity: 2
+          target_maturity: 3
+          target_date: "2026-09-30"
+          valid_from: "2026-05-26"
+          valid_to: null
+
+    - id: CAPABILITY-V2
+      name: "Customer Relationship Management"
+      type: domain
+      current_maturity: 2
+      target_maturity: 3
+      owner_role: ROLE-SALES-1
+      applications:
+        - APPLICATION-CRM-1
+      valid_from: "2026-05-26"
+      valid_to: null
+
+    - id: CAPABILITY-H1
+      name: "Compliance & Data Protection"
+      type: supporting
+      description: >
+        Cross-cutting capability covering GDPR/NIS2 obligations: data-subject
+        rights, breach reporting, and data residency. Lowest current maturity —
+        the focus of the 2026 remediation programme.
+      current_maturity: 1
+      target_maturity: 3
+      target_date: "2026-12-31"
+      owner_role: ROLE-DPO-1
+      business_process: PROCESS-DSR-HANDLE-1
+      valid_from: "2026-05-26"
+      valid_to: null
