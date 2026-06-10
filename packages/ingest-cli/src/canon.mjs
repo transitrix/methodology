@@ -24,6 +24,7 @@
 import { readdir, readFile, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { readTopScalar, readTopList } from './yaml.mjs';
+import { isUnresolvedPath } from './unresolved.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -83,6 +84,7 @@ export async function buildCanonIndex(orgRoot) {
   };
 
   for (const file of await walkYaml(canonDir)) {
+    if (isUnresolvedPath(file)) continue; // §13: holding area is NOT typed canon (UNRES-004)
     let text;
     try { text = await readFile(file, 'utf8'); } catch { continue; }
 

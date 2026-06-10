@@ -99,6 +99,9 @@ export async function checkCanonPlacement(orgRoot) {
   if (!(await exists(canonDir))) return { scanned, findings };
 
   for (const file of await walkYaml(canonDir)) {
+    // §13: the canon/unresolved/ holding area is NOT typed canon — skip it (UNRES-004).
+    // Inlined (not imported from unresolved.mjs) to avoid a placement <-> unresolved cycle.
+    if (file.replace(/\\/g, '/').includes('/canon/unresolved/')) continue;
     let text;
     try { text = await readFile(file, 'utf8'); } catch { continue; }
     // id is the basename without extension, or the top-level `id:` scalar.

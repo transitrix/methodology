@@ -15,11 +15,18 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
   "elements": [
     { "id": "GOAL-RET-1", "name": "Improve retention", "element_type": "GOAL",
       "extraction_confidence": "high", "extraction_notes": "explicit ask by the accountable owner",
-      "valid_from": "2026-01-01" }
+      "valid_from": "2026-01-01" },
+    { "id": "PRODUCT-WIDGET-1", "name": "Widget Pro", "element_type": "PRODUCT",
+      "extraction_confidence": "high",
+      "extensions": { "materials": ["Steel 316L"], "source_table": "product_equipment_matrix" } }
   ],
   "relations": [
     { "rel_kind": "stakeholding", "from": "STAKEHOLDER-CFO-1", "to": "GOAL-RET-1",
       "extraction_confidence": "high", "extraction_notes": "..." }
+  ],
+  "unresolved": [
+    { "ingest_field": "materials", "related_to": ["PRODUCT-WIDGET-1"],
+      "data": ["Steel 316L", "Rubber gasket B12"] }
   ]
 }
 ```
@@ -30,6 +37,7 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
 - **Entity-strong, relation-conservative.** Extract entities readily. For relations, only mark `extraction_confidence: high` when the source states the relation plainly; otherwise mark `medium`/`low` and let the pipeline hold it back as a *suggestion* (the CLI only promotes `high` relations to candidates).
 - **Canonical IDs.** Every element carries an ID per `<TYPE>-[<middle>-]<INTEGER>` ([IDS §1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md)); relations reference element IDs in `from`/`to`. Never invent a TYPE or a relation kind — use the registries.
 - **Propose, never admit.** The agent reads the field artefact body only (not its admission record), extracts, and stops. Admission to canon is a separate human gate; the CLI writes candidates as `admitted_to: pending`.
+- **Zero information loss — never drop, never guess (CONTRACT §12 / §13).** A source field that maps to no schema field of a *known* entity goes in that element's optional **`extensions:`** map (an open key-value bag, carried verbatim to the admitted entity). A *standalone object whose TYPE you cannot determine* — not merely an extra field on a known entity — goes in the top-level **`unresolved[]`** array, each item `{ ingest_field, data, related_to? }`; the CLI parks it in `canon/unresolved/` for a human to resolve. Never invent a TYPE to make an object fit, and never silently discard data — when in doubt between an `extensions:` key and an `unresolved[]` object, prefer `unresolved[]`.
 
 ## See also
 

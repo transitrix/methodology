@@ -1044,6 +1044,102 @@ def part_n_entity_resolution():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part O — extensions carry-through + canon/unresolved/ emission (strategy#197/#198) ──
+
+def part_o_unresolved_extensions():
+    if not shutil.which("node"):
+        print("SKIP Part O: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-unres-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.6.0"\ncoverage_profile: full\n')
+
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        fid = "INTERVIEW-eq-20260101-1"
+        with open(os.path.join(fdir, fid + ".yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "%s"\nname: "x"\ntype: "INTERVIEW"\nzone: "field"\nadmitted_at: "2026-06-01"\nnotes: "x"\n' % fid)
+
+        res = os.path.join(work, "res.json")
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({
+                "elements": [
+                    {"id": "PRODUCT-WIDGET-1", "name": "Widget Pro", "element_type": "PRODUCT",
+                     "extraction_confidence": "high",
+                     "extensions": {"materials": ["Steel 316L", "Rubber gasket B12"],
+                                    "source_table": "product_equipment_matrix"}}
+                ],
+                "relations": [],
+                "unresolved": [
+                    {"ingest_field": "materials", "related_to": ["PRODUCT-WIDGET-1"],
+                     "data": ["Steel 316L", "Rubber gasket B12"]},
+                    {"ingest_field": "mystery_column", "data": "an object of unknown type"},
+                    {"data": "missing ingest_field — must be dropped"},
+                ],
+            }, fh)
+
+        r = run_cli("emit-candidates", os.path.join(fdir, fid + ".yaml"), "--from", res, "--ingest-date", "2026-06-10")
+        check(r.returncode == 0, "Part O: emit-candidates failed: %s" % r.stderr.strip())
+
+        # Mechanism 1 (CONTRACT §12): extensions ride onto the candidate verbatim.
+        cand = os.path.join(org, "_intake", "processing", "candidates", "PRODUCT-WIDGET-1.json")
+        if check(os.path.isfile(cand), "Part O: PRODUCT candidate not emitted"):
+            c = json.load(open(cand, encoding="utf-8"))
+            check(isinstance(c.get("extensions"), dict) and c["extensions"].get("materials"),
+                  "Part O: extensions not carried onto the candidate")
+        # validate must pass an extended candidate clean (EXT-001 pass-through).
+        r = run_cli("validate", os.path.join(org, "_intake", "processing", "candidates"))
+        check(r.returncode == 0,
+              "Part O: validate flagged an extended candidate (EXT-001 broken): %s" % (r.stdout + r.stderr))
+
+        # Mechanism 2 (CONTRACT §13): two well-formed untyped objects are parked in
+        # canon/unresolved/; the third (missing ingest_field) is dropped, not emitted.
+        udir = os.path.join(org, "canon", "unresolved")
+        ufiles = sorted(f for f in os.listdir(udir)) if os.path.isdir(udir) else []
+        check(ufiles == ["UNRES-001.yaml", "UNRES-002.yaml"],
+              "Part O: expected UNRES-001/002 in canon/unresolved/, got %r" % ufiles)
+        if ufiles:
+            u = yaml.safe_load(open(os.path.join(udir, "UNRES-001.yaml"), encoding="utf-8"))
+            for key in ("ingest_status", "ingest_source", "ingest_field", "ingest_date", "data"):
+                check(key in u, "Part O: UNRES-001 missing required field %s" % key)
+            check(u.get("ingest_status") == "unresolved", "Part O: ingest_status must be 'unresolved'")
+            check("admitted_by" not in u and "gate_checks" not in u,
+                  "Part O: an emitted holding entry must be NON-admitted (no admission record)")
+
+        # THE ONE RULE: emit must not write ADMITTED canon — only the holding area.
+        check(not os.path.isdir(os.path.join(org, "canon", "elements")),
+              "Part O: emit-candidates created canon/elements/ — must never write admitted canon")
+        check(not os.path.isdir(os.path.join(org, "canon", "views")),
+              "Part O: emit-candidates created canon/views/ — must never write admitted canon")
+
+        # UNRES-004: typed canon walkers must SKIP the holding area.
+        r = run_cli("check-placement", org)
+        check("0 catalogue element(s) scanned" in (r.stdout + r.stderr),
+              "Part O: check-placement counted an unresolved entry as a typed element (UNRES-004)")
+        r = run_cli("repo-check", org)
+        rc = yaml.safe_load(r.stdout)
+        check(rc["zones"]["canon"]["files"] == 0,
+              "Part O: repo-check counted unresolved entries in the typed canon tally (UNRES-004): %r" % rc["zones"]["canon"])
+        check(rc["integrity"]["unresolved_holding"] == 2,
+              "Part O: repo-check did not report 2 unresolved holding entries: %r" % rc["integrity"].get("unresolved_holding"))
+
+        # EXT-002: an extensions key shadowing a defined field is flagged (routes to review).
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        with open(os.path.join(cdir, "EXT-COLLIDE.json"), "w", encoding="utf-8") as fh:
+            json.dump({"kind": "element", "id": "PRODUCT-Y-1", "name": "Y", "element_type": "PRODUCT",
+                       "derived_from": [fid], "admitted_to": "pending", "extraction_confidence": "high",
+                       "extensions": {"name": "shadow"}}, fh)
+        r = run_cli("validate", cdir)
+        check(r.returncode == 1 and "EXT-002" in (r.stdout + r.stderr),
+              "Part O: validate did not flag EXT-002 for an extensions key shadowing a defined field")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1058,6 +1154,7 @@ part_k_suggest_profile()
 part_l_repo_check()
 part_m_id_grammar()
 part_n_entity_resolution()
+part_o_unresolved_extensions()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

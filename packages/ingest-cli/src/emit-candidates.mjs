@@ -22,6 +22,7 @@ import { join, resolve } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
 import { isValidId } from './ids.mjs';
 import { buildCanonIndex } from './canon.mjs';
+import { shapeUnresolved, writeUnresolved } from './unresolved.mjs';
 
 // Normalise a name/alias string for case-insensitive entity-match lookup (F8).
 function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
@@ -51,6 +52,11 @@ export function shapeCandidates(derivedFrom, result) {
     if (el.extraction_notes) c.extraction_notes = el.extraction_notes;
     if (el.valid_from !== undefined) c.valid_from = el.valid_from;
     if (el.valid_to !== undefined) c.valid_to = el.valid_to;
+    // Mechanism 1 (CONTRACT §12): source fields the schema does not define ride along
+    // in an open `extensions:` bag, candidate -> admitted entity, verbatim. Carried only
+    // when it is a non-empty map; the validator passes it through untouched (EXT-001).
+    if (el.extensions && typeof el.extensions === 'object' && !Array.isArray(el.extensions)
+        && Object.keys(el.extensions).length) c.extensions = el.extensions;
     candidates.push(c);
   }
 
@@ -150,7 +156,7 @@ export function mergeCandidates(existing, fresh) {
   return merged;
 }
 
-export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, candidatesDir }) {
+export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, candidatesDir, ingestDate }) {
   const fieldText = await readFile(fieldArtefactPath, 'utf8');
   const derivedFrom = readTopScalar(fieldText, 'id');
   if (!derivedFrom) throw new Error(`could not read the field artefact id from ${fieldArtefactPath}`);
@@ -196,7 +202,19 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   const suggPath = join(resolve(orgRoot), '_intake', 'processing', 'relation-suggestions.json');
   await writeFile(suggPath, JSON.stringify(suggestions, null, 2) + '\n', 'utf8');
 
-  return { derivedFrom, dir, candidates, suggestions, suggPath, warnings };
+  // Mechanism 2 (CONTRACT §13): standalone objects ingestion could not TYPE are parked,
+  // non-admitted, in the shared canon/unresolved/ holding area — never dropped, never
+  // guessed. The CLI emits `proposed`-untyped records (no admission record); a human
+  // resolves each (promote / fold / discard). This is the only path that writes under
+  // canon/, and it writes NON-admitted holding entries only — THE ONE RULE holds.
+  const { records, skipped } = shapeUnresolved(result.unresolved, {
+    ingestSource: derivedFrom,
+    ingestDate: ingestDate || readTopScalar(fieldText, 'admitted_at') || null,
+  });
+  const unresolved = await writeUnresolved(orgRoot, records);
+
+  return { derivedFrom, dir, candidates, suggestions, suggPath, warnings,
+           unresolved: { ...unresolved, skipped: skipped.length } };
 }
 
 export { REL_THRESHOLD };

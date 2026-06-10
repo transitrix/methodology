@@ -4,7 +4,10 @@
 // the logic, so behaviour is identical under Claude and GitHub Copilot.
 //
 // THE ONE RULE: this CLI proposes. It writes field artefacts, candidates, and a
-// review queue into _intake/ and field/. It NEVER writes into canon/.
+// review queue into _intake/ and field/, and it never writes *admitted* canon. The
+// one path that writes under canon/ is the §13 holding area `canon/unresolved/`:
+// emit-candidates parks objects it could not TYPE there as NON-admitted records (no
+// admission record), which a human later resolves. Admitted canon stays human-gated.
 //
 // Exit codes:  0 = ok  ·  1 = usage / findings that need review  ·  2 = error
 //
@@ -284,10 +287,17 @@ async function cmdEmitCandidates(args) {
       orgRoot, fieldArtefactPath,
       resultPath: resolve(flags.from),
       candidatesDir: flags['candidates-dir'] ? resolve(flags['candidates-dir']) : undefined,
+      ingestDate: flags['ingest-date'] || today(),
     });
     console.log(`emit-candidates  derived_from ${res.derivedFrom}`);
     console.log(`  ${res.candidates.length} candidate(s) -> ${res.dir}`);
     console.log(`  ${res.suggestions.length} relation suggestion(s) held back (relation-conservative) -> ${res.suggPath}`);
+    if (res.unresolved && res.unresolved.written.length) {
+      console.log(`  ${res.unresolved.written.length} untyped object(s) parked (non-admitted) -> ${res.unresolved.dir}`);
+    }
+    if (res.unresolved && res.unresolved.skipped) {
+      console.error(`  WARNING: ${res.unresolved.skipped} unresolved item(s) dropped — missing required ingest_field / data (CONTRACT §13.2)`);
+    }
     for (const w of res.warnings || []) console.error(`  WARNING: ${w}`);
     console.log('  candidates are pending — nothing admitted to canon.');
     return 0;
