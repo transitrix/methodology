@@ -38,9 +38,9 @@ All heavy logic — Markitdown conversion, coverage-profile read, validator pass
 
 Python in this repo is used **only in the onboarding skill's tests**, not in shipped deterministic logic. Markitdown stays a shell-out from one subcommand; the rest of the pipeline is pure Node and behaves identically under either agent.
 
-### CLI resolution — a published package
+### CLI resolution — a standalone package
 
-The CLI is resolved as a **published package** (installed / invoked via `npx`), not vendored per skill and not referenced by a repo-relative sibling path. A sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/ingest/` install; a published package is the single versioned source for both skills and both agents.
+The CLI is resolved as a **standalone package** — not vendored per skill and not referenced by a repo-relative sibling path. A sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/ingest/` install; a standalone package is the single versioned source for both skills and both agents. Pre-1.0 the install is local (`npm install -g ./packages/ingest-cli` → `transitrix-ingest`); once the package ships from its own tooling repo at the ~1.0 extraction, `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli <command>`) becomes the equivalent shorthand. Both forms invoke the same binary.
 
 ---
 
