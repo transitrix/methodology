@@ -1,8 +1,8 @@
 ---
 notation: "Process Blueprint"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-21"
+last_updated: "2026-06-10"
 status: "draft"
 file_extension: "*.process-blueprint.transitrix.yaml"
 dsm_status: "not implemented — render module planned in Transitrix Studio (sibling task)"
@@ -41,12 +41,13 @@ The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are d
 
 A **process blueprint** answers the question: **for each stage of a value chain, what does it take to operate that stage?**
 
-The blueprint is a single, wide diagram. The horizontal axis is the value chain — stages laid out left-to-right in their operating order. The vertical structure inside each stage is its supporting context, grouped into four aspect categories:
+The blueprint is a single, wide diagram. The horizontal axis is the value chain — stages laid out left-to-right in their operating order. The vertical structure inside each stage is its supporting context, grouped into aspect lanes:
 
 - **Systems** — applications and platforms used in the stage.
 - **Actors** — roles and people who carry out the stage.
 - **Equipment** — physical instruments, devices, or facilities the stage depends on.
 - **Information entities** — the data, documents, and records produced or consumed.
+- **Compliance** *(opt-in, derived)* — the regulatory obligations that bind each stage, computed from the assertion + requirement + codex graph. No compliance data is stored in the blueprint; the lane is a read-only projection. See §5.4.
 
 Each stage also carries an explicit **goal** (what the stage should achieve) and a **result** (the deliverable that exits the stage).
 
@@ -163,8 +164,9 @@ A complete example: [`examples/process-blueprint/order-fulfilment.process-bluepr
 | `process_blueprint.actors` | no | array of actor entries — see §5.3 |
 | `process_blueprint.equipment` | no | array of equipment entries — see §5.3 |
 | `process_blueprint.information_entities` | no | array of information-entity entries — see §5.3 |
+| `lane_config` | no | optional rendering-config block controlling which lanes are visible — see §5.4 |
 
-The four aspect arrays are each optional individually; a blueprint MAY omit any aspect that does not apply (a fully digital process may have no `equipment:`, for example). At least one aspect array SHOULD be present — a blueprint with stages but no aspects renders as an empty grid and provides no operational context.
+The four authored aspect arrays are each optional individually; a blueprint MAY omit any aspect that does not apply (a fully digital process may have no `equipment:`, for example). At least one aspect array SHOULD be present — a blueprint with stages but no aspects renders as an empty grid and provides no operational context. The compliance lane (§5.4) is a fifth, opt-in, derived lane; it requires no authored array.
 
 ### 5.2 `stages[]`
 
@@ -204,6 +206,72 @@ For every aspect category, an entry with an `id` MUST use the TYPE prefix listed
 
 `EQUIPMENT` and `INFORMATION_ENTITY` were registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for these element TYPEs in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
 
+### 5.4 Compliance lane
+
+The compliance lane is an **optional, derived lane** of the Process Blueprint. When enabled via `lane_config.compliance: true`, the renderer computes — for each stage — which regulatory obligations bind that stage and what compliance status each carries. **No compliance data is written into the blueprint canon**; the lane is a read-only projection of the assertion + requirement + codex graph.
+
+Decision record: [`docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md`](../../docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md).
+
+#### Derivation formula
+
+For each stage the compliance lane is computed as follows:
+
+1. Collect every `ASSERTION` whose `realised_via` resolves to the stage (or a `STEP` within that stage's corresponding process).
+2. Lift each `ASSERTION` to its `REQUIREMENT` via `ASSERTION.about`.
+3. Lift each `REQUIREMENT` to its source law / regulation via `REQUIREMENT.derived_from` → codex artefact.
+4. Group the impacting law IDs under the stage.
+
+The lane therefore shows **which laws bear on each stage**, derived entirely from existing canon. Jurisdiction filtering (via `REQUIREMENT.derived_from` → codex `jurisdiction` field) narrows the lane to one or more regimes.
+
+#### Cell decoration — three orthogonal signals
+
+Each law chip in a cell carries up to three stacking decorations, each computed independently:
+
+| Signal | Source in canon | Decoration |
+|---|---|---|
+| **New** | The law's impact on this stage appeared since the previous generated snapshot of this report | Dashed border |
+| **Known gap** | `ASSERTION.status` is `non_compliant` or `partial` | Gap fill / status colour |
+| **Gap with deadline** | Known gap **and** `REQUIREMENT.deadline` is approaching or past (`past_due` / `in_force` / `upcoming`) | Urgent badge |
+
+The three decorations are **orthogonal and stack** — a law chip may simultaneously be *new*, a *gap*, and approaching a *deadline*.
+
+Notes:
+- **Deadline source.** The deadline is the external regulatory date on `REQUIREMENT.deadline`, not an internal `ASSERTION` remediation target; an internal remediation date is a separate, optional overlay.
+- **"New" baseline.** "New since last snapshot" is well-defined because the report is a versioned, deterministically re-rendered view-config; the previous generated snapshot serves as its reference.
+- **Temporal obligation status** (`past_due` / `in_force` / `upcoming`) is derived from `REQUIREMENT.deadline` and the report date; it is not stored on the element.
+
+#### Drill-down on demand
+
+A compliance cell expands on request to show the underlying `ASSERTION`s (status, evidence links) and their `REQUIREMENT` / codex source. The full audit chain (down to verbatim source segments and snapshots) is noted as a backlog surface and is not specced here.
+
+#### Config layering
+
+Two kinds of configuration are kept strictly separate:
+
+| Kind | Covers | Lives in | Shared? |
+|---|---|---|---|
+| **Report definition** | Scope, jurisdiction filter, obligation / stage selection, pinned lane-set | Versioned view-config (report-skill mechanism) | Yes — shared, versioned, reproducible |
+| **Display preferences** | Which lanes a person toggles on; decoration preferences | Per-user local files in a `.gitkeep`-tracked, `.gitignore`d-contents folder | No — local, never committed |
+
+The report definition is audit-relevant: it makes a compliance blueprint reproducible and diffable, and it is what makes the "new since last snapshot" signal well-defined. A named report may pin its lane-set in the report definition. Display preferences are individual ergonomics; they stay local and are never committed.
+
+#### `lane_config:` field
+
+An optional `lane_config:` block in the blueprint document (or view-config) selects which lanes render:
+
+```yaml
+lane_config:
+  systems: true             # default: true
+  actors: true              # default: true
+  equipment: true           # default: true
+  information_entities: true  # default: true
+  compliance: false         # default: false — opt-in
+  compliance_filter:
+    jurisdictions: []       # [] = all; list of codex jurisdiction codes to narrow the lane
+```
+
+`compliance: false` is the default — the compliance lane is opt-in and does not render unless explicitly enabled. `compliance_filter.jurisdictions` accepts codex jurisdiction codes (`REQUIREMENT.derived_from` → codex `jurisdiction` field); an empty list means all jurisdictions. A display-preference toggle (local, never committed) may override `compliance:` for a specific user without touching the shared report definition.
+
 ---
 
 ## 6. Validation rules
@@ -236,12 +304,17 @@ A renderer that consumes this notation MUST:
 - Render each aspect entry inside every stage's matching aspect sub-box whenever that stage's ID appears in the entry's `stages: [...]` list. An entry that spans `N` consecutive stages MAY render as a single horizontal pill that visually spans those stages; an entry that spans non-consecutive stages MUST render as one separate label per listed stage.
 - Show each aspect entry's `name` as the visible label. When `id` is present, the renderer SHOULD expose it on hover or in a secondary detail line.
 - Surface validation errors and warnings inline.
+- When `lane_config.compliance: true`, render a **compliance lane** row aligned with the other aspect rows. For each stage cell, display the law IDs derived by the formula in §5.4. Apply the three orthogonal decorations: dashed border for *new*, gap fill for *known gap*, urgent badge for *gap with deadline* — derived from canon, not authored in the document.
+- When `lane_config.compliance: true`, support **cell expansion on demand**: an expanded compliance cell shows the underlying `ASSERTION`s (status, evidence) and their `REQUIREMENT` / codex.
+- Honour `lane_config.compliance_filter.jurisdictions` when set, restricting the compliance lane to the listed jurisdiction codes.
+- Apply `lane_config` defaults as specified in §5.4 when the field is absent.
 
 A renderer SHOULD:
 
 - Use the brand styling shared with the Goals notation (typography, colour ramp, container chrome) so a blueprint and a goals tree look like the same family.
 - Support a zoom / overview control for wide blueprints; very large value chains MAY require horizontal scrolling.
 - Allow collapsing individual aspect rows to focus on a subset (e.g. systems-only view).
+- Read per-user display preferences (lane toggle overrides) from the local settings folder and apply them without modifying the shared report definition.
 
 A renderer MAY:
 
@@ -259,7 +332,7 @@ What the renderer MUST NOT do:
 
 - The horizontal axis is **operational order**, not strict procedural sequence. A blueprint is not a flowchart; for procedural detail of any one stage, link to a BPMN file via the organisation's process catalogue.
 - A blueprint corresponds to **one value chain at a time**. Multiple unrelated value chains belong in separate blueprint files.
-- Aspect categories are **fixed at four** (`systems`, `actors`, `equipment`, `information_entities`) in v0.1. Additional categories require a notation revision.
+- **Authored aspect categories** are `systems`, `actors`, `equipment`, and `information_entities`. The **compliance lane** (§5.4) is a fifth, opt-in, derived lane that carries no authored data. Additional authored categories require a notation revision.
 - An aspect entry's `stages: [...]` is the only link between aspects and stages — stages do not list their aspects directly. This keeps the M:N relation single-sided and avoids the consistency burden of double-sided cross-references.
 
 ---
@@ -273,4 +346,6 @@ What the renderer MUST NOT do:
 - Process landscape map (catalogue of all processes): [`06-process-map.md`](06-process-map.md)
 - Applications catalogue (source for `systems[].id`): [`10-applications.md`](10-applications.md)
 - Nested blocks (uses the same diagram engine): [`08-blocks.md`](08-blocks.md)
+- Compliance impact view (flat obligation matrix; compliance lane is the blueprint-shaped realisation): [`21-compliance-impact.md`](21-compliance-impact.md)
+- ADR — compliance lane decision: [`docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md`](../../docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md)
 - Methodology: `method/methodology.md`
