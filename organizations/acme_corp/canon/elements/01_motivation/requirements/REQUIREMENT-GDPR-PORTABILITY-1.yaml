@@ -1,0 +1,25 @@
+# Requirement — GDPR data portability. Schema: notations/ELEMENT_PRIMITIVES.md §7.2.
+
+notation: requirement
+id: REQUIREMENT-GDPR-PORTABILITY-1
+name: "Data portability — machine-readable export on request (GDPR Art. 20)"
+description: >
+  The data subject has the right to receive their personal data in a structured,
+  commonly used, machine-readable format and to transmit it to another
+  controller without hindrance.
+severity: medium
+derived_from:
+  - LAW-GDPR-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null

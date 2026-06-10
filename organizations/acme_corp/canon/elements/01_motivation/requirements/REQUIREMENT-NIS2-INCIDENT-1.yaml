@@ -1,0 +1,26 @@
+# Requirement — NIS2 incident notification. Schema: notations/ELEMENT_PRIMITIVES.md §7.2.
+
+notation: requirement
+id: REQUIREMENT-NIS2-INCIDENT-1
+name: "Significant incident notification within 24 h (NIS2 Art. 23)"
+description: >
+  Entities in scope must notify the competent authority of any significant
+  cybersecurity incident within 24 hours of becoming aware of it, with a
+  follow-up report within 72 hours.
+severity: high
+derived_from:
+  - LAW-NIS2-1
+deadline: "2026-09-01"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2023-01-16"
+valid_to: null

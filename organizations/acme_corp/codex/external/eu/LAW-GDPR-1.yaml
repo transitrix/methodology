@@ -1,0 +1,29 @@
+# Codex entry — EU law. Schema: notations/CONTRACT.md §6 + notations/elements/14-codex.md.
+
+notation: codex
+id: LAW-GDPR-1
+name: "General Data Protection Regulation (EU) 2016/679"
+type: REGULATION
+description: >
+  EU regulation on data protection and privacy for individuals within the EU
+  and the European Economic Area. Sets out requirements for obtaining consent,
+  handling personal data, responding to data-subject rights requests, and
+  notifying supervisory authorities of breaches.
+jurisdiction: eu
+effective_date: "2018-05-25"
+source_url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679"
+monitoring_needed: true
+scan_frequency: quarterly
+
+# Admission record (CONTRACT.md §6)
+zone: codex
+admitted_at: "2026-06-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2018-05-25"
+valid_to: null
