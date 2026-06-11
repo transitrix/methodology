@@ -8,19 +8,34 @@ It builds on **ArchiMate 3.2**, **BPMN 2.0**, and the **Capability Maturity Mode
 
 **License:** MIT.
 
+## Quick start
+
+The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned repo and walks you through your first model file. In a Claude Code session:
+
+```
+/plugin marketplace add transitrix/methodology
+/plugin install transitrix@transitrix-methodology
+/transitrix:onboard
+```
+
+The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation. Your **first artefact is a Goals tree** — the simplest notation to start from.
+
+Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`organizations/acme_corp/GETTING_STARTED.md`](organizations/acme_corp/GETTING_STARTED.md)** — same first artefact, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>`.
+
+New to the ideas behind it? Read **[`method/methodology.md`](method/methodology.md)** for the *why* — but you don't need it to start.
+
 ## Documentation
 
-Start here:
-
-- **[`method/methodology.md`](method/methodology.md)** — the methodology overview. Read this first for the model and principles.
+- **[`method/methodology.md`](method/methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`glossary.md`](glossary.md)** — standardised terminology.
-- **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — navigation guide.
+- **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — full navigation guide.
 
 Tooling:
 
 - **[`integration/studio.md`](integration/studio.md)** — how to use Transitrix Studio (the reference VS Code extension and CLI for editing all Transitrix custom formats).
 - **[`integration/tooling.md`](integration/tooling.md)** — broader tooling and ecosystem notes.
+- **[`integration/ci-example.yaml`](integration/ci-example.yaml)** — CI template that gates pull requests on validation.
 
 Per-organisation:
 
@@ -28,10 +43,6 @@ Per-organisation:
 - `organizations/<org>/GETTING_STARTED.md` — onboarding.
 - `organizations/<org>/CONVENTIONS.md` — local naming overrides.
 - `organizations/<org>/.templates/EXAMPLES.md` — worked examples.
-
-CI:
-
-- **[`integration/ci-example.yaml`](integration/ci-example.yaml)** — CI template for the validators.
 
 ## Repository structure
 
@@ -42,28 +53,6 @@ The repository has three buckets:
 - **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
 
 For the full file map, see [`PROJECT_INDEX.md`](PROJECT_INDEX.md) — the single canonical navigation guide.
-
-## Quick start — for a new organisation
-
-```bash
-# 1. Bootstrap from the worked example
-cp -r organizations/acme_corp organizations/your_company
-
-# 2. Adapt local naming conventions
-$EDITOR organizations/your_company/CONVENTIONS.md
-
-# 3. Create your first element from a template
-cp organizations/your_company/.templates/elements/03_application_template.yaml \
-   organizations/your_company/canon/elements/03_application/MY_SERVICE.yaml
-$EDITOR organizations/your_company/canon/elements/03_application/MY_SERVICE.yaml
-
-# 4. Validate
-python3 organizations/your_company/.validators/lint.py
-
-# 5. Commit and open a pull request
-git add organizations/your_company/
-git commit -m "docs(arch): add MY_SERVICE for your_company"
-```
 
 ## How it works in five lines
 
@@ -81,7 +70,7 @@ See **[`notations/README.md`](notations/README.md)** for the canonical index of 
 
 ## Validation in one paragraph
 
-Every change runs through five rule categories: syntax (valid YAML, schema-conformant), atomicity (no relations inside element files), referential integrity (every relation endpoint exists), ArchiMate semantics (layer-respecting connections), and policy (Active status requires an owner; deprecated elements reference successors). The linter is a single Python script — `python3 .validators/lint.py`. CI gates pull requests on it.
+Every change runs through five rule categories: syntax (valid YAML, schema-conformant), atomicity (no relations inside element files), referential integrity (every relation endpoint exists), ArchiMate semantics (layer-respecting connections), and policy (Active status requires an owner; deprecated elements reference successors). Adopters validate with **Transitrix Studio** (inline, on save) or the CLI — `npx @transitrix/cli validate <file>` — and gate pull requests on it in CI. *(This methodology repository lints its own example corpus with an internal script, `.validators/lint.py`; adopter repositories use the CLI above.)*
 
 ## Use cases
 
@@ -103,4 +92,4 @@ Transitrix — including the FGCA / FGA notations that form part of it — is au
 ---
 
 **Methodology status:** pre-1.0 — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
-**Last updated:** 2026-06-05
+**Last updated:** 2026-06-11
