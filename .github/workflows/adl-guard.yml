@@ -1,0 +1,33 @@
+name: ADL guard
+
+# Mechanical invariants for Architecture Decision Log records under
+# **/operations/decisions/ADR-NNNN-*.md: front-matter validity, accepted-record
+# immutability, the author:agent ratification gate, and filename/id agreement.
+# Implementation: scripts/check-adl.mjs. Spec: method/architecture-decision-log.md.
+#
+# fetch-depth: 0 so the immutability check (A2) and agent gate (A3) can diff a
+# record against its state on the base branch.
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:00 UTC — weekly safety net for direct-to-main drift.
+    - cron: '0 9 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run ADL guard
+        run: node scripts/check-adl.mjs --base origin/${{ github.base_ref || 'main' }}
