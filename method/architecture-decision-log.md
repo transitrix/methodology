@@ -48,14 +48,14 @@ id: ADR-0001
 title: "Pin @acme/object-catalog to 2.3.0 for service-x"
 status: accepted              # proposed | accepted | superseded
 date: "2026-06-11"
-author: agent                 # human-architect | agent   (NEW — provenance)
-source: "Architecture Review Board 2026-06-09"   # OPTIONAL, recommended (NEW — origin forum)
+author: agent                 # human-architect | agent   (optional; absent = human-architect)
+source: "Architecture Review Board 2026-06-09"   # OPTIONAL, recommended (origin forum)
 relates_to: []                # optional — model entity IDs
 superseded_by: null
 ---
 ```
 
-- **`author`** (required) — *who authored the record.* `human-architect` or `agent`. This drives the gate (§6): an `author: agent` record is **not** in force until a human ratifies it. `human-architect` records follow the team's normal sign-off.
+- **`author`** (optional; absent = `human-architect`) — *who authored the record.* `human-architect` or `agent`; only agent authorship must be declared. This drives the gate (§6): an `author: agent` record is **not** in force until a human ratifies it. A `human-architect` (or unlabelled, legacy) record follows the team's normal sign-off.
 - **`source`** (optional, recommended) — *the forum the decision came from*: an architecture review board (a native TOGAF governance body), a design review, a named meeting, or `ad-hoc`. Optional, because the methodology does not dictate an adopter's decision process; recommended, because it preserves the context TOGAF's Decision Log exists to retain. `author` and `source` are independent axes — a board decision (`source`) can be entered into the log by an agent (`author`).
 
 ## 4. Cross-repo identity
@@ -103,7 +103,7 @@ The harvest runs on a schedule (cron / CI in the central repo) and on demand. It
 
 | `author` | In force when | Who confirms |
 |---|---|---|
-| `human-architect` | the team's normal sign-off accepts it (`status: accepted`) | the team's reviewer |
+| `human-architect` (or unset) | the team's normal sign-off accepts it (`status: accepted`) | the team's reviewer |
 | `agent` | a human ratifies it — only then may `status` become `accepted` | a human reviewer named in the PR |
 
 An agent may author a record and open it as `status: proposed`. It may **not** self-promote to `accepted`. Ratification is a human flipping `proposed → accepted` in a reviewed change. This is the mechanism that lets an agent do consequential work (e.g. record "bumped catalog pin to 2.3.0") while a human remains the gate — the worst an unattended agent can do is leave a *proposed* record for review.
@@ -124,7 +124,7 @@ Two reasons this matters more here than in a single repo: the harvested index is
 
 A dependency-free doc-lint, companion to `check-notations.mjs`, run in CI on every PR that touches decision records. Checks:
 
-- **A1 — front-matter validity.** Required keys present (`id`, `title`, `status`, `date`, `author`); `status` ∈ {proposed, accepted, superseded}; `author` ∈ {human-architect, agent}; `date` is ISO; a `superseded` record names a `superseded_by`.
+- **A1 — front-matter validity.** Required keys present (`id`, `title`, `status`, `date`); `status` ∈ {proposed, accepted, superseded}; `author`, when present, ∈ {human-architect, agent} (absent = human-architect, which grandfathers legacy records that predate the field); `date` is ISO; a `superseded` record names a `superseded_by`.
 - **A2 — immutability.** For each record at `status: accepted` on the base branch, the PR must not change its body or its non-status front-matter. (Diff-based: compares against the merge base.)
 - **A3 — agent gate.** An `author: agent` record may not be introduced or changed to `status: accepted` in the same commit that authored it — acceptance is a separate, human-reviewed change.
 - **A4 — filename/id agreement.** `ADR-NNNN` in the filename equals `id:`.

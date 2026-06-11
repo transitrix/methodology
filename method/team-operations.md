@@ -69,7 +69,7 @@ id: ADR-0001
 title: "Adopt Transitrix methodology 0.5.x for the enterprise model"
 status: accepted            # proposed | accepted | superseded
 date: "2026-06-03"
-author: human-architect     # human-architect | agent — see §3.1.1
+author: human-architect     # human-architect | agent (optional; absent = human-architect) — see §3.1.1
 source: "Architecture Review Board 2026-06-03"   # optional — the deciding forum (§3.1.1)
 relates_to:                 # optional — model IDs the decision concerns
   - CAPABILITY-V1
@@ -96,7 +96,7 @@ What this commits the team to; what it rules out; what becomes easier or harder.
 
 Two front-matter fields record *who* authored a decision and *where* it came from. They are independent axes — a board decision (`source`) may be entered into the log by an agent (`author`).
 
-- **`author`** (required) — `human-architect` or `agent`. This drives the gate: an `author: agent` record is **not** in force until a human ratifies it (a human flips `status` to `accepted` in a separate, reviewed change). An agent may author a `proposed` record but may never introduce an already-`accepted` one. `human-architect` records follow the team's normal sign-off. This is what lets an agent do consequential work (e.g. record "bumped a version pin") while a human stays the gate.
+- **`author`** (optional; absent = `human-architect`) — `human-architect` or `agent`; only agent authorship need be declared. This drives the gate: an `author: agent` record is **not** in force until a human ratifies it (a human flips `status` to `accepted` in a separate, reviewed change). An agent may author a `proposed` record but may never introduce an already-`accepted` one. `human-architect` (or unlabelled, legacy) records follow the team's normal sign-off. This is what lets an agent do consequential work (e.g. record "bumped a version pin") while a human stays the gate.
 - **`source`** (optional, recommended) — the forum the decision came from: an architecture review board, a design review, a named meeting, or `ad-hoc`. The methodology does not dictate an adopter's decision process; the field exists so that context — the constraint a future reader needs — is not lost.
 
 A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/architecture-decision-log.md`](architecture-decision-log.md)).
@@ -166,7 +166,7 @@ Operational config/state files (§3.3) carry **no** identifier at all — they a
 
 | Value | Meaning |
 |---|---|
-| `human-architect` | A person authored the record; the team's normal sign-off accepts it. |
+| `human-architect` (or unset) | A person authored the record; the team's normal sign-off accepts it. |
 | `agent` | Authored by an agent; stays `proposed` until a human ratifies it (§3.1.1). |
 
 ### 6.3 Work Item `status:`
