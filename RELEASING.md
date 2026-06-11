@@ -26,7 +26,7 @@ For every release, in order:
 2. **Update `methodology_version` in `organizations/acme_corp/transitrix.yaml`** to the new version. acme_corp is the fixture adopter and tracks the latest released version.
 3. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
 4. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
-5. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (format defined in epic #78 Phase 2). The recipe is a precondition for the tag.
+5. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
 6. **Tag** the release commit with `vX.Y.Z`.
 7. **Publish** the release notes as a GitHub Release on the tag.
 8. **Announce** the release (channel TBD with the maintainer).
@@ -68,7 +68,7 @@ Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; steps 5�
 ## What this file does NOT cover
 
 - **Compatibility semantics** — what each bump promises adopters. See [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.
-- **Migration recipe format** — epic #78 Phase 2 (separate task).
-- **Migration CLI (`transitrix migrate`)** — epic #78 Phase 3 (lives in Studio, not in this repo).
-- **The 1.0 cut decision** — epic #78 Phase 4 (gated on in-flight schema epics landing).
+- **Migration recipe format** — see the recipe folders under [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4.
+- **Migration CLI (`transitrix migrate`)** — lives in Transitrix Studio, not in this repo.
+- **The 1.0 cut decision** — a deliberate future release, gated on the in-flight schema work landing.
 - **Releases of Transitrix Studio, DSM, the Skill bundle, or any other downstream artefact** — each has its own SemVer policy and its own RELEASING.md.

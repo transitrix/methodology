@@ -91,11 +91,11 @@ A large release covering three completed epics (Compliance & regulation tracking
 
 ### Out of scope / deferred
 
-- **Migration recipe codemod for 0.4 → 0.5** — methodology-upgrade-path epic Phase 2. The Deprecated and Changed items above are mechanical migrations; a codemod ships with epic #78 Phase 2.
+- **Migration recipe codemod for 0.4 → 0.5** — the methodology-upgrade-path work. The Deprecated and Changed items above are mechanical migrations; a codemod ships under [`migrations/`](migrations/).
 - **`transitrix migrate` CLI** in Studio — methodology-upgrade-path epic Phase 3.
 - **The 1.0 cut decision** — methodology-upgrade-path epic Phase 4.
 - **Hard removal of deprecated inline fields** — gated on the migration codemod landing.
-- **`notations/` folder restructure** (view vs element separation) — filed as a separate task in the strategy hub.
+- **`notations/` folder restructure** (view vs element separation) — filed as a separate task.
 - **Scanner-and-monitoring story** for Codex (regulatory intelligence) — future epic.
 
 ---
