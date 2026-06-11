@@ -5,12 +5,33 @@ Checks: YAML syntax, atomicity, referential integrity, semantic rules
 """
 
 import os
+import re
 import sys
 import yaml
 import glob
 from pathlib import Path
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
+
+# Canonical ID grammar — IDS_AND_REFERENCES.md §1: <TYPE>-[<middle>-]<INTEGER>.
+# Uppercase TYPE (letter-led, letters/digits/underscore), optional middle segments,
+# terminal positive integer with NO leading zeros. The terminal-only no-leading-zeros
+# rule is what §1 names (numeric middle segments — e.g. zero-padded ISO date parts —
+# are exempt and remain valid; see §1 examples + §6 migration row).
+ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$')
+
+# CAPABILITY exception — IDS_AND_REFERENCES.md §2: V/H diagram address replaces the
+# terminal integer. Each level is a positive integer ≥ 1, no leading zeros, capped
+# at three levels (L1.L2.L3). The general ID_RE rejects this form (no terminal
+# -<INTEGER>), so it is accepted explicitly.
+CAPABILITY_ADDRESS_RE = re.compile(r'^CAPABILITY-[VH][1-9][0-9]*(?:\.[1-9][0-9]*){0,2}$')
+
+
+def is_valid_id(value) -> bool:
+    """Test an ID against the canonical grammar (IDS_AND_REFERENCES.md §1 + §2)."""
+    if not isinstance(value, str):
+        return False
+    return bool(ID_RE.match(value)) or bool(CAPABILITY_ADDRESS_RE.match(value))
 
 @dataclass
 class LintError:
@@ -26,6 +47,10 @@ class TransitrixLinter:
         self.warnings: List[LintError] = []
         self.elements: Dict[str, Dict] = {}
         self.relations: Dict[str, Dict] = {}
+        # Track the source file behind each loaded id so an id-grammar violation
+        # points at the file that declared it, not just at the id string.
+        self._element_files: Dict[str, str] = {}
+        self._relation_files: Dict[str, str] = {}
 
     def run(self) -> bool:
         """Run all validation checks. Returns True if no errors found."""
@@ -50,6 +75,15 @@ class TransitrixLinter:
         self._load_relations()
         print(f"  ✓ Loaded {len(self.elements)} elements, {len(self.relations)} relations")
         print()
+
+        # Phase 2.5: ID grammar — catch malformed element/relation IDs at admission
+        # time, not only indirectly via a cross-reference. Without this, an element
+        # admitted with a leading-zero terminal (FACTOR-CHURN-001) — or any other
+        # break of IDS_AND_REFERENCES.md §1 — passes silently as long as nothing
+        # references it textually (the existing referential-integrity check only
+        # matches strings, so a self-consistent malformed pair would slip through).
+        print("Phase 2.5: Validating ID grammar (IDS_AND_REFERENCES §1/§2)...")
+        self._check_id_grammar()
 
         # Phase 3: Atomicity check - no relations inside elements
         print("Phase 3: Checking atomicity (no relations in element files)...")
@@ -109,6 +143,7 @@ class TransitrixLinter:
                     data = yaml.safe_load(f)
                     if data and 'id' in data:
                         self.elements[data['id']] = data
+                        self._element_files[data['id']] = file_path
             except Exception:
                 pass
 
@@ -123,8 +158,41 @@ class TransitrixLinter:
                     data = yaml.safe_load(f)
                     if data and 'id' in data:
                         self.relations[data['id']] = data
+                        self._relation_files[data['id']] = file_path
             except Exception:
                 pass
+
+    def _check_id_grammar(self):
+        """Reject element / relation IDs that break IDS_AND_REFERENCES.md §1 (or §2
+        for CAPABILITY). The candidate stage already flags this at emit / validate
+        time; this is the admission-side gate that closes the loop so a hand-edited
+        canon file with a malformed id (e.g. leading zero on the terminal integer)
+        is caught the next time CI runs the linter.
+        """
+        for element_id, file_path in self._element_files.items():
+            if not is_valid_id(element_id):
+                self.errors.append(LintError(
+                    file=file_path,
+                    line=0,
+                    message=(
+                        f"ID GRAMMAR: Element id '{element_id}' violates IDS_AND_REFERENCES §1 "
+                        f"(<TYPE>-[<middle>-]<INTEGER>, terminal integer ≥ 1 with no leading zeros) "
+                        f"and is not a §2 CAPABILITY V/H address. Rename in the file and update any references."
+                    ),
+                    severity="error"
+                ))
+        for relation_id, file_path in self._relation_files.items():
+            if not is_valid_id(relation_id):
+                self.errors.append(LintError(
+                    file=file_path,
+                    line=0,
+                    message=(
+                        f"ID GRAMMAR: Relation id '{relation_id}' violates IDS_AND_REFERENCES §1 "
+                        f"(<TYPE>-[<middle>-]<INTEGER>, terminal integer ≥ 1 with no leading zeros). "
+                        f"Rename in the file and update any references."
+                    ),
+                    severity="error"
+                ))
 
     def _check_atomicity(self):
         """Ensure relations are not defined inside element files."""
