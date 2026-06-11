@@ -17,7 +17,7 @@ The Transitrix model (`canon/`, `field/`, `codex/`) describes the **enterprise**
 
 A team applying Transitrix also accumulates a second, smaller body of artefacts that describe how **the team itself** is operating: the choices it has made about its own setup, and the units of work it currently has in flight. Those are statements *about the team*.
 
-This is the **Team Operations** convention. It defines a folder, its file shapes — two human-authored **record** shapes (ADR, WI) and a machine- or human-written **operational config/state** area — and one linking rule. Nothing more.
+This is the **Team Operations** convention. It defines a folder, its file shapes — two **record** shapes (ADR, WI) and a machine- or human-written **operational config/state** area — and one linking rule. Nothing more.
 
 **Hard distinctions to preserve:**
 
@@ -26,6 +26,8 @@ This is the **Team Operations** convention. It defines a folder, its file shapes
 
 The convention is intentionally minimal: a folder, two templates, and a one-screen rules doc. Adopters who want a heavier process should keep their existing tracker — this convention is for teams that want their decision log and work queue under the same version control and review surface as the model itself.
 
+This convention is the **single-repo** layer. When an adopter runs several repositories and wants one enterprise-wide view of their decisions — and when decisions may be authored by an agent, not only a human — those records aggregate into a central **Architecture Decision Log**; see [`method/architecture-decision-log.md`](architecture-decision-log.md).
+
 ## 2. Folder layout
 
 The adopter instantiates the convention at:
@@ -33,7 +35,7 @@ The adopter instantiates the convention at:
 ```
 organizations/<org>/operations/
 ├── README.md                      # Local rules (~1 screen)
-├── decisions/                     # Architecture decision records (human-authored)
+├── decisions/                     # Architecture decision records (ADR — human- or agent-authored; §3.1.1)
 │   ├── ADR-0001-<slug>.md
 │   ├── ADR-0002-<slug>.md
 │   └── …
@@ -51,7 +53,7 @@ organizations/<org>/operations/
 
 ## 3. The file shapes
 
-The convention provides two human-authored **record** shapes (§3.1 ADR, §3.2 WI) and an operational **config/state** area (§3.3) for structured data a tool or process reads and writes.
+The convention provides two **record** shapes (§3.1 ADR, §3.2 WI) and an operational **config/state** area (§3.3) for structured data a tool or process reads and writes.
 
 ### 3.1 Architecture Decision Record (`ADR-…`)
 
@@ -67,6 +69,8 @@ id: ADR-0001
 title: "Adopt Transitrix methodology 0.5.x for the enterprise model"
 status: accepted            # proposed | accepted | superseded
 date: "2026-06-03"
+author: human-architect     # human-architect | agent — see §3.1.1
+source: "Architecture Review Board 2026-06-03"   # optional — the deciding forum (§3.1.1)
 relates_to:                 # optional — model IDs the decision concerns
   - CAPABILITY-V1
   - GOAL-EU-1
@@ -87,6 +91,15 @@ necessary qualifiers.
 ## Consequences
 What this commits the team to; what it rules out; what becomes easier or harder.
 ```
+
+#### 3.1.1 Provenance and source (`author`, `source`)
+
+Two front-matter fields record *who* authored a decision and *where* it came from. They are independent axes — a board decision (`source`) may be entered into the log by an agent (`author`).
+
+- **`author`** (required) — `human-architect` or `agent`. This drives the gate: an `author: agent` record is **not** in force until a human ratifies it (a human flips `status` to `accepted` in a separate, reviewed change). An agent may author a `proposed` record but may never introduce an already-`accepted` one. `human-architect` records follow the team's normal sign-off. This is what lets an agent do consequential work (e.g. record "bumped a version pin") while a human stays the gate.
+- **`source`** (optional, recommended) — the forum the decision came from: an architecture review board, a design review, a named meeting, or `ad-hoc`. The methodology does not dictate an adopter's decision process; the field exists so that context — the constraint a future reader needs — is not lost.
+
+A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/architecture-decision-log.md`](architecture-decision-log.md)).
 
 ### 3.2 Work Item (`WI-…`)
 
@@ -135,7 +148,7 @@ If a Work Item or ADR references a model ID that does not resolve (typo, deleted
 
 `ADR-` and `WI-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…` and `WI-…` carry zero-padded four-digit sequences (`ADR-0001`, `WI-0042`) and are unique within their own folder, not globally. They cannot be cross-referenced from inside the model.
 
-This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions.
+This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions. (When records from several repos are aggregated, the central Architecture Decision Log namespaces them as `<repo-slug>/ADR-NNNN` — the local id is unchanged; see [`method/architecture-decision-log.md`](architecture-decision-log.md) §4.)
 
 Operational config/state files (§3.3) carry **no** identifier at all — they are addressed by **path** (`operations/state/<domain>/<name>`), not by a sequenced `ADR-`/`WI-` id and not by a model ID. They are never cross-referenced from inside the model.
 
@@ -149,7 +162,14 @@ Operational config/state files (§3.3) carry **no** identifier at all — they a
 | `accepted` | The decision is in force. ADR body is immutable from here. |
 | `superseded` | Replaced by a later ADR. `superseded_by:` names the successor. |
 
-### 6.2 Work Item `status:`
+### 6.2 ADR `author:`
+
+| Value | Meaning |
+|---|---|
+| `human-architect` | A person authored the record; the team's normal sign-off accepts it. |
+| `agent` | Authored by an agent; stays `proposed` until a human ratifies it (§3.1.1). |
+
+### 6.3 Work Item `status:`
 
 | Value | Meaning |
 |---|---|
@@ -192,6 +212,7 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 
 ## 10. References
 
+- Multi-repo aggregation + agent-authorship: [`method/architecture-decision-log.md`](architecture-decision-log.md).
 - Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
 - Methodology overview: [`method/methodology.md`](methodology.md) §4 — repository structure.
 - Architectural findings about the enterprise are modelled as `ASSESSMENT` (the former model-side `issues` notation was retired, 2026-06-07).

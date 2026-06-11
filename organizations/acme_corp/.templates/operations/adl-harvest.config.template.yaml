@@ -1,0 +1,20 @@
+# Architecture Decision Log — harvest configuration (central architecture repo).
+# Consumed by scripts/adl-harvest.mjs. Copy to architecture/decision-log/harvest.config.yaml
+# in the central repo and list every source repo. Spec: method/architecture-decision-log.md §5.
+
+sources:
+  # One entry per source repository. `path` defaults to operations/decisions;
+  # override it for a general code repo that keeps records under docs/decisions.
+  - repo: service-x                                   # repo slug → used as the ID namespace (service-x/ADR-NNNN)
+    path: operations/decisions
+    clone: https://github.com/acme/service-x.git      # used to build record backlinks
+
+  - repo: platform
+    path: docs/decisions
+    clone: https://github.com/acme/platform.git
+
+promote:
+  # Records lifted into architecture/decision-log/promoted/ as full copies.
+  # A record is promoted when its optional `scope:` front-matter is in this list.
+  # Everything else appears in the index by backlink only.
+  scopes: [enterprise, cross-repo]

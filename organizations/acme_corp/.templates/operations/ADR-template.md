@@ -3,6 +3,8 @@ id: ADR-NNNN
 title: "FILL-ME — one-line decision title"
 status: proposed            # proposed | accepted | superseded
 date: "YYYY-MM-DD"
+author: human-architect     # human-architect | agent — see method/team-operations.md §3.1.1
+source: ""                  # optional, recommended — deciding forum: board / review / meeting / ad-hoc
 relates_to: []              # optional — model entity IDs this decision concerns
 superseded_by: null         # ADR-NNNN ID if this decision has been replaced
 ---
@@ -16,6 +18,12 @@ Naming:    ADR-NNNN-<short-slug>.md  (NNNN = four-digit zero-padded, sequence pe
 Status:    proposed   → drafted, not yet committed by the team
            accepted   → in force; body is immutable from here
            superseded → replaced by a later ADR; superseded_by names the successor
+
+Author:    human-architect → a person authored it; normal sign-off accepts it
+           agent           → authored by an agent; MUST stay `proposed` until a
+                             human ratifies it (flips to accepted) in a separate
+                             reviewed change. Never introduce an agent record as
+                             accepted (the ADL guard, scripts/check-adl.mjs, rejects it).
 
 Once accepted, do not edit the body. If course changes, open a new ADR and set this
 file's status: superseded + superseded_by: ADR-…  in the same PR.
