@@ -70,7 +70,7 @@ See **[`notations/README.md`](notations/README.md)** for the canonical index of 
 
 ## Validation in one paragraph
 
-Every change runs through five rule categories: syntax (valid YAML, schema-conformant), atomicity (no relations inside element files), referential integrity (every relation endpoint exists), ArchiMate semantics (layer-respecting connections), and policy (Active status requires an owner; deprecated elements reference successors). Adopters validate with **Transitrix Studio** (inline, on save) or the CLI — `npx @transitrix/cli validate <file>` — and gate pull requests on it in CI. *(This methodology repository lints its own example corpus with an internal script, `.validators/lint.py`; adopter repositories use the CLI above.)*
+Transitrix separates validation by responsibility — **view notations**, **element primitives**, **relations**, and **repo structure**. As you author, a single view file validates inline in **Transitrix Studio** (on save) or with `npx @transitrix/cli validate <file>`. Across the whole repository, the model-integrity linter `.validators/lint.py` runs the element/relation/structure checks — atomicity (no relations inside element files), referential integrity (every relation endpoint exists), ArchiMate semantics (layer-respecting connections), and policy (Active status requires an owner; deprecated elements reference successors) — over `canon/` and gates pull requests in CI. See [`integration/ci-example.yaml`](integration/ci-example.yaml) for the pipeline.
 
 ## Use cases
 

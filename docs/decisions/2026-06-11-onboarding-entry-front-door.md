@@ -31,9 +31,8 @@ Three concrete frictions follow from this:
   `.validators/lint.py` inside *their* organisation folder. The onboarding Skill
   does not scaffold any `.validators/lint.py` (it drops `AGENTS.md`,
   `transitrix.yaml`, and the Copilot pointer), so a freshly onboarded repo
-  cannot run that command. Every other adopter-facing surface
-  (`GETTING_STARTED.md`, `AGENTS.md`, `SKILL.md`) uses `npx @transitrix/cli`,
-  which is the published, canonical validator.
+  cannot run that command. Per-file authoring elsewhere
+  (`GETTING_STARTED.md`, `AGENTS.md`, `SKILL.md`) uses `npx @transitrix/cli`.
 - **The `cp -r acme_corp` "copy-then-gut" trap.** Bootstrapping by copying the
   whole worked example inherits `acme_corp`'s content, which the newcomer then
   has to delete — the opposite of a clean start. The Skill's fresh-scaffold
@@ -58,11 +57,15 @@ Adopt **one canonical front door** and make every entry surface agree with it.
    The `cp -r acme_corp` bootstrap is dropped from the README quick start.
 3. **The canonical hello-world artefact is a Goals tree** — the simplest
    notation. README and `GETTING_STARTED.md` both name it.
-4. **The canonical adopter validator is `npx @transitrix/cli validate`.**
-   Studio provides the same checks inline on save. `.validators/lint.py` is
-   reframed as an **internal linter for this methodology repository's own
-   example corpus** — not an adopter command. The README's "Validation in one
-   paragraph" says so explicitly.
+4. **Validation is separated by responsibility — view / element / relation /
+   repo-structure — and the docs name both tools accurately.** A single *view
+   notation* file validates inline in **Transitrix Studio** (on save) or with
+   `npx @transitrix/cli validate <file>`. The *element*, *relation*, and
+   *repo-structure* checks (atomicity, referential integrity, ArchiMate
+   semantics, policy) are run across the whole repository by the model-integrity
+   linter `.validators/lint.py` — which is **adopter-facing** (it ships in the
+   worked example and scans `canon/`), not internal to this repository. The two
+   are complementary, not a primary/legacy pair.
 5. **Reading order is relaxed.** `method/methodology.md` is reframed from
    "read this first" to "read for the *why* — not required to start."
 
@@ -71,9 +74,12 @@ Adopt **one canonical front door** and make every entry surface agree with it.
 - **Keep the `cp -r` bootstrap as the primary path.** Rejected: it ships the
   worked example's content into the adopter repo and contradicts the Skill,
   which is the supported scaffolder.
-- **Keep `.validators/lint.py` as an adopter-facing command.** Rejected: the
-  Skill does not scaffold it, so the instruction is broken for skill-onboarded
-  repos; `@transitrix/cli` is the published, maintained validator.
+- **Keep `python3 .validators/lint.py` as the README's headline first-run
+  command.** Rejected as the *quick-start* command: the Skill does not scaffold
+  `.validators/lint.py`, so it is broken for skill-onboarded repos, and a
+  whole-repo lint is the wrong first step when you have authored one file. The
+  linter keeps its place as the whole-repo CI gate (see Decision 4); per-file
+  authoring uses Studio / `@transitrix/cli`.
 - **Leave the three doors co-equal and just cross-link them.** Rejected: a
   newcomer still has to reconcile contradictory first-artefact and validator
   instructions before doing anything.
@@ -85,12 +91,22 @@ Adopt **one canonical front door** and make every entry surface agree with it.
   validation.
 - `GETTING_STARTED.md` already embodies the target (Goals tree +
   `@transitrix/cli` + Skill-as-fastest-path); it is left unchanged.
-- The `.validators/lint.py` reference survives in the README, now scoped
-  accurately to this repository's own corpus, so the statement stays true.
+- The README's "Validation in one paragraph" now names both tools by
+  responsibility: `@transitrix/cli` / Studio for view files, `.validators/lint.py`
+  for whole-repo element/relation/structure integrity.
+- **Open gap (skill).** The onboarding Skill does not scaffold a validator
+  bundle: a freshly onboarded repo has no `.validators/lint.py`, no
+  `requirements.txt`, no `.github/workflows`, and no pinned `@transitrix/cli`.
+  With the `cp -r acme_corp` bootstrap dropped, skill-onboarded repos therefore
+  have no whole-repo validator and no CI until the Skill is taught to scaffold
+  them. Tracked as a follow-up — the Skill (the agent) should own dependency +
+  CI setup at scaffold time.
+- **Possible finer split.** `.validators/lint.py` currently bundles the element,
+  relation, and repo-structure responsibilities into one engine. Splitting it
+  into dedicated per-responsibility validators is a separate methodology
+  decision, not gated here.
 - **Follow-up (separate PR):** `integration/ci-example.yaml` is stale — it
   references the pre-zone layout (`elements/**`, `relations/**`, `views/**` at
-  the repo root rather than under `canon/`) and runs `lint.py`. It should be
-  modernised to the zoned paths and the `@transitrix/cli` validation flow.
-  Deferred from this change because the correct batch/CI invocation of the CLI
-  needs to be confirmed against `@transitrix/cli` (which lives in
-  `transitrix-studio`) before publishing it in an adopter-facing template.
+  the repo root rather than under `canon/`) and runs `lint.py` on those paths.
+  It should be modernised to the zoned `canon/` layout and to validation steps
+  separated by responsibility (structure / model-integrity / view notations).
