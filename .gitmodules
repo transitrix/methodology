@@ -1,0 +1,3 @@
+[submodule "organizations/acme_corp"]
+	path = organizations/acme_corp
+	url = https://github.com/transitrix/acme-corp.git
