@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # acme_corp is a submodule (transitrix/acme-corp); its transitrix.yaml
+          # is the version SoT that check-notations.mjs reads, so it must be present.
+          submodules: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
