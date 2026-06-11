@@ -11,9 +11,10 @@
 // ADRs under docs/decisions/ are NOT in scope — different convention on purpose.
 //
 // Checks:
-//   A1  front-matter — required keys (id,title,status,date,author) present;
-//       status ∈ {proposed,accepted,superseded}; author ∈ {human-architect,agent};
-//       date is ISO YYYY-MM-DD; a `superseded` record names a `superseded_by`.
+//   A1  front-matter — required keys (id,title,status,date) present; status ∈
+//       {proposed,accepted,superseded}; author (optional, default human-architect)
+//       ∈ {human-architect,agent} when present; date is ISO; a `superseded`
+//       record names a `superseded_by`.
 //   A2  immutability — for each record that is `status: accepted` at the merge
 //       base, the PR must not change its body or its non-status front-matter.
 //   A3  agent gate — a newly-added `author: agent` record may not be introduced
@@ -133,7 +134,11 @@ async function main() {
       continue;
     }
     const fm = parseFm(fmText);
-    for (const key of ['id', 'title', 'status', 'date', 'author']) {
+    // `author` is NOT required: a record with no author defaults to
+    // human-architect. Only agent authorship must be declared (author: agent).
+    // This grandfathers legacy accepted records that predate the field without
+    // forcing an (immutability-violating) edit to them.
+    for (const key of ['id', 'title', 'status', 'date']) {
       if (!fm[key]) failures.push({ c: 'A1', m: `${rel}: missing required key \`${key}\`.` });
     }
     if (fm.status && !STATUSES.has(fm.status))
