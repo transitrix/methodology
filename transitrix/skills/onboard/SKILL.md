@@ -39,9 +39,14 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 ├── transitrix.yaml                 # adopter manifest — methodology version, notations, zones
 ├── AGENTS.md                       # assistant-neutral agent guide (canonical for all assistants)
 ├── .github/
-│   └── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
+│   ├── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
+│   └── workflows/
+│       └── architecture-validate.yaml  # CI gate (fetched canon — see "Scaffold validation tooling + CI")
 ├── README.md                       # one-paragraph org stub + pointer to the methodology canon
 ├── .gitignore
+├── .validators/                    # whole-repo model-integrity linter (fetched canon)
+│   ├── lint.py
+│   └── requirements.txt
 ├── canon/                          # validated model — the authoritative zone
 │   ├── elements/
 │   │   ├── 01_motivation/          # GOAL, CONSTRAINT, FACTOR, …
@@ -94,6 +99,9 @@ Initialise `.gitignore`:
 node_modules/
 .vscode/settings.json
 .transitrix-cache/
+__pycache__/
+.venv/
+.diagrams/
 
 # _intake/ — the ingest skill's operational workspace (scaffolded later by
 # `transitrix-ingest scaffold-intake`). It is a PER-USER, PRIVATE area: its
@@ -110,6 +118,18 @@ _intake/processed/*
 **Why `_intake/` is private and `canon/` is shared.** `_intake/` holds raw dropped files and in-flight extraction candidates — a private scratch space, not version-of-record. Model content is the opposite: it is committed and shared. This includes `canon/unresolved/` — the holding area for objects ingestion could not yet TYPE ([`notations/CONTRACT.md`](https://github.com/transitrix/methodology/blob/main/notations/CONTRACT.md) §13). An unresolved object is still real model knowledge (it may even be admitted-accurate, only its TYPE is open), so it must be committed to shared `canon/unresolved/`, **never** left in the private `_intake/`. When the ingest skill scaffolds `_intake/`, it drops the `.gitkeep` files; if a user creates the folders by hand, add an empty `.gitkeep` to each of `inbox/`, `processing/`, `processed/`.
 
 Don't run `git init` unless the user asked for it.
+
+### Scaffold validation tooling + CI
+
+A freshly scaffolded repo should be able to validate itself and gate pull requests from day one — the agent sets this up so the adopter doesn't have to. In keeping with this skill's "fetch the canon, don't ship it" rule, pull the two canonical pieces from the methodology repo rather than embedding copies:
+
+1. **Whole-repo validator** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/main/organizations/acme_corp/.validators/lint.py` and write it to `<repo-root>/.validators/lint.py`. This is the model-integrity linter: it scans `canon/elements/**` and `canon/relations/**` for atomicity, referential integrity, ArchiMate semantics, and policy.
+2. **Validator dependencies** — write `<repo-root>/.validators/requirements.txt` containing one line: `pyyaml`. (`python3 -m pip install -r .validators/requirements.txt` to run the linter locally.)
+3. **CI gate** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/main/integration/ci-example.yaml` and write it to `<repo-root>/.github/workflows/architecture-validate.yaml`. It runs validation separated by responsibility — repo structure + manifest, model integrity (elements + relations) via `lint.py`, and view notations via `npx @transitrix/cli validate` — and blocks merges on failure.
+
+What the agent does **not** install: **Transitrix Studio** (the VS Code extension — the user installs it from the Marketplace, see Step 5) and the global Node / Python runtimes. The CI workflow provisions Node and Python itself; for local runs the user needs both on PATH.
+
+This step is interim per ADR [`2026-06-11-validation-two-axis-model.md`](https://github.com/transitrix/methodology/blob/main/docs/decisions/2026-06-11-validation-two-axis-model.md): validation is converging onto a single TypeScript runtime (`@transitrix/cli --scope=repo`), after which this step will scaffold one validator instead of two. Until then, `lint.py` is the whole-repo gate and `@transitrix/cli` validates individual view files.
 
 ---
 
@@ -152,6 +172,8 @@ If the user makes a change that introduces a canon violation:
 - Don't auto-fix unless the user asks — surface the violation and let the user decide.
 
 When fetching the full spec for a notation, use `WebFetch` against `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<name>.md` (e.g. `02-fgca.md`, `04-goals.md`). Don't embed the full spec text in your context unless the user is going deep into a specific notation — the cheat sheet below is usually enough.
+
+Once a few files exist, the whole-repo linter scaffolded in Step 2 catches cross-file problems the single-file check can't see (a relation whose endpoint doesn't exist, a missing owner): run `python3 .validators/lint.py` from the repo root, or let the CI workflow run it on the pull request.
 
 ---
 
@@ -271,6 +293,8 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Agent guide (assistant-neutral) | `templates/AGENTS.md` | `<repo-root>/AGENTS.md` |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 
+The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI workflow (`.github/workflows/architecture-validate.yaml`) are **not** bundled templates — they are fetched from the methodology canon at scaffold time. See "Scaffold validation tooling + CI" in Step 2.
+
 ### View notations (drop into `canon/views/<notation-folder>/` in Step 3)
 
 | Notation | Template file |
@@ -319,7 +343,7 @@ Read sparingly — the cheat sheet above is enough for 80% of cases. Pull the fu
 
 ## What this skill does NOT do
 
-- It does **not** ship the methodology canon. The canon lives in `github.com/transitrix/methodology`. This skill is a reading guide and a scaffolder, not a fork of the methodology.
-- It does **not** modify methodology files. Strictly read-only against `transitrix/methodology`.
+- It does **not** ship the methodology canon. The canon lives in `github.com/transitrix/methodology`. This skill is a reading guide and a scaffolder, not a fork of the methodology. The validator and CI workflow it puts in a new repo are **fetched** from the canon at scaffold time, not bundled.
+- It does **not** modify methodology files. Strictly read-only against `transitrix/methodology` — it only writes into the adopter's new repo.
 - It does **not** install Transitrix Studio. The user installs it themselves from the VS Code Marketplace.
 - It does **not** run the Studio CLI for the user uninvited. Suggest the commands; let the user run them.
