@@ -11,6 +11,7 @@ implementation PRs follow) · **Superseded** (replaced by a later ADR).
 
 | Date | Decision | Status | Scope |
 |---|---|---|---|
+| 2026-06-11 | [Extract acme_corp into a standalone reference + demo repo](2026-06-11-extract-acme-corp-reference-repo.md) | Accepted | repo |
 | 2026-06-11 | [Single canonical front door for new adopters](2026-06-11-onboarding-entry-front-door.md) | Accepted | repo |
 | 2026-06-11 | [Validation: converge on one runtime; scope axis](2026-06-11-validation-two-axis-model.md) | Accepted | repo |
 | 2026-06-11 | [Architecture Decision Log (ADL) — multi-repo aggregation component](2026-06-11-architecture-decision-log.md) | Proposed | repo |
