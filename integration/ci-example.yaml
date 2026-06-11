@@ -1,164 +1,119 @@
-# Example: CI/CD Pipeline Configuration for Transitrix
-# Location: .github/workflows/architecture-validate.yaml (for GitHub Actions)
-# Or: .gitlab-ci.yml (for GitLab CI)
-# Or: Similar in your preferred CI/CD system
+# Transitrix — architecture validation pipeline (example)
+#
+# Copy this into your adopter repository at:
+#   .github/workflows/architecture-validate.yaml   (GitHub Actions)
+# Adapt the runner/syntax for GitLab CI or another system as needed.
+#
+# It gates pull requests on the Transitrix validators. Transitrix separates
+# validation by responsibility; this pipeline runs each as its own job so a
+# failure tells you *which* layer broke:
+#
+#   1. structure        — repo zones + manifest (transitrix.yaml parses).
+#   2. model-integrity  — element primitives + relations: atomicity,
+#                         referential integrity, ArchiMate semantics, policy.
+#   3. view-notations   — every *.transitrix.yaml view validates/compiles.
+#
+# Tooling behind each job:
+#   - structure / model-integrity → .validators/lint.py (the whole-repo
+#     model-integrity linter; ships in the worked example, scans canon/).
+#     It currently covers the element, relation, and repo-structure
+#     responsibilities together; the jobs below name them separately so the
+#     pipeline already mirrors the four-way split (view / element / relation /
+#     structure) even before the linter is split into dedicated checks.
+#   - view-notations → npx @transitrix/cli validate <file> (per view file).
+#
+# Prerequisites in your repo: the zoned `canon/` layout, `transitrix.yaml`,
+# and `.validators/lint.py`. The onboarding Skill scaffolds these; the worked
+# example `organizations/acme_corp/` carries a reference copy.
 
-# This file demonstrates how to:
-# 1. Validate architecture changes on every PR
-# 2. Generate diagrams automatically
-# 3. Publish architecture documentation
-# 4. Block merges if validation fails
-
-name: Architecture Validation & Diagram Generation
+name: Architecture validation
 
 on:
   pull_request:
     paths:
-      - 'elements/**'
-      - 'relations/**'
+      - 'canon/**'
+      - 'transitrix.yaml'
       - '.validators/**'
-      - '.templates/**'
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'elements/**'
-      - 'relations/**'
+      - 'canon/**'
+      - 'transitrix.yaml'
+  workflow_dispatch:
 
 jobs:
-  validate:
-    name: Validate Architecture Model
+  structure:
+    name: Repo structure & manifest
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Full history for diff analysis
-
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Check zones and manifest
         run: |
-          pip install pyyaml
+          set -e
+          test -f transitrix.yaml || { echo "::error::transitrix.yaml manifest is missing"; exit 1; }
+          python3 -c "import yaml; yaml.safe_load(open('transitrix.yaml'))" \
+            || { echo "::error::transitrix.yaml is not valid YAML"; exit 1; }
+          test -d canon || { echo "::error::required zone 'canon/' is missing"; exit 1; }
+          echo "OK: structure & manifest"
 
-      - name: Run Transitrix Linter
-        run: |
-          python3 .validators/lint.py
-        env:
-          REPO_ROOT: .
+  model-integrity:
+    name: Model integrity (elements + relations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install validator dependencies
+        run: pip install pyyaml
+      - name: Run the model-integrity linter
+        # Scans canon/elements/** and canon/relations/**:
+        # atomicity (no relations inside element files), referential integrity,
+        # ArchiMate semantics, and policy. Exits non-zero on any error.
+        run: python3 .validators/lint.py
 
-      - name: Check for Atomicity Violations
+  view-notations:
+    name: View notations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate every view notation file
         run: |
-          # Fail if any element file contains 'relations:' section
-          if grep -r "^relations:" elements/ --include="*.yaml" 2>/dev/null; then
-            echo "ERROR: Found relations defined in element files (atomicity violation)"
-            exit 1
-          fi
-          echo "✓ Atomicity check passed"
-
-      - name: Validate YAML structure
-        run: |
-          # Verify required fields in elements
-          for file in elements/*/*.yaml; do
-            if ! grep -q "^id:" "$file"; then
-              echo "ERROR: Missing 'id' field in $file"
-              exit 1
-            fi
-            if ! grep -q "^name:" "$file"; then
-              echo "ERROR: Missing 'name' field in $file"
-              exit 1
-            fi
-            if ! grep -q "^type:" "$file"; then
-              echo "ERROR: Missing 'type' field in $file"
-              exit 1
-            fi
+          shopt -s globstar nullglob
+          status=0
+          found=0
+          for f in canon/views/**/*.transitrix.yaml; do
+            found=1
+            echo "::group::validate $f"
+            npx --yes @transitrix/cli validate "$f" || status=1
+            echo "::endgroup::"
           done
-          echo "✓ Required fields validation passed"
+          if [ "$found" -eq 0 ]; then
+            echo "No view notation files found yet — nothing to validate."
+          fi
+          exit $status
 
-  generate-diagrams:
-    name: Generate Architecture Diagrams
+  validation-gate:
+    name: Architecture validation passed
     runs-on: ubuntu-latest
-    needs: validate
-    if: success()
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up PlantUML
-        run: |
-          apt-get update
-          apt-get install -y plantuml
-
-      - name: Set up Mermaid CLI
-        run: |
-          npm install -g @mermaid-js/mermaid-cli
-
-      - name: Generate diagrams from views
-        run: |
-          mkdir -p .diagrams
-
-          # Generate Mermaid diagrams (example)
-          # mermaid -i views/system_context.mmd -o .diagrams/system_context.svg
-
-          echo "Diagram generation would run here"
-          echo "Output directory: .diagrams/"
-
-      - name: Upload diagrams as artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: architecture-diagrams
-          path: .diagrams/
-          retention-days: 30
-
-  publish-docs:
-    name: Publish Architecture Documentation
-    runs-on: ubuntu-latest
-    needs: generate-diagrams
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download diagrams
-        uses: actions/download-artifact@v3
-        with:
-          name: architecture-diagrams
-          path: .diagrams/
-
-      - name: Build documentation site
-        run: |
-          mkdir -p docs/architecture
-
-          # Copy diagrams to docs
-          cp -r .diagrams/* docs/architecture/ || true
-
-          # Generate index from elements
-          echo "# Architecture Documentation" > docs/architecture/index.md
-          echo "" >> docs/architecture/index.md
-          echo "Generated: $(date)" >> docs/architecture/index.md
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          cname: architecture.example.com  # Optional custom domain
-
-  # Example: Block merge if validation fails
-  require-status-check:
-    name: Require Architecture Validation
-    runs-on: ubuntu-latest
+    needs: [structure, model-integrity, view-notations]
     if: always()
-    needs: [validate]
     steps:
-      - name: Check validation status
+      - name: Require all validation jobs to pass
         run: |
-          if [ "${{ needs.validate.result }}" == "failure" ]; then
-            echo "❌ Architecture validation failed - merge blocked"
+          if [ "${{ needs.structure.result }}" != "success" ] \
+             || [ "${{ needs.model-integrity.result }}" != "success" ] \
+             || [ "${{ needs.view-notations.result }}" != "success" ]; then
+            echo "Architecture validation failed — merge blocked."
             exit 1
           fi
-          echo "✅ Architecture validation passed"
+          echo "Architecture validation passed."
