@@ -2,7 +2,7 @@
 title: "Activity Card — single-project narrative view"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-28"
+last_updated: "2026-06-11"
 status: "draft"
 file_extension: "*.activity-card.transitrix.yaml"
 ---
@@ -32,13 +32,13 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 A Activity Card is a **view** over an existing project Activity. It does not duplicate the activity's data; it references the activity by ID and adds card-specific narrative content — project-level milestones — that does not naturally belong on the activity itself.
 
-A "project" is an Activity with `activity_type: Project` (per the Activities notation, [07-activities.md](07-activities.md) §5.2). No new top-level entity is introduced for projects — the activity hierarchy already expresses what a project is. The Activity Card is the **narrative surface** on top of the project activity: dates, motivation chain pulled from FGCA, child activities pulled from the activities document, and narrative milestones that live on the card itself.
+A "project" is an Activity at the project scale of the recursive ACTIVITY hierarchy (initiative → programme → project → task, all one TYPE per [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.1/§7.4). No new top-level entity is introduced for projects — the activity hierarchy already expresses what a project is. The Activity Card is the **narrative surface** on top of the project activity: dates, motivation chain, child activities, and narrative milestones that live on the card itself.
 
-The renderer assembles the card from three sources:
+**View-purity.** Like every other view, the Activity Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.activities.*`, `*.fgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
 
 1. The card document itself — `notation: activity-card` — references the project Activity by ID and declares its narrative milestones.
-2. The sibling Activities document(s) in the same view directory — provide the project's `valid_from`, `start_date`, `end_date`, `goals`, `delivers_changes`, and child activities (any activity with `parent` = the project activity's ID).
-3. The sibling FGCA document(s) — provide the motivation chain (Factors → Goals → Changes) scoped to the project's declared `goals: []` and `delivers_changes: []`.
+2. The **canon element store** (`canon/elements/**`) — the project ACTIVITY element (`valid_from`, `start_date`, `end_date`, `delivers_changes`) and its child ACTIVITY elements (any activity with `parent` = the project's ID); the FACTOR / GOAL / CHANGE elements the motivation chain expands (`goal.factors`, `change.goals` carried inline on the elements).
+3. The **canon relation store** (`canon/relations/**`) — the project's goals come from the first-class `activity_goal` relations (`from` = the project ID); see [17-relations.md](../elements/17-relations.md) §3. The activity element's transitional inline `goals: []` is used only as a fallback when no such relation exists.
 
 The card does not vendor copies of any of this data; the renderer pulls by reference at view time.
 
@@ -120,20 +120,20 @@ Each entry in `milestones[]` is a MILESTONE element. Per IDS §3.1 + §4, MILEST
 
 ## 5. What the card renders, by source
 
-The renderer assembles the card from references — it does not pull the data from the card YAML itself except for the card-specific milestones.
+The renderer assembles the card from references into the canon element + relation store — it does not pull the data from the card YAML itself except for the card-specific milestones.
 
 | Card section | Source |
 |---|---|
-| **Project name** | `Activity.name` (from the referenced project Activity) |
-| **Dates: initiation** | `Activity.valid_from` ([CONTRACT.md](../CONTRACT.md) §7 — the decision-to-initiate date) |
-| **Dates: planned work** | `Activity.start_date` / `Activity.end_date` (the scheduled work window, distinct from `valid_from` per [07-activities.md](07-activities.md) Element lifecycle) |
+| **Project name** | `ACTIVITY.name` (the project ACTIVITY element in `canon/elements/`) |
+| **Dates: initiation** | `ACTIVITY.valid_from` ([CONTRACT.md](../CONTRACT.md) §7 — the decision-to-initiate date) |
+| **Dates: planned work** | `ACTIVITY.start_date` / `ACTIVITY.end_date` (the scheduled work window, distinct from `valid_from`) |
 | **Milestones (timeline)** | `activity_card.milestones[]` in this document |
-| **Motivation chain — Factors** | FGCA documents in the same view directory; included when the Factor's downstream goals include any goal the project activity references via `Activity.goals` |
-| **Motivation chain — Goals** | The goals the project activity declares (`Activity.goals: [GOAL-…]`), expanded to their definitions in the FGCA document(s) |
-| **Motivation chain — Changes** | The changes the project activity declares it delivers (`Activity.delivers_changes: [CHANGE-…]`), expanded to their definitions in the FGCA document(s) |
-| **Child activities** | Activities documents in the same view directory; any activity where `parent` = the project activity's ID |
+| **Motivation chain — Goals** | The goals the project serves, read from the `activity_goal` relations in `canon/relations/` (`from` = the project ID); falls back to the project ACTIVITY's transitional inline `goals: []` when no relation exists |
+| **Motivation chain — Changes** | The changes the project delivers (`ACTIVITY.delivers_changes: [CHANGE-…]`), expanded to their CHANGE element definitions in `canon/elements/` |
+| **Motivation chain — Factors** | The FACTOR elements referenced by the in-scope goals (`GOAL.factors: [FACTOR-…]`, carried inline on the GOAL element) |
+| **Child activities** | ACTIVITY elements in `canon/elements/` whose inline `parent` = the project's ID |
 
-The card document itself stays small. Adopters editing a card only touch the card-specific narrative (description + milestones); changes to the project Activity, its goals, its changes, or its children happen in their own canonical documents.
+The card document itself stays small. Adopters editing a card only touch the card-specific narrative (description + milestones); changes to the project Activity, its goals, its changes, or its children happen in their own canonical element / relation files.
 
 ### 5.1 ArchiMate-class rendering convention
 
@@ -159,7 +159,7 @@ This is a **renderer-side convention, not a data field** — the class is derive
 views/activity-cards/<DOMAIN>.activity-card.transitrix.yaml
 ```
 
-One card per file. The card lives alongside the FGCA / Activities documents it draws from; a card and the activities document holding its referenced project Activity are typically in the same view directory so renderers can resolve references without searching the full tree.
+One card per file, under the org's `canon/views/`. The card resolves its references against the canon element and relation store (`canon/elements/**`, `canon/relations/**`) of the same organisation, located by walking up to the `canon/` root above the card — not against sibling documents in the card's own directory.
 
 ---
 
@@ -167,8 +167,8 @@ One card per file. The card lives alongside the FGCA / Activities documents it d
 
 | Rule | Severity | Description |
 |---|---|---|
-| `PC-001` | error | `activity_card.project` is missing, malformed, or does not resolve to an admitted Activity in canon. |
-| `PC-002` | error | The Activity referenced by `activity_card.project` has `activity_type` other than `Project` (per [07-activities.md](07-activities.md) §5.2). |
+| `PC-001` | error | `activity_card.project` is missing, malformed, or does not resolve to an admitted ACTIVITY element in canon. |
+| `PC-002` | error | The ACTIVITY referenced by `activity_card.project` carries an explicit non-project scale marker. In the element model all activity scales share one ACTIVITY TYPE (§1), so a missing/unmarked value is accepted; only an explicit non-project marker is flagged. The canonical project-identification rule is under revision (tracked separately). |
 | `PC-003` | error | A `milestone.delivers_changes[]` entry references a `CHANGE-…` that is not in the project Activity's own `delivers_changes:`. The milestone cannot deliver a change the project isn't committed to. |
 | `PC-004` | warning | A `milestone.date` falls outside `[Activity.valid_from, Activity.valid_to]`. A milestone before the project initiated or after it ended is suspicious. |
 
