@@ -4,27 +4,25 @@
 #   .github/workflows/architecture-validate.yaml   (GitHub Actions)
 # Adapt the runner/syntax for GitLab CI or another system as needed.
 #
-# It gates pull requests on the Transitrix validators. Transitrix separates
-# validation by responsibility; this pipeline runs each as its own job so a
-# failure tells you *which* layer broke:
+# It gates pull requests on the Transitrix validators. Validation is split by
+# `scope` — the one axis with engineering meaning — so a failure tells you
+# whether a single file is wrong or the model as a whole is:
 #
-#   1. structure        — repo zones + manifest (transitrix.yaml parses).
-#   2. model-integrity  — element primitives + relations: atomicity,
-#                         referential integrity, ArchiMate semantics, policy.
-#   3. view-notations   — every *.transitrix.yaml view validates/compiles.
+#   - model  (repo scope) — the whole loaded model: repo structure + manifest,
+#            atomicity, referential integrity, ArchiMate semantics, policy.
+#            Backed by .validators/lint.py (ships in the worked example; scans canon/).
+#   - views  (file scope) — every canon/views/**/*.transitrix.yaml validates/compiles,
+#            one file at a time, via npx @transitrix/cli.
 #
-# Tooling behind each job:
-#   - structure / model-integrity → .validators/lint.py (the whole-repo
-#     model-integrity linter; ships in the worked example, scans canon/).
-#     It currently covers the element, relation, and repo-structure
-#     responsibilities together; the jobs below name them separately so the
-#     pipeline already mirrors the four-way split (view / element / relation /
-#     structure) even before the linter is split into dedicated checks.
-#   - view-notations → npx @transitrix/cli validate <file> (per view file).
+# The four-way responsibility framing (view / element / relation / structure) is a
+# *reporting* distinction, not separate engines — see methodology ADR
+# docs/decisions/2026-06-11-validation-two-axis-model.md. Once @transitrix/cli grows
+# --scope=repo, the `model` job moves onto the same CLI runtime and lint.py is
+# retired, collapsing this to a single validation job plus the gate.
 #
-# Prerequisites in your repo: the zoned `canon/` layout, `transitrix.yaml`,
-# and `.validators/lint.py`. The onboarding Skill scaffolds these; the worked
-# example `organizations/acme_corp/` carries a reference copy.
+# Prerequisites in your repo: the zoned `canon/` layout, `transitrix.yaml`, and
+# `.validators/lint.py`. The onboarding Skill scaffolds these; the worked example
+# `organizations/acme_corp/` carries a reference copy.
 
 name: Architecture validation
 
@@ -41,9 +39,13 @@ on:
       - 'transitrix.yaml'
   workflow_dispatch:
 
+concurrency:
+  group: architecture-validate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  structure:
-    name: Repo structure & manifest
+  model:
+    name: Model integrity (repo scope)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +53,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Check zones and manifest
+      - name: Check repo structure & manifest
         run: |
           set -e
           test -f transitrix.yaml || { echo "::error::transitrix.yaml manifest is missing"; exit 1; }
@@ -59,26 +61,16 @@ jobs:
             || { echo "::error::transitrix.yaml is not valid YAML"; exit 1; }
           test -d canon || { echo "::error::required zone 'canon/' is missing"; exit 1; }
           echo "OK: structure & manifest"
-
-  model-integrity:
-    name: Model integrity (elements + relations)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
       - name: Install validator dependencies
         run: pip install pyyaml
       - name: Run the model-integrity linter
-        # Scans canon/elements/** and canon/relations/**:
-        # atomicity (no relations inside element files), referential integrity,
-        # ArchiMate semantics, and policy. Exits non-zero on any error.
+        # Scans canon/elements/** and canon/relations/**: atomicity (no relations
+        # inside element files), referential integrity, ArchiMate semantics, policy.
+        # Exits non-zero on any error.
         run: python3 .validators/lint.py
 
-  view-notations:
-    name: View notations
+  views:
+    name: View notations (file scope)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +79,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate every view notation file
+        # Pin the CLI major so a new major can't silently change validation
+        # behaviour mid-stream; bump deliberately. Adopters may pin an exact
+        # version aligned with the methodology_version in transitrix.yaml.
         run: |
           shopt -s globstar nullglob
           status=0
@@ -94,7 +89,7 @@ jobs:
           for f in canon/views/**/*.transitrix.yaml; do
             found=1
             echo "::group::validate $f"
-            npx --yes @transitrix/cli validate "$f" || status=1
+            npx --yes @transitrix/cli@1 validate "$f" || status=1
             echo "::endgroup::"
           done
           if [ "$found" -eq 0 ]; then
@@ -105,14 +100,13 @@ jobs:
   validation-gate:
     name: Architecture validation passed
     runs-on: ubuntu-latest
-    needs: [structure, model-integrity, view-notations]
+    needs: [model, views]
     if: always()
     steps:
       - name: Require all validation jobs to pass
         run: |
-          if [ "${{ needs.structure.result }}" != "success" ] \
-             || [ "${{ needs.model-integrity.result }}" != "success" ] \
-             || [ "${{ needs.view-notations.result }}" != "success" ]; then
+          if [ "${{ needs.model.result }}" != "success" ] \
+             || [ "${{ needs.views.result }}" != "success" ]; then
             echo "Architecture validation failed — merge blocked."
             exit 1
           fi
