@@ -1,0 +1,82 @@
+name: Public-surface hygiene
+
+# Fails a PR when the changed diff OR the PR title/body matches the internal-
+# vocabulary blocklist. The blocklist (a regex) is read from the HYGIENE_BLOCKLIST
+# repository secret so the patterns never appear in this workflow file, the git
+# history, or the Actions logs. Matches case-insensitively. Generic error message
+# only — never echoes the matched line, the diff hunk, the blocklist regex, or
+# any matched term. Reports file path only.
+#
+# Excluded from the diff scan: this workflow file itself and .gitignore — both
+# legitimately reference an internal-runner ignore pattern and would otherwise
+# self-trip.
+#
+# Skips cleanly when the secret is unavailable (e.g. PRs from forks) so external
+# contributors are not blocked by a guard that cannot evaluate them.
+
+on:
+  pull_request:
+
+jobs:
+  check-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan diff and PR metadata for blocklisted vocabulary
+        shell: bash
+        env:
+          BLOCKLIST: ${{ secrets.HYGIENE_BLOCKLIST }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${BLOCKLIST:-}" ]; then
+            echo "HYGIENE_BLOCKLIST secret not available (unset, or a fork PR) - skipping."
+            exit 0
+          fi
+
+          fail=0
+
+          # 1) Diff scan. Restrict to added/changed lines (unified-diff lines
+          # starting with a single '+', excluding the '+++' file header). Two
+          # paths are excluded: this workflow itself and .gitignore.
+          mapfile -t changed < <(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+              | grep -vxE '\.gitignore' \
+              | grep -vxE '\.github/workflows/public-surface-hygiene\.yml' \
+              || true
+          )
+
+          for f in "${changed[@]:-}"; do
+            [ -z "$f" ] && continue
+            [ -f "$f" ] || continue
+            if git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" \
+                 | grep -E '^\+[^+]' \
+                 | grep -qiE -e "$BLOCKLIST"; then
+              echo "::error file=$f::public-surface hygiene check failed on file diff"
+              fail=1
+            fi
+          done
+
+          # 2) PR title/body scan.
+          if printf '%s' "$PR_TITLE" | grep -qiE -e "$BLOCKLIST"; then
+            echo "::error::public-surface hygiene check failed on PR title"
+            fail=1
+          fi
+          if printf '%s' "$PR_BODY" | grep -qiE -e "$BLOCKLIST"; then
+            echo "::error::public-surface hygiene check failed on PR body"
+            fail=1
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
+            exit 1
+          fi
+          echo "OK - no internal-vocabulary matches on diff or PR metadata."
