@@ -4,7 +4,7 @@
 Deterministic, no-API-key guard. Nine parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
-     three layer prompts + READMEs exist, the _intake template is present.
+     four layer prompts + READMEs exist, the _intake template is present.
   B. CLI pipeline drive — runs the real CLI end-to-end on a fixture
      (scaffold-intake -> convert -> field-artefact -> emit-candidates -> validate
      -> review-queue) and asserts the outputs: a conformant field artefact with a
@@ -98,7 +98,7 @@ def part_a_bundle():
             except Exception as e:  # noqa: BLE001
                 check(False, f"schema does not parse: schemas/{short}.schema.json: {e}")
 
-    for prompt in ("01_motivation", "02_business", "03_application"):
+    for prompt in ("01_motivation", "02_business", "03_application", "04_implementation"):
         p = os.path.join(SKILL_DIR, "prompts", f"{prompt}.md")
         if check(os.path.isfile(p), f"prompt missing: prompts/{prompt}.md"):
             check(isinstance(frontmatter(p), dict), f"prompt frontmatter does not parse: prompts/{prompt}.md")

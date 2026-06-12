@@ -22,7 +22,8 @@ Emit a single JSON object. Nothing else.
   "elements": [
     { "id": "<TYPE>-[<middle>-]<N>", "name": "<short name>", "element_type": "<TYPE>",
       "extraction_confidence": "high|medium|low", "extraction_notes": "<optional>",
-      "valid_from": "<YYYY-MM-DD or omit>" }
+      "valid_from": "<YYYY-MM-DD or omit>",
+      "parent_goal": "<GOAL-… or omit — placeholder only, see GOAL section below>" }
   ],
   "relations": [
     { "rel_kind": "<closed kind>", "from": "<ID>", "to": "<ID>",
@@ -42,6 +43,15 @@ Emit a single JSON object. Nothing else.
 | `STAKEHOLDER` | names a party with an interest in an outcome | references an actor for identity; `internal`/`external` |
 
 `REQUIREMENT` vs `CONSTRAINT`: positive action → REQUIREMENT; restriction → CONSTRAINT. The same source may yield both.
+
+### `parent_goal` — placeholder reference on extracted GOALs
+
+When the source names a parent goal for an extracted GOAL ("this team goal supports the company-wide retention objective"), emit `parent_goal: "<GOAL-…>"` on the candidate naming the parent's ID. **This is a placeholder for downstream goal-tree placement, not a canonical field on the admitted GOAL element.** The actual goal-tree wiring uses the first-class time-aware `goal_parent` `REL-…` ([ELEMENT_PRIMITIVES §7.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md), [17-relations.md §3](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md)) and is admitted by a separate DSM step that reads these placeholders; this prompt does not emit `goal_parent` REL candidates.
+
+Rules for `parent_goal`:
+- Only emit when the source names the parent explicitly. Do **not** infer from document order or heading indentation.
+- Reference the parent by canonical ID — the same `GOAL-…` ID you give the parent when you also extract it from this source, or a `GOAL-…` ID the source itself names.
+- If the parent goal is not extracted from this source and not named by ID, leave `parent_goal` out and capture the relationship in `extraction_notes` for the reviewer.
 
 Motivation-layer relations you may propose (only above a high bar): `stakeholding` (`STAKEHOLDER → GOAL | ACTIVITY | CAPABILITY`). Most causal links between factors/goals are better left as `extraction_notes` for the reviewer unless the source states them plainly.
 
