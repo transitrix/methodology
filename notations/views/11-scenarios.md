@@ -1,8 +1,8 @@
 ---
 notation: "Scenarios"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-03"
+last_updated: "2026-06-12"
 status: "draft"
 file_extension: "*.scenarios.transitrix.yaml"
 dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) planned for next cut"
@@ -10,9 +10,9 @@ dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) pl
 
 # Scenarios — Report-Configuration View — Reference
 
-**Version:** 0.3
-**Date:** 2026-06-03
-**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification (epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122)); this revision documents the post-reclassification, report-config shape.
+**Version:** 0.4
+**Date:** 2026-06-12
+**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification (epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122)); this revision documents the post-reclassification, report-config shape. **v0.4 pins explicit defaults on every non-required field and adds the §4.1 zero-configuration default** ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md) §7 Step 1) so the report skill has a well-defined "what I assumed" fallback.
 **File extension:** `*.scenarios.transitrix.yaml`
 **Scope:** A **rendering / ordering / filtering configuration** for the Scenarios view over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). The document is a presentation surface — it carries no canonical content of its own.
 **Renderer:** Transitrix DSM — Scenarios page; Transitrix Studio (planned).
@@ -100,20 +100,41 @@ The document carries the canonical envelope (`notation:` header, `spec_version:`
 
 ## 4. Fields
 
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `view.id` | yes | string | View identifier, canonical-grammar (`SCENARIOS-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`SCENARIOS` document-level TYPE). |
-| `view.name` | yes | string | Human-readable name shown in the renderer. |
-| `view.description` | no | string | Short description of the purpose of this view (which scenarios it groups, why). |
-| `view.scenarios.include` | one of `include`/`filter` | list | Explicit list of `SCENARIO-…` IDs to render, in display order. |
-| `view.scenarios.filter` | one of `include`/`filter` | object | Declarative filter — `arrives_at: TARGET_STATE-…`, `pursues_any: [GOAL-…]`, `pursues_all: [GOAL-…]`. The renderer resolves the filter against the `SCENARIO` catalogue at render time. |
-| `view.order_by` | no | string | Ordering key (`name`, `id`, `arrives_at`, …). Default `name`. |
-| `view.layout` | no | string | `side-by-side` \| `stacked` \| `summary-table`. Default `side-by-side`. |
-| `view.show_steps` | no | bool | Whether to render each scenario's ordered `steps` inline. Default `true`. |
-| `view.show_target_state` | no | bool | Whether to render each scenario's `arrives_at` target-state composition inline. Default `true`. |
-| `view.show_pursues` | no | bool | Whether to render each scenario's `pursues` goal list inline. Default `true`. |
+Every field carries an explicit default, so a view with only the required envelope (`view.id`, `view.name`) renders deterministically — see §4.1.
+
+| Field | Required | Type | Default | Semantics |
+|---|---|---|---|---|
+| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`SCENARIOS-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`SCENARIOS` document-level TYPE). |
+| `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
+| `view.description` | no | string | empty | Short description of the purpose of this view (which scenarios it groups, why). |
+| `view.scenarios.include` | no ¹ | list | unset (use `filter`, or the full set) | Explicit list of `SCENARIO-…` IDs to render, in display order. |
+| `view.scenarios.filter` | no ¹ | object | **no filter — every admitted `SCENARIO` in canon** | Declarative filter — `arrives_at: TARGET_STATE-…`, `pursues_any: [GOAL-…]`, `pursues_all: [GOAL-…]`. The renderer resolves the filter against the `SCENARIO` catalogue at render time. |
+| `view.order_by` | no | string | `name` | Ordering key: `name`, `id`, `arrives_at`, or a custom comparator declared elsewhere. |
+| `view.layout` | no | string | `side-by-side` | Render layout: `side-by-side`, `stacked`, or `summary-table`. |
+| `view.show_steps` | no | bool | `true` | Whether to render each scenario's ordered `steps` inline. |
+| `view.show_target_state` | no | bool | `true` | Whether to render each scenario's `arrives_at` target-state composition inline. |
+| `view.show_pursues` | no | bool | `true` | Whether to render each scenario's `pursues` goal list inline. |
+
+¹ **`scenarios`** — both keys are optional and only ever *narrow* the rendered set. Omitting them is the zero-config default: the renderer renders **every admitted `SCENARIO`** in canon (sorted by the default `order_by: name`). Name `include` or `filter` to narrow to a specific cut. If both `include` and `filter` are present, `include` wins and `filter` is silently ignored — same precedence as the obligation axis in [`21-compliance-impact.md`](21-compliance-impact.md) §4.
 
 All references in `view.scenarios.include`, `view.scenarios.filter.arrives_at`, and `view.scenarios.filter.pursues_*` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
+
+### 4.1 Zero-configuration default
+
+A view that carries only the required envelope —
+
+```yaml
+notation: scenarios
+spec_version: "0.3"
+methodology_version: "0.5.0"
+view:
+  id: SCENARIOS-ALL-1
+  name: "All scenarios"
+```
+
+— renders **deterministically**: every admitted `SCENARIO` in canon, side-by-side, with each scenario's `steps`, `arrives_at`, and `pursues` rendered inline, ordered by `name`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user as "all scenarios, no filter". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
+
+Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [`REPORT_VIEW_CONFIG.md`](REPORT_VIEW_CONFIG.md).
 
 ---
 
@@ -146,3 +167,5 @@ The example files under [`../examples/scenarios/`](../examples/scenarios/) (`opt
 - `target_state_satisfies_goal` REL kind (which goals an end-state satisfies): [elements/17-relations.md](../elements/17-relations.md) §3.
 - ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md).
 - Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1.
+- Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
+- ADR — reports rendered from declarative view-configs, with a thin skill on top: [../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md).
