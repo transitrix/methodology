@@ -43,7 +43,7 @@ for every consumer.
 2. **Doubles as the product demo.** Beyond the bare adopter shape it carries a **named demo
    scenario + narrative** — the success story the product shows. The narrative is **public-facing**,
    so its voice/positioning is owned by the strategy/comms layer (STYLE_GUIDE §3, no retired terms,
-   no client names) — **not** a Win-Claude solo authoring call.
+   no client names) — **not** a maintainer solo authoring call.
 3. **methodology** removes `organizations/acme_corp/`, leaving a short pointer/README; the front-door
    README + onboarding `SKILL.md` re-point to the new repo. Coordinate with the onboarding front door
    and with [`2026-06-11-validation-two-axis-model.md`] follow-up #202 (the validator's canonical
@@ -74,7 +74,7 @@ ref. Avoid floating `main`. Final choice recorded as a follow-up before T3.
 ## Consequences
 
 - **New repo = new family member.** Needs its own `CLAUDE.md`, CI, and (optionally) a per-repo agent.
-  Creating the repo is **Valerii's gate** (outside Win-Claude's existing writable areas).
+  Creating the repo is **Valerii's gate** (outside the maintainer's existing writable areas).
 - **Public-facing demo surface.** The success-story narrative is a comms/positioning surface — file a
   hub heads-up so the strategy/comms layer shapes the story to canon voice. The structural extraction
   itself is within-family (methodology ↔ studio) and stays a local ADR; only the narrative/voice

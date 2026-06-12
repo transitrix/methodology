@@ -70,6 +70,6 @@ None — both prior open points were resolved on 2026-06-09 (deadline source →
 
 ### Decision record
 
-- **Proposed by Win-Claude, 2026-06-09**, from a report-shape discussion with Valerii: render compliance impact in Process-Blueprint form with a configurable, derived law lane and optional assertion/requirement drill-down.
+- **Proposed by the maintainer, 2026-06-09**, from a report-shape discussion with Valerii: render compliance impact in Process-Blueprint form with a configurable, derived law lane and optional assertion/requirement drill-down.
 - **Refined with Valerii, 2026-06-09:** cell decoration is three orthogonal signals — *new* (since last snapshot; dashed border), *known gap* (`ASSERTION.status` non-conformance), and *gap with a deadline* (urgent); deadline source = `REQUIREMENT.deadline` (external regulatory date; an internal `ASSERTION` remediation target is a separate optional overlay) surfaced via a temporal status (`past_due` / `in_force` / `upcoming`); adopted the three entry-modes framing (by object / by obligation / by event).
 - **Accepted by Valerii, 2026-06-09:** display preferences (lane toggles, decoration prefs) are **per-user and local** — kept in a dedicated settings folder tracked by `.gitkeep` while its contents are `.gitignore`d (empty for other users), never committed, not canon. Named reports still pin their lane-set in the versioned report definition. With this and the deadline-source resolution, all open points are closed and the ADR is **Accepted**.

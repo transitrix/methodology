@@ -60,5 +60,5 @@ Surfaced 2026-06-09 while discussing report UX. Within the Transitrix family; no
 
 ### Decision record
 
-- **Proposed by Win-Claude, 2026-06-09**, from a report-UX discussion.
+- **Proposed by the maintainer, 2026-06-09**, from a report-UX discussion.
 - **Accepted by Valerii, 2026-06-09:** direction confirmed (view-config as the parameter artefact + thin skill over a deterministic renderer CLI). Delivery sequenced CLI-first then thin skill (Decision §7); no standalone tooling repo now — report tooling rides the ingest tooling-extraction. Open point resolved.
