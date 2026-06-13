@@ -135,6 +135,8 @@ Exit codes match the repo convention: `0` clean, `1` findings, `2` script error.
 
 The *down* flow — the central architecture repo publishing versioned object catalogs (the TOGAF *Standards Information Base*) that project repos pin and consume — is a separate component, deliberately not in this release. It will reuse the same principles (explicit version pins, "supersede with a new version, don't edit in place") and will close the loop with this log: a repo bumping its catalog-version pin is itself an architecturally-significant decision → it emits an `author: agent` ADR here. Until then, the ADL stands on its own as the up-flow.
 
+The *propagation mechanism* the down-flow will reuse — versioned transport, the named upgrade operation, and the agent ratification contract — is specified in [`methodology-update-propagation.md`](methodology-update-propagation.md). The reference-catalog layer is the next consumer of that mechanism.
+
 ## 10. Adopter setup
 
 1. **Per project repo** — adopt Team Operations `operations/decisions/` (or use an existing `docs/decisions/`). Records carry `author` (and ideally `source`). Add the CI guard: run `scripts/check-adl.mjs` on PRs touching the decisions folder.
