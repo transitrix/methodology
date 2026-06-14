@@ -169,6 +169,8 @@ Every notation file is validated before commit. Two sanctioned paths:
 - **Transitrix Studio (VS Code extension)** — install from the Marketplace (`transitrix.transitrix-studio`). The extension validates on save and shows error annotations in the editor.
 - **Transitrix CLI** — `npx @transitrix/cli validate path/to/your.fgca.transitrix.yaml`. Use in CI or when working without VS Code.
 
+For Mermaid diagrams embedded in `.md` files (ADRs, architecture notes), also install **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — VS Code Marketplace and Open VSX — to render them inline. Not a validator: a preview aid only.
+
 The agent does **not** commit files with `error`-level validation findings. `warning`-level findings are surfaced to the adopter and committed only with explicit acknowledgement. The agent does not auto-suppress validation rules.
 
 Every notation spec carries its own validation-codes table (e.g. `FGCA-001..015`, `GOALS-001..013`, `BL-001..009`, `ISS-001..006`, `CODEX-001..003`). When surfacing a validation error to the adopter, the agent includes the canonical code so the rule is traceable to the spec.

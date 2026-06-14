@@ -1,7 +1,7 @@
 ---
 name: Transitrix Onboarding
 description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
-when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology.
+when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology. Also triggers when the user says "I cloned my team's Transitrix repo", "help me get oriented in this model", "make my first change to our architecture repo", or expresses a similar intent to orient in or contribute to a repo that already uses Transitrix.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
 
@@ -13,7 +13,18 @@ The user has typed `/transitrix:onboard` (or you've decided to invoke this skill
 
 ---
 
-## Step 1 — Confirm intent and surface area
+## Step 1 — Detect repo state and branch
+
+**Before asking anything,** check for signs of an existing Transitrix repo in the current working directory:
+
+- `Glob` for `transitrix.yaml` at the working directory root (the adopter manifest), or
+- a `canon/` directory at the root.
+
+If either is found → switch to **Orient / Contribute mode** (§ below). Skip Steps 2–5.
+
+If neither is found → **greenfield setup** — continue with the two questions below.
+
+### Greenfield — confirm intent and surface area
 
 Ask the user two short questions:
 
@@ -27,6 +38,42 @@ Ask the user two short questions:
 2. **How well do you know the methodology?** Calibrate explanation depth. If the user says "first time" — give a 90-second methodology walkthrough before scaffolding. If they say "I know it" — skip straight to step 2.
 
 Do not assume. If the user picks a notation outside the family-selection table, that's fine — every notation in § Cheat sheet is a valid first artefact.
+
+---
+
+## Orient / Contribute mode (existing repo)
+
+> **Entry condition:** `transitrix.yaml` or `canon/` found in the working directory (Step 1 detection). Steps 2–5 do not apply; skip straight to Step 6 after the first change lands.
+
+**1 — Read the repo silently.** Before speaking to the user:
+
+- `Read` `transitrix.yaml` — note `methodology_version`, `notations:`, `zones:`.
+- `Glob` `canon/views/` — list which notation sub-folders exist and which are non-empty.
+- `Glob` `canon/elements/` — note which ArchiMate layers have content.
+- Check whether `field/` and `codex/` directories exist and have files.
+- If `AGENTS.md` exists at the repo root, `Read` it — it carries adopter-specific rules that govern the rest of this session.
+
+**2 — Orient the user.** Give a concise summary (3–5 bullets):
+
+- Which methodology version the repo uses.
+- Which notations are in use (non-empty `canon/views/` sub-folders).
+- Which zones are active and populated.
+- Where the agent guide lives (`AGENTS.md` at repo root) and that you have read it.
+
+Example:
+> This is a Transitrix repo at methodology v0.5.0, using FGCA, Goals, and Capability Map.
+> Active zones: `canon/` (populated), `field/` (empty), `codex/` (empty).
+> Agent guide: `AGENTS.md` at repo root — read and in effect.
+
+**3 — Point at `AGENTS.md`.** Tell the user: "The repo's `AGENTS.md` governs how I behave here. What would you like to do first — add a new notation file, modify an existing one, or something else?"
+
+**4 — Drive the first change.** Act on the user's response:
+
+- **Add a new notation file** → jump to **Step 3** (template copy → authoring → validate → PR). Before copying a template, use `Glob`/`Grep` over the existing tree to pick the right domain prefix and avoid ID clashes.
+- **Modify an existing file** → `Read` it first, summarise its current structure, then enter **Step 4** (interactive authoring with inline validation).
+- **"Where is X?"** → `Grep` the repo and answer directly; no authoring loop needed.
+
+After the first change is authored and validated, continue to **Step 6** (suggest next steps).
 
 ---
 
@@ -78,6 +125,10 @@ After the directory tree exists, copy the three canonical root files from the sk
 - `templates/AGENTS.md` → `<repo-root>/AGENTS.md` — the assistant-neutral agent guide. It carries `ADOPTER-FILL-ME` placeholders the user should fill in later (language, confidentiality policy, task source — see its §7–9).
 - `templates/copilot-instructions.md` → `<repo-root>/.github/copilot-instructions.md` — the GitHub Copilot pointer that redirects to `AGENTS.md`.
 - `templates/transitrix.yaml` → `<repo-root>/transitrix.yaml` — the adopter manifest (schema: `notations/MANIFEST.md`). After copying, edit `notations:` to list only the notations the user picked in step 1 (plus `codex` if they will use the codex zone), and `zones:` to the subset of `canon, field, codex` they will maintain.
+
+Additionally, write one generated file (no template — author it inline):
+
+- `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending both VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview, and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
 
 **Do not scaffold a Claude-specific `CLAUDE.md` agent guide.** The canonical guide for every assistant is `AGENTS.md`. If the user is on a tool that doesn't read `AGENTS.md` natively (e.g. Claude Code looks for `CLAUDE.md`, Cursor looks for `.cursor/rules/`), drop a one-line pointer file in that tool's location that reads *"Read `AGENTS.md` in the repo root and follow it."* The guidance itself stays in `AGENTS.md` only — see `AGENTS.md` §"Using this guide with your assistant".
 
@@ -186,6 +237,8 @@ Once the user has a working starter file, point them at **Transitrix Studio** (t
 > "Install Transitrix Studio from the VS Code Marketplace (search for `transitrix.transitrix-studio`). Open the file you just authored — the preview opens automatically beside the editor and refreshes on every save."
 
 The full notation set previews in Studio: BPMN, Goals, FGCA, FGA, Activity Network (PSND + Gantt), Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Issues register.
+
+Also recommend **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — available on both the VS Code Marketplace and Open VSX — so Mermaid diagrams in `.md` files (ADRs, architecture notes, `AGENTS.md` diagrams) render inline. Between Studio (Transitrix notation preview) and the Mermaid extension (Markdown diagram preview), the user has full visual coverage of the repo.
 
 If the user is on a system without VS Code, they can use the CLI for compile / validate:
 
