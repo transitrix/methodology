@@ -301,6 +301,8 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary
 | `parent` | no | string | `ACTIVITY-…` — the aggregating work package (recursive: initiative → programme → project → task, all one TYPE; §6.1). Subsumes WBS grouping. |
 | `scenario` | no | string | `SCENARIO-…` this activity belongs to. |
 | `owner` | no | string | `ACTOR-…` responsible for the activity. Replaces the old parallel `owner`(free-text) / `unit` / `employee` fields, collapsed into one typed reference by the 2026-05-29 Actors decision. |
+| `owner_role` | no | string | `ROLE-…` accountable for the activity (the positional accountability). Distinct from `owner` (`ACTOR` = who performs); uses the shared envelope field from §3. Both are optional and independent. |
+| `stakeholders` | no | list | `[STAKEHOLDER-…]` IDs whose interests are at stake in this activity. Each `STAKEHOLDER` element carries its concern/interest/influence profile and an `ACTOR` reference for identity (§7.15). |
 | `start_date` / `end_date` | no | string | Planned dates — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
 | `labor_cost` / `resources_cost` / `effort` | no | number | Cost / effort signals. |
 | `score` / `sort` | no | integer | Prioritisation / display ordering. |
