@@ -2,7 +2,7 @@
 title: "Assertion — REQUIREMENT realisation claim"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-05"
+last_updated: "2026-06-15"
 status: "draft"
 ---
 
@@ -121,6 +121,48 @@ Read it as: the **PROCESS bears** the obligation (it is the unit of compliance),
 ## 2.2 Proposed (pre-admission) assertions
 
 An automated harvest MAY emit an ASSERTION in the `proposed` admission state ([CONTRACT.md](../CONTRACT.md) §6.1) — e.g. a collector recording that a freshly-extracted obligation impacts a process or step. A proposed assertion carries `admission_state: proposed`, is excluded from admitted canon and every derived view, and does **not** count as coverage for `REQ-COVERAGE-001` until a human admits it (`proposed → active`). The collector never writes admitted canon; a human gate admits or rejects each draft. A proposed assertion MAY reference a proposed REQUIREMENT in the same harvest batch, but an admitted (`active`) assertion MUST NOT depend on an un-admitted one (`ADMIT-005`).
+
+---
+
+## 2.3 System, data, and infrastructure obligations
+
+Regulatory frameworks increasingly impose obligations whose **subject is the system, its data, or its infrastructure** — data-retention rules on generated reports, data-residency constraints on application hosting, breach-notification duties on a data-management process. All three obligation classes are expressible with existing primitives; **`ASSERT-003` is unchanged** and no new subject TYPE is added.
+
+The governing principle is the same as §2.1 (stage/task-level impact): the **compliance unit** stays at the `{PRODUCT, PROCESS, CAPABILITY}` grain; the system or infrastructure element that technically realises or violates the obligation goes in `realised_via`, which carries **no TYPE restriction**.
+
+**Data-retention obligations** on operational artefacts (generated reports, archives, audit logs) land on the **process** that owns the retention behaviour — the archival, data-management, or reporting process. The application or service that physically retains the data goes in `realised_via`:
+
+```yaml
+about: REQUIREMENT-REPORT-RETENTION-1       # e.g. "retain audit reports for 5 years"
+subject: PROCESS-REPORT-ARCHIVAL-1          # the process bears the retention obligation
+realised_via:
+  - APPLICATION-ARCHIVE-SERVICE-1           # the storage service that physically retains the data
+status: compliant
+```
+
+**Data-residency / processing-location obligations** — "data must not leave region X" or "processing must occur in region Y" — land on the **product** that must be hosted in-region, or on the **process** that performs the constrained data transfer. The application service that places the product or process in the required region goes in `realised_via`:
+
+```yaml
+about: REQUIREMENT-DATA-RESIDENCY-EU-1      # e.g. "personal data must be processed in the EU"
+subject: PRODUCT-ANALYTICS-PLATFORM-1       # the product whose deployment region is constrained
+realised_via:
+  - APPLICATION-EU-CLOUD-HOSTING-1          # the hosting application that realises in-region placement
+status: compliant
+```
+
+Alternatively, where the obligation binds the data-transfer activity rather than a deployable product:
+
+```yaml
+about: REQUIREMENT-DATA-RESIDENCY-EU-1
+subject: PROCESS-DATA-PROCESSING-1         # the data-processing process is the compliance unit
+realised_via:
+  - APPLICATION-EU-CLOUD-HOSTING-1
+status: compliant
+```
+
+**Report composition / segregation restrictions** — "report type A must not co-mingle content category B" — are **restrictions**, not positive obligations. They belong to the `CONSTRAINT` type ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.13), which is already the canonical form for "the organisation must not do X". A CONSTRAINT-side assertion mechanism is explicitly out of scope for v1 (§7); model report-composition rules as `CONSTRAINT` artefacts and express violation via the `CONSTRAINT.status` or downstream tooling, not via an ASSERTION.
+
+**Summary.** For each new obligation class: choose the PRODUCT, PROCESS, or CAPABILITY that *owns* the compliance obligation as `subject`; place the APPLICATION, INTEGRATION, or other technical element that delivers or constrains it in `realised_via`. The three-subject grain (ASSERT-003) is the permanent compliance anchor; `realised_via` is the open-typed realisation list.
 
 ---
 
