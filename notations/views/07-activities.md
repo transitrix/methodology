@@ -199,6 +199,8 @@ activities:
 | `parent` | no | string (ID ref to activity) | hierarchical parent activity (WBS-style, **single** parent only) |
 | `predecessors` | no | array of string (ID refs to activities) | activities that must complete before this one can start |
 | `owner` | no | string (ID ref) | reference to the accountable `ACTOR-…` (`person` / `business_unit` / `system`); see §5.6 |
+| `owner_role` | no | string (ID ref) | reference to the accountable `ROLE-…` (positional accountability); see §5.6 |
+| `stakeholders` | no | array of string (ID refs) | `STAKEHOLDER-…` IDs whose interests are at stake in this activity; see §5.11 |
 | `score` | no | integer | local prioritisation signal |
 | `sort` | no | integer | manual display ordering |
 | `tags` | no | array of string | free-text tags (M:M) |
@@ -213,11 +215,12 @@ activities:
 
 ### 5.3 Multi-value fields — explicit
 
-Three fields are **arrays** by design, even where the equivalent fields in current Transitrix DSM are single scalars (DSM migration is tracked separately):
+Four fields are **arrays** by design, even where the equivalent fields in current Transitrix DSM are single scalars (DSM migration is tracked separately):
 
 - `goals: []` — an activity can serve multiple goals. Array form is canonical.
 - `predecessors: []` — an activity can have multiple predecessors. Array form is required for PSND/AoN.
 - `tags: []` — an activity can carry multiple tags. Array form is canonical.
+- `stakeholders: []` — an activity can have multiple stakeholders. Array form is canonical (see §5.11).
 
 A single-value form (e.g., `goal: GOAL-X`) is **not accepted** and SHOULD be reported by the validator as an error with a suggestion to convert to the array form.
 
@@ -233,11 +236,12 @@ Activities with `start_date` AND `end_date` AND `duration` MUST have `duration` 
 
 All dependencies are interpreted as **Finish-to-Start with zero lag** by renderers and CPM computation. Typed dependencies and lag are reserved for a future version and will be additive (existing documents without these fields will remain valid).
 
-### 5.6 Owner — a single Actor reference
+### 5.6 Owner fields — Actor and Role
 
-`owner` is an optional reference to the `ACTOR` accountable for the activity — `ACTOR-…` of `type` `person`, `business_unit`, or `system` (see [elements/19-actors.md](../elements/19-actors.md)).
+Two complementary fields express different dimensions of ownership:
 
-This collapses the three parallel ownership fields DSM historically exposed (`owner` free-text, `unit` → org unit, `employee` → named employee) into one typed reference, per the 2026-05-29 Actors decision: identity lives in a single `ACTOR` catalogue, so a unit-owner and a person-owner are both just `ACTOR-…` IDs distinguished by the actor's `type`. Legacy free-text `owner` values migrate to an `ACTOR(type: person)` (or `system`) record; the `unit` / `employee` fields are removed (mapping in the `0.5 → 0.6` migration recipe).
+- **`owner: ACTOR-…`** — *who performs the work* (an identity). Optional reference to the `ACTOR` responsible for the activity — `ACTOR-…` of `type` `person`, `business_unit`, or `system` (see [elements/19-actors.md](../elements/19-actors.md)). This collapses the three parallel ownership fields DSM historically exposed (`owner` free-text, `unit` → org unit, `employee` → named employee) into one typed reference, per the 2026-05-29 Actors decision. Legacy free-text `owner` values migrate to an `ACTOR(type: person)` (or `system`) record; the `unit` / `employee` fields are removed (mapping in the `0.5 → 0.6` migration recipe).
+- **`owner_role: ROLE-…`** — *who is accountable* (a position). Optional reference to the `ROLE` that carries positional accountability for the activity. Distinct from `owner`: an `ACTOR` is an identity; a `ROLE` is a position. Both are optional and independent — an activity may carry either, both, or neither. Uses the shared envelope field defined in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.
 
 ### 5.7 BDN linkage
 
@@ -314,6 +318,12 @@ Renderer behaviour:
 - The `parent` relation is **single-valued** (an activity has at most one parent), aligning with WBS conventions.
 
 A phase with no children is structurally orphan (validator MAY warn).
+
+### 5.11 Stakeholders
+
+`stakeholders: []` is an optional array of `STAKEHOLDER-…` IDs whose interests are at stake in this activity. Each `STAKEHOLDER` element is a first-class canonical primitive (see [elements/20-stakeholders.md](../elements/20-stakeholders.md)) that carries its concern, interest, and influence profile, plus an `ACTOR` reference for identity. Using `STAKEHOLDER-…` IDs (rather than inline `ACTOR-…` or `ROLE-…` IDs) keeps the stake profile in one place — the `STAKEHOLDER` catalogue — and allows a single stakeholder to appear across multiple activities without repeating the profile.
+
+Array form is canonical (`stakeholders: [STAKEHOLDER-X, STAKEHOLDER-Y]`). An empty array is equivalent to omission.
 
 ---
 
