@@ -120,6 +120,7 @@ zone: canon                          # the TARGET zone — where this artefact l
 admission_state: proposed            # proposed | active | rejected — absent ⇒ active (back-compat)
 proposed_at: "2026-06-05"            # required when proposed/rejected — when the harvest emitted the draft
 proposed_by: "reg-intel-collector"   # required when proposed/rejected — the tool / harvest id (never a human)
+owner_to_confirm: ROLE-LEGAL-1       # recommended when proposed — the ROLE accountable for the admission decision
 gate_checks:
   uniqueness: pass                   # checks the harvest can self-certify mechanically
   consistency: pass
@@ -135,6 +136,7 @@ derived_from:
 | `reviewer_authority` | no | string | `ai_reviewed` \| `expert_confirmed` — the authority **tier** of the reviewer who admitted the artefact (tiered approval, §6.2). **Absent ⇒ `expert_confirmed`** (back-compat: every artefact admitted before this axis existed is treated as expert-confirmed; no migration). Only meaningful with `admission_state: active`; both tiers are admitted canon. A **tool** writes `ai_reviewed`, a **human** writes `expert_confirmed` (`ADMIT-007`). Orthogonal to `admission_state` and to the two trust signals (`source_quality`, `extraction_confidence`); never folded into the §11.4 confidence formula (§11.4). |
 | `proposed_at` | when `proposed` / `rejected` | string | Date the automated harvest emitted the draft — quoted ISO 8601 (§4). |
 | `proposed_by` | when `proposed` / `rejected` | string | The tool / harvest identifier that emitted the draft. A human never writes `proposed`. |
+| `owner_to_confirm` | recommended when `proposed` | string | `ROLE-…` ID of the ROLE accountable for reviewing this proposed draft and making the admission decision (`proposed → active \| rejected`). Routes the open item to the designated inbox; absent ⇒ the draft is unrouted (warning `ADMIT-008`). Not used on `active` or `rejected` artefacts — admission is already decided. |
 | `rejected_at` | when `rejected` | string | Date a human refused the draft. |
 | `rejected_by` | when `rejected` | string | The human reviewer who refused it. |
 | `rejection_reason` | recommended when `rejected` | string | Why the draft was refused — kept for audit. |
@@ -152,7 +154,7 @@ For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitte
               └────────────(human review: refuse)──────────────────────▶ rejected
 ```
 
-- **`proposed`** — written **only** by an automated harvest. The artefact is shaped as its target canon TYPE and is structurally validated as that TYPE, but it is **not admitted canon**: it is excluded from the admitted set and from every derived view (below). `admitted_at` / `admitted_by` are absent; human-judgement `gate_checks` carry `pending_review`.
+- **`proposed`** — written **only** by an automated harvest. The artefact is shaped as its target canon TYPE and is structurally validated as that TYPE, but it is **not admitted canon**: it is excluded from the admitted set and from every derived view (below). `admitted_at` / `admitted_by` are absent; human-judgement `gate_checks` carry `pending_review`. `owner_to_confirm` (recommended) routes the open item to the ROLE accountable for the admission decision.
 - **`active`** — admitted to canon. A human reviewer runs the canon gate (§6), completes every `gate_checks` entry to `pass`, sets `admission_state: active`, and fills `admitted_at` / `admitted_by` with the admission date and their handle. This is the only transition into admitted canon for a harvested draft. (Human-authored canon starts here directly, with `admission_state` absent.)
 - **`rejected`** — a human reviewed the draft and refused it. The file is retained as an **auditable decision record** (who, when, why) but is never admitted canon and is excluded from derived views. A later harvest that re-finds the same source emits a *new* `proposed` draft; `rejected` is terminal and is not reopened.
 
@@ -171,6 +173,7 @@ For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitte
 | `ADMIT-005` | warning | An `active` artefact cross-references a `proposed` or `rejected` artefact — admitted canon must not depend on un-admitted drafts. Cross-cutting (requires the full catalogue). |
 | `ADMIT-006` | error | `reviewer_authority` is present and not one of `ai_reviewed` / `expert_confirmed` (§6.2). |
 | `ADMIT-007` | error | The admitter does not match the tier: `reviewer_authority: ai_reviewed` but `admitted_by` identifies a human, or `reviewer_authority: expert_confirmed` but `admitted_by` identifies a tool. A tool writes `ai_reviewed`; a human writes `expert_confirmed` (§6.2). |
+| `ADMIT-008` | warning | `admission_state: proposed` and `owner_to_confirm` is absent — the open item has no designated reviewer and will not route to any inbox. |
 
 This lifecycle is what an automated regulatory-intelligence collector (a separate task) depends on: the collector emits `proposed` drafts plus a review digest, and the human gate admits or rejects. The per-TYPE specs note it where relevant ([15-requirement.md](elements/15-requirement.md), [16-assertion.md](elements/16-assertion.md)).
 
