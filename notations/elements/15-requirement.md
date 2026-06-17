@@ -119,7 +119,7 @@ valid_to: null
 
 Field naming follows the conventions in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) and [CONTRACT.md](../CONTRACT.md); no requirement-specific naming conventions are introduced.
 
-**Proposed (pre-admission) requirements.** An automated harvest (e.g. a regulatory collector) MAY emit a REQUIREMENT in the `proposed` admission state — a candidate extracted from a codex source that has not yet been human-reviewed. It carries `admission_state: proposed` per [CONTRACT.md](../CONTRACT.md) §6.1, is excluded from admitted canon and every derived view, and does **not** trigger `REQ-COVERAGE-001` until a human admits it (`proposed → active`). The collector never writes admitted canon; a human gate admits or rejects each draft.
+**Proposed (pre-admission) requirements.** An automated harvest (e.g. a regulatory collector) MAY emit a REQUIREMENT in the `proposed` admission state — a candidate extracted from a codex source that has not yet been human-reviewed. It carries `admission_state: proposed` per [CONTRACT.md](../CONTRACT.md) §6.1, is excluded from admitted canon and every derived view, and does **not** trigger `REQ-COVERAGE-001` until a human admits it (`proposed → active`). The collector never writes admitted canon; a human gate admits or rejects each draft. A proposed REQUIREMENT SHOULD carry `owner_to_confirm: ROLE-…` ([CONTRACT.md](../CONTRACT.md) §6.1) to route the open item to the accountable ROLE for review — e.g. `ROLE-LEGAL-1` for a proposed legal obligation awaiting Legal confirmation. Absent `owner_to_confirm` emits `ADMIT-008` (warning).
 
 ---
 
