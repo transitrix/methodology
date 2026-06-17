@@ -32,7 +32,9 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## 1. What this view is
 
-A compliance-impact view answers one question: **for a given set of subjects (a product, the processes that deliver it, the stages and tasks inside those processes), which regulatory obligations bear on each cell, and what is the current compliance status of each (subject, obligation) pair?**
+A compliance-impact view answers one question: **for a given set of subjects — a product and the processes that deliver it, or the processes and infrastructure that own a system/data obligation directly — which regulatory obligations bear on each cell, and what is the current compliance status of each (subject, obligation) pair?**
+
+The view handles both **product-compliance** scenarios (a law obliges a PRODUCT, and the matrix columns walk the product's processes) and **system/data/infrastructure-compliance** scenarios (a data-retention or data-residency rule obliges a PROCESS directly, per [elements/16-assertion.md §2.3](../elements/16-assertion.md)). The column orientation is chosen per §4 `view.grouping.columns`.
 
 The renderer materialises that matrix from canon. Nothing is stored twice:
 
@@ -55,6 +57,8 @@ This mirrors how the Scenarios view ([11-scenarios.md](11-scenarios.md)) is a re
 | A regulator-facing or audit-facing report that lists every active obligation against the process(es) that realise it. | Compliance Impact view |
 | Compare the impact footprint of two regulatory regimes side-by-side over the same product. | Compliance Impact view |
 | Drive harvesting prioritisation — visualise where the model is dark for a given regime. | Compliance Impact view (in conjunction with the coverage metric, see §6) |
+| Render data-retention, data-residency, or cybersecurity obligations where the compliance unit is a data-management or infrastructure process (no product subject). | Compliance Impact view — with `subjects.processes` and `process-*` columns (§4) |
+| Surface obligations by regulatory domain (data-protection, cybersecurity, data-residency) across all bearing processes. | Compliance Impact view — filtered by `obligations.filter.derived_from_codex` to the relevant regime |
 
 For the canonical authoring of an obligation, the claim that a subject realises it, or the process flow that bears it, use the element primitives, not this view:
 
@@ -99,7 +103,8 @@ view:
   # Grouping (the axes of the matrix). Default: product × stage × task.
   grouping:
     rows: "obligation"           # obligation | stage | task
-    columns: "product-stage-task"  # product-stage-task | product-stage | product
+    columns: "product-stage-task"  # product-*: product-stage-task | product-stage | product
+                                   # process-*: process-stage-task | process-stage | process
 
   # Status display.
   status_display:
@@ -134,7 +139,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.obligations.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of `REQUIREMENT-…` IDs to render, in row-order. |
 | `view.obligations.filter` | no ² | object | **no filter — every `REQUIREMENT` bearing on the subjects** | Declarative filter — `derived_from_codex: [LAW-… \| REGULATION-… \| POLICY-… \| INTERNAL_STANDARD-…]`, `jurisdiction: …`, `regime: …`. The renderer resolves the filter against the `REQUIREMENT` catalogue at render time, following each requirement's `derived_from` to its codex source. |
 | `view.grouping.rows` | no | string | `obligation` | Row dimension: `obligation` (one row per `REQUIREMENT`), `stage` (one row per process stage), `task` (one row per task / flow step). |
-| `view.grouping.columns` | no | string | `product-stage-task` | Column dimension: `product-stage-task` (the finest grain), `product-stage`, `product`. |
+| `view.grouping.columns` | no | string | `product-stage-task` | Column dimension. **Product-centric** (default): `product-stage-task` (finest grain), `product-stage`, `product`. **Process-centric** (use when `subjects.processes` is the entry point for system/data/infrastructure obligations): `process-stage-task`, `process-stage`, `process`. Use `process-*` to render obligations whose compliance unit is a PROCESS directly rather than a PRODUCT (see [elements/16-assertion.md §2.3](../elements/16-assertion.md)); mixing `subjects.processes`-only with `product-*` columns triggers `COMPIMP-009`. |
 | `view.status_display.show` | no | list | all five (`compliant`, `partial`, `non_compliant`, `under_review`, `n_a`) | Which `ASSERTION.status` values to render. |
 | `view.status_display.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to the cell) or `shown-distinct` (rendered with a distinct marker so a reviewer can see the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
 | `view.status_display.treat_ai_reviewed_as` | no | string | `shown-distinct` | How to handle admitted `ASSERTION`s carrying `reviewer_authority: ai_reviewed` ([CONTRACT.md](../CONTRACT.md) §6.2): `shown-distinct` (rendered with a distinct marker so the AI-reviewed tier is visible alongside expert-confirmed canon), `shown-same` (treated identically to `expert_confirmed`), or `hidden` (the AI-reviewed assertion contributes nothing to the cell). Both tiers are admitted canon, so the default surfaces the AI-reviewed tier distinctly rather than hiding it. A cell whose impact rests on an `ai_reviewed` assertion (or a dependency chain containing one) renders at the **weakest-link** authority (§6.2). |
@@ -142,7 +147,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `regime`, `jurisdiction`. |
 | `view.order_columns_by` | no | string | `process-order` | Column ordering key: `process-order` (each process's stages and tasks in flow order, then the next process), `id`, `name`. |
 
-¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer scopes the view to **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the view to a product family or specific processes. (This matches the shipped renderer, which auto-fills the product set from canon when `subjects.products` is empty.)
+¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer scopes the view to **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the view to a product family or specific processes. To render system/data/infrastructure obligations (data-retention, data-residency) where the compliance unit is a PROCESS directly — rather than a product whose processes are derived from `products` — name only `subjects.processes` and set `view.grouping.columns` to a `process-*` value. (This matches the shipped renderer, which auto-fills the product set from canon when `subjects.products` is empty.)
 
 ² **`obligations`** — both keys are optional and only ever *narrow* the row set. Omitting them renders every `REQUIREMENT` bearing on the named subjects (the full matrix). If both `include` and `filter` are present, `include` wins and `filter` is ignored.
 
@@ -177,7 +182,7 @@ A conformant renderer reads exactly these canonical inputs:
 
 1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.status_display.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or process-blueprint stage to localise the impact), and `status`.
 2. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20).
-3. **Process-blueprint stages** — when a process-blueprint document covers the same processes, its `stages[]` are the canonical stage grain for `view.grouping.columns: product-stage`. The blueprint is read as supplementary structure; nothing in the view derivation requires it (a renderer without a blueprint falls back to grouping by flow step).
+3. **Process-blueprint stages** — when a process-blueprint document covers the same processes, its `stages[]` are the canonical stage grain for `view.grouping.columns: product-stage` or `process-stage`. The blueprint is read as supplementary structure; nothing in the view derivation requires it (a renderer without a blueprint falls back to grouping by flow step).
 4. **`REQUIREMENT` status** — the `status:` field of each `REQUIREMENT` named in (or selected by) `view.obligations`. The view does not display this field directly; it is used by the renderer to surface obligations whose own status (e.g. `proposed`, `superseded`) modifies how a cell should be displayed (e.g. a row backed by a superseded obligation MAY be rendered with a strikethrough — but the data fact is the obligation's own status, not anything the view document carries).
 
 The renderer reads **no other input**. In particular: the view document itself contributes only filter / grouping / labelling configuration — never a cell value.
@@ -188,9 +193,14 @@ For each (row, column) cell in the materialised matrix:
 
 1. **Resolve the row's obligation set** from `view.obligations.include` or `view.obligations.filter` against the `REQUIREMENT` catalogue.
 2. **Resolve the column's subject-cell set** from `view.subjects.*` and `view.grouping.columns`:
-   - `product-stage-task` — the cell key is `(PRODUCT, STAGE, TASK)`; STAGE is a process-blueprint stage or (if absent) a coarse-grain flow grouping, TASK is a flow step.
-   - `product-stage` — the cell key is `(PRODUCT, STAGE)`.
-   - `product` — the cell key is `(PRODUCT,)`.
+   - **Product-centric** (default — derives the process set from `subjects.products`):
+     - `product-stage-task` — the cell key is `(PRODUCT, STAGE, TASK)`; STAGE is a process-blueprint stage or (if absent) a coarse-grain flow grouping, TASK is a flow step.
+     - `product-stage` — the cell key is `(PRODUCT, STAGE)`.
+     - `product` — the cell key is `(PRODUCT,)`.
+   - **Process-centric** (use with `subjects.processes` for system/data/infrastructure obligations, per [elements/16-assertion.md §2.3](../elements/16-assertion.md)):
+     - `process-stage-task` — the cell key is `(PROCESS, STAGE, TASK)`; walks `subjects.processes` directly without deriving from products; STAGE and TASK resolved identically to `product-stage-task`.
+     - `process-stage` — the cell key is `(PROCESS, STAGE)`.
+     - `process` — the cell key is `(PROCESS,)`.
 3. **Find the matching `ASSERTION`(s)** — every admitted `ASSERTION` whose `(about, subject)` matches the row's obligation and the column's subject (with the column's subject possibly being a `PRODUCT-…` whose bearing process is the assertion's `subject`), and — when the column is finer-grain than the assertion's `subject` — whose `realised_via[]` contains a step or stage that intersects the cell's `(STAGE, TASK)` tuple.
 4. **Cell value** — the resulting status, picked deterministically when multiple assertions bind one cell:
    - If any matching assertion has `status: non_compliant`, the cell renders `non_compliant`.
@@ -244,12 +254,13 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COMPIMP-001` | error | A required field from §4 is missing, or `id` does not match the canonical grammar `COMPLIANCE_IMPACT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1). |
 | `COMPIMP-002` | error | `view.subjects` is empty (neither `products` nor `processes` present). |
 | `COMPIMP-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.obligations.include` / `view.obligations.filter.derived_from_codex` does not resolve to an admitted canonical element of the expected TYPE. |
-| `COMPIMP-004` | error | `view.grouping.rows` or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
+| `COMPIMP-004` | error | `view.grouping.rows` is set to a value outside `{obligation, stage, task}`, or `view.grouping.columns` is set to a value outside `{product-stage-task, product-stage, product, process-stage-task, process-stage, process}`. |
 | `COMPIMP-005` | error | `view.status_display.treat_proposed_as` is set to a value outside `{hidden, shown-distinct}`. |
 | `COMPIMP-006` | error | `view.status_display.treat_ai_reviewed_as` is set to a value outside `{shown-distinct, shown-same, hidden}` (CONTRACT §6.2). |
 | `COMPIMP-006` | warning | `view.empty_cells.no_obligation_label` overrides the default but is one of the legacy strings the §5.3 distinction was introduced to retire (e.g. "No direct obligation", "Not applicable" used for the empty case). |
 | `COMPIMP-007` | warning | Both `view.obligations.include` and `view.obligations.filter` are present (the include wins; the filter is silently ignored). |
 | `COMPIMP-008` | warning | The view selects zero obligations after applying `include` / `filter` — the rendered matrix will have no rows. Usually indicates a typo in a codex reference. |
+| `COMPIMP-009` | warning | `view.grouping.columns` is a `product-*` value (`product-stage-task`, `product-stage`, `product`) but `view.subjects.products` is absent and `view.subjects.processes` is the only entry point. The column labels reference "product" but no products are in scope; consider using `process-stage-task` / `process-stage` / `process` for a process-centric view. |
 
 The shared header rules `HDR-001..004` ([CONTRACT.md](../CONTRACT.md) §2) apply in addition.
 
@@ -259,6 +270,7 @@ The shared header rules `HDR-001..004` ([CONTRACT.md](../CONTRACT.md) §2) apply
 
 - ASSERTION element schema (the canonical compliance claim): [16-assertion.md](../elements/16-assertion.md).
 - ASSERTION §2.1 — stage/task-level compliance impact idiom (`realised_via` naming a `STEP` or stage): [16-assertion.md](../elements/16-assertion.md).
+- ASSERTION §2.3 — system/data/infrastructure obligation subjects (PROCESS as compliance unit, APPLICATION in `realised_via`): [16-assertion.md](../elements/16-assertion.md).
 - REQUIREMENT element schema (the obligation): [15-requirement.md](../elements/15-requirement.md).
 - Process flow and the STEP grain: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5 (process flow), §7.20 (standalone STEP, promotion mechanic).
 - Process-blueprint stages: [13-process-blueprint.md](13-process-blueprint.md).
