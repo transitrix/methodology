@@ -30,6 +30,7 @@ jobs:
         shell: bash
         env:
           BLOCKLIST: ${{ secrets.HYGIENE_BLOCKLIST }}
+          BLOCKLIST_HUB: ${{ secrets.HYGIENE_BLOCKLIST_HUB }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -41,6 +42,8 @@ jobs:
             echo "HYGIENE_BLOCKLIST secret not available (unset, or a fork PR) - skipping."
             exit 0
           fi
+
+          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}"
 
           fail=0
 
@@ -59,18 +62,18 @@ jobs:
             [ -f "$f" ] || continue
             if git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" \
                  | grep -E '^\+[^+]' \
-                 | grep -qiE -e "$BLOCKLIST"; then
+                 | grep -qiE -e "$PATTERN"; then
               echo "::error file=$f::public-surface hygiene check failed on file diff"
               fail=1
             fi
           done
 
           # 2) PR title/body scan.
-          if printf '%s' "$PR_TITLE" | grep -qiE -e "$BLOCKLIST"; then
+          if printf '%s' "$PR_TITLE" | grep -qiE -e "$PATTERN"; then
             echo "::error::public-surface hygiene check failed on PR title"
             fail=1
           fi
-          if printf '%s' "$PR_BODY" | grep -qiE -e "$BLOCKLIST"; then
+          if printf '%s' "$PR_BODY" | grep -qiE -e "$PATTERN"; then
             echo "::error::public-surface hygiene check failed on PR body"
             fail=1
           fi
