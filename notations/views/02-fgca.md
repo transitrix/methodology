@@ -21,9 +21,19 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
+## Source of truth
+
+**FACTOR, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The FGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+
+The inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
+
+The reconstruction invariant applies: `render(Elements + Relations, view_config)` → FGCA diagram. Deleting `canon/views/fgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
+
+---
+
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `factors[]`, `goals[]`, `changes[]`, `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the FGCA document itself does not carry a lifecycle field.
+Every FACTOR, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The FGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -117,49 +127,37 @@ Examples:
 
 ---
 
-## Top-level structure — flat form
+## Structure — projection over canon elements
 
-FGCA uses the **flat form**: document metadata and the four layers (`factors`, `goals`, `changes`, `activities`) live at the document root as parallel arrays. There is no wrapper key. Links between layers are id-references on each item, not nesting.
-
-This shape matches the FGCA semantic graph: one Change can deliver many Goals, one Activity can deliver many Changes. A nested form would require duplicating nodes for every cross-layer link. The flat form expresses the DAG directly.
-
-The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](../README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
+An FGCA view document projects over FACTOR, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
 
 ```yaml
 notation: fgca
 spec_version: "0.1"
+methodology_version: "0.5.0"
 
-id: FGCA-STRAT-1
-name: "Strategy 2026 — FGCA chain"
-description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
-period: "2026"
-version: "0.1"
-date: "2026-05-21"
-author: Transitrix
+view:
+  id: FGCA-RETAIL-1
+  name: "Retail strategy chain 2026"
+  description: "FGCA projection for the 2026 retail strategy."
 
-factors:
-  - id: FACTOR-1
-    name: "Competitive market pressure"
-    type: external          # external | internal
-    category: economic      # PESTLE — external only (political | economic | social | technological | legal | environmental)
-
-goals:
-  - id: GOAL-1
-    name: "Grow revenue by 20%"
-    factors: [FACTOR-1]     # id-references to factors[]
-
-changes:
-  - id: CHANGE-1
-    name: "Launch new product line"
-    goals: [GOAL-1]         # id-references to goals[]
-
-activities:
-  - id: ACTIVITY-1
-    name: "Market research"
-    changes: [CHANGE-1]     # id-references to changes[]
+view_config:
+  goals:
+    filter: all               # include every active GOAL in canon
+  factors:
+    surface: derived          # derive from goal.factors inline links on each included GOAL
+  changes:
+    surface: derived          # derive from change.goals inline links for the included goal set
+  activities:
+    surface: derived          # derive from activity.changes links for the included change set
+  display:
+    depth: null               # unlimited depth
+    collapsed: []             # no collapsed nodes
 ```
 
-A complete example: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](../examples/fgca/strategy-2026.fgca.transitrix.yaml).
+The FGCA semantic graph — one Change can deliver many Goals, one Activity deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) on the element files themselves. The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
+
+A complete example of standalone element files for this notation: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](../examples/fgca/strategy-2026.fgca.transitrix.yaml).
 
 ---
 
@@ -228,6 +226,47 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 
 ---
 
+## view_config for FGCA
+
+The `view_config` block (see [`CONTRACT.md`](../CONTRACT.md) §14) defines which elements to include and how to display them. All fields are optional; omitted fields fall back to the defaults below.
+
+### view_config defaults
+
+```yaml
+# Canonical defaults — a view_config that omits any of these falls back to the value shown.
+view_config:
+  goals:
+    filter: all          # include every active GOAL in canon
+    ids: []              # when filter is "ids": the explicit GOAL-… list to include
+    tags: []             # when filter is "tags": include GOALs whose tags[] match any entry
+  factors:
+    surface: derived     # derive FAC set from goal.factors inline links on the included goal set
+  changes:
+    surface: derived     # derive CHANGE set from change.goals inline links for the included goals
+  activities:
+    surface: derived     # derive ACTIVITY set from activity.changes links for the included changes
+  display:
+    depth: null          # maximum depth in the rendered chain; null = unlimited
+    collapsed: []        # list of element IDs to render as collapsed nodes
+```
+
+### view_config keys
+
+| Key | Type | Default | Semantics |
+|---|---|---|---|
+| `goals.filter` | string | `all` | `all` — include every active GOAL; `ids` — include only the GOALs listed in `goals.ids`; `tags` — include GOALs whose `tags[]` match any entry in `goals.tags`. |
+| `goals.ids` | list | `[]` | `GOAL-…` IDs to include explicitly. Used when `goals.filter: ids`. |
+| `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. |
+| `factors.surface` | string | `derived` | `derived` — derive the FACTOR set by following `goal.factors` inline links on the included goals. `all` — include every active FACTOR in canon. |
+| `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
+| `activities.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. |
+| `display.depth` | integer \| null | `null` | Maximum depth of the rendered F→G→C→A chain. `null` renders all levels. |
+| `display.collapsed` | list | `[]` | IDs of elements to render as collapsed (children hidden). |
+
+The `goal.factors`, `change.goals`, and `activity.changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it only selects which goal set to anchor the projection on.
+
+---
+
 ## Validation rules
 
 | Rule | Severity | Description |
@@ -252,7 +291,11 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. 
 
 ## References
 
-- FGA notation (3-layer simplified variant, same flat form): [`03-fga.md`](03-fga.md)
+- View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../CONTRACT.md) §14 (VP-2)
+- Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1
+- FACTOR, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
+- Timeless inline relations (`goal.factors`, `change.goals`, `activity.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
+- FGA notation (3-layer simplified variant): [`03-fga.md`](03-fga.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
 - Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the FGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
