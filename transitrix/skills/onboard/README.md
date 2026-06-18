@@ -72,7 +72,7 @@ Three groups: root scaffolding, view notations, and codex zone primitives.
 
 ### View notations (dropped into `canon/views/<notation-folder>/` in Step 3)
 
-One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 14 view templates are:
+One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 15 view templates are:
 
 | Notation | Template |
 |---|---|
@@ -87,9 +87,10 @@ One starter YAML per view notation, named `<notation>.<short-name>.transitrix.ya
 | Scenarios | [`scenarios.scenarios.transitrix.yaml`](templates/scenarios.scenarios.transitrix.yaml) |
 | Applications | [`applications.applications.transitrix.yaml`](templates/applications.applications.transitrix.yaml) |
 | Products | [`products.products.transitrix.yaml`](templates/products.products.transitrix.yaml) |
-| Issues | [`issues.issues.transitrix.yaml`](templates/issues.issues.transitrix.yaml) |
 | Process Blueprint | [`process-blueprint.process-blueprint.transitrix.yaml`](templates/process-blueprint.process-blueprint.transitrix.yaml) |
 | Activity Card | [`activity-card.activity-card.transitrix.yaml`](templates/activity-card.activity-card.transitrix.yaml) |
+| Compliance Impact | [`compliance-impact.compliance-impact.transitrix.yaml`](templates/compliance-impact.compliance-impact.transitrix.yaml) |
+| Coverage Metric | [`coverage-metric.coverage-metric.transitrix.yaml`](templates/coverage-metric.coverage-metric.transitrix.yaml) |
 
 ### Codex zone primitives (dropped into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
