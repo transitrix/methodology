@@ -660,3 +660,92 @@ Resolving one `canon/unresolved/` entry means exactly one of:
 | `UNRES-004` | error | A typed canon walker (canon index, coverage, placement, renderer) counts a `canon/unresolved/` entry as a typed element — the holding area MUST be skipped by TYPE-keyed machinery (§13.1). A tooling rule, enforced by the validator's catalogue load. |
 
 The shared header rules (`HDR-001..004`, §2) do **not** apply to `canon/unresolved/` files — an unresolved entry has no resolved TYPE and therefore no `notation:` header, regardless of its admission state.
+
+---
+
+## 14. View-config contract
+
+[`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §1.1 defines the **reconstruction invariant**: a view is `render(Elements + Relations, view_config)` → diagram. The elements and relations in `canon/elements/**` and `canon/relations/**` are the complete, sufficient source of truth for the organisation's behaviour; a view is a projection over them. This section formalises the *view_config* side of that contract — what it is, what it contains, where it lives, and how per-view specs declare their defaults.
+
+### 14.1 What view_config is
+
+A `view_config` is the **presentation layer** of a view document: the configuration that determines which elements and relations appear in a rendered view and how they are arranged. It is the *parameters* of the render function — not the source data, not canonical content.
+
+**Belongs in `view_config`:**
+
+| Category | Examples |
+|---|---|
+| Selection | which goals to include — by id, tag, type, or `all` |
+| Filter | restrict the element set — by status, layer, zone, `valid_at` date, jurisdiction |
+| Grouping | cluster elements — by layer, domain, type, custom key |
+| Ordering | sort criteria within groups |
+| Display options | depth limit, collapsed nodes, label format, column visibility, orientation |
+
+**Does NOT belong in `view_config`** (these live in `canon/elements/**` and `canon/relations/**`):
+
+- Canonical element data — names, descriptions, per-TYPE fields
+- Lifecycle dates (`valid_from` / `valid_to`)
+- Admission records
+- Any fact about how the organisation works or what it has decided
+
+**Corollary.** Deleting `canon/views/**` entirely loses no model knowledge — views regenerate from elements + view_config files. A view carries no non-derivable information beyond its configuration ([`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §1.1).
+
+### 14.2 Where view_config lives in a file
+
+`view_config` is a **top-level key** in a view document (`*.<short-name>.transitrix.yaml`). It is separate from the file header fields (`notation:`, `spec_version:`) and from the view identity block (`view.id`, `view.name`, `methodology_version`). No view_config field belongs in the header; no header field belongs in `view_config`.
+
+Structural layout of a view document:
+
+```yaml
+notation: fgca                # §1 — required header
+spec_version: "0.1"           # §1 — optional header
+methodology_version: "0.5.0"  # manifest-pinned methodology version
+
+view:                         # identity block — required
+  id: FGCA-RETAIL-1
+  name: "Retail strategy chain"
+
+view_config:                  # presentation layer — defined here (§14)
+  goals:
+    filter: all               # selection: include every GOAL in canon
+  display:
+    depth: 3                  # display option: max depth
+    collapsed: []             # display option: no collapsed nodes
+```
+
+Each per-view notation spec ([`notations/views/`](views/)) defines the full set of valid `view_config` keys for that notation. Only keys defined by the spec are valid; unknown keys are an error (`VC-001`).
+
+### 14.3 Per-view default-stating convention
+
+Every view spec MUST declare **explicit defaults** for every optional `view_config` field. The defaults block in each view spec serves two purposes:
+
+1. **Zero-config renders.** A view document that carries only the required envelope (`notation:`, `view.id`, `view.name`, `methodology_version`) renders deterministically — each omitted field falls back to its spec default. There is no implicit "show everything" that varies by tool version.
+
+2. **Skill transparency (ties RPT-1).** When the CLI or report skill materialises a minimal view-config in response to a free-text request, it **states back** exactly which defaults were applied ("full goals set, depth unlimited, no filters"). The defaults block is the source of that statement; the skill reads spec defaults, never invents them.
+
+The defaults block lives in the view spec under a `### view_config defaults` (or equivalent) heading. It is a commented YAML block listing each optional key with its default value and a short inline comment explaining the default:
+
+```yaml
+# Canonical defaults — spec authority
+# A view_config that omits any of these falls back to the value shown.
+view_config:
+  goals:
+    filter: all          # include every active GOAL in canon
+  factors:
+    surface: derived     # derive from the included goal set via goal.factors
+  display:
+    depth: null          # unlimited depth
+    collapsed: []        # no collapsed nodes
+```
+
+Each per-view migration (VP-3+) adds this defaults block to its spec.
+
+### 14.4 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `VC-001` | error | A `view_config` key is not declared in the view spec for this notation — unknown keys are not accepted. |
+| `VC-002` | error | A `view_config` entry (e.g. a filter or selection) references an element or relation ID that does not resolve in canon. The view_config is stale and must be updated. |
+| `VC-003` | warning | A view spec has no explicit defaults block (§14.3). Zero-config renders are undefined for this notation; the CLI/skill cannot state assumptions. |
+
+`VC-002` is cross-cutting — it requires the full canon catalogue to resolve. It is reported at render time, not at file-lint time.
