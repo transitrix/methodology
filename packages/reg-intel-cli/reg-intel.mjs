@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { access } from 'node:fs/promises';
 
-import { findOrgRoot, listDue, findCodexFile } from './src/codex.mjs';
+import { findOrgRoot, listDue, findCodexFile, loadScanSources } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
 import { checkSignal } from './src/check-signal.mjs';
 import { fetchSnapshot } from './src/snapshot.mjs';
@@ -108,6 +108,10 @@ async function cmdListDue(args) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) { console.error('list-due: --as-of must be YYYY-MM-DD'); return 1; }
 
   const due = await listDue(orgRoot, asOf);
+  if (due === null) {
+    console.log('list-due: no watch-list configured — create operations/config/scan-sources.yaml (see 14-codex.md §3.7).');
+    return 1;
+  }
   if (flags.json) { console.log(JSON.stringify(due, null, 2)); return 0; }
 
   if (due.length === 0) {
@@ -116,8 +120,7 @@ async function cmdListDue(args) {
   }
   console.log(`list-due  as-of ${asOf}: ${due.length} target(s) due`);
   for (const d of due) {
-    const tag = d.reason === 'monitor_instead' ? `monitor_instead via ${d.via}`
-      : d.reason === 'never_scanned' ? 'never scanned' : `due ${d.next_scan_due}`;
+    const tag = d.reason === 'never_scanned' ? 'never scanned' : `due ${d.next_scan_due}`;
     console.log(`  ${d.id || '(no id)'}  [${d.type || '—'}]  ${tag}  ${d.source_url || ''}`.trimEnd());
   }
   console.log('  run the signal gate on each before any fetch — a human gates the digest.');

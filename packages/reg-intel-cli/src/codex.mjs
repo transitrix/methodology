@@ -1,7 +1,8 @@
-// Codex discovery + parsing. The reg-intel "source registry" is the set of codex
-// artefacts the repository already carries (14-codex.md §3.4–3.5) — not a separate
-// database. This reads them: monitoring flag, the `scan` block (cadence + due date),
-// and `monitor_instead[]` (live counterparts a static source points consumers at).
+// Codex discovery + parsing. The reg-intel scanner reads source discovery from
+// operations/config/scan-sources.yaml (14-codex.md §3.7); the per-artefact `scan:`
+// block (14-codex.md §3.5) holds runtime state (last_scanned_at, next_scan_due, …)
+// and doubles as a human-facing visibility marker. This module exposes both the
+// centralised watch-list loader and the per-file codex artefact parser.
 
 import { readdir, readFile, access } from 'node:fs/promises';
 import { join, resolve, dirname, basename } from 'node:path';
@@ -9,6 +10,16 @@ import { readTopScalar, readBlockScalars, readMapList } from './yaml.mjs';
 import { isDue } from './schedule.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
+
+// Load operations/config/scan-sources.yaml from the adopter org root.
+// Returns the parsed `sources` list, or null when the file does not exist.
+export async function loadScanSources(orgRoot) {
+  const p = join(resolve(orgRoot), 'operations', 'config', 'scan-sources.yaml');
+  if (!(await exists(p))) return null;
+  let text;
+  try { text = await readFile(p, 'utf8'); } catch { return null; }
+  return readMapList(text, 'sources');
+}
 
 // Walk upward from a path to the adopter org root (the dir holding transitrix.yaml).
 export async function findOrgRoot(fromPath) {
@@ -66,43 +77,37 @@ export async function discoverCodex(orgRoot) {
   return out;
 }
 
-// The due set for a run as-of a date. A `monitoring_needed: true` artefact is due when
-// its `scan.next_scan_due` is missing (never scanned) or on/before `asOf`. A
-// `monitoring_needed: false` artefact is skipped, but each of its `monitor_instead[]`
-// live counterparts is surfaced as its own scan target (SKILL Step 1). Returns an
-// array of { id, type, name, source_url, scan_frequency, next_scan_due, reason, ... }.
+// The due set for a run as-of a date. Source discovery comes from
+// operations/config/scan-sources.yaml (14-codex.md §3.7); the per-artefact scan: block
+// holds the runtime state (last_scanned_at / next_scan_due). Returns null when the
+// watch-list file does not exist, or an array of due entries when it does.
 export async function listDue(orgRoot, asOf) {
-  const arts = await discoverCodex(orgRoot);
+  const scanSources = await loadScanSources(orgRoot);
+  if (scanSources === null) return null;
+
   const due = [];
-  for (const a of arts) {
-    if (a.monitoring_needed === true) {
-      const next = (a.scan && a.scan.next_scan_due) || null;
-      if (!isDue(next, asOf)) continue;
-      due.push({
-        id: a.id,
-        type: a.type,
-        name: a.name,
-        source_url: a.source_url,
-        scan_frequency: (a.scan && a.scan.scan_frequency) || null,
-        next_scan_due: next,
-        monitoring_needed: true,
-        reason: next ? 'due' : 'never_scanned',
-      });
-    } else if (a.monitoring_needed === false) {
-      for (const mi of a.monitor_instead || []) {
-        due.push({
-          id: mi.id || null,
-          type: a.type,
-          name: mi.name || null,
-          source_url: mi.url || null,
-          scan_frequency: null,
-          next_scan_due: null,
-          monitoring_needed: false,
-          reason: 'monitor_instead',
-          via: a.id,
-        });
-      }
-    }
+  for (const entry of scanSources) {
+    if (entry.type !== 'codex') continue; // non-codex connectors reserved for a future increment
+    if (!entry.path_or_url) continue;
+
+    const codexPath = join(resolve(orgRoot), String(entry.path_or_url));
+    let text;
+    try { text = await readFile(codexPath, 'utf8'); } catch { continue; }
+    const art = parseCodexArtefact(text, codexPath);
+
+    const next = (art.scan && art.scan.next_scan_due) || null;
+    if (!isDue(next, asOf)) continue;
+
+    due.push({
+      id: entry.id || art.id,
+      type: art.type,
+      name: art.name,
+      source_url: art.source_url,
+      scan_frequency: entry.cadence || (art.scan && art.scan.scan_frequency) || null,
+      next_scan_due: next,
+      monitoring_needed: true,
+      reason: next ? 'due' : 'never_scanned',
+    });
   }
   return due;
 }
