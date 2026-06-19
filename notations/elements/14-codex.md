@@ -112,7 +112,7 @@ A static artefact (Final Rule, published once) omits the `scan` block and instea
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
 | `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
 | `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
-| `scan` | no | map | Scanner-agent metadata — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. The **authoritative runtime scan state** for an admitted source: once a `REGISTRY` row links this artefact via `codex_id`, scan state defers here (the row's `scan_frequency` / `change_signal_method` are superseded — [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, ADR 2026-06-10). See §3.5. |
+| `scan` | no | map | Runtime scan state + human-visibility marker — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. Discovery is via `scan-sources.yaml` (§3.7), not this block. The **authoritative runtime scan state** for an admitted source: once a `REGISTRY` row links this artefact via `codex_id`, scan state defers here (the row's `scan_frequency` / `change_signal_method` are superseded — [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, ADR 2026-06-10). See §3.5. |
 
 ### 3.1 Snapshots
 
@@ -192,7 +192,12 @@ A `monitor_instead[]` entry duplicating the artefact's own `source_url` is a con
 
 ### 3.5 Scanner-agent metadata — `scan` block
 
-When `monitoring_needed: true`, an automated scanner agent maintains a `scan` block on the artefact recording when the source was last fetched, when the next check is due, and whether human review is needed. Embedding the schedule and scan state in the artefact itself (rather than an external scheduler database) keeps the scan history auditable via git and allows per-artefact frequency tuning.
+When `monitoring_needed: true`, the `scan` block serves two roles simultaneously:
+
+1. **Runtime state.** An automated scanner agent writes this block after each scan run — recording when the source was last fetched, when the next check is due, and whether a change was detected. Embedding state in the artefact keeps the scan history auditable via git and allows per-artefact frequency tuning.
+2. **Human-facing visibility marker.** At authoring time a reader inspecting the artefact can see at a glance whether this source is being monitored and at what cadence, without having to consult an external registry.
+
+**Source discovery is separate.** The scanner does not discover what to scan by walking `codex/` on disk. Instead, `list-due` reads from a centralised watch-list at `operations/config/scan-sources.yaml` (see §3.7). The `scan` block in this artefact is the *state* side of the split; `scan-sources.yaml` is the *discovery* side. Keep them consistent: the `cadence` in the watch-list entry and the `scan_frequency` in this block SHOULD agree.
 
 ```yaml
 scan:
@@ -232,6 +237,43 @@ The `scan` block is optional — a brand-new live artefact that no scanner has t
 A codex source is **authoritative by construction**: it is *given to* the organisation by an outside or issuing authority, so a codex artefact carries **no** `source_quality`. The graded source-trust scale (`authoritative` / `corroborated` / `single_source` / `unverified`, [CONTRACT.md](../CONTRACT.md) §11.2) is a **field-zone** concept — it scores how far to trust an *informant or observation*. A codex source has nothing to grade: `gate_checks.source_authority` records **who** the authoritative source is (provenance), not **how much** to trust it. `source_quality` and `source_authority` are therefore **different axes** — one a graded trust label on field input, the other a provenance gate-check on codex input — and are deliberately *not* unified despite the similar names.
 
 The **retained copy of the source** is likewise the same concept under a zone-appropriate name. In codex it is the `snapshot_file` (a point-in-time capture of an external, possibly-evolving document, held in `sources/`, §3.1); in the **field** zone it is the ingest pipeline's field-artefact `raw_source` (the raw input bytes, retained in `_intake/processed/`). Both are a byte-level copy kept for traceability and fingerprinted by a `source_hash`; they are named per zone — "snapshot" fits an external evolving source, "raw source" fits captured field material — rather than unified.
+
+### 3.7 Source watch-list — `scan-sources.yaml`
+
+The scanner's source-discovery list is a YAML file at:
+
+```
+operations/config/scan-sources.yaml
+```
+
+`list-due` reads this file to determine which sources to scan. It does **not** walk the `codex/` directory. This separation makes the watch-list explicit and extensible: future connector types (Confluence, SharePoint, API endpoints) can be added as entries without requiring codex artefacts.
+
+#### Schema
+
+```yaml
+sources:
+  - id: LAW-GDPR-1                                         # matches the codex artefact id
+    type: codex                                            # "codex" for admitted artefacts; non-codex connectors reserved
+    path_or_url: codex/external/eu/LAW-GDPR-1.yaml         # path relative to org root (type: codex) or URL (future types)
+    cadence: quarterly                                     # daily | weekly | monthly | quarterly — authoritative for this entry
+    domain: data-protection-privacy                        # free-text domain tag for human orientation
+    notes: "GDPR — live regulation"                        # optional free-text
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `id` | yes | string | Identifier for this watch-list entry. For `type: codex` SHOULD match the codex artefact `id:` field. |
+| `type` | yes | string | Connector type. `codex` = admitted codex artefact; non-codex types are reserved for future increments. |
+| `path_or_url` | yes | string | For `type: codex`: path to the artefact YAML file, relative to the org root. For future remote types: the watch URL. |
+| `cadence` | yes | string | Closed enum `daily` / `weekly` / `monthly` / `quarterly`. Authoritative scan frequency for this entry. SHOULD match `scan.scan_frequency` in the codex artefact. |
+| `domain` | no | string | Free-text domain tag — helps humans orient when the list grows. Not used by the scanner. |
+| `notes` | no | string | Optional human notes. Not used by the scanner. |
+
+#### Relationship to the codex `scan:` block
+
+The `scan-sources.yaml` entry (`cadence`, `path_or_url`) is the **discovery and configuration** side. The codex artefact's `scan:` block (`last_scanned_at`, `next_scan_due`, `scan_frequency`, `change_detected`, …) is the **runtime state** side. `list-due` reads the path from `scan-sources.yaml`, then reads the artefact's `scan:` block to get the current scan state. `update-scan` writes back to the artefact only; it does not modify `scan-sources.yaml`.
+
+Keep the two in sync: if you change an entry's `cadence` in `scan-sources.yaml`, update the artefact's `scan.scan_frequency` (or pass `--frequency` to the next `update-scan` run) so the visual marker stays accurate.
 
 ---
 
