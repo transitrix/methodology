@@ -62,7 +62,7 @@ The blueprint is a **view**, not a flow. It does not describe procedural sequenc
 | Show, on one page, every operational ingredient required to run a value chain end-to-end | **Process Blueprint** |
 | Describe the procedural flow inside a single process (lanes, gateways, sequence flows) | BPMN (`*.bpmn.transitrix.yaml`) |
 | Catalogue the full set of processes in the organisation | Process landscape map (`*.process-map.transitrix.yaml`) |
-| Decompose strategy into factors, goals, changes, and activities | FGCA (`*.fgca.transitrix.yaml`) |
+| Decompose strategy into drivers, goals, changes, and activities | FGCA (`*.fgca.transitrix.yaml`) |
 | Show a multi-level architectural overview as nested containers (what contains what) | Nested blocks (`*.blocks.transitrix.yaml`) |
 
 A blueprint complements BPMN and the process landscape map. BPMN renders one process's internal flow; the landscape map lists all processes; the blueprint shows, for one value chain, the cross-cutting operational context behind each stage.

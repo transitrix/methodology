@@ -288,8 +288,8 @@ Diagrams and aggregations live under `canon/views/`. Atomic ArchiMate elements l
 | Notation | Typical location | What it is |
 | --- | --- | --- |
 | BPMN process diagram | `views/bpmn/<PROCESS_CODE>_process.bpmn.transitrix.yaml` | Detailed flow describing one BusinessProcess element |
-| FGCA | `views/fgca/<DOMAIN>.fgca.transitrix.yaml` | Chain referencing Factor + Goal + Change + Activity elements |
-| FGA | `views/fga/<DOMAIN>.fga.transitrix.yaml` | Chain referencing Factor + Goal + Activity elements |
+| FGCA | `views/fgca/<DOMAIN>.fgca.transitrix.yaml` | Chain referencing Driver + Goal + Change + Activity elements |
+| FGA | `views/fga/<DOMAIN>.fga.transitrix.yaml` | Chain referencing Driver + Goal + Activity elements |
 | Goals tree | `views/goals/<DOMAIN>.goals.transitrix.yaml` | Hierarchy referencing Goal elements |
 | Capabilities map | `views/capabilities/<DOMAIN>.capability-map.transitrix.yaml` | Hierarchy referencing Capability elements + maturity overlay |
 | Process landscape map | `views/processmap/<DOMAIN>.process-map.transitrix.yaml` | Catalogue referencing BusinessProcess elements |
@@ -313,7 +313,7 @@ FGCA is the Transitrix notation for translating strategy into coordinated execut
 
 Four layers, read as a cause-and-delivery chain:
 
-- **Factors** — external and internal drivers that explain why action is needed now.
+- **Drivers** — external and internal forces that explain why action is needed now.
 - **Goals** — strategic outcomes the organisation wants to achieve.
 - **Changes** — business transformations required to make goals real.
 - **Activities** — concrete initiatives, projects, and workstreams that deliver those changes.
@@ -385,7 +385,7 @@ Consistency in names is a small thing that pays back daily during diff review an
 
 ### 9.1 Element id type prefixes
 
-The canonical ID grammar and the full TYPE registry (`FACTOR`, `GOAL`, `ACTOR`, `CAPABILITY-V…`, `REQUIREMENT`, …) are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). Refer to it rather than to a local prefix list — a duplicate would drift from the registry.
+The canonical ID grammar and the full TYPE registry (`DRIVER`, `GOAL`, `ACTOR`, `CAPABILITY-V…`, `REQUIREMENT`, …) are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). Refer to it rather than to a local prefix list — a duplicate would drift from the registry.
 
 ### 9.2 Mandatory metadata
 

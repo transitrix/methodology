@@ -32,7 +32,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## 1. Reclassification (2026-06-03)
 
-The v0.2 spec made the `scenarios` document the **content home** for a scenario: a single document carried the scenario's vision, its goals, its capabilities, its activities, its products, its processes, its applications, and its per-scenario factor view. That conflated three things — the *path* (the ordered sequence of steps to move the enterprise), the *destination* (the structural end-state the path reaches), and the *intent* (the goals the path serves) — into one container, and put substantial canonical content inside a view document in violation of the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
+The v0.2 spec made the `scenarios` document the **content home** for a scenario: a single document carried the scenario's vision, its goals, its capabilities, its activities, its products, its processes, its applications, and its per-scenario driver view. That conflated three things — the *path* (the ordered sequence of steps to move the enterprise), the *destination* (the structural end-state the path reaches), and the *intent* (the goals the path serves) — into one container, and put substantial canonical content inside a view document in violation of the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
 
 Epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) split those three concerns into separate primitives:
 
@@ -60,7 +60,7 @@ For the canonical authoring of a path / destination / intent, use the element pr
 | The structural end-state the path reaches (the destination). | `TARGET_STATE` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17) at `canon/elements/05_implementation/target-states/TARGET_STATE-<…>.yaml`. |
 | The intent (which goals the path serves; which goals the end-state satisfies). | `GOAL` elements; plus `SCENARIO.pursues` (inline, the path's intent) and the `target_state_satisfies_goal` REL kind ([elements/17-relations.md](../elements/17-relations.md) §3). |
 | Per-driver findings that motivate a scenario. | `ASSESSMENT` elements + the `assessment_influences_goal` REL kind. |
-| Per-driver "factors view" (relevance / impact). | Not modelled in v1 as a per-scenario projection — express via `ASSESSMENT` and the influence REL kind, which are goal-relative rather than scenario-relative. |
+| Per-driver "drivers view" (relevance / impact). | Not modelled in v1 as a per-scenario projection — express via `ASSESSMENT` and the influence REL kind, which are goal-relative rather than scenario-relative. |
 
 ---
 
