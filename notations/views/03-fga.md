@@ -9,7 +9,7 @@ file_extension: "*.fga.transitrix.yaml"
 
 # FGA Notation — Reference
 
-**Scope:** Simplified strategy-to-execution chain in three layers: Factor → Goal → Activity. Skips the Changes layer present in FGCA.
+**Scope:** Simplified strategy-to-execution chain in three layers: Driver → Goal → Activity. Skips the Changes layer present in FGCA.
 **Renderer:** Transitrix Studio (planned)
 
 ---
@@ -43,7 +43,7 @@ Use FGA when the organisation operates in a fast-moving context where the Change
 
 | | FGCA | FGA |
 |--|------|-----|
-| Layers | Factor → Goal → Change → Activity | Factor → Goal → Activity |
+| Layers | Driver → Goal → Change → Activity | Driver → Goal → Activity |
 | Use when | Strategy-to-execution needs explicit change management | Activities map directly to goals |
 | File extension | `*.fgca.transitrix.yaml` | `*.fga.transitrix.yaml` |
 
@@ -126,20 +126,20 @@ A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](../exampl
 | `version` | no | document version |
 | `date` | no | document date (YYYY-MM-DD) |
 | `author` | no | document author |
-| `factors` | yes | array of factor entries — see below |
+| `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |
 | `activities` | yes | array of activity entries — see below |
 
 ### `factors[]`
 
-A factor is a **neutral driver** — a standing force the organisation acts on, not a finding about it. Findings about a driver's current state live on `ASSESSMENT` records that reference the FACTOR. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (FACTOR as ArchiMate Driver) and §7.16 (ASSESSMENT).
+A DRIVER is a neutral, standing force the organisation acts on, not a finding about it. Findings about a driver's current state live on `ASSESSMENT` records that reference the DRIVER. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (DRIVER as ArchiMate Driver) and §7.16 (ASSESSMENT).
 
 | Field | Required | Description |
 |---|---|---|
-| `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
-| `name` | yes | what the factor is — the neutral driver, not a finding about it |
+| `id` | yes | `DRIVER-[<middle>-]<INTEGER>`. Legacy `FACTOR-…` IDs remain valid. |
+| `name` | yes | what the driver is — the neutral standing force, not a finding about it |
 | `type` | no | `external` or `internal` |
-| `category` | no | PESTLE sub-classification for external factors — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal factors. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
+| `category` | no | PESTLE sub-classification for external drivers — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal drivers. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
 | `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
 ### `goals[]`
@@ -148,7 +148,7 @@ A factor is a **neutral driver** — a standing force the organisation acts on, 
 |---|---|---|
 | `id` | yes | `GOAL-[<middle>-]<INTEGER>` |
 | `name` | yes | what the goal is |
-| `factors` | no | array of `FACTOR-…` IDs this goal is driven by |
+| `factors` | no | array of `DRIVER-…` IDs this goal is driven by. Legacy `FACTOR-…` IDs remain valid. |
 | `description` | no | one-paragraph elaboration |
 
 ### `activities[]`

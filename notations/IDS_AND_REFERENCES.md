@@ -20,13 +20,13 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 
 | ID | TYPE | Middle | Integer | Notes |
 |---|---|---|---|---|
-| `FACTOR-1` | FACTOR | — | 1 | minimal form |
+| `DRIVER-1` | DRIVER | — | 1 | minimal form |
 | `GOAL-RETENTION-12` | GOAL | RETENTION | 12 | one middle segment |
 | `ACTIVITY-Q3-2026-7` | ACTIVITY | Q3, 2026 | 7 | two middle segments |
 | `INTERVIEW-cfo-onboarding-2026-04-15-1` | INTERVIEW | cfo, onboarding, 2026, 04, 15 | 1 | zero-padded ISO-date middle segments (`04`, `15`) are valid — the ban is terminal-only |
-| `FACTOR-CHURN-001` | — | — | — | **invalid** — leading zero on the *terminal* integer. Use `FACTOR-CHURN-1`. |
-| `factor-1` | — | — | — | **invalid** — TYPE must be uppercase. |
-| `FACTOR-` | — | — | — | **invalid** — missing terminal integer. |
+| `DRIVER-CHURN-001` | — | — | — | **invalid** — leading zero on the *terminal* integer. Use `DRIVER-CHURN-1`. |
+| `driver-1` | — | — | — | **invalid** — TYPE must be uppercase. |
+| `DRIVER-` | — | — | — | **invalid** — missing terminal integer. |
 | `PROCESS_BLUEPRINT-FULFIL-1` | PROCESS_BLUEPRINT | FULFIL | 1 | underscore in TYPE — permitted |
 | `BUSINESS_OBJECT-ORDER-3` | BUSINESS_OBJECT | ORDER | 3 | underscore in TYPE — permitted |
 
@@ -68,7 +68,7 @@ Elements that get referenced across documents.
 
 | TYPE | What it is | Used by |
 |---|---|---|
-| `FACTOR` | strategic driver — external or internal | FGCA, FGA |
+| `DRIVER` | strategic driver — external or internal | FGCA, FGA |
 | `GOAL` | strategic or tactical goal | Goals tree, FGCA, FGA, Activities |
 | `CHANGE` | business transformation (the BDN change layer) | FGCA, Activities (`delivers_changes:`) |
 | `ACTIVITY` | initiative / workstream | FGCA, FGA, Activities |
@@ -85,10 +85,10 @@ Elements that get referenced across documents.
 | `BUSINESS_OBJECT` | ArchiMate Business Object — passive information element at the business grain ("customer order", "customs declaration", "invoice"). Replaces `INFORMATION_ENTITY` (renamed for ArchiMate alignment). Catalogued at `canon/elements/02_business/business-objects/` (ADR 2026-06-08). `INFORMATION_ENTITY` is a deprecated alias for one release (see §6). | Process Blueprint; Business layer catalogue. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.15. |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
 | `REGISTRY` | business-layer **operating-configuration** primitive — a curated, org-authored list the organisation maintains to drive an operating activity. Worked example: the regulatory **source registry** (which sources to watch, where, how, how often). Rows are inline, canonical-by-containment, promotable. Distinct from `RULE` (decision logic, not a maintained list), from codex (codex is *given to* the org; a registry is *authored by* it), and from the Field zone (a registry is curated/authoritative, not contradiction-tolerant evidence). | Registries catalogue (`elements/02_business/registries/`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20. |
-| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA factors via `references_constraint:` |
+| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`elements/01_motivation/constraints/`); referenced from FGCA drivers via `references_constraint:` |
 | `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](elements/15-requirement.md). |
 | `STAKEHOLDER` | motivation-layer interest primitive (ArchiMate Stakeholder) — `internal` / `external`. Carries the stake profile (concern, interest, influence) and **references an `ACTOR` for identity** (`actor:` required); never carries identity itself. | Stakeholders catalogue (`elements/01_motivation/stakeholders/`); stakes in specific objects are `stakeholding` relations. Schema: [20-stakeholders.md](elements/20-stakeholders.md). |
-| `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `FACTOR`** (driver), e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. | Assessments catalogue (`elements/01_motivation/assessments/`); `assesses:` references one `FACTOR`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
+| `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `DRIVER`**, e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. | Assessments catalogue (`elements/01_motivation/assessments/`); `assesses:` references one `DRIVER`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
 | `TARGET_STATE` | implementation-layer **end-state** primitive (ArchiMate Plateau) — a structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met. The object an architect varies when presenting solution options; satisfies one or more `GOAL`s and is reached by one or more `SCENARIO` paths. | Target-states catalogue (`elements/05_implementation/target-states/`); composition is inline (`capabilities[]`, `processes[]`, `applications[]`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
 | `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Activity Card's narrative. Distinct from a "schedule milestone" (a zero-duration activity inside an Activities document, see [07-activities.md](views/07-activities.md) §5.9), which exists for critical-path computation. | Defined inside an Activity Card document (`*.activity-card.transitrix.yaml`); scope is the parent card document. Schema: [18-activity-card.md](views/18-activity-card.md). |
@@ -162,7 +162,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 
 | TYPE | Uniqueness scope |
 |---|---|
-| `FACTOR`, `GOAL`, `CHANGE`, `ACTIVITY` | within the FGCA / FGA / Goals / Activities document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
+| `DRIVER`, `GOAL`, `CHANGE`, `ACTIVITY` | within the FGCA / FGA / Goals / Activities document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
@@ -196,7 +196,7 @@ A cross-reference is a field whose value is an ID (or array of IDs) of another e
 
 - **Plural field name → array of typed IDs.** Example: `activities[].goals: [GOAL-1, GOAL-2]`.
 - **Singular field name → single typed ID.** Example: `activities[].parent: PHASE-DESIGN`.
-- **Child references parent.** A Goal references its driving Factors via `factors: [FACTOR-…]`; a Change references its Goals via `goals: [GOAL-…]`; an Activity references its Changes via `changes: [CHANGE-…]`. Any deviations are documented in the relevant notation spec.
+- **Child references parent.** A Goal references its driving Drivers via `factors: [DRIVER-…]`; a Change references its Goals via `goals: [GOAL-…]`; an Activity references its Changes via `changes: [CHANGE-…]`. Any deviations are documented in the relevant notation spec.
 
 A validator MUST check that every cross-reference resolves to a defined element of the correct TYPE. A reference to an undefined ID is an error; a reference whose target has the wrong TYPE prefix is also an error.
 
@@ -210,10 +210,10 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 |---|---|---|---|
 | `ACT-…` | `ACTIVITY-…` | examples under `examples/fga/`, `examples/fgca/`, `examples/activities/`; spec example in `03-fga.md` §4; `07-activities.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
 | `CHG-…` | `CHANGE-…` | spec example in `07-activities.md` §4; FGCA when its schema lands | follow-up |
-| `FAC-…` | `FACTOR-…` | scenarios examples (`FAC-MARKET-001`, etc.); some FGA references | follow-up |
+| `FAC-…` | `DRIVER-…` | scenarios examples (`FAC-MARKET-001`, etc.); some FGA references | follow-up — note: canonical TYPE name is now `DRIVER`; existing `FACTOR-…` IDs are grandfathered (valid, no forced migration) |
 | `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | residual: `11-scenarios.md` spec example + `examples/scenarios/optimistic-2027.scenarios.transitrix.yaml` | capability-map / products / applications / process-map portion **executed 2026-05-28**; scenarios remains as a follow-up |
 | `SCN-…` / `SCEN-…` | `SCENARIO-…` | `11-scenarios.md`; scenarios examples; `07-activities.md` (`scenario: SCEN-2026-OPT`) | follow-up — variant `SCEN` vs `SCN` also needs unifying |
-| Integer-only IDs (`1`, `2`, …) | typed string IDs (`GOAL-1`, `FACTOR-1`, …) | originally the FGCA example | covered in the in-flight FGCA schema PR — see [transitrix/methodology#7](https://github.com/transitrix/methodology/pull/7) |
+| Integer-only IDs (`1`, `2`, …) | typed string IDs (`GOAL-1`, `DRIVER-1`, …) | originally the FGCA example | covered in the in-flight FGCA schema PR — see [transitrix/methodology#7](https://github.com/transitrix/methodology/pull/7) |
 | `V1`, `V1.2`, `H1.2` (no `CAPABILITY-` prefix) | `CAPABILITY-V1`, `CAPABILITY-V1.2`, `CAPABILITY-H1.2` | residual: `examples/scenarios/omnichannel-2028.scenarios.transitrix.yaml`; prose mentions in `method/methodology.md`; `integration/studio.md` | capability-map / products / applications / process-map portion **executed 2026-05-28** (capability-map examples + cross-refs in products / applications / process-map specs, examples, and `acme_corp` views); scenarios + supporting docs remain |
 | Zero-padded sequences (`001`, `002`, …) | no-leading-zero integers (`1`, `2`, …) | most example files | follow-up — purely a string-form change; sort order is unaffected because comparison is numeric |
 | `INFORMATION_ENTITY-…` ids and `information_entities[]` blueprint field | `BUSINESS_OBJECT-…` ids and `business_objects[]` field | any blueprint that carries `information_entities[]` aspect entries with ids | one-release alias window; validator emits `BOBJ-D001` warning; hard error in the following release. Migration recipe in `migrations/0.5-to-0.6/` (additive follow-up). |

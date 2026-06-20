@@ -58,8 +58,8 @@ The methodology ships three presets. Each is defined at the version pinned in `m
 
 | Preset | Intent | Element TYPEs (in scope) |
 |---|---|---|
-| **`minimal`** | Bare strategy-to-execution chain. A small product or programme team that talks in drivers, goals, and work — no capabilities, applications, target states, or actors. | 01_motivation: `FACTOR`, `GOAL` · 05_implementation: `ACTIVITY` |
-| **`core`** | Typical EA repository. ArchiMate-aligned baseline modelling — motivation chain through capabilities, processes, applications, and a delivery plan. No advanced motivation analysis (assessment/influence) and no planning model (target states / scenarios). | 01_motivation: `FACTOR`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` · 02_business: `CAPABILITY`, `PROCESS`, `ACTOR`, `ROLE`, `RULE` · 03_application: `APPLICATION`, `INTEGRATION` · 05_implementation: `ACTIVITY`, `CHANGE`, `MILESTONE` |
+| **`minimal`** | Bare strategy-to-execution chain. A small product or programme team that talks in drivers, goals, and work — no capabilities, applications, target states, or actors. | 01_motivation: `DRIVER`, `GOAL` · 05_implementation: `ACTIVITY` |
+| **`core`** | Typical EA repository. ArchiMate-aligned baseline modelling — motivation chain through capabilities, processes, applications, and a delivery plan. No advanced motivation analysis (assessment/influence) and no planning model (target states / scenarios). | 01_motivation: `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` · 02_business: `CAPABILITY`, `PROCESS`, `ACTOR`, `ROLE`, `RULE` · 03_application: `APPLICATION`, `INTEGRATION` · 05_implementation: `ACTIVITY`, `CHANGE`, `MILESTONE` |
 | **`full`** | The complete vocabulary of the pinned methodology version. The default when `coverage_profile` is omitted. | Every TYPE in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.1. |
 
 ### 3.1 Per-preset relation allowlists
@@ -262,7 +262,7 @@ Every TYPE in the registry is in scope. The default for adopters who haven't yet
 coverage_profile: minimal
 ```
 
-A small product team using only `FACTOR`, `GOAL`, `ACTIVITY` plus `goal_parent` and `activity_goal` RELs. The team's `notations:` list narrows accordingly — `fgca` (or `fga`), `goals`, `activities`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
+A small product team using only `DRIVER`, `GOAL`, `ACTIVITY` plus `goal_parent` and `activity_goal` RELs. The team's `notations:` list narrows accordingly — `fgca` (or `fga`), `goals`, `activities`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
 
 ### 9.3 A custom profile — core + the planning model
 
