@@ -8,6 +8,23 @@ The methodology is **pre-1.0**. MINOR releases (`0.x` → `0.(x+1)`) may carry b
 
 ---
 
+## [0.7.0] — Unreleased
+
+ArchiMate 3.2 terminology alignment: `FACTOR` → `DRIVER`. Renames the element TYPE, canonical ID prefix, and `notation:` field value across all specs, skills, and templates. **YAML structural keys (`factors:`, `goal.factors`) are intentionally unchanged** — existing adopter view files remain valid without edits. Legacy `FACTOR-*` IDs are accepted by validators until the 1.0 cut. Migration recipe: [`migrations/0.6-to-0.7/`](migrations/0.6-to-0.7/).
+
+### Changed
+
+- **BREAKING (gradual): `FACTOR` element TYPE renamed to `DRIVER`.** Aligns with ArchiMate 3.2 motivation layer, which uses "Driver" for external/internal forces. Changes:
+  - Element TYPE name: `FACTOR` → `DRIVER`.
+  - Canonical ID prefix: `FACTOR-*` → `DRIVER-*`.
+  - `notation:` field value in element files: `factor` → `driver`.
+  - Folder path: `canon/elements/01_motivation/factors/` is unchanged; only file names change.
+  - YAML structural keys (`factors:`, `goal.factors[]`) are **not renamed** — backward-compat; existing view files need no edits.
+  - Legacy `FACTOR-*` IDs remain valid in all structural key values (e.g. `factors: [FACTOR-EU-REG-1]`) until the 1.0 cut; validators accept both forms.
+  - Affected specs: `notations/ELEMENT_PRIMITIVES.md`, `IDS_AND_REFERENCES.md`, `COVERAGE_PROFILES.md`, `README.md`, `views/02-fgca.md`, `views/03-fga.md` (PR #230); remaining notation views, skills, and templates in follow-on PRs.
+
+---
+
 ## [0.6.0] — Unreleased
 
 The Actors / Stakeholders identity model (epics #98 / #99). Unifies active-structure identity under one `ACTOR` TYPE and adds the `STAKEHOLDER` interest primitive; retires `UNIT` / `EMPLOYEE`. One pre-1.0 breaking change, called out below.
