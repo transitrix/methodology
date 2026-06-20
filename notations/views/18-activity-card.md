@@ -37,7 +37,7 @@ A "project" is an Activity at the project scale of the recursive ACTIVITY hierar
 **View-purity.** Like every other view, the Activity Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.activities.*`, `*.fgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
 
 1. The card document itself — `notation: activity-card` — references the project Activity by ID and declares its narrative milestones.
-2. The **canon element store** (`canon/elements/**`) — the project ACTIVITY element (`valid_from`, `start_date`, `end_date`, `delivers_changes`) and its child ACTIVITY elements (any activity with `parent` = the project's ID); the FACTOR / GOAL / CHANGE elements the motivation chain expands (`goal.factors`, `change.goals` carried inline on the elements).
+2. The **canon element store** (`canon/elements/**`) — the project ACTIVITY element (`valid_from`, `start_date`, `end_date`, `delivers_changes`) and its child ACTIVITY elements (any activity with `parent` = the project's ID); the DRIVER / GOAL / CHANGE elements the motivation chain expands (`goal.factors`, `change.goals` carried inline on the elements).
 3. The **canon relation store** (`canon/relations/**`) — the project's goals come from the first-class `activity_goal` relations (`from` = the project ID); see [17-relations.md](../elements/17-relations.md) §3. The activity element's transitional inline `goals: []` is used only as a fallback when no such relation exists.
 
 The card does not vendor copies of any of this data; the renderer pulls by reference at view time.
@@ -50,7 +50,7 @@ The card does not vendor copies of any of this data; the renderer pulls by refer
 |---|---|
 | Single-page summary of a project for an executive review | Activity Card |
 | Project network with dates + dependencies + critical path | Activities ([07-activities.md](07-activities.md)) |
-| Project's strategic context — factors driving its goals — | FGCA ([02-fgca.md](02-fgca.md)) |
+| Project's strategic context — drivers underlying its goals — | FGCA ([02-fgca.md](02-fgca.md)) |
 | Programme / portfolio overview across many projects | Out of scope for v0.1 (future) |
 
 The card is **specifically** a single-project view. A multi-project programme deck or a portfolio dashboard would be a separate notation.
@@ -130,7 +130,7 @@ The renderer assembles the card from references into the canon element + relatio
 | **Milestones (timeline)** | `activity_card.milestones[]` in this document |
 | **Motivation chain — Goals** | The goals the project serves, read from the `activity_goal` relations in `canon/relations/` (`from` = the project ID); falls back to the project ACTIVITY's transitional inline `goals: []` when no relation exists |
 | **Motivation chain — Changes** | The changes the project delivers (`ACTIVITY.delivers_changes: [CHANGE-…]`), expanded to their CHANGE element definitions in `canon/elements/` |
-| **Motivation chain — Factors** | The FACTOR elements referenced by the in-scope goals (`GOAL.factors: [FACTOR-…]`, carried inline on the GOAL element) |
+| **Motivation chain — Drivers** | The DRIVER elements referenced by the in-scope goals (`GOAL.factors: [DRIVER-…]`, carried inline on the GOAL element) |
 | **Child activities** | ACTIVITY elements in `canon/elements/` whose inline `parent` = the project's ID |
 
 The card document itself stays small. Adopters editing a card only touch the card-specific narrative (description + milestones); changes to the project Activity, its goals, its changes, or its children happen in their own canonical element / relation files.

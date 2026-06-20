@@ -69,7 +69,7 @@ Critical-path values (early start / early finish / late start / late finish / sl
 | Bind activities to strategic goals | Activities — `goals: []` |
 | Show what changes activities deliver (BDN linkage) | Activities — `delivers_changes: []` |
 | Document the procedural flow of a business process | BPMN (`*.bpmn.transitrix.yaml`) |
-| Decompose strategic factors → goals → changes → activities | FGCA (`*.fgca.transitrix.yaml`) |
+| Decompose strategic drivers → goals → changes → activities | FGCA (`*.fgca.transitrix.yaml`) |
 
 ---
 
@@ -245,7 +245,7 @@ Two complementary fields express different dimensions of ownership:
 
 ### 5.7 BDN linkage
 
-`delivers_changes: []` references Changes from BDN (Benefits Dependency Network) — see notation 03-fgca. This is the same M:M relation that exists today in DSM's `activity_change` join. It allows reading an FGCA chain end-to-end from text: a Factor leads to Goals; Goals motivate Changes; Activities deliver Changes.
+`delivers_changes: []` references Changes from BDN (Benefits Dependency Network) — see notation 03-fgca. This is the same M:M relation that exists today in DSM's `activity_change` join. It allows reading an FGCA chain end-to-end from text: a Driver leads to Goals; Goals motivate Changes; Activities deliver Changes.
 
 ### 5.8 Project block — `start_date` and `calendar`
 
@@ -491,7 +491,7 @@ activities:
 - Critical Path Method (CPM) — forward / backward pass standard reference
 - Henry L. Gantt — Gantt chart conventions (summary bars, milestones, calendar projection) as carried forward by MS Project and Primavera P6
 - Transitrix BPMN notation: `notations/01-bpmn.md` (for procedural-flow processes)
-- Transitrix FGCA notation: `notations/02-fgca.md` (for Factor → Goal → Change → Activity decomposition; this notation's `delivers_changes` field links into FGCA)
+- Transitrix FGCA notation: `notations/02-fgca.md` (for Driver → Goal → Change → Activity decomposition; this notation's `delivers_changes` field links into FGCA)
 - Transitrix Goals notation: `notations/04-goals.md` (this notation's `goals` field references Goal IDs)
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
