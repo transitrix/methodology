@@ -52,7 +52,7 @@ Key OKF fields per knowledge object:
 
 ### Canon layer — Transitrix repo
 
-Validated primitives — FACTOR, GOAL, CHANGE, CAPABILITY, and others — promoted from the knowledge repo. Each element in `canon/elements/` corresponds to one or more knowledge objects. The promotion decision is a pull request; review is the validation gate.
+Validated primitives — DRIVER, GOAL, CHANGE, CAPABILITY, and others — promoted from the knowledge repo. Each element in `canon/elements/` corresponds to one or more knowledge objects. The promotion decision is a pull request; review is the validation gate.
 
 Transitrix also distributes canonical vocabulary back downstream: generated `glossary.md` or object-reference stubs committed to project repos keep source-layer teams aligned with the enterprise model.
 

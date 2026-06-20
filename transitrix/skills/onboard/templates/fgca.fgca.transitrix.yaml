@@ -3,7 +3,7 @@ spec_version: "0.1"
 
 # FGCA chain. Spec: notations/views/02-fgca.md
 # Replace FILL-ME placeholders. IDs use the canonical grammar:
-# FACTOR-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
+# DRIVER-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
 
 id: FGCA-FILL-ME-1
 name: "FILL-ME FGCA chain"
@@ -14,15 +14,15 @@ date: "2026-05-26"
 author: "FILL-ME"
 
 factors:
-  - id: FACTOR-1
-    name: "FILL-ME factor — neutral driver (the standing force, not a finding about it)"
+  - id: DRIVER-1
+    name: "FILL-ME driver — neutral standing force the organisation acts on (not a finding about it)"
     type: external           # external | internal
     # category: economic     # PESTLE — external only: political | economic | social | technological | legal | environmental
 
 goals:
   - id: GOAL-1
     name: "FILL-ME goal"
-    factors: [FACTOR-1]      # which factors drove this goal
+    factors: [DRIVER-1]      # which drivers motivated this goal
 
 changes:
   - id: CHANGE-1

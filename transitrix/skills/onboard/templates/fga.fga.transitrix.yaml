@@ -13,15 +13,15 @@ date: "2026-05-26"
 author: "FILL-ME"
 
 factors:
-  - id: FACTOR-1
-    name: "FILL-ME factor — neutral driver (the standing force, not a finding about it)"
+  - id: DRIVER-1
+    name: "FILL-ME driver — neutral standing force the organisation acts on (not a finding about it)"
     type: external           # external | internal
     # category: economic     # PESTLE — external only: political | economic | social | technological | legal | environmental
 
 goals:
   - id: GOAL-1
     name: "FILL-ME goal"
-    factors: [FACTOR-1]
+    factors: [DRIVER-1]
 
 activities:
   - id: ACTIVITY-1

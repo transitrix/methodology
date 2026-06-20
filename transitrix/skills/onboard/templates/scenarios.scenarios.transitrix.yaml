@@ -18,8 +18,8 @@ scenarios:
     likelihood: "medium"                # low | medium | high
     horizon: "2030"
     factors:
-      - id: FACTOR-FILL-ME-1
-        name: "FILL-ME driving factor"
+      - id: DRIVER-FILL-ME-1
+        name: "FILL-ME strategic driver"
         type: external
     goals:
       - id: GOAL-FILL-ME-1

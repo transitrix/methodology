@@ -29,7 +29,7 @@ If neither is found → **greenfield setup** — continue with the two questions
 Ask the user two short questions:
 
 1. **What do you want to model first?** Show the family-selection cheat sheet (§ Cheat sheet below) and offer the most common starting points:
-   - Strategy chain → **FGCA** (Factor → Goal → Change → Activity) or **FGA** (no Changes).
+   - Strategy chain → **FGCA** (Driver → Goal → Change → Activity) or **FGA** (no Changes).
    - Hierarchy of goals → **Goals tree**.
    - Capability map with CMMI maturity → **Capability Map**.
    - Value chain with operational aspects → **Process Blueprint**.
@@ -96,7 +96,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   └── requirements.txt
 ├── canon/                          # validated model — the authoritative zone
 │   ├── elements/
-│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, FACTOR, …
+│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
 │   │   │   └── constraints/        # CONSTRAINT-…-N.yaml (one per file)
 │   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
 │   │   │   └── rules/              # RULE-…-N.yaml (one per file)
@@ -253,7 +253,7 @@ npx @transitrix/cli validate path/to/your.fgca.transitrix.yaml
 
 Based on what the user just built, propose the next artefact in the family. Concrete patterns:
 
-- They built a **Goals tree** → suggest an **FGCA** or **FGA** to link goals to driving factors and delivery activities.
+- They built a **Goals tree** → suggest an **FGCA** or **FGA** to link goals to their drivers and delivery activities.
 - They built **FGCA** → suggest a **Capability map** for the same domain so they can see which capabilities each goal requires.
 - They built a **Capability map** → suggest an **Applications catalogue** so each capability has a system inventory.
 - They built **BPMN** for one process → suggest the **Process landscape map** to put it in context.
@@ -305,7 +305,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 ### One-paragraph summary per notation
 
 - **BPMN** — `notation: bpmn`. One root `process:` with `pools[].lanes[].elements[]` and `flows[]`. Elements typed (`startEvent`, `task`, `exclusiveGateway`, …); flows directed. Compiles to BPMN 2.0 XML.
-- **FGCA** — `notation: fgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `activities[]`. Typed string IDs (`FACTOR-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTIVITY-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [FACTOR-…]`, `change.goals: [GOAL-…]`, `activity.changes: [CHANGE-…]`. Optional `factor.references_constraint: [CONSTRAINT-…]`.
+- **FGCA** — `notation: fgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `activities[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTIVITY-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `activity.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`.
 - **FGA** — `notation: fga`. Same shape as FGCA minus `changes[]`. Activities link directly to goals via `activity.goals: [GOAL-…]`.
 - **Goals tree** — `notation: goals`. Flat root arrays: `goal_types[]` (with `{name, level}` entries) + `goals[]`. Each goal has `id`, `name`, `type` (matching a `goal_types[].name`), `level` (matching that type's level), optional `parent: GOAL-…`. Omit `parent` for a root.
 - **Capability map** — `notation: capability-map`. Root key `capability_map:`. Capabilities use a V/H sub-grammar (`CAPABILITY-V1.2`, `CAPABILITY-H1`); each capability carries `type: domain | supporting`, `current_maturity`, optional `target_maturity`, `target_date`, etc.
@@ -315,7 +315,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 - **Scenarios** — `notation: scenarios`. Alternative strategic development paths, each scoping its own goals / capabilities / activities / products / processes / applications.
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
-- **Activity Card** — `notation: activity-card`. Root key `activity_card:` carrying a single project's narrative — the FGCA chain it implements (`factor`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
+- **Activity Card** — `notation: activity-card`. Root key `activity_card:` carrying a single project's narrative — the FGCA chain it implements (`driver`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
 - **Compliance Impact** — `notation: compliance-impact`. Report-config over the compliance overlay (sibling of Scenarios). Root key `view:` declaring `subjects` (products / processes), `obligations` (`include` or `filter`), `grouping`, `status_display`, and `empty_cells`. Carries no canonical content — every cell is derived from `ASSERTION` + process flow + `REQUIREMENT` status.
 - **Coverage Metric** — `notation: coverage-metric`. Report-config over the coverage read of canon (sibling of Compliance Impact). Root key `view:` declaring `subjects` (products / processes), `regimes` (`include` or `filter`), `grouping`, `coverage_rule`, and `empty_cells`. Carries no canonical content — counts the subjects with zero admitted obligations per regulatory regime and splits "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)" (an admitted `n_a` `ASSERTION`).

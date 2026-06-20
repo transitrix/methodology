@@ -1,6 +1,6 @@
 ---
 layer: motivation
-extracts: [FACTOR, GOAL, CONSTRAINT, REQUIREMENT, STAKEHOLDER]
+extracts: [DRIVER, GOAL, CONSTRAINT, REQUIREMENT, STAKEHOLDER]
 version: "0.1"
 status: draft
 ---
@@ -36,7 +36,7 @@ Emit a single JSON object. Nothing else.
 
 | TYPE | Extract when the source… | Notes |
 |---|---|---|
-| `FACTOR` | states a driver, trend, or force acting on the organisation | the *why behind* a goal; not the goal itself |
+| `DRIVER` | states a driver, trend, or force acting on the organisation | the *why behind* a goal; not the goal itself |
 | `GOAL` | names a desired outcome the organisation wants to reach | concrete enough to be pursued |
 | `CONSTRAINT` | states a restriction (“must not …”, “cannot exceed …”) | a limit on the solution space |
 | `REQUIREMENT` | states a positive obligation (“must …”, “shall …”) | a positive action the org must take |
@@ -53,7 +53,7 @@ Rules for `parent_goal`:
 - Reference the parent by canonical ID — the same `GOAL-…` ID you give the parent when you also extract it from this source, or a `GOAL-…` ID the source itself names.
 - If the parent goal is not extracted from this source and not named by ID, leave `parent_goal` out and capture the relationship in `extraction_notes` for the reviewer.
 
-Motivation-layer relations you may propose (only above a high bar): `stakeholding` (`STAKEHOLDER → GOAL | ACTIVITY | CAPABILITY`). Most causal links between factors/goals are better left as `extraction_notes` for the reviewer unless the source states them plainly.
+Motivation-layer relations you may propose (only above a high bar): `stakeholding` (`STAKEHOLDER → GOAL | ACTIVITY | CAPABILITY`). Most causal links between drivers/goals are better left as `extraction_notes` for the reviewer unless the source states them plainly.
 
 ## Rules
 
@@ -66,7 +66,7 @@ Motivation-layer relations you may propose (only above a high bar): `stakeholdin
 
 - Do not invent a TYPE or a relation kind. Use the registries; if unsure, emit the element and note the uncertainty.
 - Do not output `source_quality`, admission fields, or `admitted_to` — the CLI sets `admitted_to: pending`.
-- Do not merge two distinct drivers into one FACTOR, or restate a CONSTRAINT as a REQUIREMENT.
+- Do not merge two distinct drivers into one DRIVER, or restate a CONSTRAINT as a REQUIREMENT.
 - Do not admit, reaffirm, or reference existing canon — you only read the one field artefact.
 
 ## See also
