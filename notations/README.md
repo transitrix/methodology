@@ -80,9 +80,9 @@ Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit
 |---|---|
 | You need to trace strategic drivers through goals and explicit transformation steps to deliverable initiatives. | **FGCA** |
 | You need the same chain, but the transformation step between goals and activities is implicit or trivial. | **FGA** |
-| You need to decompose goals hierarchically (strategy → tactical → operational) without naming factors or activities. | **Goals tree** |
+| You need to decompose goals hierarchically (strategy → tactical → operational) without naming drivers or activities. | **Goals tree** |
 | You need to plan delivery — activities, dependencies, durations, Gantt — and the strategic context is already settled elsewhere. | **Activities** |
-| You need a quarterly goals review with no factor or activity context. | **Goals tree** |
+| You need a quarterly goals review with no driver or activity context. | **Goals tree** |
 | You're explaining why a goal-action gap exists and what transformation closes it. | **FGCA** |
 
 ### Form rule — flat top-level arrays with reference-based hierarchy
@@ -92,8 +92,8 @@ Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit
 | Notation | Top-level arrays | Hierarchy / cross-link |
 |---|---|---|
 | **Goals** | `goal_types[]`, `goals[]` | `goal.parent: GOAL-…` (omitted at root) |
-| **FGA** | `factors[]`, `goals[]`, `activities[]` | `goal.factors: [FACTOR-…]`; `activity.goals: [GOAL-…]` |
-| **FGCA** | `factors[]`, `goals[]`, `changes[]`, `activities[]` | `goal.factors: [FACTOR-…]`; `change.goals: [GOAL-…]`; `activity.changes: [CHANGE-…]` |
+| **FGA** | `factors[]`, `goals[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `activity.goals: [GOAL-…]` |
+| **FGCA** | `factors[]`, `goals[]`, `changes[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `change.goals: [GOAL-…]`; `activity.changes: [CHANGE-…]` |
 | **Activities** | `activities[]` | `activity.predecessors: [ACTIVITY-…]`; optional `parent: ACTIVITY-…` for WBS groupings |
 
 **Decision (2026-05-26)** — this supersedes the earlier "nested for trees, flat for DAGs" heuristic. Reasoning: a single shape across the family removes the spec-vs-implementation gap that the heuristic produced (downstream tools have to handle both forms), and tree-shape semantics survive perfectly well as `parent`-references inside a flat array. The earlier rule was a 2026-05-20 working position alongside the original FGCA schema decision; this entry replaces it.

@@ -23,7 +23,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Source of truth
 
-**FACTOR, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The FGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+**DRIVER, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The FGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
 
 The inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
 
@@ -33,7 +33,7 @@ The reconstruction invariant applies: `render(Elements + Relations, view_config)
 
 ## Element lifecycle
 
-Every FACTOR, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The FGCA view document itself does not carry a lifecycle field.
+Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The FGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -70,7 +70,7 @@ FGCA is read as a cause-and-delivery chain:
 
 In practical management communication, this means:
 
-- factors justify strategic focus,
+- drivers justify strategic focus,
 - goals set direction and expected value,
 - changes define what must be transformed in the business,
 - activities define who does what to realize that transformation.
@@ -102,7 +102,7 @@ This section is **non-normative**: it records what Transitrix DSM enforces and r
 
 | Layer | Status | Notes |
 |-------|--------|-------|
-| **F** — Factors | Implemented | Strategic Factors (PESTLE + internal); PESTLE report; factor–goal linking via `goal_factor` |
+| **F** — Drivers | Implemented | Strategic Drivers (PESTLE + internal); PESTLE report; driver–goal linking via `goal_factor` |
 | **G** — Goals | Implemented | Goals tree, Visual Editor, FGCA column; goal–activity link via `goal_id` |
 | **C** — Changes | Implemented | `bdn_change` entities linked to goals; `activity_change` join table; Activity edit form shows "Delivers changes" |
 | **A** — Activities | Implemented | Activities table, Visual Editor, FGCA column; linked to Changes via `activity_change` |
@@ -129,7 +129,7 @@ Examples:
 
 ## Structure — projection over canon elements
 
-An FGCA view document projects over FACTOR, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
+An FGCA view document projects over DRIVER, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
 
 ```yaml
 notation: fgca
@@ -176,22 +176,22 @@ A complete example of standalone element files for this notation: [`examples/fgc
 | `version` | no | document version |
 | `date` | no | document date (YYYY-MM-DD) |
 | `author` | no | document author |
-| `factors` | yes | array of factor entries — see below |
+| `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |
 | `changes` | yes | array of change entries — see below |
 | `activities` | yes | array of activity entries — see below |
 
 ### `factors[]`
 
-A factor is a **neutral driver** — a standing force the organisation acts on, not a finding about it. Findings about a driver's current state (numbers, trends, observations) live on `ASSESSMENT` records that reference the FACTOR; they are not inline on a factor entry. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (FACTOR as ArchiMate Driver) and §7.16 (ASSESSMENT).
+A DRIVER is a neutral, standing force the organisation acts on, not a finding about it. Findings about a driver's current state (numbers, trends, observations) live on `ASSESSMENT` records that reference the DRIVER; they are not inline on a driver entry. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (DRIVER as ArchiMate Driver) and §7.16 (ASSESSMENT).
 
 | Field | Required | Description |
 |---|---|---|
-| `id` | yes | `FACTOR-[<middle>-]<INTEGER>` |
-| `name` | yes | what the factor is — the neutral driver, not a finding about it |
+| `id` | yes | `DRIVER-[<middle>-]<INTEGER>`. Legacy `FACTOR-…` IDs remain valid. |
+| `name` | yes | what the driver is — the neutral standing force, not a finding about it |
 | `type` | no | `external` or `internal` |
-| `category` | no | PESTLE sub-classification for external factors — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal factors. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
-| `references_constraint` | no | array of `CONSTRAINT-…` IDs the factor reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a factor for the organisation that acts on it — the factor is the FGCA driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
+| `category` | no | PESTLE sub-classification for external drivers — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal drivers. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
+| `references_constraint` | no | array of `CONSTRAINT-…` IDs the driver reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a strategic driver for the organisation — the DRIVER is the FGCA strategic driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
 | `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
 ### `goals[]`
@@ -200,7 +200,7 @@ A factor is a **neutral driver** — a standing force the organisation acts on, 
 |---|---|---|
 | `id` | yes | `GOAL-[<middle>-]<INTEGER>` |
 | `name` | yes | what the goal is |
-| `factors` | no | array of `FACTOR-…` IDs this goal is driven by |
+| `factors` | no | array of `DRIVER-…` IDs this goal is driven by. Legacy `FACTOR-…` IDs remain valid. |
 | `description` | no | one-paragraph elaboration |
 
 ### `changes[]`
@@ -240,7 +240,7 @@ view_config:
     ids: []              # when filter is "ids": the explicit GOAL-… list to include
     tags: []             # when filter is "tags": include GOALs whose tags[] match any entry
   factors:
-    surface: derived     # derive FAC set from goal.factors inline links on the included goal set
+    surface: derived     # derive DRIVER set from goal.factors inline links on the included goal set
   changes:
     surface: derived     # derive CHANGE set from change.goals inline links for the included goals
   activities:
@@ -257,7 +257,7 @@ view_config:
 | `goals.filter` | string | `all` | `all` — include every active GOAL; `ids` — include only the GOALs listed in `goals.ids`; `tags` — include GOALs whose `tags[]` match any entry in `goals.tags`. |
 | `goals.ids` | list | `[]` | `GOAL-…` IDs to include explicitly. Used when `goals.filter: ids`. |
 | `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. |
-| `factors.surface` | string | `derived` | `derived` — derive the FACTOR set by following `goal.factors` inline links on the included goals. `all` — include every active FACTOR in canon. |
+| `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included goals. `all` — include every active DRIVER in canon. |
 | `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
 | `activities.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. |
 | `display.depth` | integer \| null | `null` | Maximum depth of the rendered F→G→C→A chain. `null` renders all levels. |
@@ -278,11 +278,11 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `FGCA-005` | error | every entry in the four arrays must have a non-empty `id` and `name`. |
 | `FGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all four layers within a document). |
 | `FGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
-| `FGCA-008` | error | `goals[].factors[]` IDs must reference defined factors. |
+| `FGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
 | `FGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
 | `FGCA-010` | error | `activities[].changes[]` IDs must reference defined changes. |
 | `FGCA-011` | error | `activities[].goals[]` IDs must reference defined goals. |
-| `FGCA-012` | warn | a factor with no goal referencing it is orphan. |
+| `FGCA-012` | warn | a driver with no goal referencing it is orphan. |
 | `FGCA-013` | warn | a goal with no change (and no direct activity) referencing it is orphan. |
 | `FGCA-014` | warn | a change with no activity referencing it is orphan. |
 | `FGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
@@ -293,7 +293,7 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 
 - View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../CONTRACT.md) §14 (VP-2)
 - Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1
-- FACTOR, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
+- DRIVER, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
 - Timeless inline relations (`goal.factors`, `change.goals`, `activity.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
 - FGA notation (3-layer simplified variant): [`03-fga.md`](03-fga.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
