@@ -3,7 +3,7 @@
 **Location:** Project root
 **Purpose:** Single source of truth for all project terms and abbreviations
 **Format:** English
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-06-20
 
 ---
 
@@ -182,6 +182,25 @@
 | **GLOSSARY** | This document |
 | **ROADMAP** | Project phases and tasks |
 
+## ArchiMate 3.2 Alignment Notes
+
+Transitrix is grounded in ArchiMate 3.2 but uses deliberately simplified or domain-friendly names in several places. The table below records where Transitrix terms differ from the standard and the rationale.
+
+| Transitrix TYPE | ArchiMate 3.2 term | Status |
+|---|---|---|
+| `DRIVER` (was `FACTOR`) | Driver | Aligned — rename in progress (pre-1.0) |
+| `GOAL` | Goal | Aligned |
+| `ASSESSMENT` | Assessment | Aligned |
+| `STAKEHOLDER` | Stakeholder | Aligned |
+| `CONSTRAINT` | Constraint | Aligned |
+| `REQUIREMENT` | Requirement | Aligned |
+| `BUSINESS_OBJECT` | Business Object | Aligned (renamed from `INFORMATION_ENTITY`) |
+| `EQUIPMENT` | Equipment | Aligned |
+| `TARGET_STATE` | Plateau | Intentional divergence — "Target State" is more accessible to business stakeholders; the ArchiMate Plateau correspondence is noted in the element spec |
+| `CHANGE` | Gap | Intentional divergence — "Change" better reflects the BDN transformation concept in practice; the ArchiMate Gap correspondence is noted in the element spec |
+| `SCENARIO` | Course of Action | Intentional divergence — "Scenario" is more intuitive for practitioners; the ArchiMate Course of Action correspondence is noted in the element spec |
+| `ACTIVITY` | Work Package | Intentional divergence — "Activity" is broader and covers initiatives, workstreams, and phases; the ArchiMate Work Package correspondence is noted in the element spec |
+
 ---
 
 ## Notes
@@ -192,6 +211,6 @@
 
 ---
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Status:** Active
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-06-20
