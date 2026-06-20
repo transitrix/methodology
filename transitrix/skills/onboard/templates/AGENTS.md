@@ -66,7 +66,7 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
 ├── README.md
 ├── canon/                          # validated model — the authoritative zone
 │   ├── elements/                   # elements by ArchiMate layer
-│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, FACTOR, …
+│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
 │   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
 │   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
 │   │   └── 04_technology/          # NODE, ARTIFACT, …
@@ -151,7 +151,7 @@ Every typed element ID follows the canonical grammar in `notations/IDS_AND_REFER
 <TYPE>-[<middle segment(s)>-]<INTEGER>
 ```
 
-- **TYPE** — uppercase, letters / digits / underscore, starts with a letter (`FACTOR`, `GOAL`, `PROCESS_BLUEPRINT`, `INFORMATION_ENTITY`).
+- **TYPE** — uppercase, letters / digits / underscore, starts with a letter (`DRIVER`, `GOAL`, `PROCESS_BLUEPRINT`, `INFORMATION_ENTITY`).
 - **Middle segments** — optional, notation-specific, for disambiguation (`GOAL-RETENTION-12`, `ACTIVITY-Q3-2026-7`).
 - **INTEGER** — terminal positive integer, **no leading zeros** (`-1`, not `-001`).
 - **Exception:** `CAPABILITY-V1.2`, `CAPABILITY-H1.2.3` — capabilities use V/H diagram addresses instead of plain integers (capped at three levels).

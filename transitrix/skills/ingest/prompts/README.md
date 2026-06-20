@@ -4,7 +4,7 @@ Per-layer **system prompts** the ingest agent runs over a `field` artefact to pr
 
 | File | ArchiMate layer | Extracts |
 |---|---|---|
-| [`01_motivation.md`](01_motivation.md) | Motivation | `FACTOR`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` |
+| [`01_motivation.md`](01_motivation.md) | Motivation | `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` |
 | [`02_business.md`](02_business.md) | Business | `ACTOR`, `ROLE`, `PROCESS`, `RULE`, `PRODUCT`, `CAPABILITY` |
 | [`03_application.md`](03_application.md) | Application | `APPLICATION`, `INTEGRATION`, `INFORMATION_ENTITY` |
 | [`04_implementation.md`](04_implementation.md) | Implementation & Migration | `ACTIVITY`, `CHANGE`, `TARGET_STATE` (+ milestone candidates routed through these two TYPEs until `MILESTONE` lands) |

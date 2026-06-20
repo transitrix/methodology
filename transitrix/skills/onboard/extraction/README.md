@@ -10,7 +10,7 @@ One prompt per ArchiMate 3.2 layer:
 
 | File | Layer | Extraction targets (canonical TYPEs in IDS §3.1) |
 |---|---|---|
-| [`01_motivation.md`](01_motivation.md) | Motivation | `FACTOR`, `GOAL`, `CONSTRAINT`, `REQUIREMENT` |
+| [`01_motivation.md`](01_motivation.md) | Motivation | `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT` |
 | [`02_business.md`](02_business.md) | Business | `ROLE`, `UNIT`, `EMPLOYEE`, `PROCESS`, `RULE`, `PRODUCT` |
 | [`03_application.md`](03_application.md) | Application | `APPLICATION`, `INTEGRATION`, `INFORMATION_ENTITY` |
 
@@ -54,7 +54,7 @@ Every draft primitive carries:
 
 ## Smoke test
 
-The [`fixtures/`](fixtures/) folder ships an English-language fake INTERVIEW. Running `01_motivation.md` over it should produce a sensible draft set of FACTORs / GOALs / CONSTRAINTs / REQUIREMENTs. The fixture is the smoke check that the prompt is internally consistent — if the prompt evolves and the fixture's expected outputs no longer make sense, the prompt is broken (or the fixture is stale).
+The [`fixtures/`](fixtures/) folder ships an English-language fake INTERVIEW. Running `01_motivation.md` over it should produce a sensible draft set of DRIVERs / GOALs / CONSTRAINTs / REQUIREMENTs. The fixture is the smoke check that the prompt is internally consistent — if the prompt evolves and the fixture's expected outputs no longer make sense, the prompt is broken (or the fixture is stale).
 
 Running `02_business.md` and `03_application.md` over the same fixture exercises `cross_layer_hints:` — the fixture contains material that surfaces as hints across all three layers.
 
