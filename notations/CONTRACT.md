@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -749,3 +749,69 @@ Each per-view migration (VP-3+) adds this defaults block to its spec.
 | `VC-003` | warning | A view spec has no explicit defaults block (§14.3). Zero-config renders are undefined for this notation; the CLI/skill cannot state assumptions. |
 
 `VC-002` is cross-cutting — it requires the full canon catalogue to resolve. It is reported at render time, not at file-lint time.
+
+---
+
+### 14.5 Rendered snapshots
+
+A `view_config` defines *what* to render (§14.1). A **rendered snapshot** is the committed output of that render — a point-in-time record of which elements the view projected and their key display values, written by the CLI and checked into the adopter repository. It makes the captured state visible in git without re-running the CLI.
+
+**Relation to canon.** A snapshot is derived, regenerable output — not canon. It carries no admission record (§6), no lifecycle (§7), and no confidence state (§11). Deleting a `snapshots/` folder loses no model knowledge; re-running `transitrix capture` regenerates it. The snapshot's authoritativeness derives from the canon it was rendered from, not from the snapshot file itself.
+
+**Location.** Snapshots live in a `snapshots/` subdirectory alongside the view document they capture, within the notation's view folder:
+
+```
+views/
+  <notation>/
+    <view-file>.<notation>.transitrix.yaml   # the authored view document (unchanged by capture)
+    snapshots/
+      2026-06-20T143000Z.yaml                # one file per CLI Capture run
+      2026-06-15T091200Z.yaml
+```
+
+**File naming.** Each snapshot is named with a compact ISO 8601 UTC timestamp: `YYYY-MM-DDTHHMMSSZ.yaml` — the date portion uses the standard hyphen-separated form; the time portion omits colons so the name is valid on all operating systems (including Windows). The CLI sets the timestamp at the moment of writing.
+
+- Example: a capture at 14:30:00 UTC on 2026-06-20 produces `2026-06-20T143000Z.yaml`.
+- Files sort alphabetically in chronological order; the most recent snapshot is always last.
+- Sub-day precision is deliberate: the accumulation rule (below) requires each Capture to produce a distinct file, even when the CLI runs multiple times on the same calendar day.
+
+**Required fields — shared envelope.** Every snapshot file MUST carry the following fields, regardless of notation:
+
+```yaml
+view_id: FGCA-RETAIL-1               # canonical ID of the view being captured
+generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
+methodology_version: "0.7.0"          # methodology version in use at generation time
+# …notation-specific element list follows (format defined per notation spec)…
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `view_id` | yes | string | Canonical ID of the `view.id` in the view document being captured. |
+| `generated_at` | yes | string | ISO-8601 UTC timestamp of when the CLI wrote this snapshot. Must match the timestamp encoded in the file name. |
+| `methodology_version` | yes | string | Methodology version in effect when the CLI ran — allows staleness detection when the spec evolves. |
+
+**Notation-specific content.** Beyond the shared envelope, each view notation spec defines which element and relation fields to denormalize into the snapshot. Each per-notation spec MUST define, under a `### Snapshot content` heading, at minimum:
+
+- the canonical element **`id`** — traceable back to `canon/elements/`
+- at least one **human-readable key field** (e.g. `name`, `label`) — so the snapshot is readable without CLI tooling or canon access
+
+Notation-specific snapshot content definitions are added per notation in subsequent VP-series passes; this section fixes the shared envelope and the conventions that all notation snapshot definitions must follow.
+
+**Authoring rules.**
+
+1. **CLI-only writes.** Snapshots are written exclusively by `transitrix capture` (or the equivalent Studio action). Hand-editing a snapshot file is not accepted.
+2. **Read-only after generation.** Snapshot files MUST NOT be modified after the CLI writes them. The git history of the `snapshots/` folder is the audit trail.
+3. **Accumulation.** Each `transitrix capture` run creates a new timestamped file. Earlier snapshots are never overwritten or deleted by the CLI. Pruning old snapshots is a manual housekeeping decision by the adopter.
+4. **View document unchanged.** Capturing a snapshot does not modify the `*.view.yaml` document or any canon element.
+
+**Validation rules.**
+
+| Rule | Severity | Description |
+|---|---|---|
+| `SNAP-001` | error | A file in a `snapshots/` directory is missing a required envelope field (`view_id`, `generated_at`, or `methodology_version`). |
+| `SNAP-002` | error | `view_id` does not resolve to a `view.id` declared in any view document in the same notation folder. |
+| `SNAP-003` | error | File name does not conform to `YYYY-MM-DDTHHMMSSZ.yaml` (compact ISO 8601 UTC timestamp, colons omitted, `Z` suffix required). |
+| `SNAP-004` | warning | `generated_at` does not match the timestamp encoded in the file name — the file may have been renamed or copied outside the CLI. |
+| `SNAP-005` | warning | An element `id` in the snapshot does not resolve in the current canon — the snapshot is stale relative to the model. Re-run `transitrix capture` to refresh. Advisory only; never blocks. |
+
+`SNAP-002` and `SNAP-005` are cross-cutting (require the full canon catalogue and the view document set). `SNAP-001`, `SNAP-003`, and `SNAP-004` are per-file checks.
