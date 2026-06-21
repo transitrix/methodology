@@ -1,9 +1,9 @@
 notation: scenarios
 spec_version: "0.1"
-title: NorthBay Retail — Omnichannel 2028
+name: "NorthBay Retail — Omnichannel 2028"
 description: Strategic scenario for unifying in-store, online, and mobile channels into a single customer-centric platform by 2028.
 version: "1.0"
-date: "2026-05-12"
+generated_at: "2026-05-12"
 
 scenario:
   id: SCN-NB-OMNI-2028

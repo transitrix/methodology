@@ -1,9 +1,9 @@
 notation: applications
 spec_version: "0.1"
-title: Enterprise Applications Portfolio 2026
+name: "Enterprise Applications Portfolio 2026"
 description: Inventory of applications and integrations in operation
 version: "1.0"
-date: "2026-05-14"
+generated_at: "2026-05-14"
 
 applications_catalogue:
   id: APP-CAT-ENTERPRISE-001

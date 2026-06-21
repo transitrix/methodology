@@ -23,6 +23,27 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `applications` |
 | File extension | `*.applications.transitrix.yaml` |
 
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `applications` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `applications_catalogue` | yes | object | the applications catalogue root — see §4 and §5 |
+
+Example header:
+
+```yaml
+notation: applications
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+applications_catalogue:
+  # ... see §4
+```
+
 ---
 
 ## Element lifecycle

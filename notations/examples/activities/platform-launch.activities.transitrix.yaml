@@ -1,13 +1,13 @@
 notation: activities
 spec_version: "0.1"
 
-title: Platform Launch 2026
+name: "Platform Launch 2026"
 description: |
   Critical path through the customer-facing platform launch.
   Used for Q3 2026 portfolio review. Two parallel implementation paths
   merge at integration testing before the final release activities.
 version: "0.1"
-date: "2026-05-12"
+generated_at: "2026-05-12"
 author: "Valerii Korobeinikov"
 
 activities:

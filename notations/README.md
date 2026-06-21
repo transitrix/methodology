@@ -10,7 +10,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 |---|---|---|---|---|
 | [01-bpmn.md](views/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
 | [02-fgca.md](views/02-fgca.md) | `fgca` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | `*.fgca.transitrix.yaml` | documented |
-| [03-fga.md](views/03-fga.md) | `fga` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | `*.fga.transitrix.yaml` | draft |
+| [03-fga.md](views/03-fga.md) | `fga` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | `*.fga.transitrix.yaml` | documented |
 | [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
 | [05-capability-map.md](views/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
 | [06-process-map.md](views/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
@@ -20,7 +20,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
 | [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
-| [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | documented |
+| [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | draft |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 
@@ -60,6 +60,36 @@ The `status:` field in each spec's front-matter describes the **spec's maturity*
 | `stable` | The schema is locked. Future changes must be backwards-compatible (additive only). |
 
 The vocabulary is intentionally small. A future `deprecated` value will be added when a notation is retired.
+
+## Front-matter conventions
+
+Every notation spec opens with a YAML front-matter block. The schema differs by kind.
+
+**View notations** (`views/`) — name key is `notation:`, includes `file_extension:`:
+
+```yaml
+notation: "Human-readable diagram name"
+version: "X.Y"
+author: "..."
+last_updated: "YYYY-MM-DD"
+status: draft | documented | stable
+file_extension: "*.short-name.transitrix.yaml"
+dsm_status: "..."          # see rule below
+```
+
+**Element notations** (`elements/`) — name key is `title:`, no `file_extension:` (elements are addressed by ID, not by extension):
+
+```yaml
+title: "Element Name — one-line summary"
+version: "X.Y"
+author: "..."
+last_updated: "YYYY-MM-DD"
+status: draft | documented | stable
+```
+
+**`dsm_status:` rule:** required for all view notations with `status: documented`. Optional for `draft` views — add when there is something specific to say about Studio implementation. Describes Transitrix Studio implementation state, not spec completeness.
+
+---
 
 ## Family selection
 

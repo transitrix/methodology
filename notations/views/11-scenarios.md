@@ -28,6 +28,28 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `scenarios` |
 | File extension | `*.scenarios.transitrix.yaml` |
 
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `scenarios` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `view` | yes | object | the scenario view config — see §3 and §4 |
+
+Example header:
+
+```yaml
+notation: scenarios
+spec_version: "0.3"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+methodology_version: "0.5.0"
+view:
+  # ... see §3
+```
+
 ---
 
 ## 1. Reclassification (2026-06-03)
@@ -71,6 +93,8 @@ A scenarios view file is a short, declarative report config. It does not own any
 ```yaml
 notation: scenarios
 spec_version: "0.3"
+name: "Optimistic vs Conservative — 2027 cut"   # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"                       # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 
 view:
@@ -126,6 +150,8 @@ A view that carries only the required envelope —
 ```yaml
 notation: scenarios
 spec_version: "0.3"
+name: "All scenarios"                   # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 view:
   id: SCENARIOS-ALL-1

@@ -6,7 +6,7 @@ name: "Strategy 2026"
 description: "Factor–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
 period: "2026"
 version: "0.1"
-date: "2026-05-26"
+generated_at: "2026-05-26"
 author: Transitrix
 
 factors:

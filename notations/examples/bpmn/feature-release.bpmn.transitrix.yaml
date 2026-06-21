@@ -1,4 +1,5 @@
 notation: bpmn
+name: "Feature Release Process"
 process:
   id: feature-release
   name: Feature Release Process

@@ -89,10 +89,10 @@ spec_version: "0.1"
 
 id: GOALS-STRAT-1
 name: "Strategy 2026 — Goals Tree"
+generated_at: "2026-05-26"             # optional per CONTRACT.md §4
 description: "Goal hierarchy across Strategy → Strategic Goal → Project Goal levels for the 2026 plan."
 period: "2026"
 version: "0.1"
-date: "2026-05-26"
 author: Transitrix
 
 goal_types:
@@ -134,10 +134,10 @@ A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../ex
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar (the document-level TYPE `GOALS_TREE` in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2 is the historical label; document IDs use the short `GOALS-…` form for filenames and references) |
 | `name` | yes | human-readable name |
+| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the tree covers |
 | `version` | no | document version |
-| `date` | no | document date (YYYY-MM-DD) |
 | `author` | no | document author |
 | `goal_types` | yes | array of `{name, level}` entries defining the level vocabulary — see §5.1 |
 | `goals` | yes | flat array of goal entries — see §5.2 |

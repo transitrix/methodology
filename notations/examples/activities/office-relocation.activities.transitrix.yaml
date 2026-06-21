@@ -1,7 +1,7 @@
 notation: activities
 spec_version: "0.1"
 
-title: Office Relocation — HQ Move 2026
+name: "Office Relocation — HQ Move 2026"
 description: |
   HQ move from Building A to Building B. Pinned-mode schedule per
   [07-activities.md §9.1](../../07-activities.md): every leaf activity
@@ -17,7 +17,7 @@ description: |
   → physical move → unpack → opening day (105 working days, 2026-06-01
   → 2026-10-23).
 version: "0.1"
-date: "2026-05-26"
+generated_at: "2026-05-26"
 author: "Valerii Korobeinikov"
 
 project:

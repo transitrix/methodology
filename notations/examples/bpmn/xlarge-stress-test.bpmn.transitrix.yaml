@@ -1,4 +1,5 @@
 notation: bpmn
+name: "XLarge Stress Test"
 # CORPUS CELL: XL-Hi-A-Hi-4+
 # Element count: 52 (30 tasks, 2 events, 20 gateways)
 # Cross-lane flows: 42/51 (82%)

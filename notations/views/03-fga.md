@@ -5,6 +5,7 @@ author: "Valerii Korobeinikov"
 last_updated: "2026-05-26"
 status: "documented"
 file_extension: "*.fga.transitrix.yaml"
+dsm_status: "not implemented — renderer planned in Transitrix Studio"
 ---
 
 # FGA Notation — Reference
@@ -84,10 +85,10 @@ spec_version: "0.1"
 
 id: FGA-STRAT-1
 name: "Strategy 2026 — FGA chain"
+generated_at: "2026-05-26"              # optional per CONTRACT.md §4
 description: "Factor → Goal → Activity decomposition for the 2026 plan."
 period: "2026"
 version: "0.1"
-date: "2026-05-26"
 author: Transitrix
 
 factors:
@@ -121,10 +122,10 @@ A complete example: [`examples/fga/strategy-2026.fga.transitrix.yaml`](../exampl
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `FGA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
+| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
 | `version` | no | document version |
-| `date` | no | document date (YYYY-MM-DD) |
 | `author` | no | document author |
 | `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |

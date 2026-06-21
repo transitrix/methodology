@@ -5,6 +5,7 @@ author: "Valerii Korobeinikov"
 last_updated: "2026-05-26"
 status: "documented"
 file_extension: "*.bpmn.transitrix.yaml"
+dsm_status: "not implemented in DSM — renders via Transitrix Studio"
 ---
 
 # BPMN Process YAML Notation — Reference
@@ -23,6 +24,27 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 |---|---|
 | `notation:` value | `bpmn` |
 | File extension | `*.bpmn.transitrix.yaml` |
+
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `bpmn` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `process` | yes | object | the BPMN process root — see §3 |
+
+Example header:
+
+```yaml
+notation: bpmn
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+process:
+  # ... see §3
+```
 
 ---
 

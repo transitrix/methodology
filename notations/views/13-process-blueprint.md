@@ -24,6 +24,27 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `process-blueprint` |
 | File extension | `*.process-blueprint.transitrix.yaml` |
 
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `process-blueprint` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `process_blueprint` | yes | object | the process blueprint root — see §4 and §5 |
+
+Example header:
+
+```yaml
+notation: process-blueprint
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+process_blueprint:
+  # ... see §4
+```
+
 ---
 
 ## Element lifecycle
@@ -90,6 +111,8 @@ This shape matches the blueprint's semantic graph: a single system or actor typi
 ```yaml
 notation: process-blueprint
 spec_version: "0.1"
+name: "Order fulfilment blueprint"      # required per CONTRACT.md §1.1
+generated_at: "2026-05-21"             # optional per CONTRACT.md §4
 
 process_blueprint:
   id: PROCESS_BLUEPRINT-FULFIL-1
@@ -97,7 +120,6 @@ process_blueprint:
   description: "End-to-end blueprint of the order fulfilment value chain."
   period: "2026"
   version: "0.1"
-  date: "2026-05-21"
   author: "Valerii Korobeinikov"
 
   stages:
