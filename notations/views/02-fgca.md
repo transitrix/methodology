@@ -134,6 +134,8 @@ An FGCA view document projects over DRIVER, GOAL, CHANGE, and ACTIVITY elements 
 ```yaml
 notation: fgca
 spec_version: "0.1"
+name: "Retail strategy chain 2026"      # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"              # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 
 view:
@@ -171,10 +173,10 @@ A complete example of standalone element files for this notation: [`examples/fgc
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `FGCA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
+| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
 | `version` | no | document version |
-| `date` | no | document date (YYYY-MM-DD) |
 | `author` | no | document author |
 | `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |

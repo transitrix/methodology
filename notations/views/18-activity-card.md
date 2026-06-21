@@ -1,5 +1,5 @@
 ---
-title: "Activity Card — single-project narrative view"
+notation: "Activity Card"
 version: "0.1"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-11"
@@ -25,6 +25,27 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 |---|---|
 | `notation:` value | `activity-card` |
 | File extension | `*.activity-card.transitrix.yaml` |
+
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `activity-card` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `activity_card` | yes | object | the activity card root — see §3 and §4 |
+
+Example header:
+
+```yaml
+notation: activity-card
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+activity_card:
+  # ... see §3
+```
 
 ---
 
@@ -62,6 +83,8 @@ The card is **specifically** a single-project view. A multi-project programme de
 ```yaml
 notation: activity-card
 spec_version: "0.1"
+name: "EU Programme Activity Card"      # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
 
 activity_card:
   id: ACTIVITY_CARD-EU-PROGRAMME-1                # canonical ACTIVITY_CARD document ID

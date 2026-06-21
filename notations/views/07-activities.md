@@ -90,13 +90,14 @@ Activities defined here MAY reference other elements by ID (goals, changes, scen
 ```yaml
 notation: activities
 spec_version: "0.1"
+name: "Platform Launch 2026"            # required per CONTRACT.md §1.1
+generated_at: "2026-05-11"             # optional per CONTRACT.md §4
 
 title: Platform Launch 2026
 description: |
   Critical path through customer-facing platform launch. Used for
   Q3 2026 portfolio review.
 version: "0.1"
-date: "2026-05-11"
 author: "Valerii Korobeinikov"
 
 project:                              # optional; enables Gantt rendering
@@ -178,10 +179,11 @@ activities:
 |---|---|---|---|
 | `notation` | yes | string | MUST equal `activities` |
 | `spec_version` | no | string | reserved, see file header |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `title` | no | string | document title — surfaces in renderer caption |
 | `description` | no | string | optional document-level description |
 | `version` | no | string | document version (semantic versioning recommended) |
-| `date` | no | ISO 8601 date | document date |
 | `author` | no | string | document author |
 | `project` | no | object | optional schedule anchor for Gantt rendering — `start_date` and `calendar`; see §5.8 |
 | `activities` | yes | array | one or more activity entries; see §5.2 |
@@ -468,6 +470,9 @@ Both views are projections of the same underlying schedule. A document never "be
 
 ```yaml
 notation: activities
+spec_version: "0.1"
+name: "Minimal example"                 # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
 title: Minimal example
 activities:
   - id: A

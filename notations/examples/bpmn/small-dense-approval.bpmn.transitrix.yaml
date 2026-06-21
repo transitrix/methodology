@@ -1,4 +1,5 @@
 notation: bpmn
+name: "Small Dense Approval"
 # CORPUS CELL: S-Hi-A-Hi-2
 # Element count: 9 (4 tasks, 1 event, 4 gateways)
 # Cross-lane flows: 6/8 (75%)

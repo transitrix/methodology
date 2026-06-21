@@ -25,6 +25,27 @@ spec_version: "0.1"         # optional today; reserved field; will be required w
 
 The short name is fixed per notation and matches the per-notation table at the bottom of the spec being read.
 
+### 1.1 Document metadata
+
+Every view notation document MUST declare the following fields at the document root, alongside `notation:` and `spec_version:`:
+
+```yaml
+notation: <short-name>           # §1 — required
+spec_version: "0.1"              # §1 — optional
+name: "Human-readable title"     # §1.1 — required
+generated_at: "YYYY-MM-DD"       # §1.1 — optional; quoted ISO 8601 date per §4
+description: "One paragraph."    # §1.1 — optional
+# … rest of the document
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per §4. Distinct from the git modification date; records the authoring intent, not the file write. |
+| `description` | no | string | One-paragraph context — what the document covers and why. |
+
+**Root placement is mandatory.** Placing `name:` or `generated_at:` only inside a nested notation object (e.g. `nested_blocks.name`, `process_blueprint.name`, `view.name`) does not satisfy this contract. Renderers and tooling read root-level fields; notation-specific nested objects may carry their own name or date fields for notation-internal purposes, but those are not the document metadata fields defined here.
+
 ---
 
 ## 2. Validator behaviour
@@ -54,7 +75,7 @@ No aliases are accepted: one notation has exactly one extension. The full per-no
 
 All date-typed fields across the Transitrix notations MUST be quoted ISO 8601 strings in `YYYY-MM-DD` form (e.g., `"2026-06-01"`). Unquoted `2026-06-01` is parsed by YAML 1.1 loaders as a native date type and is **not** accepted as the canonical form. Quote dates explicitly.
 
-Which fields are date-typed is defined per notation — the shared header `date:`, plus fields such as activity `start_date` / `end_date` and `project.start_date` / `project.calendar.holidays[]`, capability `assessment_date` / `target_date`, issue `created_at` / `resolved_at` / `updated_at`, and application / product `updated_at`. The quoting rule above applies to every one of them; specs reference this section rather than restating it.
+Which fields are date-typed is defined per notation — the shared document-metadata field `generated_at:` (§1.1), plus fields such as activity `start_date` / `end_date` and `project.start_date` / `project.calendar.holidays[]`, capability `assessment_date` / `target_date`, issue `created_at` / `resolved_at` / `updated_at`, and application / product `updated_at`. The quoting rule above applies to every one of them; specs reference this section rather than restating it.
 
 ---
 
@@ -700,10 +721,10 @@ Structural layout of a view document:
 notation: fgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
 methodology_version: "0.5.0"  # manifest-pinned methodology version
+name: "Retail strategy chain" # §1.1 — required document name
 
-view:                         # identity block — required
+view:                         # view identity block — id only; name lives at root per §1.1
   id: FGCA-RETAIL-1
-  name: "Retail strategy chain"
 
 view_config:                  # presentation layer — defined here (§14)
   goals:

@@ -1,16 +1,16 @@
 notation: process-blueprint
 spec_version: "0.1"
+name: "Order fulfilment — operational blueprint"
+generated_at: "2026-05-21"
 
 process_blueprint:
   id: PROCESS_BLUEPRINT-FULFIL-1
-  name: "Order fulfilment — operational blueprint"
   description: |
     End-to-end operational blueprint of the order fulfilment value chain.
     Each stage column lists its goal, result, and the supporting systems,
     actors, equipment, and information entities involved.
   period: "2026"
   version: "0.1"
-  date: "2026-05-21"
   author: "Valerii Korobeinikov"
   process: PROCESS-ORD-FULFIL-1
   scenario: SCENARIO-2026-BASE-1

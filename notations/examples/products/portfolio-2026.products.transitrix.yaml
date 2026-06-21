@@ -1,9 +1,9 @@
 notation: products
 spec_version: "1.0"
-title: Digital Products Portfolio 2026
+name: "Digital Products Portfolio 2026"
 description: Product offerings for the current strategic cycle
 version: "1.0"
-date: "2026-05-13"
+generated_at: "2026-05-13"
 
 products_catalogue:
   id: portfolio-2026

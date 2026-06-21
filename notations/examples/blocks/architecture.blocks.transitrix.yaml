@@ -1,12 +1,12 @@
 notation: blocks
 spec_version: "0.1"
+name: "Software architecture"
+generated_at: "2026-05-25"
 
 nested_blocks:
   id: BLOCKS-ARCH-1
-  name: "Software architecture"
   description: "Two-tier overview of the application and data layers of a typical SaaS product."
   version: "0.1"
-  date: "2026-05-25"
   author: "Valerii Korobeinikov"
 
   blocks:

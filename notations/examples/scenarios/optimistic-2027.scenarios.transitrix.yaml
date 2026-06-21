@@ -1,9 +1,9 @@
 notation: scenarios
 spec_version: "0.1"
-title: Optimistic Growth 2027
+name: "Optimistic Growth 2027"
 description: Aggressive expansion scenario assuming 30% market growth
 version: "1.0"
-date: "2026-01-01"
+generated_at: "2026-01-01"
 
 scenario:
   id: SCN-001

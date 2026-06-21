@@ -1,9 +1,9 @@
 notation: process-map
 spec_version: "0.1"
-title: Enterprise Process Landscape
+name: "Enterprise Process Landscape"
 description: Top-level catalogue of operating, supporting, and management processes
 version: "1.0"
-date: "2026-05-08"
+generated_at: "2026-05-08"
 
 process_map:
   id: PM-ENT-001

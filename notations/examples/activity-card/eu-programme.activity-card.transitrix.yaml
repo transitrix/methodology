@@ -1,5 +1,6 @@
 notation: activity-card
 spec_version: "0.1"
+name: "EU MDR Conformity Programme"
 
 # Worked example — EU regulatory-conformity programme.
 # Single-project narrative view per notations/views/18-activity-card.md.

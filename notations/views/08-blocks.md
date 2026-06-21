@@ -24,6 +24,27 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `blocks` |
 | File extension | `*.blocks.transitrix.yaml` |
 
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `blocks` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `nested_blocks` | yes | object | the nested blocks root — see §4 and §5 |
+
+Example header:
+
+```yaml
+notation: blocks
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+nested_blocks:
+  # ... see §4
+```
+
 ---
 
 ## Element lifecycle
@@ -86,13 +107,14 @@ A document carries a single `nested_blocks:` root key with the document's identi
 ```yaml
 notation: blocks
 spec_version: "0.1"
+name: "Software architecture"           # required per CONTRACT.md §1.1
+generated_at: "2026-05-25"             # optional per CONTRACT.md §4
 
 nested_blocks:
   id: BLOCKS-ARCH-1
   name: "Software architecture"
   description: "Two-tier overview of the application and data layers."
   version: "0.1"
-  date: "2026-05-25"
   author: "Valerii Korobeinikov"
 
   blocks:

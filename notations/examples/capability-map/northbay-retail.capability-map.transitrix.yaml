@@ -1,9 +1,9 @@
 notation: capability-map
 spec_version: "0.1"
-title: NorthBay Retail — Business Capabilities Map
+name: "NorthBay Retail — Business Capabilities Map"
 description: Full enterprise capability hierarchy for a mid-size retailer with current and target CMMI maturity for 2027.
 version: "2.0"
-date: "2026-05-12"
+generated_at: "2026-05-12"
 
 capability_map:
   id: CAPABILITY_MAP-NB-RETAIL-1

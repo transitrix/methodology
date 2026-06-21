@@ -6,7 +6,7 @@ name: "Strategy 2026 — FGCA chain"
 description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
 period: "2026"
 version: "0.1"
-date: "2026-05-26"
+generated_at: "2026-05-26"
 author: Transitrix
 
 factors:

@@ -1,4 +1,5 @@
 notation: bpmn
+name: "Simple Approval Process"
 # CORPUS CELL: S-Mi-A-Lo-2
 # Element count: 8 (5 tasks, 2 events, 1 XOR gateway)
 # Cross-lane flows: 2/7 (29%)

@@ -28,6 +28,28 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `coverage-metric` |
 | File extension | `*.coverage-metric.transitrix.yaml` |
 
+### Document root fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | MUST equal `coverage-metric` (per [CONTRACT.md](../CONTRACT.md)) |
+| `spec_version` | no | string | reserved field per the shared contract |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `view` | yes | object | the coverage-metric view config — see §3 and §4 |
+
+Example header:
+
+```yaml
+notation: coverage-metric
+spec_version: "0.1"
+name: "Human-readable title"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
+methodology_version: "0.5.0"
+view:
+  # ... see §3
+```
+
 ---
 
 ## 1. What this view is
@@ -75,6 +97,8 @@ A coverage-metric view file is a short, declarative report config. It does not o
 ```yaml
 notation: coverage-metric
 spec_version: "0.1"
+name: "Retail product — regime coverage"    # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"                  # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 
 view:
@@ -169,6 +193,8 @@ A view that carries only the required envelope —
 ```yaml
 notation: coverage-metric
 spec_version: "0.1"
+name: "Full coverage metric"            # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 view:
   id: COVERAGE_METRIC-ALL-1

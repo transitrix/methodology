@@ -1,4 +1,5 @@
 notation: bpmn
+name: "Large Cyclic Workflow"
 # CORPUS CELL: L-Hi-C-Hi-4
 # Element count: 22 (10 tasks, 2 events, 10 gateways)
 # Cross-lane flows: 16/21 (76%)
