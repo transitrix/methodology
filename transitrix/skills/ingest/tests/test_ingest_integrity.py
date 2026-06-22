@@ -225,7 +225,7 @@ def part_c_ig5():
                           "element_type": "CAPABILITY", "derived_from": [fid],
                           "admitted_to": "pending", "extraction_confidence": "high"})
         cand("RELbad.json", {"kind": "relation", "rel_kind": "contributes_to",
-                             "from": "FACTOR-A-1", "to": "GOAL-B-1", "derived_from": [fid],
+                             "from": "DRIVER-A-1", "to": "GOAL-B-1", "derived_from": [fid],
                              "admitted_to": "pending", "extraction_confidence": "high"})
         cand("RELok.json", {"kind": "relation", "rel_kind": "stakeholding",
                             "from": "STAKEHOLDER-A-1", "to": "GOAL-B-1", "derived_from": [fid],

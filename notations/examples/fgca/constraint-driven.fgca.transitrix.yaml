@@ -4,7 +4,7 @@ spec_version: "0.1"
 id: FGCA-DATA-RESIDENCY-1
 name: "EU data-residency FGCA chain"
 description: >
-  Worked example showing FACTOR.references_constraint — a factor that
+  Worked example showing DRIVER.references_constraint — a driver that
   reflects a binding regulatory constraint (GDPR data residency), and the
   goals / changes / activities the organisation runs to comply.
 period: "2026"
@@ -13,7 +13,7 @@ generated_at: "2026-05-26"
 author: Transitrix
 
 factors:
-  - id: FACTOR-DATA-RESIDENCY-1
+  - id: DRIVER-DATA-RESIDENCY-1
     name: "EU customer personal-data residency obligation"
     type: external
     category: legal
@@ -23,7 +23,7 @@ factors:
 goals:
   - id: GOAL-COMPLY-RESIDENCY-1
     name: "Persist EU customer personal data only within EU/EEA"
-    factors: [FACTOR-DATA-RESIDENCY-1]
+    factors: [DRIVER-DATA-RESIDENCY-1]
 
 changes:
   - id: CHANGE-EU-REGION-1

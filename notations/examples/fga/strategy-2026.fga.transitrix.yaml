@@ -3,35 +3,35 @@ spec_version: "0.1"
 
 id: FGA-STRATEGY-2026
 name: "Strategy 2026"
-description: "Factor–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
+description: "Driver–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
 period: "2026"
 version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
 
 factors:
-  - id: FACTOR-MARKET-1
+  - id: DRIVER-MARKET-1
     name: "Market growth opportunity in new geographies"
     type: external
     category: economic
-  - id: FACTOR-REG-1
+  - id: DRIVER-REG-1
     name: "Increasing regulatory pressure (GDPR, data residency)"
     type: external
     category: legal
-  - id: FACTOR-TECH-1
+  - id: DRIVER-TECH-1
     name: "Internal shift to cloud-native architecture"
     type: internal
 
 goals:
   - id: GOAL-MARKET-1
     name: "Expand market share"
-    factors: [FACTOR-MARKET-1, FACTOR-TECH-1]
+    factors: [DRIVER-MARKET-1, DRIVER-TECH-1]
   - id: GOAL-COMPLIANCE-1
     name: "Achieve full regulatory compliance"
-    factors: [FACTOR-REG-1]
+    factors: [DRIVER-REG-1]
   - id: GOAL-PLATFORM-1
     name: "Modernise platform"
-    factors: [FACTOR-TECH-1]
+    factors: [DRIVER-TECH-1]
 
 activities:
   - id: ACTIVITY-MARKET-1

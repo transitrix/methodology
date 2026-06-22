@@ -2,13 +2,13 @@
   "_comment": "Fixture extraction result — a canned stand-in for what the agent produces by running prompts/ over the sample interview. Used by the deterministic integrity test so emit-candidates has an input without an LLM. Mixes a high relation (-> candidate) and a medium relation (-> held-back suggestion).",
   "elements": [
     { "id": "GOAL-RETENTION-1", "name": "Improve customer retention above 90%", "element_type": "GOAL", "extraction_confidence": "high" },
-    { "id": "FACTOR-CHURN-1", "name": "Rising customer churn", "element_type": "FACTOR", "extraction_confidence": "medium", "extraction_notes": "driver behind the retention goal" },
+    { "id": "DRIVER-CHURN-1", "name": "Rising customer churn", "element_type": "DRIVER", "extraction_confidence": "medium", "extraction_notes": "driver behind the retention goal" },
     { "id": "REQUIREMENT-COMPLIANCE-1", "name": "File a quarterly compliance report", "element_type": "REQUIREMENT", "extraction_confidence": "high" },
     { "id": "CONSTRAINT-DATA-RESIDENCY-1", "name": "Customer data stays in the home jurisdiction", "element_type": "CONSTRAINT", "extraction_confidence": "high" },
     { "id": "APPLICATION-CRM-1", "name": "CRM (customer system of record)", "element_type": "APPLICATION", "extraction_confidence": "high" }
   ],
   "relations": [
     { "rel_kind": "stakeholding", "from": "STAKEHOLDER-OPS-1", "to": "GOAL-RETENTION-1", "extraction_confidence": "high", "extraction_notes": "accountable owner stated the goal directly" },
-    { "rel_kind": "contributes_to", "from": "FACTOR-CHURN-1", "to": "GOAL-RETENTION-1", "extraction_confidence": "medium", "extraction_notes": "inferred causal link — held back as a suggestion" }
+    { "rel_kind": "contributes_to", "from": "DRIVER-CHURN-1", "to": "GOAL-RETENTION-1", "extraction_confidence": "medium", "extraction_notes": "inferred causal link — held back as a suggestion" }
   ]
 }

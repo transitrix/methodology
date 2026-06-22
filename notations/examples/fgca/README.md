@@ -1,7 +1,7 @@
 # FGCA diagram
 
-**Factor → Goal → Change → Activity** — a four-column strategy decomposition chain.
-Shows how external factors drive goals, which require changes, which are delivered through activities.
+**Driver → Goal → Change → Activity** — a four-column strategy decomposition chain.
+Shows how external drivers push goals, which require changes, which are delivered through activities.
 
 **File extension:** `*.fgca.transitrix.yaml`
 
@@ -17,14 +17,14 @@ id: FGCA-SAMPLE-1
 name: "Sample FGCA chain"
 
 factors:
-  - id: FACTOR-1
-    name: "External factor driving change"
+  - id: DRIVER-1
+    name: "External driver pushing change"
     type: external
 
 goals:
   - id: GOAL-1
     name: "Strategic goal"
-    factors: [FACTOR-1]            # one or more FACTOR-… IDs
+    factors: [DRIVER-1]            # one or more DRIVER-… IDs
 
 changes:
   - id: CHANGE-1
@@ -53,7 +53,7 @@ author: "Your Name"
 ## Rules
 
 - All IDs follow the canonical `<TYPE>-[<middle>-]<INTEGER>` grammar per [`../../IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md). IDs are unique within their layer.
-- A goal MAY reference multiple factors via `factors: [FACTOR-…, FACTOR-…]`.
+- A goal MAY reference multiple drivers via `factors: [DRIVER-…, DRIVER-…]`.
 - A change MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
 - An activity MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
 - For degenerate paths where a change layer adds no information, an activity MAY link directly via `goals: [GOAL-…]` — see [`../../views/02-fgca.md`](../../views/02-fgca.md) §Fields.
@@ -62,4 +62,4 @@ author: "Your Name"
 
 | File | Description |
 |---|---|
-| `strategy-2026.fgca.transitrix.yaml` | Full FGCA chain (2 factors, 3 goals, 3 changes, 5 activities) |
+| `strategy-2026.fgca.transitrix.yaml` | Full FGCA chain (2 drivers, 3 goals, 3 changes, 5 activities) |
