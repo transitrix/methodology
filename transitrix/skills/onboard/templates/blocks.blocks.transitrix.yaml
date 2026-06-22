@@ -8,6 +8,8 @@ spec_version: "0.1"
 # APPLICATION-OMS-1) or be a free-form local label (e.g. FRONTEND).
 # Recommended max depth: 5 levels.
 
+name: "FILL-ME architecture overview"  # required per CONTRACT.md §1.1
+
 nested_blocks:
   id: BLOCKS-FILL-ME-1
   name: "FILL-ME architecture overview"

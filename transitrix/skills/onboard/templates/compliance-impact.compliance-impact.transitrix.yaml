@@ -7,6 +7,8 @@ spec_version: "0.1"
 # process flow + REQUIREMENT status. This file only declares which slice
 # of that matrix to render and how.
 
+name: "FILL-ME compliance impact"      # required per CONTRACT.md §1.1
+
 view:
   id: COMPLIANCE_IMPACT-FILL-ME-1
   name: "FILL-ME — e.g. Retail product — GDPR obligations"

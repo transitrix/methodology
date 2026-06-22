@@ -7,10 +7,10 @@ spec_version: "0.1"
 # the critical path. Optional `project.start_date` + per-activity
 # `duration_days` enable a Gantt projection.
 
-title: "FILL-ME activities network"
+name: "FILL-ME activities network"
 description: "FILL-ME — what this schedule covers"
 version: "0.1"
-date: "2026-05-26"
+generated_at: "YYYY-MM-DD"
 author: "FILL-ME"
 
 project:

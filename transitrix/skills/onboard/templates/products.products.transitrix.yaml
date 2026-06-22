@@ -5,6 +5,8 @@ spec_version: "0.1"
 # Inventory of digital products / services. Each PRODUCT-… is a
 # canonical element ID; categories group products by domain.
 
+name: "FILL-ME products catalogue"     # required per CONTRACT.md §1.1
+
 products_catalogue:
   id: PRODUCTS_CAT-FILL-ME-1
   name: "FILL-ME products catalogue"

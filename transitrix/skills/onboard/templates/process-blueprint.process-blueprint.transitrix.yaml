@@ -6,13 +6,15 @@ spec_version: "0.1"
 # Stages laid out left-to-right; per-stage aspects (systems, actors,
 # equipment, information entities) reference the stages they touch.
 
+name: "FILL-ME process blueprint"      # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"            # optional per CONTRACT.md §4
+
 process_blueprint:
   id: PROCESS_BLUEPRINT-FILL-ME-1
   name: "FILL-ME process blueprint"
   description: "FILL-ME — value chain scope"
   period: "FILL-ME"                    # e.g. "2026"
   version: "0.1"
-  date: "2026-05-26"
   author: "FILL-ME"
 
   stages:
