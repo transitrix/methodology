@@ -67,6 +67,37 @@ Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; steps 5�
 
 ---
 
+## Skill `min_version` convention
+
+Every skill file (`transitrix/skills/<name>/SKILL.md`) carries a `min_version` field in its YAML frontmatter declaring the minimum methodology version required to use the skill:
+
+```yaml
+---
+name: Transitrix Ingest
+# ...
+min_version: "0.6.0"
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
+---
+```
+
+**Rules:**
+
+- `min_version` is the first methodology version in which the skill was added or last had a **breaking change** (new required step, changed CLI interface, removed capability). Additive improvements to an existing skill do not require a bump.
+- `min_version` is a hard floor: the adopter's agent uses the table in `AGENTS.md §14` to refuse a skill invocation when the adopter's pinned version is below the floor.
+- When a release changes a skill in a breaking way, **update `min_version` in that skill's `SKILL.md`** as part of the same PR. This is a precondition for tagging, alongside the migration recipe (for MAJOR) and the changelog entry.
+
+**Administrator note — updating skills in adopter repos:**
+
+Skills are not auto-synced to adopter repos. When the methodology releases a version that updates one or more skills, the adopter's administrator must:
+
+1. Copy the updated skill files from `transitrix/skills/<name>/` into the adopter repo (at whatever path the adopter's `AGENTS.md §14` table references).
+2. Update the `Min version` column in the adopter's `AGENTS.md §14` to match the new `min_version` value.
+3. Commit the update as a separate PR titled `chore: update skills to methodology vX.Y.Z`.
+
+For MAJOR releases, skills are updated **after** the migration recipe is applied and `transitrix.yaml` reflects the new version — not before.
+
+---
+
 ## What this file does NOT cover
 
 - **Compatibility semantics** — what each bump promises adopters. See [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.
