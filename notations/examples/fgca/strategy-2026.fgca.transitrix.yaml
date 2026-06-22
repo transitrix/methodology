@@ -3,18 +3,18 @@ spec_version: "0.1"
 
 id: FGCA-STRAT-1
 name: "Strategy 2026 — FGCA chain"
-description: "Factor → Goal → Change → Activity decomposition for the 2026 plan."
+description: "Driver → Goal → Change → Activity decomposition for the 2026 plan."
 period: "2026"
 version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
 
 factors:
-  - id: FACTOR-1
+  - id: DRIVER-1
     name: "Competitive market pressure"
     type: external
     category: economic
-  - id: FACTOR-2
+  - id: DRIVER-2
     name: "Digital adoption acceleration"
     type: external
     category: technological
@@ -22,13 +22,13 @@ factors:
 goals:
   - id: GOAL-1
     name: "Grow revenue by 20%"
-    factors: [FACTOR-1, FACTOR-2]
+    factors: [DRIVER-1, DRIVER-2]
   - id: GOAL-2
     name: "Reduce operational costs"
-    factors: [FACTOR-2]
+    factors: [DRIVER-2]
   - id: GOAL-3
     name: "Improve customer retention"
-    factors: [FACTOR-1]
+    factors: [DRIVER-1]
 
 changes:
   - id: CHANGE-1

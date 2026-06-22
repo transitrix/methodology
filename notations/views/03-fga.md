@@ -86,13 +86,13 @@ spec_version: "0.1"
 id: FGA-STRAT-1
 name: "Strategy 2026 — FGA chain"
 generated_at: "2026-05-26"              # optional per CONTRACT.md §4
-description: "Factor → Goal → Activity decomposition for the 2026 plan."
+description: "Driver → Goal → Activity decomposition for the 2026 plan."
 period: "2026"
 version: "0.1"
 author: Transitrix
 
 factors:
-  - id: FACTOR-1
+  - id: DRIVER-1
     name: "Competitive market pressure"
     type: external          # external | internal
     category: economic      # PESTLE — external only
@@ -100,7 +100,7 @@ factors:
 goals:
   - id: GOAL-1
     name: "Grow revenue by 20%"
-    factors: [FACTOR-1]     # id-references to factors[]
+    factors: [DRIVER-1]     # id-references to factors[]
 
 activities:
   - id: ACTIVITY-1
@@ -179,9 +179,9 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 | `FGA-005` | error | every entry in the three arrays must have a non-empty `id` and `name`. |
 | `FGA-006` | error | IDs unique within their layer (and SHOULD be unique across all three layers within a document). |
 | `FGA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
-| `FGA-008` | error | `goals[].factors[]` IDs must reference defined factors. |
+| `FGA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
 | `FGA-009` | error | `activities[].goals[]` IDs must reference defined goals. |
-| `FGA-010` | warn | a factor with no goal referencing it is orphan. |
+| `FGA-010` | warn | a driver with no goal referencing it is orphan. |
 | `FGA-011` | warn | a goal with no activity referencing it is orphan. |
 
 ---
@@ -191,8 +191,8 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 FGCA adds a `changes` layer between goals and activities:
 
 ```
-FGCA: Factor → Goal → Change → Activity
-FGA:  Factor → Goal →          Activity
+FGCA: Driver → Goal → Change → Activity
+FGA:  Driver → Goal →          Activity
 ```
 
 When converting FGA to FGCA: identify the implicit change each goal demands and make it explicit. This is the right move when a goal requires organisational transformation, not just execution.

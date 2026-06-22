@@ -63,7 +63,7 @@
         "name": { "type": "string", "minLength": 1 },
         "element_type": {
           "type": "string",
-          "description": "Canonical element TYPE (IDS_AND_REFERENCES.md §3.1), e.g. FACTOR, GOAL, ROLE, APPLICATION.",
+          "description": "Canonical element TYPE (IDS_AND_REFERENCES.md §3.1), e.g. DRIVER, GOAL, ROLE, APPLICATION.",
           "pattern": "^[A-Z][A-Z0-9_]*$"
         },
         "valid_from": { "type": ["string", "null"], "description": "Lifecycle anchor (CONTRACT.md §7). `pending` or a date when known." },

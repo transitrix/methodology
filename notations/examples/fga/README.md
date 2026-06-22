@@ -1,6 +1,6 @@
 # FGA diagram
 
-**Factor → Goal → Activity** — a three-column strategy view without the Changes column.
+**Driver → Goal → Activity** — a three-column strategy view without the Changes column.
 Use this format when you want a direct mapping from goals to activities without intermediate change items.
 
 **File extension:** `*.fga.transitrix.yaml`
@@ -17,14 +17,14 @@ id: FGA-SAMPLE-1
 name: "Sample FGA chain"
 
 factors:
-  - id: FACTOR-MARKET-1
+  - id: DRIVER-MARKET-1
     name: "Market growth opportunity"
     type: external
 
 goals:
   - id: GOAL-EXPAND-1
     name: "Expand market share"
-    factors: [FACTOR-MARKET-1]   # one or more FACTOR-… IDs
+    factors: [DRIVER-MARKET-1]   # one or more DRIVER-… IDs
 
 activities:
   - id: ACTIVITY-LAUNCH-1
@@ -50,11 +50,11 @@ Use FGCA (`.fgca.transitrix.yaml`) when you need to track discrete change packag
 ## Rules
 
 - All IDs follow the canonical `<TYPE>-[<middle>-]<INTEGER>` grammar per [`../../IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md). IDs are unique within their layer.
-- A goal MAY reference multiple factors via `factors: [FACTOR-…, FACTOR-…]`.
+- A goal MAY reference multiple drivers via `factors: [DRIVER-…, DRIVER-…]`.
 - An activity MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `strategy-2026.fga.transitrix.yaml` | FGA chain (3 factors, 3 goals, 7 activities) |
+| `strategy-2026.fga.transitrix.yaml` | FGA chain (3 drivers, 3 goals, 7 activities) |
