@@ -4,6 +4,8 @@ spec_version: "0.1"
 # Applications catalogue. Spec: notations/views/10-applications.md
 # Inventory of APPLICATION-… elements + INTEGRATION-… entries.
 
+name: "FILL-ME applications portfolio" # required per CONTRACT.md §1.1
+
 applications_catalogue:
   id: APPLICATIONS_CAT-FILL-ME-1
   name: "FILL-ME applications portfolio"

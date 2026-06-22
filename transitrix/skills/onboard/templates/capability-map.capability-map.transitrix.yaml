@@ -5,6 +5,8 @@ spec_version: "0.1"
 # Capability IDs use the V/H sub-grammar (CAPABILITY-V1.2, CAPABILITY-H1.2.3).
 # Maturity uses the CMMI 1–5 scale.
 
+name: "FILL-ME capability map"         # required per CONTRACT.md §1.1
+
 capability_map:
   id: CAPABILITY_MAP-FILL-ME-1
   name: "FILL-ME capability map"

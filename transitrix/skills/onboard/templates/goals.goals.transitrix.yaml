@@ -9,7 +9,7 @@ name: "FILL-ME goals tree"
 description: "FILL-ME — what this tree covers"
 period: "FILL-ME"
 version: "0.1"
-date: "2026-05-26"
+generated_at: "YYYY-MM-DD"
 author: "FILL-ME"
 
 goal_types:

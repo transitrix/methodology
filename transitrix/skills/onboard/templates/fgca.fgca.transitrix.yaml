@@ -10,7 +10,7 @@ name: "FILL-ME FGCA chain"
 description: "FILL-ME — one-paragraph context"
 period: "FILL-ME"            # e.g. "2026" or "2026-Q3"
 version: "0.1"
-date: "2026-05-26"
+generated_at: "YYYY-MM-DD"
 author: "FILL-ME"
 
 factors:

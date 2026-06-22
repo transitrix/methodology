@@ -6,9 +6,9 @@ spec_version: "0.1"
 # own goals, capabilities, activities, products, processes, and
 # applications.
 
-title: "FILL-ME scenario set"
+name: "FILL-ME scenario set"
 description: "FILL-ME — what range of futures this set spans"
-date: "2026-05-26"
+generated_at: "YYYY-MM-DD"
 author: "FILL-ME"
 
 scenarios:

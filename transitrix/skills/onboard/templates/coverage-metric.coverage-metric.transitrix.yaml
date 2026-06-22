@@ -10,6 +10,8 @@ methodology_version: "0.5.0"
 # subjects with zero admitted obligations, and splits a modelling gap from a
 # modelled exclusion (an admitted ASSERTION with status: n_a).
 
+name: "FILL-ME coverage metric"        # required per CONTRACT.md §1.1
+
 view:
   id: COVERAGE_METRIC-FILL-ME-1
   name: "FILL-ME — e.g. Retail product — regime coverage"

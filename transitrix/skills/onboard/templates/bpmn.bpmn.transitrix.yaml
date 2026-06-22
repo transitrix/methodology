@@ -6,6 +6,8 @@ spec_version: "0.1"
 # exclusiveGateway, parallelGateway, inclusiveGateway. Flows connect
 # element IDs across lanes.
 
+name: "FILL-ME process name"           # required per CONTRACT.md §1.1
+
 process:
   id: FILL-ME-process-id          # kebab-case slug, e.g. order-fulfilment
   name: "FILL-ME process name"
