@@ -2,6 +2,7 @@
 name: Transitrix Onboarding
 description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
 when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology. Also triggers when the user says "I cloned my team's Transitrix repo", "help me get oriented in this model", "make my first change to our architecture repo", or expresses a similar intent to orient in or contribute to a repo that already uses Transitrix.
+min_version: "0.5.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
 
