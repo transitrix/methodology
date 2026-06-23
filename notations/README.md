@@ -10,10 +10,10 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 |---|---|---|---|---|
 | [01-bpmn.md](views/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
 | [02-dgca.md](views/02-dgca.md) | `dgca` | Strategy-to-execution chain: Driver → Goal → Change → Activity. Layer toggle via `view_config.layers` (DGA mode when `changes: off`). | `*.dgca.transitrix.yaml` | documented |
-| [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
+| [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.dgca.transitrix.yaml` | documented |
 | [05-capability-map.md](views/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
 | [06-process-map.md](views/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
-| [07-activities.md](views/07-activities.md) | `activities` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — activities and dependencies. | `*.activities.transitrix.yaml` | documented |
+| [07-activities.md](views/07-activities.md) | `activities` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — activities and dependencies. | `*.dgca.transitrix.yaml` | documented |
 | [08-blocks.md](views/08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews — recursive `block` tree rendered as nested boxes. | `*.blocks.transitrix.yaml` | documented |
 | [09-products.md](views/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
 | [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
@@ -23,7 +23,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 
-All view notations share the same file-extension convention `.<short-name>.transitrix.yaml`, and every file begins with a `notation: <short-name>` header — see each spec's "File header" section for the rule.
+Most view notations follow the convention `.<short-name>.transitrix.yaml`. Exception: the DGCA family (`dgca`, `goals`, `activities`) all share the `*.dgca.transitrix.yaml` extension — the `notation:` header distinguishes them within the family. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 
 ## Elements
 

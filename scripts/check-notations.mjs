@@ -98,8 +98,22 @@ async function parseCatalogue() {
 
 // --- checks ----------------------------------------------------------------
 
+// Build inverted index: extensionShort → Set<notationShort> for notations that
+// share an extension (e.g. dgca family: dgca, goals, activities all → 'dgca').
+function buildExtensionFamilies(catalogue) {
+  const families = new Map(); // extShort → Set<notationShort>
+  for (const [notation, ext] of catalogue) {
+    // ext is like '.dgca.transitrix.yaml'; strip leading dot and trailing suffix
+    const extShort = ext.replace(/^\./, '').replace(/\.transitrix\.yaml$/, '');
+    if (!families.has(extShort)) families.set(extShort, new Set());
+    families.get(extShort).add(notation);
+  }
+  return families;
+}
+
 // E1 + E2: example files.
 async function checkExamples(catalogue, failures) {
+  const families = buildExtensionFamilies(catalogue);
   const files = (await walk(EXAMPLES_DIR, '.yaml'));
   for (const abs of files) {
     const rel = relPosix(abs);
@@ -115,33 +129,36 @@ async function checkExamples(catalogue, failures) {
       });
       continue;
     }
-    const short = m[1];
-    if (!catalogue.has(short)) {
+    const extShort = m[1];
+    if (!catalogue.has(extShort)) {
       failures.push({
         check: 'E1',
-        message: `${rel}: extension short "${short}" is not a notation in notations/README.md §Views.`,
+        message: `${rel}: extension short "${extShort}" is not a notation in notations/README.md §Views.`,
       });
       continue;
     }
-    if (parentDir !== short) {
+    // Valid parent dirs: any notation short that maps to this same extension
+    // (covers the DGCA family: dgca/, goals/, activities/ are all valid for .dgca.).
+    const validDirs = families.get(extShort) ?? new Set([extShort]);
+    if (!validDirs.has(parentDir)) {
       failures.push({
         check: 'E1',
-        message: `${rel}: filed under "${parentDir}/" but its notation is "${short}" — move it to examples/${short}/.`,
+        message: `${rel}: filed under "${parentDir}/" but extension is "${extShort}" — move it to examples/${extShort}/ or a family sub-dir (${[...validDirs].join(', ')}).`,
       });
     }
 
-    // E2 — top-level `notation:` must equal the extension short.
+    // E2 — top-level `notation:` must be a member of the extension's family.
     const text = await readFile(abs, 'utf8');
     const nm = text.match(/^notation:\s*"?([a-z0-9-]+)"?\s*$/m);
     if (!nm) {
       failures.push({
         check: 'E2',
-        message: `${rel}: missing a top-level \`notation:\` header (expected \`notation: ${short}\`).`,
+        message: `${rel}: missing a top-level \`notation:\` header (expected one of: ${[...validDirs].join(', ')}).`,
       });
-    } else if (nm[1] !== short) {
+    } else if (!validDirs.has(nm[1])) {
       failures.push({
         check: 'E2',
-        message: `${rel}: \`notation: ${nm[1]}\` does not match the file extension (expected \`${short}\`).`,
+        message: `${rel}: \`notation: ${nm[1]}\` is not valid for extension ".${extShort}.transitrix.yaml" (accepted: ${[...validDirs].join(', ')}).`,
       });
     }
   }
