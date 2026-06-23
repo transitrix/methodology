@@ -4,7 +4,7 @@ version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-21"
 status: "documented"
-file_extension: "*.activities.transitrix.yaml"
+file_extension: "*.dgca.transitrix.yaml"
 dsm_status: "partially implemented — Activities page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
 ---
 
@@ -22,7 +22,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | Field | Value |
 |---|---|
 | `notation:` value | `activities` |
-| File extension | `*.activities.transitrix.yaml` |
+| File extension | `*.dgca.transitrix.yaml` |
 
 ---
 

@@ -29,12 +29,16 @@ except ImportError:  # pragma: no cover
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # The 12 view notations the skill ships a template for (SKILL.md § Templates).
-# Filename convention: <short>.<short>.transitrix.yaml, with `notation: <short>` inside.
+# Filename convention: <short>.<ext>.transitrix.yaml, with `notation: <short>` inside.
+# Most notations use <ext> == <short>; DGCA-family notations share the dgca extension.
 VIEW_NOTATIONS = [
     "bpmn", "dgca", "goals", "capability-map", "process-map",
     "activities", "blocks", "scenarios", "applications", "products",
     "process-blueprint", "activity-card",
 ]
+NOTATION_EXT = {short: short for short in VIEW_NOTATIONS}
+NOTATION_EXT["goals"] = "dgca"
+NOTATION_EXT["activities"] = "dgca"
 ROOT_TEMPLATES = ["transitrix.yaml", "AGENTS.md", "copilot-instructions.md"]
 CODEX_TEMPLATES = ["codex-external.yaml", "codex-internal.yaml"]
 EXTRACTION_FILES = ["01_motivation.md", "02_business.md", "03_application.md", "README.md"]
@@ -87,7 +91,8 @@ def check_bundle_integrity():
 
     # Every view-notation template exists, parses, and its notation header matches.
     for short in VIEW_NOTATIONS:
-        fname = f"{short}.{short}.transitrix.yaml"
+        ext = NOTATION_EXT[short]
+        fname = f"{short}.{ext}.transitrix.yaml"
         path = os.path.join(tdir, fname)
         if not check(os.path.isfile(path), f"view template missing: templates/{fname}"):
             continue
@@ -196,8 +201,8 @@ def check_clean_install_goals_path():
             dest = os.path.join(repo, ".github") if f == "copilot-instructions.md" else repo
             os.makedirs(dest, exist_ok=True)
             shutil.copyfile(os.path.join(tdir, f), os.path.join(dest, f))
-        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.goals.transitrix.yaml")
-        shutil.copyfile(os.path.join(tdir, "goals.goals.transitrix.yaml"), goals_dest)
+        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.dgca.transitrix.yaml")
+        shutil.copyfile(os.path.join(tdir, "goals.dgca.transitrix.yaml"), goals_dest)
 
         # 4. Assertions.
         check(os.path.isfile(os.path.join(repo, "transitrix.yaml")),

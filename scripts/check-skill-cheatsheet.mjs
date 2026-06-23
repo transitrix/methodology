@@ -137,18 +137,19 @@ async function parseSkillMatrix() {
 }
 
 // Pull the view-notation template paths from transitrix/skills/onboard/SKILL.md.
-// Returns: Set<short_name>, extracted from `templates/<short>.<short>.transitrix.yaml`.
-// Other template categories (root scaffolding, codex) do not match the
-// `<short>.<short>.transitrix.yaml` shape and are naturally filtered out.
-async function parseSkillTemplates() {
+// Returns: Set<short_name> for every `templates/<notation>.<extShort>.transitrix.yaml`
+// entry where <extShort> is the canonical extension short for <notation> per the
+// catalogue (e.g. goals.dgca, activities.dgca for the DGCA family).
+// Other template categories (root scaffolding, codex) don't match the shape and
+// are naturally filtered out.
+async function parseSkillTemplates(notationToExtShort) {
   const text = await readFile(SKILL_PATH, 'utf8');
-  // Match every `templates/<x>.<y>.transitrix.yaml` mention; we collect the
-  // short name when x === y.
   const re = /`templates\/([a-z][a-z0-9-]*)\.([a-z][a-z0-9-]*)\.transitrix\.yaml`/g;
   const out = new Set();
   let m;
   while ((m = re.exec(text)) !== null) {
-    if (m[1] === m[2]) out.add(m[1]);
+    const [, notationShort, extShort] = m;
+    if (notationToExtShort.get(notationShort) === extShort) out.add(notationShort);
   }
   if (out.size === 0) {
     throw new Error(`SKILL.md: no view-notation template paths found`);
@@ -175,10 +176,17 @@ function reportFailure(failures) {
 async function main() {
   let catalogue, skillMatrixExts, skillTemplateShorts;
   try {
-    [catalogue, skillMatrixExts, skillTemplateShorts] = await Promise.all([
-      parseCatalogue(),
+    catalogue = await parseCatalogue();
+    // Build notation → extShort map (e.g. goals → 'dgca', bpmn → 'bpmn').
+    const notationToExtShort = new Map(
+      [...catalogue].map(([short, { extension }]) => [
+        short,
+        extension.replace(/^\*\./, '').replace(/\.transitrix\.yaml$/, ''),
+      ])
+    );
+    [skillMatrixExts, skillTemplateShorts] = await Promise.all([
       parseSkillMatrix(),
-      parseSkillTemplates(),
+      parseSkillTemplates(notationToExtShort),
     ]);
   } catch (e) {
     console.error(`error: ${e.message}`);
@@ -209,13 +217,14 @@ async function main() {
   }
 
   // Check B: every catalogue notation has a matching template at the canonical path.
-  for (const [shortName] of catalogue) {
+  for (const [shortName, { extension }] of catalogue) {
     if (!skillTemplateShorts.has(shortName)) {
+      const extShort = extension.replace(/^\*\./, '').replace(/\.transitrix\.yaml$/, '');
       failures.push({
         check: 'B',
         message:
           `notation "${shortName}" is in the canon catalogue but has no view-template ` +
-          `entry at \`templates/${shortName}.${shortName}.transitrix.yaml\` in the ` +
+          `entry at \`templates/${shortName}.${extShort}.transitrix.yaml\` in the ` +
           `Skill's templates table.`,
       });
     }
