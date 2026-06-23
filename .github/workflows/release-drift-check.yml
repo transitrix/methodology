@@ -1,0 +1,104 @@
+name: Release drift check
+
+# Weekly check: if main has accumulated more than THRESHOLD commits since the
+# last release tag, open a reminder issue so the release doesn't slip further.
+#
+# Runs every Monday at 09:00 UTC and on workflow_dispatch.
+# Requires no secrets — uses GITHUB_TOKEN (read + issues:write on this repo).
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  THRESHOLD: 50
+
+jobs:
+  check:
+    name: Check commits since last tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Count drift
+        id: drift
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No tags found — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(git log "${LAST_TAG}..HEAD" --oneline | wc -l | tr -d ' ')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "Commits since $LAST_TAG: $COUNT (threshold: $THRESHOLD)"
+
+      - name: Open or update reminder issue
+        if: steps.drift.outputs.skip != 'true' && steps.drift.outputs.count > env.THRESHOLD
+        uses: actions/github-script@v7
+        env:
+          COUNT: ${{ steps.drift.outputs.count }}
+          TAG: ${{ steps.drift.outputs.tag }}
+        with:
+          script: |
+            const count = parseInt(process.env.COUNT);
+            const tag = process.env.TAG;
+            const threshold = parseInt(process.env.THRESHOLD);
+            const label = 'needs:release';
+
+            // Ensure label exists
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner, repo: context.repo.repo, name: label,
+              });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner, repo: context.repo.repo,
+                name: label, color: 'e11d48',
+                description: 'A release tag is overdue',
+              });
+            }
+
+            // Find an existing open drift-reminder issue
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              labels: label, state: 'open',
+            });
+
+            const body = `**${count} commits** on \`main\` since \`${tag}\` — exceeds the ${threshold}-commit reminder threshold.\n\nRun through \`RELEASING.md\` checklist to cut the next release.\n\n_Updated by the weekly release-drift-check workflow._`;
+
+            if (existing.data.length > 0) {
+              const issue = existing.data[0];
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number,
+                title: `[reminder] Cut a new release — ${count} commits since ${tag}`,
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issue.number, body,
+              });
+              core.notice(`Updated existing reminder issue #${issue.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: `[reminder] Cut a new release — ${count} commits since ${tag}`,
+                body, labels: [label],
+              });
+              core.notice(`Opened reminder issue #${created.data.number}`);
+            }
+
+      - name: All good
+        if: steps.drift.outputs.skip != 'true' && steps.drift.outputs.count <= env.THRESHOLD
+        run: |
+          echo "Drift is ${{ steps.drift.outputs.count }} commits — within threshold ($THRESHOLD). No reminder needed."
