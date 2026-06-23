@@ -1,8 +1,8 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.2"
+version: "1.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-26"
+last_updated: "2026-06-23"
 status: "documented"
 file_extension: "*.bpmn.transitrix.yaml"
 dsm_status: "not implemented in DSM — renders via Transitrix Studio"
@@ -10,8 +10,8 @@ dsm_status: "not implemented in DSM — renders via Transitrix Studio"
 
 # BPMN Process YAML Notation — Reference
 
-**Version:** 1.2
-**Date:** 2026-05-26
+**Version:** 1.3
+**Date:** 2026-06-23
 **Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
 ---
@@ -164,7 +164,7 @@ lanes:
 | Field | Type | Constraints |
 |---|---|---|
 | `id` | string | Identifier pattern; must differ from pool id and from any element id |
-| `performed_by` | string | The lane's participant — `ROLE-…` or `ACTOR-…`. The default for every element in the lane (see §7.2). |
+| `performed_by_role` | string | Optional. `ROLE-…` for the role responsible for this lane — the default for every element in the lane (see §7.2). |
 | `name` | string | The rendered lane caption. **Derived** from the participant's `name` — not authored (reconstruction invariant, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). Present in the serialised projection only. |
 | `elements` | array | At least one element required |
 | `supported_by_application` | string | Optional. `APPLICATION-…` used for the work in this lane — the default for every element in it (see §7.2). |
@@ -194,7 +194,7 @@ Each element is an object with these fields:
 | `id` | string | Identifier pattern; globally unique within the document |
 | `type` | string | One of the seven enum values above |
 | `name` | string | Required for tasks and gateways (non-empty); optional for events |
-| `performed_by` | string | Optional. `ROLE-…` or `ACTOR-…` responsible for this step — overrides the lane participant (see §7.2). |
+| `performed_by_role` | string | Optional. `ROLE-…` responsible for this step — overrides the lane default (see §7.2). |
 | `supported_by_application` | string | Optional. `APPLICATION-…` used for this task — overrides the lane default (see §7.2). |
 
 Example:
@@ -229,7 +229,7 @@ A gateway with exactly one incoming and one outgoing flow is forbidden — use a
 
 A process records **who** performs each piece of work and **which system** supports it by referencing canon primitives. In the canonical form these are the `PROCESS` `participants` and per-step `performed_by` / `supported_by_application` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); the BPMN projection carries them through:
 
-- `performed_by: ROLE-…` or `ACTOR-…` — the responsible role or actor ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE` as the position and `ACTOR` as the identity — person / business_unit / system — that fills it).
+- `performed_by_role: ROLE-…` — the responsible role ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE` as the position that fills a lane or step).
 - `supported_by_application: APPLICATION-…` — the supporting application ([10-applications.md](10-applications.md)).
 
 Both may appear at **lane** level (the default for every element in the lane — the standard swimlane-is-a-participant reading) and at **element** level (an override for one task). Precedence, per element:
@@ -407,7 +407,7 @@ In addition, anti-pattern checks (warnings, not errors) flag suspicious-but-vali
 
 | ID | Rule |
 |---|---|
-| **BPMN-XREF-001** | A `performed_by` / `supported_by_application` value (on a lane or an element, §7.2) must resolve to an admitted primitive in canon: `ROLE-…` in `canon/elements/02_business/roles/` or `ACTOR-…` in `canon/elements/02_business/actors/`; `APPLICATION-…` in `canon/elements/03_application/applications/`. Same canon-existence bar as `REL-002`, applied at parse time when the catalogue is loaded. |
+| **BPMN-XREF-001** | A `performed_by_role` / `supported_by_application` value (on a lane or an element, §7.2) must resolve to an admitted primitive in canon: `ROLE-…` in `canon/elements/02_business/roles/`; `APPLICATION-…` in `canon/elements/03_application/applications/`. Same canon-existence bar as `REL-002`, applied at parse time when the catalogue is loaded. |
 
 ### Warnings (non-blocking)
 
@@ -673,6 +673,15 @@ Domain terms used in this notation. Concise definitions focused on what each ter
 
 ## 16. Versioning
 
-The notation is at version **1.0** (frozen 2026-05-04).
+The notation is at version **1.3** (updated 2026-06-23).
 
 Backward-incompatible changes (renaming or removing fields, tightening identifier rules, removing element types) require a major version bump and a migration note. New optional fields and new allowed element types are minor changes; removed fields or types are major.
+
+### Version history
+
+| Version | Date | Change |
+|---|---|---|
+| 1.0 | 2026-05-04 | Initial frozen spec |
+| 1.1 | — | Extension/header/boolean corrections |
+| 1.2 | 2026-05-26 | BPMN-as-projection inversion; §7.2 role/system association |
+| 1.3 | 2026-06-23 | Rename `performed_by` → `performed_by_role` on lane and element to match DSL usage; tighten `BPMN-XREF-001` |
