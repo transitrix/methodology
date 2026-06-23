@@ -196,8 +196,8 @@ def check_clean_install_goals_path():
             dest = os.path.join(repo, ".github") if f == "copilot-instructions.md" else repo
             os.makedirs(dest, exist_ok=True)
             shutil.copyfile(os.path.join(tdir, f), os.path.join(dest, f))
-        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.goals.transitrix.yaml")
-        shutil.copyfile(os.path.join(tdir, "goals.goals.transitrix.yaml"), goals_dest)
+        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.dgca.transitrix.yaml")
+        shutil.copyfile(os.path.join(tdir, "goals.dgca.transitrix.yaml"), goals_dest)
 
         # 4. Assertions.
         check(os.path.isfile(os.path.join(repo, "transitrix.yaml")),
