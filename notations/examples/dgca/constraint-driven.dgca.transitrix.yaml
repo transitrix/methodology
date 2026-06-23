@@ -1,8 +1,8 @@
-notation: fgca
+notation: dgca
 spec_version: "0.1"
 
-id: FGCA-DATA-RESIDENCY-1
-name: "EU data-residency FGCA chain"
+id: DGCA-DATA-RESIDENCY-1
+name: "EU data-residency DGCA chain"
 description: >
   Worked example showing DRIVER.references_constraint — a driver that
   reflects a binding regulatory constraint (GDPR data residency), and the

@@ -90,8 +90,8 @@ Surfaced but left for Valerii — examples are not edited unilaterally.
 ## 4. Coverage honesty
 
 The 2026-05-30 pass verified every family that carried a substantive prior
-claim (bpmn, fga, goals, capability-map, products, applications, process-map).
-The specs **not** re-walked schema-line-by-line this pass: `fgca`, `blocks`,
+claim (bpmn, dgca, goals, capability-map, products, applications, process-map).
+The specs **not** re-walked schema-line-by-line this pass: `blocks`,
 `activities`, `process-blueprint`, `activity-card`. The doc-lint covers their
 mechanical invariants (extension / header / links / version) continuously; a
 deeper schema re-walk of those five is the next manual audit's job.

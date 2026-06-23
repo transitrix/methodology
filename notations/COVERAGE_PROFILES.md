@@ -23,7 +23,7 @@ A profile is declared at the repository root in `transitrix.yaml` under the `cov
 ```yaml
 transitrix: 1
 methodology_version: "0.5.0"
-notations: [fgca, goals, activities, capability-map]
+notations: [dgca, goals, activities, capability-map]
 zones: [canon, field]
 coverage_profile: core         # short form — name a shipped preset
 ```
@@ -249,7 +249,7 @@ The shipped presets (`minimal`, `core`, `full`) are *re-defined per methodology 
 # transitrix.yaml
 transitrix: 1
 methodology_version: "0.5.0"
-notations: [fgca, goals, activities, capability-map, applications]
+notations: [dgca, goals, activities, capability-map, applications]
 zones: [canon, field]
 # coverage_profile omitted → defaults to `full`
 ```
@@ -262,7 +262,7 @@ Every TYPE in the registry is in scope. The default for adopters who haven't yet
 coverage_profile: minimal
 ```
 
-A small product team using only `DRIVER`, `GOAL`, `ACTIVITY` plus `goal_parent` and `activity_goal` RELs. The team's `notations:` list narrows accordingly — `fgca` (or `fga`), `goals`, `activities`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
+A small product team using only `DRIVER`, `GOAL`, `ACTIVITY` plus `goal_parent` and `activity_goal` RELs. The team's `notations:` list narrows accordingly — `dgca`, `goals`, `activities`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
 
 ### 9.3 A custom profile — core + the planning model
 

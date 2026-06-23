@@ -6,8 +6,7 @@ One subfolder per diagram format. Open any example file in VS Code with the Tran
 |---|---|---|---|
 | [`bpmn/`](bpmn/) | `*.bpmn.transitrix.yaml` | BPMN | Business process diagrams with lanes, gateways, and flows |
 | [`goals/`](goals/) | `*.goals.transitrix.yaml` | Goals tree | Hierarchical goal decomposition (Strategy → Business Goal → Project) |
-| [`fgca/`](fgca/) | `*.fgca.transitrix.yaml` | FGCA | Factor → Goal → Change → Activity chain |
-| [`fga/`](fga/) | `*.fga.transitrix.yaml` | FGA | Factor → Goal → Activity (FGCA without Changes) |
+| [`dgca/`](dgca/) | `*.dgca.transitrix.yaml` | DGCA | Driver → Goal → Change → Activity chain; DGA mode via `view_config.layers.changes: off` |
 | [`activities/`](activities/) | `*.activities.transitrix.yaml` | Activity network | AoN / PSND precedence diagram with critical path |
 | [`blocks/`](blocks/) | `*.blocks.transitrix.yaml` | Nested block diagrams | Recursive `block` tree rendered as nested boxes |
 | [`capability-map/`](capability-map/) | `*.capability-map.transitrix.yaml` | Capabilities map | Capability hierarchy with CMMI maturity assessment |

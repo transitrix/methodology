@@ -60,8 +60,8 @@ Goals trees live in `views/goals/`.
 |----------|----------|
 | Show how strategic goals break into tactical ones | Goals tree |
 | Link goals to capabilities or processes | Capabilities map (`*.capability-map.transitrix.yaml`) |
-| Show what drives goals | FGCA (`*.fgca.transitrix.yaml`) |
-| Track goal delivery through activities | FGCA or FGA |
+| Show what drives goals | DGCA (`*.dgca.transitrix.yaml`) |
+| Track goal delivery through activities | DGCA (full or DGA mode) |
 
 ---
 
@@ -191,8 +191,7 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 ## 7. References
 
 - Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
-- FGCA notation: [`02-fgca.md`](02-fgca.md)
-- FGA notation: [`03-fga.md`](03-fga.md)
+- DGCA notation: [`02-dgca.md`](02-dgca.md)
 - ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across FGCA / FGA / Goals / Activities: [`README.md`](../README.md) § Family selection
 - Methodology section 6.1: `method/methodology.md`
@@ -240,6 +239,6 @@ When a goal is moved to a new parent:
 
 Goals without a valid parent (orphans) live in the **backlog**. They are visible in the Goals table but not rendered in the Visual Editor (G) tree. Dragging a backlog goal onto a tree node attaches it and triggers the cascade level update.
 
-### 8.5 Relationship to FGCA
+### 8.5 Relationship to DGCA
 
-In DSM the Goals Tree is the G layer of FGCA. Goals are linked to Activities via the `goals: [GOAL-…]` field on Activity records. The FGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-fgca.md`](02-fgca.md).
+In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Activities via the `goals: [GOAL-…]` field on Activity records. The DGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-dgca.md`](02-dgca.md).

@@ -69,7 +69,7 @@ Critical-path values (early start / early finish / late start / late finish / sl
 | Bind activities to strategic goals | Activities — `goals: []` |
 | Show what changes activities deliver (BDN linkage) | Activities — `delivers_changes: []` |
 | Document the procedural flow of a business process | BPMN (`*.bpmn.transitrix.yaml`) |
-| Decompose strategic drivers → goals → changes → activities | FGCA (`*.fgca.transitrix.yaml`) |
+| Decompose strategic drivers → goals → changes → activities | DGCA (`*.dgca.transitrix.yaml`) |
 
 ---
 

@@ -53,7 +53,7 @@ id: DRIVER-EU-REG-1
 
 ### Step 2 — Update ID references in view files (optional until 1.0)
 
-In your `*.fgca.transitrix.yaml` and `*.fga.transitrix.yaml` files, the `factors[]` array entries and `goal.factors[]` values that reference `FACTOR-*` IDs should be updated to match the renamed element files. The YAML key stays unchanged:
+In your `*.dgca.transitrix.yaml` files (formerly `*.fgca.transitrix.yaml` / `*.fga.transitrix.yaml`), the `factors[]` array entries and `goal.factors[]` values that reference `FACTOR-*` IDs should be updated to match the renamed element files. The YAML key stays unchanged:
 
 ```yaml
 # Before (valid, produces a DRIVER-TYPE-LEGACY-001 warning)

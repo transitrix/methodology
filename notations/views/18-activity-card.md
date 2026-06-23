@@ -55,7 +55,7 @@ A Activity Card is a **view** over an existing project Activity. It does not dup
 
 A "project" is an Activity at the project scale of the recursive ACTIVITY hierarchy (initiative → programme → project → task, all one TYPE per [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.1/§7.4). No new top-level entity is introduced for projects — the activity hierarchy already expresses what a project is. The Activity Card is the **narrative surface** on top of the project activity: dates, motivation chain, child activities, and narrative milestones that live on the card itself.
 
-**View-purity.** Like every other view, the Activity Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.activities.*`, `*.fgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
+**View-purity.** Like every other view, the Activity Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.activities.*`, `*.dgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
 
 1. The card document itself — `notation: activity-card` — references the project Activity by ID and declares its narrative milestones.
 2. The **canon element store** (`canon/elements/**`) — the project ACTIVITY element (`valid_from`, `start_date`, `end_date`, `delivers_changes`) and its child ACTIVITY elements (any activity with `parent` = the project's ID); the DRIVER / GOAL / CHANGE elements the motivation chain expands (`goal.factors`, `change.goals` carried inline on the elements).
@@ -71,7 +71,7 @@ The card does not vendor copies of any of this data; the renderer pulls by refer
 |---|---|
 | Single-page summary of a project for an executive review | Activity Card |
 | Project network with dates + dependencies + critical path | Activities ([07-activities.md](07-activities.md)) |
-| Project's strategic context — drivers underlying its goals — | FGCA ([02-fgca.md](02-fgca.md)) |
+| Project's strategic context — drivers underlying its goals — | DGCA ([02-dgca.md](02-dgca.md)) |
 | Programme / portfolio overview across many projects | Out of scope for v0.1 (future) |
 
 The card is **specifically** a single-project view. A multi-project programme deck or a portfolio dashboard would be a separate notation.
@@ -231,5 +231,5 @@ Pending design work (separate epics):
 - TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`ACTIVITY_CARD` document type), §4 (uniqueness scope — both document-scoped).
 - The project Activity TYPE this card binds: [07-activities.md](07-activities.md) §5.2 (`activity_type: Project`).
 - Schedule milestones — distinct from activity-card milestones: [07-activities.md](07-activities.md) §5.9.
-- Motivation chain the card pulls: [02-fgca.md](02-fgca.md) (FGCA).
+- Motivation chain the card pulls: [02-dgca.md](02-dgca.md) (DGCA).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5–7.

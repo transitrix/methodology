@@ -1,20 +1,22 @@
-# FGCA diagram
+# DGCA diagram
 
 **Driver → Goal → Change → Activity** — a four-column strategy decomposition chain.
 Shows how external drivers push goals, which require changes, which are delivered through activities.
 
-**File extension:** `*.fgca.transitrix.yaml`
+Layer toggle: individual columns (D, G, C, A) can be disabled via `view_config.layers`. The DGA variant (`layers.changes: off`) maps activities directly to goals without an intermediate change step.
 
-See the canonical spec: [`../../views/02-fgca.md`](../../views/02-fgca.md).
+**File extension:** `*.dgca.transitrix.yaml`
 
-## Minimal structure
+See the canonical spec: [`../../views/02-dgca.md`](../../views/02-dgca.md).
+
+## Minimal structure — full DGCA (4 layers)
 
 ```yaml
-notation: fgca
+notation: dgca
 spec_version: "0.1"
 
-id: FGCA-SAMPLE-1
-name: "Sample FGCA chain"
+id: DGCA-SAMPLE-1
+name: "Sample DGCA chain"
 
 factors:
   - id: DRIVER-1
@@ -40,6 +42,35 @@ activities:
     changes: [CHANGE-1]
 ```
 
+## DGA mode — Changes layer off (3 layers)
+
+```yaml
+notation: dgca
+spec_version: "0.1"
+
+id: DGCA-SAMPLE-DGA-1
+name: "Sample DGA chain"
+
+view_config:
+  layers:
+    changes: off          # Driver → Goal → Activity; changes[] may be omitted
+
+factors:
+  - id: DRIVER-1
+    name: "External driver"
+    type: external
+
+goals:
+  - id: GOAL-1
+    name: "Strategic goal"
+    factors: [DRIVER-1]
+
+activities:
+  - id: ACTIVITY-1
+    name: "Initiative"
+    goals: [GOAL-1]       # direct link to goal — no changes[] needed
+```
+
 ## Optional document-root fields
 
 ```yaml
@@ -56,10 +87,12 @@ author: "Your Name"
 - A goal MAY reference multiple drivers via `factors: [DRIVER-…, DRIVER-…]`.
 - A change MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
 - An activity MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
-- For degenerate paths where a change layer adds no information, an activity MAY link directly via `goals: [GOAL-…]` — see [`../../views/02-fgca.md`](../../views/02-fgca.md) §Fields.
+- In DGA mode (`view_config.layers.changes: off`), activities link directly via `goals: [GOAL-…]`.
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `strategy-2026.fgca.transitrix.yaml` | Full FGCA chain (2 drivers, 3 goals, 3 changes, 5 activities) |
+| `strategy-2026.dgca.transitrix.yaml` | Full DGCA chain (2 drivers, 3 goals, 3 changes, 5 activities) |
+| `constraint-driven.dgca.transitrix.yaml` | Constraint-driven DGCA (GDPR data-residency scenario) |
+| `strategy-2026-dga.dgca.transitrix.yaml` | DGA mode — Changes layer off (3 drivers, 3 goals, 7 activities) |
