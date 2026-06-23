@@ -30,7 +30,7 @@ In this methodology repo the worked example lives at `organizations/acme_corp/tr
 ```yaml
 transitrix: 1                       # manifest schema version (integer)
 methodology_version: "0.5.0"        # the methodology release this repo conforms to
-notations: [fgca, goals, activities, capability-map, codex]
+notations: [dgca, goals, activities, capability-map, codex]
 zones: [canon, field, codex]
 coverage_profile: full              # optional — see COVERAGE_PROFILES.md
 confidence_decay:                   # optional — per-TYPE freshness decay; see CONTRACT.md §11.3

@@ -21,7 +21,7 @@ ArchiMate 3.2 terminology alignment: `FACTOR` → `DRIVER`. Renames the element 
   - Folder path: `canon/elements/01_motivation/factors/` is unchanged; only file names change.
   - YAML structural keys (`factors:`, `goal.factors[]`) are **not renamed** — backward-compat; existing view files need no edits.
   - Legacy `FACTOR-*` IDs remain valid in all structural key values (e.g. `factors: [FACTOR-EU-REG-1]`) until the 1.0 cut; validators accept both forms.
-  - Affected specs: `notations/ELEMENT_PRIMITIVES.md`, `IDS_AND_REFERENCES.md`, `COVERAGE_PROFILES.md`, `README.md`, `views/02-fgca.md`, `views/03-fga.md` (PR #230); remaining notation views, skills, and templates in follow-on PRs.
+  - Affected specs: `notations/ELEMENT_PRIMITIVES.md`, `IDS_AND_REFERENCES.md`, `COVERAGE_PROFILES.md`, `README.md`, `views/02-dgca.md` (PR #230); remaining notation views, skills, and templates in follow-on PRs.
 
 ---
 

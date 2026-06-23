@@ -71,7 +71,7 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
 │   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
 │   │   └── 04_technology/          # NODE, ARTIFACT, …
 │   └── views/                      # one subfolder per notation
-│       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
+│       ├── bpmn/   dgca/   goals/   capabilities/   processmap/
 │       ├── activities/   blocks/   scenarios/
 │       └── applications/   products/   issues/   process-blueprint/
 ├── field/                          # raw inputs — interviews, surveys, observations, drafts
@@ -117,7 +117,7 @@ The root `transitrix.yaml` pins which methodology release this repo conforms to 
 ```yaml
 transitrix: 1
 methodology_version: "0.5.0"
-notations: [fgca, goals, activities, issues, capability-map, codex]
+notations: [dgca, goals, activities, issues, capability-map, codex]
 zones: [canon, field, codex]
 ```
 
@@ -135,11 +135,11 @@ spec_version: "0.1"         # accepted; will become required at notation v1.0
 
 The file extension is always `*.<short-name>.transitrix.yaml`. The validator rejects extension/content mismatch (rule `HDR-003`).
 
-Naming convention for view files: `<DOMAIN>.<short-name>.transitrix.yaml`, where `<DOMAIN>` is a short kebab-case or upper-snake-case label for the area (e.g. `order-fulfilment.bpmn.transitrix.yaml`, `RETENTION-2026.fgca.transitrix.yaml`). One canonical instance per notation per domain.
+Naming convention for view files: `<DOMAIN>.<short-name>.transitrix.yaml`, where `<DOMAIN>` is a short kebab-case or upper-snake-case label for the area (e.g. `order-fulfilment.bpmn.transitrix.yaml`, `RETENTION-2026.dgca.transitrix.yaml`). One canonical instance per notation per domain.
 
 Codex artefacts are an exception: they are zone primitives, not view documents. They live at `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`, named by their canonical ID, and carry no `notation:` header. Schema: `notations/elements/14-codex.md`.
 
-The agent never strips the `notation:` and `spec_version:` headers from view files, and never introduces alias extensions (`*.bpmn.yaml`, `*.fgca.yml`) — they fail validation.
+The agent never strips the `notation:` and `spec_version:` headers from view files, and never introduces alias extensions (`*.bpmn.yaml`, `*.dgca.yml`) — they fail validation.
 
 ---
 
@@ -167,7 +167,7 @@ Deprecated three-letter abbreviations (`ACT`, `CHG`, `FAC`, `CAP`, `SCN`) — do
 Every notation file is validated before commit. Two sanctioned paths:
 
 - **Transitrix Studio (VS Code extension)** — install from the Marketplace (`transitrix.transitrix-studio`). The extension validates on save and shows error annotations in the editor.
-- **Transitrix CLI** — `npx @transitrix/cli validate path/to/your.fgca.transitrix.yaml`. Use in CI or when working without VS Code.
+- **Transitrix CLI** — `npx @transitrix/cli validate path/to/your.dgca.transitrix.yaml`. Use in CI or when working without VS Code.
 
 For Mermaid diagrams embedded in `.md` files (ADRs, architecture notes), also install **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — VS Code Marketplace and Open VSX — to render them inline. Not a validator: a preview aid only.
 
@@ -214,7 +214,7 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 - Does **not** edit files under the methodology canon at `transitrix/methodology` from inside this repo.
 - Does **not** invent new notations, new TYPE prefixes, or new validation rules. Those decisions happen upstream.
 - Does **not** change the canonical repository layout — `canon/views/<notation>/`, `canon/elements/<NN>_<layer>/`, `codex/external/<jurisdiction>/`, `codex/internal/`, `field/<sub>/` — without an explicit adopter decision recorded in the PR.
-- Does **not** strip the `notation:` / `spec_version:` headers, rename canonical extensions, or rewrite files into alias formats (`*.bpmn.yaml`, `*.fgca.yml`).
+- Does **not** strip the `notation:` / `spec_version:` headers, rename canonical extensions, or rewrite files into alias formats (`*.bpmn.yaml`, `*.dgca.yml`).
 - Does **not** auto-merge PRs. All PRs go through the gating in §11.
 - Does **not** push to `main` directly. Use a feature branch + PR every time.
 - Does **not** run destructive operations (`git push --force`, `git reset --hard`, deleting branches that aren't local-only) without an explicit instruction from the adopter.

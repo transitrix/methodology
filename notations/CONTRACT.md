@@ -20,7 +20,7 @@ spec_version: "0.1"         # optional today; reserved field; will be required w
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | Short name of the notation (`bpmn`, `fgca`, `goals`, `capability-map`, …). Identifies the schema the rest of the document follows. The accepted short names are listed in [README.md](README.md). |
+| `notation` | yes | string | Short name of the notation (`bpmn`, `dgca`, `goals`, `capability-map`, …). Identifies the schema the rest of the document follows. The accepted short names are listed in [README.md](README.md). |
 | `spec_version` | no, accepted | string | Declared version of the notation spec the document conforms to. Reserved today; will become required when each notation reaches v1.0. The validator accepts but does not enforce it. |
 
 The short name is fixed per notation and matches the per-notation table at the bottom of the spec being read.
@@ -718,7 +718,7 @@ A `view_config` is the **presentation layer** of a view document: the configurat
 Structural layout of a view document:
 
 ```yaml
-notation: fgca                # §1 — required header
+notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
 methodology_version: "0.5.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name

@@ -9,8 +9,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
 | [01-bpmn.md](views/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
-| [02-fgca.md](views/02-fgca.md) | `fgca` | Four-layer strategy-to-execution chain: Factor → Goal → Change → Activity. | `*.fgca.transitrix.yaml` | documented |
-| [03-fga.md](views/03-fga.md) | `fga` | Simplified strategy-to-execution chain: Factor → Goal → Activity (no Changes layer). | `*.fga.transitrix.yaml` | documented |
+| [02-dgca.md](views/02-dgca.md) | `dgca` | Strategy-to-execution chain: Driver → Goal → Change → Activity. Layer toggle via `view_config.layers` (DGA mode when `changes: off`). | `*.dgca.transitrix.yaml` | documented |
 | [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
 | [05-capability-map.md](views/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
 | [06-process-map.md](views/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
@@ -20,7 +19,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
 | [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
-| [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — FGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | draft |
+| [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | draft |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 
@@ -93,40 +92,44 @@ status: draft | documented | stable
 
 ## Family selection
 
-Four notations — FGCA, FGA, the Goals tree, and the Activities network — sit on the same strategy-to-execution spectrum. They differ in which layers they carry; the right one for a given task is the one that names exactly the layers you need to talk about, no more.
+Three notations — DGCA, the Goals tree, and the Activities network — sit on the same strategy-to-execution spectrum. They differ in which layers they carry; the right one for a given task is the one that names exactly the layers you need to talk about, no more.
 
 ### Layer composition
 
-| Notation | Factor | Goal | Change | Activity |
-|---|:---:|:---:|:---:|:---:|
-| **FGCA** ([02-fgca.md](views/02-fgca.md)) | ✓ | ✓ | ✓ | ✓ |
-| **FGA** ([03-fga.md](views/03-fga.md)) | ✓ | ✓ | — | ✓ |
-| **Goals tree** ([04-goals.md](views/04-goals.md)) | — | ✓ | — | — |
-| **Activities network** ([07-activities.md](views/07-activities.md)) | — | — | — | ✓ |
+DGCA supports toggling individual layers off via `view_config.layers`. The table shows common configurations:
+
+| Mode | Driver | Goal | Change | Activity | How |
+|---|:---:|:---:|:---:|:---:|---|
+| **DGCA** full ([02-dgca.md](views/02-dgca.md)) | ✓ | ✓ | ✓ | ✓ | default |
+| **DGA** (DGCA, Changes off) | ✓ | ✓ | — | ✓ | `view_config.layers.changes: off` |
+| **Goals tree** ([04-goals.md](views/04-goals.md)) | — | ✓ | — | — | separate notation |
+| **Activities network** ([07-activities.md](views/07-activities.md)) | — | — | — | ✓ | separate notation |
 
 ### Selection matrix
 
-| Situation | Recommended notation |
+| Situation | Recommended |
 |---|---|
-| You need to trace strategic drivers through goals and explicit transformation steps to deliverable initiatives. | **FGCA** |
-| You need the same chain, but the transformation step between goals and activities is implicit or trivial. | **FGA** |
-| You need to decompose goals hierarchically (strategy → tactical → operational) without naming drivers or activities. | **Goals tree** |
-| You need to plan delivery — activities, dependencies, durations, Gantt — and the strategic context is already settled elsewhere. | **Activities** |
-| You need a quarterly goals review with no driver or activity context. | **Goals tree** |
-| You're explaining why a goal-action gap exists and what transformation closes it. | **FGCA** |
+| Trace strategic drivers through goals and explicit transformation steps to deliverable initiatives. | **DGCA** (full) |
+| Same chain, but the transformation step between goals and activities is implicit or trivial. | **DGCA** with `layers.changes: off` (DGA mode) |
+| Decompose goals hierarchically (strategy → tactical → operational) without naming drivers or activities. | **Goals tree** |
+| Plan delivery — activities, dependencies, durations, Gantt — strategic context already settled elsewhere. | **Activities** |
+| Quarterly goals review with no driver or activity context. | **Goals tree** |
+| Explaining why a goal-action gap exists and what transformation closes it. | **DGCA** (full) |
 
 ### Form rule — flat top-level arrays with reference-based hierarchy
 
-**All four strategy-chain notations — FGCA, FGA, Goals, Activities — use the flat form.** Document metadata and the layer arrays live at the document root as parallel top-level arrays. There is no wrapper root key. Where a notation is tree-shaped (Goals, Activities), hierarchy is expressed by `parent` references on each element inside the flat array. Where a notation is DAG-shaped (FGCA, FGA), cross-layer links are id-references on each element in the canonical downstream direction.
+**All three strategy-chain notations — DGCA, Goals, Activities — use the flat form.** Document metadata and the layer arrays live at the document root as parallel top-level arrays. There is no wrapper root key. Where a notation is tree-shaped (Goals, Activities), hierarchy is expressed by `parent` references on each element inside the flat array. Where a notation is DAG-shaped (DGCA), cross-layer links are id-references on each element in the canonical downstream direction.
 
 | Notation | Top-level arrays | Hierarchy / cross-link |
 |---|---|---|
 | **Goals** | `goal_types[]`, `goals[]` | `goal.parent: GOAL-…` (omitted at root) |
-| **FGA** | `factors[]`, `goals[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `activity.goals: [GOAL-…]` |
-| **FGCA** | `factors[]`, `goals[]`, `changes[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `change.goals: [GOAL-…]`; `activity.changes: [CHANGE-…]` |
+| **DGCA** (DGA mode) | `factors[]`, `goals[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `activity.goals: [GOAL-…]` |
+| **DGCA** (full) | `factors[]`, `goals[]`, `changes[]`, `activities[]` | `goal.factors: [DRIVER-…]`; `change.goals: [GOAL-…]`; `activity.changes: [CHANGE-…]` |
 | **Activities** | `activities[]` | `activity.predecessors: [ACTIVITY-…]`; optional `parent: ACTIVITY-…` for WBS groupings |
 
-**Decision (2026-05-26)** — this supersedes the earlier "nested for trees, flat for DAGs" heuristic. Reasoning: a single shape across the family removes the spec-vs-implementation gap that the heuristic produced (downstream tools have to handle both forms), and tree-shape semantics survive perfectly well as `parent`-references inside a flat array. The earlier rule was a 2026-05-20 working position alongside the original FGCA schema decision; this entry replaces it.
+**Decision (2026-05-26)** — flat form across all strategy-chain notations (supersedes the earlier "nested for trees, flat for DAGs" heuristic). Reasoning: a single shape removes the spec-vs-implementation gap; tree-shape semantics survive as `parent`-references inside a flat array.
+
+**Decision (2026-06-23)** — FGA merged into DGCA as DGA mode. `fga` / `fgca` are deprecated pre-2026-06 keys; migrate to `dgca` with `view_config.layers.changes: off` for the 3-layer variant.
 
 ## Examples
 

@@ -1,14 +1,14 @@
 ---
-notation: "FGCA Strategy-to-Execution Chain"
-version: "1.4"
+notation: "DGCA Strategy-to-Execution Chain"
+version: "1.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-26"
+last_updated: "2026-06-23"
 status: "documented"
-file_extension: "*.fgca.transitrix.yaml"
-dsm_status: "implemented — F, G, C, A layers active; column selection via localStorage"
+file_extension: "*.dgca.transitrix.yaml"
+dsm_status: "implemented — D, G, C, A layers active; column selection via localStorage"
 ---
 
-# FGCA Notation Reference
+# DGCA Notation Reference
 
 ## File header
 
@@ -16,24 +16,26 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Value |
 |---|---|
-| `notation:` value | `fgca` |
-| File extension | `*.fgca.transitrix.yaml` |
+| `notation:` value | `dgca` |
+| File extension | `*.dgca.transitrix.yaml` |
+
+> **Deprecation note:** `fgca` and `fga` were the pre-2026-06 notation keys. Migrate to `dgca`. The old 3-layer FGA view (Driver → Goal → Activity) is now expressed as a `dgca` document with `view_config.layers.changes: off`.
 
 ---
 
 ## Source of truth
 
-**DRIVER, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The FGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+**DRIVER, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The DGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
 
 The inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
 
-The reconstruction invariant applies: `render(Elements + Relations, view_config)` → FGCA diagram. Deleting `canon/views/fgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
 ---
 
 ## Element lifecycle
 
-Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The FGCA view document itself does not carry a lifecycle field.
+Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -43,30 +45,30 @@ This method is authored by **Valerii Korobeinikov**.
 
 ## What This Notation Is For
 
-FGCA notation is a business method for translating strategy into coordinated execution.
+DGCA notation is a business method for translating strategy into coordinated execution.
 It helps teams answer a single management question:
 
 **How do our day-to-day initiatives directly support strategic intent?**
 
-FGCA stands for:
+DGCA stands for:
 
-- **F**actors
+- **D**rivers
 - **G**oals
 - **C**hanges
 - **A**ctivities
 
 ## Business Meaning of Each Layer
 
-- **Factors**: external and internal drivers that explain why action is needed now.
+- **Drivers**: external and internal drivers that explain why action is needed now.
 - **Goals**: strategic outcomes the organization wants to achieve.
 - **Changes**: business transformations required to make goals real.
 - **Activities**: concrete initiatives, projects, and workstreams that deliver those changes.
 
 ## Core Management Logic
 
-FGCA is read as a cause-and-delivery chain:
+DGCA is read as a cause-and-delivery chain:
 
-**Factors -> Goals -> Changes -> Activities**
+**Drivers -> Goals -> Changes -> Activities**
 
 In practical management communication, this means:
 
@@ -74,6 +76,19 @@ In practical management communication, this means:
 - goals set direction and expected value,
 - changes define what must be transformed in the business,
 - activities define who does what to realize that transformation.
+
+## Layer Toggle — Flexible View Configurations
+
+Individual layers can be toggled off via `view_config.layers`. This produces degenerate views that are structurally valid DGCA documents but omit one or more columns.
+
+| Mode | `layers` config | Layers rendered |
+|---|---|---|
+| Full DGCA (default) | all `on` or omitted | Driver → Goal → Change → Activity |
+| DGA (no Changes) | `changes: off` | Driver → Goal → Activity |
+| GA (Goal-Activity only) | `drivers: off`, `changes: off` | Goal → Activity |
+| Goals only | `drivers: off`, `changes: off`, `activities: off` | Goal |
+
+**DGA mode** (`view_config.layers.changes: off`) is the direct successor of the former FGA notation. When Changes is off, the `changes[]` array is optional and activities link directly to goals via `activities[].goals`.
 
 ## How To Read and Use It
 
@@ -91,57 +106,55 @@ In practical management communication, this means:
 
 ## Why This Matters
 
-FGCA improves strategic coherence across leadership, program management, and operational teams.
+DGCA improves strategic coherence across leadership, program management, and operational teams.
 It creates a shared language for planning, prioritization, and accountability, reducing the gap between strategy documents and real execution.
 
 ---
 
 ## DSM Implementation Status
 
-This section is **non-normative**: it records what Transitrix DSM enforces and renders today and introduces no validation rules of its own — the conformance rules live in the §"Validation rules" table above. Transitrix DSM implements the full 4-layer FGCA chain as of release 0.2.2:
+This section is **non-normative**: it records what Transitrix DSM enforces and renders today and introduces no validation rules of its own — the conformance rules live in the §"Validation rules" table above. Transitrix DSM implements the full 4-layer DGCA chain as of release 0.2.2:
 
 | Layer | Status | Notes |
 |-------|--------|-------|
-| **F** — Drivers | Implemented | Strategic Drivers (PESTLE + internal); PESTLE report; driver–goal linking via `goal_factor` |
-| **G** — Goals | Implemented | Goals tree, Visual Editor, FGCA column; goal–activity link via `goal_id` |
+| **D** — Drivers | Implemented | Strategic Drivers (PESTLE + internal); PESTLE report; driver–goal linking via `goal_factor` |
+| **G** — Goals | Implemented | Goals tree, Visual Editor, DGCA column; goal–activity link via `goal_id` |
 | **C** — Changes | Implemented | `bdn_change` entities linked to goals; `activity_change` join table; Activity edit form shows "Delivers changes" |
-| **A** — Activities | Implemented | Activities table, Visual Editor, FGCA column; linked to Changes via `activity_change` |
+| **A** — Activities | Implemented | Activities table, Visual Editor, DGCA column; linked to Changes via `activity_change` |
 
-**FGCA Viewer:** The FGCA tab renders all four columns. Column visibility is configurable via F/G/C/A toggle buttons; preference saved in `localStorage["fgca_columns"]`. Valid degenerate views (FGA, GCA, GA, etc.) are supported.
+**DGCA Viewer:** The DGCA tab renders all four columns. Column visibility is configurable via D/G/C/A toggle buttons; preference saved in `localStorage["dgca_columns"]`. Valid degenerate views (DGA, GCA, GA, etc.) are supported.
 
-**FGCA Report:** The "FGCA Report" tab renders the full F→G→C→A chain in list format and exports Mermaid/PlantUML diagrams. PNG export saves as `fgca-diagram.png`.
-
-**Design decisions:** see `docs/decisions/2026-05-08-fgca-design.md` in the DSM repository.
+**DGCA Report:** The "DGCA Report" tab renders the full D→G→C→A chain in list format and exports Mermaid/PlantUML diagrams. PNG export saves as `dgca-diagram.png`.
 
 ---
 
 ## File location and naming
 
 ```
-views/fgca/<DOMAIN>.fgca.transitrix.yaml
+views/dgca/<DOMAIN>.dgca.transitrix.yaml
 ```
 
 Examples:
-- `views/fgca/STRATEGY_2026.fgca.transitrix.yaml`
-- `views/fgca/Q3_OPERATIONS.fgca.transitrix.yaml`
+- `views/dgca/STRATEGY_2026.dgca.transitrix.yaml`
+- `views/dgca/Q3_OPERATIONS.dgca.transitrix.yaml`
 
 ---
 
 ## Structure — projection over canon elements
 
-An FGCA view document projects over DRIVER, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
+A DGCA view document projects over DRIVER, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
 
 ```yaml
-notation: fgca
+notation: dgca
 spec_version: "0.1"
 name: "Retail strategy chain 2026"      # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"              # optional per CONTRACT.md §4
 methodology_version: "0.5.0"
 
 view:
-  id: FGCA-RETAIL-1
+  id: DGCA-RETAIL-1
   name: "Retail strategy chain 2026"
-  description: "FGCA projection for the 2026 retail strategy."
+  description: "DGCA projection for the 2026 retail strategy."
 
 view_config:
   goals:
@@ -152,14 +165,19 @@ view_config:
     surface: derived          # derive from change.goals inline links for the included goal set
   activities:
     surface: derived          # derive from activity.changes links for the included change set
+  layers:
+    drivers: on               # on | off — toggle the Drivers column
+    goals: on                 # on | off — Goals column (always on recommended)
+    changes: on               # on | off — off activates DGA mode (Driver → Goal → Activity)
+    activities: on            # on | off — toggle the Activities column
   display:
     depth: null               # unlimited depth
     collapsed: []             # no collapsed nodes
 ```
 
-The FGCA semantic graph — one Change can deliver many Goals, one Activity deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) on the element files themselves. The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
+The DGCA semantic graph — one Change can deliver many Goals, one Activity deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) on the element files themselves. The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
 
-A complete example of standalone element files for this notation: [`examples/fgca/strategy-2026.fgca.transitrix.yaml`](../examples/fgca/strategy-2026.fgca.transitrix.yaml).
+A complete example of standalone element files for this notation: [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../examples/dgca/strategy-2026.dgca.transitrix.yaml).
 
 ---
 
@@ -169,9 +187,9 @@ A complete example of standalone element files for this notation: [`examples/fgc
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `fgca` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | MUST equal `dgca` (per [CONTRACT.md](../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
-| `id` | yes | document ID — `FGCA-[<middle>-]<INTEGER>` per the canonical grammar |
+| `id` | yes | document ID — `DGCA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
 | `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
@@ -180,7 +198,7 @@ A complete example of standalone element files for this notation: [`examples/fgc
 | `author` | no | document author |
 | `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |
-| `changes` | yes | array of change entries — see below |
+| `changes` | yes* | array of change entries — *optional when `view_config.layers.changes: off` |
 | `activities` | yes | array of activity entries — see below |
 
 ### `factors[]`
@@ -193,7 +211,7 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 | `name` | yes | what the driver is — the neutral standing force, not a finding about it |
 | `type` | no | `external` or `internal` |
 | `category` | no | PESTLE sub-classification for external drivers — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal drivers. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
-| `references_constraint` | no | array of `CONSTRAINT-…` IDs the driver reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a strategic driver for the organisation — the DRIVER is the FGCA strategic driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
+| `references_constraint` | no | array of `CONSTRAINT-…` IDs the driver reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a strategic driver for the organisation — the DRIVER is the DGCA strategic driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
 | `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
 ### `goals[]`
@@ -221,14 +239,17 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 | `id` | yes | `ACTIVITY-[<middle>-]<INTEGER>` |
 | `name` | yes | what the activity is |
 | `changes` | no | array of `CHANGE-…` IDs this activity delivers |
-| `goals` | no | array of `GOAL-…` IDs the activity supports directly (degenerate FGA-style link, used when the Change layer adds no information for that activity) |
+| `goals` | no | array of `GOAL-…` IDs the activity supports directly — used in DGA mode (`view_config.layers.changes: off`) or when the Change layer adds no information for that activity |
+| `owner` | no | `ROLE-…` ID of the accountable role |
+| `status` | no | `Planned` / `In Progress` / `Done` |
+| `due_date` | no | target completion date (YYYY-MM-DD) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the FGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
 
 ---
 
-## view_config for FGCA
+## view_config for DGCA
 
 The `view_config` block (see [`CONTRACT.md`](../CONTRACT.md) §14) defines which elements to include and how to display them. All fields are optional; omitted fields fall back to the defaults below.
 
@@ -247,6 +268,11 @@ view_config:
     surface: derived     # derive CHANGE set from change.goals inline links for the included goals
   activities:
     surface: derived     # derive ACTIVITY set from activity.changes links for the included changes
+  layers:
+    drivers: on          # show the Drivers column
+    goals: on            # show the Goals column
+    changes: on          # show the Changes column; off = DGA mode
+    activities: on       # show the Activities column
   display:
     depth: null          # maximum depth in the rendered chain; null = unlimited
     collapsed: []        # list of element IDs to render as collapsed nodes
@@ -262,7 +288,11 @@ view_config:
 | `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included goals. `all` — include every active DRIVER in canon. |
 | `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
 | `activities.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. |
-| `display.depth` | integer \| null | `null` | Maximum depth of the rendered F→G→C→A chain. `null` renders all levels. |
+| `layers.drivers` | `on` \| `off` | `on` | Toggle the Drivers column in the rendered view. |
+| `layers.goals` | `on` \| `off` | `on` | Toggle the Goals column. Toggling off produces a degenerate view; `on` recommended. |
+| `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, activities link directly to goals via `activities[].goals`. |
+| `layers.activities` | `on` \| `off` | `on` | Toggle the Activities column in the rendered view. |
+| `display.depth` | integer \| null | `null` | Maximum depth of the rendered D→G→C→A chain. `null` renders all levels. |
 | `display.collapsed` | list | `[]` | IDs of elements to render as collapsed (children hidden). |
 
 The `goal.factors`, `change.goals`, and `activity.changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it only selects which goal set to anchor the projection on.
@@ -273,21 +303,21 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 
 | Rule | Severity | Description |
 |---|---|---|
-| `FGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `fgca`. |
-| `FGCA-002` | error | `id` missing or empty. |
-| `FGCA-003` | error | `name` missing or empty. |
-| `FGCA-004` | error | any of `factors` / `goals` / `changes` / `activities` missing or empty. |
-| `FGCA-005` | error | every entry in the four arrays must have a non-empty `id` and `name`. |
-| `FGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all four layers within a document). |
-| `FGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
-| `FGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
-| `FGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
-| `FGCA-010` | error | `activities[].changes[]` IDs must reference defined changes. |
-| `FGCA-011` | error | `activities[].goals[]` IDs must reference defined goals. |
-| `FGCA-012` | warn | a driver with no goal referencing it is orphan. |
-| `FGCA-013` | warn | a goal with no change (and no direct activity) referencing it is orphan. |
-| `FGCA-014` | warn | a change with no activity referencing it is orphan. |
-| `FGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
+| `DGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `dgca`. |
+| `DGCA-002` | error | `id` missing or empty. |
+| `DGCA-003` | error | `name` missing or empty. |
+| `DGCA-004` | error | any of `factors` / `goals` / `activities` missing or empty. `changes` is also required unless `view_config.layers.changes: off`. |
+| `DGCA-005` | error | every entry in the arrays must have a non-empty `id` and `name`. |
+| `DGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all layers within a document). |
+| `DGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
+| `DGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
+| `DGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
+| `DGCA-010` | error | `activities[].changes[]` IDs must reference defined changes (when changes layer is on). |
+| `DGCA-011` | error | `activities[].goals[]` IDs must reference defined goals. |
+| `DGCA-012` | warn | a driver with no goal referencing it is orphan. |
+| `DGCA-013` | warn | a goal with no change (and no direct activity) referencing it is orphan. |
+| `DGCA-014` | warn | a change with no activity referencing it is orphan. |
+| `DGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
 
 ---
 
@@ -297,9 +327,8 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 - Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1
 - DRIVER, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
 - Timeless inline relations (`goal.factors`, `change.goals`, `activity.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
-- FGA notation (3-layer simplified variant): [`03-fga.md`](03-fga.md)
 - Goals tree notation: [`04-goals.md`](04-goals.md)
-- Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the FGCA chain
+- Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
-- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
+- Family selection across DGCA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`

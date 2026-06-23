@@ -162,7 +162,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `REGISTRY` | standalone (rows inline, canonical-by-containment, promotable) | `registry` | business | `02_business/registries/` | §7.19 (no dedicated spec) |
 | `APPLICATION` | standalone | `application` | application | `03_application/applications/` | §7.7 + [views/10-applications.md](views/10-applications.md) |
 | `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](views/10-applications.md) |
-| `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-fgca.md](views/02-fgca.md) |
+| `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-dgca.md](views/02-dgca.md) |
 | `ACTIVITY` | standalone | `activity` | implementation | `05_implementation/activities/` | §7.4 + [views/07-activities.md](views/07-activities.md) |
 | `TARGET_STATE` | standalone | `target-state` | implementation | `05_implementation/target-states/` | §7.17 (no dedicated spec) |
 | `SCENARIO` | standalone | `scenario` | implementation | `05_implementation/scenarios/` | §7.18 (no dedicated spec) |
@@ -263,7 +263,7 @@ ArchiMate **Driver** — a neutral, standing force the organisation acts on (an 
 | `description` | recommended | string | One-paragraph elaboration of the driver — what the standing force is, not a finding about it. Keep findings (numbers, trends, observations) out of the DRIVER; put them on an `ASSESSMENT` that `assesses` this driver. |
 | `references_constraint` | no | list | `CONSTRAINT-…` IDs the driver reflects. |
 
-Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.2.
+Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.2.
 
 ### 7.2 `GOAL` — `01_motivation/goals/`
 
@@ -275,7 +275,7 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.2.
 | `description` | recommended | string | One-paragraph elaboration. |
 | `link` | no | string | URL to supplementary documentation. |
 
-**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — it lives in a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3), not as an inline `parent` field. Inline `parent` is v0.x transitional. Inline shape: [views/04-goals.md](views/04-goals.md), [views/02-fgca.md](views/02-fgca.md) §5.3.
+**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — it lives in a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3), not as an inline `parent` field. Inline `parent` is v0.x transitional. Inline shape: [views/04-goals.md](views/04-goals.md), [views/02-dgca.md](views/02-dgca.md) §5.3.
 
 ### 7.3 `CHANGE` — `05_implementation/changes/`
 
@@ -287,7 +287,7 @@ A `CHANGE` is an ArchiMate **Gap**: a required delta to reach the target state, 
 | `parent` | no | string | `CHANGE-…` — the higher-scale change this one decomposes from (capability → process → step). |
 | `description` | recommended | string | One-paragraph elaboration of the transformation. |
 
-Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
+Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
 
 ### 7.4 `ACTIVITY` — `05_implementation/activities/`
 
@@ -310,7 +310,7 @@ Inline shape: [views/02-fgca.md](views/02-fgca.md) §5.4. (No subtype vocabulary
 | `link` | no | string | URL. |
 | `description` | recommended | string | Multi-line description. |
 
-Inline shape: [views/07-activities.md](views/07-activities.md) §5.2, [views/02-fgca.md](views/02-fgca.md) §5.5. (No subtype vocabulary on `type`; `activity_type` carries the classifier instead.)
+Inline shape: [views/07-activities.md](views/07-activities.md) §5.2, [views/02-dgca.md](views/02-dgca.md) §5.5. (No subtype vocabulary on `type`; `activity_type` carries the classifier instead.)
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 
@@ -664,5 +664,5 @@ Backfill for existing canon files and downstream tasks. Each is a **separate PR*
 - ID grammar, TYPE registry, uniqueness scope, cross-references: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
 - Shared header, zone model, admission record, primitive lifecycle, versioned-attribute sidecar: [`CONTRACT.md`](CONTRACT.md) §1–2, §5–7, §9.
 - Element notations (specialised instances of this envelope): [`elements/14-codex.md`](elements/14-codex.md), [`elements/15-requirement.md`](elements/15-requirement.md), [`elements/16-assertion.md`](elements/16-assertion.md), [`elements/17-relations.md`](elements/17-relations.md).
-- Capability element fields: [`views/05-capability-map.md`](views/05-capability-map.md) §13. Strategy-chain inline shapes: [`views/02-fgca.md`](views/02-fgca.md), [`views/03-fga.md`](views/03-fga.md), [`views/04-goals.md`](views/04-goals.md), [`views/07-activities.md`](views/07-activities.md).
+- Capability element fields: [`views/05-capability-map.md`](views/05-capability-map.md) §13. Strategy-chain inline shapes: [`views/02-dgca.md`](views/02-dgca.md), [`views/04-goals.md`](views/04-goals.md), [`views/07-activities.md`](views/07-activities.md).
 - Notation catalogue and the views/elements split: [`README.md`](README.md).

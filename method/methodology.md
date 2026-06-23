@@ -197,7 +197,7 @@ organizations/
 │   │   ├── relations/             # First-class, time-aware relations (1 relation = 1 file)
 │   │   ├── assertions/            # Compliance assertions (REQUIREMENT ↔ subject)
 │   │   └── views/                 # Composite diagrams and aggregations over elements
-│   │       ├── goals/  capabilities/  processmap/  bpmn/  fgca/  fga/
+│   │       ├── goals/  capabilities/  processmap/  bpmn/  dgca/
 │   │       └── blocks/  activities/  products/  applications/  scenarios/  …
 │   ├── field/                     # Zone: raw material — interviews, surveys, observations, drafts
 │   ├── codex/                     # Zone: external laws / regulations + internal policies / standards
@@ -288,8 +288,7 @@ Diagrams and aggregations live under `canon/views/`. Atomic ArchiMate elements l
 | Notation | Typical location | What it is |
 | --- | --- | --- |
 | BPMN process diagram | `views/bpmn/<PROCESS_CODE>_process.bpmn.transitrix.yaml` | Detailed flow describing one BusinessProcess element |
-| FGCA | `views/fgca/<DOMAIN>.fgca.transitrix.yaml` | Chain referencing Driver + Goal + Change + Activity elements |
-| FGA | `views/fga/<DOMAIN>.fga.transitrix.yaml` | Chain referencing Driver + Goal + Activity elements |
+| DGCA | `views/dgca/<DOMAIN>.dgca.transitrix.yaml` | Chain referencing Driver + Goal + Change + Activity elements; DGA mode via `view_config.layers.changes: off` |
 | Goals tree | `views/goals/<DOMAIN>.goals.transitrix.yaml` | Hierarchy referencing Goal elements |
 | Capabilities map | `views/capabilities/<DOMAIN>.capability-map.transitrix.yaml` | Hierarchy referencing Capability elements + maturity overlay |
 | Process landscape map | `views/processmap/<DOMAIN>.process-map.transitrix.yaml` | Catalogue referencing BusinessProcess elements |
@@ -324,9 +323,9 @@ Used in three views:
 - **Bottom-up (execution → strategy)** — confirm initiatives aren't disconnected from goals.
 - **Portfolio** — identify concentration, overlaps, and gaps in strategic coverage.
 
-FGA is the same chain without the Changes layer — used when the transformation step is implicit or trivial. Both notations render as visual chains in Transitrix Studio.
+The Driver → Goal → Activity (DGA) variant — where the transformation step is implicit or trivial — is expressed as a DGCA document with `view_config.layers.changes: off`. Both full and DGA mode render as visual chains in Transitrix Studio.
 
-See `notations/views/02-fgca.md` for the full FGCA notation reference (file format, fields, examples, DSM implementation status). See `notations/views/03-fga.md` for the FGA variant.
+See `notations/views/02-dgca.md` for the full DGCA notation reference (file format, fields, layer toggle, examples, DSM implementation status).
 
 ### 6.3 Capabilities and maturity
 

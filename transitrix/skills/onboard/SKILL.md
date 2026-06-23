@@ -104,7 +104,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
 │   │   └── 04_technology/          # NODE, ARTIFACT, …
 │   └── views/                      # one subfolder per notation
-│       ├── bpmn/   fgca/   fga/   goals/   capabilities/   processmap/
+│       ├── bpmn/   dgca/   goals/   capabilities/   processmap/
 │       ├── activities/   blocks/   scenarios/
 │       └── applications/   products/   process-blueprint/
 ├── field/                          # raw inputs — not authoritative; provenance is the point
@@ -225,7 +225,7 @@ If the user makes a change that introduces a canon violation:
 - Offer one or two ways to fix it.
 - Don't auto-fix unless the user asks — surface the violation and let the user decide.
 
-When fetching the full spec for a notation, use `WebFetch` against `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<name>.md` (e.g. `02-fgca.md`, `04-goals.md`). Don't embed the full spec text in your context unless the user is going deep into a specific notation — the cheat sheet below is usually enough.
+When fetching the full spec for a notation, use `WebFetch` against `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<name>.md` (e.g. `02-dgca.md`, `04-goals.md`). Don't embed the full spec text in your context unless the user is going deep into a specific notation — the cheat sheet below is usually enough.
 
 Once a few files exist, the whole-repo linter scaffolded in Step 2 catches cross-file problems the single-file check can't see (a relation whose endpoint doesn't exist, a missing owner): run `python3 .validators/lint.py` from the repo root, or let the CI workflow run it on the pull request.
 
@@ -244,8 +244,8 @@ Also recommend **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`)
 If the user is on a system without VS Code, they can use the CLI for compile / validate:
 
 ```
-npx @transitrix/cli compile path/to/your.fgca.transitrix.yaml output.bpmn   # only meaningful for BPMN sources
-npx @transitrix/cli validate path/to/your.fgca.transitrix.yaml
+npx @transitrix/cli compile path/to/your.dgca.transitrix.yaml output.bpmn   # only meaningful for BPMN sources
+npx @transitrix/cli validate path/to/your.dgca.transitrix.yaml
 ```
 
 ---
@@ -273,8 +273,8 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 
 | Situation | Notation | File extension |
 |---|---|---|
-| Trace strategic drivers → goals → transformation steps → deliverables | **FGCA** | `*.fgca.transitrix.yaml` |
-| Same chain, but the Change layer adds no clarity (activities directly serve goals) | **FGA** | `*.fga.transitrix.yaml` |
+| Trace strategic drivers → goals → transformation steps → deliverables | **DGCA** | `*.dgca.transitrix.yaml` |
+| Same chain, but the Change layer adds no clarity (activities directly serve goals) | **DGCA** with `view_config.layers.changes: off` | `*.dgca.transitrix.yaml` |
 | Decompose goals hierarchically (strategy → tactical → operational) | **Goals tree** | `*.goals.transitrix.yaml` |
 | Plan delivery — activities, dependencies, durations, Gantt | **Activities** | `*.activities.transitrix.yaml` |
 | Map capabilities with CMMI maturity, V/H orientation | **Capability map** | `*.capability-map.transitrix.yaml` |
@@ -306,8 +306,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 ### One-paragraph summary per notation
 
 - **BPMN** — `notation: bpmn`. One root `process:` with `pools[].lanes[].elements[]` and `flows[]`. Elements typed (`startEvent`, `task`, `exclusiveGateway`, …); flows directed. Compiles to BPMN 2.0 XML.
-- **FGCA** — `notation: fgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `activities[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTIVITY-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `activity.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`.
-- **FGA** — `notation: fga`. Same shape as FGCA minus `changes[]`. Activities link directly to goals via `activity.goals: [GOAL-…]`.
+- **DGCA** — `notation: dgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `activities[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTIVITY-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `activity.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`. DGA mode (no Changes): add `view_config.layers.changes: off` — `changes[]` becomes optional, activities link via `activity.goals: [GOAL-…]`.
 - **Goals tree** — `notation: goals`. Flat root arrays: `goal_types[]` (with `{name, level}` entries) + `goals[]`. Each goal has `id`, `name`, `type` (matching a `goal_types[].name`), `level` (matching that type's level), optional `parent: GOAL-…`. Omit `parent` for a root.
 - **Capability map** — `notation: capability-map`. Root key `capability_map:`. Capabilities use a V/H sub-grammar (`CAPABILITY-V1.2`, `CAPABILITY-H1`); each capability carries `type: domain | supporting`, `current_maturity`, optional `target_maturity`, `target_date`, etc.
 - **Process landscape map** — `notation: process-map`. Top-level catalogue of `PROCESS-…` IDs grouped into `operating`, `supporting`, `management`.
@@ -356,8 +355,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Notation | Template file |
 |---|---|
 | BPMN | `templates/bpmn.bpmn.transitrix.yaml` |
-| FGCA | `templates/fgca.fgca.transitrix.yaml` |
-| FGA | `templates/fga.fga.transitrix.yaml` |
+| DGCA | `templates/dgca.dgca.transitrix.yaml` |
 | Goals tree | `templates/goals.goals.transitrix.yaml` |
 | Capability map | `templates/capability-map.capability-map.transitrix.yaml` |
 | Process landscape map | `templates/process-map.process-map.transitrix.yaml` |

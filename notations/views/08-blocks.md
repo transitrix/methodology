@@ -76,7 +76,7 @@ The notation is **structured YAML**, not ASCII art. The previous Svgbob-rendered
 |---|---|
 | Show what is inside what (containment) | Yes |
 | Show sequence or flow between elements | No — use BPMN |
-| Show strategy-to-execution tracing | No — use FGCA / FGA |
+| Show strategy-to-execution tracing | No — use DGCA |
 | Show layered architecture overview | Yes |
 | Show detailed process steps | No — use BPMN |
 | Show a value-chain blueprint with operational context per stage | No — use Process Blueprint |

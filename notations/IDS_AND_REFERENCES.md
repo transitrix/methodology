@@ -99,8 +99,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 
 | TYPE | Notation file |
 |---|---|
-| `FGCA` | `*.fgca.transitrix.yaml` |
-| `FGA` | `*.fga.transitrix.yaml` |
+| `DGCA` | `*.dgca.transitrix.yaml` |
 | `GOALS_TREE` | `*.goals.transitrix.yaml` |
 | `CAPABILITY_MAP` | `*.capability-map.transitrix.yaml` |
 | `PROCESS_MAP` | `*.process-map.transitrix.yaml` |
@@ -208,8 +207,8 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 
 | Old form | Canonical form | Where it appears | Notes |
 |---|---|---|---|
-| `ACT-…` | `ACTIVITY-…` | examples under `examples/fga/`, `examples/fgca/`, `examples/activities/`; spec example in `03-fga.md` §4; `07-activities.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
-| `CHG-…` | `CHANGE-…` | spec example in `07-activities.md` §4; FGCA when its schema lands | follow-up |
+| `ACT-…` | `ACTIVITY-…` | examples under `examples/dgca/`, `examples/activities/`; `07-activities.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
+| `CHG-…` | `CHANGE-…` | spec example in `07-activities.md` §4; DGCA when its schema lands | follow-up |
 | `FAC-…` | `DRIVER-…` | scenarios examples (`FAC-MARKET-001`, etc.); some FGA references | follow-up — note: canonical TYPE name is now `DRIVER`; existing `FACTOR-…` IDs are grandfathered (valid, no forced migration) |
 | `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | residual: `11-scenarios.md` spec example + `examples/scenarios/optimistic-2027.scenarios.transitrix.yaml` | capability-map / products / applications / process-map portion **executed 2026-05-28**; scenarios remains as a follow-up |
 | `SCN-…` / `SCEN-…` | `SCENARIO-…` | `11-scenarios.md`; scenarios examples; `07-activities.md` (`scenario: SCEN-2026-OPT`) | follow-up — variant `SCEN` vs `SCN` also needs unifying |

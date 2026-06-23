@@ -1,12 +1,13 @@
-notation: fgca
+notation: dgca
 spec_version: "0.1"
 
-# FGCA chain. Spec: notations/views/02-fgca.md
+# DGCA chain. Spec: notations/views/02-dgca.md
 # Replace FILL-ME placeholders. IDs use the canonical grammar:
 # DRIVER-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
+# To use DGA mode (no Changes column) add: view_config: { layers: { changes: off } }
 
-id: FGCA-FILL-ME-1
-name: "FILL-ME FGCA chain"
+id: DGCA-FILL-ME-1
+name: "FILL-ME DGCA chain"
 description: "FILL-ME — one-paragraph context"
 period: "FILL-ME"            # e.g. "2026" or "2026-Q3"
 version: "0.1"

@@ -77,8 +77,7 @@ One starter YAML per view notation, named `<notation>.<short-name>.transitrix.ya
 | Notation | Template |
 |---|---|
 | BPMN | [`bpmn.bpmn.transitrix.yaml`](templates/bpmn.bpmn.transitrix.yaml) |
-| FGCA | [`fgca.fgca.transitrix.yaml`](templates/fgca.fgca.transitrix.yaml) |
-| FGA | [`fga.fga.transitrix.yaml`](templates/fga.fga.transitrix.yaml) |
+| DGCA | [`dgca.dgca.transitrix.yaml`](templates/dgca.dgca.transitrix.yaml) |
 | Goals tree | [`goals.goals.transitrix.yaml`](templates/goals.goals.transitrix.yaml) |
 | Capability map | [`capability-map.capability-map.transitrix.yaml`](templates/capability-map.capability-map.transitrix.yaml) |
 | Process landscape map | [`process-map.process-map.transitrix.yaml`](templates/process-map.process-map.transitrix.yaml) |

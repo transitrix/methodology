@@ -1,13 +1,17 @@
-notation: fga
+notation: dgca
 spec_version: "0.1"
 
-id: FGA-STRATEGY-2026
-name: "Strategy 2026"
-description: "Driver–Goal–Activity view for the 2026 strategic plan. Changes layer omitted — activities map directly to goals."
+id: DGCA-STRATEGY-2026-DGA
+name: "Strategy 2026 — DGA view"
+description: "Driver–Goal–Activity view for the 2026 strategic plan. Changes layer disabled — activities map directly to goals."
 period: "2026"
 version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
+
+view_config:
+  layers:
+    changes: off          # DGA mode — Driver → Goal → Activity (no Changes column)
 
 factors:
   - id: DRIVER-MARKET-1
