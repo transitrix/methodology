@@ -5,6 +5,7 @@ name: "Retail product — GDPR obligations"
 
 view:
   id: COMPLIANCE_IMPACT-RETAIL-GDPR-1
+  report_type: product
   description: |
     Compliance overlay for the retail product family against the GDPR slice of canon.
     Rows are obligations (one REQUIREMENT per row); columns are the stages and tasks
