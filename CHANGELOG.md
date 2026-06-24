@@ -8,7 +8,7 @@ The methodology is **pre-1.0**. MINOR releases (`0.x` → `0.(x+1)`) may carry b
 
 ---
 
-## [0.7.0] — Unreleased
+## [0.7.0] — 2026-06-24
 
 ArchiMate 3.2 terminology alignment: `FACTOR` → `DRIVER`. Renames the element TYPE, canonical ID prefix, and `notation:` field value across all specs, skills, and templates. **YAML structural keys (`factors:`, `goal.factors`) are intentionally unchanged** — existing adopter view files remain valid without edits. Legacy `FACTOR-*` IDs are accepted by validators until the 1.0 cut. Migration recipe: [`migrations/0.6-to-0.7/`](migrations/0.6-to-0.7/).
 
@@ -25,7 +25,7 @@ ArchiMate 3.2 terminology alignment: `FACTOR` → `DRIVER`. Renames the element 
 
 ---
 
-## [0.6.0] — Unreleased
+## [0.6.0] — 2026-06-24
 
 The Actors / Stakeholders identity model (epics #98 / #99). Unifies active-structure identity under one `ACTOR` TYPE and adds the `STAKEHOLDER` interest primitive; retires `UNIT` / `EMPLOYEE`. One pre-1.0 breaking change, called out below.
 
