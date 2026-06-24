@@ -158,8 +158,8 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COMPLIANCE_IMPACT-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COMPLIANCE_IMPACT` document-level TYPE). |
 | `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
 | `view.description` | no | string | empty | Short description of the purpose of this view (which obligations and subjects, why). |
-| `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
-| `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to display, in addition to (or instead of) the processes derived from `products`. |
+| `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. Column headers for product-derived columns MUST carry the PRODUCT identifier or name, not a process label. |
+| `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to display, in addition to (or instead of) the processes derived from `products`. When this field is the **sole** subject entry point (no `subjects.products`), every column header MUST carry a PROCESS identifier or name — the renderer MUST NOT label process columns as products. A view with only `subjects.processes` and `product-*` columns triggers `COMPIMP-009`. |
 | `view.obligations.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of `REQUIREMENT-…` IDs to render, in row-order. |
 | `view.obligations.filter` | no ² | object | **no filter — every `REQUIREMENT` bearing on the subjects** | Declarative filter — `derived_from_codex: [LAW-… \| REGULATION-… \| POLICY-… \| INTERNAL_STANDARD-…]`, `jurisdiction: …`, `regime: …`. The renderer resolves the filter against the `REQUIREMENT` catalogue at render time, following each requirement's `derived_from` to its codex source. |
 | `view.grouping.rows` | no | string | `obligation` | Row dimension: `obligation` (one row per `REQUIREMENT`), `stage` (one row per process stage), `task` (one row per task / flow step). |
@@ -227,6 +227,14 @@ For each (row, column) cell in the materialised matrix:
      - `process-stage-task` — the cell key is `(PROCESS, STAGE, TASK)`; walks `subjects.processes` directly without deriving from products; STAGE and TASK resolved identically to `product-stage-task`.
      - `process-stage` — the cell key is `(PROCESS, STAGE)`.
      - `process` — the cell key is `(PROCESS,)`.
+
+   **Subject type label invariant.** A conformant renderer MUST preserve the subject type (PRODUCT vs PROCESS) in every column header. Specifically:
+   - A column derived from `subjects.products` MUST be headed by the PRODUCT name or ID.
+   - A column derived from `subjects.processes` (whether standalone or in addition to products) MUST be headed by the PROCESS name or ID with an explicit PROCESS designation — never by a PRODUCT name or ID.
+   - When both `subjects.products` and `subjects.processes` are present (combined view), each column header MUST carry a distinct PRODUCT or PROCESS badge so the reader can distinguish the two subject types at a glance.
+
+   This invariant exists because a config with only `subjects.processes` can produce a visually identical column layout to a product-centric view if labels are not type-explicit, causing users to misread the scope of the compliance report (violation logged as `COMPIMP-010`).
+
 3. **Find the matching `ASSERTION`(s)** — every admitted `ASSERTION` whose `(about, subject)` matches the row's obligation and the column's subject (with the column's subject possibly being a `PRODUCT-…` whose bearing process is the assertion's `subject`), and — when the column is finer-grain than the assertion's `subject` — whose `realised_via[]` contains a step or stage that intersects the cell's `(STAGE, TASK)` tuple.
 4. **Cell value** — the resulting status, picked deterministically when multiple assertions bind one cell:
    - If any matching assertion has `status: non_compliant`, the cell renders `non_compliant`.
@@ -287,8 +295,21 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COMPIMP-007` | warning | Both `view.obligations.include` and `view.obligations.filter` are present (the include wins; the filter is silently ignored). |
 | `COMPIMP-008` | warning | The view selects zero obligations after applying `include` / `filter` — the rendered matrix will have no rows. Usually indicates a typo in a codex reference. |
 | `COMPIMP-009` | warning | `view.grouping.columns` is a `product-*` value (`product-stage-task`, `product-stage`, `product`) but `view.subjects.products` is absent and `view.subjects.processes` is the only entry point. The column labels reference "product" but no products are in scope; consider using `process-stage-task` / `process-stage` / `process` for a process-centric view. |
+| `COMPIMP-010` | error | A renderer has applied a PRODUCT-typed column header to a column derived solely from `view.subjects.processes`, or applied a PROCESS-typed header to a column derived from `view.subjects.products`. Subject type (PRODUCT vs PROCESS) MUST be preserved end-to-end from the config fields through to every rendered column header, as required by the subject type label invariant (§5.2 step 2). |
 
 The shared header rules `HDR-001..004` ([CONTRACT.md](../CONTRACT.md) §2) apply in addition.
+
+### 7.1 Report variants
+
+Three canonical patterns follow from the §4 fields. Each maps directly to `view.subjects.*` and `view.grouping.columns`:
+
+| Variant | `subjects.*` | `grouping.columns` | Column header type |
+|---|---|---|---|
+| **Product compliance** | `subjects.products: [PRODUCT-…]` | `product-stage-task` (or `product-stage` / `product`) | PRODUCT name / ID |
+| **Process compliance** | `subjects.processes: [PROCESS-…]` (no `products`) | `process-stage-task` (or `process-stage` / `process`) | PROCESS name / ID |
+| **Combined** | both `subjects.products` and `subjects.processes` | `product-stage-task` + `process-stage-task` (rendered as two column groups) | PRODUCT badge for product columns; PROCESS badge for process columns |
+
+Adopters choosing "combined" render two distinct column groups in one report. Renderers MUST use explicit subject-type badges (e.g. `[PRODUCT]` / `[PROCESS]` prefixes or distinct visual styling) so the reader can always identify which subject type a column represents. `COMPIMP-010` fires when a renderer omits these badges or misapplies them.
 
 ---
 
