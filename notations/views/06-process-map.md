@@ -2,7 +2,7 @@
 notation: "Process Landscape Map"
 version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-19"
+last_updated: "2026-06-24"
 status: "draft"
 file_extension: "*.process-map.transitrix.yaml"
 ---
@@ -110,14 +110,14 @@ process_map:
           name: "Order Fulfilment"
           owner_role: "ROLE-OPS-001"
           capability: "CAPABILITY-V1"
-          maturity: 2
+          # maturity — time-varying, resolved from PROC-ORD-FULFILL-001.history.yaml (CONTRACT.md §9)
           status: "Active"
 
         - process_id: "PROC-CUST-ONBOARD-001"
           name: "Customer Onboarding"
           owner_role: "ROLE-SALES-001"
           capability: "CAPABILITY-V2"
-          maturity: 1
+          # maturity — time-varying, resolved from PROC-CUST-ONBOARD-001.history.yaml (CONTRACT.md §9)
           status: "Draft"
 
     - id: "GRP-SUPPORTING"
@@ -154,7 +154,7 @@ process_map:
 | `processes[].name` | Yes | Process name (should match the element) |
 | `processes[].owner_role` | No | Reference to BusinessRole element ID |
 | `processes[].capability` | No | Capability ID this process realises (V1, H1, etc.) |
-| `processes[].maturity` | No | Current CMM level (1–5) |
+| `processes[].maturity` | No | Current CMM level (1–5). **Time-varying** — lives in the sidecar `<process_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
 | `processes[].status` | Yes | `Draft` / `Active` / `Deprecated` |
 
 > **No `bpmn_file` pointer.** Earlier revisions carried an optional `processes[].bpmn_file` path to "the detailed BPMN diagram." It is **removed**: a BPMN file is a *derived projection* of the referenced `PROCESS` element's `flow` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5, [views/01-bpmn.md](01-bpmn.md)), not a source artefact. Storing a path to generated output in the inventory would violate the view-purity corollary ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). The map references the process by `process_id`; the diagram is regenerated from that element's `flow` and located by convention, so no separate pointer is held here.
@@ -180,3 +180,29 @@ Process Landscape Map    →  lists all processes
 - Capabilities map: `notations/05-capability-map.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology section 6.4: `method/methodology.md`
+
+---
+
+## 8. Time-varying attributes — sidecar history
+
+A process's `maturity` evolves within the process's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, this field is stored in a sidecar file co-located with the process's element file, **not inline** on the process-map view or on the element file:
+
+```
+canon/elements/02_business/processes/PROCESS-ORD-FULFILL-1.yaml          # stable fields
+canon/elements/02_business/processes/PROCESS-ORD-FULFILL-1.history.yaml  # time-varying fields
+```
+
+Sidecar shape:
+
+```yaml
+target: PROCESS-ORD-FULFILL-1
+attribute_versions:
+  maturity:
+    - { valid_from: "2024-01-01", value: 1 }
+    - { valid_from: "2025-06-01", value: 2 }
+    - { valid_from: "2026-09-15", value: 3 }
+```
+
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../CONTRACT.md) §9.2.
+
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = process.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../CONTRACT.md) §9.3).
