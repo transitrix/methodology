@@ -51,7 +51,7 @@ activity_card:
 
 ## 1. What an Activity Card is
 
-A Activity Card is a **view** over an existing project Activity. It does not duplicate the activity's data; it references the activity by ID and adds card-specific narrative content — project-level milestones — that does not naturally belong on the activity itself.
+An Activity Card is a **view** over an existing project Activity. It does not duplicate the activity's data; it references the activity by ID and adds card-specific narrative content — project-level milestones — that does not naturally belong on the activity itself.
 
 A "project" is an Activity at the project scale of the recursive ACTIVITY hierarchy (initiative → programme → project → task, all one TYPE per [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.1/§7.4). No new top-level entity is introduced for projects — the activity hierarchy already expresses what a project is. The Activity Card is the **narrative surface** on top of the project activity: dates, motivation chain, child activities, and narrative milestones that live on the card itself.
 

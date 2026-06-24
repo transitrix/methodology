@@ -314,9 +314,9 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `DGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
 | `DGCA-010` | error | `activities[].changes[]` IDs must reference defined changes (when changes layer is on). |
 | `DGCA-011` | error | `activities[].goals[]` IDs must reference defined goals. |
-| `DGCA-012` | warn | a driver with no goal referencing it is orphan. |
-| `DGCA-013` | warn | a goal with no change (and no direct activity) referencing it is orphan. |
-| `DGCA-014` | warn | a change with no activity referencing it is orphan. |
+| `DGCA-012` | warning | a driver with no goal referencing it is orphan. |
+| `DGCA-013` | warning | a goal with no change (and no direct activity) referencing it is orphan. |
+| `DGCA-014` | warning | a change with no activity referencing it is orphan. |
 | `DGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
 
 ---

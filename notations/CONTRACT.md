@@ -725,7 +725,7 @@ methodology_version: "0.5.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
-  id: FGCA-RETAIL-1
+  id: DGCA-RETAIL-1
 
 view_config:                  # presentation layer — defined here (§14)
   goals:
@@ -800,7 +800,7 @@ views/
 **Required fields — shared envelope.** Every snapshot file MUST carry the following fields, regardless of notation:
 
 ```yaml
-view_id: FGCA-RETAIL-1               # canonical ID of the view being captured
+view_id: DGCA-RETAIL-1               # canonical ID of the view being captured
 generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
 methodology_version: "0.7.0"          # methodology version in use at generation time
 # …notation-specific element list follows (format defined per notation spec)…
