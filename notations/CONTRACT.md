@@ -721,7 +721,7 @@ Structural layout of a view document:
 ```yaml
 notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
-methodology_version: "0.5.0"  # manifest-pinned methodology version
+methodology_version: "0.7.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
