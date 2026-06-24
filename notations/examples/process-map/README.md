@@ -41,7 +41,7 @@ notation: process-map
 |---|---|
 | `owner_role` | Responsible role |
 | `capability` | Capability ID this process realises (canonical form, e.g. `CAPABILITY-V1`, `CAPABILITY-H1`) |
-| `maturity` | Integer 1–5 |
+| `maturity` | **Time-varying** — resolved from `<process_id>.history.yaml` sidecar ([CONTRACT.md](../../CONTRACT.md) §9), not inline on the view. |
 | `description` | Short description |
 
 ## Preview

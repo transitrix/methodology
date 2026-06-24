@@ -22,20 +22,20 @@ process_map:
           name: Order Fulfilment
           owner_role: ROLE-OPS-001
           capability: CAPABILITY-V1
-          maturity: 3
+          # maturity — time-varying, resolved from PROC-ORD-FULFILL-001.history.yaml (CONTRACT.md §9)
           status: Active
           description: End-to-end fulfilment from order placement to delivery.
         - process_id: PROC-CUST-ONBOARD-001
           name: Customer Onboarding
           owner_role: ROLE-SALES-001
           capability: CAPABILITY-V2
-          maturity: 2
+          # maturity — time-varying, resolved from PROC-CUST-ONBOARD-001.history.yaml (CONTRACT.md §9)
           status: Active
         - process_id: PROC-DELIV-001
           name: Last-mile Delivery
           owner_role: ROLE-LOG-001
           capability: CAPABILITY-V1
-          maturity: 1
+          # maturity — time-varying, resolved from PROC-DELIV-001.history.yaml (CONTRACT.md §9)
           status: Draft
 
     - id: GRP-SUPPORTING
@@ -47,17 +47,17 @@ process_map:
           name: Recruitment
           owner_role: ROLE-HR-001
           status: Active
-          maturity: 3
+          # maturity — time-varying, resolved from PROC-HR-RECRUIT-001.history.yaml (CONTRACT.md §9)
         - process_id: PROC-FIN-CLOSE-001
           name: Monthly Financial Close
           owner_role: ROLE-FIN-001
           status: Active
-          maturity: 4
+          # maturity — time-varying, resolved from PROC-FIN-CLOSE-001.history.yaml (CONTRACT.md §9)
         - process_id: PROC-IT-INCIDENT-001
           name: IT Incident Response
           owner_role: ROLE-IT-001
           status: Active
-          maturity: 2
+          # maturity — time-varying, resolved from PROC-IT-INCIDENT-001.history.yaml (CONTRACT.md §9)
 
     - id: GRP-MANAGEMENT
       name: Management Processes
@@ -68,12 +68,12 @@ process_map:
           name: Annual Strategy Planning
           owner_role: ROLE-CEO-001
           status: Active
-          maturity: 3
+          # maturity — time-varying, resolved from PROC-STRAT-PLAN-001.history.yaml (CONTRACT.md §9)
         - process_id: PROC-RISK-MGT-001
           name: Risk Management Review
           owner_role: ROLE-RISK-001
           status: Active
-          maturity: 2
+          # maturity — time-varying, resolved from PROC-RISK-MGT-001.history.yaml (CONTRACT.md §9)
         - process_id: PROC-COMPLIANCE-001
           name: Compliance Audit
           owner_role: ROLE-LEGAL-001

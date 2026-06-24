@@ -320,7 +320,7 @@ The `PROCESS` element is the **complete, self-sufficient definition** of a busin
 |---|---|---|---|
 | `owner_role` | no | string | `ROLE-…` accountable for the process as a whole. |
 | `capability` | no | string | `CAPABILITY-…` this process realises. |
-| `maturity` | no | integer | CMM level 1–5. |
+| `maturity` | no | integer | CMM level 1–5. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9), not inline. |
 | `participants` | no | list | The process's lanes — each a reference to a canonical active-structure element, `ROLE-…` or `ACTOR-…` (person / business_unit / system). A participant's lane caption is **derived** from the referenced element's `name`; no caption text is stored here. List order is the rendered top-to-bottom lane order. |
 | `flow` | no | object | The canonical process graph — steps, gateways, and sequence flows (see below). Sufficient to regenerate a BPMN diagram; the view adds only layout, which is computed deterministically. |
 | `description` | recommended | string | One-paragraph elaboration. |
