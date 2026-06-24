@@ -90,29 +90,39 @@ transitrix-ingest repo-check [org-root]
 
 A clean run shows `tooling.ok: true` with no version-mismatch flag. If `DRIVER-TYPE-LEGACY-001` warnings remain, they point to view files that still reference `FACTOR-*` IDs (Step 2 above).
 
-## Codemod (planned)
+## Codemod
 
-A `codemod.mjs` automating Steps 1–2 is planned. Until available, the steps above are mechanical enough to do by hand or with a one-liner:
+`codemod.mjs` automates Steps 1–2 (element file rewrite + cross-reference substitution).
+It is idempotent — re-running on a fully migrated repo is a no-op.
 
 ```bash
-# Rename element files (Linux / macOS / Git Bash)
-for f in canon/elements/01_motivation/factors/FACTOR-*.yaml; do
-  mv "$f" "${f/FACTOR-/DRIVER-}"
-done
+# Preview — shows what would change without writing any files
+node migrations/0.6-to-0.7/codemod.mjs <adopter-root> --dry-run
 
-# Update notation and id fields inside element files
-sed -i 's/^notation: factor$/notation: driver/' canon/elements/01_motivation/factors/DRIVER-*.yaml
-sed -i 's/^id: FACTOR-/id: DRIVER-/' canon/elements/01_motivation/factors/DRIVER-*.yaml
+# Apply
+node migrations/0.6-to-0.7/codemod.mjs <adopter-root>
 
-# Update ID references in view files (replaces FACTOR- values, not the factors: key)
-grep -rl 'FACTOR-' canon/views/ | xargs sed -i 's/FACTOR-/DRIVER-/g'
+# Post-migration check
+node migrations/0.6-to-0.7/validate.mjs <adopter-root>
 ```
 
-Review the diff carefully before committing — the `factors:` key must not be renamed.
+`validate.mjs` exits 0 if no `notation: factor` / `id: FACTOR-…` element files remain.
+Files that still reference `FACTOR-…` IDs in cross-reference value positions are
+reported as informational notices (valid until 1.0 cut; produces a
+`DRIVER-TYPE-LEGACY-001` warning from the runtime validator, not a failure).
+
+The shell one-liners in the manual steps above remain valid as an alternative for
+adopters who prefer them. Review the diff carefully in either case — the `factors:`
+key must not be renamed.
 
 ## Folder shape
 
 ```
 migrations/0.6-to-0.7/
-└── README.md         # this file; codemod.mjs planned
+├── README.md
+├── codemod.mjs          # idempotent transform; runs Steps 1–2
+├── validate.mjs         # post-migration check; exits 0 on clean repo
+└── fixtures/
+    ├── before/          # minimal adopter repo before migration (FACTOR-* form)
+    └── after/           # the same after running codemod.mjs (DRIVER-* form)
 ```

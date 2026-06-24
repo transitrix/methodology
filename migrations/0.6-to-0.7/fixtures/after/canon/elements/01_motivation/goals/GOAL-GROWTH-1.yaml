@@ -1,0 +1,19 @@
+notation: goal
+id: GOAL-GROWTH-1
+name: "Grow market share"
+type: "Strategic Goal"
+level: 1
+factors:
+  - DRIVER-COMP-1
+description: >
+  Increase market share by 15% in response to competitive pressure.
+
+zone: canon
+admitted_at: "2026-01-01"
+admitted_by: "admin"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-01-01"
+valid_to: null
