@@ -1,0 +1,17 @@
+notation: driver
+id: DRIVER-COMP-1
+name: "Competitive market pressure"
+type: external
+category: economic
+description: >
+  Standing external force — intensifying competition in the core segment.
+
+zone: canon
+admitted_at: "2026-01-01"
+admitted_by: "admin"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-01-01"
+valid_to: null
