@@ -11,10 +11,14 @@ name: "FILL-ME compliance impact"      # required per CONTRACT.md §1.1
 
 view:
   id: COMPLIANCE_IMPACT-FILL-ME-1
+  report_type: product          # required: product | process | combined
   name: "FILL-ME — e.g. Retail product — GDPR obligations"
   description: "FILL-ME — which obligations against which subjects, and why"
 
-  # What the view displays. At least one of products / processes MUST be present.
+  # What the view displays. Must match report_type:
+  #   product  → subjects.products only; subjects.processes MUST be absent
+  #   process  → subjects.processes only; subjects.products MUST be absent
+  #   combined → both may be present with explicit PRODUCT/PROCESS badges in output
   subjects:
     products: [PRODUCT-FILL-ME-1]
     # processes: [PROCESS-FILL-ME-1]   # optional; instead of or in addition to products

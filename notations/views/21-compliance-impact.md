@@ -109,12 +109,15 @@ view:
   id: COMPLIANCE_IMPACT-RETAIL-GDPR-1
   name: "Retail product — GDPR obligations"
   description: "Compliance overlay for the retail product family against the GDPR slice of canon."
+  report_type: product          # product | process | combined — required; enforces subject/column consistency
 
-  # What the view displays. At least one of `subjects.products` / `subjects.processes`
-  # MUST be present (the renderer derives the stage / task grain from the named subjects).
+  # What the view displays. Must match report_type:
+  #   product  → subjects.products only (subjects.processes MUST be absent)
+  #   process  → subjects.processes only (subjects.products MUST be absent)
+  #   combined → both may be present; renderers MUST badge each column with PRODUCT or PROCESS
   subjects:
     products: [PRODUCT-RETAIL-1]
-    # processes: [PROCESS-USER-DATA-PURGE-1]   # optional; in addition to or instead of products
+    # processes: [PROCESS-USER-DATA-PURGE-1]   # use with report_type: process or combined
 
   # Which obligations are in scope. Either an explicit include list, or a filter that
   # selects REQUIREMENTs by codex source / jurisdiction / regime. If both are present,
@@ -158,6 +161,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COMPLIANCE_IMPACT-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COMPLIANCE_IMPACT` document-level TYPE). |
 | `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
 | `view.description` | no | string | empty | Short description of the purpose of this view (which obligations and subjects, why). |
+| `view.report_type` | yes | string | — (required) | Declares the subject scope of the report. `product` — the matrix covers products only; `subjects.processes` MUST be absent; `grouping.columns` MUST be a `product-*` value. `process` — the matrix covers processes directly; `subjects.products` MUST be absent; `grouping.columns` MUST be a `process-*` value. `combined` — both subject types allowed; renderers MUST attach explicit PRODUCT/PROCESS badges per §5.2 and §7.1. Makes scope visible in the config file, preventing accidental cross-type bleed at the source rather than at render time. |
 | `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. Column headers for product-derived columns MUST carry the PRODUCT identifier or name, not a process label. |
 | `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to display, in addition to (or instead of) the processes derived from `products`. When this field is the **sole** subject entry point (no `subjects.products`), every column header MUST carry a PROCESS identifier or name — the renderer MUST NOT label process columns as products. A view with only `subjects.processes` and `product-*` columns triggers `COMPIMP-009`. |
 | `view.obligations.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of `REQUIREMENT-…` IDs to render, in row-order. |
@@ -171,7 +175,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `regime`, `jurisdiction`. |
 | `view.order_columns_by` | no | string | `process-order` | Column ordering key: `process-order` (each process's stages and tasks in flow order, then the next process), `id`, `name`. |
 
-¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer scopes the view to **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the view to a product family or specific processes. To render system/data/infrastructure obligations (data-retention, data-residency) where the compliance unit is a PROCESS directly — rather than a product whose processes are derived from `products` — name only `subjects.processes` and set `view.grouping.columns` to a `process-*` value. (This matches the shipped renderer, which auto-fills the product set from canon when `subjects.products` is empty.)
+¹ **`subjects`** — behaviour depends on `view.report_type`. `product`: `subjects.products` is optional (omit → all PRODUCTs in canon); `subjects.processes` MUST be absent. `process`: `subjects.processes` is required; `subjects.products` MUST be absent. `combined`: both keys are present (omitting `subjects.products` falls back to all PRODUCTs). The zero-config default (omitting all of `subjects`) is only valid for `report_type: product` and renders the full product matrix. (This matches the shipped renderer, which auto-fills the product set from canon when `subjects.products` is empty.)
 
 ² **`obligations`** — both keys are optional and only ever *narrow* the row set. Omitting them renders every `REQUIREMENT` bearing on the named subjects (the full matrix). If both `include` and `filter` are present, `include` wins and `filter` is ignored.
 
@@ -190,6 +194,7 @@ methodology_version: "0.7.0"
 view:
   id: COMPLIANCE_IMPACT-ALL-1
   name: "Full compliance matrix"
+  report_type: product                  # required; product | process | combined
 ```
 
 — renders **deterministically**: the full obligation × subject matrix over every `PRODUCT` in canon and every `REQUIREMENT` that bears on them, grouped `obligation` × `product-stage-task`, all five statuses shown, proposed assertions hidden, rows ordered by `id`, columns in `process-order`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user as "full matrix, no filters". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
@@ -296,20 +301,23 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COMPIMP-008` | warning | The view selects zero obligations after applying `include` / `filter` — the rendered matrix will have no rows. Usually indicates a typo in a codex reference. |
 | `COMPIMP-009` | warning | `view.grouping.columns` is a `product-*` value (`product-stage-task`, `product-stage`, `product`) but `view.subjects.products` is absent and `view.subjects.processes` is the only entry point. The column labels reference "product" but no products are in scope; consider using `process-stage-task` / `process-stage` / `process` for a process-centric view. |
 | `COMPIMP-010` | error | A renderer has applied a PRODUCT-typed column header to a column derived solely from `view.subjects.processes`, or applied a PROCESS-typed header to a column derived from `view.subjects.products`. Subject type (PRODUCT vs PROCESS) MUST be preserved end-to-end from the config fields through to every rendered column header, as required by the subject type label invariant (§5.2 step 2). |
+| `COMPIMP-011` | error | `view.report_type` is absent. All compliance-impact view files MUST declare their scope type explicitly. |
+| `COMPIMP-012` | error | `report_type: product` but `view.subjects.processes` is present; or `report_type: process` but `view.subjects.products` is present. Remove the cross-type subject entry, or change `report_type` to `combined`. |
+| `COMPIMP-013` | error | `report_type: product` but `view.grouping.columns` uses a `process-*` value; or `report_type: process` but `view.grouping.columns` uses a `product-*` value. Column grouping MUST match the declared report type. |
 
 The shared header rules `HDR-001..004` ([CONTRACT.md](../CONTRACT.md) §2) apply in addition.
 
 ### 7.1 Report variants
 
-Three canonical patterns follow from the §4 fields. Each maps directly to `view.subjects.*` and `view.grouping.columns`:
+Three canonical patterns follow from the `view.report_type` field (required, §4). Each also determines the allowed `view.subjects.*` and `view.grouping.columns` values:
 
-| Variant | `subjects.*` | `grouping.columns` | Column header type |
+| `report_type` | `subjects.*` | `grouping.columns` | Column header type |
 |---|---|---|---|
-| **Product compliance** | `subjects.products: [PRODUCT-…]` | `product-stage-task` (or `product-stage` / `product`) | PRODUCT name / ID |
-| **Process compliance** | `subjects.processes: [PROCESS-…]` (no `products`) | `process-stage-task` (or `process-stage` / `process`) | PROCESS name / ID |
-| **Combined** | both `subjects.products` and `subjects.processes` | `product-stage-task` + `process-stage-task` (rendered as two column groups) | PRODUCT badge for product columns; PROCESS badge for process columns |
+| `product` | `subjects.products: [PRODUCT-…]` (processes MUST be absent) | `product-stage-task` / `product-stage` / `product` | PRODUCT name / ID |
+| `process` | `subjects.processes: [PROCESS-…]` (products MUST be absent) | `process-stage-task` / `process-stage` / `process` | PROCESS name / ID |
+| `combined` | both `subjects.products` and `subjects.processes` | `product-stage-task` + `process-stage-task` (two column groups) | PRODUCT badge for product columns; PROCESS badge for process columns |
 
-Adopters choosing "combined" render two distinct column groups in one report. Renderers MUST use explicit subject-type badges (e.g. `[PRODUCT]` / `[PROCESS]` prefixes or distinct visual styling) so the reader can always identify which subject type a column represents. `COMPIMP-010` fires when a renderer omits these badges or misapplies them.
+Adopters choosing `combined` render two distinct column groups in one report. Renderers MUST use explicit subject-type badges (e.g. `[PRODUCT]` / `[PROCESS]` prefixes or distinct visual styling) so the reader can always identify which subject type a column represents. `COMPIMP-010` fires when a renderer omits these badges or misapplies them. `COMPIMP-011` fires when `report_type` is absent. `COMPIMP-012` fires when `subjects.*` contradicts the declared `report_type`. `COMPIMP-013` fires when `grouping.columns` contradicts the declared `report_type`.
 
 ---
 
