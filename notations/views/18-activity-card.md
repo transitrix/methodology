@@ -184,13 +184,24 @@ views/activity-cards/<DOMAIN>.activity-card.transitrix.yaml
 
 One card per file, under the org's `canon/views/`. The card resolves its references against the canon element and relation store (`canon/elements/**`, `canon/relations/**`) of the same organisation, located by walking up to the `canon/` root above the card — not against sibling documents in the card's own directory.
 
+### 6.1 Canonical reference resolution scope
+
+When resolving `activity_card.project`, a conformant validator MUST search `canon/elements/` **recursively** — every `.yaml` file under the full `canon/elements/**` tree reached by walking up to the `canon/` root from the card file. The validator MUST NOT stop at a fixed subfolder (e.g. `canon/elements/activities/` only) — the ACTIVITY element may live under any implementation-layer subfolder such as `canon/elements/05_implementation/activities/`.
+
+Resolution lookup order:
+
+1. **`canon/elements/**`** (recursive, primary) — the canonical element store. An ACTIVITY-* file found here is the authoritative source.
+2. **`canon/views/activities/**`** (secondary fallback) — when the ACTIVITY ID appears in an activities view file rather than a standalone element file, the validator MAY surface it here. A validator using this fallback SHOULD warn that the element is referenced via a view rather than the element store.
+
+A validator that cannot find the ID after exhausting both paths MUST raise `PC-001`.
+
 ---
 
 ## 7. Validation rules
 
 | Rule | Severity | Description |
 |---|---|---|
-| `PC-001` | error | `activity_card.project` is missing, malformed, or does not resolve to an admitted ACTIVITY element in canon. |
+| `PC-001` | error | `activity_card.project` is missing, malformed, or does not resolve to an admitted ACTIVITY element after exhausting the canonical resolution scope (§6.1). The validator MUST search `canon/elements/**` recursively and then `canon/views/activities/**` before raising this error. The diagnostic MUST disclose the paths searched (e.g. `canon/elements/`, `canon/views/activities/`) and include an actionable hint naming the expected file pattern (`canon/elements/05_implementation/activities/ACTIVITY-<DOMAIN>-<INTEGER>.yaml`). |
 | `PC-002` | error | The ACTIVITY referenced by `activity_card.project` carries an explicit non-project scale marker. In the element model all activity scales share one ACTIVITY TYPE (§1), so a missing/unmarked value is accepted; only an explicit non-project marker is flagged. The canonical project-identification rule is under revision (tracked separately). |
 | `PC-003` | error | A `milestone.delivers_changes[]` entry references a `CHANGE-…` that is not in the project Activity's own `delivers_changes:`. The milestone cannot deliver a change the project isn't committed to. |
 | `PC-004` | warning | A `milestone.date` falls outside `[Activity.valid_from, Activity.valid_to]`. A milestone before the project initiated or after it ended is suspicious. |
