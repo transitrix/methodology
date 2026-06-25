@@ -24,10 +24,10 @@ view_config:
     surface: derived                  # derive: DRIVER-DATA-RESIDENCY-1 via goal.factors
   changes:
     surface: derived                  # derive: CHANGE-EU-REGION-1, CHANGE-DATA-FLOW-AUDIT-1
-  activities:
-    surface: derived                  # derive: all four migration / audit activities
+  actions:
+    surface: derived                  # derive: all four migration / audit actions
   layers:
     drivers: on
     goals: on
     changes: on
-    activities: on
+    actions: on

@@ -29,13 +29,15 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 The inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
 
+> **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is still **ACTIVITY** — element IDs use the `ACTIVITY-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an ACTIVITY element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package).
+
 The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
 ---
 
 ## Element lifecycle
 
-Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
+Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. In inline-element DGCA files (where element data is authored directly in the view document) each `actions[]` entry carries lifecycle fields in the same way. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -55,14 +57,14 @@ DGCA stands for:
 - **D**rivers
 - **G**oals
 - **C**hanges
-- **A**ctivities
+- **A**ctions
 
 ## Business Meaning of Each Layer
 
 - **Drivers**: external and internal drivers that explain why action is needed now.
 - **Goals**: strategic outcomes the organization wants to achieve.
 - **Changes**: business transformations required to make goals real.
-- **Activities**: concrete initiatives, projects, and workstreams that deliver those changes.
+- **Actions**: concrete initiatives, projects, and workstreams that deliver those changes. An Action is a level-agnostic placeholder — it can represent any element of the project domain (Initiative, Programme, Project, or Work Package) depending on the diagram's zoom level.
 
 ## Core Management Logic
 
@@ -75,7 +77,7 @@ In practical management communication, this means:
 - drivers justify strategic focus,
 - goals set direction and expected value,
 - changes define what must be transformed in the business,
-- activities define who does what to realize that transformation.
+- actions define who does what to realize that transformation.
 
 ## Layer Toggle — Flexible View Configurations
 
@@ -83,12 +85,12 @@ Individual layers can be toggled off via `view_config.layers`. This produces deg
 
 | Mode | `layers` config | Layers rendered |
 |---|---|---|
-| Full DGCA (default) | all `on` or omitted | Driver → Goal → Change → Activity |
-| DGA (no Changes) | `changes: off` | Driver → Goal → Activity |
-| GA (Goal-Activity only) | `drivers: off`, `changes: off` | Goal → Activity |
-| Goals only | `drivers: off`, `changes: off`, `activities: off` | Goal |
+| Full DGCA (default) | all `on` or omitted | Driver → Goal → Change → Action |
+| DGA (no Changes) | `changes: off` | Driver → Goal → Action |
+| GA (Goal-Action only) | `drivers: off`, `changes: off` | Goal → Action |
+| Goals only | `drivers: off`, `changes: off`, `actions: off` | Goal |
 
-**DGA mode** (`view_config.layers.changes: off`) is the direct successor of the former FGA notation. When Changes is off, the `changes[]` array is optional and activities link directly to goals via `activities[].goals`.
+**DGA mode** (`view_config.layers.changes: off`) is the direct successor of the former FGA notation. When Changes is off, the `changes[]` array is optional and actions link directly to goals via `actions[].goals`.
 
 ## How To Read and Use It
 
@@ -120,9 +122,9 @@ This section is **non-normative**: it records what Transitrix DSM enforces and r
 | **D** — Drivers | Implemented | Strategic Drivers (PESTLE + internal); PESTLE report; driver–goal linking via `goal_factor` |
 | **G** — Goals | Implemented | Goals tree, Visual Editor, DGCA column; goal–activity link via `goal_id` |
 | **C** — Changes | Implemented | `bdn_change` entities linked to goals; `activity_change` join table; Activity edit form shows "Delivers changes" |
-| **A** — Activities | Implemented | Activities table, Visual Editor, DGCA column; linked to Changes via `activity_change` |
+| **A** — Actions | Implemented | Activities table, Visual Editor, DGCA column; linked to Changes via `activity_change` |
 
-**DGCA Viewer:** The DGCA tab renders all four columns. Column visibility is configurable via D/G/C/A toggle buttons; preference saved in `localStorage["dgca_columns"]`. Valid degenerate views (DGA, GCA, GA, etc.) are supported.
+**DGCA Viewer:** The DGCA tab renders all four columns. Column visibility is configurable via D/G/C/A toggle buttons; preference saved in `localStorage["dgca_columns"]`. Valid degenerate views (DGA, GCA, GA, etc.) are supported. The fourth column is labelled "Actions" in the UI.
 
 **DGCA Report:** The "DGCA Report" tab renders the full D→G→C→A chain in list format and exports Mermaid/PlantUML diagrams. PNG export saves as `dgca-diagram.png`.
 
@@ -163,13 +165,13 @@ view_config:
     surface: derived          # derive from goal.factors inline links on each included GOAL
   changes:
     surface: derived          # derive from change.goals inline links for the included goal set
-  activities:
+  actions:
     surface: derived          # derive from activity.changes links for the included change set
   layers:
     drivers: on               # on | off — toggle the Drivers column
     goals: on                 # on | off — Goals column (always on recommended)
-    changes: on               # on | off — off activates DGA mode (Driver → Goal → Activity)
-    activities: on            # on | off — toggle the Activities column
+    changes: on               # on | off — off activates DGA mode (Driver → Goal → Action)
+    actions: on               # on | off — toggle the Actions column
   display:
     depth: null               # unlimited depth
     collapsed: []             # no collapsed nodes
@@ -199,7 +201,7 @@ A complete example of standalone element files for this notation: [`examples/dgc
 | `factors` | yes | array of driver entries — see below |
 | `goals` | yes | array of goal entries — see below |
 | `changes` | yes* | array of change entries — *optional when `view_config.layers.changes: off` |
-| `activities` | yes | array of activity entries — see below |
+| `actions` | yes | array of action entries — see below. Deprecated alias: `activities:` (accepted with `DEPRECATED_NOTATION` warning; migrate to `actions:`). |
 
 ### `factors[]`
 
@@ -232,20 +234,49 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 | `goals` | no | array of `GOAL-…` IDs this change delivers |
 | `description` | no | one-paragraph elaboration |
 
-### `activities[]`
+### `actions[]`
+
+Each entry in `actions[]` is an **Action** — a project-domain work item at whatever abstraction level the diagram uses. The underlying element is an ACTIVITY primitive (id prefix `ACTIVITY-`); the optional `type:` field records its project-domain level within the DGCA view.
 
 | Field | Required | Description |
 |---|---|---|
 | `id` | yes | `ACTIVITY-[<middle>-]<INTEGER>` |
-| `name` | yes | what the activity is |
-| `changes` | no | array of `CHANGE-…` IDs this activity delivers |
-| `goals` | no | array of `GOAL-…` IDs the activity supports directly — used in DGA mode (`view_config.layers.changes: off`) or when the Change layer adds no information for that activity |
+| `name` | yes | what the action is |
+| `type` | no | project-domain level: `initiative` \| `programme` \| `project` \| `work_package`. Defaults to `initiative` when omitted (backward compat). See §"Project domain elements" below. |
+| `changes` | no | array of `CHANGE-…` IDs this action delivers |
+| `goals` | no | array of `GOAL-…` IDs the action supports directly — used in DGA mode (`view_config.layers.changes: off`) or when the Change layer adds no information for that action |
 | `owner` | no | `ROLE-…` ID of the accountable role |
 | `status` | no | `Planned` / `In Progress` / `Done` |
 | `due_date` | no | target completion date (YYYY-MM-DD) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical activity prefix (replacing the older `ACT-` form); `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical element-type prefix; `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+
+---
+
+## Project domain elements
+
+The fourth column of a DGCA chart ("Actions") represents **project-domain elements** — temporary, goal-directed investments that exist to deliver a Change. The same `actions[]` entry can represent any level of the project hierarchy depending on the diagram's zoom level. The `type:` field on each action entry makes the level explicit.
+
+| `type` value | Name | Description | ArchiMate analogue |
+|---|---|---|---|
+| `initiative` | Strategic Initiative | Top-level strategic investment decision; tied to a Goal or Capability. A container for related Programmes and Projects. | Course of Action / Work Package L1 |
+| `programme` | Programme | A coordinated group of Projects that together pursue a shared Outcome. Typically spans multiple years and owns a budget line. | Work Package L2 |
+| `project` | Project | A temporary endeavour with defined scope, schedule, and budget that delivers a specific Deliverable or Capability change. | Work Package L3 |
+| `work_package` | Work Package | An atomic unit of work; assigned to a person or team; produces a Deliverable. The leaf node of the project hierarchy. | Work Package (leaf) |
+
+**All four types are temporary and goal-directed** (project domain). They are distinct from the process domain (Process → Activity), which is recurring and operational.
+
+**Zoom-level convention:**
+
+| Diagram zoom | Typical `type` in `actions[]` |
+|---|---|
+| Portfolio / board view | `initiative` |
+| Programme-level view | `programme` |
+| Project delivery view | `project` |
+| Work-item view | `work_package` |
+
+When `type:` is omitted, the validator treats the action as `initiative` for backward compatibility. Adopters are encouraged to populate `type:` on new and updated entries.
 
 ---
 
@@ -266,17 +297,19 @@ view_config:
     surface: derived     # derive DRIVER set from goal.factors inline links on the included goal set
   changes:
     surface: derived     # derive CHANGE set from change.goals inline links for the included goals
-  activities:
+  actions:
     surface: derived     # derive ACTIVITY set from activity.changes links for the included changes
   layers:
     drivers: on          # show the Drivers column
     goals: on            # show the Goals column
     changes: on          # show the Changes column; off = DGA mode
-    activities: on       # show the Activities column
+    actions: on          # show the Actions column
   display:
     depth: null          # maximum depth in the rendered chain; null = unlimited
     collapsed: []        # list of element IDs to render as collapsed nodes
 ```
+
+> **Deprecated aliases:** `view_config.activities:` is accepted in place of `view_config.actions:`, and `view_config.layers.activities:` is accepted in place of `view_config.layers.actions:`. Both emit a `DEPRECATED_NOTATION` warning. Migrate to the canonical keys.
 
 ### view_config keys
 
@@ -287,11 +320,11 @@ view_config:
 | `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. |
 | `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included goals. `all` — include every active DRIVER in canon. |
 | `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
-| `activities.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. |
+| `actions.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. Deprecated alias: `activities.surface`. |
 | `layers.drivers` | `on` \| `off` | `on` | Toggle the Drivers column in the rendered view. |
 | `layers.goals` | `on` \| `off` | `on` | Toggle the Goals column. Toggling off produces a degenerate view; `on` recommended. |
-| `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, activities link directly to goals via `activities[].goals`. |
-| `layers.activities` | `on` \| `off` | `on` | Toggle the Activities column in the rendered view. |
+| `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, actions link directly to goals via `actions[].goals`. |
+| `layers.actions` | `on` \| `off` | `on` | Toggle the Actions column in the rendered view. Deprecated alias: `layers.activities`. |
 | `display.depth` | integer \| null | `null` | Maximum depth of the rendered D→G→C→A chain. `null` renders all levels. |
 | `display.collapsed` | list | `[]` | IDs of elements to render as collapsed (children hidden). |
 
@@ -306,18 +339,21 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `DGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `dgca`. |
 | `DGCA-002` | error | `id` missing or empty. |
 | `DGCA-003` | error | `name` missing or empty. |
-| `DGCA-004` | error | any of `factors` / `goals` / `activities` missing or empty. `changes` is also required unless `view_config.layers.changes: off`. |
+| `DGCA-004` | error | any of `factors` / `goals` / `actions` (or deprecated `activities`) missing or empty. `changes` is also required unless `view_config.layers.changes: off`. |
 | `DGCA-005` | error | every entry in the arrays must have a non-empty `id` and `name`. |
 | `DGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all layers within a document). |
 | `DGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
 | `DGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
 | `DGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
-| `DGCA-010` | error | `activities[].changes[]` IDs must reference defined changes (when changes layer is on). |
-| `DGCA-011` | error | `activities[].goals[]` IDs must reference defined goals. |
+| `DGCA-010` | error | `actions[].changes[]` (or deprecated `activities[].changes[]`) IDs must reference defined changes (when changes layer is on). |
+| `DGCA-011` | error | `actions[].goals[]` (or deprecated `activities[].goals[]`) IDs must reference defined goals. |
 | `DGCA-012` | warning | a driver with no goal referencing it is orphan. |
-| `DGCA-013` | warning | a goal with no change (and no direct activity) referencing it is orphan. |
-| `DGCA-014` | warning | a change with no activity referencing it is orphan. |
+| `DGCA-013` | warning | a goal with no change (and no direct action) referencing it is orphan. |
+| `DGCA-014` | warning | a change with no action referencing it is orphan. |
 | `DGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
+| `DGCA-016` | warning | `activities:` key used at document root or in `view_config` — deprecated; migrate to `actions:`. |
+| `DGCA-017` | warning | `view_config.layers.activities:` used — deprecated; migrate to `view_config.layers.actions:`. |
+| `DGCA-018` | warning | `actions[].type` is not one of `initiative` \| `programme` \| `project` \| `work_package`. The validator treats the entry as `initiative` for backward compat. |
 
 ---
 
@@ -328,7 +364,7 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 - DRIVER, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
 - Timeless inline relations (`goal.factors`, `change.goals`, `activity.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
 - Goals tree notation: [`04-goals.md`](04-goals.md)
-- Activities notation: [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the DGCA chain
+- Activities notation (separate notation, process domain): [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across DGCA / Goals / Activities: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`
