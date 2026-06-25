@@ -22,6 +22,7 @@ The 15 view notations live under [`views/`](views/) — each describes a render-
 | [18-activity-card.md](views/18-activity-card.md) | `activity-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.activity-card.transitrix.yaml` | draft |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
+| [23-activities-tree.md](views/23-activities-tree.md) | `activities-tree` | Report-config view over the `ACTIVITY` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.activities-tree.transitrix.yaml` | draft |
 
 Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 
