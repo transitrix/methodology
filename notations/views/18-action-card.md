@@ -127,7 +127,7 @@ action_card:
 | Field | Required | Description |
 |---|---|---|
 | `action_card.id` | Yes | Canonical ACTION_CARD document ID per IDS §1 (`ACTION_CARD-<DOMAIN>-<INTEGER>`). |
-| `action_card.project` | Yes | Canonical ID of the project Action this card is about. The referenced Action MUST exist (`PC-001`) and MUST have `action_type: Project` (`PC-002`). |
+| `action_card.project` | Yes | Canonical ID of the project Action this card is about. The referenced Action MUST exist (`PC-001`) and MUST have `type: Project` (`PC-002`). |
 | `action_card.description` | No | One-paragraph narrative summary for an executive audience. The full description lives on the referenced Action. |
 | `action_card.milestones` | No | Array of milestone entries (see §4.2). May be empty for cards that have no narrative milestones yet. |
 
@@ -245,7 +245,7 @@ Pending design work (separate epics):
 ## 10. References
 
 - TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`ACTION_CARD` document type), §4 (uniqueness scope — both document-scoped).
-- The project Action TYPE this card binds: [07-action.md](07-action.md) §5.2 (`action_type: Project`).
+- The project Action TYPE this card binds: [07-action.md](07-action.md) §5.2 (`type: Project`).
 - Schedule milestones — distinct from action-card milestones: [07-action.md](07-action.md) §5.9.
 - Motivation chain the card pulls: [02-dgca.md](02-dgca.md) (DGCA).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5–7.

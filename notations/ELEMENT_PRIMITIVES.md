@@ -291,7 +291,7 @@ Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.4. (No subtype vocabulary
 
 ### 7.4 `ACTION` — `05_implementation/actions/`
 
-Full spec — field set, `action_type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, inline authoring, validation rules: **[elements/24-action.md](elements/24-action.md)**.
+Full spec — field set, `type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, inline authoring, validation rules: **[elements/24-action.md](elements/24-action.md)**.
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 

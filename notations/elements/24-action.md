@@ -20,34 +20,34 @@ The `ACTION` TYPE is multi-scale and recursive — an `Initiative` aggregates `P
 
 ---
 
-## 1. Scale levels and the `action_type` vocabulary
+## 1. Scale levels — the `type` vocabulary
 
-Every action carries an `action_type` value that labels its **scale** within the initiative hierarchy. This is a controlled string enum — not a reference to a separate element.
+Every action carries a `type` value that labels its **scale** within the initiative hierarchy. This is a controlled string enum — not a reference to a separate element.
 
-| `action_type` value | Alias | Scale | Typical scope |
+| `type` value | Alias | Scale | Typical scope |
 |---|---|---|---|
 | `Initiative` | `Strategic Initiative` — fully interchangeable | 1 | A transformation programme driven by one or more strategic goals; the root of an action hierarchy |
 | `Programme` | — | 2 | A coordinated set of projects delivering a related set of changes; child of an Initiative |
 | `Project` | — | 3 | A time-boxed, goal-directed effort with a defined start and end; child of a Programme (or directly of an Initiative) |
 | `Task` | — | 4 | An atomic work item within a project; no further decomposition |
 
-**Deprecated alias.** The field name `activity_type` is accepted with an `ACTION-005` warning; validators normalise it to `action_type` on ingest.
+**Deprecated alias.** The field name `activity_type` is accepted with an `ACTION-005` warning; validators normalise it to `type` on ingest.
 
-**Virtual root — level 0.** Above the Initiative level sits an implicit anchor: the totality of the organisation's action — the business itself. This root is not modelled as an `ACTION` element and carries no `action_type` value. In renderings it appears in two forms depending on context:
+**Virtual root — level 0.** Above the Initiative level sits an implicit anchor: the totality of the organisation's action — the business itself. This root is not modelled as an `ACTION` element and carries no `type` value. In renderings it appears in two forms depending on context:
 - **Network / Gantt diagrams** — a single anonymous start node (a dot or arrow origin) from which all Initiative nodes fan out.
 - **Tree view** — the company name at the root of the tree, with all Initiatives as its direct children.
 
 The virtual root is a rendering convention, not a data primitive. It never needs a `parent` field pointing to it; Initiatives with no `parent` are implicitly its children.
 
-**`action_type` vs `parent`:**
+**`type` vs `parent`:**
 - `parent: ACTION-…` carries the **structural** parent-child relationship — the DAG edge.
-- `action_type` labels the **semantic scale** of the action itself.
+- `type` labels the **semantic scale** of the action itself.
 
-Both are optional on any given element. An action may carry `parent` without `action_type` (the hierarchy is known but the scale is unclassified) or `action_type` without `parent` (the scale is known but the action is a root node or its parent hasn't been modelled yet). When both are present they should be consistent: a `Task` should not be the parent of a `Project`.
+Both are optional on any given element. An action may carry `parent` without `type` (the hierarchy is known but the scale is unclassified) or `type` without `parent` (the scale is known but the action is a root node or its parent hasn't been modelled yet). When both are present they should be consistent: a `Task` should not be the parent of a `Project`.
 
 **`Strategic Initiative` alias:** `Strategic Initiative` and `Initiative` are the same level. `Initiative` is the canonical stored value; `Strategic Initiative` is an accepted alias. Tooling should normalise `Strategic Initiative` → `Initiative` on ingest and treat both as equivalent in display.
 
-**Action Card binding:** An action rendered as an Action Card ([views/18-action-card.md](../views/18-action-card.md)) must carry `action_type: Project` (validation rule PC-002). Action Cards are project-scoped artefacts; using an Initiative or Programme as the card anchor is not supported in v1.
+**Action Card binding:** An action rendered as an Action Card ([views/18-action-card.md](../views/18-action-card.md)) must carry `type: Project` (validation rule PC-002). Action Cards are project-scoped artefacts; using an Initiative or Programme as the card anchor is not supported in v1.
 
 ---
 
@@ -57,7 +57,7 @@ Both are optional on any given element. An action may carry `parent` without `ac
 notation: action
 id: ACTION-PLATFORM-LAUNCH-1
 name: "Platform Launch 2026"
-action_type: Initiative              # Initiative | Programme | Project | Task (optional)
+type: Initiative                     # Initiative | Programme | Project | Task (optional)
 description: >
   Strategic initiative to launch the customer-facing platform by Q4 2026,
   delivering the self-service onboarding capability.
@@ -113,7 +113,7 @@ valid_to: null
 | `notation` | yes | string | Fixed value `action`. Deprecated alias: `activity`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `ACTION-[<middle>-]<INTEGER>`. Deprecated alias prefix: `ACTIVITY-`. |
 | `name` | yes | string | Human-readable label. |
-| `action_type` | no | string | Scale level — one of `Initiative`, `Programme`, `Project`, `Task`. `Strategic Initiative` is accepted as an alias for `Initiative`. Deprecated alias: `activity_type`. See §1. |
+| `type` | no | string | Scale level — one of `Initiative`, `Programme`, `Project`, `Task`. `Strategic Initiative` is accepted as an alias for `Initiative`. Deprecated alias: `activity_type`. See §1. |
 | `description` | recommended | string | One-paragraph elaboration of the work package's purpose. |
 | `parent` | no | string | `ACTION-…` of the aggregating work package one level up in the hierarchy. Omit for root actions (Initiatives with no parent). |
 | `goals` | no | list | `GOAL-…` IDs the action serves. **v0.x transitional inline field** — prefer a `REL` file with `type: action_goal` (§3). |
@@ -175,10 +175,10 @@ One action per file, named by its canonical ID. Examples: `ACTION-PLATFORM-LAUNC
 | Rule | Severity | Description |
 |---|---|---|
 | `ACTION-001` | error | `id` missing or not matching `ACTION-[<middle>-]<INTEGER>`; or a required field (`notation`, `name`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
-| `ACTION-002` | error | `action_type` is present and not one of `Initiative`, `Strategic Initiative`, `Programme`, `Project`, `Task`. |
-| `ACTION-003` | warning | `parent` is present and both the parent and child have `action_type` values, but the child's level is not lower than the parent's (e.g. an `Initiative` whose `parent` is a `Project`). |
-| `ACTION-004` | error | `action_type` is not `Project` and the action is referenced as the project anchor in an Action Card ([views/18-action-card.md](../views/18-action-card.md)) — action-card binding rule PC-002. |
-| `ACTION-005` | warning | Deprecated alias detected: `notation: activity`, `id` matching `ACTIVITY-…`, field `activity_type`, or path prefix `activities/`. Migrate to `action` / `ACTION-…` / `action_type` / `actions/`. |
+| `ACTION-002` | error | `type` is present and not one of `Initiative`, `Strategic Initiative`, `Programme`, `Project`, `Task`. |
+| `ACTION-003` | warning | `parent` is present and both the parent and child have `type` values, but the child's level is not lower than the parent's (e.g. an `Initiative` whose `parent` is a `Project`). |
+| `ACTION-004` | error | `type` is not `Project` and the action is referenced as the project anchor in an Action Card ([views/18-action-card.md](../views/18-action-card.md)) — action-card binding rule PC-002. |
+| `ACTION-005` | warning | Deprecated alias detected: `notation: activity`, `id` matching `ACTIVITY-…`, field `activity_type`, or path prefix `activities/`. Migrate to `action` / `ACTION-…` / `type` / `actions/`. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to ACTION files in addition to the ACTION-* rules above.
 
@@ -187,7 +187,7 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 ## 7. Evolution
 
 - **Actions tree view** — a tree rendering of the `parent`-linked Initiative → Programme → Project → Task hierarchy, analogous to the Goals tree ([views/04-goals.md](../views/04-goals.md)). Specified in `views/23-actions-tree.md`; Studio implementation tracked separately.
-- **`action_type` normalisation** — tooling should normalise `Strategic Initiative` → `Initiative` on ingest. A validator `ACTION-006` warning for `Strategic Initiative` (use canonical `Initiative`) may be added once migration tooling is in place.
+- **`type` normalisation** — tooling should normalise `Strategic Initiative` → `Initiative` on ingest. A validator `ACTION-006` warning for `Strategic Initiative` (use canonical `Initiative`) may be added once migration tooling is in place.
 - **Milestone** — a zero-duration action (`duration: 0`) marks a milestone within the current model. A dedicated `MILESTONE` TYPE (`05_implementation/milestones/`) is reserved in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.2 for a future first-class milestone element.
 
 ---

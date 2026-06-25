@@ -209,7 +209,7 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 |---|---|---|---|
 | `ACT-…` | `ACTION-…` | examples under `examples/dgca/`, `examples/action/`; `07-action.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
 | `ACTIVITY-…` | `ACTION-…` | any remaining files using the deprecated `ACTIVITY-` prefix — validators emit `ACTION-005`; migrate before 1.0 cut | follow-up |
-| `activity_type` field | `action_type` field | any schedule or element file still using `activity_type` — validators emit `ACT-020` / `ACTION-005` | follow-up |
+| `activity_type` field | `type` field | any schedule or element file still using `activity_type` — validators emit `ACT-020` / `ACTION-005` | follow-up |
 | `activities:` root array | `actions:` root array | any `*.action.transitrix.yaml` still using `activities:` top-level array — validators emit `ACT-020` | follow-up |
 | `activity-card` notation key | `action-card` | any `*.action-card.transitrix.yaml` using `notation: activity-card` — validators emit `PC-005` | follow-up |
 | `activity_card:` root field | `action_card:` | any action-card file using `activity_card:` — validators emit `PC-005` | follow-up |
