@@ -1,0 +1,31 @@
+name: Workflow script integrity
+
+# Guards against stale workflow task definitions that reference local scripts
+# which no longer exist. Runs scripts/check-workflow-scripts.mjs, which scans
+# every .github/workflows/*.yml for `node <path>` and `python <path>` run:
+# steps and verifies the referenced files are present in the repo.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'transitrix/skills/**/tests/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Verify workflow script references
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check workflow script references
+        run: node scripts/check-workflow-scripts.mjs
