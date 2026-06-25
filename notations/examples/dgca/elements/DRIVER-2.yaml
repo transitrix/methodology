@@ -1,0 +1,19 @@
+notation: driver
+id: DRIVER-2
+name: "Digital adoption acceleration"
+type: external
+category: technological
+description: >
+  Standing external technological driver — the broad shift to digital
+  channels that the organisation must ride to remain competitive.
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

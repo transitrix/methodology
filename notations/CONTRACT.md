@@ -56,7 +56,7 @@ Every notation's compiler / validator enforces the same four header rules:
 |---|---|---|
 | `HDR-001` | error | Missing `notation` field. |
 | `HDR-002` | error | `notation` value does not match the short name expected for this notation. The file is probably in the wrong format for its extension. |
-| `HDR-003` | error | File extension does not match the family extension for the `notation` declared inside the file (extension/content mismatch). For the DGCA family (`dgca`, `goals`, `activities`) the expected extension is `*.dgca.transitrix.yaml`; for all other notations it is `*.<short-name>.transitrix.yaml`. |
+| `HDR-003` | error | File extension does not match the canonical extension for the `notation` declared inside the file (extension/content mismatch). Every notation has its own extension: `*.dgca.transitrix.yaml` for `dgca`, `*.goals.transitrix.yaml` for `goals`, `*.activities.transitrix.yaml` for `activities`; for all other notations it is `*.<short-name>.transitrix.yaml`. |
 | `HDR-004` | accepted | `spec_version` is accepted but not enforced until the notation reaches v1.0. |
 
 Additional notation-specific rules (per-field, semantic, structural) live in the respective spec's "Validation rules" section.
@@ -65,7 +65,7 @@ Additional notation-specific rules (per-field, semantic, structural) live in the
 
 ## 3. Extension / content match
 
-Each notation has exactly one canonical file extension. For most notations the extension is `.<short-name>.transitrix.yaml`. **Exception — DGCA family:** the `dgca`, `goals`, and `activities` notations all share the `*.dgca.transitrix.yaml` extension because they are representations of the same strategy-execution layer family with different layer subsets active. Within a DGCA-family file the `notation:` header (`dgca`, `goals`, or `activities`) identifies the specific notation; the extension identifies the family. The validator enforces this per rule `HDR-003`.
+Each notation has exactly one canonical file extension: `*.<short-name>.transitrix.yaml`. The `dgca`, `goals`, and `activities` notations are each distinct and each carry their own extension (`*.dgca.transitrix.yaml`, `*.goals.transitrix.yaml`, `*.activities.transitrix.yaml` respectively), even though they describe related layers of the same strategy-execution family. The `notation:` header inside the file identifies the specific notation; the extension mirrors it. The validator enforces this per rule `HDR-003`.
 
 No aliases are accepted: one notation has exactly one extension. The full per-notation mapping lives in [README.md](README.md).
 

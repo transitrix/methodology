@@ -1,0 +1,23 @@
+notation: driver
+id: DRIVER-DATA-RESIDENCY-1
+name: "EU customer personal-data residency obligation"
+type: external
+category: legal
+references_constraint:
+  - CONSTRAINT-GDPR-RESIDENCY-1
+description: >
+  Standing external legal driver — the GDPR and national supervisory authority
+  requirement that EU customer personal data must be stored and processed within
+  the EU/EEA. The referenced constraint captures the binding rule; this DRIVER
+  records it as a strategic force the organisation acts on.
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2018-05-25"
+valid_to: null

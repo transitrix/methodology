@@ -37,8 +37,8 @@ VIEW_NOTATIONS = [
     "process-blueprint", "activity-card",
 ]
 NOTATION_EXT = {short: short for short in VIEW_NOTATIONS}
-NOTATION_EXT["goals"] = "dgca"
-NOTATION_EXT["activities"] = "dgca"
+NOTATION_EXT["goals"] = "goals"
+NOTATION_EXT["activities"] = "activities"
 ROOT_TEMPLATES = ["transitrix.yaml", "AGENTS.md", "copilot-instructions.md"]
 CODEX_TEMPLATES = ["codex-external.yaml", "codex-internal.yaml"]
 EXTRACTION_FILES = ["01_motivation.md", "02_business.md", "03_application.md", "README.md"]
@@ -201,8 +201,8 @@ def check_clean_install_goals_path():
             dest = os.path.join(repo, ".github") if f == "copilot-instructions.md" else repo
             os.makedirs(dest, exist_ok=True)
             shutil.copyfile(os.path.join(tdir, f), os.path.join(dest, f))
-        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.dgca.transitrix.yaml")
-        shutil.copyfile(os.path.join(tdir, "goals.dgca.transitrix.yaml"), goals_dest)
+        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.goals.transitrix.yaml")
+        shutil.copyfile(os.path.join(tdir, "goals.goals.transitrix.yaml"), goals_dest)
 
         # 4. Assertions.
         check(os.path.isfile(os.path.join(repo, "transitrix.yaml")),

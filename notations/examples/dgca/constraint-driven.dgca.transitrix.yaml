@@ -1,5 +1,6 @@
 notation: dgca
 spec_version: "0.1"
+methodology_version: "0.7.0"
 
 id: DGCA-DATA-RESIDENCY-1
 name: "EU data-residency DGCA chain"
@@ -8,41 +9,25 @@ description: >
   reflects a binding regulatory constraint (GDPR data residency), and the
   goals / changes / activities the organisation runs to comply.
 period: "2026"
-version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
 
-factors:
-  - id: DRIVER-DATA-RESIDENCY-1
-    name: "EU customer personal-data residency obligation"
-    type: external
-    category: legal
-    references_constraint:
-      - CONSTRAINT-GDPR-RESIDENCY-1
+# Projection-only view. No element data is authored inline in this file.
+# The GDPR data-residency element set lives in elements/ alongside this file.
+# See notations/views/02-dgca.md §"Source of truth".
 
-goals:
-  - id: GOAL-COMPLY-RESIDENCY-1
-    name: "Persist EU customer personal data only within EU/EEA"
-    factors: [DRIVER-DATA-RESIDENCY-1]
-
-changes:
-  - id: CHANGE-EU-REGION-1
-    name: "Move EU-customer data store to an EU-resident region"
-    goals: [GOAL-COMPLY-RESIDENCY-1]
-  - id: CHANGE-DATA-FLOW-AUDIT-1
-    name: "Audit and document every cross-border data flow"
-    goals: [GOAL-COMPLY-RESIDENCY-1]
-
-activities:
-  - id: ACTIVITY-MIGRATE-CRM-1
-    name: "Migrate CRM datastore from us-east-1 to eu-central-1"
-    changes: [CHANGE-EU-REGION-1]
-  - id: ACTIVITY-MIGRATE-OMS-1
-    name: "Migrate OMS datastore from us-east-1 to eu-central-1"
-    changes: [CHANGE-EU-REGION-1]
-  - id: ACTIVITY-FLOW-INVENTORY-1
-    name: "Catalogue every PII data flow that crosses jurisdictions"
-    changes: [CHANGE-DATA-FLOW-AUDIT-1]
-  - id: ACTIVITY-SCC-REVIEW-1
-    name: "Review Standard Contractual Clauses for remaining cross-border flows"
-    changes: [CHANGE-DATA-FLOW-AUDIT-1]
+view_config:
+  goals:
+    filter: ids
+    ids: [GOAL-COMPLY-RESIDENCY-1]   # anchor on the single compliance goal
+  factors:
+    surface: derived                  # derive: DRIVER-DATA-RESIDENCY-1 via goal.factors
+  changes:
+    surface: derived                  # derive: CHANGE-EU-REGION-1, CHANGE-DATA-FLOW-AUDIT-1
+  activities:
+    surface: derived                  # derive: all four migration / audit activities
+  layers:
+    drivers: on
+    goals: on
+    changes: on
+    activities: on

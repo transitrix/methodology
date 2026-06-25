@@ -1,0 +1,16 @@
+notation: change
+id: CHANGE-2
+name: "Automate manual processes"
+goals: [GOAL-2]
+description: "Replace high-volume manual workflows with RPA and digital tooling."
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

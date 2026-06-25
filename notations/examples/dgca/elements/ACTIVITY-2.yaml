@@ -1,0 +1,16 @@
+notation: activity
+id: ACTIVITY-2
+name: "MVP development"
+changes: [CHANGE-1]
+description: "Build and release the minimum viable product for the new product line."
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

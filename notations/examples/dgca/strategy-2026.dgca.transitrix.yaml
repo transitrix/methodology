@@ -1,59 +1,31 @@
 notation: dgca
 spec_version: "0.1"
+methodology_version: "0.7.0"
 
 id: DGCA-STRAT-1
 name: "Strategy 2026 — DGCA chain"
 description: "Driver → Goal → Change → Activity decomposition for the 2026 plan."
 period: "2026"
-version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
 
-factors:
-  - id: DRIVER-1
-    name: "Competitive market pressure"
-    type: external
-    category: economic
-  - id: DRIVER-2
-    name: "Digital adoption acceleration"
-    type: external
-    category: technological
+# Projection-only view. No element data is authored inline in this file.
+# The full D/G/C/A element set lives in elements/ alongside this file.
+# The renderer derives the displayed chain by traversing the inline cross-
+# reference fields (goal.factors, change.goals, activity.changes) on those
+# element files — see notations/views/02-dgca.md §"Source of truth".
 
-goals:
-  - id: GOAL-1
-    name: "Grow revenue by 20%"
-    factors: [DRIVER-1, DRIVER-2]
-  - id: GOAL-2
-    name: "Reduce operational costs"
-    factors: [DRIVER-2]
-  - id: GOAL-3
-    name: "Improve customer retention"
-    factors: [DRIVER-1]
-
-changes:
-  - id: CHANGE-1
-    name: "Launch new product line"
-    goals: [GOAL-1]
-  - id: CHANGE-2
-    name: "Automate manual processes"
-    goals: [GOAL-2]
-  - id: CHANGE-3
-    name: "Enhance support platform"
-    goals: [GOAL-3]
-
-activities:
-  - id: ACTIVITY-1
-    name: "Market research"
-    changes: [CHANGE-1]
-  - id: ACTIVITY-2
-    name: "MVP development"
-    changes: [CHANGE-1]
-  - id: ACTIVITY-3
-    name: "Process audit"
-    changes: [CHANGE-2]
-  - id: ACTIVITY-4
-    name: "RPA tooling rollout"
-    changes: [CHANGE-2]
-  - id: ACTIVITY-5
-    name: "CRM implementation"
-    changes: [CHANGE-3]
+view_config:
+  goals:
+    filter: all             # include every active GOAL from the companion elements/
+  factors:
+    surface: derived        # derive DRIVER set from goal.factors links
+  changes:
+    surface: derived        # derive CHANGE set from change.goals links
+  activities:
+    surface: derived        # derive ACTIVITY set from activity.changes links
+  layers:
+    drivers: on
+    goals: on
+    changes: on
+    activities: on

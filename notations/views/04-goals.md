@@ -4,7 +4,7 @@ version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-26"
 status: "documented"
-file_extension: "*.dgca.transitrix.yaml"
+file_extension: "*.goals.transitrix.yaml"
 dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 ---
 
@@ -22,7 +22,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | Field | Value |
 |---|---|
 | `notation:` value | `goals` |
-| File extension | `*.dgca.transitrix.yaml` |
+| File extension | `*.goals.transitrix.yaml` |
 
 ---
 
@@ -120,7 +120,7 @@ goals:
     parent: GOAL-EU-1
 ```
 
-A complete example: [`examples/goals/strategy-2026.dgca.transitrix.yaml`](../examples/goals/strategy-2026.dgca.transitrix.yaml).
+A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
 
 ---
 
