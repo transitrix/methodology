@@ -291,26 +291,7 @@ Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.4. (No subtype vocabulary
 
 ### 7.4 `ACTIVITY` — `05_implementation/activities/`
 
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `duration` | no | number | Duration in time units (required for CPM; recommended for Gantt). |
-| `activity_type` | no | string | Reference to an activity-type element. |
-| `goals` | no | list | `GOAL-…` IDs the activity serves. **Time-aware** — first-class via `REL` `type: activity_goal` ([elements/17](elements/17-relations.md) §3); inline `goals` is v0.x transitional. |
-| `delivers_changes` | no | list | `CHANGE-…` IDs (BDN linkage). |
-| `predecessors` | no | list | `ACTIVITY-…` IDs that must complete first. **Stays inline/timeless.** |
-| `parent` | no | string | `ACTIVITY-…` — the aggregating work package (recursive: initiative → programme → project → task, all one TYPE; §6.1). Subsumes WBS grouping. |
-| `scenario` | no | string | `SCENARIO-…` this activity belongs to. |
-| `owner` | no | string | `ACTOR-…` responsible for the activity. Replaces the old parallel `owner`(free-text) / `unit` / `employee` fields, collapsed into one typed reference by the 2026-05-29 Actors decision. |
-| `owner_role` | no | string | `ROLE-…` accountable for the activity (the positional accountability). Distinct from `owner` (`ACTOR` = who performs); uses the shared envelope field from §3. Both are optional and independent. |
-| `stakeholders` | no | list | `[STAKEHOLDER-…]` IDs whose interests are at stake in this activity. Each `STAKEHOLDER` element carries its concern/interest/influence profile and an `ACTOR` reference for identity (§7.15). |
-| `start_date` / `end_date` | no | string | Planned dates — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). |
-| `labor_cost` / `resources_cost` / `effort` | no | number | Cost / effort signals. |
-| `score` / `sort` | no | integer | Prioritisation / display ordering. |
-| `tags` | no | list | Free-text tags. |
-| `link` | no | string | URL. |
-| `description` | recommended | string | Multi-line description. |
-
-Inline shape: [views/07-activities.md](views/07-activities.md) §5.2, [views/02-dgca.md](views/02-dgca.md) §5.5. (No subtype vocabulary on `type`; `activity_type` carries the classifier instead.)
+Full spec — field set, `activity_type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, inline authoring, validation rules: **[elements/24-activity.md](elements/24-activity.md)**.
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 
