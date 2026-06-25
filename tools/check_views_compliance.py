@@ -223,6 +223,59 @@ def _check_bpmn(data: dict, result: CheckResult):
         )
 
 
+def _check_dgca(data: dict, result: CheckResult):
+    """DGCA-specific rules (02-dgca.md §Validation rules).
+
+    DGCA-016: `activities:` at root is deprecated; use `actions:`.
+    DGCA-017: `view_config.layers.activities:` is deprecated; use `layers.actions:`.
+    DGCA-018: `actions[].type` must be one of the project-domain enum when present.
+    """
+    _VALID_ACTION_TYPES = {"initiative", "programme", "project", "work_package"}
+
+    # DGCA-016: deprecated root-level key
+    if "activities" in data:
+        result.warning(
+            "DGCA-016",
+            "'activities:' is deprecated as the DGCA fourth-column key; "
+            "rename to 'actions:' (02-dgca.md §DGCA-016).",
+        )
+
+    view_config = data.get("view_config") or {}
+
+    # DGCA-016: deprecated view_config.activities key
+    if isinstance(view_config, dict) and "activities" in view_config:
+        result.warning(
+            "DGCA-016",
+            "'view_config.activities:' is deprecated; rename to "
+            "'view_config.actions:' (02-dgca.md §DGCA-016).",
+        )
+
+    # DGCA-017: deprecated view_config.layers.activities key
+    layers = view_config.get("layers") if isinstance(view_config, dict) else None
+    if isinstance(layers, dict) and "activities" in layers:
+        result.warning(
+            "DGCA-017",
+            "'view_config.layers.activities:' is deprecated; rename to "
+            "'view_config.layers.actions:' (02-dgca.md §DGCA-017).",
+        )
+
+    # DGCA-018: validate type enum on actions[] (canonical key)
+    actions = data.get("actions") or []
+    if isinstance(actions, list):
+        for entry in actions:
+            if not isinstance(entry, dict):
+                continue
+            action_type = entry.get("type")
+            if action_type is not None and action_type not in _VALID_ACTION_TYPES:
+                entry_id = entry.get("id", "<unknown>")
+                result.warning(
+                    "DGCA-018",
+                    f"Action '{entry_id}': type '{action_type}' is not one of "
+                    f"{sorted(_VALID_ACTION_TYPES)}. "
+                    f"Treated as 'initiative' for backward compat (02-dgca.md §DGCA-018).",
+                )
+
+
 def _check_activity_card(data: dict, file_path: Path, result: CheckResult):
     """Activity-card validation rules (18-activity-card.md §7).
 
@@ -366,6 +419,7 @@ def _check_activity_card(data: dict, file_path: Path, result: CheckResult):
 
 NOTATION_CHECKERS = {
     "bpmn":          _check_bpmn,
+    "dgca":          _check_dgca,
     "activity-card": _check_activity_card,
 }
 

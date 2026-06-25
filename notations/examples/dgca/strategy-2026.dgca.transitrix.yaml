@@ -22,10 +22,10 @@ view_config:
     surface: derived        # derive DRIVER set from goal.factors links
   changes:
     surface: derived        # derive CHANGE set from change.goals links
-  activities:
+  actions:
     surface: derived        # derive ACTIVITY set from activity.changes links
   layers:
     drivers: on
     goals: on
     changes: on
-    activities: on
+    actions: on

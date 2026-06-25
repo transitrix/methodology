@@ -19,10 +19,10 @@ view_config:
     filter: all
   factors:
     surface: derived
-  activities:
+  actions:
     surface: derived
   layers:
     drivers: on
     goals: on
-    changes: off        # DGA mode — Driver → Goal → Activity; no Changes column
-    activities: on
+    changes: off        # DGA mode — Driver → Goal → Action; no Changes column
+    actions: on

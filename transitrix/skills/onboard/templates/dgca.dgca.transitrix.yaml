@@ -4,6 +4,8 @@ spec_version: "0.1"
 # DGCA chain. Spec: notations/views/02-dgca.md
 # Replace FILL-ME placeholders. IDs use the canonical grammar:
 # DRIVER-N / GOAL-N / CHANGE-N / ACTIVITY-N (optional middle segments).
+# Fourth column: "actions:" (canonical). Deprecated alias "activities:" still accepted with warning.
+# Action types: initiative | programme | project | work_package
 # To use DGA mode (no Changes column) add: view_config: { layers: { changes: off } }
 
 id: DGCA-FILL-ME-1
@@ -30,7 +32,8 @@ changes:
     name: "FILL-ME change — transformation that delivers the goal"
     goals: [GOAL-1]
 
-activities:
+actions:
   - id: ACTIVITY-1
-    name: "FILL-ME activity — initiative that delivers the change"
+    name: "FILL-ME action — initiative / programme / project that delivers the change"
+    type: initiative      # initiative | programme | project | work_package
     changes: [CHANGE-1]
