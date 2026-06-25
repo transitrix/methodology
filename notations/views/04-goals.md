@@ -40,7 +40,7 @@ A goal's **`parent`** relationship — its position under another goal in the hi
 
 The `goal_types[]` array is a **static vocabulary** and carries no time-awareness — it is not a relation between primitives but a per-document type declaration.
 
-The Activity → Goal cross-reference (`activity.goals: [GOAL-…]`) is documented as **time-aware** in [07-activities.md](07-activities.md); its canonical REL home uses `type: activity_goal`.
+The Action → Goal cross-reference (`action.goals: [GOAL-…]`) is documented as **time-aware** in [07-action.md](07-action.md); its canonical REL home uses `type: action_goal`.
 
 ---
 

@@ -1,4 +1,4 @@
-notation: activities
+notation: action
 spec_version: "0.1"
 
 name: "Platform Launch 2026"
@@ -10,7 +10,7 @@ version: "0.1"
 generated_at: "2026-05-12"
 author: "Valerii Korobeinikov"
 
-activities:
+actions:
   - id: A-001
     name: Requirements analysis
     duration: 5

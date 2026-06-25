@@ -39,7 +39,7 @@ view:
   show_pursues: true
 ```
 
-Each referenced `SCENARIO-…` is a standalone element file under `canon/elements/05_implementation/scenarios/` with inline `pursues` (goal list — intent), `arrives_at` (single `TARGET_STATE-…` ref — destination), and ordered `steps` (`ACTIVITY-…` / `CHANGE-…`). See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) §3 for the full field set.
+Each referenced `SCENARIO-…` is a standalone element file under `canon/elements/05_implementation/scenarios/` with inline `pursues` (goal list — intent), `arrives_at` (single `TARGET_STATE-…` ref — destination), and ordered `steps` (`ACTION-…` / `CHANGE-…`). See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) §3 for the full field set.
 
 ## Preview
 

@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance domain (REQUIREMENT + ASSERTION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -837,3 +837,18 @@ Notation-specific snapshot content definitions are added per notation in subsequ
 | `SNAP-005` | warning | An element `id` in the snapshot does not resolve in the current canon — the snapshot is stale relative to the model. Re-run `transitrix capture` to refresh. Advisory only; never blocks. |
 
 `SNAP-002` and `SNAP-005` are cross-cutting (require the full canon catalogue and the view document set). `SNAP-001`, `SNAP-003`, and `SNAP-004` are per-file checks.
+
+---
+
+## 15. Domain vocabulary — Action vs Activity
+
+Two terms in the methodology carry closely related names and must not be conflated.
+
+| Term | Domain | Definition | Where used |
+|---|---|---|---|
+| **Action** | Project domain | A bounded, goal-directed unit of transformation work the organisation undertakes — an Initiative, Programme, Project, or Task (ArchiMate Work Package). Temporary: it starts, delivers, and ends. Modelled as the `ACTION` element TYPE. | ACTION elements (`canon/elements/05_implementation/actions/`); Action schedule (`*.action.transitrix.yaml`); Actions tree (`*.actions-tree.transitrix.yaml`); Action Card (`*.action-card.transitrix.yaml`); DGCA fourth column. |
+| **Activity** | Process domain | A single step in a **recurring** business process — an operational task that repeats as part of normal operations (BPMN Task / ArchiMate Business Process step). Ongoing: it runs continuously as the business operates, not as a one-off transformation event. Modelled as a node inside a `PROCESS` element's `flow`. | BPMN (`*.bpmn.transitrix.yaml`); PROCESS elements (`canon/elements/02_business/processes/`); Process Blueprint (`*.process-blueprint.transitrix.yaml`). |
+
+**Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
+
+**Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name has been deprecated in favour of `ACTION` to enforce this distinction. The deprecated `ACTIVITY` TYPE prefix, `activity_type` field, and `activities:` array name are accepted with `ACTION-005` / `ACT-020` warnings until the 1.0 cut; see [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.

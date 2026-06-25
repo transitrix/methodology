@@ -94,7 +94,7 @@ All of an actor's links are first-class, time-aware `REL` records ([17-relations
 | `community_membership` | `ACTOR(person)` → `ACTOR(business_unit)` | Membership of a community modelled as a `business_unit` actor. |
 | `contracting` | `ACTOR(person\|business_unit)` → `ACTOR(business_unit)` | Contracting relationship; carries `contract_terms`. |
 
-Activity ownership references an actor by ID: an activity's `owner: ACTOR-…` ([07-activities.md](../views/07-activities.md) §5.6). The Stakeholders notation references an actor for identity (`STAKEHOLDER.actor: ACTOR-…`, REQUIRED) — a stakeholder carries the stake, never the identity.
+Action ownership references an actor by ID: an action's `owner: ACTOR-…` ([07-action.md](../views/07-action.md) §5.6). The Stakeholders notation references an actor for identity (`STAKEHOLDER.actor: ACTOR-…`, REQUIRED) — a stakeholder carries the stake, never the identity.
 
 ---
 
@@ -135,5 +135,5 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (entry), §1 (grammar), §4 (uniqueness scope).
 - Common element-primitive envelope + `ACTOR` field set: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3, §7.10.
 - Engagement / hierarchy relations: [17-relations.md](17-relations.md) §3.
-- Activity ownership (`owner: ACTOR-…`): [07-activities.md](../views/07-activities.md) §5.6.
+- Action ownership (`owner: ACTOR-…`): [07-action.md](../views/07-action.md) §5.6.
 - Stakeholder identity binding (`STAKEHOLDER.actor`): [20-stakeholders.md](20-stakeholders.md).

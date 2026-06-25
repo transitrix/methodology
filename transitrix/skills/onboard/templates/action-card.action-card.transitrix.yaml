@@ -1,0 +1,26 @@
+notation: action-card
+spec_version: "0.1"
+
+# Single-project narrative view. Spec: notations/views/18-action-card.md
+# One project per document, identified by the `project:` ref into an
+# existing project Action (must resolve; type must be Project).
+# Document-scoped MILESTONE elements in milestones[] for narrative gates.
+
+name: "FILL-ME action card"          # required per CONTRACT.md §1.1
+
+action_card:
+  id: ACTION_CARD-FILL-ME-1
+  project: ACTION-FILL-ME-1                  # existing project Action ID; must resolve
+
+  description: >
+    FILL-ME — one-paragraph executive summary of the project's purpose.
+    The full description lives on the referenced Action; keep this concise.
+
+  milestones:
+    - id: MILESTONE-FILL-ME-1
+      name: "FILL-ME milestone — one-line label"
+      date: "2026-12-31"
+      description: >
+        FILL-ME — longer-form context for what the milestone signals.
+      delivers_changes:
+        - CHANGE-FILL-ME-1                     # must appear in the project Action's delivers_changes[]

@@ -58,16 +58,16 @@ The methodology ships three presets. Each is defined at the version pinned in `m
 
 | Preset | Intent | Element TYPEs (in scope) |
 |---|---|---|
-| **`minimal`** | Bare strategy-to-execution chain. A small product or programme team that talks in drivers, goals, and work — no capabilities, applications, target states, or actors. | 01_motivation: `DRIVER`, `GOAL` · 05_implementation: `ACTIVITY` |
-| **`core`** | Typical EA repository. ArchiMate-aligned baseline modelling — motivation chain through capabilities, processes, applications, and a delivery plan. No advanced motivation analysis (assessment/influence) and no planning model (target states / scenarios). | 01_motivation: `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` · 02_business: `CAPABILITY`, `PROCESS`, `ACTOR`, `ROLE`, `RULE` · 03_application: `APPLICATION`, `INTEGRATION` · 05_implementation: `ACTIVITY`, `CHANGE`, `MILESTONE` |
+| **`minimal`** | Bare strategy-to-execution chain. A small product or programme team that talks in drivers, goals, and work — no capabilities, applications, target states, or actors. | 01_motivation: `DRIVER`, `GOAL` · 05_implementation: `ACTION` |
+| **`core`** | Typical EA repository. ArchiMate-aligned baseline modelling — motivation chain through capabilities, processes, applications, and a delivery plan. No advanced motivation analysis (assessment/influence) and no planning model (target states / scenarios). | 01_motivation: `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER` · 02_business: `CAPABILITY`, `PROCESS`, `ACTOR`, `ROLE`, `RULE` · 03_application: `APPLICATION`, `INTEGRATION` · 05_implementation: `ACTION`, `CHANGE`, `MILESTONE` |
 | **`full`** | The complete vocabulary of the pinned methodology version. The default when `coverage_profile` is omitted. | Every TYPE in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.1. |
 
 ### 3.1 Per-preset relation allowlists
 
 | Preset | Allowed relation kinds (per `from` layer) |
 |---|---|
-| **`minimal`** | 01_motivation: `goal_parent` · 05_implementation: `activity_goal` |
-| **`core`** | 01_motivation: `goal_parent`, `stakeholding` · 02_business: `parent`, `unit_parent`, `employment` · 05_implementation: `activity_goal` |
+| **`minimal`** | 01_motivation: `goal_parent` · 05_implementation: `action_goal` |
+| **`core`** | 01_motivation: `goal_parent`, `stakeholding` · 02_business: `parent`, `unit_parent`, `employment` · 05_implementation: `action_goal` |
 | **`full`** | All twelve relation kinds in [`elements/17-relations.md`](elements/17-relations.md) §3. |
 
 The presets compose by subset — every TYPE in `minimal` is in `core`; every TYPE in `core` is in `full`. This is a property of the v1 presets, not a general rule: a future preset may slice the vocabulary along a different axis (e.g. a `compliance` preset that adds `REQUIREMENT`/`ASSERTION` to `minimal` without adding `CAPABILITY`).
@@ -133,7 +133,7 @@ For every element TYPE `T` in the final allowlist:
 
 For every relation kind `R` in the final allowlist:
 
-- Each endpoint TYPE in the §3 enum for `R` must be in the final allowlist. (For relation kinds with disjunctive endpoint TYPEs — e.g. `stakeholding`'s `to` is `GOAL | ACTIVITY | CAPABILITY` — **at least one** of the alternatives must be in the allowlist; otherwise the relation has no valid endpoints.)
+- Each endpoint TYPE in the §3 enum for `R` must be in the final allowlist. (For relation kinds with disjunctive endpoint TYPEs — e.g. `stakeholding`'s `to` is `GOAL | ACTION | CAPABILITY` — **at least one** of the alternatives must be in the allowlist; otherwise the relation has no valid endpoints.)
 
 ### 5.2 Rejection message (required form)
 
@@ -162,7 +162,7 @@ Fix: either
 
 ### 5.3 Cross-layer closure — one rule
 
-Cross-layer references and within-layer references are governed by the same closure rule. A reference from `ACTIVITY` (layer 05_implementation) to `GOAL` (layer 01_motivation) is in scope iff both endpoints are in the final allowlist, regardless of layer. There is no separate "cross-layer permission" — closure is uniform.
+Cross-layer references and within-layer references are governed by the same closure rule. A reference from `ACTION` (layer 05_implementation) to `GOAL` (layer 01_motivation) is in scope iff both endpoints are in the final allowlist, regardless of layer. There is no separate "cross-layer permission" — closure is uniform.
 
 ### 5.4 Disabling a layer
 
@@ -262,7 +262,7 @@ Every TYPE in the registry is in scope. The default for adopters who haven't yet
 coverage_profile: minimal
 ```
 
-A small product team using only `DRIVER`, `GOAL`, `ACTIVITY` plus `goal_parent` and `activity_goal` RELs. The team's `notations:` list narrows accordingly — `dgca`, `goals`, `activities`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
+A small product team using only `DRIVER`, `GOAL`, `ACTION` plus `goal_parent` and `action_goal` RELs. The team's `notations:` list narrows accordingly — `dgca`, `goals`, `action`. Adding a `CAPABILITY-…` file to canon would fail `CP-003`.
 
 ### 9.3 A custom profile — core + the planning model
 
@@ -278,7 +278,7 @@ coverage_profile:
         add: [target_state_satisfies_goal]
 ```
 
-An EA team that uses `core` plus the planning-model primitives (Target State + Scenario). Closure passes: `TARGET_STATE.satisfies` is a `target_state_satisfies_goal` REL whose endpoints are `TARGET_STATE` (in scope) and `GOAL` (in scope via `core`); `SCENARIO.arrives_at` is an inline reference to `TARGET_STATE` (in scope); `SCENARIO.steps` references `ACTIVITY` (in scope) and `CHANGE` (in scope).
+An EA team that uses `core` plus the planning-model primitives (Target State + Scenario). Closure passes: `TARGET_STATE.satisfies` is a `target_state_satisfies_goal` REL whose endpoints are `TARGET_STATE` (in scope) and `GOAL` (in scope via `core`); `SCENARIO.arrives_at` is an inline reference to `TARGET_STATE` (in scope); `SCENARIO.steps` references `ACTION` (in scope) and `CHANGE` (in scope).
 
 ### 9.4 A custom profile — core minus the engagement RELs
 
@@ -292,7 +292,7 @@ coverage_profile:
         remove: [employment]
 ```
 
-The team uses `ACTOR` for identity but does not track employment as a first-class temporal relation. Activity owners reference `ACTOR-…` directly (the `owner` inline field per [`views/07-activities.md`](views/07-activities.md) §5.6 is unchanged). Closure passes — no other in-scope TYPE requires `employment`.
+The team uses `ACTOR` for identity but does not track employment as a first-class temporal relation. Action owners reference `ACTOR-…` directly (the `owner` inline field per [`views/07-action.md`](views/07-action.md) §5.6 is unchanged). Closure passes — no other in-scope TYPE requires `employment`.
 
 ### 9.5 A profile that fails closure
 

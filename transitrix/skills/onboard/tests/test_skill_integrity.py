@@ -33,12 +33,10 @@ SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Most notations use <ext> == <short>; DGCA-family notations share the dgca extension.
 VIEW_NOTATIONS = [
     "bpmn", "dgca", "goals", "capability-map", "process-map",
-    "activities", "blocks", "scenarios", "applications", "products",
-    "process-blueprint", "activity-card",
+    "action", "blocks", "scenarios", "applications", "products",
+    "process-blueprint", "action-card",
 ]
 NOTATION_EXT = {short: short for short in VIEW_NOTATIONS}
-NOTATION_EXT["goals"] = "goals"
-NOTATION_EXT["activities"] = "activities"
 ROOT_TEMPLATES = ["transitrix.yaml", "AGENTS.md", "copilot-instructions.md"]
 CODEX_TEMPLATES = ["codex-external.yaml", "codex-internal.yaml"]
 EXTRACTION_FILES = ["01_motivation.md", "02_business.md", "03_application.md", "README.md"]

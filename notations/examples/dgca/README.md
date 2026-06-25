@@ -1,9 +1,9 @@
 # DGCA diagram
 
-**Driver → Goal → Change → Activity** — a four-column strategy decomposition chain.
-Shows how external drivers push goals, which require changes, which are delivered through activities.
+**Driver → Goal → Change → Action** — a four-column strategy decomposition chain.
+Shows how external drivers push goals, which require changes, which are delivered through actions.
 
-Layer toggle: individual columns (D, G, C, A) can be disabled via `view_config.layers`. The DGA variant (`layers.changes: off`) maps activities directly to goals without an intermediate change step.
+Layer toggle: individual columns (D, G, C, A) can be disabled via `view_config.layers`. The DGA variant (`layers.changes: off`) maps actions directly to goals without an intermediate change step.
 
 **File extension:** `*.dgca.transitrix.yaml`
 
@@ -33,11 +33,11 @@ changes:
     name: "Transformation programme"
     goals: [GOAL-1]                # one or more GOAL-… IDs this change delivers
 
-activities:
-  - id: ACTIVITY-1
+actions:
+  - id: ACTION-1
     name: "Research phase"
-    changes: [CHANGE-1]            # one or more CHANGE-… IDs this activity delivers
-  - id: ACTIVITY-2
+    changes: [CHANGE-1]            # one or more CHANGE-… IDs this action delivers
+  - id: ACTION-2
     name: "Rollout phase"
     changes: [CHANGE-1]
 ```
@@ -53,7 +53,7 @@ name: "Sample DGA chain"
 
 view_config:
   layers:
-    changes: off          # Driver → Goal → Activity; changes[] may be omitted
+    changes: off          # Driver → Goal → Action; changes[] may be omitted
 
 factors:
   - id: DRIVER-1
@@ -65,8 +65,8 @@ goals:
     name: "Strategic goal"
     factors: [DRIVER-1]
 
-activities:
-  - id: ACTIVITY-1
+actions:
+  - id: ACTION-1
     name: "Initiative"
     goals: [GOAL-1]       # direct link to goal — no changes[] needed
 ```
@@ -86,13 +86,13 @@ author: "Your Name"
 - All IDs follow the canonical `<TYPE>-[<middle>-]<INTEGER>` grammar per [`../../IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md). IDs are unique within their layer.
 - A goal MAY reference multiple drivers via `factors: [DRIVER-…, DRIVER-…]`.
 - A change MAY reference multiple goals via `goals: [GOAL-…, GOAL-…]`.
-- An activity MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
-- In DGA mode (`view_config.layers.changes: off`), activities link directly via `goals: [GOAL-…]`.
+- An action MAY reference multiple changes via `changes: [CHANGE-…, CHANGE-…]`.
+- In DGA mode (`view_config.layers.changes: off`), actions link directly via `goals: [GOAL-…]`.
 
 ## Examples in this folder
 
 | File | Description |
 |---|---|
-| `strategy-2026.dgca.transitrix.yaml` | Full DGCA chain (2 drivers, 3 goals, 3 changes, 5 activities) |
+| `strategy-2026.dgca.transitrix.yaml` | Full DGCA chain (2 drivers, 3 goals, 3 changes, 5 actions) |
 | `constraint-driven.dgca.transitrix.yaml` | Constraint-driven DGCA (GDPR data-residency scenario) |
-| `strategy-2026-dga.dgca.transitrix.yaml` | DGA mode — Changes layer off (3 drivers, 3 goals, 7 activities) |
+| `strategy-2026-dga.dgca.transitrix.yaml` | DGA mode — Changes layer off (3 drivers, 3 goals, 7 actions) |

@@ -60,7 +60,7 @@ Epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) split thos
 
 - **`GOAL`** — the intent. (Pre-existing motivation-layer element.)
 - **`TARGET_STATE`** — the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met (ArchiMate **Plateau**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17.
-- **`SCENARIO`** — the **path**: the ordered set of steps (`ACTIVITY` / `CHANGE` — Work Packages + Gaps) that moves the enterprise to one target state in service of one or more goals (ArchiMate **Course of Action**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.18.
+- **`SCENARIO`** — the **path**: the ordered set of steps (`ACTION` / `CHANGE` — Work Packages + Gaps) that moves the enterprise to one target state in service of one or more goals (ArchiMate **Course of Action**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.18.
 
 The `scenarios` view document is **demoted to report-config**: rendering, ordering, and filtering knobs over the `SCENARIO` catalogue. It carries no canonical facts; the path/destination/intent live on the three element primitives above.
 
@@ -172,7 +172,7 @@ Scenarios view (this notation — report-config)
   ├── (each scenario)
   │     ├── pursues  → GOAL elements           (inline list — the intent)
   │     ├── arrives_at → TARGET_STATE element  (ELEMENT_PRIMITIVES.md §7.17 — the destination)
-  │     └── steps    → ACTIVITY / CHANGE       (inline ordered list — the execution sequence)
+  │     └── steps    → ACTION / CHANGE          (inline ordered list — the execution sequence)
   └── (each target state, via the path's arrives_at)
         ├── composition → CAPABILITY / PROCESS / APPLICATION (inline)
         └── satisfies   → GOAL                 (target_state_satisfies_goal REL kind)
