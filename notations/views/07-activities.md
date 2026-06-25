@@ -118,7 +118,7 @@ activities:
     name: Requirements analysis
     parent: PHASE-DESIGN              # optional; WBS-style parent
     duration: 5                       # optional; integer or float in time units (see §5.4). Required for CPM; recommended for Gantt.
-    activity_type: ANTYPE-ANALYSIS    # optional, reference to ActivityType element
+    activity_type: Project             # optional — Initiative | Programme | Project | Task
     goals: [GOAL-CUST-001]            # optional, array of Goal IDs (an activity can serve multiple goals)
     scenario: SCEN-2026-OPT           # optional, reference to a Scenario element
     parent: A-000                     # optional, hierarchical parent activity (WBS-style)
@@ -195,7 +195,7 @@ activities:
 | `id` | yes | string | unique within the document; follows organisation naming convention (typically `A-NNN`) |
 | `name` | yes | string | activity name |
 | `duration` | no | number (≥ 0) | duration in time units; see §5.4. Required for CPM analysis and recommended for Gantt rendering. `0` is the milestone marker — see §5.9. |
-| `activity_type` | no | string (ID ref) | reference to an ActivityType element |
+| `activity_type` | no | string | scale level — one of `Initiative`, `Programme`, `Project`, `Task` (`Strategic Initiative` accepted as alias for `Initiative`); see [elements/24-activity.md](../elements/24-activity.md) §1 |
 | `goals` | no | array of string (ID refs) | array of Goal IDs (M:M) — an activity may serve multiple goals |
 | `scenario` | no | string (ID ref) | reference to a Scenario element |
 | `parent` | no | string (ID ref to activity) | hierarchical parent activity (WBS-style, **single** parent only) |
