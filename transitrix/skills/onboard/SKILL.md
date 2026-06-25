@@ -277,6 +277,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Same chain, but the Change layer adds no clarity (activities directly serve goals) | **DGCA** with `view_config.layers.changes: off` | `*.dgca.transitrix.yaml` |
 | Decompose goals hierarchically (strategy → tactical → operational) | **Goals tree** | `*.goals.transitrix.yaml` |
 | Plan delivery — activities, dependencies, durations, Gantt | **Activities** | `*.activities.transitrix.yaml` |
+| Browse the strategic portfolio as a hierarchy — Initiative → Programme → Project → Task | **Activities tree** | `*.activities-tree.transitrix.yaml` |
 | Map capabilities with CMMI maturity, V/H orientation | **Capability map** | `*.capability-map.transitrix.yaml` |
 | Top-level catalogue of processes (operating / supporting / management) | **Process landscape map** | `*.process-map.transitrix.yaml` |
 | Detail one process — lanes, gateways, sequence flows | **BPMN** | `*.bpmn.transitrix.yaml` |
@@ -368,6 +369,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Activity Card | `templates/activity-card.activity-card.transitrix.yaml` |
 | Compliance Impact | `templates/compliance-impact.compliance-impact.transitrix.yaml` |
 | Coverage Metric | `templates/coverage-metric.coverage-metric.transitrix.yaml` |
+| Activities tree | `templates/activities-tree.activities-tree.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
