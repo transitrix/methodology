@@ -59,6 +59,10 @@ The notation captures **what work is planned** (actions, durations, dependencies
 
 Critical-path values (early start / early finish / late start / late finish / slack) and computed Gantt dates are **not stored** in the document. They are derived at render time by a forward and backward pass over the network (CPM) and by projecting CPM offsets onto the working calendar (Gantt). Renderers MUST compute them and SHOULD highlight the critical path visually.
 
+**Practical usage note.** In production schedules every action typically carries `duration` and `predecessors[]`, and the project carries `start_date`; together they make the Gantt computable. Timing data is marked optional in the schema because a nascent plan may not have it yet — but the expected steady-state is a fully-scheduled network. The hierarchy (`parent:`) and the dependency DAG (`predecessors[]`) coexist: `parent` groups actions into phases/work-packages for WBS rollup, `predecessors` drives the critical-path calculation.
+
+**Tree rendering in Studio.** When an `action` file is open in Transitrix Studio, the preview panel offers a **Tree** tab alongside Network and Gantt. That tab shows the same actions in a parent-child tree without timing or dependency arrows — useful for navigating the WBS of the current project. This is a Studio display mode, not a separate notation. For a portfolio-level tree across all initiatives, use `actions-tree` (see §2).
+
 ---
 
 ## 2. When to use this notation

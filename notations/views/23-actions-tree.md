@@ -59,6 +59,8 @@ Mixed-depth trees are valid: an Initiative may have direct Project children (no 
 
 The Actions tree reads from the elements catalogue; the Action schedule is a standalone plan document with its own inline action entries. The two views are complementary — the tree gives the strategic overview, the schedule gives the delivery plan for one project.
 
+**Why a separate notation rather than a tab inside the Action preview.** Transitrix Studio does offer a **Tree** tab when viewing an `action` file — that shows the WBS of the *current file's* actions. The `actions-tree` notation is different in scope: it draws from the **full ACTION catalogue** across all initiatives, applies cross-cutting filters (`scope.goals`, `scope.action_type`, `scope.root_action`), and is a saved, version-controlled configuration — a governance artefact, not a display preference. A CPO reviewing all programmes across the portfolio uses `actions-tree`; a PM navigating their own project plan uses the tree tab inside `action`.
+
 ---
 
 ## 2. When to use
