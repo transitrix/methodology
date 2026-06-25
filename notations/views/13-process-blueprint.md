@@ -51,8 +51,9 @@ process_blueprint:
 
 This notation's inline arrays split into two groups for lifecycle purposes:
 
-- **Canonical-TYPE arrays** — `equipment[]` (`EQUIPMENT`) and `information_entities[]` (`INFORMATION_ENTITY`), both registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1. Each entry carries the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../CONTRACT.md) §7.
-- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`. These use document-local identifiers (e.g. `STAGE-1`, `STAGE-2`) that are not registered as canonical TYPEs in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1; they are scoped to the blueprint document and do not carry their own lifecycle. When a `systems[]` or `actors[]` entry is intended to reference a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
+- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`, `equipment[]`. These entries are scoped to the blueprint document and do not carry their own lifecycle. `EQUIPMENT-…` IDs are notation-local in v0.1 (promotable to an org-wide catalogue without renaming — the IDs already conform to the canonical grammar). When a `systems[]` or `actors[]` entry references a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
+- **Canonical-TYPE entries** — `business_objects[]` (`BUSINESS_OBJECT`). `BUSINESS_OBJECT` has an org-wide catalogue at `canon/elements/02_business/business-objects/` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1, ADR 2026-06-08). Entries with a `BUSINESS_OBJECT-…` `id` reference that catalogue and carry the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../CONTRACT.md) §7. Inline entries without an `id` are free-form labels (document-local only).
+- **Deprecated** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). See [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`. Validators emit `BOBJ-D001` for this field.
 
 The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. Per [CONTRACT.md](../CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
 
@@ -185,7 +186,8 @@ A complete example: [`examples/process-blueprint/order-fulfilment.process-bluepr
 | `process_blueprint.systems` | no | array of system entries — see §5.3 |
 | `process_blueprint.actors` | no | array of actor entries — see §5.3 |
 | `process_blueprint.equipment` | no | array of equipment entries — see §5.3 |
-| `process_blueprint.information_entities` | no | array of information-entity entries — see §5.3 |
+| `process_blueprint.business_objects` | no | array of business-object entries — see §5.3 |
+| `process_blueprint.information_entities` | no *(deprecated)* | **Deprecated** — use `business_objects` instead. [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6; validator emits `BOBJ-D001`. |
 | `lane_config` | no | optional rendering-config block controlling which lanes are visible — see §5.4 |
 
 The four authored aspect arrays are each optional individually; a blueprint MAY omit any aspect that does not apply (a fully digital process may have no `equipment:`, for example). At least one aspect array SHOULD be present — a blueprint with stages but no aspects renders as an empty grid and provides no operational context. The compliance lane (§5.4) is a fifth, opt-in, derived lane; it requires no authored array.
@@ -220,13 +222,16 @@ All four aspect arrays share the same entry shape. Each entry is an object with 
 | `systems[]` | `APPLICATION-…` | applications catalogue (`*.applications.transitrix.yaml`) |
 | `actors[]` | `ROLE-…` | roles in the organisation's element catalogue |
 | `equipment[]` | `EQUIPMENT-…` | notation-local in v0.1; promotable to a catalogue (see below) |
-| `information_entities[]` | `INFORMATION_ENTITY-…` | notation-local in v0.1; promotable to a catalogue (see below) |
+| `business_objects[]` | `BUSINESS_OBJECT-…` | org-wide catalogue at `canon/elements/02_business/business-objects/` (ADR 2026-06-08); entries may be inline (no `id`) or catalogue-referenced (with `BUSINESS_OBJECT-…` `id`) |
+| `information_entities[]` *(deprecated)* | `INFORMATION_ENTITY-…` | **Deprecated** — use `business_objects[]`; see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6 |
 
 For every aspect category, an entry with an `id` MUST use the TYPE prefix listed above. An entry without an `id` is a free-form label — useful for sketches and for elements that have not yet been promoted into a catalogue.
 
 `systems[]` and `actors[]` cross-reference established catalogues: `APPLICATION-…` resolves into the applications catalogue (`*.applications.transitrix.yaml`); `ROLE-…` resolves into the organisation's roles list. A validator MUST resolve these references against the relevant catalogue once cross-document linking is wired up.
 
-`EQUIPMENT` and `INFORMATION_ENTITY` were registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for these element TYPEs in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
+`EQUIPMENT` was registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for `EQUIPMENT` in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
+
+`BUSINESS_OBJECT` replaces the deprecated `INFORMATION_ENTITY` (renamed for ArchiMate alignment, ADR 2026-06-08). `BUSINESS_OBJECT` has a canonical catalogue at `canon/elements/02_business/business-objects/`; migrate any remaining `INFORMATION_ENTITY-…` IDs and `information_entities[]` fields per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6.
 
 ### 5.4 Compliance lane
 
