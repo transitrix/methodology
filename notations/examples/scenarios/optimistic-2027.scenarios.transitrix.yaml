@@ -18,13 +18,13 @@ scenario:
     across all core capabilities.
 
   factors_view:
-    - factor_id: FAC-MARKET-001
+    - factor_id: DRIVER-MARKET-1
       relevance: High
       impact: Revenue growth opportunity in CEE region
-    - factor_id: FAC-TECH-001
+    - factor_id: DRIVER-TECH-1
       relevance: Medium
       impact: AI adoption accelerates product differentiation
-    - factor_id: FAC-REG-001
+    - factor_id: DRIVER-REG-1
       relevance: Low
       impact: Minor compliance friction, manageable in current quarter
 
@@ -34,9 +34,9 @@ scenario:
     - goal_id: GOAL-CUST-001
 
   capabilities:
-    - capability_id: CAP-ECOMM-001
-    - capability_id: CAP-DATA-001
-    - capability_id: CAP-MARKETING-001
+    - capability_id: CAPABILITY-ECOMM-1
+    - capability_id: CAPABILITY-DATA-1
+    - capability_id: CAPABILITY-MARKETING-1
 
   activities:
     - activity_id: ACT-EXPAND-CEE-001

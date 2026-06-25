@@ -21,22 +21,22 @@ scenario:
     ahead of the new EU regulatory regime taking effect in 2028.
 
   factors_view:
-    - factor_id: FAC-MARKET-CEE-001
+    - factor_id: DRIVER-MARKET-CEE-1
       relevance: High
       impact: 30% YoY e-commerce growth in CEE region opens room for two new market entries.
-    - factor_id: FAC-TECH-AI-001
+    - factor_id: DRIVER-TECH-AI-1
       relevance: High
       impact: Mature AI/ML tooling makes SKU-level demand forecasting and personalisation economically viable.
-    - factor_id: FAC-REG-NIS2-2028
+    - factor_id: DRIVER-REG-NIS2-2028
       relevance: High
       impact: NIS2 directive requires uplift of cyber controls — affects every digital touchpoint and supplier integration.
-    - factor_id: FAC-SUPPLY-DISRUPTION-001
+    - factor_id: DRIVER-SUPPLY-DISRUPTION-1
       relevance: Medium
       impact: Continued geopolitical instability requires sourcing diversification and inventory buffer reviews.
-    - factor_id: FAC-TALENT-TECH-001
+    - factor_id: DRIVER-TALENT-TECH-1
       relevance: Medium
       impact: Tech talent shortage in CEE — partnership-based delivery and upskilling preferred over hiring.
-    - factor_id: FAC-ESG-CARBON-001
+    - factor_id: DRIVER-ESG-CARBON-1
       relevance: Low
       impact: Carbon reporting becomes table stakes by 2028 but does not yet constrain strategic moves.
 
@@ -48,15 +48,15 @@ scenario:
     - goal_id: GOAL-CYBER-L4-2027
 
   capabilities:
-    - capability_id: V1.1
-    - capability_id: V1.1.2
-    - capability_id: V1.2.2
-    - capability_id: V1.2.3
-    - capability_id: V1.3.2
-    - capability_id: V2.2.1
-    - capability_id: V2.3.2
-    - capability_id: H1
-    - capability_id: H2
+    - capability_id: CAPABILITY-V1.1
+    - capability_id: CAPABILITY-V1.1.2
+    - capability_id: CAPABILITY-V1.2.2
+    - capability_id: CAPABILITY-V1.2.3
+    - capability_id: CAPABILITY-V1.3.2
+    - capability_id: CAPABILITY-V2.2.1
+    - capability_id: CAPABILITY-V2.3.2
+    - capability_id: CAPABILITY-H1
+    - capability_id: CAPABILITY-H2
 
   activities:
     - activity_id: ACT-UNIFIED-LOYALTY-PLATFORM
