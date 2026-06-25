@@ -22,10 +22,16 @@ Every activity carries an `activity_type` value that labels its **scale** within
 
 | `activity_type` value | Alias | Scale | Typical scope |
 |---|---|---|---|
-| `Initiative` | `Strategic Initiative` — fully interchangeable | 1 — highest | A multi-year transformation programme driven by one or more strategic goals; the root of an activity hierarchy |
+| `Initiative` | `Strategic Initiative` — fully interchangeable | 1 | A transformation programme driven by one or more strategic goals; the root of an activity hierarchy |
 | `Programme` | — | 2 | A coordinated set of projects delivering a related set of changes; child of an Initiative |
 | `Project` | — | 3 | A time-boxed, goal-directed effort with a defined start and end; child of a Programme (or directly of an Initiative) |
-| `Task` | — | 4 — lowest | An atomic work item within a project; no further decomposition |
+| `Task` | — | 4 | An atomic work item within a project; no further decomposition |
+
+**Virtual root — level 0.** Above the Initiative level sits an implicit anchor: the totality of the organisation's activity — the business itself. This root is not modelled as an `ACTIVITY` element and carries no `activity_type` value. In renderings it appears in two forms depending on context:
+- **Network / Gantt diagrams** — a single anonymous start node (a dot or arrow origin) from which all Initiative nodes fan out.
+- **Tree view** — the company name at the root of the tree, with all Initiatives as its direct children.
+
+The virtual root is a rendering convention, not a data primitive. It never needs a `parent` field pointing to it; Initiatives with no `parent` are implicitly its children.
 
 **`activity_type` vs `parent`:**
 - `parent: ACTIVITY-…` carries the **structural** parent-child relationship — the DAG edge.
