@@ -96,6 +96,7 @@ period: "2026"
 
 view_config:
   scope:
+    root: ACTIVITY-PLATFORM-1          # pin any activity as the tree root; omit = virtual root
     initiatives: []                     # ACTIVITY-… IDs to include as roots; omit = all roots
     goals: []                           # filter to activities serving these GOAL-… IDs
     valid_at: "2026-06-25"             # show only activities valid at this date; omit = latest
@@ -133,8 +134,9 @@ Scope fields filter which elements the renderer includes. All are optional; omit
 
 | Field | Required | Description |
 |---|---|---|
-| `initiatives` | no | list of `ACTIVITY-…` IDs whose subtrees to include. When present and non-empty, only the listed Initiatives and their descendants appear. Omit or set to `[]` to include all Initiative-level roots. |
-| `goals` | no | list of `GOAL-…` IDs. When present and non-empty, only activities with a matching entry in `goals[]` (inline) or a `REL` of `type: activity_goal` pointing to one of the listed goals are included, along with their ancestors up to the Initiative root (to preserve tree shape). |
+| `root` | no | `ACTIVITY-…` ID of the activity to use as the tree root. When set, only that activity and its descendants are shown — the rest of the portfolio is hidden. Overrides `initiatives`. Works at any scale level: you can root the tree at an Initiative, a Programme, a Project, or a Task. Omit to show the full portfolio from the virtual root. See §7. |
+| `initiatives` | no | list of `ACTIVITY-…` IDs whose subtrees to include. When present and non-empty, only the listed Initiatives and their descendants appear. Ignored when `root` is set. Omit or set to `[]` to include all Initiative-level roots. |
+| `goals` | no | list of `GOAL-…` IDs. When present and non-empty, only activities with a matching entry in `goals[]` (inline) or a `REL` of `type: activity_goal` pointing to one of the listed goals are included, along with their ancestors up to the root (to preserve tree shape). |
 | `valid_at` | no | quoted ISO 8601 date. Renderer includes only activities whose `valid_from ≤ valid_at` and (`valid_to` is null or `valid_to ≥ valid_at`). Omit to include all elements regardless of lifecycle dates. |
 
 ### 5.2 `view_config.display`
@@ -169,7 +171,33 @@ The `id` (`ACTIVITY-…`) is available for drill-down navigation but is not show
 
 ---
 
-## 7. Virtual root — level 0
+## 7. Focus mode — rooting the tree at any node
+
+Any activity in the tree can become the **root** of the displayed diagram. This works at any scale level — you can focus on a single Initiative, drill into a Programme, or zoom in on one Project and see only its Tasks.
+
+### 7.1 Document-level root (`view_config.scope.root`)
+
+Set `root: ACTIVITY-…` in the document's `view_config.scope` to save a specific activity as the persistent root. The renderer shows only that activity and its descendants; ancestors and siblings are hidden. Use this to publish a focused view — e.g. a Programme board that shows only one Programme's Projects and Tasks.
+
+When `root` is set:
+- `initiatives` is ignored.
+- The virtual root (§8) is suppressed — the pinned activity is the top-most visible node.
+- A **breadcrumb trail** (the pinned node's ancestors up to the virtual root) SHOULD be displayed above the tree as context, even though the ancestors are not part of the tree body.
+
+### 7.2 Runtime focus (interactive)
+
+Renderers SHOULD allow the user to **focus from any node at runtime** without modifying the document:
+
+- **Trigger:** right-click a node → "Focus from here", or a dedicated focus icon on the node.
+- **Effect:** the tree re-renders with the selected node as root; its subtree fills the viewport; ancestors and siblings are hidden from the diagram.
+- **Navigation:** a **breadcrumb** above the tree shows the path from the virtual root to the focused node (`Company › Initiative › Programme › [focused]`). Each breadcrumb segment is clickable and restores the tree rooted at that ancestor.
+- **Scope:** runtime focus is session-local — it does not modify the document's `view_config.scope.root`. To persist a focus, the user explicitly saves the document after setting the focus (which writes `root` into the YAML).
+
+The runtime focus and the document-level `root` use the same rendering logic — they differ only in persistence.
+
+---
+
+## 8. Virtual root — level 0
 
 The organisation's total activity is represented by an implicit **virtual root** at level 0. It is not modelled as an `ACTIVITY` element; it is a rendering convention only.
 
@@ -180,24 +208,25 @@ The virtual root is never exported to YAML and carries no `ACTIVITY-…` ID.
 
 ---
 
-## 8. Orphan activities
+## 9. Orphan activities
 
 An activity is an **orphan** if it has no `parent` and is not classified as `activity_type: Initiative`. Orphans are not placed in the main tree.
 
-Renderers SHOULD expose orphans in a separate **backlog** panel (analogous to the Goals tree backlog, §8.4 in [04-goals.md](04-goals.md)). Dragging a backlog activity onto a tree node sets its `parent` in the underlying element file.
+Renderers SHOULD expose orphans in a separate **backlog** panel (analogous to the Goals tree backlog, §8.4 in [04-goals.md](04-goals.md)). Dragging a backlog activity onto a tree node sets its `parent` in the underlying element file. Orphans are not reachable via focus mode (§7.2) until attached to the tree.
 
 ---
 
-## 9. Validation rules
+## 10. Validation rules
 
 | Rule | Severity | Description |
 |---|---|---|
 | `ATREE-001` | error | `notation` missing or not equal to `activities-tree`. |
 | `ATREE-002` | error | `id` missing or not matching `ATREE-[<middle>-]<INTEGER>`. |
 | `ATREE-003` | error | `name` missing or empty. |
-| `ATREE-004` | warn | `view_config.scope.initiatives[]` references an `ACTIVITY-…` ID not found in the catalogue. |
-| `ATREE-005` | warn | `view_config.scope.goals[]` references a `GOAL-…` ID not found in the catalogue. |
-| `ATREE-006` | error | `view_config.display.collapse_depth` is present and not an integer between 1 and 4. |
+| `ATREE-004` | warn | `view_config.scope.root` references an `ACTIVITY-…` ID not found in the catalogue. |
+| `ATREE-005` | warn | `view_config.scope.initiatives[]` references an `ACTIVITY-…` ID not found in the catalogue. |
+| `ATREE-006` | warn | `view_config.scope.goals[]` references a `GOAL-…` ID not found in the catalogue. |
+| `ATREE-007` | error | `view_config.display.collapse_depth` is present and not an integer between 1 and 4. |
 
 The shared header rules (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) apply to activities-tree documents.
 
@@ -205,7 +234,7 @@ Activities tree documents do **not** carry an admission record or primitive life
 
 ---
 
-## 10. References
+## 11. References
 
 - Activity element spec and `activity_type` vocabulary: [elements/24-activity.md](../elements/24-activity.md)
 - Activities schedule notation (network + Gantt): [07-activities.md](07-activities.md)
