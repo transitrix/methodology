@@ -242,7 +242,7 @@ Each entry in `actions[]` is an **Action** — a project-domain work item at wha
 |---|---|---|
 | `id` | yes | `ACTION-[<middle>-]<INTEGER>` (deprecated alias: `ACTIVITY-[<middle>-]<INTEGER>`) |
 | `name` | yes | what the action is |
-| `type` | no | project-domain level: `initiative` \| `programme` \| `project` \| `work_package`. Defaults to `initiative` when omitted (backward compat). See §"Project domain elements" below. |
+| `type` | no | project-domain level: `Initiative` \| `Programme` \| `Project` \| `Task`. Deprecated alias: `work_package` = `Task`. Defaults to `Initiative` when omitted (backward compat). See §"Project domain elements" below. |
 | `changes` | no | array of `CHANGE-…` IDs this action delivers |
 | `goals` | no | array of `GOAL-…` IDs the action supports directly — used in DGA mode (`view_config.layers.changes: off`) or when the Change layer adds no information for that action |
 | `owner` | no | `ROLE-…` ID of the accountable role |
@@ -260,10 +260,10 @@ The fourth column of a DGCA chart ("Actions") represents **project-domain elemen
 
 | `type` value | Name | Description | ArchiMate analogue |
 |---|---|---|---|
-| `initiative` | Strategic Initiative | Top-level strategic investment decision; tied to a Goal or Capability. A container for related Programmes and Projects. | Course of Action / Work Package L1 |
-| `programme` | Programme | A coordinated group of Projects that together pursue a shared Outcome. Typically spans multiple years and owns a budget line. | Work Package L2 |
-| `project` | Project | A temporary endeavour with defined scope, schedule, and budget that delivers a specific Deliverable or Capability change. | Work Package L3 |
-| `work_package` | Work Package | An atomic unit of work; assigned to a person or team; produces a Deliverable. The leaf node of the project hierarchy. | Work Package (leaf) |
+| `Initiative` | Strategic Initiative | Top-level strategic investment decision; tied to a Goal or Capability. A container for related Programmes and Projects. | Course of Action / Work Package L1 |
+| `Programme` | Programme | A coordinated group of Projects that together pursue a shared Outcome. Typically spans multiple years and owns a budget line. | Work Package L2 |
+| `Project` | Project | A temporary endeavour with defined scope, schedule, and budget that delivers a specific Deliverable or Capability change. | Work Package L3 |
+| `Task` | Task | An atomic unit of work; assigned to a person or team; produces a Deliverable. The leaf node of the project hierarchy. Deprecated alias: `work_package`. | Work Package (leaf) |
 
 **All four types are temporary and goal-directed** (project domain). They are distinct from the process domain (Process → Activity), which is recurring and operational.
 
@@ -271,12 +271,12 @@ The fourth column of a DGCA chart ("Actions") represents **project-domain elemen
 
 | Diagram zoom | Typical `type` in `actions[]` |
 |---|---|
-| Portfolio / board view | `initiative` |
-| Programme-level view | `programme` |
-| Project delivery view | `project` |
-| Work-item view | `work_package` |
+| Portfolio / board view | `Initiative` |
+| Programme-level view | `Programme` |
+| Project delivery view | `Project` |
+| Work-item view | `Task` |
 
-When `type:` is omitted, the validator treats the action as `initiative` for backward compatibility. Adopters are encouraged to populate `type:` on new and updated entries.
+When `type:` is omitted, the validator treats the action as `Initiative` for backward compatibility. Adopters are encouraged to populate `type:` on new and updated entries.
 
 ---
 
@@ -353,7 +353,7 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `DGCA-015` | error | every `factors[].references_constraint[]` entry MUST match `CONSTRAINT-[<middle>-]<INTEGER>`. Cross-document resolution of the reference (existence of the catalogue file) is out of scope for in-file validation, consistent with the rest of the family. |
 | `DGCA-016` | warning | `activities:` key used at document root or in `view_config` — deprecated; migrate to `actions:`. |
 | `DGCA-017` | warning | `view_config.layers.activities:` used — deprecated; migrate to `view_config.layers.actions:`. |
-| `DGCA-018` | warning | `actions[].type` is not one of `initiative` \| `programme` \| `project` \| `work_package`. The validator treats the entry as `initiative` for backward compat. |
+| `DGCA-018` | warning | `actions[].type` is not one of `Initiative` \| `Programme` \| `Project` \| `Task` (or deprecated alias `work_package` for `Task`). The validator treats the entry as `Initiative` for backward compat. |
 
 ---
 

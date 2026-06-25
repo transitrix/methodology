@@ -35,7 +35,7 @@ Ask the user two short questions:
    - Capability map with CMMI maturity → **Capability Map**.
    - Value chain with operational aspects → **Process Blueprint**.
    - Single process flow → **BPMN**.
-   - Project schedule → **Activities network**.
+   - Project schedule → **Action schedule**.
 2. **How well do you know the methodology?** Calibrate explanation depth. If the user says "first time" — give a 90-second methodology walkthrough before scaffolding. If they say "I know it" — skip straight to step 2.
 
 Do not assume. If the user picks a notation outside the family-selection table, that's fine — every notation in § Cheat sheet is a valid first artefact.
@@ -105,7 +105,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   │   └── 04_technology/          # NODE, ARTIFACT, …
 │   └── views/                      # one subfolder per notation
 │       ├── bpmn/   dgca/   goals/   capabilities/   processmap/
-│       ├── activities/   blocks/   scenarios/
+│       ├── actions/   blocks/   scenarios/
 │       └── applications/   products/   process-blueprint/
 ├── field/                          # raw inputs — not authoritative; provenance is the point
 │   └── interviews/   surveys/   observations/   drafts/
@@ -193,7 +193,7 @@ Take the user's chosen notation from step 1. Copy the matching template from `${
 
 ### View notations (canon zone)
 
-For any of the 13 view notations (FGCA / FGA / Goals / Capability map / Process map / BPMN / Activities / Blocks / Scenarios / Applications / Products / Issues / Process Blueprint), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
+For any of the 13 view notations (FGCA / FGA / Goals / Capability map / Process map / BPMN / Action schedule / Blocks / Scenarios / Applications / Products / Issues / Process Blueprint), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
@@ -237,7 +237,7 @@ Once the user has a working starter file, point them at **Transitrix Studio** (t
 
 > "Install Transitrix Studio from the VS Code Marketplace (search for `transitrix.transitrix-studio`). Open the file you just authored — the preview opens automatically beside the editor and refreshes on every save."
 
-The full notation set previews in Studio: BPMN, Goals, FGCA, FGA, Activity Network (PSND + Gantt), Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Issues register.
+The full notation set previews in Studio: BPMN, Goals, FGCA, FGA, Action schedule (PSND + Gantt), Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Issues register.
 
 Also recommend **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — available on both the VS Code Marketplace and Open VSX — so Mermaid diagrams in `.md` files (ADRs, architecture notes, `AGENTS.md` diagrams) render inline. Between Studio (Transitrix notation preview) and the Mermaid extension (Markdown diagram preview), the user has full visual coverage of the repo.
 
@@ -258,8 +258,8 @@ Based on what the user just built, propose the next artefact in the family. Conc
 - They built **FGCA** → suggest a **Capability map** for the same domain so they can see which capabilities each goal requires.
 - They built a **Capability map** → suggest an **Applications catalogue** so each capability has a system inventory.
 - They built **BPMN** for one process → suggest the **Process landscape map** to put it in context.
-- They built **Process Blueprint** → suggest **Activities network** to plan delivery against the blueprint stages.
-- They built **Activities network** → suggest **Goals tree** to back-link activities to strategic outcomes.
+- They built **Process Blueprint** → suggest **Action schedule** to plan delivery against the blueprint stages.
+- They built **Action schedule** → suggest **Goals tree** to back-link actions to strategic outcomes.
 
 Don't push more than one suggestion per session. The point is to leave the user with one obvious next move, not a roadmap.
 
@@ -276,8 +276,8 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Trace strategic drivers → goals → transformation steps → deliverables | **DGCA** | `*.dgca.transitrix.yaml` |
 | Same chain, but the Change layer adds no clarity (activities directly serve goals) | **DGCA** with `view_config.layers.changes: off` | `*.dgca.transitrix.yaml` |
 | Decompose goals hierarchically (strategy → tactical → operational) | **Goals tree** | `*.goals.transitrix.yaml` |
-| Plan delivery — activities, dependencies, durations, Gantt | **Activities** | `*.activities.transitrix.yaml` |
-| Browse the strategic portfolio as a hierarchy — Initiative → Programme → Project → Task | **Activities tree** | `*.activities-tree.transitrix.yaml` |
+| Plan delivery — actions, dependencies, durations, Gantt | **Action schedule** | `*.action.transitrix.yaml` |
+| Browse the strategic portfolio as a hierarchy — Initiative → Programme → Project → Task | **Actions tree** | `*.actions-tree.transitrix.yaml` |
 | Map capabilities with CMMI maturity, V/H orientation | **Capability map** | `*.capability-map.transitrix.yaml` |
 | Top-level catalogue of processes (operating / supporting / management) | **Process landscape map** | `*.process-map.transitrix.yaml` |
 | Detail one process — lanes, gateways, sequence flows | **BPMN** | `*.bpmn.transitrix.yaml` |
@@ -286,11 +286,11 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Alternative strategic development paths | **Scenarios** | `*.scenarios.transitrix.yaml` |
 | Catalogue of applications + integrations | **Applications** | `*.applications.transitrix.yaml` |
 | Catalogue of products + services | **Products** | `*.products.transitrix.yaml` |
-| Single-project narrative view — FGCA chain, dates, milestones, gate decisions | **Activity Card** | `*.activity-card.transitrix.yaml` |
+| Single-project narrative view — goals served, dates, milestones, gate decisions | **Action Card** | `*.action-card.transitrix.yaml` |
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
 | Coverage of canon — which subjects are dark for each regulatory regime, splitting modelling gaps from modelled exclusions | **Coverage Metric** | `*.coverage-metric.transitrix.yaml` |
 
-**Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Activities) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
+**Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Action schedule) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
 
 ### Zone primitives — not view documents
 
@@ -307,16 +307,16 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 ### One-paragraph summary per notation
 
 - **BPMN** — `notation: bpmn`. One root `process:` with `pools[].lanes[].elements[]` and `flows[]`. Elements typed (`startEvent`, `task`, `exclusiveGateway`, …); flows directed. Compiles to BPMN 2.0 XML.
-- **DGCA** — `notation: dgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `activities[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTIVITY-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `activity.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`. DGA mode (no Changes): add `view_config.layers.changes: off` — `changes[]` becomes optional, activities link via `activity.goals: [GOAL-…]`.
+- **DGCA** — `notation: dgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `actions[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTION-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `action.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`. DGA mode (no Changes): add `view_config.layers.changes: off` — `changes[]` becomes optional, actions link via `action.goals: [GOAL-…]`.
 - **Goals tree** — `notation: goals`. Flat root arrays: `goal_types[]` (with `{name, level}` entries) + `goals[]`. Each goal has `id`, `name`, `type` (matching a `goal_types[].name`), `level` (matching that type's level), optional `parent: GOAL-…`. Omit `parent` for a root.
 - **Capability map** — `notation: capability-map`. Root key `capability_map:`. Capabilities use a V/H sub-grammar (`CAPABILITY-V1.2`, `CAPABILITY-H1`); each capability carries `type: domain | supporting`, `current_maturity`, optional `target_maturity`, `target_date`, etc.
 - **Process landscape map** — `notation: process-map`. Top-level catalogue of `PROCESS-…` IDs grouped into `operating`, `supporting`, `management`.
-- **Activities** — `notation: activities`. Flat `activities[]`. Each activity has string `id`, `name`, optional `predecessors: [ACTIVITY-…]`, `goals: [GOAL-…]`, `delivers_changes: [CHANGE-…]`, `duration_days`, `start_date`, etc. Renders as a PSND network with critical path; optionally projects to Gantt.
+- **Action schedule** — `notation: action`. Flat `actions[]`. Each action has string `id`, `name`, optional `predecessors: [ACTION-…]`, `goals: [GOAL-…]`, `delivers_changes: [CHANGE-…]`, `duration_days`, `start_date`, etc. Renders as a PSND network with critical path; optionally projects to Gantt.
 - **Nested blocks** — `notation: blocks`. Root key `nested_blocks:`. Recursive `block` tree (`id`, `name`, optional `description`, optional `children[]`). Containment is YAML-nested.
 - **Scenarios** — `notation: scenarios`. Alternative strategic development paths, each scoping its own goals / capabilities / activities / products / processes / applications.
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
-- **Activity Card** — `notation: activity-card`. Root key `activity_card:` carrying a single project's narrative — the FGCA chain it implements (`driver`/`goal`/`change`/`activities`), planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
+- **Action Card** — `notation: action-card`. Root key `action_card:` carrying a single project's narrative — the project Action it summarises, planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
 - **Compliance Impact** — `notation: compliance-impact`. Report-config over the compliance overlay (sibling of Scenarios). Root key `view:` declaring `subjects` (products / processes), `obligations` (`include` or `filter`), `grouping`, `status_display`, and `empty_cells`. Carries no canonical content — every cell is derived from `ASSERTION` + process flow + `REQUIREMENT` status.
 - **Coverage Metric** — `notation: coverage-metric`. Report-config over the coverage read of canon (sibling of Compliance Impact). Root key `view:` declaring `subjects` (products / processes), `regimes` (`include` or `filter`), `grouping`, `coverage_rule`, and `empty_cells`. Carries no canonical content — counts the subjects with zero admitted obligations per regulatory regime and splits "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)" (an admitted `n_a` `ASSERTION`).
@@ -360,16 +360,16 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Goals tree | `templates/goals.goals.transitrix.yaml` |
 | Capability map | `templates/capability-map.capability-map.transitrix.yaml` |
 | Process landscape map | `templates/process-map.process-map.transitrix.yaml` |
-| Activities | `templates/activities.activities.transitrix.yaml` |
+| Action schedule | `templates/action.action.transitrix.yaml` |
 | Nested blocks | `templates/blocks.blocks.transitrix.yaml` |
 | Scenarios | `templates/scenarios.scenarios.transitrix.yaml` |
 | Applications | `templates/applications.applications.transitrix.yaml` |
 | Products | `templates/products.products.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
-| Activity Card | `templates/activity-card.activity-card.transitrix.yaml` |
+| Action Card | `templates/action-card.action-card.transitrix.yaml` |
 | Compliance Impact | `templates/compliance-impact.compliance-impact.transitrix.yaml` |
 | Coverage Metric | `templates/coverage-metric.coverage-metric.transitrix.yaml` |
-| Activities tree | `templates/activities-tree.activities-tree.transitrix.yaml` |
+| Actions tree | `templates/actions-tree.actions-tree.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 

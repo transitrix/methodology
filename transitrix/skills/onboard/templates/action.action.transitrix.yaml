@@ -1,13 +1,13 @@
-notation: activities
+notation: action
 spec_version: "0.1"
 
-# Activity-on-Node project schedule. Spec: notations/views/07-activities.md
-# Activities have string IDs and reference predecessors / goals / changes.
+# Action schedule (Activity-on-Node network). Spec: notations/views/07-action.md
+# Actions have string IDs and reference predecessors / goals / changes.
 # The compiler computes Early Start / Late Finish / slack and marks
-# the critical path. Optional `project.start_date` + per-activity
+# the critical path. Optional `project.start_date` + per-action
 # `duration_days` enable a Gantt projection.
 
-name: "FILL-ME activities network"
+name: "FILL-ME action schedule"
 description: "FILL-ME — what this schedule covers"
 version: "0.1"
 generated_at: "YYYY-MM-DD"
@@ -19,21 +19,21 @@ project:
     working_days: [mon, tue, wed, thu, fri]
     hours_per_day: 8
 
-activities:
-  - id: ACTIVITY-DISCOVERY-1
-    name: "FILL-ME — first activity"
+actions:
+  - id: ACTION-DISCOVERY-1
+    name: "FILL-ME — first action"
     duration_days: 10
     predecessors: []
     goals: [GOAL-1]               # optional cross-ref to a goal
 
-  - id: ACTIVITY-DESIGN-1
-    name: "FILL-ME — second activity"
+  - id: ACTION-DESIGN-1
+    name: "FILL-ME — second action"
     duration_days: 14
-    predecessors: [ACTIVITY-DISCOVERY-1]
+    predecessors: [ACTION-DISCOVERY-1]
     goals: [GOAL-1]
 
-  - id: ACTIVITY-BUILD-1
-    name: "FILL-ME — third activity"
+  - id: ACTION-BUILD-1
+    name: "FILL-ME — third action"
     duration_days: 30
-    predecessors: [ACTIVITY-DESIGN-1]
+    predecessors: [ACTION-DESIGN-1]
     delivers_changes: [CHANGE-1]  # optional cross-ref to an FGCA change

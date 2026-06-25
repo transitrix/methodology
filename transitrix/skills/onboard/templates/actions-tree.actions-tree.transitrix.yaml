@@ -1,0 +1,27 @@
+notation: actions-tree
+spec_version: "0.1"
+
+# Actions tree. Spec: notations/views/23-actions-tree.md
+# Report-config view over the ACTION element catalogue.
+# No action data is defined here — the tree is built from
+# canon/elements/05_implementation/actions/ at render time.
+
+id: ATREE-FILL-ME-1
+name: "FILL-ME — Strategic Portfolio"
+description: "FILL-ME — what portfolio or sub-tree this view covers"
+period: "FILL-ME"
+generated_at: "YYYY-MM-DD"
+
+view_config:
+  scope:
+    # root: ACTION-FILL-ME-1        # uncomment to pin a specific action as root
+    initiatives: []                  # list specific ACTION-… IDs to include; omit = all roots
+    goals: []                        # filter to actions serving these GOAL-… IDs
+    # valid_at: "YYYY-MM-DD"         # uncomment to scope to a specific date
+  display:
+    collapse_depth: 2                # 1=Initiative, 2=+Programme, 3=+Project, 4=all
+    show_dates: true
+    show_owner: true
+    show_type_badge: true
+    show_action_card_link: true
+    virtual_root_label: ""           # set to org name or "" to suppress virtual root
