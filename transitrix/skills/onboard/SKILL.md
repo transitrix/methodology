@@ -275,8 +275,8 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 |---|---|---|
 | Trace strategic drivers → goals → transformation steps → deliverables | **DGCA** | `*.dgca.transitrix.yaml` |
 | Same chain, but the Change layer adds no clarity (activities directly serve goals) | **DGCA** with `view_config.layers.changes: off` | `*.dgca.transitrix.yaml` |
-| Decompose goals hierarchically (strategy → tactical → operational) | **Goals tree** | `*.dgca.transitrix.yaml` |
-| Plan delivery — activities, dependencies, durations, Gantt | **Activities** | `*.dgca.transitrix.yaml` |
+| Decompose goals hierarchically (strategy → tactical → operational) | **Goals tree** | `*.goals.transitrix.yaml` |
+| Plan delivery — activities, dependencies, durations, Gantt | **Activities** | `*.activities.transitrix.yaml` |
 | Map capabilities with CMMI maturity, V/H orientation | **Capability map** | `*.capability-map.transitrix.yaml` |
 | Top-level catalogue of processes (operating / supporting / management) | **Process landscape map** | `*.process-map.transitrix.yaml` |
 | Detail one process — lanes, gateways, sequence flows | **BPMN** | `*.bpmn.transitrix.yaml` |
@@ -356,10 +356,10 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 |---|---|
 | BPMN | `templates/bpmn.bpmn.transitrix.yaml` |
 | DGCA | `templates/dgca.dgca.transitrix.yaml` |
-| Goals tree | `templates/goals.dgca.transitrix.yaml` |
+| Goals tree | `templates/goals.goals.transitrix.yaml` |
 | Capability map | `templates/capability-map.capability-map.transitrix.yaml` |
 | Process landscape map | `templates/process-map.process-map.transitrix.yaml` |
-| Activities | `templates/activities.dgca.transitrix.yaml` |
+| Activities | `templates/activities.activities.transitrix.yaml` |
 | Nested blocks | `templates/blocks.blocks.transitrix.yaml` |
 | Scenarios | `templates/scenarios.scenarios.transitrix.yaml` |
 | Applications | `templates/applications.applications.transitrix.yaml` |
