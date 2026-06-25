@@ -22,7 +22,7 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 |---|---|---|---|---|
 | `DRIVER-1` | DRIVER | — | 1 | minimal form |
 | `GOAL-RETENTION-12` | GOAL | RETENTION | 12 | one middle segment |
-| `ACTIVITY-Q3-2026-7` | ACTIVITY | Q3, 2026 | 7 | two middle segments |
+| `ACTION-Q3-2026-7` | ACTION | Q3, 2026 | 7 | two middle segments |
 | `INTERVIEW-cfo-onboarding-2026-04-15-1` | INTERVIEW | cfo, onboarding, 2026, 04, 15 | 1 | zero-padded ISO-date middle segments (`04`, `15`) are valid — the ban is terminal-only |
 | `DRIVER-CHURN-001` | — | — | — | **invalid** — leading zero on the *terminal* integer. Use `DRIVER-CHURN-1`. |
 | `driver-1` | — | — | — | **invalid** — TYPE must be uppercase. |
@@ -69,18 +69,18 @@ Elements that get referenced across documents.
 | TYPE | What it is | Used by |
 |---|---|---|
 | `DRIVER` | strategic driver — external or internal | FGCA, FGA |
-| `GOAL` | strategic or tactical goal | Goals tree, FGCA, FGA, Activities |
-| `CHANGE` | business transformation (the BDN change layer) | FGCA, Activities (`delivers_changes:`) |
-| `ACTIVITY` | initiative / workstream | FGCA, FGA, Activities |
+| `GOAL` | strategic or tactical goal | Goals tree, FGCA, FGA, Action schedule |
+| `CHANGE` | business transformation (the BDN change layer) | FGCA, Action schedule (`delivers_changes:`) |
+| `ACTION` | implementation-layer work package — Initiative / Programme / Project / Task (ArchiMate Work Package). **Deprecated alias:** `ACTIVITY` (accepted with `ACTION-005` warning until 1.0 cut). | FGCA, FGA, Action schedule, Actions tree, Action Card; see [elements/24-action.md](elements/24-action.md) |
 | `CAPABILITY` | capability — V/H sub-grammar, see §2 | Capability map, Products, Applications, Process map |
 | `PROCESS` | business process | Process landscape map, BPMN |
-| `STEP` | process-flow step — a single node (task / event / gateway) in a `PROCESS` element's `flow`. Canonical-by-containment within its PROCESS (which carries the admission record); addressable by its `STEP-…` id and promoted to a standalone catalogue record only when a second document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). | `PROCESS.flow` (inline, §7.5); promoted to `elements/02_business/steps/`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.21. |
+| `STEP` | process-flow step — a single node (task / event / gateway) in a `PROCESS` element's `flow`. Canonical-by-containment within its PROCESS (which carries the admission record); addressable by its `STEP-…` id and promoted to a standalone catalogue record only when a second document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTION` realising it, or an `ASSERTION` (`subject` / `realised_via`). | `PROCESS.flow` (inline, §7.5); promoted to `elements/02_business/steps/`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.21. |
 | `PRODUCT` | product or service | Products catalogue |
 | `APPLICATION` | application | Applications catalogue |
 | `INTEGRATION` | integration between applications | Applications catalogue |
 | `ROLE` | business role — a position / responsibility, distinct from the `ACTOR` that fills it | referenced as `owner_role` across notations; `role.unit` references an `ACTOR` of `type: business_unit` |
 | `ACTOR` | active-structure identity — `person`, `business_unit`, or `system` (ArchiMate Business Actor). Replaces the former `UNIT` / `EMPLOYEE` TYPEs (removed 2026-05-29). Engagement (employment, candidacy, …) and org hierarchy are first-class `REL` records, not inline fields. | Actors catalogue (`elements/02_business/actors/`); referenced as activity `owner`. Schema: [19-actors.md](elements/19-actors.md). |
-| `SCENARIO` | implementation-layer **path** primitive — the ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate Course of Action realised by Work Packages + Gaps). The destination is a separate primitive (`TARGET_STATE`); the scenario references it via `arrives_at` and owns its `steps`. | Scenarios catalogue (`elements/05_implementation/scenarios/`); rendered by [11-scenarios.md](views/11-scenarios.md) as a report-config view. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19. |
+| `SCENARIO` | implementation-layer **path** primitive — the ordered set of steps (`ACTION` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate Course of Action realised by Work Packages + Gaps). The destination is a separate primitive (`TARGET_STATE`); the scenario references it via `arrives_at` and owns its `steps`. | Scenarios catalogue (`elements/05_implementation/scenarios/`); rendered by [11-scenarios.md](views/11-scenarios.md) as a report-config view. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19. |
 | `EQUIPMENT` | ArchiMate Physical element — physical instrument, device, or facility a process stage depends on. Catalogued at `canon/elements/04_technology/equipment/` (ADR 2026-06-08; first catalogued TYPE for this layer). | Process Blueprint; Technology layer catalogue. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.14. |
 | `BUSINESS_OBJECT` | ArchiMate Business Object — passive information element at the business grain ("customer order", "customs declaration", "invoice"). Replaces `INFORMATION_ENTITY` (renamed for ArchiMate alignment). Catalogued at `canon/elements/02_business/business-objects/` (ADR 2026-06-08). `INFORMATION_ENTITY` is a deprecated alias for one release (see §6). | Process Blueprint; Business layer catalogue. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.15. |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
@@ -90,8 +90,8 @@ Elements that get referenced across documents.
 | `STAKEHOLDER` | motivation-layer interest primitive (ArchiMate Stakeholder) — `internal` / `external`. Carries the stake profile (concern, interest, influence) and **references an `ACTOR` for identity** (`actor:` required); never carries identity itself. | Stakeholders catalogue (`elements/01_motivation/stakeholders/`); stakes in specific objects are `stakeholding` relations. Schema: [20-stakeholders.md](elements/20-stakeholders.md). |
 | `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `DRIVER`**, e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. | Assessments catalogue (`elements/01_motivation/assessments/`); `assesses:` references one `DRIVER`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
 | `TARGET_STATE` | implementation-layer **end-state** primitive (ArchiMate Plateau) — a structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met. The object an architect varies when presenting solution options; satisfies one or more `GOAL`s and is reached by one or more `SCENARIO` paths. | Target-states catalogue (`elements/05_implementation/target-states/`); composition is inline (`capabilities[]`, `processes[]`, `applications[]`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
-| `REL` | first-class time-aware relation between two canonical primitives — `parent`, `activity_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
-| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Activity Card's narrative. Distinct from a "schedule milestone" (a zero-duration activity inside an Activities document, see [07-activities.md](views/07-activities.md) §5.9), which exists for critical-path computation. | Defined inside an Activity Card document (`*.activity-card.transitrix.yaml`); scope is the parent card document. Schema: [18-activity-card.md](views/18-activity-card.md). |
+| `REL` | first-class time-aware relation between two canonical primitives — `parent`, `action_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. Deprecated alias: `activity_goal` → `action_goal`. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
+| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Action Card's narrative. Distinct from a "schedule milestone" (a zero-duration action inside an Action schedule document, see [07-action.md](views/07-action.md) §5.9), which exists for critical-path computation. | Defined inside an Action Card document (`*.action-card.transitrix.yaml`); scope is the parent card document. Schema: [18-action-card.md](views/18-action-card.md). |
 
 ### 3.2 Document-level types
 
@@ -103,13 +103,13 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `GOALS_TREE` | `*.goals.transitrix.yaml` |
 | `CAPABILITY_MAP` | `*.capability-map.transitrix.yaml` |
 | `PROCESS_MAP` | `*.process-map.transitrix.yaml` |
-| `ACTIVITIES_NET` | `*.activities.transitrix.yaml` |
+| `ACTION_NET` | `*.action.transitrix.yaml` (deprecated alias: `*.activities.transitrix.yaml`) |
 | `PRODUCTS_CAT` | `*.products.transitrix.yaml` |
 | `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
 | `BLOCKS` | `*.blocks.transitrix.yaml` |
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
-| `ACTIVITY_CARD` | `*.activity-card.transitrix.yaml` |
+| `ACTION_CARD` | `*.action-card.transitrix.yaml` (deprecated alias: `*.activity-card.transitrix.yaml`) |
 | `COMPLIANCE_IMPACT` | `*.compliance-impact.transitrix.yaml` |
 | `COVERAGE_METRIC` | `*.coverage-metric.transitrix.yaml` |
 
@@ -119,7 +119,7 @@ BPMN diagrams use their `process.id` as the document identifier; that field is a
 
 In a **standalone `.bpmn.transitrix.yaml` projection** — a generated diagram, not an authored source — the node IDs (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) are local labels, not cross-document references: they identify nodes within that one rendered file and are not part of the TYPE registry above.
 
-This does **not** apply to a process flow authored inside a `PROCESS` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.5). There the flow is canon: each `flow.steps[].id` follows the canonical ID grammar (§1) and is **addressable** — unique within its `PROCESS` and referenceable by a step-level `CHANGE`, a `RULE`, an `ACTIVITY`, or an `ASSERTION` — and is promoted to the registered standalone `STEP` TYPE (§3.1; element-file shape and promotion mechanic in [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20) only if a second document references it (canonical-by-containment + promotion, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1). The `STEP` TYPE is the canonical step identity; the file-local `TASK-…` / `SE-…` / `EE-…` labels above are projection labels, never a step's catalogue identity.
+This does **not** apply to a process flow authored inside a `PROCESS` element ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.5). There the flow is canon: each `flow.steps[].id` follows the canonical ID grammar (§1) and is **addressable** — unique within its `PROCESS` and referenceable by a step-level `CHANGE`, a `RULE`, an `ACTION`, or an `ASSERTION` — and is promoted to the registered standalone `STEP` TYPE (§3.1; element-file shape and promotion mechanic in [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20) only if a second document references it (canonical-by-containment + promotion, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1). The `STEP` TYPE is the canonical step identity; the file-local `TASK-…` / `SE-…` / `EE-…` labels above are projection labels, never a step's catalogue identity.
 
 ### 3.4 Field artefact types
 
@@ -161,7 +161,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 
 | TYPE | Uniqueness scope |
 |---|---|
-| `DRIVER`, `GOAL`, `CHANGE`, `ACTIVITY` | within the FGCA / FGA / Goals / Activities document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
+| `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the FGCA / FGA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`elements/01_motivation/`, `elements/02_business/`). |
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
@@ -179,7 +179,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `ASSESSMENT` | within the organisation's element catalogue (`elements/01_motivation/assessments/`), one file per ASSESSMENT. |
 | `TARGET_STATE` | within the organisation's element catalogue (`elements/05_implementation/target-states/`), one file per TARGET_STATE. |
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
-| `MILESTONE` | within the activity-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
+| `MILESTONE` | within the action-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT`, `AMENDMENT`, `SEGMENT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
@@ -193,9 +193,9 @@ Document-level IDs (`FGCA-…`, `FGA-…`, etc.) are unique within the organisat
 
 A cross-reference is a field whose value is an ID (or array of IDs) of another element. The pattern is consistent across notations:
 
-- **Plural field name → array of typed IDs.** Example: `activities[].goals: [GOAL-1, GOAL-2]`.
-- **Singular field name → single typed ID.** Example: `activities[].parent: PHASE-DESIGN`.
-- **Child references parent.** A Goal references its driving Drivers via `factors: [DRIVER-…]`; a Change references its Goals via `goals: [GOAL-…]`; an Activity references its Changes via `changes: [CHANGE-…]`. Any deviations are documented in the relevant notation spec.
+- **Plural field name → array of typed IDs.** Example: `actions[].goals: [GOAL-1, GOAL-2]`.
+- **Singular field name → single typed ID.** Example: `actions[].parent: PHASE-DESIGN`.
+- **Child references parent.** A Goal references its driving Drivers via `factors: [DRIVER-…]`; a Change references its Goals via `goals: [GOAL-…]`; an Action references its Changes via `changes: [CHANGE-…]`. Any deviations are documented in the relevant notation spec.
 
 A validator MUST check that every cross-reference resolves to a defined element of the correct TYPE. A reference to an undefined ID is an error; a reference whose target has the wrong TYPE prefix is also an error.
 
@@ -207,8 +207,13 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 
 | Old form | Canonical form | Where it appears | Notes |
 |---|---|---|---|
-| `ACT-…` | `ACTIVITY-…` | examples under `examples/dgca/`, `examples/activities/`; `07-activities.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
-| `CHG-…` | `CHANGE-…` | spec example in `07-activities.md` §4; DGCA when its schema lands | follow-up |
+| `ACT-…` | `ACTION-…` | examples under `examples/dgca/`, `examples/action/`; `07-action.md` §4 (`delivers_changes: [CHG-001]`). | follow-up |
+| `ACTIVITY-…` | `ACTION-…` | any remaining files using the deprecated `ACTIVITY-` prefix — validators emit `ACTION-005`; migrate before 1.0 cut | follow-up |
+| `activity_type` field | `action_type` field | any schedule or element file still using `activity_type` — validators emit `ACT-020` / `ACTION-005` | follow-up |
+| `activities:` root array | `actions:` root array | any `*.action.transitrix.yaml` still using `activities:` top-level array — validators emit `ACT-020` | follow-up |
+| `activity-card` notation key | `action-card` | any `*.action-card.transitrix.yaml` using `notation: activity-card` — validators emit `PC-005` | follow-up |
+| `activity_card:` root field | `action_card:` | any action-card file using `activity_card:` — validators emit `PC-005` | follow-up |
+| `CHG-…` | `CHANGE-…` | spec example in `07-action.md` §4; DGCA when its schema lands | follow-up |
 | `FAC-…` | `DRIVER-…` | scenarios examples (`FAC-MARKET-001`, etc.); some FGA references | follow-up — note: canonical TYPE name is now `DRIVER`; existing `FACTOR-…` IDs are grandfathered (valid, no forced migration) |
 | `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | residual: `11-scenarios.md` spec example + `examples/scenarios/optimistic-2027.scenarios.transitrix.yaml` | capability-map / products / applications / process-map portion **executed 2026-05-28**; scenarios remains as a follow-up |
 | `SCN-…` / `SCEN-…` | `SCENARIO-…` | `11-scenarios.md`; scenarios examples; `07-activities.md` (`scenario: SCEN-2026-OPT`) | follow-up — variant `SCEN` vs `SCN` also needs unifying |

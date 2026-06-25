@@ -4,7 +4,7 @@ methodology_version: "0.7.0"
 
 id: DGCA-STRATEGY-2026-DGA
 name: "Strategy 2026 — DGA view"
-description: "Driver–Goal–Activity view for the 2026 strategic plan. Changes layer disabled — activities map directly to goals."
+description: "Driver–Goal–Action view for the 2026 strategic plan. Changes layer disabled — actions map directly to goals."
 period: "2026"
 generated_at: "2026-05-26"
 author: Transitrix

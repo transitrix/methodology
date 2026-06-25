@@ -1,17 +1,19 @@
 ---
-notation: "Activities — Project Schedule"
+notation: "Action — Project Schedule"
 version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-21"
+last_updated: "2026-06-25"
 status: "documented"
-file_extension: "*.activities.transitrix.yaml"
-dsm_status: "partially implemented — Activities page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
+file_extension: "*.action.transitrix.yaml"
+dsm_status: "partially implemented — Actions page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
 ---
 
-# Activities Notation — Project Schedule (Network and Timeline)
+# Action Notation — Project Schedule (Network and Timeline)
 
-**Scope:** Text-native form of a project schedule. Activities are nodes carrying optional duration, dependencies, and dates; the same document renders as a Project Schedule Network Diagram (PSND / AoN) for the dependency view and as a Gantt chart for the timeline view. The two views are projections of one schedule, in the MS Project / Primavera tradition. All timing data is optional: a document without dates renders only as a network; with sufficient timing data, it also renders as a Gantt.
-**Renderer:** Transitrix DSM — Activities page (graphical AoN today; Gantt view planned in 0.4.x); Transitrix Studio — preview planned in v0.5.0.
+**Scope:** Text-native form of a project schedule. Actions are nodes carrying optional duration, dependencies, and dates; the same document renders as a Project Schedule Network Diagram (PSND / AoN) for the dependency view and as a Gantt chart for the timeline view. The two views are projections of one schedule, in the MS Project / Primavera tradition. All timing data is optional: a document without dates renders only as a network; with sufficient timing data, it also renders as a Gantt.
+**Renderer:** Transitrix DSM — Actions page (graphical AoN today; Gantt view planned in 0.4.x); Transitrix Studio — preview planned in v0.5.0.
+
+**Deprecated alias.** The former notation key `activities`, file extension `*.activities.transitrix.yaml`, root array field `activities:`, and per-entry field `activity_type` are deprecated as of 2026-06-25. Validators emit `ACT-020` warnings on old names; they remain accepted for backward compatibility until the 1.0 cut.
 
 ---
 
@@ -21,24 +23,26 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Value |
 |---|---|
-| `notation:` value | `activities` |
-| File extension | `*.activities.transitrix.yaml` |
+| `notation:` value | `action` |
+| File extension | `*.action.transitrix.yaml` |
+| Deprecated `notation:` alias | `activities` |
+| Deprecated file extension alias | `*.activities.transitrix.yaml` |
 
 ---
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `activities[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the activities document itself does not carry a lifecycle field. Per-activity scheduling fields (`start_date`, `end_date`) describe *when work is planned to happen*, distinct from `valid_from`/`valid_to` which describe *when the activity element itself is considered in effect*; both coexist.
+Every inline element this notation defines — entries in `actions[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the action document itself does not carry a lifecycle field. Per-action scheduling fields (`start_date`, `end_date`) describe *when work is planned to happen*, distinct from `valid_from`/`valid_to` which describe *when the action element itself is considered in effect*; both coexist.
 
 ---
 
 ## Time-aware relations
 
-An activity's **`goals: [GOAL-…]`** cross-reference — the goals an activity serves — is declared **time-aware** per the temporal model. An activity re-aimed mid-stream (a build activity originally serving GOAL-A pivoted to serve GOAL-B as priorities shift) is a temporal event that loses information when inlined. The canonical home for an Activity → Goal link is a `REL-…` file under `canon/relations/` with `type: activity_goal` (see [17-relations.md](../elements/17-relations.md) §3).
+An action's **`goals: [GOAL-…]`** cross-reference — the goals an action serves — is declared **time-aware** per the temporal model. An action re-aimed mid-stream (a build action originally serving GOAL-A pivoted to serve GOAL-B as priorities shift) is a temporal event that loses information when inlined. The canonical home for an Action → Goal link is a `REL-…` file under `canon/relations/` with `type: action_goal` (see [17-relations.md](../elements/17-relations.md) §3).
 
-**Inline `goals: [GOAL-…]` — v0.x transitional.** The inline `goals` array on activity entries (§5.2 Per-activity fields) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `goals` once an adopter's validator is configured to enforce post-migration. Adopters extracting links to REL files use `valid_from = activity.valid_from` as a sensible epoch for the initial relation.
+**Inline `goals: [GOAL-…]` — v0.x transitional.** The inline `goals` array on action entries (§5.2 Per-action fields) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `goals` once an adopter's validator is configured to enforce post-migration. Adopters extracting links to REL files use `valid_from = action.valid_from` as a sensible epoch for the initial relation.
 
-**`predecessors: [ACTIVITY-…]` stays timeless.** The predecessor DAG within a project plan is a structural property of the plan as a whole, not a temporal event — re-jiggering predecessors mid-stream is a new plan version, not a re-aiming of a single relation. `predecessors` is **not** declared time-aware; it stays inline.
+**`predecessors: [ACTION-…]` stays timeless.** The predecessor DAG within a project plan is a structural property of the plan as a whole, not a temporal event — re-jiggering predecessors mid-stream is a new plan version, not a re-aiming of a single relation. `predecessors` is **not** declared time-aware; it stays inline.
 
 **`delivers_changes: [CHANGE-…]`** (BDN linkage) stays inline in v1 (timeless within the activity's lifecycle).
 
@@ -46,12 +50,12 @@ An activity's **`goals: [GOAL-…]`** cross-reference — the goals an activity 
 
 ## 1. Overview
 
-An **Activities** document describes a directed acyclic graph (DAG) of activities and the dependencies between them, optionally placed in calendar time. It is the text-native form of a project schedule with two coexisting renderings:
+An **Action** document describes a directed acyclic graph (DAG) of actions and the dependencies between them, optionally placed in calendar time. It is the text-native form of a project schedule with two coexisting renderings:
 
-- **Network view** — Project Schedule Network Diagram in Activity-on-Node (AoN) representation: each activity is a node, predecessor relationships are directed edges from predecessor to successor. Always renderable from `activities[]` + `predecessors[]`.
-- **Gantt view** — horizontal-bar timeline: each activity is a bar positioned by computed or pinned dates. Renderable when the schedule is *computable* (durations + predecessors + a project `start_date`) or *pinned* (explicit per-activity dates).
+- **Network view** — Project Schedule Network Diagram in Activity-on-Node (AoN) representation: each action is a node, predecessor relationships are directed edges from predecessor to successor. Always renderable from `actions[]` + `predecessors[]`.
+- **Gantt view** — horizontal-bar timeline: each action is a bar positioned by computed or pinned dates. Renderable when the schedule is *computable* (durations + predecessors + a project `start_date`) or *pinned* (explicit per-action dates).
 
-The notation captures **what work is planned** (activities, durations, dependencies), **for what purpose** (goals served), **by whom** (owner — an `ACTOR`), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — no `progress` / `% complete` field is part of this notation. Execution tracking is the job of an execution system.
+The notation captures **what work is planned** (actions, durations, dependencies), **for what purpose** (goals served), **by whom** (owner — an `ACTOR`), **at what cost** (labor / resources / effort), and **delivering which changes** (BDN linkage). It does **not** track real-time progress against the plan — no `progress` / `% complete` field is part of this notation. Execution tracking is the job of an execution system.
 
 Critical-path values (early start / early finish / late start / late finish / slack) and computed Gantt dates are **not stored** in the document. They are derived at render time by a forward and backward pass over the network (CPM) and by projecting CPM offsets onto the working calendar (Gantt). Renderers MUST compute them and SHOULD highlight the critical path visually.
 
@@ -61,35 +65,35 @@ Critical-path values (early start / early finish / late start / late finish / sl
 
 | Need | Use |
 |---|---|
-| Plan a project as a network of activities with dependencies | Activities — network view |
-| Identify critical path and float | Activities — network view, with CPM render mode |
-| Place the same project on a calendar timeline | Activities — Gantt view (requires `project.start_date` and durations, or pinned per-activity dates) |
-| Mark a deliverable date with no work attached | Activities — milestone (zero-duration activity) |
-| Group activities into phases / summary bars | Activities — parent activities (WBS-style via `parent`) |
-| Bind activities to strategic goals | Activities — `goals: []` |
-| Show what changes activities deliver (BDN linkage) | Activities — `delivers_changes: []` |
+| Plan a project as a network of actions with dependencies | Action — network view |
+| Identify critical path and float | Action — network view, with CPM render mode |
+| Place the same project on a calendar timeline | Action — Gantt view (requires `project.start_date` and durations, or pinned per-action dates) |
+| Mark a deliverable date with no work attached | Action — milestone (zero-duration action) |
+| Group actions into phases / summary bars | Action — parent actions (WBS-style via `parent`) |
+| Bind actions to strategic goals | Action — `goals: []` |
+| Show what changes actions deliver (BDN linkage) | Action — `delivers_changes: []` |
 | Document the procedural flow of a business process | BPMN (`*.bpmn.transitrix.yaml`) |
-| Decompose strategic drivers → goals → changes → activities | DGCA (`*.dgca.transitrix.yaml`) |
-| Browse the strategic portfolio — all Initiatives, Programmes, Projects as a hierarchy | Activities tree (`*.activities-tree.transitrix.yaml`) |
+| Decompose strategic drivers → goals → changes → actions | DGCA (`*.dgca.transitrix.yaml`) |
+| Browse the strategic portfolio — all Initiatives, Programmes, Projects as a hierarchy | Actions tree (`*.actions-tree.transitrix.yaml`) |
 
 ---
 
 ## 3. File location and naming
 
-Stand-alone activity documents live in:
+Stand-alone action documents live in:
 
 ```
-organizations/<org>/views/activities/<NAME>.activities.transitrix.yaml
+organizations/<org>/views/actions/<NAME>.action.transitrix.yaml
 ```
 
-Activities defined here MAY reference other elements by ID (goals, changes, scenarios, actors, activity types) declared elsewhere in the organisation's repository.
+Actions defined here MAY reference other elements by ID (goals, changes, scenarios, actors, action types) declared elsewhere in the organisation's repository.
 
 ---
 
 ## 4. Document structure
 
 ```yaml
-notation: activities
+notation: action
 spec_version: "0.1"
 name: "Platform Launch 2026"            # required per CONTRACT.md §1.1
 generated_at: "2026-05-11"             # optional per CONTRACT.md §4
@@ -110,20 +114,20 @@ project:                              # optional; enables Gantt rendering
       - "2026-07-04"
       - "2026-12-25"
 
-activities:
+actions:
   - id: PHASE-DESIGN
     name: Design phase
-    # parent (summary) activity — see §5.10. No duration of its own; dates roll up from children.
+    # parent (summary) action — see §5.10. No duration of its own; dates roll up from children.
 
   - id: A-001
     name: Requirements analysis
     parent: PHASE-DESIGN              # optional; WBS-style parent
     duration: 5                       # optional; integer or float in time units (see §5.4). Required for CPM; recommended for Gantt.
-    activity_type: Project             # optional — Initiative | Programme | Project | Task
-    goals: [GOAL-CUST-001]            # optional, array of Goal IDs (an activity can serve multiple goals)
+    action_type: Project               # optional — Initiative | Programme | Project | Task
+    goals: [GOAL-CUST-001]            # optional, array of Goal IDs (an action can serve multiple goals)
     scenario: SCEN-2026-OPT           # optional, reference to a Scenario element
-    parent: A-000                     # optional, hierarchical parent activity (WBS-style)
-    predecessors: []                  # optional, array of activity IDs that must complete first
+    parent: A-000                     # optional, hierarchical parent action (WBS-style)
+    predecessors: []                  # optional, array of action IDs that must complete first
     owner: ACTOR-PRODUCT-TEAM-1       # optional, reference to the accountable ACTOR (see §5.6)
     score: 5                          # optional, integer — local prioritisation signal
     sort: 10                          # optional, integer — manual display ordering
@@ -136,8 +140,8 @@ activities:
     link: https://wiki.example.com/A001  # optional, single URL
     description: |
       Optional multi-line description.
-      Anything the team needs to remember about this activity.
-    delivers_changes: [CHG-001]       # optional, array of Change IDs this activity contributes to (BDN linkage)
+      Anything the team needs to remember about this action.
+    delivers_changes: [CHG-001]       # optional, array of Change IDs this action contributes to (BDN linkage)
 
   - id: A-002
     name: Architecture design
@@ -178,7 +182,7 @@ activities:
 
 | Field | Required | Type | Notes |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `activities` |
+| `notation` | yes | string | MUST equal `action`. Deprecated alias: `activities`. |
 | `spec_version` | no | string | reserved, see file header |
 | `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
 | `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
@@ -187,23 +191,23 @@ activities:
 | `version` | no | string | document version (semantic versioning recommended) |
 | `author` | no | string | document author |
 | `project` | no | object | optional schedule anchor for Gantt rendering — `start_date` and `calendar`; see §5.8 |
-| `activities` | yes | array | one or more activity entries; see §5.2 |
+| `actions` | yes | array | one or more action entries; see §5.2. Deprecated alias: `activities`. |
 
-### 5.2 Per-activity fields
+### 5.2 Per-action fields
 
 | Field | Required | Type | Notes |
 |---|---|---|---|
 | `id` | yes | string | unique within the document; follows organisation naming convention (typically `A-NNN`) |
-| `name` | yes | string | activity name |
+| `name` | yes | string | action name |
 | `duration` | no | number (≥ 0) | duration in time units; see §5.4. Required for CPM analysis and recommended for Gantt rendering. `0` is the milestone marker — see §5.9. |
-| `activity_type` | no | string | scale level — one of `Initiative`, `Programme`, `Project`, `Task` (`Strategic Initiative` accepted as alias for `Initiative`); see [elements/24-activity.md](../elements/24-activity.md) §1 |
-| `goals` | no | array of string (ID refs) | array of Goal IDs (M:M) — an activity may serve multiple goals |
+| `action_type` | no | string | scale level — one of `Initiative`, `Programme`, `Project`, `Task` (`Strategic Initiative` accepted as alias for `Initiative`); see [elements/24-action.md](../elements/24-action.md) §1. Deprecated alias: `activity_type`. |
+| `goals` | no | array of string (ID refs) | array of Goal IDs (M:M) — an action may serve multiple goals |
 | `scenario` | no | string (ID ref) | reference to a Scenario element |
-| `parent` | no | string (ID ref to activity) | hierarchical parent activity (WBS-style, **single** parent only) |
-| `predecessors` | no | array of string (ID refs to activities) | activities that must complete before this one can start |
+| `parent` | no | string (ID ref to action) | hierarchical parent action (WBS-style, **single** parent only) |
+| `predecessors` | no | array of string (ID refs to actions) | actions that must complete before this one can start |
 | `owner` | no | string (ID ref) | reference to the accountable `ACTOR-…` (`person` / `business_unit` / `system`); see §5.6 |
 | `owner_role` | no | string (ID ref) | reference to the accountable `ROLE-…` (positional accountability); see §5.6 |
-| `stakeholders` | no | array of string (ID refs) | `STAKEHOLDER-…` IDs whose interests are at stake in this activity; see §5.11 |
+| `stakeholders` | no | array of string (ID refs) | `STAKEHOLDER-…` IDs whose interests are at stake in this action; see §5.11 |
 | `score` | no | integer | local prioritisation signal |
 | `sort` | no | integer | manual display ordering |
 | `tags` | no | array of string | free-text tags (M:M) |
@@ -214,16 +218,16 @@ activities:
 | `effort` | no | decimal (≥ 0) | effort estimate (typically person-hours) |
 | `link` | no | URL string | single related URL |
 | `description` | no | string (multi-line) | free-text description |
-| `delivers_changes` | no | array of string (ID refs to changes) | Change IDs this activity contributes to (BDN linkage) |
+| `delivers_changes` | no | array of string (ID refs to changes) | Change IDs this action contributes to (BDN linkage) |
 
 ### 5.3 Multi-value fields — explicit
 
 Four fields are **arrays** by design, even where the equivalent fields in current Transitrix DSM are single scalars (DSM migration is tracked separately):
 
-- `goals: []` — an activity can serve multiple goals. Array form is canonical.
-- `predecessors: []` — an activity can have multiple predecessors. Array form is required for PSND/AoN.
-- `tags: []` — an activity can carry multiple tags. Array form is canonical.
-- `stakeholders: []` — an activity can have multiple stakeholders. Array form is canonical (see §5.11).
+- `goals: []` — an action can serve multiple goals. Array form is canonical.
+- `predecessors: []` — an action can have multiple predecessors. Array form is required for PSND/AoN.
+- `tags: []` — an action can carry multiple tags. Array form is canonical.
+- `stakeholders: []` — an action can have multiple stakeholders. Array form is canonical (see §5.11).
 
 A single-value form (e.g., `goal: GOAL-X`) is **not accepted** and SHOULD be reported by the validator as an error with a suggestion to convert to the array form.
 
@@ -243,12 +247,12 @@ All dependencies are interpreted as **Finish-to-Start with zero lag** by rendere
 
 Two complementary fields express different dimensions of ownership:
 
-- **`owner: ACTOR-…`** — *who performs the work* (an identity). Optional reference to the `ACTOR` responsible for the activity — `ACTOR-…` of `type` `person`, `business_unit`, or `system` (see [elements/19-actors.md](../elements/19-actors.md)). This collapses the three parallel ownership fields DSM historically exposed (`owner` free-text, `unit` → org unit, `employee` → named employee) into one typed reference, per the 2026-05-29 Actors decision. Legacy free-text `owner` values migrate to an `ACTOR(type: person)` (or `system`) record; the `unit` / `employee` fields are removed (mapping in the `0.5 → 0.6` migration recipe).
-- **`owner_role: ROLE-…`** — *who is accountable* (a position). Optional reference to the `ROLE` that carries positional accountability for the activity. Distinct from `owner`: an `ACTOR` is an identity; a `ROLE` is a position. Both are optional and independent — an activity may carry either, both, or neither. Uses the shared envelope field defined in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.
+- **`owner: ACTOR-…`** — *who performs the work* (an identity). Optional reference to the `ACTOR` responsible for the action — `ACTOR-…` of `type` `person`, `business_unit`, or `system` (see [elements/19-actors.md](../elements/19-actors.md)). This collapses the three parallel ownership fields DSM historically exposed (`owner` free-text, `unit` → org unit, `employee` → named employee) into one typed reference, per the 2026-05-29 Actors decision. Legacy free-text `owner` values migrate to an `ACTOR(type: person)` (or `system`) record; the `unit` / `employee` fields are removed (mapping in the `0.5 → 0.6` migration recipe).
+- **`owner_role: ROLE-…`** — *who is accountable* (a position). Optional reference to the `ROLE` that carries positional accountability for the action. Distinct from `owner`: an `ACTOR` is an identity; a `ROLE` is a position. Both are optional and independent — an action may carry either, both, or neither. Uses the shared envelope field defined in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.
 
 ### 5.7 BDN linkage
 
-`delivers_changes: []` references Changes from BDN (Benefits Dependency Network) — see notation 03-fgca. This is the same M:M relation that exists today in DSM's `activity_change` join. It allows reading an FGCA chain end-to-end from text: a Driver leads to Goals; Goals motivate Changes; Activities deliver Changes.
+`delivers_changes: []` references Changes from BDN (Benefits Dependency Network) — see notation 03-fgca. This is the same M:M relation that exists today in DSM's `action_change` join. It allows reading an FGCA chain end-to-end from text: a Driver leads to Goals; Goals motivate Changes; Actions deliver Changes.
 
 ### 5.8 Project block — `start_date` and `calendar`
 
@@ -274,9 +278,9 @@ project:
 
 The project block does **not** define the duration unit — that lives in `CONVENTIONS.md` per §5.4. The calendar describes when work happens, not how `duration` is measured.
 
-### 5.9 Schedule milestones — zero-duration activities
+### 5.9 Schedule milestones — zero-duration actions
 
-A **schedule milestone** is an activity with `duration: 0`. It marks a deliverable, gate, or significant date on the project's timeline with no work attached. No new entity is introduced *for scheduling*; schedule milestones are first-class activities that happen to be instantaneous.
+A **schedule milestone** is an action with `duration: 0`. It marks a deliverable, gate, or significant date on the project's timeline with no work attached. No new entity is introduced *for scheduling*; schedule milestones are first-class actions that happen to be instantaneous.
 
 ```yaml
 - id: M-LAUNCH
@@ -292,11 +296,11 @@ Renderer behaviour:
 
 Schedule milestones MAY have `start_date` / `end_date` pinned; if both are present they MUST be equal (validator MAY enforce — see §6).
 
-**Distinct from activity-card milestones.** The Activity Card notation ([18-activity-card.md](18-activity-card.md)) introduces a separate `MILESTONE` element type for **project-narrative** milestones — decision gates, certification dates, programme-level markers that belong in the card's narrative but are not part of the schedule's critical-path computation. The two coexist: a `MILESTONE-…` element in a activity card may *also* reference a zero-duration activity here when the same date appears on both the card and the schedule. Use a schedule milestone (zero-duration activity, this section) for timeline computation; use a activity-card milestone ([18-activity-card.md](18-activity-card.md) §3) for narrative gates.
+**Distinct from action-card milestones.** The Action Card notation ([18-action-card.md](18-action-card.md)) introduces a separate `MILESTONE` element type for **project-narrative** milestones — decision gates, certification dates, programme-level markers that belong in the card's narrative but are not part of the schedule's critical-path computation. The two coexist: a `MILESTONE-…` element in an action card may *also* reference a zero-duration action here when the same date appears on both the card and the schedule. Use a schedule milestone (zero-duration action, this section) for timeline computation; use an action-card milestone ([18-action-card.md](18-action-card.md) §3) for narrative gates.
 
-### 5.10 Phases / summary activities — `parent`
+### 5.10 Phases / summary actions — `parent`
 
-A **phase** (also called a summary activity in MS Project terminology) groups child activities under one heading. It is an activity that other activities reference via `parent: <PHASE-ID>`. The phase itself MAY omit `duration`, `predecessors`, and dates — those values are derived from its children at render time (earliest start of any child, latest finish of any child).
+A **phase** (also called a summary action in MS Project terminology) groups child actions under one heading. It is an action that other actions reference via `parent: <PHASE-ID>`. The phase itself MAY omit `duration`, `predecessors`, and dates — those values are derived from its children at render time (earliest start of any child, latest finish of any child).
 
 ```yaml
 - id: PHASE-DESIGN
@@ -318,13 +322,13 @@ A **phase** (also called a summary activity in MS Project terminology) groups ch
 Renderer behaviour:
 - Network view: phases MAY render as collapsible groups or visual containers around their children (see §7 render contract for details).
 - Gantt view: phases render as a summary bar spanning from earliest child start to latest child finish, visually distinct from leaf bars.
-- The `parent` relation is **single-valued** (an activity has at most one parent), aligning with WBS conventions.
+- The `parent` relation is **single-valued** (an action has at most one parent), aligning with WBS conventions.
 
 A phase with no children is structurally orphan (validator MAY warn).
 
 ### 5.11 Stakeholders
 
-`stakeholders: []` is an optional array of `STAKEHOLDER-…` IDs whose interests are at stake in this activity. Each `STAKEHOLDER` element is a first-class canonical primitive (see [elements/20-stakeholders.md](../elements/20-stakeholders.md)) that carries its concern, interest, and influence profile, plus an `ACTOR` reference for identity. Using `STAKEHOLDER-…` IDs (rather than inline `ACTOR-…` or `ROLE-…` IDs) keeps the stake profile in one place — the `STAKEHOLDER` catalogue — and allows a single stakeholder to appear across multiple activities without repeating the profile.
+`stakeholders: []` is an optional array of `STAKEHOLDER-…` IDs whose interests are at stake in this action. Each `STAKEHOLDER` element is a first-class canonical primitive (see [elements/20-stakeholders.md](../elements/20-stakeholders.md)) that carries its concern, interest, and influence profile, plus an `ACTOR` reference for identity. Using `STAKEHOLDER-…` IDs (rather than inline `ACTOR-…` or `ROLE-…` IDs) keeps the stake profile in one place — the `STAKEHOLDER` catalogue — and allows a single stakeholder to appear across multiple actions without repeating the profile.
 
 Array form is canonical (`stakeholders: [STAKEHOLDER-X, STAKEHOLDER-Y]`). An empty array is equivalent to omission.
 
@@ -334,35 +338,36 @@ Array form is canonical (`stakeholders: [STAKEHOLDER-X, STAKEHOLDER-Y]`). An emp
 
 | Rule | Severity | Description |
 |---|---|---|
-| `ACT-001` | error | `notation` must equal `activities` |
-| `ACT-002` | error | every activity must have a non-empty `id` |
-| `ACT-003` | error | every activity must have a non-empty `name` |
-| `ACT-004` | error | activity IDs must be unique within the document |
-| `ACT-005` | error | `predecessors` must reference existing activity IDs (within or outside the document, depending on linker mode) |
+| `ACT-001` | error | `notation` must equal `action` (deprecated alias `activities` accepted with `ACT-020` warning) |
+| `ACT-002` | error | every action must have a non-empty `id` |
+| `ACT-003` | error | every action must have a non-empty `name` |
+| `ACT-004` | error | action IDs must be unique within the document |
+| `ACT-005` | error | `predecessors` must reference existing action IDs (within or outside the document, depending on linker mode) |
 | `ACT-006` | error | the dependency graph defined by `predecessors` must be acyclic (no loops) |
-| `ACT-007` | error | an activity cannot list itself as a predecessor |
+| `ACT-007` | error | an action cannot list itself as a predecessor |
 | `ACT-008` | error | `end_date` MUST be ≥ `start_date` if both present |
 | `ACT-009` | error | numeric fields (`duration`, `labor_cost`, `resources_cost`, `effort`, `score`, `sort`) must be ≥ 0 (or 0-allowed where semantically valid) |
 | `ACT-010` | error | single-value forms `goal: …`, `predecessor: …`, `tag: …` rejected — use the plural array form |
-| `ACT-011` | warn | activity with no `duration` cannot participate in CPM analysis; renderer SHOULD highlight it |
-| `ACT-012` | warn | activity with `start_date` AND `end_date` AND `duration` whose values are inconsistent |
-| `ACT-013` | warn | an activity that is not a predecessor of any other and is not referenced as a goal-supporting activity is structurally orphan |
+| `ACT-011` | warn | action with no `duration` cannot participate in CPM analysis; renderer SHOULD highlight it |
+| `ACT-012` | warn | action with `start_date` AND `end_date` AND `duration` whose values are inconsistent |
+| `ACT-013` | warn | an action that is not a predecessor of any other and is not referenced as a goal-supporting action is structurally orphan |
 | `ACT-014` | error | `project.calendar.working_days` values must be from the set `{mon, tue, wed, thu, fri, sat, sun}` (case-insensitive) and unique |
 | `ACT-015` | error | `project.calendar.holidays` entries must be valid ISO 8601 dates |
 | `ACT-016` | error | a milestone (`duration: 0`) with both `start_date` and `end_date` MUST have `start_date == end_date` |
-| `ACT-017` | warn | a phase (an activity referenced as `parent` by at least one child) SHOULD omit its own `duration` and dates — those values roll up from children |
+| `ACT-017` | warn | a phase (an action referenced as `parent` by at least one child) SHOULD omit its own `duration` and dates — those values roll up from children |
 | `ACT-018` | warn | a phase with no children is structurally orphan |
-| `ACT-019` | warn | `project.start_date` absent AND no activity has pinned dates → Gantt view will not render; the network view still does |
+| `ACT-019` | warn | `project.start_date` absent AND no action has pinned dates → Gantt view will not render; the network view still does |
+| `ACT-020` | warn | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `action_type`. |
 
 ---
 
 ## 7. Network view — render contract
 
-The network view (Project Schedule Network Diagram) is always renderable from `activities[]` and their `predecessors[]`. Timing data is irrelevant for the network view; an activity without a `duration` simply renders without one.
+The network view (Project Schedule Network Diagram) is always renderable from `actions[]` and their `predecessors[]`. Timing data is irrelevant for the network view; an action without a `duration` simply renders without one.
 
 A renderer that consumes this notation for the network view MUST:
 
-- Draw each activity as a rectangular node containing at minimum `id`, `name`, and `duration` (if present).
+- Draw each action as a rectangular node containing at minimum `id`, `name`, and `duration` (if present).
 - Draw a directed edge from each `predecessor` to its successor.
 - Compute the critical path via forward / backward pass over the network (see §8).
 - Highlight critical-path nodes and edges visually distinct from non-critical (Transitrix Studio uses `--ts-brand-orange` for critical, neutral for non-critical).
@@ -376,8 +381,8 @@ A renderer SHOULD:
 
 A renderer MAY:
 
-- Group activities by `parent` (WBS-style) into visual swimlanes or collapsible groups.
-- Filter visible activities by `tags`, `goals`, or `scenario`.
+- Group actions by `parent` (WBS-style) into visual swimlanes or collapsible groups.
+- Filter visible actions by `tags`, `goals`, or `scenario`.
 - Export the network to image formats (SVG / PNG).
 
 ---
@@ -470,12 +475,12 @@ Both views are projections of the same underlying schedule. A document never "be
 ## 10. Example file shape (minimal)
 
 ```yaml
-notation: activities
+notation: action
 spec_version: "0.1"
 name: "Minimal example"                 # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
 title: Minimal example
-activities:
+actions:
   - id: A
     name: Start
     duration: 3
@@ -497,7 +502,7 @@ activities:
 - Critical Path Method (CPM) — forward / backward pass standard reference
 - Henry L. Gantt — Gantt chart conventions (summary bars, milestones, calendar projection) as carried forward by MS Project and Primavera P6
 - Transitrix BPMN notation: `notations/01-bpmn.md` (for procedural-flow processes)
-- Transitrix FGCA notation: `notations/02-fgca.md` (for Driver → Goal → Change → Activity decomposition; this notation's `delivers_changes` field links into FGCA)
+- Transitrix FGCA notation: `notations/02-fgca.md` (for Driver → Goal → Change → Action decomposition; this notation's `delivers_changes` field links into FGCA)
 - Transitrix Goals notation: `notations/04-goals.md` (this notation's `goals` field references Goal IDs)
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Family selection across FGCA / FGA / Goals / Activities: `notations/README.md` § Family selection
+- Family selection across FGCA / FGA / Goals / Actions: `notations/README.md` § Family selection

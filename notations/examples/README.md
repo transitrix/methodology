@@ -6,8 +6,8 @@ One subfolder per diagram format. Open any example file in VS Code with the Tran
 |---|---|---|---|
 | [`bpmn/`](bpmn/) | `*.bpmn.transitrix.yaml` | BPMN | Business process diagrams with lanes, gateways, and flows |
 | [`goals/`](goals/) | `*.goals.transitrix.yaml` | Goals tree | Hierarchical goal decomposition (Strategy → Business Goal → Project) |
-| [`dgca/`](dgca/) | `*.dgca.transitrix.yaml` | DGCA | Driver → Goal → Change → Activity chain; DGA mode via `view_config.layers.changes: off` |
-| [`activities/`](activities/) | `*.activities.transitrix.yaml` | Activity network | AoN / PSND precedence diagram with critical path |
+| [`dgca/`](dgca/) | `*.dgca.transitrix.yaml` | DGCA | Driver → Goal → Change → Action chain; DGA mode via `view_config.layers.changes: off` |
+| [`action/`](action/) | `*.action.transitrix.yaml` | Action schedule | AoN / PSND precedence diagram with critical path |
 | [`blocks/`](blocks/) | `*.blocks.transitrix.yaml` | Nested block diagrams | Recursive `block` tree rendered as nested boxes |
 | [`capability-map/`](capability-map/) | `*.capability-map.transitrix.yaml` | Capabilities map | Capability hierarchy with CMMI maturity assessment |
 | [`process-map/`](process-map/) | `*.process-map.transitrix.yaml` | Process landscape map | Top-level catalogue of operating, supporting, and management processes |

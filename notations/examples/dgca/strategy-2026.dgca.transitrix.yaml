@@ -4,7 +4,7 @@ methodology_version: "0.7.0"
 
 id: DGCA-STRAT-1
 name: "Strategy 2026 — DGCA chain"
-description: "Driver → Goal → Change → Activity decomposition for the 2026 plan."
+description: "Driver → Goal → Change → Action decomposition for the 2026 plan."
 period: "2026"
 generated_at: "2026-05-26"
 author: Transitrix
@@ -12,7 +12,7 @@ author: Transitrix
 # Projection-only view. No element data is authored inline in this file.
 # The full D/G/C/A element set lives in elements/ alongside this file.
 # The renderer derives the displayed chain by traversing the inline cross-
-# reference fields (goal.factors, change.goals, activity.changes) on those
+# reference fields (goal.factors, change.goals, action.changes) on those
 # element files — see notations/views/02-dgca.md §"Source of truth".
 
 view_config:
@@ -23,7 +23,7 @@ view_config:
   changes:
     surface: derived        # derive CHANGE set from change.goals links
   actions:
-    surface: derived        # derive ACTIVITY set from activity.changes links
+    surface: derived        # derive ACTION set from action.changes links
   layers:
     drivers: on
     goals: on

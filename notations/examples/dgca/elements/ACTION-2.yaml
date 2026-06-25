@@ -1,8 +1,8 @@
-notation: activity
-id: ACTIVITY-5
-name: "CRM implementation"
-changes: [CHANGE-3]
-description: "Implement and integrate a modern CRM to improve customer support visibility."
+notation: action
+id: ACTION-2
+name: "MVP development"
+changes: [CHANGE-1]
+description: "Build and release the minimum viable product for the new product line."
 
 zone: canon
 admitted_at: "2026-05-26"

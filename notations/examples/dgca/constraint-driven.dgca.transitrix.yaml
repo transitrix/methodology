@@ -7,7 +7,7 @@ name: "EU data-residency DGCA chain"
 description: >
   Worked example showing DRIVER.references_constraint — a driver that
   reflects a binding regulatory constraint (GDPR data residency), and the
-  goals / changes / activities the organisation runs to comply.
+  goals / changes / actions the organisation runs to comply.
 period: "2026"
 generated_at: "2026-05-26"
 author: Transitrix

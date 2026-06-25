@@ -1,8 +1,8 @@
-notation: activity
-id: ACTIVITY-3
-name: "Process audit"
-changes: [CHANGE-2]
-description: "Inventory and assess all manual processes eligible for automation."
+notation: action
+id: ACTION-1
+name: "Market research"
+changes: [CHANGE-1]
+description: "Customer and competitor research to inform product specification."
 
 zone: canon
 admitted_at: "2026-05-26"

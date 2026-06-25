@@ -1,8 +1,8 @@
-notation: activity
-id: ACTIVITY-4
-name: "RPA tooling rollout"
-changes: [CHANGE-2]
-description: "Deploy and configure RPA tooling for the highest-volume manual workflows."
+notation: action
+id: ACTION-5
+name: "CRM implementation"
+changes: [CHANGE-3]
+description: "Implement and integrate a modern CRM to improve customer support visibility."
 
 zone: canon
 admitted_at: "2026-05-26"

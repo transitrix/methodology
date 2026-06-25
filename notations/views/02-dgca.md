@@ -25,11 +25,11 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Source of truth
 
-**DRIVER, GOAL, CHANGE, and ACTIVITY elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The DGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+**DRIVER, GOAL, CHANGE, and ACTION elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The DGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
 
-The inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
+The inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
 
-> **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is still **ACTIVITY** — element IDs use the `ACTIVITY-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an ACTIVITY element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package).
+> **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is `ACTION` — element IDs use the `ACTION-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an `ACTION` element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package). The former element type name `ACTIVITY` is a deprecated alias accepted with `ACTION-005` warnings; see [CONTRACT.md](../CONTRACT.md) §15.
 
 The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
@@ -37,7 +37,7 @@ The reconstruction invariant applies: `render(Elements + Relations, view_config)
 
 ## Element lifecycle
 
-Every DRIVER, GOAL, CHANGE, and ACTIVITY element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. In inline-element DGCA files (where element data is authored directly in the view document) each `actions[]` entry carries lifecycle fields in the same way. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
+Every DRIVER, GOAL, CHANGE, and ACTION element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. In inline-element DGCA files (where element data is authored directly in the view document) each `actions[]` entry carries lifecycle fields in the same way. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -144,7 +144,7 @@ Examples:
 
 ## Structure — projection over canon elements
 
-A DGCA view document projects over DRIVER, GOAL, CHANGE, and ACTIVITY elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
+A DGCA view document projects over DRIVER, GOAL, CHANGE, and ACTION elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
 
 ```yaml
 notation: dgca
@@ -236,11 +236,11 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 
 ### `actions[]`
 
-Each entry in `actions[]` is an **Action** — a project-domain work item at whatever abstraction level the diagram uses. The underlying element is an ACTIVITY primitive (id prefix `ACTIVITY-`); the optional `type:` field records its project-domain level within the DGCA view.
+Each entry in `actions[]` is an **Action** — a project-domain work item at whatever abstraction level the diagram uses. The underlying element is an `ACTION` primitive (id prefix `ACTION-`); the optional `type:` field records its project-domain level within the DGCA view.
 
 | Field | Required | Description |
 |---|---|---|
-| `id` | yes | `ACTIVITY-[<middle>-]<INTEGER>` |
+| `id` | yes | `ACTION-[<middle>-]<INTEGER>` (deprecated alias: `ACTIVITY-[<middle>-]<INTEGER>`) |
 | `name` | yes | what the action is |
 | `type` | no | project-domain level: `initiative` \| `programme` \| `project` \| `work_package`. Defaults to `initiative` when omitted (backward compat). See §"Project domain elements" below. |
 | `changes` | no | array of `CHANGE-…` IDs this action delivers |
@@ -250,7 +250,7 @@ Each entry in `actions[]` is an **Action** — a project-domain work item at wha
 | `due_date` | no | target completion date (YYYY-MM-DD) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTIVITY-` is the canonical element-type prefix; `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTION-` is the canonical element-type prefix; `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
 
 ---
 
@@ -298,7 +298,7 @@ view_config:
   changes:
     surface: derived     # derive CHANGE set from change.goals inline links for the included goals
   actions:
-    surface: derived     # derive ACTIVITY set from activity.changes links for the included changes
+    surface: derived     # derive ACTION set from action.changes links for the included changes
   layers:
     drivers: on          # show the Drivers column
     goals: on            # show the Goals column
@@ -320,7 +320,7 @@ view_config:
 | `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. |
 | `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included goals. `all` — include every active DRIVER in canon. |
 | `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
-| `actions.surface` | string | `derived` | `derived` — derive the ACTIVITY set by following `activity.changes` links for the included change set. `all` — include every active ACTIVITY in canon. Deprecated alias: `activities.surface`. |
+| `actions.surface` | string | `derived` | `derived` — derive the ACTION set by following `action.changes` links for the included change set. `all` — include every active ACTION in canon. Deprecated alias: `activities.surface`. |
 | `layers.drivers` | `on` \| `off` | `on` | Toggle the Drivers column in the rendered view. |
 | `layers.goals` | `on` \| `off` | `on` | Toggle the Goals column. Toggling off produces a degenerate view; `on` recommended. |
 | `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, actions link directly to goals via `actions[].goals`. |
@@ -361,10 +361,10 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 
 - View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../CONTRACT.md) §14 (VP-2)
 - Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1
-- DRIVER, GOAL, CHANGE, ACTIVITY element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
-- Timeless inline relations (`goal.factors`, `change.goals`, `activity.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
+- DRIVER, GOAL, CHANGE, ACTION element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
+- Timeless inline relations (`goal.factors`, `change.goals`, `action.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
 - Goals tree notation: [`04-goals.md`](04-goals.md)
-- Activities notation (separate notation, process domain): [`07-activities.md`](07-activities.md) — uses `delivers_changes:` to link into the DGCA chain
+- Action schedule notation: [`07-action.md`](07-action.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
-- Family selection across DGCA / Goals / Activities: `notations/README.md` § Family selection
+- Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/methodology.md`

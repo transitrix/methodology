@@ -1,16 +1,16 @@
-notation: activities
+notation: action
 spec_version: "0.1"
 
 name: "Office Relocation — HQ Move 2026"
 description: |
   HQ move from Building A to Building B. Pinned-mode schedule per
-  [07-activities.md §9.1](../../07-activities.md): every leaf activity
+  [07-action.md §9.1](../../07-action.md): every leaf action
   carries both `start_date` and `end_date`, so the Gantt view renders
   directly without computing CPM offsets. `duration` is kept for
   CPM analysis and stays consistent with the pinned date range.
 
   Two milestones — `M-LEASE-SIGNED` and `M-OPEN-DAY` — are modelled
-  as zero-duration activities per §5.9. `A-202` (interior design) and
+  as zero-duration actions per §5.9. `A-202` (interior design) and
   `A-205` (furniture delivery) sit on parallel paths with positive
   slack; the critical path runs through site selection → lease →
   construction permits → construction work → IT install → pack-up
@@ -28,7 +28,7 @@ project:
     holidays:
       - "2026-12-25"
 
-activities:
+actions:
   - id: A-101
     name: Requirements gathering
     duration: 10
