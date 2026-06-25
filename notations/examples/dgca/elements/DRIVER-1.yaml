@@ -1,0 +1,19 @@
+notation: driver
+id: DRIVER-1
+name: "Competitive market pressure"
+type: external
+category: economic
+description: >
+  Standing external economic driver — the competitive dynamic that compels
+  the organisation to grow revenue and differentiate its offering.
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

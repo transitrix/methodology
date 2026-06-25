@@ -120,6 +120,12 @@ async function checkExamples(catalogue, failures) {
     const base = posix.basename(rel);
     const parentDir = posix.basename(posix.dirname(rel));
 
+    // Skip companion element files nested inside a notation subdirectory
+    // (e.g. notations/examples/dgca/elements/DRIVER-1.yaml). E1/E2 apply only
+    // to view files one level inside a notation dir (<notation>/<file>).
+    const relWithinExamples = rel.slice('notations/examples/'.length);
+    if (relWithinExamples.split('/').length !== 2) continue;
+
     // E1 — name must be <name>.<short>.transitrix.yaml with a known short.
     const m = base.match(/^[^.]+\.([a-z0-9-]+)\.transitrix\.yaml$/);
     if (!m) {

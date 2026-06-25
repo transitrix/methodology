@@ -1,82 +1,28 @@
 notation: dgca
 spec_version: "0.1"
+methodology_version: "0.7.0"
 
 id: DGCA-STRATEGY-2026-DGA
 name: "Strategy 2026 — DGA view"
 description: "Driver–Goal–Activity view for the 2026 strategic plan. Changes layer disabled — activities map directly to goals."
 period: "2026"
-version: "0.1"
 generated_at: "2026-05-26"
 author: Transitrix
 
+# Projection-only view (DGA mode — Changes layer off).
+# No element data is authored inline in this file.
+# The 2026 strategic element set lives in elements/ alongside this file.
+# See notations/views/02-dgca.md §"Source of truth".
+
 view_config:
+  goals:
+    filter: all
+  factors:
+    surface: derived
+  activities:
+    surface: derived
   layers:
-    changes: off          # DGA mode — Driver → Goal → Activity (no Changes column)
-
-factors:
-  - id: DRIVER-MARKET-1
-    name: "Market growth opportunity in new geographies"
-    type: external
-    category: economic
-  - id: DRIVER-REG-1
-    name: "Increasing regulatory pressure (GDPR, data residency)"
-    type: external
-    category: legal
-  - id: DRIVER-TECH-1
-    name: "Internal shift to cloud-native architecture"
-    type: internal
-
-goals:
-  - id: GOAL-MARKET-1
-    name: "Expand market share"
-    factors: [DRIVER-MARKET-1, DRIVER-TECH-1]
-  - id: GOAL-COMPLIANCE-1
-    name: "Achieve full regulatory compliance"
-    factors: [DRIVER-REG-1]
-  - id: GOAL-PLATFORM-1
-    name: "Modernise platform"
-    factors: [DRIVER-TECH-1]
-
-activities:
-  - id: ACTIVITY-MARKET-1
-    name: "Launch in two new regions"
-    goals: [GOAL-MARKET-1]
-    owner: ROLE-BIZ-1
-    status: "In Progress"
-    due_date: "2026-09-30"
-  - id: ACTIVITY-MARKET-2
-    name: "Partner channel programme"
-    goals: [GOAL-MARKET-1]
-    owner: ROLE-SALES-1
-    status: "Planned"
-    due_date: "2026-12-31"
-  - id: ACTIVITY-MARKET-3
-    name: "Launch self-serve onboarding"
-    goals: [GOAL-MARKET-1]
-    owner: ROLE-PRODUCT-1
-    status: "Planned"
-    due_date: "2026-11-30"
-  - id: ACTIVITY-COMPLIANCE-1
-    name: "GDPR gap assessment"
-    goals: [GOAL-COMPLIANCE-1]
-    owner: ROLE-LEGAL-1
-    status: "Done"
-    due_date: "2026-03-31"
-  - id: ACTIVITY-COMPLIANCE-2
-    name: "Policy and training rollout"
-    goals: [GOAL-COMPLIANCE-1]
-    owner: ROLE-HR-1
-    status: "In Progress"
-    due_date: "2026-06-30"
-  - id: ACTIVITY-PLATFORM-1
-    name: "Migrate to cloud-native stack"
-    goals: [GOAL-PLATFORM-1]
-    owner: ROLE-ENG-1
-    status: "In Progress"
-    due_date: "2026-10-31"
-  - id: ACTIVITY-PLATFORM-2
-    name: "API gateway rollout"
-    goals: [GOAL-PLATFORM-1]
-    owner: ROLE-ENG-1
-    status: "Planned"
-    due_date: "2026-12-31"
+    drivers: on
+    goals: on
+    changes: off        # DGA mode — Driver → Goal → Activity; no Changes column
+    activities: on
