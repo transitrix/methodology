@@ -12,7 +12,9 @@
 #            atomicity, referential integrity, ArchiMate semantics, policy.
 #            Backed by .validators/lint.py (ships in the worked example; scans canon/).
 #   - views  (file scope) — every canon/views/**/*.transitrix.yaml validates/compiles,
-#            one file at a time, via npx @transitrix/cli.
+#            one file at a time, via npx @transitrix/cli. All canonical notation
+#            extensions are accepted without --ext; pass --ext <notation-name>
+#            only for a non-canonical extension outside the built-in registry.
 #
 # The four-way responsibility framing (view / element / relation / structure) is a
 # *reporting* distinction, not separate engines — see methodology ADR
