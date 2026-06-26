@@ -5,7 +5,7 @@
 // centralised watch-list loader and the per-file codex artefact parser.
 
 import { readdir, readFile, access } from 'node:fs/promises';
-import { join, resolve, dirname, basename } from 'node:path';
+import { join, resolve, dirname, basename, relative } from 'node:path';
 import { readTopScalar, readBlockScalars, readMapList } from './yaml.mjs';
 import { isDue } from './schedule.mjs';
 
@@ -38,6 +38,16 @@ export async function findOrgRoot(fromPath) {
   }
 }
 
+// Convert a glob pattern (supporting * and **) to a RegExp for path matching.
+function globToRegex(pattern) {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  const rx = escaped
+    .replace(/\*\*/g, '\x00')
+    .replace(/\*/g, '[^/]*')
+    .replace(/\x00/g, '.*');
+  return new RegExp('^' + rx + '$');
+}
+
 async function walkYaml(dir, out = []) {
   let entries;
   try { entries = await readdir(dir, { withFileTypes: true }); } catch { return out; }
@@ -65,11 +75,18 @@ export function parseCodexArtefact(text, file) {
 }
 
 // Discover every codex artefact under <orgRoot>/codex/ (external + internal).
-export async function discoverCodex(orgRoot) {
+// excludePatterns — optional glob list (relative to codex/ root) matching paths to skip.
+// Mirrors view.regimes.exclude_paths from 22-coverage-metric.md §4.
+export async function discoverCodex(orgRoot, { excludePatterns = [] } = {}) {
   const codexDir = join(resolve(orgRoot), 'codex');
   if (!(await exists(codexDir))) return [];
+  const regexes = excludePatterns.map(globToRegex);
   const out = [];
   for (const file of (await walkYaml(codexDir)).sort()) {
+    if (regexes.length > 0) {
+      const rel = relative(codexDir, file).replace(/\\/g, '/');
+      if (regexes.some(rx => rx.test(rel))) continue;
+    }
     let text;
     try { text = await readFile(file, 'utf8'); } catch { continue; }
     out.push(parseCodexArtefact(text, file));
