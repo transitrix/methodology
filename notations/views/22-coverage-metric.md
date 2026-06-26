@@ -122,6 +122,9 @@ view:
     # filter:
     #   jurisdiction: [eu, ge]
     #   codex_type: [LAW, REGULATION]   # optional; default — all four codex TYPEs
+    # exclude_paths:                    # optional — globs relative to codex/ root; ignored when include: is set
+    #   - "templates/**"
+    #   - "service/**"
 
   # Grouping (the axes of the matrix). Default: subject × regime.
   grouping:
@@ -166,6 +169,7 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to count over, in addition to (or instead of) the processes derived from `products`. |
 | `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../elements/14-codex.md)). |
 | `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
+| `view.regimes.exclude_paths` | no ² | list of strings | unset (no path exclusions) | Glob patterns relative to the `codex/` root. Any file whose path (relative to `codex/`) matches a pattern is excluded from the regime candidate set before `filter` is applied. Supports `*` (any characters except `/`) and `**` (any characters including `/`). **Ignored when `view.regimes.include` is set** — an explicit include list bypasses path-based exclusion entirely. Useful for omitting non-catalogue sub-folders (templates, service files, drafts) without duplicating their paths across every view config. Example: `["templates/**", "service/**"]`. |
 | `view.grouping.rows` | no | string | `subject` | Row dimension: `subject` (one row per subject at `subject_grain`), `regime` (one row per regime). |
 | `view.grouping.subject_grain` | no | string | `task` | Subject grain when `rows: subject` or when the matrix is per-subject: `product` (one row per `PRODUCT`), `product-stage` (one row per stage of each process), `task` (one row per flow step). |
 | `view.grouping.columns` | no | string | `regime` | Column dimension: `regime` (one column per codex artefact), `jurisdiction` (one column per jurisdiction; collapses all regimes from the same jurisdiction). |
@@ -182,7 +186,7 @@ Every field carries an explicit default, so a view with only the required envelo
 
 ¹ **`subjects`** — both keys are optional. Omitting them is the zero-config default: the renderer counts coverage over **every `PRODUCT` in canon** (sorted by id). Name `products` and/or `processes` to narrow the scope.
 
-² **`regimes`** — both keys are optional and only ever *narrow* the regime axis. Omitting them enumerates every codex artefact in the `codex/` zone as a regime column. If both `include` and `filter` are present, `include` wins and `filter` is ignored.
+² **`regimes`** — all three keys are optional and only ever *narrow* the regime axis. Omitting them enumerates every codex artefact in the `codex/` zone as a regime column. **Priority**: `include` wins over everything — when set, `filter` and `exclude_paths` are both ignored. When `include` is absent, `exclude_paths` is applied first (path-based exclusion from the candidate set), then `filter` (type / jurisdiction filter).
 
 All references in `view.subjects.*` and `view.regimes.include` / `view.regimes.filter` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
 
@@ -227,7 +231,7 @@ The renderer reads **no other input**. In particular: the view document itself c
 
 For each (row, column) cell in the materialised matrix:
 
-1. **Resolve the column's regime set** from `view.regimes.include` or `view.regimes.filter` against the codex catalogue. When `view.grouping.columns: jurisdiction`, regimes are bucketed by their `jurisdiction:` field (internal codex artefacts → bucket `internal`).
+1. **Resolve the column's regime set** — apply in precedence order: (a) if `view.regimes.include` is set, use exactly those artefacts and skip steps b–c; (b) otherwise, start from every codex artefact in the `codex/` zone and exclude any whose file path (relative to `codex/`) matches a pattern in `view.regimes.exclude_paths`; (c) then narrow by `view.regimes.filter` if present. When `view.grouping.columns: jurisdiction`, bucket the resulting set by `jurisdiction:` field (internal codex artefacts → bucket `internal`).
 2. **Resolve the row's subject set** from `view.subjects.*` and `view.grouping.subject_grain`:
    - `product` — one row per `PRODUCT-…`.
    - `product-stage` — one row per (`PRODUCT-…`, stage). Stages come from process-blueprints; absent a blueprint, a coarse-grain flow grouping is used.
@@ -287,6 +291,7 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COVMET-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.regimes.include` does not resolve to an admitted canonical element of the expected TYPE. A value in `view.regimes.include` whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` is the same error. |
 | `COVMET-004` | error | `view.grouping.rows`, `view.grouping.subject_grain`, or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
 | `COVMET-005` | error | `view.coverage_rule.counts_as_covered`, `view.coverage_rule.treat_proposed_as`, or `view.coverage_rule.treat_ai_reviewed_as` is set to a value outside its enumeration (the last per CONTRACT §6.2: `shown-distinct` \| `shown-same` \| `hidden`). |
+| `COVMET-006` | warning | A pattern in `view.regimes.exclude_paths` is not a valid glob string (unbalanced brackets or other malformed syntax). The renderer MUST skip the malformed pattern and emit this warning; it MUST NOT abort the render. |
 | `COVMET-006` | warning | `view.regimes.filter.jurisdiction` contains a value that is not ISO 3166-1 alpha-2, `eu`, or `intl` (the only values codex external artefacts permit, [14-codex.md](../elements/14-codex.md) §3). |
 | `COVMET-007` | warning | Both `view.regimes.include` and `view.regimes.filter` are present (the include wins; the filter is silently ignored). |
 | `COVMET-008` | warning | The view selects zero regimes after applying `include` / `filter` — the rendered matrix will have no columns. Usually indicates a typo or that no codex artefacts of the requested kind have been admitted. |
