@@ -35,6 +35,20 @@ A `person` actor records *identity*, independent of how the organisation engages
 
 This is why the former `EMPLOYEE` TYPE was removed: `EMPLOYEE` = `ACTOR(person)` **+** an `employment` relation.
 
+### 1.2 Agent disambiguation — how to tell ACTOR from ROLE at load time
+
+Three signals, in reliability order:
+
+1. **ID prefix** — definitive. `ACTOR-…` is always an actor; `ROLE-…` is always a role. If a reference carries an ID, it is unambiguous.
+2. **File path** — unambiguous when loading from the canon: files under `02_business/actors/` are actors; files under `02_business/roles/` are roles.
+3. **`notation` field** — every element YAML carries `notation: actor` or `notation: role`; use as a fallback when the ID or path is unavailable.
+
+Common pitfalls:
+
+- `owner: ACTOR-…` and `owner_role: ROLE-…` can coexist on the same object (e.g. an action). They are independent fields: who *performs* the work vs what *position is accountable* for it.
+- A `person` ACTOR is not an employee. Employment lives in a separate `employment` REL that carries `roles: [ROLE-…]`, not on the actor file itself.
+- The deprecated `EMPLOYEE-…` ID prefix does not exist in canon. If encountered in legacy data, map it to `ACTOR(type: person)` + `employment` REL.
+
 ---
 
 ## 2. Frontmatter — canonical schema
