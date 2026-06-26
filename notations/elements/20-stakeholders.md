@@ -81,9 +81,9 @@ A stakeholder's stake in a specific canonical object is a first-class relation (
 
 | Relation `type` | From → To | What it records |
 |---|---|---|
-| `stakeholding` | `STAKEHOLDER` → `GOAL` \| `ACTIVITY` \| `CAPABILITY` | This stakeholder has a stake in the target object. Optional per-stake `concern` / `influence` on the relation. The stakeholder→project link (`ACTIVITY`) drives the Activity Card stakeholders block; the stakeholder→goal link is the methodology form of DSM's existing `goal_stakeholder`. |
+| `stakeholding` | `STAKEHOLDER` → `GOAL` \| `ACTION` \| `CAPABILITY` | This stakeholder has a stake in the target object. Optional per-stake `concern` / `influence` on the relation. The stakeholder→action link (`ACTION`) drives the Action Card stakeholders block; the stakeholder→goal link is the methodology form of DSM's existing `goal_stakeholder`. |
 
-v0.1 covers `GOAL`, `ACTIVITY` (project), and `CAPABILITY` targets; stakeholder→change and stakeholder→driver are deferred until a concrete need surfaces.
+v0.1 covers `GOAL`, `ACTION` (work package), and `CAPABILITY` targets; stakeholder→change and stakeholder→driver are deferred until a concrete need surfaces.
 
 ---
 
