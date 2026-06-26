@@ -270,6 +270,13 @@ Every notation's validator enforces the same four lifecycle rules:
 
 The lifecycle fields are required on every canonical primitive once a notation spec is updated to reference this section. Existing canonical files in adopter repositories backfill: `valid_from` = the file's `last_updated` (or, if absent, a sensible organisation-chosen epoch); `valid_to: null`. A mechanical sweep — no manual decision per file is needed.
 
+**ID-rename migration (two-phase pattern).** When an element's canonical ID changes — whether a TYPE-prefix rename (e.g. `FACTOR-…` → `DRIVER-…`) or an individual element renumber — update relation files in two phases rather than a single atomic sweep:
+
+1. **Phase 1 — bridge.** Rename the element file and set its `id:` to the new ID. Add the old ID to `former_ids:` on the element file ([ELEMENT_PRIMITIVES.md](../notations/ELEMENT_PRIMITIVES.md) §3). Existing REL `from:`/`to:` references that carry the old ID continue to resolve — the resolver falls back to `former_ids` when the literal value does not match any live element `id`. Ship this phase immediately; no relation-file changes required.
+2. **Phase 2 — sweep.** In a dedicated follow-up commit, update all REL files to reference the new ID. Remove the old ID from `former_ids`. Track the sweep in the task issue. `former_ids` is a temporary bridge; entries must not persist after the sweep is complete.
+
+`ELEM-FORMER-ID-001` ([ELEMENT_PRIMITIVES.md](../notations/ELEMENT_PRIMITIVES.md) §9) flags any `former_id` that collides with a live element `id` or another element's `former_ids` — such a collision means Phase 2 was not completed cleanly.
+
 ### 7.5 Out of scope (v1)
 
 - **Bitemporality.** No separate `transaction_time` vs `valid_time`. v1 records what is true *now* about what was true *then*; back-dating corrections rewrite the file via git, and the git history is the audit trail.
