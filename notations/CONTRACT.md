@@ -458,13 +458,50 @@ A released version of the methodology, once tagged, is **immutable**. Subsequent
 
 A `MINOR` or `PATCH` release (post-1.0) MUST NOT break any adopter repo that was valid against the previous release of the same `MAJOR` line. The validator's `error`-level rules added in a `MINOR` or `PATCH` release apply only to files authored against that release or later, not to files already in adopters' canon.
 
-A `MAJOR` release SHOULD ship with a migration recipe under `migrations/<from>-to-<to>/` defining the codemod and manual steps an adopter follows to upgrade. The recipe format is the concern of Phase 2 of this epic.
+A `MAJOR` release SHOULD ship with a migration recipe under `migrations/<from>-to-<to>/` — format defined below.
+
+#### On-disk shape
+
+```
+migrations/<from>-to-<to>/
+├── README.md              # what changed, why, and manual step-by-step instructions
+├── codemod.mjs            # idempotent automated transform
+├── validate.mjs           # post-migration check — exits 0 on a clean repo
+└── fixtures/
+    ├── before/            # minimal adopter-repo fragment in <from> form
+    └── after/             # the same fragment after running codemod.mjs
+```
+
+#### README.md — minimum contents
+
+- What changed and why (the schema delta).
+- A table of old form → new form for each transformed element.
+- Numbered manual steps with `before` / `after` snippets for adopters who prefer manual edits.
+- How to run the codemod and the post-migration validator.
+
+#### codemod.mjs conventions
+
+- **Pure Node.js ≥ 20** — no native add-ons, no external npm dependencies. Invoked as `node codemod.mjs [--dry-run] [target-dir]`; default `target-dir` is `cwd`.
+- **Idempotent** — re-running on an already-migrated repo is a no-op: no diff produced, exit 0.
+- **Line-based** — text transforms applied line by line, not a YAML parse/serialise roundtrip, so comments, key order, and formatting on untouched lines are preserved.
+- **`--dry-run`** — prints what would change without writing any files.
+- **Diff-style summary** — prints each changed file with a count of field-level changes; ends with a totals line (files scanned, files changed).
+- **Exit codes** — `0` on a clean run or no-op; `1` on a detected unsafe ambiguity that requires manual intervention; `2` on a script-internal error (missing directory, unreadable file).
+
+#### validate.mjs conventions
+
+Checks that the structural changes targeted by the codemod have been applied (e.g. no `notation: factor` files remain after the `0.6 → 0.7` recipe). Exits `0` if the repo is clean; exits `1` with a list of offending files if not. Does not re-run the codemod — validates only.
+
+#### Fixtures
+
+`fixtures/before/` is a minimal fragment of an adopter repo in the `<from>` form — just enough files to exercise every transform in `codemod.mjs`. `fixtures/after/` is the expected output after running the codemod against `before/`. CI MAY assert that running `codemod.mjs fixtures/before/` produces a result equal to `fixtures/after/` to prevent recipe rot over time.
+
+Worked examples: [`migrations/0.5-to-0.6/`](../migrations/0.5-to-0.6/) and [`migrations/0.6-to-0.7/`](../migrations/0.6-to-0.7/).
 
 ### 10.5 What this section does NOT cover
 
-- **Migration recipe on-disk format.** Phase 2 of this epic.
-- **Migration CLI** (`transitrix migrate`). Phase 3 of this epic.
-- **The 1.0 cut decision.** Phase 4 of this epic — gated on the in-flight schema epics landing.
+- **Migration CLI** (`transitrix migrate`). Phase 3 of epic #78 — lives in Transitrix Studio, not in this repo.
+- **The 1.0 cut decision.** Phase 4 of epic #78 — gated on the in-flight schema epics landing.
 - **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
 - **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
 
