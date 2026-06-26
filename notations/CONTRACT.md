@@ -500,8 +500,8 @@ Worked examples: [`migrations/0.5-to-0.6/`](../migrations/0.5-to-0.6/) and [`mig
 
 ### 10.5 What this section does NOT cover
 
-- **Migration CLI** (`transitrix migrate`). Phase 3 of epic #78 — lives in Transitrix Studio, not in this repo.
-- **The 1.0 cut decision.** Phase 4 of epic #78 — gated on the in-flight schema epics landing.
+- **Migration CLI** (`transitrix migrate`). Phase 3 — lives in Transitrix Studio, not in this repo.
+- **The 1.0 cut decision.** Phase 4 — gated on the in-flight schema epics landing.
 - **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
 - **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
 
