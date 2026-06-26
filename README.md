@@ -26,6 +26,7 @@ New to the ideas behind it? Read **[`method/methodology.md`](method/methodology.
 
 ## Documentation
 
+- **[`IMPLEMENTATION_TIERS.md`](IMPLEMENTATION_TIERS.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
 - **[`method/methodology.md`](method/methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`glossary.md`](glossary.md)** — standardised terminology.
