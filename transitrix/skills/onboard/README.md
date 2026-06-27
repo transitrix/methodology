@@ -43,16 +43,16 @@ Once installed, invoke the skill in three ways:
 
 1. **Slash command** — type `/transitrix:onboard` in any Claude Code session.
 2. **Freeform** — say "set up Transitrix for my org", "scaffold a transitrix repo", or "I want to model my architecture as text"; the skill's `when_to_use` triggers should pick it up.
-3. **Mid-session** — already in a project and want to add a new notation file? Say "use the Transitrix onboarding skill to add an FGCA for the retention chain" and the agent will jump in at step 3 (template copy).
+3. **Mid-session** — already in a project and want to add a new notation file? Say "use the Transitrix onboarding skill to add a DGCA for the retention chain" and the agent will jump in at step 3 (template copy).
 
 Once invoked, the agent runs the six-step flow documented in [`SKILL.md`](SKILL.md):
 
 1. **Confirm intent and surface area.** Asks which notation you want to start with (showing the family-selection matrix), and how deep an explanation you want.
 2. **Scaffold the repo.** Creates the canonical zoned tree (`canon/{elements,views}`, `field/{interviews,surveys,observations,drafts}`, `codex/{external/<jurisdiction>,internal}`), drops the `transitrix.yaml` manifest at the root, drops the assistant-neutral `AGENTS.md` agent guide and the `.github/copilot-instructions.md` pointer, and initialises `.gitignore` + a README stub.
 3. **Create the starter notation file from a template.** For view notations, copies the matching template from [`templates/`](templates/) into the right `canon/views/<notation>/` subfolder and renames it to `<DOMAIN>.<short-name>.transitrix.yaml`. For codex artefacts, copies a codex-external or codex-internal template into `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`.
-4. **Interactive authoring with inline validation.** Walks the user through the placeholders one at a time and validates after each meaningful edit. Validation errors are surfaced by their canonical code (e.g. `FGCA-009 — change references unknown goal`, `CODEX-001 — jurisdiction folder mismatch`).
+4. **Interactive authoring with inline validation.** Walks the user through the placeholders one at a time and validates after each meaningful edit. Validation errors are surfaced by their canonical code (e.g. `DGCA-009 — change references unknown goal`, `CODEX-001 — jurisdiction folder mismatch`).
 5. **Hand off to Transitrix Studio.** Points the user at the VS Code extension for live preview, or at `npx @transitrix/cli validate` for CLI-only workflows.
-6. **Suggest next steps.** Proposes one — and only one — adjacent artefact in the family (e.g. "you built a Goals tree, the natural next step is an FGCA").
+6. **Suggest next steps.** Proposes one — and only one — adjacent artefact in the family (e.g. "you built a Goals tree, the natural next step is a DGCA").
 
 The agent never silently rewrites the user's content. If a validation rule fails, it surfaces the rule and waits for the user's choice.
 
@@ -81,13 +81,14 @@ One starter YAML per view notation, named `<notation>.<short-name>.transitrix.ya
 | Goals tree | [`goals.goals.transitrix.yaml`](templates/goals.goals.transitrix.yaml) |
 | Capability map | [`capability-map.capability-map.transitrix.yaml`](templates/capability-map.capability-map.transitrix.yaml) |
 | Process landscape map | [`process-map.process-map.transitrix.yaml`](templates/process-map.process-map.transitrix.yaml) |
-| Activities | [`activities.activities.transitrix.yaml`](templates/activities.activities.transitrix.yaml) |
+| Action schedule | [`action.action.transitrix.yaml`](templates/action.action.transitrix.yaml) |
+| Actions tree | [`actions-tree.actions-tree.transitrix.yaml`](templates/actions-tree.actions-tree.transitrix.yaml) |
 | Nested blocks | [`blocks.blocks.transitrix.yaml`](templates/blocks.blocks.transitrix.yaml) |
 | Scenarios | [`scenarios.scenarios.transitrix.yaml`](templates/scenarios.scenarios.transitrix.yaml) |
 | Applications | [`applications.applications.transitrix.yaml`](templates/applications.applications.transitrix.yaml) |
 | Products | [`products.products.transitrix.yaml`](templates/products.products.transitrix.yaml) |
 | Process Blueprint | [`process-blueprint.process-blueprint.transitrix.yaml`](templates/process-blueprint.process-blueprint.transitrix.yaml) |
-| Activity Card | [`activity-card.activity-card.transitrix.yaml`](templates/activity-card.activity-card.transitrix.yaml) |
+| Action Card | [`action-card.action-card.transitrix.yaml`](templates/action-card.action-card.transitrix.yaml) |
 | Compliance Impact | [`compliance-impact.compliance-impact.transitrix.yaml`](templates/compliance-impact.compliance-impact.transitrix.yaml) |
 | Coverage Metric | [`coverage-metric.coverage-metric.transitrix.yaml`](templates/coverage-metric.coverage-metric.transitrix.yaml) |
 

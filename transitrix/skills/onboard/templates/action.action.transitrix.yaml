@@ -36,4 +36,4 @@ actions:
     name: "FILL-ME — third action"
     duration_days: 30
     predecessors: [ACTION-DESIGN-1]
-    delivers_changes: [CHANGE-1]  # optional cross-ref to an FGCA change
+    delivers_changes: [CHANGE-1]  # optional cross-ref to a DGCA change
