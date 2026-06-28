@@ -63,7 +63,10 @@ canon/
     03_application/
       applications/   APPLICATION-*.yaml
       integrations/   INTEGRATION-*.yaml      # promotable; nested-in-view in v1 (§4)
-    04_technology/    (no registry element TYPEs yet — see IDS_AND_REFERENCES.md)
+    04_technology/
+      equipment/    EQUIPMENT-*.yaml          # §7.14 — ADR 2026-06-08; Physical element
+      nodes/        NODE-*.yaml               # §7.24 — elements/25-nodes.md
+      services/     TECHNOLOGY_SERVICE-*.yaml # §7.25 — elements/26-technology-services.md
     05_implementation/                        # new layer, this document §6
       actions/        ACTION-*.yaml            # Work Package (recursive)
       changes/        CHANGE-*.yaml            # Gap (multi-scale)
@@ -171,6 +174,8 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `ACTION` | standalone | `action` | implementation | `05_implementation/actions/` | §7.4 + [elements/24-action.md](elements/24-action.md) |
 | `TARGET_STATE` | standalone | `target-state` | implementation | `05_implementation/target-states/` | §7.17 (no dedicated spec) |
 | `SCENARIO` | standalone | `scenario` | implementation | `05_implementation/scenarios/` | §7.18 (no dedicated spec) |
+| `NODE` | standalone | `node` | technology | `04_technology/nodes/` | §7.24 + [elements/25-nodes.md](elements/25-nodes.md) |
+| `TECHNOLOGY_SERVICE` | standalone | `technology-service` | technology | `04_technology/services/` | §7.25 + [elements/26-technology-services.md](elements/26-technology-services.md) |
 | `EQUIPMENT` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3 |
 | `INFORMATION_ENTITY` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3 |
 
@@ -186,6 +191,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`STEP` is contained-then-promotable (a third shape, distinct from `view-defined`).** A process-flow step lives inline in its `PROCESS` element's `flow.steps[]` (§7.5), not in a view — so it is neither `standalone` (no element file until promoted) nor `view-defined` (its definition home is a *standalone element*, not a view document). It is **canonical-by-containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). It is **promoted** to a standalone `02_business/steps/STEP-….yaml` only when a *second* document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). This promotion trigger fired in the regulatory-intelligence build (compliance impact expressed via `ASSERTION` → flow-step ids), which is what moved this TYPE from reserved to registered. The promotion is **mechanical** (§7.20): the step's attributes move to the standalone file, its `flow.steps[]` entry reduces to a reference, and `flow.sequence` (the process-owned graph edges) is untouched — the id never changes. The BPMN node-label forms (`TASK-…` / `SE-…` / `EE-…`) are projection-local labels ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3), **not** a step's catalogue identity; `STEP` is.
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` is `standalone`, as the path the architect plans.** A scenario is *the path*, not the destination — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate **Course of Action** realised by Work Packages + Gaps; epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122)). It is what an architect *varies* alongside the `TARGET_STATE` when offering customer solution options — multiple paths may reach the same end-state. That makes it a first-class addressable element, not an inline fragment of a view. The earlier `view-defined` placement (a "scenario document" that scoped its own goals/capabilities/activities/etc.) conflated the path with the things it sequences and the things its end-state contains; the reclassification splits them: `TARGET_STATE` owns structural composition (§7.17), `SCENARIO` owns the ordered steps (§7.18). Scenario references — `pursues` goal list, `arrives_at` target-state ref, ordered `steps` — are **inline (B2)**; the only first-class REL in the planning model is `target_state_satisfies_goal` (declared on `TARGET_STATE`, §7.17).
+- **`NODE` and `TECHNOLOGY_SERVICE` are `standalone`, as first-class infrastructure elements.** Infrastructure nodes and the platform services they expose are shared references: many applications may consume the same `TECHNOLOGY_SERVICE`, and many nodes may co-host it. Making them standalone catalogue elements lets the application layer reference `TECHNOLOGY_SERVICE-…` IDs without repeating connectivity details, and lets the infrastructure team manage node lifecycle independently of the applications built on top. They belong in `04_technology/` (ArchiMate Technology layer) — distinct from `03_application/` (software) and `02_business/` (organisational behaviour). The `hosts` and `uses` relation kinds ([elements/17-relations.md](elements/17-relations.md) §3) are the cross-layer links.
 - **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](views/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
 
 ### 4.2 `view-defined` is inline-content convenience, never a content home of last resort
@@ -234,7 +240,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
-| `04_technology/` | Technology | *(no registry element TYPE in §3.1 yet; the layer folder exists for templates / future TYPEs)* |
+| `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
 | `05_implementation/` | Implementation & Migration | `ACTION` (`actions/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2) |
 
 ### 6.1 New layer — `05_implementation`
@@ -621,6 +627,34 @@ A physical or virtual **place** where actors operate (ArchiMate Location). A loc
 
 **Relations:** `located_at` (`ACTOR(person|business_unit)` → `LOCATION`) is the only first-class relation kind; always a REL file, never inline. See [elements/17-relations.md](elements/17-relations.md) §3.
 
+### 7.24 `NODE` — `04_technology/nodes/`
+
+An infrastructure substrate — the physical or virtual compute, network, or storage resource that hosts technology services (ArchiMate Technology Node §9.3.1). A NODE is the *where things run*; a `TECHNOLOGY_SERVICE` (§7.25) is the *platform capability that runs on it*. Full spec: [elements/25-nodes.md](elements/25-nodes.md).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `node`. |
+| `type` | yes | string | `server` \| `cloud_instance` \| `container_platform` \| `database_server` \| `network_device`. |
+| `description` | recommended | string | What the node is and what it hosts. |
+| `provider` | no | string | Cloud or hosting provider (e.g. `"AWS"`, `"on-premises"`). |
+| `region` | no | string | Data-centre or cloud-region identifier. |
+
+**Relations:** `hosts` (`NODE` → `TECHNOLOGY_SERVICE`) is the primary first-class relation kind ([elements/17-relations.md](elements/17-relations.md) §3). Declared on the NODE side.
+
+### 7.25 `TECHNOLOGY_SERVICE` — `04_technology/services/`
+
+A platform-level service exposed by a NODE or group of NODEs to the application layer (ArchiMate Technology Service §9.3.3). Examples: Kafka cluster (event streaming), S3-compatible object storage, managed database, API gateway. Full spec: [elements/26-technology-services.md](elements/26-technology-services.md).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `technology-service`. |
+| `type` | yes | string | `messaging` \| `storage` \| `api_gateway` \| `database` \| `compute`. |
+| `description` | recommended | string | What the service offers and how it is used. |
+| `node` | recommended | string | `NODE-…` — the primary hosting node (inline for stable single-host case; use the `hosts` REL for migration history). |
+| `endpoint` | no | string | Connection string or base URL. |
+
+**Relations:** `uses` (`APPLICATION` → `TECHNOLOGY_SERVICE`) records application-layer consumption; `hosts` (`NODE` → `TECHNOLOGY_SERVICE`) records infrastructure hosting. Both are first-class relation kinds ([elements/17-relations.md](elements/17-relations.md) §3). The `APPLICATION` side may also carry a `technology_services[]` inline field in a future additive revision.
+
 ---
 
 ## 8. Alignment with the ID grammar and TYPE registry
@@ -652,6 +686,11 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `LOC-003` | error | `parent` present but does not resolve to an admitted `LOCATION` in canon. |
 | `ELEM-FORMER-ID-001` | error | A `former_ids[]` entry matches the live `id` of any element in the catalogue, or matches a `former_ids[]` entry of another element. Either collision makes link resolution ambiguous — the resolver cannot determine which element a `from:`/`to:` value maps to. A **cross-catalogue** gate requiring a full catalogue scan. Resolve by removing the stale `former_id` after completing the relation-file sweep (Phase 2 of the migration pattern — [CONTRACT.md](CONTRACT.md) §7.4). |
 | `REG-001` | error | A `REGISTRY` row of `type: regulatory_source` carries a `codex_id` whose linked codex artefact's `source_url` differs from the row's `source_url`. A **cross-artefact** gate (REGISTRY row ↔ codex zone): once a source is admitted as a codex artefact the codex `source_url` is the authoritative watch target, so a divergent row URL is a source-of-truth conflict. Resolve by aligning the row to the codex artefact (codex is authoritative from admission). A row without `codex_id` (not yet admitted) is out of scope — its `source_url` is the live harvesting target. (ADR [`docs/decisions/2026-06-10-codex-registry-monitoring-source-of-truth.md`](../docs/decisions/2026-06-10-codex-registry-monitoring-source-of-truth.md); §7.20 `codex_id` field.) |
+| `NOD-001` | error | A `NODE` element is missing `id`, `name`, `type`, or any required envelope field; or `id` does not match `NODE-[<middle>-]<INTEGER>`. |
+| `NOD-002` | error | `type` is not one of `server`, `cloud_instance`, `container_platform`, `database_server`, `network_device`. |
+| `TSVC-001` | error | A `TECHNOLOGY_SERVICE` element is missing `id`, `name`, `type`, or any required envelope field; or `id` does not match `TECHNOLOGY_SERVICE-[<middle>-]<INTEGER>`. |
+| `TSVC-002` | error | `type` is not one of `messaging`, `storage`, `api_gateway`, `database`, `compute`. |
+| `TSVC-003` | error | `node` is present but does not resolve to an admitted `NODE` in canon. |
 
 ---
 
