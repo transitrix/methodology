@@ -173,7 +173,7 @@ For Mermaid diagrams embedded in `.md` files (ADRs, architecture notes), also in
 
 The agent does **not** commit files with `error`-level validation findings. `warning`-level findings are surfaced to the adopter and committed only with explicit acknowledgement. The agent does not auto-suppress validation rules.
 
-Every notation spec carries its own validation-codes table (e.g. `FGCA-001..015`, `GOALS-001..013`, `BL-001..009`, `ISS-001..006`, `CODEX-001..003`). When surfacing a validation error to the adopter, the agent includes the canonical code so the rule is traceable to the spec.
+Every notation spec carries its own validation-codes table (e.g. `DGCA-001..018`, `GOALS-001..013`, `BL-001..009`, `CODEX-001..003`). When surfacing a validation error to the adopter, the agent includes the canonical code so the rule is traceable to the spec.
 
 ---
 

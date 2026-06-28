@@ -1,7 +1,7 @@
 ---
 name: Transitrix Onboarding
-description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, FGCA / FGA / Goals, capability map, process blueprint, activities network, blocks, scenarios, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
-when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [FGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology. Also triggers when the user says "I cloned my team's Transitrix repo", "help me get oriented in this model", "make my first change to our architecture repo", or expresses a similar intent to orient in or contribute to a repo that already uses Transitrix.
+description: Scaffold a new Transitrix architecture-as-text repository (zoned canon/ + field/ + codex/ layout with assistant-neutral AGENTS.md + transitrix.yaml manifest) and drive a first modelling session — enterprise architecture (BPMN, DGCA / Goals, capability map, process blueprint, action schedule, actions tree, nested blocks, scenarios, products, applications) plus codex artefacts (laws, regulations, policies, internal standards). Use when the user wants to start a new Transitrix repo from scratch, or has just cloned one and wants to author their first notation file with validation.
+when_to_use: User says "set up Transitrix", "model my architecture as text", "create a new transitrix repo", "I want to write [DGCA / Goals / capability map / process blueprint / ...] but don't know the schema", or asks to scaffold an organisation-as-text repository following the Transitrix methodology. Also triggers when the user says "I cloned my team's Transitrix repo", "help me get oriented in this model", "make my first change to our architecture repo", or expresses a similar intent to orient in or contribute to a repo that already uses Transitrix.
 min_version: "0.5.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -30,7 +30,7 @@ If neither is found → **greenfield setup** — continue with the two questions
 Ask the user two short questions:
 
 1. **What do you want to model first?** Show the family-selection cheat sheet (§ Cheat sheet below) and offer the most common starting points:
-   - Strategy chain → **FGCA** (Driver → Goal → Change → Activity) or **FGA** (no Changes).
+   - Strategy chain → **DGCA** (Driver → Goal → Change → Action) — use `view_config.layers.changes: off` for DGA mode (no Changes layer).
    - Hierarchy of goals → **Goals tree**.
    - Capability map with CMMI maturity → **Capability Map**.
    - Value chain with operational aspects → **Process Blueprint**.
@@ -62,7 +62,7 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 - Where the agent guide lives (`AGENTS.md` at repo root) and that you have read it.
 
 Example:
-> This is a Transitrix repo at methodology v0.5.0, using FGCA, Goals, and Capability Map.
+> This is a Transitrix repo at methodology v0.5.0, using DGCA, Goals, and Capability Map.
 > Active zones: `canon/` (populated), `field/` (empty), `codex/` (empty).
 > Agent guide: `AGENTS.md` at repo root — read and in effect.
 
@@ -193,7 +193,7 @@ Take the user's chosen notation from step 1. Copy the matching template from `${
 
 ### View notations (canon zone)
 
-For any of the 13 view notations (FGCA / FGA / Goals / Capability map / Process map / BPMN / Action schedule / Blocks / Scenarios / Applications / Products / Issues / Process Blueprint), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
+For any of the 15 view notations (DGCA / Goals / Capability map / Process map / BPMN / Action schedule / Actions tree / Nested blocks / Scenarios / Applications / Products / Process Blueprint / Action Card / Compliance Impact / Coverage Metric), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
@@ -217,11 +217,11 @@ Update the `id:`, `name:`, `description:`, the admission record (`admitted_at`, 
 
 Walk the user through filling the placeholders one at a time. After every meaningful edit, validate the file against the canonical schema:
 
-- **For FGCA / FGA / Goals files**: validate against the canonical-form parsers in `@transitrix/diagrams` (`parseCanonicalFGCA`, `parseCanonicalGoals`; FGA uses an FGCA wrapper inside the Studio extension). If Transitrix Studio is installed, opening the file shows live validation errors.
+- **For DGCA / Goals files**: validate against the canonical-form parsers in `@transitrix/diagrams` (`parseCanonicalDGCA`, `parseCanonicalGoals`). If Transitrix Studio is installed, opening the file shows live validation errors.
 - **For every other notation**: validate against the rules in the relevant `notations/<NN>-<name>.md` spec. Each spec has a "Validation rules" table with the error codes the canonical validator uses. Surface those code names to the user in plain English when an edit produces an error.
 
 If the user makes a change that introduces a canon violation:
-- Explain the violation in one sentence ("you've referenced `GOAL-99` from a change, but no goal with that ID exists in the document — that's `FGCA-009`").
+- Explain the violation in one sentence ("you've referenced `GOAL-99` from a change, but no goal with that ID exists in the document — that's `DGCA-009`").
 - Offer one or two ways to fix it.
 - Don't auto-fix unless the user asks — surface the violation and let the user decide.
 
@@ -237,7 +237,7 @@ Once the user has a working starter file, point them at **Transitrix Studio** (t
 
 > "Install Transitrix Studio from the VS Code Marketplace (search for `transitrix.transitrix-studio`). Open the file you just authored — the preview opens automatically beside the editor and refreshes on every save."
 
-The full notation set previews in Studio: BPMN, Goals, FGCA, FGA, Action schedule (PSND + Gantt), Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Issues register.
+The full notation set previews in Studio: BPMN, Goals, DGCA, Action schedule (PSND + Gantt), Actions tree, Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Action Card, Compliance Impact, Coverage Metric.
 
 Also recommend **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — available on both the VS Code Marketplace and Open VSX — so Mermaid diagrams in `.md` files (ADRs, architecture notes, `AGENTS.md` diagrams) render inline. Between Studio (Transitrix notation preview) and the Mermaid extension (Markdown diagram preview), the user has full visual coverage of the repo.
 
@@ -254,8 +254,8 @@ npx @transitrix/cli validate path/to/your.dgca.transitrix.yaml
 
 Based on what the user just built, propose the next artefact in the family. Concrete patterns:
 
-- They built a **Goals tree** → suggest an **FGCA** or **FGA** to link goals to their drivers and delivery activities.
-- They built **FGCA** → suggest a **Capability map** for the same domain so they can see which capabilities each goal requires.
+- They built a **Goals tree** → suggest a **DGCA** to link goals to their drivers and delivery activities.
+- They built **DGCA** → suggest a **Capability map** for the same domain so they can see which capabilities each goal requires.
 - They built a **Capability map** → suggest an **Applications catalogue** so each capability has a system inventory.
 - They built **BPMN** for one process → suggest the **Process landscape map** to put it in context.
 - They built **Process Blueprint** → suggest **Action schedule** to plan delivery against the blueprint stages.
@@ -290,7 +290,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
 | Coverage of canon — which subjects are dark for each regulatory regime, splitting modelling gaps from modelled exclusions | **Coverage Metric** | `*.coverage-metric.transitrix.yaml` |
 
-**Family rule:** all four strategy-chain notations (FGCA, FGA, Goals, Action schedule) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
+**Family rule:** all three strategy-chain notations (DGCA, Goals, Action schedule) use the **flat form** — top-level arrays at the document root, hierarchy via `parent` / cross-references inside the flat array. No nested wrapper keys.
 
 ### Zone primitives — not view documents
 

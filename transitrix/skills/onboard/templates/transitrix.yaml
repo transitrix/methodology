@@ -6,10 +6,9 @@
 transitrix: 1                       # manifest schema version (integer; 1 today)
 methodology_version: "0.4.x"        # pin a real release once the adopter chooses one
 notations:                          # short names from notations/README.md (+ codex)
-  - fgca
+  - dgca
   - goals
-  - activities
-  - issues
+  - action
   - capability-map
   - codex
 zones: [canon, field, codex]        # any subset of canon / field / codex
