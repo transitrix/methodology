@@ -157,6 +157,52 @@ applications_catalogue:
 | `integrations[].target` | No | Target application element ID |
 | `integrations[].direction` | No | `inbound` / `outbound` / `bidirectional` |
 | `integrations[].protocol` | No | Integration protocol (REST, Kafka, gRPC, etc.) |
+| `integrations[].interface_semantics` | No | `true` — asserts ArchiMate Application Interface semantics on this INTEGRATION. When set, the additional fields below become required. See §5b. |
+| `integrations[].payload_class` | Conditional | **Required when `interface_semantics: true`.** Category of data the interface exchanges — e.g. `"domain_event"`, `"command"`, `"query"`, `"bulk_export"`. |
+| `integrations[].sensitivity` | Conditional | **Required when `interface_semantics: true`.** `public` / `internal` / `confidential` / `restricted`. |
+| `integrations[].directionality` | Conditional | **Required when `interface_semantics: true`.** `producer` / `consumer` / `request_reply` / `bidirectional_stream`. |
+
+---
+
+## 5b. Application Interface semantics for INTEGRATION
+
+ArchiMate defines Application Interface (§8.2.5) as "a point of access where application services are made available to another application." Transitrix expresses this concept via `INTEGRATION` with `interface_semantics: true` rather than a separate primitive.
+
+**When to use.** Set `interface_semantics: true` when an integration represents a named, governed, typed endpoint contract — not just a data pipe. Examples: a Kafka-producer interface for domain events, a REST API endpoint consumed by a partner, a gRPC service.
+
+**Required fields** (`INT-001` — see [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §9): in addition to the standard `source`, `target`, the following must all be present:
+- `protocol` — e.g. `"Kafka"`, `"REST"`, `"gRPC"`
+- `payload_class` — adopter-defined category: `"domain_event"`, `"command"`, `"query"`, `"bulk_export"`, etc.
+- `sensitivity` — `public` | `internal` | `confidential` | `restricted`
+- `directionality` — `producer` | `consumer` | `request_reply` | `bidirectional_stream`
+
+**Example — Kafka-producer interface:**
+
+```yaml
+applications_catalogue:
+  id: "APP-CAT-PLATFORM-1"
+  name: "Platform Applications"
+  updated_at: "2026-06-28"
+  applications:
+    - app_id: "APPLICATION-OMS-1"
+      name: "Order Management System"
+      type: "application"
+      status: "Active"
+      integrations:
+        - target: "APPLICATION-CRM-1"
+          direction: "outbound"
+          protocol: "Kafka"
+          interface_semantics: true
+          payload_class: "domain_event"
+          sensitivity: internal
+          directionality: producer
+          description: >
+            Kafka producer interface exposing order-state change events.
+            Consumers subscribe to the `oms.orders.v1` topic.
+            Events follow the CloudEvents 1.0 envelope.
+```
+
+Full field semantics and vocabulary: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.8.1.
 
 ---
 
