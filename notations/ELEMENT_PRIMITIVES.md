@@ -365,6 +365,78 @@ In v1 an integration is a nested entry under its source application's `integrati
 | `direction` | no | string | `inbound` \| `outbound` \| `bidirectional`. |
 | `protocol` | no | string | Integration protocol (REST, Kafka, gRPC, …). |
 | `description` | recommended | string | One-paragraph elaboration. |
+| `interface_semantics` | no | boolean | When `true`, this INTEGRATION is asserting ArchiMate Application Interface semantics — a named, typed point of access. Triggers the required-field enforcement below (INT-001). Default: absent / `false`. |
+| `payload_class` | conditional | string | **Required when `interface_semantics: true`.** The category of data the interface exchanges — e.g. `"domain_event"`, `"command"`, `"query"`, `"bulk_export"`. Free-form string; adopter-defined vocabulary, meaningful within their domain. |
+| `sensitivity` | conditional | string | **Required when `interface_semantics: true`.** Data sensitivity classification — `public` \| `internal` \| `confidential` \| `restricted`. See §7.8.1. |
+| `directionality` | conditional | string | **Required when `interface_semantics: true`.** Interface data-flow direction — `producer` \| `consumer` \| `request_reply` \| `bidirectional_stream`. Distinct from `direction` (which records inbound/outbound from the source-app perspective); `directionality` records the interface's own data-flow mode. See §7.8.1. |
+
+#### 7.8.1 Application Interface semantics
+
+**When to use INTEGRATION to express an Application Interface.** ArchiMate 3.2 §8.2.5 defines Application Interface as "a point of access where application services are made available to another application." Transitrix does not define a separate `APPLICATION_INTERFACE` primitive (Path B decision, 2026-06-28); instead, an INTEGRATION with `interface_semantics: true` asserts interface semantics on a standard INTEGRATION element. Use this flag when:
+
+- The integration represents a named, typed endpoint — not just a data pipe, but a contract that specifies what operations are available, over which protocol, with which payload format and sensitivity.
+- The interface is addressable and governed independently of the source application — it has a lifecycle and a spec that adopters can reference.
+- Other applications or architectural views need to refer to this interface by name rather than by the generic "OMS → CRM" pattern.
+
+Do NOT set `interface_semantics: true` for:
+- Simple, point-to-point data copies with no named contract.
+- Temporary integrations without a defined protocol or payload class.
+- Integrations where `source` or `target` is unknown.
+
+**Required fields when `interface_semantics: true`** (enforced by INT-001):
+All five of `source`, `target`, `protocol`, `payload_class`, `sensitivity`, and `directionality` must be present. `source` and `target` are already required on all INTEGRATION elements; the remaining four become conditionally required.
+
+**`sensitivity` vocabulary:**
+
+| Value | Meaning |
+|---|---|
+| `public` | No authentication required; data is freely accessible. |
+| `internal` | Intra-organisation access; authenticated but not sensitive by data category. |
+| `confidential` | Access restricted to named roles or services; data may include business-sensitive or regulated content. |
+| `restricted` | Highest sensitivity — PII, health, financial, or security-critical data; access tightly controlled with audit. |
+
+**`directionality` vocabulary:**
+
+| Value | Meaning |
+|---|---|
+| `producer` | The source application emits data / events; consumers receive without a synchronous reply (e.g. Kafka producer, webhook emitter). |
+| `consumer` | The source application ingests data / events from the target without producing a synchronous request (e.g. Kafka consumer). |
+| `request_reply` | Synchronous request–response — the source sends a request and waits for a reply (e.g. REST API call, gRPC unary). |
+| `bidirectional_stream` | Both sides emit and receive within the same session (e.g. WebSocket, gRPC bidirectional streaming). |
+
+**Example — Kafka-producer interface modelled as INTEGRATION:**
+
+```yaml
+notation: integration
+id: INTEGRATION-OMS-EVENTS-1
+name: "OMS Order-Events Kafka Interface"
+source: APPLICATION-OMS-1
+target: APPLICATION-CRM-1
+protocol: "Kafka"
+direction: outbound
+interface_semantics: true
+payload_class: "domain_event"
+sensitivity: internal
+directionality: producer
+description: >
+  Kafka producer interface exposing order-state change events from the
+  Order Management System. Consumers subscribe to the `oms.orders.v1`
+  topic. Events follow the CloudEvents 1.0 envelope; schema registered
+  in the org's schema registry.
+
+zone: canon
+admitted_at: "2026-06-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2024-03-01"
+valid_to: null
+```
+
+**Endpoint patterns for interface-semantics INTEGRATION.** The `source` and `target` endpoints of an interface-semantics INTEGRATION MUST both resolve to admitted `APPLICATION-…` elements ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1). A `NODE`, `TECHNOLOGY_SERVICE`, or any non-application element as an endpoint is invalid (enforced by INT-002). The intent: Application Interface semantics is an application-layer contract; the infrastructure that carries it (a Kafka cluster, an API gateway) is represented separately via `TECHNOLOGY_SERVICE` and linked via the `uses` relation ([elements/17-relations.md](elements/17-relations.md) §3), not by pointing the integration at the infrastructure node directly.
 
 ### 7.9 `ROLE` — `02_business/roles/`
 
@@ -647,6 +719,10 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `BOBJ-D001` | warning | An element candidate carries `element_type: INFORMATION_ENTITY` or an `INFORMATION_ENTITY-…` id prefix — the deprecated alias for `BUSINESS_OBJECT`. The validator flags it and continues; hard error in the following release. Rename `element_type` to `BUSINESS_OBJECT`, update the id prefix, and rename `information_entities[]` → `business_objects[]` in blueprints. |
 | `ELEM-005` | warning | A `standalone` element carries inline a field declared `time_varying` (§7) or a cross-reference of a kind declared first-class time-aware ([elements/17](elements/17-relations.md)) — it belongs in the sidecar (`VERSIONED-004`) or a `REL-…` file (`REL-004`) respectively. Surfaced here for discoverability; the authoritative codes are `VERSIONED-004` / `REL-004`. |
 | `ELEM-ALIAS-001` | error | An element's `aliases[]` entry collides (case-insensitively, trimmed) with another element's `name` or another element's `aliases[]` entry in the same `canon/` catalogue. A **cross-catalogue** gate — distinct from the per-file `ELEM-*` checks above, it requires scanning the whole catalogue. Ambiguous surface forms make F8 cross-source entity resolution unreliable, so a collision is a hard error at canon admission. A value shared with the element's *own* `name`/aliases is not a collision. (ADR [`docs/decisions/2026-06-09-element-aliases.md`](../docs/decisions/2026-06-09-element-aliases.md); §3 `aliases` field.) |
+| `INT-001` | error | An `INTEGRATION` element carries `interface_semantics: true` but is missing one or more of the conditionally required fields: `protocol`, `payload_class`, `sensitivity`, `directionality`. When `interface_semantics: true`, all four must be present in addition to the always-required `source` and `target`. |
+| `INT-002` | error | An `INTEGRATION` element carries `interface_semantics: true` but `source` or `target` does not resolve to an admitted `APPLICATION-…` element. Interface-semantics INTEGRATION endpoints must both be application-layer elements (§7.8.1). |
+| `INT-003` | error | `sensitivity` is not one of `public`, `internal`, `confidential`, `restricted`. |
+| `INT-004` | error | `directionality` is not one of `producer`, `consumer`, `request_reply`, `bidirectional_stream`. |
 | `LOC-001` | error | A `LOCATION` element is missing `id`, `name`, `type`, or any required envelope field; or `id` does not match `LOCATION-[<middle>-]<INTEGER>`. |
 | `LOC-002` | error | `type` is not one of `country`, `region`, `city`, `site`, `office`, `virtual`. |
 | `LOC-003` | error | `parent` present but does not resolve to an admitted `LOCATION` in canon. |
