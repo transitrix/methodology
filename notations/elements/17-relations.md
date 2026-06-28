@@ -80,6 +80,7 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `alumni_membership` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A former employee's continuing relationship; may reference the prior `employment`. |
 | `community_membership` | person → community | `ACTOR(person)` → `ACTOR(business_unit)` | Membership of a community modelled as a `business_unit` actor (e.g. an open-source community, a user group). |
 | `contracting` | contractor → org | `ACTOR(person\|business_unit)` → `ACTOR(business_unit)` | A contracting relationship; carries `contract_terms`. |
+| `located_at` | actor → place | `ACTOR(person\|business_unit)` → `LOCATION` | This actor's primary work location. For a `business_unit`, its primary registered location; for a `person`, their primary work base. Time-aware — a move produces a new REL file with `valid_to` set on the old one. Always a REL file; never inline on the actor. Studio alias: `unit_located_at` maps to this kind. |
 | `stakeholding` | stakeholder → object | `STAKEHOLDER` → `GOAL` \| `ACTION` \| `CAPABILITY` | A stakeholder's stake in a specific object. Optional per-stake `concern` / `influence` on the relation. The `→ ACTION` form drives the Action Card stakeholders block; `→ GOAL` is the methodology form of DSM's `goal_stakeholder`. v0.1 targets `GOAL` / `ACTION` / `CAPABILITY` only. |
 
 Adding a new `type` value is a non-backwards-compatible methodology revision — adopters' validators built against an older enum will reject newer relations.
