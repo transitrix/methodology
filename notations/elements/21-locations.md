@@ -8,7 +8,7 @@ status: "draft"
 
 # Locations — Reference
 
-**Scope:** The `LOCATION` element type — the business-layer primitive for *where* actors operate (ArchiMate Physical / Location). A location is a physical or virtual place; it never carries identity — identity lives in an `ACTOR` ([19-actors.md](19-actors.md)) that references the location via a `located_at` relation. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the common element-primitive envelope is [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3; the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
+**Scope:** The `LOCATION` element type — the place primitive for *where* actors operate. A location is a physical or virtual place; it never carries identity — identity lives in an `ACTOR` ([19-actors.md](19-actors.md)) that references the location via a `located_at` relation. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the common element-primitive envelope is [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3; the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
 
 Locations are **zone primitives**: each is a single YAML file under `canon/elements/02_business/locations/`, named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the location-specific frontmatter below.
 
@@ -17,6 +17,8 @@ Locations are **zone primitives**: each is a single YAML file under `canon/eleme
 ## 1. What LOCATION is — and is not
 
 A `LOCATION` is a **place** — a physical or conceptual site where actors perform work or where a unit is registered. It is not:
+
+> **ArchiMate note.** ArchiMate 3.2 distinguishes two related concepts: `Location` (cross-layer — a geographic or conceptual area: country, city, region) and `Facility` (Technology & Physical layer §9.3.2 — a concrete physical structure: building, factory, office). This primitive pragmatically **merges both** into one element: geographic areas (`country`, `region`, `city`, `virtual`) map to ArchiMate `Location`; physical structures (`site`, `office`) map to ArchiMate `Facility`. A future `FACILITY` primitive will separate these two concepts cleanly and resolve the ambiguity — see §7.
 
 - A property of an `ACTOR` — actors reference locations via `located_at` relations; the location is a first-class element that can be pointed to by many actors.
 - A substitute for an address field on the actor — `LOCATION` is a named, addressable catalogue entry so that "Tbilisi Office" can be referenced by N business units and M persons without repeating the address.
@@ -149,6 +151,7 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 - **Secondary locations.** v0.1 models only a primary location per actor via `located_at`. If an actor has multiple locations (e.g. a business unit with offices in two cities), write two REL files — one per location. A `primary: true` attribute on the REL may be introduced to distinguish primary from satellite in a future revision.
 - **`person_located_at` / `unit_located_at` aliases.** Studio may emit `unit_located_at` as a relation type; the methodology canonical name is `located_at`. If a second semantically distinct relation kind for persons vs units is ever needed, it will be filed as a separate revision — for v0.1 a single `located_at` kind covers both.
 - **`country_code` validation.** The validator currently checks only that `country_code` is a two-uppercase-letter string; a future revision may validate it against the ISO 3166-1 register.
+- **`FACILITY` primitive.** ArchiMate 3.2 §9.3.2 defines `Facility` as a first-class Technology & Physical layer element for concrete physical structures (buildings, factories, offices) — distinct from `Location` (geographic / conceptual areas). v0.1 merges both into `LOCATION` for simplicity. A dedicated `FACILITY` primitive will be introduced when the Technology layer is populated, at which point `type: office` and `type: site` will be deprecated in `LOCATION` and migrated to `FACILITY`, while `country` / `region` / `city` / `virtual` stay in `LOCATION`.
 
 ---
 
