@@ -5,6 +5,7 @@ generated_at: "2026-05-25"
 
 nested_blocks:
   id: BLOCKS-ARCH-1
+  name: "Software architecture"
   description: "Two-tier overview of the application and data layers of a typical SaaS product."
   version: "0.1"
   author: "Valerii Korobeinikov"
