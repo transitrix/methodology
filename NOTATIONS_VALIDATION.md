@@ -89,9 +89,94 @@ Surfaced but left for Valerii — examples are not edited unilaterally.
 
 ## 4. Coverage honesty
 
-The 2026-05-30 pass verified every family that carried a substantive prior
-claim (bpmn, dgca, goals, capability-map, products, applications, process-map).
-The specs **not** re-walked schema-line-by-line this pass: `blocks`,
-`activities`, `process-blueprint`, `activity-card`. The doc-lint covers their
-mechanical invariants (extension / header / links / version) continuously; a
-deeper schema re-walk of those five is the next manual audit's job.
+The 2026-05-30 pass verified: `bpmn`, `dgca`, `goals`, `capability-map`,
+`products`, `applications`, `process-map`.
+
+**Second pass — 2026-06-29** walked the remaining five notations
+(`blocks`, `action`, `process-blueprint`, `action-card`, `actions-tree`;
+note: `activities` → `action` and `activity-card` → `action-card` were
+renamed since the first pass). Findings below; two conformance bugs fixed
+in the same PR that updated this file.
+
+### blocks (`notations/views/08-blocks.md`)
+
+Required fields: `notation`, `name` (doc root), `nested_blocks.id`,
+`nested_blocks.name`, `nested_blocks.blocks[]` (each entry: `id`, `name`).
+
+- All required document-root fields present in the spec examples. ✅
+- **Example file bug fixed:** `examples/blocks/architecture.blocks.transitrix.yaml`
+  was missing `nested_blocks.name` (required, `BL-003` error severity). Fixed
+  by adding `name: "Software architecture"` inside `nested_blocks:`.
+- All block entries carry `id` and `name` at every depth. ✅
+- Free-form IDs (no canonical-grammar prefix) used for all blocks — this is
+  explicitly allowed by the spec (§5.2). ✅
+- Nit: spec intro (§ "File header") refers to "thirteen Transitrix notations"
+  — stale count (current is 15). Not fixed here; Valerii's call on whether
+  to maintain exact counts in spec intros or leave them as approximations.
+
+### action (`notations/views/07-action.md`)
+
+Required fields: `notation`, `name` (doc root), `actions[]` (each entry: `id`,
+`name`). Deprecated aliases: `activities`, `activity_type`.
+
+Both example files (`office-relocation.action.transitrix.yaml`,
+`platform-launch.action.transitrix.yaml`) walk clean:
+- All required fields present. ✅
+- Multi-value fields (`goals`, `predecessors`, `tags`, `delivers_changes`) all
+  use array form — single-value forms (`goal:`) absent. ✅
+- Milestone actions (`duration: 0`) have `start_date == end_date` per `ACT-016`. ✅
+- No deprecated `activities` / `activity_type` aliases in examples. ✅
+- `owner` references use `ACTOR-…` prefix. ✅
+
+### process-blueprint (`notations/views/13-process-blueprint.md`)
+
+Required fields: `notation`, `name` (doc root), `process_blueprint.id`,
+`process_blueprint.name`, `process_blueprint.stages[]` (each entry: `id`,
+`name`, `goal`, `result`). Each aspect entry: `name`, `stages[]` (non-empty).
+
+- **Example file bug fixed:** `examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`
+  was missing `process_blueprint.name` (required, `BP-003` error severity).
+  Fixed by adding `name: "Order fulfilment — operational blueprint"` inside
+  `process_blueprint:`.
+- All stage entries carry `id`, `name`, `goal`, `result`. ✅
+- `systems[]` entries with `id` use `APPLICATION-` prefix. ✅
+- `actors[]` entries with `id` use `ROLE-` prefix. ✅
+- `equipment[]` entries use free-form names (no `id`). ✅
+- Example uses `business_objects[]` (not deprecated `information_entities[]`). ✅
+- Nit (spec): `BP-010` validation rule lists prefix enforcement for `systems[]`,
+  `actors[]`, `equipment[]`, `information_entities[]` but **omits `business_objects[]`**
+  — the `BUSINESS_OBJECT-` prefix requirement from §5.3 is not reflected in
+  the validation rule table. Minor gap in the spec's rule enumeration; not
+  a regression (the rule text in §5.3 is authoritative). Valerii's call on
+  whether to add a `BP-012` or extend `BP-010`.
+- Nit: spec intro (§ "File header") refers to "twelve Transitrix notations"
+  — stale count (current is 15). Same note as blocks above.
+
+### action-card (`notations/views/18-action-card.md`)
+
+Required fields: `notation`, `name` (doc root), `action_card.id`,
+`action_card.project`. Milestone entries: `id`, `name`, `date`. Deprecated
+aliases: `activity-card`, `activity_card:`.
+
+Example file (`examples/action-card/eu-programme.action-card.transitrix.yaml`)
+walks clean:
+- All required fields present. ✅
+- `action_card.id` matches `ACTION_CARD-<DOMAIN>-<INTEGER>`. ✅
+- Milestone `id`s match `MILESTONE-<MIDDLE>-<INTEGER>`. ✅
+- Milestone `delivers_changes[]` uses array form. ✅
+- No deprecated `activity-card` aliases in example. ✅
+- `generated_at` absent — optional, acceptable. ✅
+
+### actions-tree (`notations/views/23-actions-tree.md`)
+
+Status: `draft`. No example file yet — by design for a newly drafted
+notation. The spec is internally consistent; validation rules
+(`ATREE-001..008`) follow the shared contract pattern. No example to walk.
+
+---
+
+**Coverage after second pass (2026-06-29):** all 15 view-notation specs have
+now been walked at least once. The doc-lint covers mechanical invariants
+continuously. The two example bugs found by the manual walk are fixed. Open
+nits (stale notation counts in spec intros, `BP-010` missing `business_objects`
+coverage) are Valerii-gated.

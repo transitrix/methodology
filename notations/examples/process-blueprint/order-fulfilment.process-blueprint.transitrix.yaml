@@ -5,6 +5,7 @@ generated_at: "2026-05-21"
 
 process_blueprint:
   id: PROCESS_BLUEPRINT-FULFIL-1
+  name: "Order fulfilment — operational blueprint"
   description: |
     End-to-end operational blueprint of the order fulfilment value chain.
     Each stage column lists its goal, result, and the supporting systems,
