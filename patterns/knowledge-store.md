@@ -118,6 +118,34 @@ Migrate to a separate knowledge repo when the single-repo structure becomes cong
 5. **Promote the first batch.** Create a PR for each promoted object. Link the PR back to the knowledge object(s) it was derived from. This establishes the provenance chain.
 6. **Wire the return path.** Set up a process (manual or automated) to publish a `glossary.md` or object-reference stubs from Transitrix back to source repos. This closes the loop and keeps project teams aligned with canon.
 
+## Templates
+
+Starter templates for the two core OKF record types live alongside this pattern:
+
+- [`knowledge-store-templates/okf-source-document.md`](knowledge-store-templates/okf-source-document.md) — copy to `_intake/processed/` for each ingested document; covers `type`, `source`, `source_hash`, `confidence`, `tracks`, and routing notes
+- [`knowledge-store-templates/okf-knowledge-object.md`](knowledge-store-templates/okf-knowledge-object.md) — copy to `knowledge/` for each extracted concept; covers `type`, `description`, `resource`, `confidence`, citations, and examples
+
+**Initialise the MVP bundle with these two files:**
+
+`_intake/log.md`:
+```markdown
+# Intake log
+
+Entries are date-grouped. Each entry carries a type tag: [route] routing decision, [admit] chunk approval, [assert] assertion outcome.
+
+## YYYY-MM-DD
+```
+
+`knowledge/index.md`:
+```markdown
+# Knowledge index
+
+Auto-updated when knowledge objects are added or modified. Each entry: title, type, confidence, source.
+
+| Object | Type | Confidence | Source |
+|---|---|---|---|
+```
+
 ## Tooling
 
 Google Cloud publishes reference implementations alongside the OKF spec:
