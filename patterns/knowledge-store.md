@@ -1,10 +1,15 @@
-# Transitrix + Knowledge Store
+# Knowledge Store
 
 **Pattern type:** three-layer  
 **Complexity:** medium  
-**System-agnostic counterpart:** Knowledge Refinery pattern
+**System-agnostic counterpart:** Knowledge Refinery pattern  
+**OKF alignment:** Google Cloud Open Knowledge Format v0.1 (announced 2026-06-12) — spec at [GoogleCloudPlatform/knowledge-catalog](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf)
 
 ---
+
+## Overview
+
+Transitrix includes an optional knowledge store component for organisations that need a structured curation layer between raw source material and the canonical model. The knowledge store is part of the methodology — not a separate or competing system. It uses [Google Cloud Open Knowledge Format (OKF) v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) as its storage format, which provides interoperability with OKF-compatible tooling while keeping knowledge objects fully within the Transitrix lifecycle.
 
 ## Problem
 
@@ -12,7 +17,7 @@ Raw source material — interview notes, meeting summaries, research documents �
 
 ## Solution
 
-Three explicit layers with clear promotion rules: project repos contribute raw material, a dedicated knowledge repo curates it into OKF-formatted knowledge objects, and Transitrix canon holds only what has been validated and promoted.
+Three explicit layers with clear promotion rules: project repos contribute raw material, the Transitrix knowledge store curates it into OKF-formatted knowledge objects, and Transitrix canon holds only what has been validated and promoted.
 
 ```
 ┌────────────────────────────────────────────┐
@@ -22,15 +27,15 @@ Three explicit layers with clear promotion rules: project repos contribute raw m
 └──────────────────────┬─────────────────────┘
                        │
 ┌──────────────────────▼─────────────────────┐
-│            refinement layer                │
+│   Transitrix knowledge store (optional)    │
 │                                            │
-│  knowledge repo — OKF, curated, dated      │
+│  OKF knowledge objects — curated, dated    │
 └──────────────────────┬─────────────────────┘
                        │
 ┌──────────────────────▼─────────────────────┐
-│              canon layer                   │
+│         Transitrix canon layer             │
 │                                            │
-│  Transitrix repo — validated primitives    │
+│  canon/ — validated primitives             │
 └────────────────────────────────────────────┘
 ```
 
@@ -40,21 +45,62 @@ Three explicit layers with clear promotion rules: project repos contribute raw m
 
 Each project repo contributes raw material: meeting notes, interview transcripts, survey data, draft documents. Material lives under `field/` in each repo. No Transitrix structure is required at this layer — it is an input feed, not a model.
 
-### Refinement layer — knowledge repository
+### Refinement layer — Transitrix knowledge store
 
-A dedicated knowledge repository (separate from Transitrix) holds curated knowledge objects in OKF format: Markdown files with structured YAML frontmatter, explicit source citations, and timestamps. Curators pull from the source layer, extract signal, and write knowledge objects. Nothing reaches this layer without a citation and a timestamp.
+The Transitrix knowledge store holds curated knowledge objects in OKF format: Markdown files with structured YAML frontmatter, explicit source citations, and timestamps. Curators pull from the source layer, extract signal, and write knowledge objects. Nothing reaches this layer without a citation and a timestamp.
 
-Key OKF fields per knowledge object:
-- `source:` — URI or repo path of the originating document
-- `created_at:` — date the object was curated
-- `confidence:` — curator's assessment (observed / inferred / assumed)
-- `tags:` — free-form classification
+OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extensions):
+
+| Field | Required | Notes |
+|---|---|---|
+| `type:` | **yes** | Short string identifying the kind of concept — no central registry, choose descriptive values (e.g. `insight`, `finding`, `concept`, `source-document`) |
+| `title:` | recommended | Display name; derived from filename if omitted |
+| `description:` | recommended | Single-sentence summary |
+| `resource:` | recommended | Canonical URI for the underlying asset (Google OKF field) |
+| `tags:` | recommended | YAML list for categorisation |
+| `timestamp:` | recommended | ISO 8601 datetime of last modification |
+| `source:` | Transitrix extension | Repo path or URI of the originating document (provenance) |
+| `created_at:` | Transitrix extension | Date the object was curated (distinct from `timestamp:` which tracks modifications) |
+| `confidence:` | Transitrix extension | Curator's epistemic assessment: `observed` / `inferred` / `assumed` |
+
+OKF consumers must not reject bundles for unknown fields — Transitrix extensions are fully compatible.
+
+**Bundle conventions (Google OKF v0.1):**
+- `index.md` — progressive-disclosure directory listing; keep auto-generated and current
+- `log.md` — chronological change history, date-grouped entries; record routing decisions, admit decisions, and assertion outcomes here
+- Links between concept files use bundle-relative paths (`/knowledge/concept-name.md`)
 
 ### Canon layer — Transitrix repo
 
-Validated primitives — DRIVER, GOAL, CHANGE, CAPABILITY, and others — promoted from the knowledge repo. Each element in `canon/elements/` corresponds to one or more knowledge objects. The promotion decision is a pull request; review is the validation gate.
+Validated primitives — DRIVER, GOAL, CHANGE, CAPABILITY, and others — promoted from the knowledge store. Each element in `canon/elements/` corresponds to one or more knowledge objects. The promotion decision is a pull request; review is the validation gate.
 
 Transitrix also distributes canonical vocabulary back downstream: generated `glossary.md` or object-reference stubs committed to project repos keep source-layer teams aligned with the enterprise model.
+
+## Single-repo MVP
+
+For early adoption where standing up a separate knowledge repo adds too much overhead, the refinement layer can live as folders inside the Transitrix repo:
+
+```
+_intake/
+  inbox/           ← incoming documents (gitignored — temporary staging)
+  originals/       ← source files archived by reference (gitignored)
+  processed/       ← OKF source-document records (type: source-document)
+  log.md           ← all events: [route] / [admit] / [assert]
+
+knowledge/         ← OKF knowledge objects (type: insight / finding / concept / ...)
+  index.md         ← auto-generated bundle index
+  <concept>.md     ← individual knowledge objects
+
+canon/             ← Transitrix primitives (unchanged)
+```
+
+**Ingestion routing:** a single document can feed one or both tracks.
+- **OKF track** — extract knowledge objects → curator reviews chunks → write to `knowledge/` → update `index.md`
+- **Canon track** — extract Transitrix primitives → open PR to `canon/` → merge gate
+
+All incoming documents are always archived to `processed/` as OKF source-document records before routing begins. `originals/` is gitignored; the processed record carries `source:` (path or URI) and `source_hash:` (SHA-256) for integrity.
+
+Migrate to a separate knowledge repo when the single-repo structure becomes congested or when a dedicated curation role is established.
 
 ## When to use
 
@@ -63,11 +109,20 @@ Transitrix also distributes canonical vocabulary back downstream: generated `glo
 - Source material quality is uneven and needs a structured validation stage before reaching canon.
 - Downstream consumers (other tools, teams, systems) need stable, versioned canonical objects with traceable provenance.
 
-## How to start with Transitrix
+## How to start
 
-1. **Stand up the Transitrix repo first.** Follow the [Transitrix Alone](transitrix-alone.md) pattern to establish canon. The knowledge store wraps it — canon does not change shape.
-2. **Create the knowledge repository.** A separate Git repo, not a folder inside Transitrix. Scaffold it with OKF-compatible frontmatter templates. Decide the `confidence:` vocabulary your team will use (observed / inferred / assumed is a reasonable default).
+1. **Establish the canon first.** Follow the [Transitrix Alone](transitrix-alone.md) pattern. The knowledge store is an additive layer — `canon/` does not change shape when you add it.
+2. **Enable the knowledge store** (or scaffold the single-repo MVP folders above). Decide the `confidence:` vocabulary your team will use (`observed / inferred / assumed` is a reasonable default).
 3. **Instrument source repos.** Add a convention for capturing raw material: `field/` folder, a lightweight template, and a note in each project's `CONTRIBUTING.md` pointing to the knowledge repo as the curation destination.
 4. **Define the promotion criteria.** Document in the knowledge repo's `README.md` what makes a knowledge object ready to promote: minimum confidence level, required fields, review sign-off.
-5. **Promote the first batch.** Create a Transitrix PR for each promoted object. Link the PR back to the knowledge object(s) it was derived from. This establishes the provenance chain.
+5. **Promote the first batch.** Create a PR for each promoted object. Link the PR back to the knowledge object(s) it was derived from. This establishes the provenance chain.
 6. **Wire the return path.** Set up a process (manual or automated) to publish a `glossary.md` or object-reference stubs from Transitrix back to source repos. This closes the loop and keeps project teams aligned with canon.
+
+## Tooling
+
+Google Cloud publishes reference implementations alongside the OKF spec:
+- **Enrichment agent** — walks a dataset, drafts OKF documents, enriches with citations and cross-references
+- **Static HTML visualiser** — turns an OKF bundle into an interactive graph view with no backend required
+- **Sample bundles** — GA4 e-commerce, Stack Overflow, Bitcoin datasets
+
+These tools consume any OKF-conformant bundle, including Transitrix knowledge stores.
