@@ -458,6 +458,76 @@ Both projects are published as open source and may be used for educational and c
 
 ---
 
-**Document version:** 1.0.1
-**Updated:** 2026-05-08
+---
+
+## CLI validation — Windows and extension set
+
+### Windows PowerShell — use `npx.cmd`
+
+On Windows with a restricted PowerShell execution policy (the default on many corporate workstations), the unsuffixed `npx` command resolves to a `.ps1` wrapper that the policy refuses to execute:
+
+```
+npx @transitrix/cli validate my.goals.transitrix.yaml
+# Error: File C:\...\npx.ps1 cannot be loaded because running scripts is disabled on this system.
+```
+
+**Fix:** invoke `npx.cmd` instead of `npx`. The `.cmd` wrapper is not subject to the script-execution policy:
+
+```
+npx.cmd @transitrix/cli validate my.goals.transitrix.yaml
+```
+
+This applies everywhere `npx @transitrix/cli` appears — per-file validation, compile, and any other subcommand.
+
+### Canonical notation extensions — built-in registry
+
+The `@transitrix/cli validate` command ships with a built-in registry of every canonical Transitrix notation extension. **No `--ext` flag is needed for canonical notations.** The built-in registry matches the notation catalogue in [`notations/README.md`](../notations/README.md):
+
+| File extension | Notation |
+|---|---|
+| `*.bpmn.transitrix.yaml` | `bpmn` |
+| `*.dgca.transitrix.yaml` | `dgca` |
+| `*.goals.transitrix.yaml` | `goals` |
+| `*.capability-map.transitrix.yaml` | `capability-map` |
+| `*.process-map.transitrix.yaml` | `process-map` |
+| `*.action.transitrix.yaml` | `action` |
+| `*.blocks.transitrix.yaml` | `blocks` |
+| `*.products.transitrix.yaml` | `products` |
+| `*.applications.transitrix.yaml` | `applications` |
+| `*.scenarios.transitrix.yaml` | `scenarios` |
+| `*.process-blueprint.transitrix.yaml` | `process-blueprint` |
+| `*.action-card.transitrix.yaml` | `action-card` |
+| `*.compliance-impact.transitrix.yaml` | `compliance-impact` |
+| `*.coverage-metric.transitrix.yaml` | `coverage-metric` |
+| `*.actions-tree.transitrix.yaml` | `actions-tree` |
+
+Every one of these validates and compiles without additional flags. The `--ext <notation-name>` flag exists only for **non-canonical** extensions — custom notations an adopter has defined outside the built-in registry. Canonical BPMN validation is unchanged; the table above does not relax BPMN rules.
+
+### Pre-commit validation on Windows
+
+To gate every commit on notation validity before it reaches CI, add a `.git/hooks/pre-commit` file in your adopter repository. On Windows, use a `.cmd` file so the hook does not require PowerShell execution-policy changes:
+
+**`.git/hooks/pre-commit`** (shell — works on Linux/macOS/Git Bash on Windows):
+
+```sh
+#!/usr/bin/env sh
+# Transitrix notation pre-commit validation
+set -e
+status=0
+found=0
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep '\.transitrix\.yaml$'); do
+  found=1
+  echo "Validating $f ..."
+  npx.cmd @transitrix/cli validate "$f" || status=1
+done
+if [ "$found" -eq 0 ]; then
+  echo "No .transitrix.yaml files staged — nothing to validate."
+fi
+exit $status
+```
+
+Make it executable (`chmod +x .git/hooks/pre-commit` on Unix; Git Bash on Windows respects this). The hook validates only staged `*.transitrix.yaml` files, so it runs quickly on typical commits. It uses `npx.cmd` so it works under a restricted PowerShell execution policy without any policy change.
+
+**Document version:** 1.0.2
+**Updated:** 2026-07-01
 **Next update:** When new tools are added
