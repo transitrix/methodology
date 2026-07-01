@@ -72,7 +72,7 @@ Example:
 
 - **Add a new notation file** → jump to **Step 3** (template copy → authoring → validate → PR). Before copying a template, use `Glob`/`Grep` over the existing tree to pick the right domain prefix and avoid ID clashes.
 - **Modify an existing file** → `Read` it first, summarise its current structure, then enter **Step 4** (interactive authoring with inline validation).
-- **"Where is X?"** → `Grep` the repo and answer directly; no authoring loop needed.
+- **"Where is X?" / any question about the organization itself** → follow `AGENTS.md` §13 (canon-first sourcing): check `canon/` first, then `codex/`, cite the artefact ID/path; only fall back to `field/` with an explicit "unvalidated" caveat, and don't grep ad hoc top-level folders (scratch notes, `_intake/`) as if they were authoritative. If canon/codex genuinely don't cover it, say so rather than guessing from whatever's nearby.
 
 After the first change is authored and validated, continue to **Step 6** (suggest next steps).
 
@@ -132,6 +132,17 @@ Additionally, write one generated file (no template — author it inline):
 - `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending both VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview, and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
 
 **Do not scaffold a Claude-specific `CLAUDE.md` agent guide.** The canonical guide for every assistant is `AGENTS.md`. If the user is on a tool that doesn't read `AGENTS.md` natively (e.g. Claude Code looks for `CLAUDE.md`, Cursor looks for `.cursor/rules/`), drop a one-line pointer file in that tool's location that reads *"Read `AGENTS.md` in the repo root and follow it."* The guidance itself stays in `AGENTS.md` only — see `AGENTS.md` §"Using this guide with your assistant".
+
+### Suggest editor tooling — right after scaffolding, don't wait for Step 5
+
+As soon as the root files exist, check what's already installed: `code --list-extensions` (swap `code` for `cursor` / `codium` if that's the detected editor; on Windows PowerShell with a restricted execution policy use `code.cmd` / `cursor.cmd`). If **Transitrix Studio** (`transitrix.transitrix-studio`) or **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) is missing, surface the install command(s) prominently now, before Step 3:
+
+```
+code --install-extension transitrix.transitrix-studio
+code --install-extension bierner.markdown-mermaid
+```
+
+The agent does **not** run these itself — it shows the command and lets the user run it (see `AGENTS.md` §12, scaffolded into the new repo, for the standing rule this session-start check follows going forward). Step 5 below is a reminder to actually open the file in Studio once one exists, not the first time this comes up.
 
 ### Three zones — what gets scaffolded
 
@@ -233,13 +244,13 @@ Once a few files exist, the whole-repo linter scaffolded in Step 2 catches cross
 
 ## Step 5 — Hand off to Studio
 
-Once the user has a working starter file, point them at **Transitrix Studio** (the VS Code extension) for live preview:
+The install suggestion already happened right after scaffolding (see "Suggest editor tooling" in Step 2). Now that the user has a working starter file, close the loop — point them at **Transitrix Studio** for live preview:
 
-> "Install Transitrix Studio from the VS Code Marketplace (search for `transitrix.transitrix-studio`). Open the file you just authored — the preview opens automatically beside the editor and refreshes on every save."
+> "Open the file you just authored — the preview opens automatically beside the editor and refreshes on every save." (If they skipped the earlier install prompt, repeat the `code --install-extension transitrix.transitrix-studio` command once here.)
 
 The full notation set previews in Studio: BPMN, Goals, DGCA, Action schedule (PSND + Gantt), Actions tree, Process Map, Process Blueprint, Capability Map, Scenarios, Applications catalogue, Products catalogue, Nested blocks, Action Card, Compliance Impact, Coverage Metric.
 
-Also recommend **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) — available on both the VS Code Marketplace and Open VSX — so Mermaid diagrams in `.md` files (ADRs, architecture notes, `AGENTS.md` diagrams) render inline. Between Studio (Transitrix notation preview) and the Mermaid extension (Markdown diagram preview), the user has full visual coverage of the repo.
+Between Studio (Transitrix notation preview) and the Mermaid extension (Markdown diagram preview), the user has full visual coverage of the repo.
 
 If the user is on a system without VS Code, they can use the CLI for compile / validate:
 

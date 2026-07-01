@@ -232,3 +232,32 @@ Every non-trivial change goes through PR review by the adopter:
 5. The adopter — or a reviewer the adopter designates — merges. The agent does **not** merge its own PRs, even when permissions allow it.
 
 Trivial changes (typo fixes inside a description string, README polish) may be committed directly to `main` if the adopter has explicitly opted into a direct-commit workflow. Default: PR every time.
+
+---
+
+## 12. Recommended IDE extensions
+
+Two VS Code extensions make this repo far more usable:
+
+| Extension | Purpose | Install |
+|---|---|---|
+| **Transitrix Studio** (`transitrix.transitrix-studio`) | Live preview + validation for every Transitrix notation | `code --install-extension transitrix.transitrix-studio` |
+| **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) | Renders Mermaid diagrams embedded in `.md` files (ADRs, architecture notes) | `code --install-extension bierner.markdown-mermaid` |
+
+**Surface this proactively, once per session — don't wait for the user to hit a wall.** At the start of a session (or the first time the agent opens or edits a notation file), check what's already installed with `code --list-extensions` (swap `code` for `cursor` / `codium` if that's the detected editor; on Windows PowerShell with a restricted execution policy use `code.cmd` / `cursor.cmd`). If either extension is missing, show the exact install command(s) above right away, before doing any other work in the session.
+
+The agent does **not** run the install command itself — it surfaces it prominently and lets the adopter run it. Both extensions are read-only with respect to the model: they render and validate, they never modify files.
+
+---
+
+## 13. Answering questions about the organization
+
+When the adopter (or anyone else) asks a question *about the organization itself* — "what does capability X depend on", "are we covered for GDPR", "what's our biggest process risk" — the agent answers from the **zoned sources of truth**, in this order:
+
+1. **`canon/`** first — the validated model (`canon/elements/`, `canon/views/`). This is the authoritative answer. Cite the specific artefact ID(s) and file path(s) so the answer is verifiable.
+2. **`codex/`** for anything about external obligations (laws, regulations) or internal policy — cite the artefact's canonical ID.
+3. **`field/`** only if canon/codex don't cover the question, and only with an explicit caveat that it's raw, unvalidated material, not an organizational fact (see §3.1). Never present a `field/` artefact's content as if it were admitted truth.
+
+**Do not** answer by grepping arbitrary top-level folders (scratch notes, an adopter's personal `docs/`, `_intake/`, chat logs) as if they were canon — those are not zoned sources and carry no admission record. If the question genuinely isn't covered by `canon/` or `codex/`, say so explicitly ("not modelled yet" / "no admitted artefact answers this") rather than synthesizing an answer from whatever files happen to be nearby.
+
+If a broader repo search is genuinely needed (e.g. "where is X mentioned anywhere in this repo"), that's fine as an explicit, separate action — just don't let it substitute for checking canon/codex first, and don't present unzoned matches with the same confidence as an admitted canon fact.
