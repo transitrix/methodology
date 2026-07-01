@@ -248,6 +248,12 @@ npx @transitrix/cli compile path/to/your.dgca.transitrix.yaml output.bpmn   # on
 npx @transitrix/cli validate path/to/your.dgca.transitrix.yaml
 ```
 
+All canonical `*.transitrix.yaml` notation extensions are recognised without `--ext`; pass `--ext <notation-name>` only for a non-canonical extension outside the built-in registry. **On Windows PowerShell** with a restricted execution policy (the default on many workstations), replace `npx` with `npx.cmd` — plain `npx` resolves to a `.ps1` wrapper that the policy refuses to launch:
+
+```
+npx.cmd @transitrix/cli validate path/to/your.dgca.transitrix.yaml
+```
+
 ---
 
 ## Step 6 — Suggest next steps

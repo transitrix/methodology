@@ -227,7 +227,7 @@ Every non-trivial change goes through PR review by the adopter:
 
 1. Branch from `main` for the task.
 2. Make the smallest change that satisfies the task. One concern per commit, one task per PR.
-3. Validate every changed notation file (Studio or `npx @transitrix/cli validate`) before pushing.
+3. Validate every changed notation file (Studio or `npx @transitrix/cli validate`; on Windows PowerShell use `npx.cmd @transitrix/cli validate`) before pushing.
 4. Open a PR with a short summary and a test-plan checklist.
 5. The adopter — or a reviewer the adopter designates — merges. The agent does **not** merge its own PRs, even when permissions allow it.
 
