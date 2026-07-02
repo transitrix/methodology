@@ -22,7 +22,8 @@ const EXTRACTION_CONFIDENCE = new Set(['high', 'medium', 'low']);
 // candidate.schema.json names "closed REL kinds" among what validation_flags covers.
 const CLOSED_REL_KINDS = new Set([
   'parent', 'goal_parent', 'target_state_satisfies_goal', 'assessment_influences_goal',
-  'activity_goal', 'unit_parent', 'employment', 'candidacy', 'alumni_membership',
+  'action_goal', 'activity_goal', // action_goal is canonical; activity_goal is deprecated alias (ACTION-005)
+  'unit_parent', 'employment', 'candidacy', 'alumni_membership',
   'community_membership', 'contracting', 'stakeholding',
 ]);
 
