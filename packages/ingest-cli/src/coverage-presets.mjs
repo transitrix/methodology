@@ -7,8 +7,14 @@
 // Stored per layer (so a custom profile can `disabled:`/`remove:` a whole layer and
 // resolve correctly); the resolver flattens to membership sets. `full` is the sentinel
 // "everything" — it carries no allowlist because every registry TYPE / REL kind is in.
+//
+// RELEASE DISCIPLINE: on every methodology MINOR or MAJOR bump, update PRESETS_VERSION
+// to match the new methodology_version and re-state each preset's element + relation
+// lists against COVERAGE_PROFILES.md §3 / §3.1 for that release. This is a manual
+// release step — run `node packages/ingest-cli/ingest.mjs repo-check <repo>` on a repo
+// pinned to the new version to confirm no false-negative mismatch before tagging.
 
-export const PRESETS_VERSION = '0.5.0';
+export const PRESETS_VERSION = '0.7.0';
 
 export const LAYERS = ['01_motivation', '02_business', '03_application', '04_technology', '05_implementation'];
 
@@ -16,25 +22,25 @@ export const LAYERS = ['01_motivation', '02_business', '03_application', '04_tec
 export const PRESETS = {
   minimal: {
     elements: {
-      '01_motivation': ['FACTOR', 'GOAL'],
-      '05_implementation': ['ACTIVITY'],
+      '01_motivation': ['DRIVER', 'GOAL'],
+      '05_implementation': ['ACTION'],
     },
     relations: {
       '01_motivation': ['goal_parent'],
-      '05_implementation': ['activity_goal'],
+      '05_implementation': ['action_goal'],
     },
   },
   core: {
     elements: {
-      '01_motivation': ['FACTOR', 'GOAL', 'CONSTRAINT', 'REQUIREMENT', 'STAKEHOLDER'],
+      '01_motivation': ['DRIVER', 'GOAL', 'CONSTRAINT', 'REQUIREMENT', 'STAKEHOLDER'],
       '02_business': ['CAPABILITY', 'PROCESS', 'ACTOR', 'ROLE', 'RULE'],
       '03_application': ['APPLICATION', 'INTEGRATION'],
-      '05_implementation': ['ACTIVITY', 'CHANGE', 'MILESTONE'],
+      '05_implementation': ['ACTION', 'CHANGE', 'MILESTONE'],
     },
     relations: {
       '01_motivation': ['goal_parent', 'stakeholding'],
       '02_business': ['parent', 'unit_parent', 'employment'],
-      '05_implementation': ['activity_goal'],
+      '05_implementation': ['action_goal'],
     },
   },
   // `full` is intentionally the sentinel — see resolveProfile(). No allowlist needed.

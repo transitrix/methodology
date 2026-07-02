@@ -33,6 +33,8 @@ Deterministic, no-API-key guard. Nine parts:
   N. F8 entity resolution — emit-candidates attaches entity_match when a candidate's
      name matches an existing canon element by primary name or alias; genuinely new
      candidates get no proposal; review-queue surfaces entity_match_proposals.
+  P. #434 preset version currency — repo-check reports a version match (no false-negative)
+     for a repo correctly pinned to the CLI's built-in preset version (0.7.0).
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -1140,6 +1142,42 @@ def part_o_unresolved_extensions():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part P — #434 regression: preset version currency ────────────
+
+def part_p_preset_version_currency():
+    """repo-check reports a version match for a repo pinned to the CLI's built-in
+    preset version (currently 0.7.0). Regression for the false-negative mismatch
+    caused by stale built-in presets frozen at an old methodology version."""
+    if not shutil.which("node"):
+        print("SKIP Part P: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-p434-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.7.0"\ncoverage_profile: core\n')
+
+        r = run_cli("repo-check", org)
+        check(r.returncode == 0, "P: repo-check failed on a 0.7.0 repo: %s" % (r.stderr or r.stdout))
+        rep = yaml.safe_load(r.stdout)
+
+        tooling = rep.get("tooling", {})
+        check(tooling.get("methodology_version_match") is True,
+              "P: repo-check must report methodology_version_match: true for a 0.7.0 repo "
+              "(false-negative regression from stale built-in presets); got tooling=%r" % tooling)
+        check(tooling.get("ok") is True,
+              "P: repo-check tooling.ok must be true for a 0.7.0 repo; got tooling=%r" % tooling)
+        red_flags = rep.get("integrity", {}).get("red_flags", [])
+        version_flags = [f for f in red_flags if "does not match" in f and "CLI built-in" in f]
+        check(len(version_flags) == 0,
+              "P: repo-check must not emit a version-mismatch red flag for a 0.7.0 repo; "
+              "got red_flags=%r" % red_flags)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1155,6 +1193,7 @@ part_l_repo_check()
 part_m_id_grammar()
 part_n_entity_resolution()
 part_o_unresolved_extensions()
+part_p_preset_version_currency()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

@@ -27,7 +27,8 @@ import { join, resolve, dirname } from 'node:path';
 // means the TYPE has no own catalogue folder (view-defined, document-local).
 export const PLACEMENT = {
   // 01_motivation
-  FACTOR:             { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/factors/' },
+  DRIVER:             { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/factors/' },
+  FACTOR:             { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/factors/' }, // grandfathered IDs; canonical name is DRIVER
   GOAL:               { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/goals/' },
   CONSTRAINT:         { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/constraints/' },
   REQUIREMENT:        { mode: 'standalone',   layer: '01_motivation',    folder: '01_motivation/requirements/' },
@@ -46,8 +47,9 @@ export const PLACEMENT = {
   APPLICATION:        { mode: 'standalone',   layer: '03_application',   folder: '03_application/applications/' },
   INTEGRATION:        { mode: 'view-defined', layer: '03_application',   folder: '03_application/integrations/', promotable: true },
   // 05_implementation
+  ACTION:             { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/actions/' },
+  ACTIVITY:           { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/activities/', deprecated: true, replacedBy: 'ACTION' },
   CHANGE:             { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/changes/' },
-  ACTIVITY:           { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/activities/' },
   TARGET_STATE:       { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/target-states/' },
   SCENARIO:           { mode: 'standalone',   layer: '05_implementation', folder: '05_implementation/scenarios/' },
   // 04_technology — first catalogued TYPE in this layer (ADR 2026-06-08)
