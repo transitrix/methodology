@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-06"
+last_updated: "2026-07-02"
 status: "draft"
 ---
 
@@ -41,7 +41,7 @@ The same regulation often produces a REQUIREMENT and a corresponding CONSTRAINT 
 
 ### 1.1 Default classification for extracted obligations
 
-When an obligation is **extracted from a codex source** — by an automated harvest (e.g. a regulatory-intelligence collector) or by a human reading a law / regulation / policy — the form of the obligation in the source text determines the TYPE. The defaults below apply; they are conventions, not validator rules.
+When an obligation is **extracted from a codex source** — by an automated harvest (e.g. a regulatory-intelligence collector) or by a human reading a law / regulation / policy — the form of the obligation in the source text determines the TYPE. The defaults below apply; they are conventions, not validator rules. The `origin` field (§2.1) captures the broader context — a legislative obligation from a regulation receives `origin: legislative`; obligations extracted from a process/SOP document receive `origin: process-product`; obligations from a BRD or project charter receive `origin: project-product`.
 
 | Obligation form in source text | Default TYPE | Rationale |
 |---|---|---|
@@ -82,7 +82,8 @@ id: REQUIREMENT-DATA-ERASURE-1
 name: "Personal-data erasure on user request within 30 days"
 description: "On request from a data subject, the controller must erase personal data within 30 days. The window starts at the time the request is received and verified."
 
-# Optional regulatory attributes
+# Optional attributes
+origin: legislative             # legislative | process-product | project-product — see §2.1
 severity: high                  # high | medium | low — organisation-defined priority
 derived_from:                   # typed IDs of source documents this requirement is drawn from
   - LAW-PERSONAL-DATA-2017-1
@@ -108,6 +109,7 @@ valid_to: null
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REQUIREMENT-[<middle>-]<INTEGER>`. |
 | `name` | yes | string | One-line statement of the requirement. (Was `title` before the 2026-05-29 single-label-field decision; see [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.) |
 | `description` | yes | string | Longer-form explanation of the obligation, its scope, and the conditions under which it applies. |
+| `origin` | no | string | Origin / kind distinguishing the context from which the requirement was derived. Closed vocabulary — see §2.1. Omitted requirements are treated as `legislative` by tooling that supports filtering. |
 | `severity` | no | string | One of `high`, `medium`, `low`. Organisation-defined priority for planning and reporting. Distinct from `obligation_level` (regulatory force, RFC 2119 — out of scope for v1; see [§5](#5-evolution)). |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
@@ -116,6 +118,24 @@ valid_to: null
 | `gate_checks` | yes | map | Standard canon checks (`uniqueness`, `consistency`, `completeness`); see [CONTRACT.md](../CONTRACT.md) §6. |
 | `valid_from` | yes | string | Date the requirement took effect — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §7. |
 | `valid_to` | yes | string \| null | Date the requirement ceased to be in effect, or `null` if still in effect — see [CONTRACT.md](../CONTRACT.md) §7. |
+
+### 2.1 `origin` — requirement taxonomy
+
+`origin` captures the context from which the requirement was drawn — the domain and source type that gave rise to the obligation. This drives filtering, reporting, and ingest classification (a BRD and a regulation both produce `REQUIREMENT` elements but under fundamentally different authority chains).
+
+| Value | Meaning | Typical source documents | Default `derived_from` TYPEs |
+|---|---|---|---|
+| `legislative` | Obligation derived from a law, regulation, standard, or internal policy — an externally imposed or formally adopted rule the organisation must comply with. | Law / regulation text, standards documents, internal policies, compliance frameworks. | `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` |
+| `process-product` | Requirement on the output or product of a **PROCESS** — what the process must deliver, in what shape, to what quality threshold. Typically extracted from SOPs, process specifications, or quality-management documents. | SOP, process spec, quality manual, ISO work instruction. | None (no codex source; `derived_from` cites field artefacts or is absent) |
+| `project-product` | Requirement on a deliverable or product of a **PROJECT** or initiative — what the project must produce to satisfy its stakeholders. Typically extracted from BRDs, project charters, product specs, or stakeholder briefs. | BRD, project charter, product spec, stakeholder brief, RFP. | None (same as above) |
+
+**Closed vocabulary.** Values outside `legislative | process-product | project-product` are rejected by REQ-004.
+
+**Default when omitted.** A REQUIREMENT without `origin` is treated as `legislative` by tooling that supports origin-based filtering. Existing requirements admitted before this field was introduced carry no `origin` and are grandfathered as implicitly `legislative` (they were extracted from codex sources under the original compliance scope of this spec). Authors SHOULD add `origin` on newly admitted requirements; backfilling existing records is optional.
+
+**Relation to `derived_from`.** `origin: legislative` requirements typically carry a `derived_from` list citing the codex artefact; `process-product` and `project-product` requirements typically do not (they derive from field artefacts — the interview, the BRD document, the process spec — not from codex sources). Having a `derived_from` codex reference does not override an explicit `origin: process-product` if the author intentionally set it (a process spec that is itself governed by a regulation may produce a `process-product` requirement that also cites the governing regulation as a `derived_from` reference).
+
+**Relation to `ASSERTION`.** The `origin` field does not change which elements may be subjects of an `ASSERTION` targeting this `REQUIREMENT`. `ASSERTION.about` always references a `REQUIREMENT` id regardless of origin; the subject TYPE constraint (`PRODUCT | PROCESS | CAPABILITY`) comes from [elements/16-assertion.md](16-assertion.md) §3, not from `origin`.
 
 Field naming follows the conventions in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) and [CONTRACT.md](../CONTRACT.md); no requirement-specific naming conventions are introduced.
 
@@ -145,6 +165,7 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 | `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `name`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
 | `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
+| `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 
 The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](../CONTRACT.md) §8.
@@ -153,7 +174,10 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 
 ## 5. Evolution
 
-Pending design work (separate strategy-hub tasks) extends the REQUIREMENT schema with regulatory attributes that apply symmetrically to REQUIREMENT and CONSTRAINT:
+**Landed (v0.2, 2026-07-02):**
+- `origin` field — three-value taxonomy (`legislative | process-product | project-product`) distinguishing the context from which the requirement was derived. Ingest classification follow-on: `emit-candidates` and the extraction prompts will be updated to pass `origin` through based on source-document context signals.
+
+**Pending design work (separate tasks) extends the REQUIREMENT schema with regulatory attributes that apply symmetrically to REQUIREMENT and CONSTRAINT:**
 
 - `deadline` (ISO 8601 date) and an extended `status` vocabulary (`active` / `upcoming` / `past_due` / `compliant` / `deprecated` / `retired`).
 - `obligation_level` (`SHALL` / `SHOULD` / `MAY` — RFC 2119 language for positive obligations; the corresponding `SHALL_NOT` / `SHOULD_NOT` apply on CONSTRAINT).
