@@ -35,6 +35,9 @@ Deterministic, no-API-key guard. Nine parts:
      candidates get no proposal; review-queue surfaces entity_match_proposals.
   P. #434 preset version currency — repo-check reports a version match (no false-negative)
      for a repo correctly pinned to the CLI's built-in preset version (0.7.0).
+  Q. origin pass-through + REQ-004 — emit-candidates carries origin through for all three
+     valid values (legislative/process-product/project-product); validate enforces REQ-004
+     (closed vocabulary) on the candidate origin field.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -1178,6 +1181,87 @@ def part_p_preset_version_currency():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part Q — origin pass-through + REQ-004 validation (task #439) ─
+
+def part_q_origin_classification():
+    """emit-candidates carries origin through for REQUIREMENT elements; validate enforces
+    REQ-004 (closed vocabulary) on the origin field; all three valid values pass clean."""
+    if not shutil.which("node"):
+        print("SKIP Part Q: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-origin-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.7.0"\ncoverage_profile: full\n')
+
+        fdir = os.path.join(org, "field", "interviews")
+        os.makedirs(fdir, exist_ok=True)
+        fid = "INTERVIEW-q-20260703-1"
+        with open(os.path.join(fdir, fid + ".yaml"), "w", encoding="utf-8") as fh:
+            fh.write('id: "%s"\nname: "x"\ntype: "INTERVIEW"\nzone: "field"\nnotes: "x"\n' % fid)
+
+        res = os.path.join(work, "res.json")
+        # Three requirements — one per valid origin value; no invalid origin yet.
+        with open(res, "w", encoding="utf-8") as fh:
+            json.dump({"elements": [
+                {"id": "REQUIREMENT-LEG-1", "name": "Annual regulatory report",
+                 "element_type": "REQUIREMENT", "extraction_confidence": "high",
+                 "origin": "legislative"},
+                {"id": "REQUIREMENT-PROC-1", "name": "SOP output specification",
+                 "element_type": "REQUIREMENT", "extraction_confidence": "high",
+                 "origin": "process-product"},
+                {"id": "REQUIREMENT-PROJ-1", "name": "Deliverable acceptance criteria",
+                 "element_type": "REQUIREMENT", "extraction_confidence": "high",
+                 "origin": "project-product"},
+                # Non-REQUIREMENT element — must NOT carry origin.
+                {"id": "GOAL-COMPLIANCE-1", "name": "Compliance goal",
+                 "element_type": "GOAL", "extraction_confidence": "high"},
+            ], "relations": [], "assertions": []}, fh)
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        r = run_cli("emit-candidates", os.path.join(fdir, fid + ".yaml"), "--from", res, "--candidates-dir", cdir)
+        check(r.returncode == 0, "Q: emit-candidates failed: %s" % r.stderr.strip())
+
+        # origin carried through for each valid value.
+        for cid, expected_origin in [
+            ("REQUIREMENT-LEG-1", "legislative"),
+            ("REQUIREMENT-PROC-1", "process-product"),
+            ("REQUIREMENT-PROJ-1", "project-product"),
+        ]:
+            path = os.path.join(cdir, cid + ".json")
+            if check(os.path.isfile(path), "Q: candidate not emitted: %s" % cid):
+                c = json.load(open(path, encoding="utf-8"))
+                check(c.get("origin") == expected_origin,
+                      "Q: origin not carried through for %s (got %r)" % (cid, c.get("origin")))
+
+        # GOAL candidate must NOT carry origin.
+        goal_path = os.path.join(cdir, "GOAL-COMPLIANCE-1.json")
+        if check(os.path.isfile(goal_path), "Q: GOAL candidate not emitted"):
+            gc = json.load(open(goal_path, encoding="utf-8"))
+            check("origin" not in gc, "Q: non-REQUIREMENT candidate must not carry origin")
+
+        # All three valid-origin REQUIREMENTs pass validate clean.
+        r = run_cli("validate", cdir)
+        check(r.returncode == 0,
+              "Q: valid-origin candidates were flagged by validate: %s" % (r.stdout + r.stderr))
+
+        # REQ-004: an invalid origin value is flagged.
+        with open(os.path.join(cdir, "REQ-BADORIGIN.json"), "w", encoding="utf-8") as fh:
+            json.dump({"kind": "element", "id": "REQUIREMENT-BAD-1", "name": "Bad origin",
+                       "element_type": "REQUIREMENT", "origin": "contractual",
+                       "derived_from": [fid], "admitted_to": "pending",
+                       "extraction_confidence": "high"}, fh)
+        r = run_cli("validate", cdir)
+        out = r.stdout + r.stderr
+        check(r.returncode == 1 and "REQ-004" in out,
+              "Q: validate did not flag REQ-004 for an invalid origin value (got: %r)" % out)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1194,6 +1278,7 @@ part_m_id_grammar()
 part_n_entity_resolution()
 part_o_unresolved_extensions()
 part_p_preset_version_currency()
+part_q_origin_classification()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

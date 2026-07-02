@@ -23,7 +23,8 @@ Emit a single JSON object. Nothing else.
     { "id": "<TYPE>-[<middle>-]<N>", "name": "<short name>", "element_type": "<TYPE>",
       "extraction_confidence": "high|medium|low", "extraction_notes": "<optional>",
       "valid_from": "<YYYY-MM-DD or omit>",
-      "parent_goal": "<GOAL-… or omit — placeholder only, see GOAL section below>" }
+      "parent_goal": "<GOAL-… or omit — placeholder only, see GOAL section below>",
+      "origin": "legislative|process-product|project-product (REQUIREMENT only — omit for all other TYPEs)" }
   ],
   "relations": [
     { "rel_kind": "<closed kind>", "from": "<ID>", "to": "<ID>",
@@ -44,6 +45,18 @@ Emit a single JSON object. Nothing else.
 
 `REQUIREMENT` vs `CONSTRAINT`: positive action → REQUIREMENT; restriction → CONSTRAINT. The same source may yield both.
 
+### REQUIREMENT `origin` — source-document context signals
+
+Every extracted REQUIREMENT SHOULD carry `origin` based on the source document you are reading. Use exactly one of the three closed values:
+
+| Value | Use when the source document is… | Typical signals |
+|---|---|---|
+| `legislative` | A law, regulation, standard, or internal policy — an externally-imposed or formally-adopted rule | Numbered articles/clauses; regulatory authority named; compliance/certification framing; references to penalties, audits, or legal enforcement |
+| `process-product` | An SOP, process specification, quality manual, or work instruction — what a PROCESS must deliver | Process steps with defined outputs; quality thresholds; "the process shall produce…"; ISO work instructions |
+| `project-product` | A BRD, project charter, product specification, stakeholder brief, or RFP — what a PROJECT or initiative must produce | Project scope sections; stakeholder "must-haves"; product backlog items; acceptance criteria for a deliverable |
+
+Default rule: when the source is ambiguous or you cannot determine the document type with confidence, leave `origin` out rather than guessing. The pipeline treats omitted `origin` as `legislative` (backward-compatible default per 15-requirement.md §2.1). Only emit a value when the document type is clear.
+
 ### `parent_goal` — placeholder reference on extracted GOALs
 
 When the source names a parent goal for an extracted GOAL ("this team goal supports the company-wide retention objective"), emit `parent_goal: "<GOAL-…>"` on the candidate naming the parent's ID. **This is a placeholder for downstream goal-tree placement, not a canonical field on the admitted GOAL element.** The actual goal-tree wiring uses the first-class time-aware `goal_parent` `REL-…` ([ELEMENT_PRIMITIVES §7.2](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md), [17-relations.md §3](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md)) and is admitted by a separate DSM step that reads these placeholders; this prompt does not emit `goal_parent` REL candidates.
@@ -60,6 +73,7 @@ Motivation-layer relations you may propose (only above a high bar): `stakeholdin
 - **Two axes, never merged.** `extraction_confidence` = did you read the document correctly (`high` only when the source is explicit; `medium`/`low` when inferred). Never output `source_quality`.
 - **Entity-strong, relation-conservative.** Extract elements readily. Mark a relation `high` only when the source states it outright; otherwise `medium`/`low` (the pipeline holds non-high relations back as suggestions).
 - **Canonical IDs.** `<TYPE>-[<middle>-]<INTEGER>`, uppercase TYPE, terminal positive integer, no leading zeros ([IDS §1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md)). Relations reference element IDs.
+- **REQUIREMENT `origin`.** Emit `origin` on every REQUIREMENT using the three-value closed vocabulary (`legislative | process-product | project-product`) per the table above. Only omit when the document type is genuinely unclear. Never emit `origin` on non-REQUIREMENT elements.
 - **Dates.** When the source dates an obligation/goal, set `valid_from`; otherwise omit it (the human sets it at admission).
 
 ## Anti-goals

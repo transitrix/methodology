@@ -14,6 +14,7 @@ import { isValidId, isValidType } from './ids.mjs';
 import { classifyCoverage } from './coverage.mjs';
 
 const EXTRACTION_CONFIDENCE = new Set(['high', 'medium', 'low']);
+const ORIGIN_VALUES = new Set(['legislative', 'process-product', 'project-product']);
 
 // Closed REL `type` enum — notations/elements/17-relations.md §3. The enum is closed
 // in v1; adding a kind is a non-backwards-compatible methodology revision. The CLI
@@ -42,7 +43,7 @@ const DEFINED_FIELDS = new Set([
   'kind', 'id', 'name', 'element_type', 'type', 'aliases',
   'rel_kind', 'from', 'to', 'about', 'subject', 'status', 'realised_via', 'evidence',
   'derived_from', 'admitted_to', 'extraction_confidence', 'extraction_notes',
-  'valid_from', 'valid_to', 'entity_match', 'coverage_flag', 'validation_flags', 'extensions',
+  'valid_from', 'valid_to', 'origin', 'entity_match', 'coverage_flag', 'validation_flags', 'extensions',
 ]);
 
 function typeOf(id) { return typeof id === 'string' ? id.split('-')[0] : null; }
@@ -99,6 +100,10 @@ export function validateCandidate(cand, profile) {
     // Warn (not error) so existing pipelines keep working during the one-release alias window.
     if (type === 'INFORMATION_ENTITY') {
       flags.push('BOBJ-D001 [deprecation]: INFORMATION_ENTITY is a deprecated alias; rename element_type to BUSINESS_OBJECT and update the id prefix (INFORMATION_ENTITY- → BUSINESS_OBJECT-)');
+    }
+    // REQ-004 — origin closed vocabulary (15-requirement.md §4).
+    if (type === 'REQUIREMENT' && 'origin' in cand && !ORIGIN_VALUES.has(cand.origin)) {
+      flags.push(`REQ-004: origin must be legislative|process-product|project-product (got ${JSON.stringify(cand.origin)})`);
     }
   } else if (cand.kind === 'relation') {
     if (!cand.rel_kind) flags.push('relation is missing rel_kind');
