@@ -232,6 +232,7 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 | `id` | yes | `CHANGE-[<middle>-]<INTEGER>` |
 | `name` | yes | what the change is |
 | `goals` | no | array of `GOAL-…` IDs this change delivers |
+| `addresses` | no | array of `REQUIREMENT-…` / `CONSTRAINT-…` IDs this change responds to — the motivation-layer obligations whose gap the change closes. Origin-agnostic; see [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3.1. |
 | `description` | no | one-paragraph elaboration |
 
 ### `actions[]`

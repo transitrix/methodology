@@ -298,10 +298,76 @@ A `CHANGE` is an ArchiMate **Gap**: a required delta to reach the target state, 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `goals` | no | list | `GOAL-…` IDs this change delivers. |
+| `addresses` | no | list | `REQUIREMENT-…` / `CONSTRAINT-…` IDs this change responds to — the motivation-layer obligations whose gap this CHANGE closes. **Origin-agnostic** (§7.3.1): every `origin` value on the addressed REQUIREMENT/CONSTRAINT is valid (`legislative`, `process-product`, `project-product`). Each entry MUST resolve to an admitted `REQUIREMENT` or `CONSTRAINT` in canon. |
 | `parent` | no | string | `CHANGE-…` — the higher-scale change this one decomposes from (capability → process → step). |
 | `description` | recommended | string | One-paragraph elaboration of the transformation. |
 
 Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
+
+#### 7.3.1 Origin-agnostic subject and impact via `ASSERTION`
+
+`CHANGE` carries **no `origin`-typed field** and no other filter that binds it to a source category — the schema is uniform for every kind of change the organisation plans, and has been since the type was registered. What was missing was an explicit **subject** field naming the motivation-layer obligation(s) the change responds to; `addresses` closes that gap. A CHANGE may address:
+
+- an `origin: legislative` REQUIREMENT (a codex-driven obligation whose interpretation shifted),
+- an `origin: process-product` REQUIREMENT (an obligation on a process's output that the org has decided to tighten),
+- an `origin: project-product` REQUIREMENT (a BRD-derived obligation whose scope changed mid-project), or
+- a `CONSTRAINT` of any `origin` (a restriction the org has decided to lift, add, or narrow).
+
+The addressed subject is **canon** — a REQUIREMENT/CONSTRAINT already admitted to `canon/elements/01_motivation/`. `addresses` is **inline** (not first-class time-aware) and follows the same convention as `goals` on this element: a timeless cross-reference on the CHANGE's own record, not a `REL` file.
+
+**Impact via `ASSERTION`.** Given a CHANGE addressing one or more REQUIREMENTs, the **impact set** is the set of `ASSERTION` elements whose `about:` field names any of those REQUIREMENTs ([elements/16-assertion.md](elements/16-assertion.md) §2 — `about:` is the assertion's compliance target). The compliance impact of a CHANGE is derivable by scanning `canon/assertions/`; no new field on `ASSERTION` is required. `CONSTRAINT` compliance is not yet tracked via `ASSERTION` in v1 ([elements/16-assertion.md](elements/16-assertion.md) §1), so a CHANGE addressing only CONSTRAINTs derives an empty impact set — this is by design and requires no schema accommodation on CHANGE.
+
+**Relation to `derived_from` and to `AMENDMENT`.** The standalone-envelope `derived_from` field (§3) records the Field/Codex **evidence** that motivated this CHANGE — an `AMENDMENT-…` for a codex-driven detection ([elements/22-amendment.md](elements/22-amendment.md) §1), or a field artefact (an interview, an observation, a BRD note) for a non-codex-driven trigger. `addresses` records the canon **subject** — the REQUIREMENT/CONSTRAINT the CHANGE responds to. The two fields are complementary and orthogonal:
+
+- `derived_from: [AMENDMENT-…]` alone: the codex-driven flow ([elements/22-amendment.md](elements/22-amendment.md) §1's paired chain, `AMENDMENT.motivates ↔ CHANGE.derived_from`). Populated for `origin: legislative` REQUIREMENTs whose source was re-scanned.
+- `addresses: [REQUIREMENT-…]` alone: the non-codex-driven flow. Populated for `origin: process-product` or `origin: project-product` REQUIREMENTs where no scanner emitted an AMENDMENT — the CHANGE names the canon subject directly.
+- Both populated: a codex-driven CHANGE whose amended source and whose addressed obligation are both explicit — the most complete case; recommended when both are known.
+
+Neither is required (both are optional per §7.3): a strategic CHANGE that predates the motivation-layer catalogue may carry only `goals[]`.
+
+**Worked example — a `project-product` REQUIREMENT changes.** A BRD amendment tightens a delivery-time obligation from "≤ 48h" to "≤ 24h" for a mobile-order product. The obligation was captured as a `REQUIREMENT` with `origin: project-product` at project kick-off; two ASSERTIONs bind two subjects (a product and a process) to it. The CHANGE closes the gap between the old and the tightened obligation.
+
+```yaml
+# canon/elements/05_implementation/changes/CHANGE-DELIVERY-24H-1.yaml
+notation: change
+id: CHANGE-DELIVERY-24H-1
+name: "Tighten mobile-order delivery SLA from 48h to 24h"
+description: >
+  The BRD was amended on 2026-06-30 to tighten the mobile-order delivery
+  window from 48h to 24h. This CHANGE closes the gap between the
+  legacy 48h fulfilment and the new 24h obligation.
+
+# Non-codex-driven — no AMENDMENT chain. The subject is named directly.
+addresses:
+  - REQUIREMENT-MOBILE-ORDER-DELIVERY-1
+
+goals:
+  - GOAL-MOBILE-EXPERIENCE-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-03"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+derived_from:
+  - INTERVIEW-po-brd-amendment-2026-06-30-1   # non-codex evidence, not an AMENDMENT
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-03"
+valid_to: null
+```
+
+Given this CHANGE, the impact set — the ASSERTIONs whose compliance status may need re-review — is derivable by scanning `canon/assertions/` for entries with `about: REQUIREMENT-MOBILE-ORDER-DELIVERY-1`. Suppose two exist:
+
+- `ASSERTION-PRODUCT-MOBILE-ORDER-DELIVERY-1` (subject `PRODUCT-MOBILE-ORDER-1`)
+- `ASSERTION-PROCESS-FULFILLMENT-DELIVERY-1` (subject `PROCESS-ORDER-FULFILL-1`)
+
+Both surface as impacted, without any per-CHANGE bookkeeping: the derivation follows the existing `ASSERTION.about → REQUIREMENT` link and the new `CHANGE.addresses → REQUIREMENT` link.
+
+**Validation.** `addresses[]` entries follow the general reference-resolution rule (§3 envelope, [CONTRACT.md](CONTRACT.md) §6): each entry MUST be a well-formed typed ID and MUST resolve to an admitted `REQUIREMENT` or `CONSTRAINT` in canon. A dangling or wrong-TYPE reference is reported through the shared reference-check pass; no CHANGE-specific rule code is introduced. Cross-cutting impact queries ("which ASSERTIONs are impacted by this CHANGE?", "which CHANGEs address this REQUIREMENT?") are report-config concerns over the canon graph, not element-schema fields.
 
 ### 7.4 `ACTION` — `05_implementation/actions/`
 
