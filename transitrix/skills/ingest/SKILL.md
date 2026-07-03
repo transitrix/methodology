@@ -1,7 +1,7 @@
 ---
 name: Transitrix Ingest
 description: Turn raw organisational material (interviews, policies, org charts, spreadsheets, notes) into Transitrix field artefacts and typed canon candidates at scale, with source-quality scoring and a human review queue. Operates the field→canon derivation pipeline — convert a document, emit a field artefact with provenance and a proposed source_quality, extract typed elements and conservative relations that each cite their field source via derived_from, validate them against the canonical schemas and the adopter's coverage profile, and produce a review queue a human gates before anything is admitted to canon. Never writes canon directly.
-when_to_use: User says "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates.
+when_to_use: User says "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates. BA-facing shortcut: user says "extract requirements from this interview / project brief / SOP", "get REQUIREMENT / CONSTRAINT candidates out of this writeup", or "run the ingest pipeline motivation-only" — same pipeline, agent runs only `prompts/01_motivation.md` (see [BA quickstart](#ba-quickstart--requirements-from-an-interview)).
 min_version: "0.6.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -244,6 +244,61 @@ This skill is one shared `SKILL.md` in the converged **Agent Skills** format. It
 - All heavy logic is in the CLI, not in agent-specific tool calls.
 - This `SKILL.md` is **agent-neutral** — it references the CLI and the procedure, with no Claude-only or Copilot-only assumptions.
 - The skill directory is self-contained: prompts and schemas live in the bundle, never referenced from a sibling skill.
+
+---
+
+## BA quickstart — requirements from an interview
+
+A common shortcut for the BA persona: an interview writeup (or a project brief, or an SOP) is already Markdown, and only **motivation-layer** candidates are wanted — `REQUIREMENT`, `CONSTRAINT`, and the surrounding `GOAL` / `STAKEHOLDER` context. The four business/application/implementation layers are not needed. The full pipeline still applies; the only change is scope.
+
+**Scope-narrowing is agent-side, not CLI-side.** The CLI never runs the prompts itself — it receives a JSON extraction *result* from the agent (see [Step 4](#step-4--extract-typed-candidates-entity-strong-relation-conservative)). The four per-layer prompts under [`prompts/`](prompts/) are independent and self-contained ([`prompts/README.md`](prompts/README.md)); running only [`prompts/01_motivation.md`](prompts/01_motivation.md) and skipping `02_business.md` / `03_application.md` / `04_implementation.md` is the supported shortcut. No CLI flag is needed and none exists — the agent simply omits the other prompts.
+
+Motivation-only run (assumes `_intake/` already scaffolded; source file is already `.md`, so `convert` is skipped):
+
+1. Drop the writeup into `_intake/inbox/` and move it to `_intake/processing/` (or just save it there directly).
+2. **Admit** as a field artefact:
+   ```
+   transitrix-ingest admit-source --zone field _intake/processing/<file>.md \
+       --type INTERVIEW --role "<role>" --date YYYY-MM-DD
+   ```
+   The type is `INTERVIEW` for a transcript, `DRAFT` for a brief/spec/SOP (the source-quality proposal follows the [Step 3](#step-3--emit-the-field-artefact-with-proposed-source_quality) table).
+3. **Extract, motivation-only.** Feed the field artefact body to [`prompts/01_motivation.md`](prompts/01_motivation.md) as the system prompt and save the JSON extraction result (single object with `elements[]` / `relations[]` / `unresolved[]`, per [`prompts/README.md`](prompts/README.md)). The prompt sets `origin` on every `REQUIREMENT` from source-document context — a project brief yields `origin: project-product`, an SOP `origin: process-product`, a law/regulation/policy `origin: legislative` (see the origin table in [`prompts/01_motivation.md`](prompts/01_motivation.md)). Do **not** run `02`/`03`/`04` for this persona.
+4. **Emit candidates + review queue** (unchanged from the main pipeline):
+   ```
+   transitrix-ingest emit-candidates <field/artefact.yaml> --from <result.json>
+   transitrix-ingest validate         _intake/processing/candidates/
+   transitrix-ingest review-queue     _intake/processing/candidates/
+   ```
+
+Everything downstream — validation, coverage-profile flags, the human review gate, [the one rule](#the-one-rule-that-governs-everything) — is identical. Nothing is admitted to canon; the reviewer confirms `origin` alongside `source_quality` on the field artefact and each candidate.
+
+### Worked example — project brief → project-product REQUIREMENT
+
+Source (an excerpt from `_intake/processing/customer-portal-brief.md`, admitted as `--type DRAFT --role "Product Manager"`):
+
+> The customer portal must expose a self-service password reset flow. Users must be able to reset their password without contacting support. The reset must complete within 3 minutes end-to-end.
+
+Motivation-only extraction result the agent produces from `prompts/01_motivation.md`:
+
+```json
+{
+  "elements": [
+    { "id": "REQUIREMENT-PORTAL-1", "name": "Self-service password reset",
+      "element_type": "REQUIREMENT",
+      "extraction_confidence": "high",
+      "extraction_notes": "explicit \"must\" in a project brief for the customer portal",
+      "origin": "project-product" },
+    { "id": "REQUIREMENT-PORTAL-2", "name": "Password reset completes within 3 minutes",
+      "element_type": "REQUIREMENT",
+      "extraction_confidence": "high",
+      "origin": "project-product" }
+  ]
+}
+```
+
+After `emit-candidates`, each becomes a candidate under `_intake/processing/candidates/` with `derived_from: [<the field artefact id>]`, `admitted_to: pending`, `origin: project-product`, and the `extraction_confidence` review flag preserved. The review queue lists them for the human gate; nothing lands in `canon/` until admitted.
+
+For a **process-product** origin, swap the source: an SOP passage like "the returns process shall produce a completed refund confirmation within 24 hours" yields a `REQUIREMENT` with `origin: process-product` under the same steps. For a **legislative** origin, use the codex route ([Step 3](#step-3--emit-the-field-artefact-with-proposed-source_quality) — `admit-source --zone codex --type LAW|REGULATION|POLICY|INTERNAL_STANDARD`) instead of the field route; the motivation-only extraction still applies.
 
 ---
 
