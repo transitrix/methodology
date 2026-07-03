@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-02"
+last_updated: "2026-07-03"
 status: "draft"
 ---
 
@@ -143,6 +143,47 @@ Field naming follows the conventions in [IDS_AND_REFERENCES.md](../IDS_AND_REFER
 
 ---
 
+### 2.2 Admission entry points — two paths, one gate
+
+Any `REQUIREMENT` or `CONSTRAINT`, regardless of `origin`, must pass **one human admission gate** before entering admitted canon. The gate is invariant; the path that leads to it differs by source type.
+
+**Path A — ingest-skill pipeline (all origins):**
+
+```
+raw material (_intake/inbox/)
+  → convert  (field artefact in field/, raw in _intake/processed/)
+  → emit-candidates  (candidate in _intake/processing/candidates/, admitted_to: pending)
+  → review-queue  (human reviews source_quality, origin, extraction_confidence)
+  → admit  (human gates candidate → REQUIREMENT in canon/ with zone: canon, admission_state: active)
+```
+
+`emit-candidates` produces a candidate with `admitted_to: pending`. This candidate is **not** in `canon/` — it is in the staging area. A human runs the review-queue, confirms each candidate, and invokes `admit` to write the canon YAML. This path is **origin-agnostic**: `process-product` and `project-product` requirements from interviews, BRDs, and SOPs go through exactly the same steps as `legislative` requirements from field-zone copies of legislation. The `origin` value is simply passed through from the extraction prompt to the candidate and on to the admitted REQUIREMENT — no separate queue, no separate gate.
+
+**Path B — codex-collector (legislative only):**
+
+```
+codex artefact in codex/external/<jurisdiction>/
+  → automated extraction  (REQUIREMENT written directly to canon/ with admission_state: proposed)
+  → human ratification  (human flips proposed → active, completing gate_checks)
+```
+
+The codex collector writes a `REQUIREMENT` file **directly into `canon/`** at `admission_state: proposed`. The file is structurally valid canon (fully typed, fully shaped) but excluded from admitted canon and derived views until a human completes the gate by flipping `admission_state: proposed → active`. This path is **legislative-only** by design: it applies to obligations extracted from law/regulation/policy documents whose structured format (a codex artefact with a `source_hash`) makes the extraction reliably near-final.
+
+**Why the paths differ — and why both have one gate:**
+
+| | Path A (ingest, all origins) | Path B (codex-collector, legislative) |
+|---|---|---|
+| Source material | Unstructured field artefacts | Structured codex artefacts with source_hash |
+| Candidate location before gate | `_intake/processing/candidates/` | `canon/` at `admission_state: proposed` |
+| Gate mechanism | `review-queue` + `admit` CLI command | Human edits `admission_state: proposed → active` |
+| Who writes pre-gate candidate | ingest skill's `emit-candidates` | Automated collector |
+| Origins served | `legislative`, `process-product`, `project-product` | `legislative` only |
+| Human gate | Required before any `active` canon | Required before `proposed → active` |
+
+Both paths converge at the same human decision: nothing enters admitted canon without a human reviewing and explicitly accepting the candidate. The difference is **where the pre-gate staging artefact lives** (`_intake/` staging vs. `canon/` at `proposed`) and **who writes it** (the ingest skill vs. the collector). There is no second gate for `process-product` or `project-product` requirements — they share Path A with legislative requirements.
+
+---
+
 ## 3. File location and naming
 
 ```
@@ -174,8 +215,11 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 
 ## 5. Evolution
 
+**Landed (v0.3, 2026-07-03):**
+- §2.2 — documented the two admission entry points (ingest-skill `pending` path and codex-collector `proposed` path) and confirmed that `emit-candidates` is origin-agnostic: `process-product` and `project-product` requirements pass through the same pipeline steps as `legislative` ones. The codex-collector `proposed` path is deliberately `legislative`-only (codex artefacts are structured and near-final; field material is not).
+
 **Landed (v0.2, 2026-07-02):**
-- `origin` field — three-value taxonomy (`legislative | process-product | project-product`) distinguishing the context from which the requirement was derived. Ingest classification follow-on: `emit-candidates` and the extraction prompts will be updated to pass `origin` through based on source-document context signals.
+- `origin` field — three-value taxonomy (`legislative | process-product | project-product`) distinguishing the context from which the requirement was derived. Ingest classification: `emit-candidates` and the extraction prompts pass `origin` through based on source-document context signals.
 
 **Pending design work (separate tasks) extends the REQUIREMENT schema with regulatory attributes that apply symmetrically to REQUIREMENT and CONSTRAINT:**
 
