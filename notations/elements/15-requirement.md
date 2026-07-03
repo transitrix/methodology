@@ -1,6 +1,6 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
 last_updated: "2026-07-03"
 status: "draft"
@@ -85,6 +85,7 @@ description: "On request from a data subject, the controller must erase personal
 # Optional attributes
 origin: legislative             # legislative | process-product | project-product — see §2.1
 severity: high                  # high | medium | low — organisation-defined priority
+parent: REQUIREMENT-PERSONAL-DATA-PROTECTION-1  # optional; same-TYPE decomposition — see §2.4
 next_review_at: "2027-06-01"    # optional; drives REQ-STALE-001 — see §2.3
 derived_from:                   # typed IDs of source documents this requirement is drawn from
   - LAW-PERSONAL-DATA-2017-1
@@ -112,6 +113,7 @@ valid_to: null
 | `description` | yes | string | Longer-form explanation of the obligation, its scope, and the conditions under which it applies. |
 | `origin` | no | string | Origin / kind distinguishing the context from which the requirement was derived. Closed vocabulary — see §2.1. Omitted requirements are treated as `legislative` by tooling that supports filtering. |
 | `severity` | no | string | One of `high`, `medium`, `low`. Organisation-defined priority for planning and reporting. Distinct from `obligation_level` (regulatory force, RFC 2119 — out of scope for v1; see [§5](#5-evolution)). |
+| `parent` | no | string | `REQUIREMENT-…` — the higher-scale REQUIREMENT this one decomposes from. Enables authoring a broad obligation once and decomposing it into more specific sub-requirements. Inline; not time-aware (v0.x transitional, same shape as `CHANGE.parent` in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.3 and `LOCATION.parent` in §7.22). Origin-agnostic — see §2.4. |
 | `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
@@ -138,6 +140,10 @@ valid_to: null
 **Relation to `derived_from`.** `origin: legislative` requirements typically carry a `derived_from` list citing the codex artefact; `process-product` and `project-product` requirements typically do not (they derive from field artefacts — the interview, the BRD document, the process spec — not from codex sources). Having a `derived_from` codex reference does not override an explicit `origin: process-product` if the author intentionally set it (a process spec that is itself governed by a regulation may produce a `process-product` requirement that also cites the governing regulation as a `derived_from` reference).
 
 **Relation to `ASSERTION`.** The `origin` field does not change which elements may be subjects of an `ASSERTION` targeting this `REQUIREMENT`. `ASSERTION.about` always references a `REQUIREMENT` id regardless of origin; the subject TYPE constraint (`PRODUCT | PROCESS | CAPABILITY`) comes from [elements/16-assertion.md](16-assertion.md) §3, not from `origin`.
+
+**Origin-agnostic trace chain.** The forward trace from a REQUIREMENT to its realising elements — REQUIREMENT ← `ASSERTION.about`; `ASSERTION.subject` → `PRODUCT` / `PROCESS` / `CAPABILITY`; `ASSERTION.realised_via` → any admitted canonical element ([elements/16-assertion.md](16-assertion.md) §2, §2.1, §2.3) — is uniform across every `origin` value. A `process-product` REQUIREMENT extracted from an SOP and a `legislative` REQUIREMENT extracted from a regulation admit the same ASSERTION shape and the same realising subjects; downstream tooling that reads the ASSERTION catalogue derives the realisation and compliance trace without branching on `origin`. Backward-trace to source is the only origin-dependent leg: `legislative`-origin REQUIREMENTs typically cite codex artefacts through `derived_from` and rely on codex change-monitoring for the *maintain* task; `process-product` and `project-product` REQUIREMENTs typically cite field artefacts or nothing and rely on `next_review_at` (§2.3) instead. `CONSTRAINT` compliance is not yet tracked via `ASSERTION` in v1 ([elements/16-assertion.md](16-assertion.md) §1) — the origin-agnostic forward trace covers REQUIREMENTs only; the same statement applies vacuously to CONSTRAINTs until a parallel mechanism lands.
+
+The upshot: no new element, field, or relation is required to trace an obligation of any `origin` end-to-end (source → REQUIREMENT → realising PRODUCT/PROCESS/CAPABILITY, via ASSERTION). Adopters modelling `process-product` or `project-product` obligations author the same ASSERTION shape they would for a `legislative` obligation; the trace chain is intact.
 
 Field naming follows the conventions in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) and [CONTRACT.md](../CONTRACT.md); no requirement-specific naming conventions are introduced.
 
@@ -203,6 +209,22 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 
 ---
 
+### 2.4 `parent` — requirement hierarchy
+
+A REQUIREMENT is a single obligation, but obligations naturally decompose: a broad "the organisation must protect personal data" is realised by narrower sub-obligations ("must obtain consent before processing", "must erase personal data on request within 30 days") that share the same source, subject set, or accountability chain. `parent` lets that decomposition be modelled explicitly on the requirement's own record, without inventing a new relation type.
+
+- **Same-TYPE.** `parent` names another admitted `REQUIREMENT` — the higher-scale obligation this one decomposes from. Cross-TYPE hierarchies (REQUIREMENT → CONSTRAINT and vice versa) are not supported: a REQUIREMENT (positive obligation) and a CONSTRAINT (restriction) are peer motivation-layer elements per §1, not decompositions of one another. Mirror-pairs authored per §1.2 do not use `parent`.
+- **Inline; not time-aware.** `parent` is a timeless cross-reference on the requirement's own record — the same shape as `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3) and `LOCATION.parent` (§7.22). It is v0.x transitional and does **not** live in a `REL-…` file. If a time-aware requirement hierarchy is ever needed, a first-class `requirement_parent` REL kind ([elements/17-relations.md](17-relations.md)) is the promotion path — the current inline field is chosen for parity with the existing multi-scale primitives.
+- **Origin-agnostic.** The taxonomy in §2.1 does not restrict `parent`. Any two REQUIREMENTs may be linked regardless of their `origin` values — a broad `legislative` obligation may decompose into `legislative` sub-obligations, and a `project-product` deliverable-quality obligation may decompose into finer `project-product` sub-obligations. Cross-`origin` decomposition (e.g. a `legislative` parent with a `process-product` child) is permitted but should be authored deliberately: it typically signals an organisational choice to satisfy a legal duty through a process-quality obligation, and the reasoning belongs in the child's `description`.
+- **Structure only, no traversal semantics.** `parent` records structure; it does **not** imply that satisfying the parent's obligation is realised by satisfying all children, or that a claim about the parent aggregates its children. Compliance claims remain per-REQUIREMENT via `ASSERTION` ([elements/16-assertion.md](16-assertion.md)); a hierarchy view over `parent` is a downstream tooling concern, not a validator concern. In particular, `REQ-COVERAGE-001` (§4) evaluates per-REQUIREMENT and is unaffected by parent linkage — a parent REQUIREMENT is not "covered" by an ASSERTION targeting its child.
+- **Optional.** Requirements without `parent` are top-level. Cycles in the `parent` chain are ill-formed (a REQUIREMENT is not its own transitive parent) but not currently a validator concern — same posture as `CHANGE.parent` and `LOCATION.parent`. Backfilling `parent` on existing admitted requirements is optional.
+
+The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13): authors MAY set `parent: CONSTRAINT-…` to decompose a broad restriction ("no personal data outside the EEA without safeguards") into narrower ones ("no PII in analytics logs sent outside the EEA"). Same-TYPE, same origin-agnostic semantics, same structure-only interpretation.
+
+**Precedent — one convention across `parent` fields.** Same-TYPE inline `parent` is the settled v0.x shape across multi-scale primitives: `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3, capability → process → step decomposition) and `LOCATION.parent` (§7.22, enclosing location). Reusing that shape here keeps the authoring surface uniform; no new pattern is introduced.
+
+---
+
 ## 3. File location and naming
 
 ```
@@ -234,6 +256,10 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (v0.5, 2026-07-03):**
+- §2.1 — origin-agnostic trace-chain audit: documented explicitly that the forward trace (REQUIREMENT ← `ASSERTION.about`; `ASSERTION.subject` → PRODUCT / PROCESS / CAPABILITY; `ASSERTION.realised_via` → any admitted element) is uniform across every `origin` value. No new element, field, or relation is required to trace an obligation of any origin end-to-end; audit found no structural gap.
+- §2.4 + §2 schema — optional `parent: REQUIREMENT-…` field. Same-TYPE, inline, timeless — the same shape as `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3) and `LOCATION.parent` (§7.22). Lets a broad requirement decompose into narrower sub-requirements without inventing a new relation type. Origin-agnostic. The same convention is mirrored on CONSTRAINT via [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13 (`parent: CONSTRAINT-…`).
 
 **Landed (v0.4, 2026-07-03):**
 - §2.3 + §4 — `next_review_at` review-checkpoint field (optional ISO 8601 date, origin-agnostic) and `REQ-STALE-001` warning. Closes the "Maintain" gap for `process-product` / `project-product` origins that have no monitorable codex source — codex change-monitoring (#153 track) stays `legislative`-only by design; `next_review_at` is a lightweight orthogonal mechanism. Surfaced by the `check-stale` CLI command in `@transitrix/ingest-cli` (walks `canon/elements/01_motivation/requirements/` and `.../constraints/`, reports overdue by ID). The same convention applies symmetrically to CONSTRAINT via [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13.
