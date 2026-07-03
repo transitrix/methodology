@@ -1,0 +1,43 @@
+name: Discovery
+
+# The Discovery job realises the scheduled-trigger contract in
+# method/methodology-update-propagation.md §7: for each downstream consumer
+# named in ./adopters.yaml, it clones the consumer shallowly, compares its
+# pinned methodology_version against the latest tag on this repo, and scans
+# the consumer's decision folder for status:proposed ADRs older than 14 days.
+# It emits one digest per run to the workflow summary.
+#
+# Scope: READ-ONLY. This workflow does not open PRs on consumer repos — that
+# is the follow-on write side of §7.2 and needs cross-repo write auth
+# (deployment policy, §7.7). Until then, the digest is the signal; the
+# maintainer runs the recipe by hand (RELEASING.md §"Adopter upgrade
+# procedure") when a `behind` entry appears.
+#
+# Runs Mondays 08:00 UTC and on workflow_dispatch. GITHUB_TOKEN needs no
+# elevated scopes — the job reads public consumer repos over HTTPS.
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan adopters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo (full history, for tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run discovery
+        run: node scripts/discovery.mjs
