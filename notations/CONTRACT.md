@@ -296,6 +296,7 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-STALE-001` | warning | REQUIREMENT / CONSTRAINT | `next_review_at` is set and is in the past — obligation due for re-review; applies symmetrically to CONSTRAINT ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.13) | [15-requirement.md](elements/15-requirement.md) §4 |
 | `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-002` | error | ASSERTION | `about` is missing, malformed, or resolves to a non-REQUIREMENT | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-003` | error | ASSERTION | `subject` does not resolve, or TYPE not in `{PRODUCT, PROCESS, CAPABILITY}` | [16-assertion.md](elements/16-assertion.md) §5 |

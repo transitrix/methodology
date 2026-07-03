@@ -1,6 +1,6 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
 last_updated: "2026-07-03"
 status: "draft"
@@ -85,6 +85,7 @@ description: "On request from a data subject, the controller must erase personal
 # Optional attributes
 origin: legislative             # legislative | process-product | project-product — see §2.1
 severity: high                  # high | medium | low — organisation-defined priority
+next_review_at: "2027-06-01"    # optional; drives REQ-STALE-001 — see §2.3
 derived_from:                   # typed IDs of source documents this requirement is drawn from
   - LAW-PERSONAL-DATA-2017-1
   - REGULATION-GDPR-2016-1
@@ -111,6 +112,7 @@ valid_to: null
 | `description` | yes | string | Longer-form explanation of the obligation, its scope, and the conditions under which it applies. |
 | `origin` | no | string | Origin / kind distinguishing the context from which the requirement was derived. Closed vocabulary — see §2.1. Omitted requirements are treated as `legislative` by tooling that supports filtering. |
 | `severity` | no | string | One of `high`, `medium`, `low`. Organisation-defined priority for planning and reporting. Distinct from `obligation_level` (regulatory force, RFC 2119 — out of scope for v1; see [§5](#5-evolution)). |
+| `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
@@ -184,6 +186,23 @@ Both paths converge at the same human decision: nothing enters admitted canon wi
 
 ---
 
+### 2.3 `next_review_at` — review-due signal for non-codex origins
+
+A `legislative`-origin REQUIREMENT can be kept current by re-scanning its `derived_from` codex source: when the underlying law or regulation is amended, downstream mechanisms (codex change-monitoring, [`AMENDMENT`](22-amendment.md)) surface a `CHANGE`/Gap against the affected REQUIREMENT. A `process-product` or `project-product` REQUIREMENT has no equivalent — its motivating source (an SOP, a BRD, a stakeholder brief) is a field artefact, not a monitorable codex document, so there is nothing for a scanner to re-scan.
+
+**`next_review_at`** closes that gap with a lightweight authoring convention: the author records the date on which the requirement is next due for human review, and tooling surfaces requirements whose review date has arrived.
+
+- **Semantics.** `next_review_at` is the date by which the author expects the requirement to be re-examined against its motivating source — checked for continued applicability, updated wording, or retirement. It is **not** `valid_to` (which retires the obligation) and **not** `assessed_at` (which records when an ASSERTION's status was last determined).
+- **Origin-agnostic.** The field is available on any REQUIREMENT regardless of `origin`; the taxonomy in §2.1 does not restrict its use. In practice the field is primarily useful for `process-product` and `project-product` origins (no codex to scan). `legislative`-origin requirements typically rely on codex change-monitoring instead — but MAY carry `next_review_at` where codex monitoring is not (yet) in place, or where a periodic Legal / DPO re-review is required regardless of amendments.
+- **Optional.** Absent or `null`, the requirement is not evaluated for staleness. Existing admitted requirements without the field are unaffected.
+- **Authoring guidance.** For `process-product` requirements, align with the SOP's revision cadence (annual, biennial). For `project-product`, use the project close-out or a stakeholder sign-off milestone. Backfilling the field on legacy requirements is optional; new admissions of non-codex origins SHOULD set it.
+- **Stale = today ≥ `next_review_at`.** A requirement is **stale** when today's date is greater than or equal to its `next_review_at`. Stale requirements are surfaced by `REQ-STALE-001` (§4) and by the `check-stale` CLI command (§5). Being stale is a signal, not an error: the author is asked to review, not to change anything by default.
+- **Relation to codex change-monitoring (#153).** These are **two independent mechanisms**, deliberately separate. Codex change-monitoring re-scans a `derived_from` source and stays `legislative`-only; `next_review_at` is a review-checkpoint convention that stays origin-agnostic. A `legislative` REQUIREMENT covered by codex monitoring does not need `next_review_at`; a `process-product` REQUIREMENT (with no codex source) uses `next_review_at` as its only staleness signal.
+
+The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13): authors MAY set `next_review_at` on a CONSTRAINT and the `check-stale` command surfaces overdue CONSTRAINTs alongside overdue REQUIREMENTs.
+
+---
+
 ## 3. File location and naming
 
 ```
@@ -208,12 +227,16 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 | `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
+| `REQ-STALE-001` | warning | `next_review_at` is set and is in the past relative to today (§2.3). The requirement is due for re-review. Time-dependent — the same file may pass on one day and fire on the next; surfaced by the `check-stale` CLI command (§5) so evaluation is explicit rather than embedded in every validate pass. Applies symmetrically to CONSTRAINT ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13). Malformed / unparseable `next_review_at` values silently skip evaluation (the CLI flags them in a separate line rather than firing a false stale). Mirrors `ASSERT-008` ([16-assertion.md](16-assertion.md) §5). |
 
 The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 
 ---
 
 ## 5. Evolution
+
+**Landed (v0.4, 2026-07-03):**
+- §2.3 + §4 — `next_review_at` review-checkpoint field (optional ISO 8601 date, origin-agnostic) and `REQ-STALE-001` warning. Closes the "Maintain" gap for `process-product` / `project-product` origins that have no monitorable codex source — codex change-monitoring (#153 track) stays `legislative`-only by design; `next_review_at` is a lightweight orthogonal mechanism. Surfaced by the `check-stale` CLI command in `@transitrix/ingest-cli` (walks `canon/elements/01_motivation/requirements/` and `.../constraints/`, reports overdue by ID). The same convention applies symmetrically to CONSTRAINT via [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13.
 
 **Landed (v0.3, 2026-07-03):**
 - §2.2 — documented the two admission entry points (ingest-skill `pending` path and codex-collector `proposed` path) and confirmed that `emit-candidates` is origin-agnostic: `process-product` and `project-product` requirements pass through the same pipeline steps as `legislative` ones. The codex-collector `proposed` path is deliberately `legislative`-only (codex artefacts are structured and near-final; field material is not).
