@@ -1,20 +1,26 @@
 name: Discovery
 
-# The Discovery job realises the scheduled-trigger contract in
-# method/methodology-update-propagation.md §7: for each downstream consumer
-# named in ./adopters.yaml, it clones the consumer shallowly, compares its
-# pinned methodology_version against the latest tag on this repo, and scans
-# the consumer's decision folder for status:proposed ADRs older than 14 days.
-# It emits one digest per run to the workflow summary.
+# Realises the scheduled-trigger contract in
+# method/methodology-update-propagation.md §7.
 #
-# Scope: READ-ONLY. This workflow does not open PRs on consumer repos — that
-# is the follow-on write side of §7.2 and needs cross-repo write auth
-# (deployment policy, §7.7). Until then, the digest is the signal; the
-# maintainer runs the recipe by hand (RELEASING.md §"Adopter upgrade
-# procedure") when a `behind` entry appears.
+# Step 1 — scan (always): for each consumer in adopters.yaml, compare its
+# pinned methodology_version against the latest tag on this repo and scan its
+# decision folder for status:proposed ADRs older than 14 days. Emits a digest
+# to the workflow summary. No write access required.
 #
-# Runs Mondays 08:00 UTC and on workflow_dispatch. GITHUB_TOKEN needs no
-# elevated scopes — the job reads public consumer repos over HTTPS.
+# Step 2 — propose (write side, §7.2): when a consumer's pin is `behind`, open
+# the bounded upgrade PR — exactly the diff §4 permits (pin bump + one
+# agent-authored proposed ADR). Skips gracefully when CONSUMER_WRITE_TOKEN is
+# not configured, so the read-only digest still runs.
+#
+# CONSUMER_WRITE_TOKEN setup (maintainer action required):
+#   Create a GitHub PAT (fine-grained) with `contents:write` + `pull-requests:write`
+#   on each registered consumer repo (starting with transitrix/acme-corp).
+#   Add it as a repository secret named CONSUMER_WRITE_TOKEN in
+#   Settings → Secrets and variables → Actions on this repo.
+#   Until the secret is provisioned, step 2 exits 0 with a diagnostic message.
+#
+# Runs Mondays 08:00 UTC and on workflow_dispatch.
 
 on:
   schedule:
@@ -26,7 +32,7 @@ permissions:
 
 jobs:
   scan:
-    name: Scan adopters
+    name: Scan and propose
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source repo (full history, for tags)
@@ -39,5 +45,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run discovery
+      - name: Run discovery (read-only digest)
         run: node scripts/discovery.mjs
+
+      - name: Propose upgrade PRs for behind consumers
+        env:
+          CONSUMER_WRITE_TOKEN: ${{ secrets.CONSUMER_WRITE_TOKEN }}
+        run: node scripts/discovery-propose.mjs
