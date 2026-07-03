@@ -30,6 +30,7 @@ import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
+import { checkStale } from './src/check-stale.mjs';
 import { dump } from './src/yaml.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -79,6 +80,7 @@ function usage() {
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
+    '  check-stale [org-root]         List REQUIREMENT/CONSTRAINT elements whose next_review_at has passed (REQ-STALE-001)',
     '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
@@ -344,6 +346,31 @@ async function cmdResolvePlacement(args) {
   return 0;
 }
 
+// List REQUIREMENT / CONSTRAINT files whose next_review_at is in the past
+// (REQ-STALE-001; 15-requirement.md §2.3, §4). Read-only over canon/.
+async function cmdCheckStale(args) {
+  const { _ } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('check-stale: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const { scanned, stale, malformed, today } = await checkStale(orgRoot);
+  if (stale.length === 0 && malformed.length === 0) {
+    console.log(`check-stale  ${scanned} REQUIREMENT/CONSTRAINT file(s) scanned as of ${today} — none stale (REQ-STALE-001).`);
+    return 0;
+  }
+  if (stale.length > 0) {
+    console.error(`check-stale  ${stale.length} of ${scanned} REQUIREMENT/CONSTRAINT element(s) stale as of ${today} (REQ-STALE-001):`);
+    for (const s of stale) console.error(`  STALE  ${s.id}  next_review_at: ${s.next_review_at}`);
+  }
+  if (malformed.length > 0) {
+    console.error(`check-stale  ${malformed.length} file(s) with an unparseable next_review_at (skipped — evaluation elided per 15-requirement.md §4):`);
+    for (const m of malformed) console.error(`  UNPARSED  ${m.id}  next_review_at: ${JSON.stringify(m.next_review_at)}`);
+  }
+  return stale.length > 0 ? 1 : 0;
+}
+
 // Flag admitted elements sitting outside their §4 folder (read-only over canon/).
 async function cmdCheckPlacement(args) {
   const { _ } = parseArgs(args);
@@ -380,6 +407,7 @@ async function main(argv) {
     case 'suggest-profile': return cmdSuggestProfile(args);
     case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
+    case 'check-stale':     return cmdCheckStale(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);

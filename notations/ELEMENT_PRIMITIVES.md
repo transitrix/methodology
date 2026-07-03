@@ -565,6 +565,8 @@ Already shipped (worked example `RULE-DUAL-APPROVAL-1`).
 
 Already shipped (worked example `CONSTRAINT-GDPR-RESIDENCY-1`). Same field set as `RULE` (§7.12) — `statement`, `applies_to`, `source`, `owner_role`, `severity`, `rationale` — distinguished from `RULE` by layer (motivation vs business) and from `REQUIREMENT` by the form of the obligation ([elements/15-requirement.md](elements/15-requirement.md) §1: CONSTRAINT = restriction, REQUIREMENT = positive obligation).
 
+**Review-due signal.** CONSTRAINT MAY carry the same optional `next_review_at` field defined for REQUIREMENT in [elements/15-requirement.md](elements/15-requirement.md) §2.3 (quoted ISO 8601 date; the review-checkpoint convention for obligations whose motivating source is not a monitorable codex artefact). `REQ-STALE-001` ([elements/15-requirement.md](elements/15-requirement.md) §4) applies symmetrically to CONSTRAINT: when `next_review_at` is set and is in the past relative to today, the constraint is stale and due for re-review. The `check-stale` command in `@transitrix/ingest-cli` walks both `01_motivation/requirements/` and `01_motivation/constraints/`.
+
 ### 7.14 `EQUIPMENT` — `04_technology/equipment/`
 
 Physical instrument, device, or facility a process stage depends on (ArchiMate Physical element). Promoted from Process Blueprint view-defined to first-class standalone in the `04_technology` layer (ADR 2026-06-08; first catalogued TYPE for this layer).
