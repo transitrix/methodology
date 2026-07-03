@@ -52,6 +52,7 @@ export function shapeCandidates(derivedFrom, result) {
     if (el.extraction_notes) c.extraction_notes = el.extraction_notes;
     if (el.valid_from !== undefined) c.valid_from = el.valid_from;
     if (el.valid_to !== undefined) c.valid_to = el.valid_to;
+    if (el.origin !== undefined) c.origin = el.origin;
     // Mechanism 1 (CONTRACT §12): source fields the schema does not define ride along
     // in an open `extensions:` bag, candidate -> admitted entity, verbatim. Carried only
     // when it is a non-empty map; the validator passes it through untouched (EXT-001).
