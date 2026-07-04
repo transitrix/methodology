@@ -11,7 +11,7 @@ Transitrix offers two implementation tiers: **Simple** and **Full**. The split r
 
 **Simple is self-contained — not a demo of Full.** A team that adopts Simple and gets lasting value from it is a success, whether or not they ever move to Full. The upgrade trigger is an organic ceiling: a set of questions that Simple artefacts genuinely cannot answer, not an artificial limitation built in to push adoption.
 
-The formal vocabulary boundary is the **coverage profile** declared in `transitrix.yaml` (see [`notations/COVERAGE_PROFILES.md`](notations/COVERAGE_PROFILES.md)). Simple maps to the `core` preset; Full maps to the `full` preset.
+The formal vocabulary boundary is the **coverage profile** declared in `transitrix.yaml` (see [`notations/COVERAGE_PROFILES.md`](../notations/COVERAGE_PROFILES.md)). Simple maps to the `core` preset; Full maps to the `full` preset.
 
 ---
 
@@ -63,7 +63,7 @@ Declare `coverage_profile: core` in `transitrix.yaml`. The `core` preset provide
 
 ### Adoption pattern
 
-**Transitrix Alone** — a single repository as the EA source of truth. See [`patterns/transitrix-alone.md`](patterns/transitrix-alone.md).
+**Transitrix Alone** — a single repository as the EA source of truth. See [`transitrix-alone.md`](transitrix-alone.md).
 
 ### What "done" looks like
 
@@ -122,8 +122,8 @@ Declare `coverage_profile: full` in `transitrix.yaml` (or omit `coverage_profile
 
 | Pattern | File | When to use |
 |---|---|---|
-| Transitrix + Knowledge Store | [`patterns/knowledge-store.md`](patterns/knowledge-store.md) | Multiple raw-source repositories feed a curated knowledge repo that feeds Transitrix canon |
-| Transitrix + Enterprise ADR Registry | [`patterns/enterprise-adr-registry.md`](patterns/enterprise-adr-registry.md) | Transitrix repo aggregates cross-project architectural decisions as the enterprise ADL |
+| Transitrix + Knowledge Store | [`knowledge-store.md`](knowledge-store.md) | Multiple raw-source repositories feed a curated knowledge repo that feeds Transitrix canon |
+| Transitrix + Enterprise ADR Registry | [`enterprise-adr-registry.md`](enterprise-adr-registry.md) | Transitrix repo aggregates cross-project architectural decisions as the enterprise ADL |
 
 ---
 
@@ -157,7 +157,7 @@ The upgrade is **additive** — Simple artefacts continue to work unchanged.
 
 The DGCA chain and Capability Map can be added in any order — they depend only on your existing Goal and Capability elements from the `core` profile.
 
-For methodology version upgrades (migrating from one spec release to another), see [`migrations/`](migrations/) and [`RELEASING.md`](RELEASING.md). A tier upgrade is a model-scope decision, not a version change — no migration recipe applies.
+For methodology version upgrades (migrating from one spec release to another), see [`migrations/`](../migrations/) and [`RELEASING.md`](../RELEASING.md). A tier upgrade is a model-scope decision, not a version change — no migration recipe applies.
 
 ---
 
@@ -165,7 +165,7 @@ For methodology version upgrades (migrating from one spec release to another), s
 
 The tier model is a **decision aid for adoption**, not a separate technical mechanism. The formal controls are:
 
-- **`coverage_profile`** in `transitrix.yaml` — the vocabulary gate (which element TYPEs and relation kinds are in scope). Simple uses `core`; Full uses `full`. See [`notations/COVERAGE_PROFILES.md`](notations/COVERAGE_PROFILES.md).
+- **`coverage_profile`** in `transitrix.yaml` — the vocabulary gate (which element TYPEs and relation kinds are in scope). Simple uses `core`; Full uses `full`. See [`notations/COVERAGE_PROFILES.md`](../notations/COVERAGE_PROFILES.md).
 - **`notations:`** in `transitrix.yaml` — the list of view notations the repo uses. A Simple adopter typically lists a subset of Simple notations; a Full adopter adds the Full notations as needed.
 
 A repository that declares `coverage_profile: core` cannot accidentally admit Assertion or Amendment elements (the validator enforces the boundary). This means the tier boundary is machine-checked, not just advisory.
