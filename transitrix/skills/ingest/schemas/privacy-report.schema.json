@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/ingest/privacy-report.schema.json",
+  "title": "Transitrix ingest privacy report",
+  "description": "Per-run report from the privacy pre-admission gate (SKILL.md Step 2b). Lists every source document scanned in this ingest run, its gate outcome (CLEAN / STRIPPED / REJECTED / ERROR), and — for non-CLEAN outcomes — the blocked fragments with reason codes. PII content is never reproduced verbatim: fragment_preview is truncated to the first 20 characters followed by '***'. Emitted alongside review-queue.yaml.",
+  "type": "object",
+  "required": ["generated_by", "run_id", "scanned", "summary"],
+  "additionalProperties": true,
+  "properties": {
+    "generated_by": {
+      "type": "string",
+      "description": "Tool identifier and version that produced the report (e.g. 'transitrix-ingest/0.6.0')."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for the ingest run — ISO 8601 timestamp or a UUID. Matches the run_id in the companion review-queue.yaml."
+    },
+    "config_snapshot": {
+      "type": "object",
+      "description": "Snapshot of the active privacy_gate configuration used in this run, for audit reproducibility.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the gate was active. Always true when this report is produced — a disabled gate produces no report."
+        },
+        "on_detection": {
+          "type": "string",
+          "enum": ["strip", "reject"],
+          "description": "'strip': redact fragments and admit the clean copy. 'reject': block the entire document."
+        },
+        "allowlist": {
+          "type": "array",
+          "description": "The allowlist entries active for this run — business-contact fields that are never blocked.",
+          "items": {
+            "type": "object",
+            "required": ["field", "on"],
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string",
+                "description": "Field name that is permitted (e.g. 'work_email')."
+              },
+              "on": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Element TYPEs on which this field is permitted (e.g. ['ACTOR', 'ORG'])."
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "scanned": {
+      "type": "array",
+      "description": "One entry per source document scanned in this ingest run. Order matches the processing sequence.",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["source_file", "outcome"],
+        "additionalProperties": true,
+        "properties": {
+          "source_file": {
+            "type": "string",
+            "description": "Path to the converted source file that was scanned (relative to the org root or _intake/processing/)."
+          },
+          "outcome": {
+            "type": "string",
+            "enum": ["CLEAN", "STRIPPED", "REJECTED", "ERROR"],
+            "description": "Gate result for this document. CLEAN: no blocked content, proceed to admit-source. STRIPPED: blocked fragments redacted; clean copy admitted. REJECTED: entire document blocked, not admitted. ERROR: scan could not complete — do not admit until resolved."
+          },
+          "redacted_file": {
+            "type": "string",
+            "description": "STRIPPED only — path to the redacted copy that was passed to admit-source. The original file is retained in _intake/processed/ for traceability."
+          },
+          "error_detail": {
+            "type": "string",
+            "description": "ERROR only — actionable description of what prevented the scan from completing (config error, unreadable file, etc.)."
+          },
+          "blocked_fragments": {
+            "type": "array",
+            "description": "Present for STRIPPED and REJECTED outcomes — one entry per detected PII/medical fragment. Absent for CLEAN and ERROR outcomes. Lets the human reviewer audit false positives and false negatives; the reviewer may adjust the allowlist or the detection rules in response.",
+            "items": {
+              "type": "object",
+              "required": ["code", "reason"],
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "Reason code identifying the detection category that fired.",
+                  "enum": [
+                    "PII-001",
+                    "PII-002",
+                    "PII-003",
+                    "PII-004",
+                    "PII-005",
+                    "PII-006"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Human-readable description of what was detected and which rule fired (e.g. 'national-ID pattern matched: SSN-shaped token')."
+                },
+                "fragment_preview": {
+                  "type": "string",
+                  "description": "Truncated preview of the blocked fragment — first 20 characters followed by '***'. The full verbatim content is never reproduced in this report."
+                },
+                "allowlist_cleared": {
+                  "type": "boolean",
+                  "description": "True when a fragment matched a detection rule but was cleared by an allowlist entry. Informational — surfaced so the reviewer can audit that the allowlist is not over-broad. Only present when an allowlist entry applied."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "description": "Aggregate counts across all documents scanned in this run.",
+      "required": ["total", "clean", "stripped", "rejected"],
+      "additionalProperties": true,
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total documents scanned."
+        },
+        "clean": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Documents that passed the gate without any blocked fragments."
+        },
+        "stripped": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Documents where blocked fragments were redacted and the clean copy was admitted."
+        },
+        "rejected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Documents blocked entirely and not admitted."
+        },
+        "error": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Documents the scan could not complete for — not admitted until the error is resolved."
+        }
+      }
+    }
+  }
+}

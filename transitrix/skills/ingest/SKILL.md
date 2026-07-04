@@ -74,6 +74,84 @@ Markitdown is a Python tool (`pip install "markitdown[all]"`); install it into t
 
 ---
 
+## Step 2b — Privacy pre-admission scan
+
+Before a converted document can be admitted as a field artefact (Step 3), it passes through the **privacy pre-admission gate** — a fail-closed check that detects and blocks personal and medical data by default.
+
+```
+transitrix-ingest privacy-scan <processing/file.md>
+```
+
+**Fail-closed.** The gate must exit with outcome `CLEAN` or `STRIPPED` before `admit-source` is called. A `REJECTED` or `ERROR` outcome halts the pipeline — do not call `admit-source` on a document that has not cleared the gate.
+
+### Detection — Phase 1 (rule-based, deterministic)
+
+The gate applies deterministic pattern + dictionary matching across a closed set of detection categories. Every blocked fragment is tagged with a reason code:
+
+| Code | Category | Examples |
+|---|---|---|
+| `PII-001` | National identifier | SSN, NI number, national-ID-shaped tokens |
+| `PII-002` | Date of birth | DOB phrases combined with date-shaped tokens in a personal context |
+| `PII-003` | Medical / health terms | Diagnosis codes, medication names, clinical and diagnostic vocabulary |
+| `PII-004` | Contact PII beyond allowlist | Personal email, personal phone (non-work) |
+| `PII-005` | Financial personal | Credit / debit card numbers, personal bank account numbers |
+| `PII-006` | Biometric / government identifier | Passport numbers, biometric descriptors |
+
+Reason codes are emitted in the **privacy report** (see below). A scan that fires any code (and the fragment is not cleared by the allowlist) produces a `STRIPPED` or `REJECTED` outcome; a scan that fires none produces `CLEAN`.
+
+### Allowlist — always admitted
+
+A narrow, explicit list of business-contact fields on `ACTOR` / `ORG` element records is never blocked. The default allowlist:
+
+| Field | Permitted on |
+|---|---|
+| `first_name` | `ACTOR`, `ORG` |
+| `last_name` | `ACTOR`, `ORG` |
+| `work_phone` | `ACTOR`, `ORG` |
+| `work_email` | `ACTOR`, `ORG` |
+
+The allowlist is **never inferred from context** — it is extended only by deliberate edit in the config.
+
+### Outcomes
+
+| Outcome | Meaning | Next step |
+|---|---|---|
+| `CLEAN` | No blocked content found | Proceed to `admit-source` (Step 3) |
+| `STRIPPED` | Blocked fragments redacted; clean copy ready | Proceed to `admit-source` on the redacted copy |
+| `REJECTED` | Document blocked entirely (e.g. predominantly PII) | Do not admit; human reviews privacy report |
+| `ERROR` | Scan could not complete (config error, unreadable file) | Do not admit; fix the issue and re-scan |
+
+For `STRIPPED`: the CLI writes `<file>.redacted.md` alongside the original. `admit-source` is run on the redacted copy; `raw_source` on the resulting field artefact still points to the original retained in `_intake/processed/` — the original is never discarded. The privacy report records what was stripped.
+
+### Configuration
+
+The gate is **enabled by default** (`enabled: true`). Configure it in `transitrix.yaml` under `ingest.privacy_gate`:
+
+```yaml
+ingest:
+  privacy_gate:
+    enabled: true          # default: true — fail-closed; set false only with explicit adopter decision
+    on_detection: strip    # strip (default): redact fragments, admit clean copy
+                           # reject: block the entire document
+    allowlist:
+      - field: first_name
+        on: [ACTOR, ORG]
+      - field: last_name
+        on: [ACTOR, ORG]
+      - field: work_phone
+        on: [ACTOR, ORG]
+      - field: work_email
+        on: [ACTOR, ORG]
+```
+
+### Privacy report
+
+The CLI writes a **`privacy-report.yaml`** per ingest run, alongside the `review-queue.yaml`. Schema: [`schemas/privacy-report.schema.json`](schemas/privacy-report.schema.json).
+
+The report lists every document scanned with its outcome. For `STRIPPED` and `REJECTED` outcomes it records the blocked fragments with reason codes — truncated previews only, never verbatim PII — so a human can audit false positives and false negatives and adjust the allowlist or detection rules if needed.
+
+---
+
 ## Step 3 — Emit the field artefact (with proposed source_quality)
 
 Each converted document becomes one `field` artefact carrying a complete **admission record** — provenance (who / when / in what setting) and a **proposed** `source_quality`. The field artefact is what lives in `field/`; the original raw bytes stay in `_intake/processed/` so the artefact is traceable to its source.
@@ -233,7 +311,7 @@ The reviewer resolves each `canon/unresolved/` entry to exactly one of **promote
 
 All deterministic behaviour lives in **`@transitrix/ingest-cli`** — document conversion, coverage-profile read, validator pass, field-artefact + candidate emission, and the `_intake/` moves. This keeps the deterministic guarantees independent of which agent drives the skill (the same principle as the methodology's CI validators): neither Claude nor Copilot reimplements the logic, and both get identical results.
 
-The CLI is resolved as a **standalone package** — installed locally (it provides the `transitrix-ingest` bin) and, once published from its own tooling repo at the ~1.0 extraction, equivalently via `npx @transitrix/ingest-cli`. It is **not** vendored per skill and **not** referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement`.
+The CLI is resolved as a **standalone package** — installed locally (it provides the `transitrix-ingest` bin) and, once published from its own tooling repo at the ~1.0 extraction, equivalently via `npx @transitrix/ingest-cli`. It is **not** vendored per skill and **not** referenced by a sibling path — a sibling-path reference would dangle when only this skill directory ships into a Copilot `.github/skills/` install. Its subcommands are the contract above: `scaffold-intake`, `convert`, `privacy-scan`, `admit-source` (`--zone field|codex`; `field-artefact` / `codex-artefact` remain as deprecated aliases for one release), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement`.
 
 ---
 
@@ -309,3 +387,4 @@ For a **process-product** origin, swap the source: an SOP passage like "the retu
 - It does **not** fold `extraction_confidence` into `source_quality`, or persist either extraction-confidence value into canon.
 - It does **not** emit TYPEs or REL kinds outside the adopter's coverage profile — out-of-profile material is flagged for review.
 - It does **not** auto-admit, auto-reaffirm, or move data between zones. `derived_from` is a citation, not a migration.
+- It does **not** bypass the privacy gate. No document reaches `admit-source` unless `privacy-scan` exits `CLEAN` or `STRIPPED`. The gate is fail-closed and enabled by default; disabling it requires an explicit adopter decision in `transitrix.yaml`.
