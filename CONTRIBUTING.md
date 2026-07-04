@@ -5,7 +5,7 @@ Thanks for considering a contribution. This document describes how to get involv
 ## What kinds of contributions are welcome
 
 - **Methodology refinements** — edits to `method/01-methodology.md`, the glossary, or the project rules. Substantive changes (new notation, schema change, validation rule) need an issue first; phrasing and documentation fixes can land directly as a pull request.
-- **Worked examples** — additions to `organizations/acme_corp/` or new sibling worked-example organisations that demonstrate a pattern not yet covered.
+- **Worked examples** — contribute directly to the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo (its own PR flow), or propose a new sibling worked-example repo for a pattern not yet covered.
 - **Validators and templates** — new validation rules in `.validators/lint.py`, new YAML templates in `.templates/`, or new view templates in `views/`.
 - **Tooling integrations** — patches that make Transitrix easier to use with editors, CI systems, or downstream consumers (renderers, exporters, etc.).
 - **Translations** — translations of `methodology.md` into other languages, placed under `translations/<lang>/`. The English version remains canonical; translations are derivative.

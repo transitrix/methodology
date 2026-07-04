@@ -17,7 +17,7 @@
 //   L1  links — every relative Markdown link in notations/**/*.md resolves to
 //       an existing file (anchors and external URLs are skipped).
 //   V1  version — every concrete `methodology_version:` pin in the repo equals
-//       the single source of truth (organizations/acme_corp/transitrix.yaml,
+//       the single source of truth (notations/CURRENT_VERSION.yaml,
 //       per CONTRACT.md §10), except explicitly allowlisted placeholders.
 //
 // Exit codes:
@@ -35,7 +35,7 @@ const REPO_ROOT = join(dirname(__filename), '..');
 const CATALOGUE_PATH = join(REPO_ROOT, 'notations', 'README.md');
 const EXAMPLES_DIR = join(REPO_ROOT, 'notations', 'examples');
 const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
-const VERSION_SOT = join(REPO_ROOT, 'organizations', 'acme_corp', 'transitrix.yaml');
+const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([

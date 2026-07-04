@@ -36,7 +36,7 @@ A view file that lives anywhere else — an inline example under [`../examples/`
 
 | Path segment | Rule |
 |---|---|
-| `<repo-root>/canon/views/` | The single root of the registry in an adopter repo. The same root the [`organizations/acme_corp/canon/views/`](../../organizations/acme_corp/canon/views/) example uses. The view document lives under `canon/` for storage convenience — but it carries **no canonical content** of its own ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1 reconstruction invariant): everything it displays is reconstructible from the elements alone. A view document is a presentation surface, not a canonical fact. |
+| `<repo-root>/canon/views/` | The single root of the registry in an adopter repo. The same root the [`canon/views/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/) example in the acme-corp reference repo uses. The view document lives under `canon/` for storage convenience — but it carries **no canonical content** of its own ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1 reconstruction invariant): everything it displays is reconstructible from the elements alone. A view document is a presentation surface, not a canonical fact. |
 | `<short-name>/` | One folder per view notation, named exactly as the notation's short name in [README.md](../README.md) §Views (e.g. `scenarios/`, `compliance-impact/`, `coverage-metric/`, `fgca/`, …). Tools list the registry per notation by walking these folders. |
 | `<basename>` | `kebab-case` slug uniquely identifying this saved config within its folder. Typically the slug-form of `view.id`'s middle segment (e.g. `view.id: SCENARIOS-2027-CUT-1` ⇒ basename `2027-cut`), or a `[DOMAIN]-[CONTEXT]` prefix (e.g. `retail-gdpr`, `eu-compliance`). |
 | `.<short-name>.transitrix.yaml` | The canonical file extension per [CONTRACT.md](../CONTRACT.md) §3 and the catalogue in [README.md](../README.md) §Views. The doc-lint [`scripts/check-notations.mjs`](../../scripts/check-notations.mjs) (E1) enforces extension + parent-folder match. |
@@ -72,7 +72,7 @@ Per notation, the listing entry for each file is the triple `(basename, view.id,
 
 The folder itself plays the role of the **small report registry** the [ADR](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md) Decision §5 names — no separate index file is maintained. The filesystem walk **is** the listing; this keeps the registry diffable, reviewable, and reproducible without an out-of-band catalogue to keep in sync.
 
-A `README.md` per `canon/views/<short-name>/` folder is recommended for human navigation (the [`acme_corp`](../../organizations/acme_corp/canon/views/) example repo carries one per folder) but is not part of the listing contract — tooling reads the YAML, not the README.
+A `README.md` per `canon/views/<short-name>/` folder is recommended for human navigation (the [acme-corp](https://github.com/transitrix/acme-corp/tree/main/canon/views/) example repo carries one per folder) but is not part of the listing contract — tooling reads the YAML, not the README.
 
 ---
 
@@ -129,7 +129,7 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
 - View-notation catalogue (short names + extensions): [`README.md`](../README.md) §Views.
 - Document-level TYPE registry (`SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC`, …): [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2.
 - File extension + header rules: [`CONTRACT.md`](../CONTRACT.md) §1, §3.
-- Worked example registry: [`organizations/acme_corp/canon/views/`](../../organizations/acme_corp/canon/views/).
+- Worked example registry: [`canon/views/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/) in the acme-corp reference repo.
 - Report-config view specs:
   - [`11-scenarios.md`](11-scenarios.md) — Scenarios.
   - [`21-compliance-impact.md`](21-compliance-impact.md) — Compliance Impact.

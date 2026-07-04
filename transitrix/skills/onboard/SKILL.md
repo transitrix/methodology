@@ -80,7 +80,7 @@ After the first change is authored and validated, continue to **Step 6** (sugges
 
 ## Step 2 — Scaffold the repo
 
-Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen target directory. The shape mirrors the worked example at [`organizations/acme_corp/`](https://github.com/transitrix/methodology/tree/main/organizations/acme_corp) in the methodology repo and is defined for adopters in [`organizations/acme_corp/AGENTS.md`](https://github.com/transitrix/methodology/blob/main/organizations/acme_corp/AGENTS.md) §3.
+Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen target directory. The shape mirrors the worked example in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo and is defined for adopters in [`AGENTS.md`](https://github.com/transitrix/acme-corp/blob/main/AGENTS.md) §3.
 
 ```
 <repo-root>/
@@ -188,7 +188,7 @@ A freshly scaffolded repo should be able to validate itself and gate pull reques
 
 **Fetch from a pinned methodology version, not `main`.** Read `methodology_version` from the `transitrix.yaml` you just wrote (e.g. `0.5.0`) and fetch the canonical files from the matching release tag `v<methodology_version>` (e.g. `v0.5.0`) — never from the floating `main` branch. This makes the scaffold reproducible: two repos onboarded weeks apart on the same `methodology_version` get byte-identical validators, and the manifest already records which version they got. If no tag exists yet for the pinned version, tell the user and fall back to the latest release tag rather than silently pulling `main`.
 
-1. **Whole-repo validator** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/tools/lint.py` and write it to `<repo-root>/.validators/lint.py`. This is the model-integrity linter: it scans `canon/elements/**` and `canon/relations/**` for atomicity, referential integrity, ArchiMate semantics, and policy. The canonical source is `tools/lint.py` at the methodology root — fetch the canon, **not** the `organizations/acme_corp/` worked example.
+1. **Whole-repo validator** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/tools/lint.py` and write it to `<repo-root>/.validators/lint.py`. This is the model-integrity linter: it scans `canon/elements/**` and `canon/relations/**` for atomicity, referential integrity, ArchiMate semantics, and policy. The canonical source is `tools/lint.py` at the methodology root — fetch the canon, **not** the acme-corp reference repo's copy.
 2. **Validator dependencies** — write `<repo-root>/.validators/requirements.txt` containing one line: `pyyaml`. (`python3 -m pip install -r .validators/requirements.txt` to run the linter locally.)
 3. **CI gate** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/integration/ci-example.yaml` and write it to `<repo-root>/.github/workflows/architecture-validate.yaml`. It runs validation by `scope` — a repo-scope `model` job (structure + manifest, then `lint.py`: atomicity, referential integrity, ArchiMate semantics, policy) and a file-scope `views` job (`npx @transitrix/cli validate` per view) — and blocks merges on failure.
 
@@ -408,7 +408,7 @@ When the user goes deeper than this cheat sheet covers, fetch the canonical spec
 - Adopter manifest schema (`transitrix.yaml`): `https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md`
 - Notation index + family selection: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/README.md`
 - Per-notation full specs: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<short-name>.md` (including `14-codex.md` for the codex zone)
-- Worked adopter example (the shape this skill scaffolds): `https://raw.githubusercontent.com/transitrix/methodology/main/organizations/acme_corp/AGENTS.md`
+- Worked adopter example (the shape this skill scaffolds): `https://raw.githubusercontent.com/transitrix/acme-corp/main/AGENTS.md`
 
 Read sparingly — the cheat sheet above is enough for 80% of cases. Pull the full spec only when the user hits a validation rule they want to understand, or asks for a field's semantics that the summary doesn't cover.
 

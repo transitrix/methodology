@@ -189,14 +189,14 @@ Each adopter writes a short local README inside `operations/` covering:
 
 The local README is the team's adaptation; this canonical doc is the convention.
 
-A starter template lives at [`organizations/acme_corp/operations/README.md`](../organizations/acme_corp/operations/README.md).
+A starter template lives at [`operations/README.md`](https://github.com/transitrix/acme-corp/blob/main/operations/README.md) in the acme-corp reference repo.
 
 ## 8. Templates
 
 Two starter templates live under `.templates/operations/` in the adopter repository:
 
-- [`organizations/acme_corp/.templates/operations/ADR-template.md`](../organizations/acme_corp/.templates/operations/ADR-template.md)
-- [`organizations/acme_corp/.templates/operations/WI-template.md`](../organizations/acme_corp/.templates/operations/WI-template.md)
+- [`ADR-template.md`](https://github.com/transitrix/acme-corp/blob/main/.templates/operations/ADR-template.md)
+- [`WI-template.md`](https://github.com/transitrix/acme-corp/blob/main/.templates/operations/WI-template.md)
 
 Copy a template into the matching subfolder, fill in the front-matter and body, commit.
 
@@ -213,7 +213,7 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 ## 10. References
 
 - Multi-repo aggregation + agent-authorship: [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md).
-- Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
+- Worked example: [`operations/`](https://github.com/transitrix/acme-corp/tree/main/operations/) in the acme-corp reference repo.
 - Methodology overview: [`method/01-methodology.md`](01-methodology.md) §4 — repository structure.
 - Architectural findings about the enterprise are modelled as `ASSESSMENT` (the former model-side `issues` notation was retired, 2026-06-07).
 - Distinct from the canon zones: [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5.

@@ -37,7 +37,7 @@ The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned re
 
 The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation. Your **first artefact is a Goals tree** — the simplest notation to start from.
 
-Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`organizations/acme_corp/GETTING_STARTED.md`](organizations/acme_corp/GETTING_STARTED.md)** — same first artefact, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
+Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same first artefact, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
 New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
 
@@ -67,7 +67,7 @@ Per-organisation:
 The repository has three buckets:
 
 - **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/), [`glossary.md`](glossary.md), [`migrations/`](migrations/).
-- **Worked example** — a sample organisation to learn from: [`organizations/acme_corp/`](organizations/acme_corp/).
+- **Worked example** — a sample organisation to learn from, maintained as a standalone reference repo: [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp). Path references elsewhere in this repo of the form `organizations/acme_corp/...` point into that repo — clone it to `organizations/acme_corp/` locally to follow them verbatim, or browse it directly on GitHub.
 - **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
 
 For the full file map, see [`PROJECT_INDEX.md`](PROJECT_INDEX.md) — the single canonical navigation guide.

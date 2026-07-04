@@ -69,7 +69,7 @@ organizations/acme_corp/
 
 - **First time:** `organizations/<org>/README.md` → `GETTING_STARTED.md` → `CONVENTIONS.md`.
 - **Creating an element:** copy a template from `.templates/elements/` into the right `canon/elements/<layer>/` folder, fill it in, then `python3 .validators/lint.py`.
-- **Bootstrapping a new organisation:** `organizations/NEW_ORGANIZATION_TEMPLATE.md`, or copy `acme_corp/` as a starting reference.
+- **Bootstrapping a new organisation:** run `/transitrix:onboard`, or copy the structure from the [acme-corp reference repo](https://github.com/transitrix/acme-corp) as a starting point.
 
 ---
 

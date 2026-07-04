@@ -21,7 +21,7 @@ Adopters do **not** vendor a copy of `notations/` into their repo — they pin a
 | Single legal entity | `[org]/` | `[org]/transitrix.yaml` |
 | Holding (multiple entities) | `organizations/` | `organizations/transitrix.yaml`, with `_shared/` for group-level codex / field |
 
-In this methodology repo the worked example lives at `organizations/acme_corp/transitrix.yaml`.
+A worked example lives at `transitrix.yaml` in the [acme-corp reference repo](https://github.com/transitrix/acme-corp).
 
 ---
 
