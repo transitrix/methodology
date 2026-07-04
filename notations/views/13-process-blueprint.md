@@ -17,7 +17,7 @@ dsm_status: "not implemented — render module planned in Transitrix Studio (sib
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all twelve Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all fifteen Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -314,7 +314,7 @@ lane_config:
 | `BP-007` | error | every aspect entry (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`) must have a non-empty `name` and a non-empty `stages: [STAGE-…]` array. |
 | `BP-008` | error | every ID in any aspect entry's `stages: [...]` must reference a stage declared in `stages[]`. |
 | `BP-009` | error | if an aspect entry has an `id`, the ID must match the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. |
-| `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. For `equipment[]`, the prefix MUST be `EQUIPMENT-`. For `information_entities[]`, the prefix MUST be `INFORMATION_ENTITY-`. |
+| `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. For `equipment[]`, the prefix MUST be `EQUIPMENT-`. For `business_objects[]`, the prefix MUST be `BUSINESS_OBJECT-`. For `information_entities[]` *(deprecated)*, the prefix MUST be `INFORMATION_ENTITY-`. |
 | `BP-011` | warn | a stage with no aspect entries pointing at it from any of the four aspect arrays is structurally empty and SHOULD be reviewed. |
 | `JURISDICTION-CONSISTENCY-001` | warning | a jurisdiction code listed in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` field of any codex source resolved in scope for this blueprint — the filter references an unrecognised or out-of-scope jurisdiction code, so the compliance lane will silently return no obligations for that code. Cross-cutting — requires the codex catalogue to evaluate. Indexed in [CONTRACT.md](../CONTRACT.md) §8. |
 

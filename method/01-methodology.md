@@ -57,7 +57,7 @@ Transitrix adds value at the layer above these standards: how the model is **sto
 
 Transitrix uses ArchiMate 3.2 as the vocabulary for architectural elements. Every YAML element file carries a `type` field drawn from this vocabulary. Relations between elements use ArchiMate relation types. The subset documented here covers what is actively used in the methodology — it is not a replacement for the full Open Group standard.
 
-> **Canonical ID authority.** The ID grammar and the full TYPE registry are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). Where the prefix tables below differ from that registry, the registry wins — the tables here describe the ArchiMate element *vocabulary*, not the canonical ID forms.
+> **Canonical ID authority.** The ID grammar and the full TYPE registry are defined once in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md). The tables below show the canonical Transitrix TYPE for each ArchiMate element where one is registered. For ArchiMate element types not yet registered in the Transitrix TYPE registry, no canonical TYPE is listed — use the abbreviated placeholders shown only as a reference, and register the TYPE before using it in artefacts.
 
 ### 3a.1 Layer mapping
 
@@ -73,49 +73,49 @@ ArchiMate organises elements across layers. In Transitrix these map directly to 
 
 ### 3a.2 Motivation layer elements
 
-| Type | ID prefix | Description |
-|------|-----------|-------------|
-| **Goal** | `GOAL-` | A desired outcome or end state the organisation aims to achieve |
-| **Principle** | `PRIN-` | A normative statement that guides decision-making |
-| **Constraint** | `CONS-` | A restriction that limits available options |
-| **Driver** | `DRIV-` | An external or internal condition that motivates change |
-| **Outcome** | `OUTC-` | A result produced by a goal or activity |
-| **Value** | `VALUE-` | A benefit or importance attributed to an element |
-| **Requirement** | `REQ-` | A statement of need that must be satisfied |
-| **Assessment** | `ASMNT-` | An appraisal of a driver or situation |
+| Type | Canonical TYPE | Description |
+|------|----------------|-------------|
+| **Goal** | `GOAL` | A desired outcome or end state the organisation aims to achieve |
+| **Principle** | — | A normative statement that guides decision-making |
+| **Constraint** | `CONSTRAINT` | A restriction that limits available options |
+| **Driver** | `DRIVER` | An external or internal condition that motivates change |
+| **Outcome** | — | A result produced by a goal or activity |
+| **Value** | — | A benefit or importance attributed to an element |
+| **Requirement** | `REQUIREMENT` | A statement of need that must be satisfied |
+| **Assessment** | `ASSESSMENT` | An appraisal of a driver or situation |
 
 ### 3a.3 Business layer elements
 
-| Type | ID prefix | Description |
-|------|-----------|-------------|
-| **BusinessRole** | `ROLE-` | A named set of responsibilities assigned to an actor |
-| **BusinessActor** | `ACTR-` | A person, team, or organisational unit that fulfils roles |
-| **BusinessProcess** | `PROC-` | A sequence of activities that produces a result |
-| **BusinessFunction** | `FUNC-` | A grouping of behaviour based on expertise or resources |
-| **BusinessService** | `SRVC-` | A service that provides value to external actors |
-| **BusinessObject** | `BOBJ-` | A concept used in business (contract, order, claim) |
-| **Product** | `PROD-` | A coherent collection of services offered to customers |
-| **Capability** | `CAP-` | An ability the organisation has or wants to develop |
+| Type | Canonical TYPE | Description |
+|------|----------------|-------------|
+| **BusinessRole** | `ROLE` | A named set of responsibilities assigned to an actor |
+| **BusinessActor** | `ACTOR` | A person, team, or organisational unit that fulfils roles |
+| **BusinessProcess** | `PROCESS` | A sequence of activities that produces a result |
+| **BusinessFunction** | — | A grouping of behaviour based on expertise or resources |
+| **BusinessService** | `BUSINESS_SERVICE` | A service that provides value to external actors |
+| **BusinessObject** | `BUSINESS_OBJECT` | A concept used in business (contract, order, claim) |
+| **Product** | `PRODUCT` | A coherent collection of services offered to customers |
+| **Capability** | `CAPABILITY` | An ability the organisation has or wants to develop; see §2 for the V/H sub-grammar |
 
 ### 3a.4 Application layer elements
 
-| Type | ID prefix | Description |
-|------|-----------|-------------|
-| **ApplicationComponent** | `APP-` | An application unit with its own logic, data, and interfaces |
-| **ApplicationService** | `SRVC-` | A service exposed by a component to other components or users |
-| **ApplicationInterface** | `INTF-` | An access point for a component's service |
-| **DataObject** | `DATA-` | A structured body of information used or produced by an application |
+| Type | Canonical TYPE | Description |
+|------|----------------|-------------|
+| **ApplicationComponent** | `APPLICATION` | An application unit with its own logic, data, and interfaces |
+| **ApplicationService** | — | A service exposed by a component to other components or users |
+| **ApplicationInterface** | — | An access point for a component's service |
+| **DataObject** | — | A structured body of information used or produced by an application |
 
 ### 3a.5 Technology layer elements
 
-| Type | ID prefix | Description |
-|------|-----------|-------------|
-| **Node** | `NODE-` | A computational or physical resource that hosts components |
-| **SystemSoftware** | `SYS-` | Software that provides environment for components (OS, middleware, DB) |
-| **Artifact** | `ARTF-` | A physical piece of data — binary, container image, config file |
-| **Device** | `DEV-` | A physical hardware unit |
-| **CommunicationPath** | `NET-` | A network link between nodes |
-| **TechnologyService** | `TSRVC-` | A service exposed at the technology layer |
+| Type | Canonical TYPE | Description |
+|------|----------------|-------------|
+| **Node** | `NODE` | A computational or physical resource that hosts components |
+| **SystemSoftware** | — | Software that provides environment for components (OS, middleware, DB) |
+| **Artifact** | — | A physical piece of data — binary, container image, config file |
+| **Device** | — | A physical hardware unit |
+| **CommunicationPath** | — | A network link between nodes |
+| **TechnologyService** | `TECHNOLOGY_SERVICE` | A service exposed at the technology layer |
 
 ### 3a.6 Relation types
 
@@ -136,7 +136,7 @@ ArchiMate organises elements across layers. In Transitrix these map directly to 
 ### 3a.7 Element file shape (YAML)
 
 ```yaml
-id: "APP-ORD-001"              # TYPE-DOMAIN-SEQ, uppercase, hyphens only
+id: "APPLICATION-ORD-1"        # TYPE-DOMAIN-SEQ, uppercase, hyphens only
 name: "Order API"              # Human-readable name
 type: "ApplicationComponent"   # ArchiMate 3.2 type (see tables above)
 layer: "Application"           # Motivation | Business | Application | Technology
@@ -154,9 +154,9 @@ properties:
 ### 3a.8 Relation file shape (YAML)
 
 ```yaml
-id: "REL-001"
-source: "APP-ORD-001"          # ID of the source element
-target: "DATA-ORDER-001"       # ID of the target element
+id: "REL-ORD-1"
+source: "APPLICATION-ORD-1"   # ID of the source element
+target: "BUSINESS_OBJECT-ORDER-1"  # ID of the target element
 type: "Access"                 # ArchiMate relation type (see §3a.6)
 properties:
   access_type: "ReadWrite"     # Optional: Read | Write | ReadWrite
@@ -165,7 +165,7 @@ properties:
 
 ### 3a.9 Naming rules (ArchiMate-typed elements)
 
-IDs follow the canonical grammar in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §1 — a full-word `TYPE` prefix (not the abbreviated vocabulary prefixes in the tables above), optional middle segments, and a terminal integer with no leading zeros (e.g. `APPLICATION-ORDER-1`, not `APP-ORD-001`). File name matches the element ID.
+IDs follow the canonical grammar in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §1 — the full-word `TYPE` from the registry (e.g. `APPLICATION`, `ACTOR`, `CAPABILITY`), optional middle segments, and a terminal integer with no leading zeros (e.g. `APPLICATION-ORDER-1`, not `APP-ORD-001`). File name matches the element ID.
 
 ### 3a.10 References
 
@@ -375,8 +375,8 @@ Consistency in names is a small thing that pays back daily during diff review an
 | YAML element files | `UPPER_SNAKE_CASE.yaml` | `ORDER_API.yaml`, `CUSTOMER_DATABASE.yaml` |
 | Documentation | `kebab-case.md` | `getting-started.md`, `project-rules.md` |
 | Organisation folders | `snake_case` | `acme_corp`, `tech_innovations` |
-| Element ids | `[TYPE]-[DOMAIN]-[SEQUENCE]` | `ROLE-SALES-001`, `PROC-ORD-FULFILL-001`, `APP-CRM-001` |
-| Relation ids | `REL-[CONTEXT]-[SEQUENCE]` | `REL-ORD-001` |
+| Element ids | `[TYPE]-[DOMAIN]-[SEQUENCE]` | `ROLE-SALES-1`, `PROCESS-ORD-FULFILL-1`, `APPLICATION-CRM-1` |
+| Relation ids | `REL-[CONTEXT]-[SEQUENCE]` | `REL-ORD-1` |
 
 ### 9.1 Element id type prefixes
 
