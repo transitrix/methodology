@@ -165,16 +165,13 @@ properties:
 
 ### 3a.9 Naming rules (ArchiMate-typed elements)
 
-- IDs: `[TYPE_PREFIX]-[DOMAIN]-[SEQ]` — uppercase, hyphens only, globally unique within the organisation.
-- Domain codes: 3-letter abbreviation (`ORD`, `PAY`, `USR`, etc.) — see `glossary.md`.
-- Sequence: three-digit zero-padded number (`001`, `002`, …).
-- File name: matches the element ID — `APP-ORD-001.yaml`.
+IDs follow the canonical grammar in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §1 — a full-word `TYPE` prefix (not the abbreviated vocabulary prefixes in the tables above), optional middle segments, and a terminal integer with no leading zeros (e.g. `APPLICATION-ORDER-1`, not `APP-ORD-001`). File name matches the element ID.
 
 ### 3a.10 References
 
 - The Open Group — ArchiMate 3.2 specification: <https://pubs.opengroup.org/architecture/archimate3-doc/>
 - Transitrix element templates: `organizations/<org>/.templates/elements/`
-- Transitrix glossary: `glossary.md`
+- Transitrix glossary: `method/00-glossary.md`
 
 ## 4. Repository structure
 
@@ -408,7 +405,7 @@ A Transitrix repository carries documentation at three levels:
 
 - `README.md` — overview and quick start
 - `method/01-methodology.md` (this document) — canonical methodology overview
-- `glossary.md` — standard terminology
+- `method/00-glossary.md` — standard terminology
 - `LICENSE`, `CONTRIBUTING.md` — open-source artefacts
 
 **Per-organisation root (`organizations/<org>/`):**

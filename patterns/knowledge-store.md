@@ -74,7 +74,7 @@ OKF consumers must not reject bundles for unknown fields — Transitrix extensio
 
 Validated primitives — DRIVER, GOAL, CHANGE, CAPABILITY, and others — promoted from the knowledge store. Each element in `canon/elements/` corresponds to one or more knowledge objects. The promotion decision is a pull request; review is the validation gate.
 
-Transitrix also distributes canonical vocabulary back downstream: generated `glossary.md` or object-reference stubs committed to project repos keep source-layer teams aligned with the enterprise model.
+Transitrix also distributes canonical vocabulary back downstream: a generated glossary or object-reference stubs committed to project repos keep source-layer teams aligned with the enterprise model.
 
 ## Single-repo MVP
 
@@ -116,7 +116,7 @@ Migrate to a separate knowledge repo when the single-repo structure becomes cong
 3. **Instrument source repos.** Add a convention for capturing raw material: `field/` folder, a lightweight template, and a note in each project's `CONTRIBUTING.md` pointing to the knowledge repo as the curation destination.
 4. **Define the promotion criteria.** Document in the knowledge repo's `README.md` what makes a knowledge object ready to promote: minimum confidence level, required fields, review sign-off.
 5. **Promote the first batch.** Create a PR for each promoted object. Link the PR back to the knowledge object(s) it was derived from. This establishes the provenance chain.
-6. **Wire the return path.** Set up a process (manual or automated) to publish a `glossary.md` or object-reference stubs from Transitrix back to source repos. This closes the loop and keeps project teams aligned with canon.
+6. **Wire the return path.** Set up a process (manual or automated) to publish a generated glossary or object-reference stubs from Transitrix back to source repos. This closes the loop and keeps project teams aligned with canon.
 
 ## Templates
 

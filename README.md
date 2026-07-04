@@ -46,7 +46,7 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 - **[`IMPLEMENTATION_TIERS.md`](IMPLEMENTATION_TIERS.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
 - **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
-- **[`glossary.md`](glossary.md)** — standardised terminology.
+- **[`method/00-glossary.md`](method/00-glossary.md)** — standardised terminology.
 - **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — full navigation guide.
 
 Tooling:
@@ -66,7 +66,7 @@ Per-organisation:
 
 The repository has three buckets:
 
-- **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/), [`glossary.md`](glossary.md), [`migrations/`](migrations/).
+- **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/) (including [`method/00-glossary.md`](method/00-glossary.md)), [`migrations/`](migrations/).
 - **Worked example** — a sample organisation to learn from, maintained as a standalone reference repo: [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp). Path references elsewhere in this repo of the form `organizations/acme_corp/...` point into that repo — clone it to `organizations/acme_corp/` locally to follow them verbatim, or browse it directly on GitHub.
 - **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
 

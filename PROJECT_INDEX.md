@@ -12,7 +12,7 @@ A map of the repository and where to find things. For the methodology itself, st
 | [`method/01-methodology.md`](method/01-methodology.md) | Methodology overview — principles, zones, repository structure, change lifecycle. |
 | [`method/02-team-operations.md`](method/02-team-operations.md) | Team Operations convention — `operations/` folder, ADR + Work Item shapes; operational layer alongside the model (not a zone). |
 | [`notations/`](notations/) | The canonical model: notation specs, shared contract, ID grammar, examples. |
-| [`glossary.md`](glossary.md) | Standardised terminology. |
+| [`method/00-glossary.md`](method/00-glossary.md) | Standardised terminology. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history (Keep a Changelog; SemVer with pre-1.0 caveats). |
 | [`RELEASING.md`](RELEASING.md) | Per-release operational checklist for the maintainer. |
 | [`NOTATIONS_VALIDATION.md`](NOTATIONS_VALIDATION.md) | Maintainer audit — open shape decisions a linter can't make, plus flagged nits. |

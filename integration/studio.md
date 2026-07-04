@@ -304,7 +304,7 @@ npm run serve
 
 - **method/** — Complete methodology (English)
 - **README.md** — Project overview
-- **glossary.md** — Standardised terminology
+- **method/00-glossary.md** — Standardised terminology
 - **integration/tooling.md** — Tools and integration guide
 - **integration/studio.md** — This file (Transitrix + Transitrix Studio)
 
