@@ -12,7 +12,7 @@ dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) pl
 
 **Version:** 0.4
 **Date:** 2026-06-12
-**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification; this revision documents the post-reclassification, report-config shape. **v0.4 pins explicit defaults on every non-required field and adds the §4.1 zero-configuration default** ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md) §7 Step 1) so the report skill has a well-defined "what I assumed" fallback.
+**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification; this revision documents the post-reclassification, report-config shape. **v0.4 pins explicit defaults on every non-required field and adds the §4.1 zero-configuration default** (per the *reports rendered from declarative view-configs* architecture decision, §7 Step 1) so the report skill has a well-defined "what I assumed" fallback.
 **File extension:** `*.scenarios.transitrix.yaml`
 **Scope:** A **rendering / ordering / filtering configuration** for the Scenarios view over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). The document is a presentation surface — it carries no canonical content of its own.
 **Renderer:** Transitrix DSM — Scenarios page; Transitrix Studio (planned).
@@ -158,7 +158,7 @@ view:
   name: "All scenarios"
 ```
 
-— renders **deterministically**: every admitted `SCENARIO` in canon, side-by-side, with each scenario's `steps`, `arrives_at`, and `pursues` rendered inline, ordered by `name`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user as "all scenarios, no filter". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
+— renders **deterministically**: every admitted `SCENARIO` in canon, side-by-side, with each scenario's `steps`, `arrives_at`, and `pursues` rendered inline, ordered by `name`. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user as "all scenarios, no filter". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
 Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [`REPORT_VIEW_CONFIG.md`](REPORT_VIEW_CONFIG.md).
 
@@ -194,4 +194,4 @@ The example files under [`../examples/scenarios/`](../examples/scenarios/) (`opt
 - ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md).
 - Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1.
 - Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
-- ADR — reports rendered from declarative view-configs, with a thin skill on top: [../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md).
+- Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.

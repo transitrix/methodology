@@ -200,7 +200,7 @@ This lifecycle is what an automated regulatory-intelligence collector (a separat
 
 ### 6.2 Reviewer authority — tiered approval
 
-Admission carries a second, orthogonal axis: *who confirmed it*. The single human gate (§6.1) records only *who* admitted; it cannot distinguish a draft an AI reviewer ticked from one a domain expert confirmed, so the only safe default is to hold everything behind the expert gate — which does not scale to a source that yields hundreds of `REQUIREMENT` / `ASSERTION` candidates. `reviewer_authority` grades the **authority tier** of the reviewer, independent of `admission_state` (gate progress) and of the two trust signals (`source_quality`, `extraction_confidence` — §11). (ADR [`docs/decisions/2026-06-10-tiered-approval-reviewer-authority.md`](../docs/decisions/2026-06-10-tiered-approval-reviewer-authority.md).)
+Admission carries a second, orthogonal axis: *who confirmed it*. The single human gate (§6.1) records only *who* admitted; it cannot distinguish a draft an AI reviewer ticked from one a domain expert confirmed, so the only safe default is to hold everything behind the expert gate — which does not scale to a source that yields hundreds of `REQUIREMENT` / `ASSERTION` candidates. `reviewer_authority` grades the **authority tier** of the reviewer, independent of `admission_state` (gate progress) and of the two trust signals (`source_quality`, `extraction_confidence` — §11). (Per the tiered-approval reviewer-authority architecture decision.)
 
 The tiers are ordinal — `ai_reviewed` < `expert_confirmed` — and **both are admitted canon** (`admission_state: active`); the axis adds **no** new exclusion from derived views. Write authority is strict:
 

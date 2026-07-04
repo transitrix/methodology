@@ -17,8 +17,8 @@
 #            only for a non-canonical extension outside the built-in registry.
 #
 # The four-way responsibility framing (view / element / relation / structure) is a
-# *reporting* distinction, not separate engines — see methodology ADR
-# docs/decisions/2026-06-11-validation-two-axis-model.md. Once @transitrix/cli grows
+# *reporting* distinction, not separate engines — per the methodology's
+# validation-two-axis-model architecture decision. Once @transitrix/cli grows
 # --scope=repo, the `model` job moves onto the same CLI runtime and lint.py is
 # retired, collapsing this to a single validation job plus the gate.
 #

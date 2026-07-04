@@ -194,7 +194,7 @@ A freshly scaffolded repo should be able to validate itself and gate pull reques
 
 What the agent does **not** install: **Transitrix Studio** (the VS Code extension — the user installs it from the Marketplace, see Step 5) and the global Node / Python runtimes. The CI workflow provisions Node and Python itself; for local runs the user needs both on PATH.
 
-This step is interim per ADR [`2026-06-11-validation-two-axis-model.md`](https://github.com/transitrix/methodology/blob/main/docs/decisions/2026-06-11-validation-two-axis-model.md): validation is converging onto a single TypeScript runtime (`@transitrix/cli --scope=repo`), after which this step will scaffold one validator instead of two. Until then, `lint.py` is the whole-repo gate and `@transitrix/cli` validates individual view files.
+This step is interim per the validation-two-axis-model architecture decision: validation is converging onto a single TypeScript runtime (`@transitrix/cli --scope=repo`), after which this step will scaffold one validator instead of two. Until then, `lint.py` is the whole-repo gate and `@transitrix/cli` validates individual view files.
 
 ---
 

@@ -237,7 +237,7 @@ For every aspect category, an entry with an `id` MUST use the TYPE prefix listed
 
 The compliance lane is an **optional, derived lane** of the Process Blueprint. When enabled via `lane_config.compliance: true`, the renderer computes — for each stage — which regulatory obligations bind that stage and what compliance status each carries. **No compliance data is written into the blueprint canon**; the lane is a read-only projection of the assertion + requirement + codex graph.
 
-Decision record: [`docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md`](../../docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md).
+Decision record: the compliance-impact-as-blueprint-lane architecture decision.
 
 #### Derivation formula
 
@@ -375,5 +375,5 @@ What the renderer MUST NOT do:
 - Applications catalogue (source for `systems[].id`): [`10-applications.md`](10-applications.md)
 - Nested blocks (uses the same diagram engine): [`08-blocks.md`](08-blocks.md)
 - Compliance impact view (flat obligation matrix; compliance lane is the blueprint-shaped realisation): [`21-compliance-impact.md`](21-compliance-impact.md)
-- ADR — compliance lane decision: [`docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md`](../../docs/decisions/2026-06-09-compliance-impact-as-blueprint-lane.md)
+- Architecture decision — compliance lane decision.
 - Methodology: `method/01-methodology.md`

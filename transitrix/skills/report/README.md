@@ -9,7 +9,7 @@ It is the operator UX for two derived views:
 
 ## Design
 
-Per [ADR 2026-06-09 — *Reports are rendered from declarative view-configs; a thin conversational skill is the front-end*](../../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md):
+Per the architecture decision *"Reports are rendered from declarative view-configs; a thin conversational skill is the front-end"*:
 
 - **Parameters live in a versioned artefact**, not in chat — so a report is reproducible, diffable, and auditable.
 - **Rendering lives in the CLI**, never in the agent — so the same config re-renders identically under any runtime.

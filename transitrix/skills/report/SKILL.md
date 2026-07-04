@@ -12,7 +12,7 @@ The **conversational front-end for compliance reporting.** A user asks for a rep
 
 This directory is the **`report` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, one `skills/<name>/` directory per skill). Invoked as `/transitrix:report`.
 
-> **Status — Step 2 of [ADR 2026-06-09](../../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md).** Step 1 (the deterministic `cervin export-compliance` CLI) ships in Transitrix Studio v1.4.x. This skill is the thin layer over it. All rendering is the CLI's; this `SKILL.md` and its [`scripts/report.py`](scripts/report.py) orchestrator only sequence it — so the skill loads agent-neutrally (Claude, Copilot, or a human at a shell).
+> **Status — Step 2 of the report-skill architecture decision.** Step 1 (the deterministic `cervin export-compliance` CLI) ships in Transitrix Studio v1.4.x. This skill is the thin layer over it. All rendering is the CLI's; this `SKILL.md` and its [`scripts/report.py`](scripts/report.py) orchestrator only sequence it — so the skill loads agent-neutrally (Claude, Copilot, or a human at a shell).
 
 ---
 

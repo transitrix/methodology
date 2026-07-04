@@ -47,7 +47,7 @@ The cross-cutting **element-primitive file schema** — the common envelope ever
 
 The cross-cutting **Coverage Profile** — the mechanism an adopter uses to declare which slice of the methodology's vocabulary (per-layer element TYPEs + relation TYPEs) is in scope for their repository — is defined in [`COVERAGE_PROFILES.md`](COVERAGE_PROFILES.md). Adopters declare a profile in [`transitrix.yaml`](MANIFEST.md); the default when omitted is `full`.
 
-The cross-cutting **Named view-config convention** — where saved view-configs live in an adopter repo, how they're named, listed, and re-run — is defined in [`views/REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md). The convention applies uniformly across every view notation, and is the registry the report-config view specs ([`11-scenarios.md`](views/11-scenarios.md), [`21-compliance-impact.md`](views/21-compliance-impact.md), [`22-coverage-metric.md`](views/22-coverage-metric.md)) and the future report skill ([ADR 2026-06-09](../docs/decisions/2026-06-09-report-skill-over-declarative-views.md)) lean on.
+The cross-cutting **Named view-config convention** — where saved view-configs live in an adopter repo, how they're named, listed, and re-run — is defined in [`views/REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md). The convention applies uniformly across every view notation, and is the registry the report-config view specs ([`11-scenarios.md`](views/11-scenarios.md), [`21-compliance-impact.md`](views/21-compliance-impact.md), [`22-coverage-metric.md`](views/22-coverage-metric.md)) and the future report skill (per the *reports rendered from declarative view-configs* architecture decision) lean on.
 
 ## Status vocabulary
 

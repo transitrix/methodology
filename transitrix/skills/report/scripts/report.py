@@ -2,7 +2,7 @@
 """Report-skill orchestrator — a thin, agent-neutral layer over the
 `cervin export-compliance` renderer CLI.
 
-Per ADR docs/decisions/2026-06-09-report-skill-over-declarative-views.md:
+Per the report-skill architecture decision:
 the report's parameters live in a *declarative view-config artefact*, the
 deterministic rendering lives in the CLI, and this script only orchestrates —
 it resolves parameters, materialises a named view-config, shells out to the

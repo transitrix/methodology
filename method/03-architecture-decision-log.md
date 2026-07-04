@@ -141,7 +141,7 @@ The *propagation mechanism* the down-flow will reuse — versioned transport, th
 
 1. **Per project repo** — adopt Team Operations `operations/decisions/` (or use an existing `docs/decisions/`). Records carry `author` (and ideally `source`). Add the CI guard: run `scripts/check-adl.mjs` on PRs touching the decisions folder.
 2. **Central architecture repo** — create `architecture/decision-log/` with `harvest.config.yaml` listing every source repo. Run `scripts/adl-harvest.mjs` (scheduled + on demand) to regenerate `INDEX.md` and `promoted/`.
-3. **First entry** — the inaugural record of the ADL is, fittingly, the decision that the ADL is immutable (this is recorded as a methodology design decision in `docs/decisions/2026-06-11-architecture-decision-log.md`).
+3. **First entry** — the inaugural record of the ADL is, fittingly, the decision that the ADL is immutable (this is recorded as a methodology design decision — the "Architecture Decision Log (ADL) — multi-repo aggregation component" decision).
 
 Templates: `.templates/operations/ADR-template.md` (per-repo record, with the new fields), `.templates/operations/central-adl-index.template.md` and `.templates/operations/adl-harvest.config.template.yaml` (central repo).
 
@@ -154,7 +154,7 @@ Templates: `.templates/operations/ADR-template.md` (per-repo record, with the ne
 
 - [Team Operations convention](02-team-operations.md) — the single-repo ADR/WI layer this builds on (record shape: §3.1).
 - [`method/01-methodology.md`](01-methodology.md) — repository structure and change lifecycle.
-- Design decision adopting this component: `docs/decisions/2026-06-11-architecture-decision-log.md`.
+- Design decision adopting this component: the "Architecture Decision Log (ADL) — multi-repo aggregation component" decision.
 
 ---
 

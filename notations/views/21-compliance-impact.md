@@ -197,7 +197,7 @@ view:
   report_type: product                  # required; product | process | combined
 ```
 
-— renders **deterministically**: the full obligation × subject matrix over every `PRODUCT` in canon and every `REQUIREMENT` that bears on them, grouped `obligation` × `product-stage-task`, all five statuses shown, proposed assertions hidden, rows ordered by `id`, columns in `process-order`. This is the fallback the report skill ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md), §4) states back to the user as "full matrix, no filters". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
+— renders **deterministically**: the full obligation × subject matrix over every `PRODUCT` in canon and every `REQUIREMENT` that bears on them, grouped `obligation` × `product-stage-task`, all five statuses shown, proposed assertions hidden, rows ordered by `id`, columns in `process-order`. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user as "full matrix, no filters". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
 Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
 
@@ -333,4 +333,4 @@ Adopters choosing `combined` render two distinct column groups in one report. Re
 - ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) (`COMPLIANCE_IMPACT` registered in §3.2).
 - Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1.
 - Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
-- ADR — reports rendered from declarative view-configs, with a thin skill on top: [../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md).
+- Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.
