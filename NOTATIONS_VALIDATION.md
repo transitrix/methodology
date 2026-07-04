@@ -1,7 +1,11 @@
 # Notations / examples validation — audit
 
 **Status:** tracked (was a gitignored local snapshot until 2026-05-30).
-**Last full review:** 2026-05-30.
+**Last full review:** 2026-05-30. **Status check 2026-07-04:** re-verified
+every open item against the files on `main`; §2 item 3 resolved, §2 item 2
+partially resolved (see below), §1 and the minor nits in §3 confirmed still
+accurate. Not yet ready to archive — §2 items 1 and 2 and the §3/§4 nits
+remain open, Valerii-gated decisions with no other tracker.
 **Scope:** conformance of `notations/examples/**` and the per-notation specs in
 `notations/` to the canonical contract. Excludes `0. archive/`.
 
@@ -61,13 +65,20 @@ direction before any file moves.
    `method/01-methodology.md` §3a historically used legacy prefix tables
    (`GOAL-`, `APP-`, `ACTR-`, …); `IDS_AND_REFERENCES.md` uses full-word TYPEs
    (`ACTOR`, `CAPABILITY-V…`). The front-door reconcile made IDS authoritative
-   and pointed §3a at it, but the underlying scheme choice is unresolved.
+   and pointed §3a at it. **Partially resolved 2026-07-04:** §3a.9's naming-rule
+   prescription (which restated the legacy scheme as if it were the ID grammar
+   to follow) now points at the canonical grammar instead. Still unresolved:
+   whether §3a.2–§3a.8's legacy-prefix vocabulary tables themselves should be
+   rewritten or purged — they carry an explicit "vocabulary, not canonical ID
+   forms" disclaimer (§3a, above §3a.1), but the underlying scheme choice for
+   those tables is Valerii's call.
 
-3. **SCENARIO / ISSUE reclassification** (`ELEMENT_PRIMITIVES.md` §4.2).
-   Both are tagged `view-defined` but are content, not presentation — in tension
-   with the reconstruction invariant §1.1. The reclassification (content element
-   + report-config view) is a family-wide shape decision; proposal filed,
-   awaiting direction. Tracked as its own task.
+3. ~~**SCENARIO / ISSUE reclassification**~~ — **resolved**. `SCENARIO` is now
+   a standalone content element (`ELEMENT_PRIMITIVES.md` §7.18; view spec
+   [`11-scenarios.md`](notations/views/11-scenarios.md) is a report-config
+   surface over it, not a content home). The former model-side `ISSUE`
+   notation was retired 2026-06-07 (`method/01-methodology.md` §4.1). No
+   non-promotable `view-defined` rows remain (`ELEMENT_PRIMITIVES.md` §4.2).
 
 ---
 
