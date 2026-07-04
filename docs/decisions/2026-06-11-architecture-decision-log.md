@@ -15,7 +15,7 @@ An autonomous agent on a production environment self-discovered the public metho
 
 The methodology already has the single-repo half of the answer — the [Team Operations](../../method/team-operations.md) convention defines `operations/decisions/ADR-NNNN-*.md` records that are immutable-once-accepted and superseded rather than rewritten. What it lacks is (a) a multi-repo story — an adopter runs many internal project repos and needs one enterprise view of their decisions; and (b) a safe way for an agent (not only a human) to author a decision.
 
-This realises TOGAF's *Governance Log → Decision Log* — the log of "architecturally significant" decisions — git-natively. The structure mirrors TOGAF's Decision Log; the agent-authored dimension is a Transitrix extension the standard does not mandate. The strategy hub was notified for visibility as a public-facing/positioning matter ([vkgeorgia/strategy#200](https://github.com/vkgeorgia/strategy/issues/200)); the mechanism itself is a within-family methodology-engineering decision.
+This realises TOGAF's *Governance Log → Decision Log* — the log of "architecturally significant" decisions — git-natively. The structure mirrors TOGAF's Decision Log; the agent-authored dimension is a Transitrix extension the standard does not mandate. This is a within-family methodology-engineering decision.
 
 ## Decision
 
