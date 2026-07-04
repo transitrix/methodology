@@ -17,4 +17,4 @@ Start with **Transitrix Alone** unless you already have multiple source repos pr
 
 The patterns are additive. Transitrix canon is always the centre; the other patterns wrap it. You can start with Alone and migrate later — the canon layer does not change shape.
 
-Not sure which tier fits your organisation? See [`IMPLEMENTATION_TIERS.md`](../IMPLEMENTATION_TIERS.md) for the Simple vs Full comparison — what belongs in each, the upgrade trigger, and the upgrade path.
+Not sure which tier fits your organisation? See [`implementation-tiers.md`](implementation-tiers.md) for the Simple vs Full comparison — what belongs in each, the upgrade trigger, and the upgrade path.
