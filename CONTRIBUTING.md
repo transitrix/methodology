@@ -29,7 +29,7 @@ For each issue, include the file path or section reference, what you observed, a
 2. **Branch from `main`.** Use a descriptive branch name (`docs/methodology-bpmn-clarifications`, `feat/validator-rule-policy-archive`).
 3. **Keep pull requests focused.** One concern per PR.
 4. **Run validators locally.** `python3 organizations/<org>/.validators/lint.py` for any organisation you touch.
-5. **Update related docs.** If your change affects naming, layout, or rules, update `methodology.md`, `glossary.md`, and `PROJECT_INDEX.md` as needed.
+5. **Update related docs.** If your change affects naming, layout, or rules, update `method/01-methodology.md`, `method/00-glossary.md`, and `PROJECT_INDEX.md` as needed.
 6. **Open a pull request.** Describe what changed, why, and link the issue.
 
 ## Review process

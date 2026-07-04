@@ -426,7 +426,7 @@ kill -9 <PID>
 | `diagram-rules.md` | Routing rules (R1–R6, L1) and BPMN 2.0 validation |
 | `transitrix-studio-project-description-v0.3.md` | Detailed description of version 0.3 |
 | `roadmap.md` | Project status (RD-001 to RD-078+) |
-| `glossary.md` | Glossary of terms (BPMN, DSL, layout, etc.) |
+| `method/00-glossary.md` | Glossary of terms (BPMN, DSL, layout, etc.) |
 | `LICENSE` | MIT licence |
 | `CONTRIBUTING.md` | Contributor guide |
 
