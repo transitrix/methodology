@@ -1,6 +1,6 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "0.5"
+version: "1.0"
 author: "Valerii Korobeinikov"
 last_updated: "2026-07-03"
 status: "draft"

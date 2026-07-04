@@ -1,6 +1,6 @@
 ---
 notation: "Nested Block Diagrams"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-25"
 status: "documented"

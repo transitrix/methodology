@@ -1,6 +1,6 @@
 ---
 notation: "Action — Project Schedule"
-version: "0.3"
+version: "1.0"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-25"
 status: "documented"

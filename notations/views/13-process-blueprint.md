@@ -1,6 +1,6 @@
 ---
 notation: "Process Blueprint"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-10"
 status: "draft"
