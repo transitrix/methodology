@@ -12,7 +12,7 @@ dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) pl
 
 **Version:** 0.4
 **Date:** 2026-06-12
-**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification (epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122)); this revision documents the post-reclassification, report-config shape. **v0.4 pins explicit defaults on every non-required field and adds the §4.1 zero-configuration default** ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md) §7 Step 1) so the report skill has a well-defined "what I assumed" fallback.
+**Status:** Draft — the v0.2 "scenario document scopes its own goals/capabilities/activities/…" shape was retired by the SCENARIO reclassification; this revision documents the post-reclassification, report-config shape. **v0.4 pins explicit defaults on every non-required field and adds the §4.1 zero-configuration default** ([ADR 2026-06-09](../../docs/decisions/2026-06-09-report-skill-over-declarative-views.md) §7 Step 1) so the report skill has a well-defined "what I assumed" fallback.
 **File extension:** `*.scenarios.transitrix.yaml`
 **Scope:** A **rendering / ordering / filtering configuration** for the Scenarios view over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). The document is a presentation surface — it carries no canonical content of its own.
 **Renderer:** Transitrix DSM — Scenarios page; Transitrix Studio (planned).
@@ -56,7 +56,7 @@ view:
 
 The v0.2 spec made the `scenarios` document the **content home** for a scenario: a single document carried the scenario's vision, its goals, its capabilities, its activities, its products, its processes, its applications, and its per-scenario driver view. That conflated three things — the *path* (the ordered sequence of steps to move the enterprise), the *destination* (the structural end-state the path reaches), and the *intent* (the goals the path serves) — into one container, and put substantial canonical content inside a view document in violation of the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
 
-Epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) split those three concerns into separate primitives:
+The SCENARIO reclassification split those three concerns into separate primitives:
 
 - **`GOAL`** — the intent. (Pre-existing motivation-layer element.)
 - **`TARGET_STATE`** — the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met (ArchiMate **Plateau**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17.
@@ -182,7 +182,7 @@ Scenarios view (this notation — report-config)
 
 ## 6. Existing examples (pending migration)
 
-The example files under [`../examples/scenarios/`](../examples/scenarios/) (`optimistic-2027.scenarios.transitrix.yaml`, `omnichannel-2028.scenarios.transitrix.yaml`) reflect the **v0.2 content-document shape** — they carry the now-reclassified `scenario.vision` / `scenario.goals` / `scenario.capabilities` / `scenario.activities` / `scenario.products` / `scenario.processes` / `scenario.applications` / `scenario.factors_view` fields inline. They predate the reclassification and are scheduled for migration in a follow-up sub-task under epic [strategy#122](https://github.com/vkgeorgia/strategy/issues/122) (epic sub-task 5). They remain valid YAML and continue to carry the `notation: scenarios` header.
+The example files under [`../examples/scenarios/`](../examples/scenarios/) (`optimistic-2027.scenarios.transitrix.yaml`, `omnichannel-2028.scenarios.transitrix.yaml`) reflect the **v0.2 content-document shape** — they carry the now-reclassified `scenario.vision` / `scenario.goals` / `scenario.capabilities` / `scenario.activities` / `scenario.products` / `scenario.processes` / `scenario.applications` / `scenario.factors_view` fields inline. They predate the reclassification and are scheduled for migration in a follow-up sub-task. They remain valid YAML and continue to carry the `notation: scenarios` header.
 
 ---
 

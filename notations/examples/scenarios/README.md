@@ -8,7 +8,7 @@ The scenarios view is a **report-configuration surface** over the `SCENARIO` con
 
 | File | Description |
 |---|---|
-| [`optimistic-2027.scenarios.transitrix.yaml`](optimistic-2027.scenarios.transitrix.yaml) | **v0.2 content-document shape (pending migration).** Compact scenario with vision, three factors, and reference lists. Predates the SCENARIO reclassification ([strategy#122](https://github.com/vkgeorgia/strategy/issues/122)); migrates in a follow-up sub-task. |
+| [`optimistic-2027.scenarios.transitrix.yaml`](optimistic-2027.scenarios.transitrix.yaml) | **v0.2 content-document shape (pending migration).** Compact scenario with vision, three factors, and reference lists. Predates the SCENARIO reclassification; migrates in a follow-up sub-task. |
 | [`omnichannel-2028.scenarios.transitrix.yaml`](omnichannel-2028.scenarios.transitrix.yaml) | **v0.2 content-document shape (pending migration).** Realistic retail omnichannel scenario; references the NorthBay capability and process maps. Same pending-migration status as above. |
 
 ## Notation header
