@@ -3,7 +3,7 @@ name: Notations doc-lint
 # Mechanical front-door rot checks for the notations docs: example file
 # extensions + `notation:` headers, internal Markdown link resolution, and
 # methodology_version pin consistency. Implementation:
-# scripts/check-notations.mjs. The tracked audit NOTATIONS_VALIDATION.md holds
+# scripts/check-notations.mjs. The tracked audit NOTATIONS_AUDIT.md holds
 # the judgement calls a linter can't make.
 #
 # CI is red on drift — the script exits non-zero and the job fails. Fix the
