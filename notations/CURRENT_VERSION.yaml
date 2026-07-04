@@ -1,0 +1,8 @@
+# Single source of truth for the methodology_version pin.
+#
+# Every concrete `methodology_version:` value elsewhere in this repo
+# (examples, specs, templates) must equal this pin, except the explicit
+# placeholder allowlist in scripts/check-notations.mjs. Enforced by that
+# script's V1 check. See notations/CONTRACT.md §10 for the versioning and
+# compatibility policy this pin follows.
+methodology_version: "0.7.0"

@@ -67,7 +67,7 @@ A `MINOR` or `PATCH` bump that carries no migration recipe (additive specs only)
 
 An agent may prepare an upgrade. An agent may not silently apply one. The mechanism that enforces the distinction is the ADL ratification gate ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §6):
 
-- An agent-prepared upgrade PR **must** include an ADR with `author: agent` and `status: proposed` that records the bump. A worked example is `organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md`.
+- An agent-prepared upgrade PR **must** include an ADR with `author: agent` and `status: proposed` that records the bump. A worked example is `operations/decisions/ADR-0002-pin-methodology-0-5-0.md` in the acme-corp reference repo.
 - The pin in `transitrix.yaml` may change in the same PR, but the decision is **not in force** until a human flips the ADR `proposed → accepted` in a separate, reviewed change.
 - The ADL CI guard (`scripts/check-adl.mjs`, check A3) mechanically rejects an `author: agent` record introduced as `accepted`. The gate is enforced, not advised.
 
@@ -144,7 +144,7 @@ Field semantics:
 
 **Reusability guarantee.** The schema above is what acme-corp's own `adopters.yaml` uses to name transitrix-studio and transitrix-dsm as its downstream consumers, with `pin_file` / `pin_key` set to whatever field those consumers pin acme-corp under. The same discovery job shape runs one hop further down without change — the mechanism defined here is the whole mechanism for the chain.
 
-**Worked example — the pin an adopter's ADR records.** [`organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md`](../organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md) is the shape of the ADR the Discovery job's proposed upgrade PR carries: `author: agent`, `status: proposed`, one bump recorded, awaiting human ratification. Discovery's job is to notice when a repo *should have* an ADR like that one but does not yet, and to open the PR that adds it.
+**Worked example — the pin an adopter's ADR records.** [`operations/decisions/ADR-0002-pin-methodology-0-5-0.md`](https://github.com/transitrix/acme-corp/blob/main/operations/decisions/ADR-0002-pin-methodology-0-5-0.md) in the acme-corp reference repo is the shape of the ADR the Discovery job's proposed upgrade PR carries: `author: agent`, `status: proposed`, one bump recorded, awaiting human ratification. Discovery's job is to notice when a repo *should have* an ADR like that one but does not yet, and to open the PR that adds it.
 
 ### 7.5 What the digest reports
 
@@ -182,7 +182,7 @@ Discovery runs on a schedule; two runs a day apart with no intervening release m
 - [`notations/MANIFEST.md`](../notations/MANIFEST.md) §3 — the `methodology_version` field and the no-vendoring default.
 - [`03-architecture-decision-log.md`](03-architecture-decision-log.md) — ADL, including the ratification gate (§6) and the reference-catalog forward reference (§9).
 - [`migrations/0.5-to-0.6/README.md`](../migrations/0.5-to-0.6/README.md) — migration recipe format, worked example.
-- `organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md` — worked agent-authored upgrade ADR.
+- `operations/decisions/ADR-0002-pin-methodology-0-5-0.md` (acme-corp reference repo) — worked agent-authored upgrade ADR.
 
 ---
 

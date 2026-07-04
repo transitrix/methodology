@@ -208,7 +208,6 @@ organizations/
 │   │   └── work-items/            #   WI-NNNN-<slug>.md
 │   ├── .templates/                # Copy-and-fill templates for elements / relations / views
 │   └── .validators/               # Lint and schema scripts
-└── NEW_ORGANIZATION_TEMPLATE.md   # How to bootstrap a new organisation
 ```
 
 Two layers stay separate inside `canon/`:
@@ -226,7 +225,7 @@ Alongside the model zones, an adopter team optionally keeps an **operational lay
 
 Team Operations Work Items record what the team itself is doing; a problem, risk, or weakness *about the modelled enterprise* is a model finding, captured as an `ASSESSMENT` in canon. (The former model-side `issues` notation was retired, 2026-06-07.)
 
-Full convention: [`method/02-team-operations.md`](02-team-operations.md). Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
+Full convention: [`method/02-team-operations.md`](02-team-operations.md). Worked example: [`operations/`](https://github.com/transitrix/acme-corp/tree/main/operations/) in the acme-corp reference repo.
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
 
@@ -436,12 +435,11 @@ For organisations integrating Transitrix into existing pipelines, the linter (`.
 
 ### 12.1 For a new organisation
 
-1. Read `organizations/NEW_ORGANIZATION_TEMPLATE.md`.
-2. Create `organizations/<your_org_slug>/`.
-3. Copy structure from `organizations/acme_corp/` as a starting reference.
-4. Adapt `.templates/` to local conventions and overrides.
-5. Add the first elements to `canon/elements/`.
-6. Open a pull request to introduce the organisation; the validators check the structure.
+1. Scaffold with `/transitrix:onboard`, or copy the structure from the [acme-corp reference repo](https://github.com/transitrix/acme-corp) as a starting point.
+2. Create `organizations/<your_org_slug>/` (multi-tenant repo) or use the repo root (single-tenant).
+3. Adapt `.templates/` to local conventions and overrides.
+4. Add the first elements to `canon/elements/`.
+5. Open a pull request to introduce the organisation; the validators check the structure.
 
 ### 12.2 For modelling capabilities
 

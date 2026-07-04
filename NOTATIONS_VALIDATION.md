@@ -80,10 +80,9 @@ Surfaced but left for Valerii — examples are not edited unilaterally.
   Operations` (a display name) where every other node uses a `ROLE-…` ID.
   One-line inconsistency, not structural drift.
 
-- `organizations/acme_corp/NEW_ORGANIZATION_TEMPLATE.md` is stale more broadly —
-  still describes the pre-zone `elements/01–04` layout and references
-  `create_organization.sh`. Worth a dedicated rewrite to the
-  `canon`/`field`/`codex` model rather than a one-line patch.
+- ~~`organizations/NEW_ORGANIZATION_TEMPLATE.md` is stale~~ — **resolved**: the
+  file described a pre-zone layout superseded by the onboarding Skill's own
+  scaffolding, and has been retired.
 
 ---
 
