@@ -19,8 +19,8 @@ This directory is the **`ingest` skill** within the `transitrix` plugin (the plu
 
 ## What it ships
 
-- [`SKILL.md`](SKILL.md) — the agent-facing, agent-neutral protocol: a six-step pipeline (`scaffold-intake → convert → admit-source → emit-candidates → validate → review-queue`) plus the hard constraints.
-- [`schemas/`](schemas/) — JSON Schemas for the three artefacts the pipeline produces: a `field` artefact, a canon candidate, and the review queue.
+- [`SKILL.md`](SKILL.md) — the agent-facing, agent-neutral protocol: a seven-step pipeline (`scaffold-intake → convert → privacy-scan → admit-source → emit-candidates → validate → review-queue`) plus the hard constraints.
+- [`schemas/`](schemas/) — JSON Schemas for the artefacts the pipeline produces: a `field` artefact ([`field-artefact.schema.json`](schemas/field-artefact.schema.json)), a canon candidate ([`candidate.schema.json`](schemas/candidate.schema.json)), the review queue ([`review-queue.schema.json`](schemas/review-queue.schema.json)), and the privacy gate report ([`privacy-report.schema.json`](schemas/privacy-report.schema.json)).
 - [`templates/_intake.README.md`](templates/_intake.README.md) — the documentation the CLI drops into an adopter's `_intake/` folder describing the `inbox → processing → processed` flow.
 
 ---
@@ -70,6 +70,7 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 | **CLI** ✓ landed | `@transitrix/ingest-cli` — the deterministic subcommands (`scaffold-intake`, `convert`, `admit-source`/`field-artefact`/`codex-artefact`, `emit-candidates`, `validate`, `review-queue`) + the forked extraction prompts in `prompts/`. |
 | **Tests + CI** ✓ landed | A no-API-key integrity test (bundle + dry CLI run on a fixture) and a weekly LLM-drive, plus a workflow — mirroring the onboarding skill's test harness. |
 | **Zero information loss** ✓ landed | `extensions:` carry-through + `canon/unresolved/` emission (CONTRACT §12/§13). `emit-candidates` carries `extensions:` onto candidates and parks untyped objects in `canon/unresolved/`; `validate` enforces `EXT-002`; `repo-check` reports the holding count; typed canon walkers skip the holding area (`UNRES-004`). Covered by Part O of the integrity test. |
+| **Privacy gate spec** ✓ landed | Step 2b `privacy-scan`: rule-based fail-closed pre-admission gate with six PII/medical detection categories, a narrow business-contact allowlist, `CLEAN`/`STRIPPED`/`REJECTED`/`ERROR` outcomes, and a per-run `privacy-report.yaml`. CLI implementation (`@transitrix/ingest-cli privacy-scan`) is the downstream delivery. |
 
 ---
 
@@ -80,3 +81,4 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 - It does **not** fold `extraction_confidence` into `source_quality`, or persist either extraction-confidence value into canon.
 - It does **not** emit TYPEs or REL kinds outside the adopter's coverage profile — out-of-profile material is flagged for review, never silently emitted or dropped.
 - It does **not** auto-admit or move data between zones. `derived_from` is a citation, not a migration.
+- It does **not** bypass the privacy gate. No document reaches `admit-source` unless `privacy-scan` exits `CLEAN` or `STRIPPED`. Disabling the gate requires an explicit adopter decision in `transitrix.yaml`.
