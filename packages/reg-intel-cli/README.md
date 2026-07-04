@@ -44,7 +44,7 @@ packages/reg-intel-cli/
     digest.mjs         # assemble the review digest from staged run artefacts (Step 9)
 ```
 
-The "source registry" is **the codex artefacts the repo already carries** (`14-codex.md` §3.4–3.5), not a separate database — the schedule rides on each codex YAML's `scan` block, so scan history is auditable via git. The change-signal cache is committed operational **state** at `operations/state/reg-intel/signal-cache.json` (`method/team-operations.md` §3.3) — outside the model, disposable, survives clone/CI. Zero runtime dependencies, Node ≥ 18.
+The "source registry" is **the codex artefacts the repo already carries** (`14-codex.md` §3.4–3.5), not a separate database — the schedule rides on each codex YAML's `scan` block, so scan history is auditable via git. The change-signal cache is committed operational **state** at `operations/state/reg-intel/signal-cache.json` (`method/02-team-operations.md` §3.3) — outside the model, disposable, survives clone/CI. Zero runtime dependencies, Node ≥ 18.
 
 ## Tests
 

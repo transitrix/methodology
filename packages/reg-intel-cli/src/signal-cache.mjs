@@ -1,5 +1,5 @@
 // Last-seen change-signal cache — committed operational STATE, per the operations
-// config/state convention (method/team-operations.md §3.3, decided in strategy#169).
+// config/state convention (method/02-team-operations.md §3.3).
 // It lives at `operations/state/reg-intel/signal-cache.json` — NOT on the codex
 // artefact (the §3.5 scan block stays closed) and NOT in transient _intake/ (the cache
 // must survive a fresh clone / CI checkout for the gate to pay off).

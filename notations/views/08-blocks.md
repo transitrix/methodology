@@ -249,4 +249,4 @@ What the renderer MUST NOT do:
 - Process Blueprint (uses the same diagram engine): [`13-process-blueprint.md`](13-process-blueprint.md)
 - Applications catalogue (source for cross-linked `APPLICATION-…` block IDs): [`10-applications.md`](10-applications.md)
 - Capabilities map (source for cross-linked `CAPABILITY-…` block IDs): [`05-capability-map.md`](05-capability-map.md)
-- Methodology section 6 (Notation kit): `method/methodology.md`
+- Methodology section 6 (Notation kit): `method/01-methodology.md`

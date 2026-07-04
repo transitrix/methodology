@@ -1,6 +1,6 @@
 # Transitrix Project Index & Navigation
 
-A map of the repository and where to find things. For the methodology itself, start with [`method/methodology.md`](method/methodology.md); for the notation specs, start with [`notations/README.md`](notations/README.md).
+A map of the repository and where to find things. For the methodology itself, start with [`method/01-methodology.md`](method/01-methodology.md); for the notation specs, start with [`notations/README.md`](notations/README.md).
 
 ---
 
@@ -9,8 +9,8 @@ A map of the repository and where to find things. For the methodology itself, st
 | Path | What it is |
 |---|---|
 | [`README.md`](README.md) | Project overview and quick start. |
-| [`method/methodology.md`](method/methodology.md) | Methodology overview — principles, zones, repository structure, change lifecycle. |
-| [`method/team-operations.md`](method/team-operations.md) | Team Operations convention — `operations/` folder, ADR + Work Item shapes; operational layer alongside the model (not a zone). |
+| [`method/01-methodology.md`](method/01-methodology.md) | Methodology overview — principles, zones, repository structure, change lifecycle. |
+| [`method/02-team-operations.md`](method/02-team-operations.md) | Team Operations convention — `operations/` folder, ADR + Work Item shapes; operational layer alongside the model (not a zone). |
 | [`notations/`](notations/) | The canonical model: notation specs, shared contract, ID grammar, examples. |
 | [`glossary.md`](glossary.md) | Standardised terminology. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history (Keep a Changelog; SemVer with pre-1.0 caveats). |
@@ -75,7 +75,7 @@ organizations/acme_corp/
 
 ## Validation
 
-Every change runs through the validator (`.validators/lint.py`) and the CI gate: YAML syntax, atomicity (no relations inside element files), referential integrity, ArchiMate semantics, and policy (Active status requires an owner). A pull request that breaks validation cannot be merged. See `method/methodology.md` §8 for the rule categories and `notations/CONTRACT.md` for the shared validation codes.
+Every change runs through the validator (`.validators/lint.py`) and the CI gate: YAML syntax, atomicity (no relations inside element files), referential integrity, ArchiMate semantics, and policy (Active status requires an owner). A pull request that breaks validation cannot be merged. See `method/01-methodology.md` §8 for the rule categories and `notations/CONTRACT.md` for the shared validation codes.
 
 ---
 

@@ -35,7 +35,7 @@ For every release, in order:
 
 ## Adopter upgrade procedure
 
-The conceptual companion to this section — the **propagation mechanism**: transport, the named operation, the ratification gate on autonomous agents, and what makes the upgrade *bounded / traceable / reproducible* — lives in [`method/methodology-update-propagation.md`](method/methodology-update-propagation.md). This section is the operational checklist; that document is the contract the checklist satisfies.
+The conceptual companion to this section — the **propagation mechanism**: transport, the named operation, the ratification gate on autonomous agents, and what makes the upgrade *bounded / traceable / reproducible* — lives in [`method/04-methodology-update-propagation.md`](method/04-methodology-update-propagation.md). This section is the operational checklist; that document is the contract the checklist satisfies.
 
 When an adopter repo moves from one methodology version to another, **three artefacts must move together** — specs, skill bundle, and CLI — in this order:
 

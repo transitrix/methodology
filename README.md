@@ -39,12 +39,12 @@ The skill asks what you want to model first, scaffolds the `canon/` + `field/` +
 
 Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`organizations/acme_corp/GETTING_STARTED.md`](organizations/acme_corp/GETTING_STARTED.md)** — same first artefact, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
-New to the ideas behind it? Read **[`method/methodology.md`](method/methodology.md)** for the *why* — but you don't need it to start.
+New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
 
 ## Documentation
 
 - **[`IMPLEMENTATION_TIERS.md`](IMPLEMENTATION_TIERS.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
-- **[`method/methodology.md`](method/methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
+- **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`glossary.md`](glossary.md)** — standardised terminology.
 - **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — full navigation guide.
@@ -84,7 +84,7 @@ For the full file map, see [`PROJECT_INDEX.md`](PROJECT_INDEX.md) — the single
 
 Transitrix defines text-native notations for the most common enterprise-architecture artefacts — process diagrams (BPMN), goals trees, capability maps, the FGCA / FGA strategy chains, activities networks, process maps, blocks, products and applications catalogues, scenarios, issues, and process blueprints — plus element notations for the codex, requirements, assertions, relations, actors, and stakeholders. Each view notation has a `*.<short-name>.transitrix.yaml` extension and a `notation:` header.
 
-See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/methodology.md` §6](method/methodology.md#6-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
+See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/01-methodology.md` §6](method/01-methodology.md#6-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
 
 ## Validation in one paragraph
 

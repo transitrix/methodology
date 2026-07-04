@@ -32,7 +32,7 @@ This document defines the mechanism that closes those three gaps without losing 
 | **Compatibility promise** | What each `MAJOR` / `MINOR` / `PATCH` bump promises | [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 |
 | **Migration recipe** | On-disk codemod + post-migration validator for breaking bumps | `migrations/<prev>-to-<this>/` |
 | **Operational steps** | Ordered procedure the adopter runs | [`RELEASING.md`](../RELEASING.md) §"Adopter upgrade procedure" |
-| **Ratification gate** | An agent's record proposes; a human accepts | [`architecture-decision-log.md`](architecture-decision-log.md) §6 |
+| **Ratification gate** | An agent's record proposes; a human accepts | [`03-architecture-decision-log.md`](03-architecture-decision-log.md) §6 |
 | **Version-currency check** | Reports pinned vs installed | `transitrix-ingest repo-check` |
 
 The four propagation guarantees — *declared*, *bounded*, *traceable*, *reproducible* — fall out of how these components are wired together.
@@ -65,7 +65,7 @@ A `MINOR` or `PATCH` bump that carries no migration recipe (additive specs only)
 
 ## 5. The bound on autonomous agents
 
-An agent may prepare an upgrade. An agent may not silently apply one. The mechanism that enforces the distinction is the ADL ratification gate ([`architecture-decision-log.md`](architecture-decision-log.md) §6):
+An agent may prepare an upgrade. An agent may not silently apply one. The mechanism that enforces the distinction is the ADL ratification gate ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §6):
 
 - An agent-prepared upgrade PR **must** include an ADR with `author: agent` and `status: proposed` that records the bump. A worked example is `organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md`.
 - The pin in `transitrix.yaml` may change in the same PR, but the decision is **not in force** until a human flips the ADR `proposed → accepted` in a separate, reviewed change.
@@ -75,7 +75,7 @@ The worst an unattended agent can do, then, is leave a *proposed* upgrade for hu
 
 ## 6. Reference-catalog distribution — same pattern, separate component
 
-The architecture-decision-log forward-references ([`architecture-decision-log.md`](architecture-decision-log.md) §9) a future *down-flow*: a per-organization architecture repository publishing versioned reference catalogs (the TOGAF *Standards Information Base*) that project repositories pin and consume. That distribution layer is intentionally not designed here — but it will reuse this mechanism unchanged:
+The architecture-decision-log forward-references ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §9) a future *down-flow*: a per-organization architecture repository publishing versioned reference catalogs (the TOGAF *Standards Information Base*) that project repositories pin and consume. That distribution layer is intentionally not designed here — but it will reuse this mechanism unchanged:
 
 - The catalog source becomes the organization's architecture repository (not this one).
 - The version slot is a catalog-specific field on the consuming project's manifest.
@@ -110,9 +110,9 @@ The job never merges, never flips a status, and never edits a source repo. Its o
 
 The same job scans each registered consumer's decision folder (per the consumer's registry entry, §7.4) for records at `status: proposed` whose `date:` is older than **fourteen calendar days**. Each such record is flagged in the same digest (§7.5) as the pin-vs-release output — one queue, one look.
 
-Fourteen days is chosen because it is short enough that a single missed weekly review cycle does not trip the reminder, and long enough that it does not compete with the normal review cadence. The threshold is a property of Discovery, not of the ADL: an ADR sitting `proposed` is not itself an integrity violation ([`architecture-decision-log.md`](architecture-decision-log.md) §8) — the reminder just says *this one has been waiting a while*.
+Fourteen days is chosen because it is short enough that a single missed weekly review cycle does not trip the reminder, and long enough that it does not compete with the normal review cadence. The threshold is a property of Discovery, not of the ADL: an ADR sitting `proposed` is not itself an integrity violation ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §8) — the reminder just says *this one has been waiting a while*.
 
-The reminder is a *flag in the digest*, not a state change on the ADR. Discovery never edits an ADR; the record is immutable except for a human ratifying `proposed → accepted` in a reviewed change (§5, [`architecture-decision-log.md`](architecture-decision-log.md) §7). A ratification later than fourteen days is normal and is not itself a problem — the reminder exists so that ratification happens at all.
+The reminder is a *flag in the digest*, not a state change on the ADR. Discovery never edits an ADR; the record is immutable except for a human ratifying `proposed → accepted` in a reviewed change (§5, [`03-architecture-decision-log.md`](03-architecture-decision-log.md) §7). A ratification later than fourteen days is normal and is not itself a problem — the reminder exists so that ratification happens at all.
 
 ### 7.4 The downstream-consumer registry — contract
 
@@ -138,7 +138,7 @@ consumers:
 Field semantics:
 
 - **`pin_file` + `pin_key`** — the version slot §2 refers to. Named explicitly so a downstream registry (e.g. acme-corp → studio) can point at whatever pin field the next layer uses without Discovery baking in `methodology_version` as the only recognised key.
-- **`decisions_path`** — the ADR folder §7.3 scans. Named explicitly so a consumer using `docs/decisions/` instead of `operations/decisions/` is discoverable ([`architecture-decision-log.md`](architecture-decision-log.md) §5).
+- **`decisions_path`** — the ADR folder §7.3 scans. Named explicitly so a consumer using `docs/decisions/` instead of `operations/decisions/` is discoverable ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §5).
 - **`role`** — free-form label used only to group entries in the digest (§7.5). Not a validated enum.
 - **`clone`** — the URL the job clones from. Discovery reads only; it does not push to consumers.
 
@@ -180,10 +180,10 @@ Discovery runs on a schedule; two runs a day apart with no intervening release m
 - [`RELEASING.md`](../RELEASING.md) — release process and the operational adopter upgrade procedure.
 - [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 — compatibility policy and version semantics.
 - [`notations/MANIFEST.md`](../notations/MANIFEST.md) §3 — the `methodology_version` field and the no-vendoring default.
-- [`architecture-decision-log.md`](architecture-decision-log.md) — ADL, including the ratification gate (§6) and the reference-catalog forward reference (§9).
+- [`03-architecture-decision-log.md`](03-architecture-decision-log.md) — ADL, including the ratification gate (§6) and the reference-catalog forward reference (§9).
 - [`migrations/0.5-to-0.6/README.md`](../migrations/0.5-to-0.6/README.md) — migration recipe format, worked example.
 - `organizations/acme_corp/operations/decisions/ADR-0002-pin-methodology-0-5-0.md` — worked agent-authored upgrade ADR.
 
 ---
 
-**Status:** draft — new in this release. Defines the propagation mechanism that [ADL](architecture-decision-log.md) §9 forward-references for the reference-catalog distribution layer.
+**Status:** draft — new in this release. Defines the propagation mechanism that [ADL](03-architecture-decision-log.md) §9 forward-references for the reference-catalog distribution layer.

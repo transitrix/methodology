@@ -1,5 +1,5 @@
 # adopters.yaml — machine-readable registry of downstream consumers of this repo.
-# Read by the Discovery job (method/methodology-update-propagation.md §7);
+# Read by the Discovery job (method/04-methodology-update-propagation.md §7);
 # never edited by the job itself. Schema and semantics: §7.4 of that doc.
 version: 1
 consumers:

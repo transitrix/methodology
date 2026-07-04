@@ -26,7 +26,7 @@ This is the **Team Operations** convention. It defines a folder, its file shapes
 
 The convention is intentionally minimal: a folder, two templates, and a one-screen rules doc. Adopters who want a heavier process should keep their existing tracker — this convention is for teams that want their decision log and work queue under the same version control and review surface as the model itself.
 
-This convention is the **single-repo** layer. When an adopter runs several repositories and wants one enterprise-wide view of their decisions — and when decisions may be authored by an agent, not only a human — those records aggregate into a central **Architecture Decision Log**; see [`method/architecture-decision-log.md`](architecture-decision-log.md).
+This convention is the **single-repo** layer. When an adopter runs several repositories and wants one enterprise-wide view of their decisions — and when decisions may be authored by an agent, not only a human — those records aggregate into a central **Architecture Decision Log**; see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md).
 
 ## 2. Folder layout
 
@@ -99,7 +99,7 @@ Two front-matter fields record *who* authored a decision and *where* it came fro
 - **`author`** (optional; absent = `human-architect`) — `human-architect` or `agent`; only agent authorship need be declared. This drives the gate: an `author: agent` record is **not** in force until a human ratifies it (a human flips `status` to `accepted` in a separate, reviewed change). An agent may author a `proposed` record but may never introduce an already-`accepted` one. `human-architect` (or unlabelled, legacy) records follow the team's normal sign-off. This is what lets an agent do consequential work (e.g. record "bumped a version pin") while a human stays the gate.
 - **`source`** (optional, recommended) — the forum the decision came from: an architecture review board, a design review, a named meeting, or `ad-hoc`. The methodology does not dictate an adopter's decision process; the field exists so that context — the constraint a future reader needs — is not lost.
 
-A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/architecture-decision-log.md`](architecture-decision-log.md)).
+A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/03-architecture-decision-log.md`](03-architecture-decision-log.md)).
 
 ### 3.2 Work Item (`WI-…`)
 
@@ -148,7 +148,7 @@ If a Work Item or ADR references a model ID that does not resolve (typo, deleted
 
 `ADR-` and `WI-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…` and `WI-…` carry zero-padded four-digit sequences (`ADR-0001`, `WI-0042`) and are unique within their own folder, not globally. They cannot be cross-referenced from inside the model.
 
-This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions. (When records from several repos are aggregated, the central Architecture Decision Log namespaces them as `<repo-slug>/ADR-NNNN` — the local id is unchanged; see [`method/architecture-decision-log.md`](architecture-decision-log.md) §4.)
+This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions. (When records from several repos are aggregated, the central Architecture Decision Log namespaces them as `<repo-slug>/ADR-NNNN` — the local id is unchanged; see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §4.)
 
 Operational config/state files (§3.3) carry **no** identifier at all — they are addressed by **path** (`operations/state/<domain>/<name>`), not by a sequenced `ADR-`/`WI-` id and not by a model ID. They are never cross-referenced from inside the model.
 
@@ -212,9 +212,9 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 
 ## 10. References
 
-- Multi-repo aggregation + agent-authorship: [`method/architecture-decision-log.md`](architecture-decision-log.md).
+- Multi-repo aggregation + agent-authorship: [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md).
 - Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
-- Methodology overview: [`method/methodology.md`](methodology.md) §4 — repository structure.
+- Methodology overview: [`method/01-methodology.md`](01-methodology.md) §4 — repository structure.
 - Architectural findings about the enterprise are modelled as `ASSESSMENT` (the former model-side `issues` notation was retired, 2026-06-07).
 - Distinct from the canon zones: [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5.
 

@@ -4,7 +4,7 @@
 //
 // Companion to scripts/check-notations.mjs. Where check-notations guards the
 // model's front door, this guards the decision-record convention defined in
-// method/team-operations.md §3.1 and method/architecture-decision-log.md.
+// method/02-team-operations.md §3.1 and method/03-architecture-decision-log.md.
 //
 // Scope: files matching  **/operations/decisions/ADR-NNNN-*.md  (override the
 // decisions sub-path with --dir <relpath>). The methodology's own dated design
@@ -181,7 +181,7 @@ async function main() {
     console.error(`\nADL guard — ${failures.length} finding(s) (decisions sub-path: ${DECISIONS_SUBPATH}/):\n`);
     for (const f of failures.sort((a, b) => a.c.localeCompare(b.c)))
       console.error(`  - [${f.c}] ${f.m}`);
-    console.error(`\nSee method/architecture-decision-log.md §7–8 for the rules.\n`);
+    console.error(`\nSee method/03-architecture-decision-log.md §7–8 for the rules.\n`);
     process.exit(1);
   }
   console.log(`ADL guard clean — ${records.length} decision record(s) under **/${DECISIONS_SUBPATH}/ valid${haveBase ? '' : ' (A2/A3 skipped — no base ref)'}.`);
