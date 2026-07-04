@@ -4,7 +4,7 @@
 Deterministic, no-API-key, no-network. Checks the segmentation + classification
 prompts are present, their frontmatter parses, and they encode the contracts the
 SKILL.md run loop depends on — in particular the CLASSIFY default rule
-(positive obligation → REQUIREMENT) that strategy#153 / #152 require.
+(positive obligation → REQUIREMENT) that the ingest contract requires.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_prompts.py
 Exit: 0 = all pass; 1 = a check failed.

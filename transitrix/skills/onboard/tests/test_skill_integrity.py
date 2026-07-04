@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""From-scratch install test for the Transitrix Onboarding Skill (strategy#56).
+"""From-scratch install test for the Transitrix Onboarding Skill.
 
 Deterministic, no-API-key "Skill-correctness" guard. Proves the Skill works
 against a clean install: the bundle is intact, every template the SKILL.md
