@@ -52,7 +52,7 @@ Process & releases:
 
 - **[`CHANGELOG.md`](CHANGELOG.md)** — release history (Keep a Changelog; SemVer with pre-1.0 caveats).
 - **[`RELEASING.md`](RELEASING.md)** — per-release operational checklist for the maintainer.
-- **[`NOTATIONS_VALIDATION.md`](NOTATIONS_VALIDATION.md)** — maintainer audit of open shape decisions a linter can't make.
+- **[`NOTATIONS_AUDIT.md`](NOTATIONS_AUDIT.md)** — maintainer audit of open shape decisions a linter can't make.
 - **[`migrations/`](migrations/)** — per-release migration recipes.
 
 Tooling:

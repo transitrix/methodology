@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Notations doc-lint — mechanical front-door rot checks.
 //
-// Companion to the tracked audit NOTATIONS_VALIDATION.md: the audit holds the
+// Companion to the tracked audit NOTATIONS_AUDIT.md: the audit holds the
 // judgement calls a linter can't make (conceptual drift, open shape decisions);
 // this script holds the mechanical invariants that silently rot. Keep them
 // disjoint — if a check here starts needing human judgement, it belongs in the
