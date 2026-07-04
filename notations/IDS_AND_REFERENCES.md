@@ -224,7 +224,7 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 | `CAP-…` | `CAPABILITY-V…` / `CAPABILITY-H…` | residual: `11-scenarios.md` spec example + `examples/scenarios/optimistic-2027.scenarios.transitrix.yaml` | capability-map / products / applications / process-map portion **executed 2026-05-28**; scenarios remains as a follow-up |
 | `SCN-…` / `SCEN-…` | `SCENARIO-…` | `11-scenarios.md`; scenarios examples; `07-activities.md` (`scenario: SCEN-2026-OPT`) | follow-up — variant `SCEN` vs `SCN` also needs unifying |
 | Integer-only IDs (`1`, `2`, …) | typed string IDs (`GOAL-1`, `DRIVER-1`, …) | originally the FGCA example | covered in the in-flight FGCA schema PR — see [transitrix/methodology#7](https://github.com/transitrix/methodology/pull/7) |
-| `V1`, `V1.2`, `H1.2` (no `CAPABILITY-` prefix) | `CAPABILITY-V1`, `CAPABILITY-V1.2`, `CAPABILITY-H1.2` | residual: `examples/scenarios/omnichannel-2028.scenarios.transitrix.yaml`; prose mentions in `method/methodology.md`; `integration/studio.md` | capability-map / products / applications / process-map portion **executed 2026-05-28** (capability-map examples + cross-refs in products / applications / process-map specs, examples, and `acme_corp` views); scenarios + supporting docs remain |
+| `V1`, `V1.2`, `H1.2` (no `CAPABILITY-` prefix) | `CAPABILITY-V1`, `CAPABILITY-V1.2`, `CAPABILITY-H1.2` | residual: `examples/scenarios/omnichannel-2028.scenarios.transitrix.yaml`; prose mentions in `method/01-methodology.md`; `integration/studio.md` | capability-map / products / applications / process-map portion **executed 2026-05-28** (capability-map examples + cross-refs in products / applications / process-map specs, examples, and `acme_corp` views); scenarios + supporting docs remain |
 | Zero-padded sequences (`001`, `002`, …) | no-leading-zero integers (`1`, `2`, …) | most example files | follow-up — purely a string-form change; sort order is unaffected because comparison is numeric |
 | `INFORMATION_ENTITY-…` ids and `information_entities[]` blueprint field | `BUSINESS_OBJECT-…` ids and `business_objects[]` field | any blueprint that carries `information_entities[]` aspect entries with ids | one-release alias window; validator emits `BOBJ-D001` warning; hard error in the following release. Migration recipe in `migrations/0.5-to-0.6/` (additive follow-up). |
 
@@ -236,4 +236,4 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 
 - Notation catalogue and the index of all notations: [`README.md`](README.md).
 - Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](views/05-capability-map.md) §4–5.
-- Methodology: `method/methodology.md`.
+- Methodology: `method/01-methodology.md`.

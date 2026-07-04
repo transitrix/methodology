@@ -4,7 +4,7 @@
 // Regenerates the enterprise ADL in the central architecture repo from the
 // per-repo decision records of every source repo. Derived, idempotent, and
 // one-directional: it only ever writes the central index + promoted copies; it
-// never touches a source repo. See method/architecture-decision-log.md §5.
+// never touches a source repo. See method/03-architecture-decision-log.md §5.
 //
 // Usage:
 //   node adl-harvest.mjs --config <harvest.config.yaml> \

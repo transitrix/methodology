@@ -226,7 +226,7 @@ Alongside the model zones, an adopter team optionally keeps an **operational lay
 
 Team Operations Work Items record what the team itself is doing; a problem, risk, or weakness *about the modelled enterprise* is a model finding, captured as an `ASSESSMENT` in canon. (The former model-side `issues` notation was retired, 2026-06-07.)
 
-Full convention: [`method/team-operations.md`](team-operations.md). Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
+Full convention: [`method/02-team-operations.md`](02-team-operations.md). Worked example: [`organizations/acme_corp/operations/`](../organizations/acme_corp/operations/).
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
 
@@ -408,7 +408,7 @@ A Transitrix repository carries documentation at three levels:
 **Repository root:**
 
 - `README.md` — overview and quick start
-- `method/methodology.md` (this document) — canonical methodology overview
+- `method/01-methodology.md` (this document) — canonical methodology overview
 - `glossary.md` — standard terminology
 - `LICENSE`, `CONTRIBUTING.md` — open-source artefacts
 

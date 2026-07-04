@@ -194,7 +194,7 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 - DGCA notation: [`02-dgca.md`](02-dgca.md)
 - ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across FGCA / FGA / Goals / Activities: [`README.md`](../README.md) § Family selection
-- Methodology section 6.1: `method/methodology.md`
+- Methodology section 6.1: `method/01-methodology.md`
 
 ---
 

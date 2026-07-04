@@ -2,7 +2,7 @@
 // Discovery — noticing drift on a schedule.
 //
 // Realises the scheduled-trigger contract in
-// method/methodology-update-propagation.md §7. For each consumer listed in
+// method/04-methodology-update-propagation.md §7. For each consumer listed in
 // adopters.yaml, per run:
 //   * clones the consumer's default branch (shallow, read-only);
 //   * reads its `pin_key` from `pin_file` and compares against the latest tag

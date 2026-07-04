@@ -165,4 +165,4 @@ Capabilities Map         →  what capabilities are required
 - Applications catalogue: `notations/10-applications.md`
 - Capabilities map: `notations/05-capability-map.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Methodology section 6: `method/methodology.md`
+- Methodology section 6: `method/01-methodology.md`

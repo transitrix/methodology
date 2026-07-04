@@ -9,7 +9,7 @@ tags: [transitrix, methodology, operations, adr, adl, togaf, governance]
 
 # Architecture Decision Log (ADL) — multi-repo aggregation
 
-> How architecture decisions made across **many repositories** are aggregated into one enterprise-level **Architecture Decision Log**, and how an autonomous agent may author decisions safely. The ADL is the multi-repo layer on top of the single-repo [Team Operations](team-operations.md) convention — not a separate, parallel system.
+> How architecture decisions made across **many repositories** are aggregated into one enterprise-level **Architecture Decision Log**, and how an autonomous agent may author decisions safely. The ADL is the multi-repo layer on top of the single-repo [Team Operations](02-team-operations.md) convention — not a separate, parallel system.
 
 This is a git-native, agent-operable realisation of **TOGAF's *Governance Log → Decision Log*** — the log of "architecturally significant" decisions, expressed as Markdown records under version control and aggregated across an organisation's repositories. The **structure** mirrors TOGAF's Decision Log; the **agent-authored** dimension (§3.1.1, §6) is a **Transitrix extension** the standard does not mandate. The companion construct TOGAF places alongside it — the *Standards Information Base* (the reference-catalog) — is out of scope for this release; see §9.
 
@@ -17,7 +17,7 @@ This is a git-native, agent-operable realisation of **TOGAF's *Governance Log �
 
 | Layer | Where it lives | Owner | Defined by |
 |---|---|---|---|
-| **Per-repo decision records** | each project repo, `operations/decisions/ADR-NNNN-<slug>.md` | that repo's team | [Team Operations](team-operations.md) §3.1 (extended here with `author` / `source`) |
+| **Per-repo decision records** | each project repo, `operations/decisions/ADR-NNNN-<slug>.md` | that repo's team | [Team Operations](02-team-operations.md) §3.1 (extended here with `author` / `source`) |
 | **Enterprise ADL** | the central **architecture repository**, `architecture/decision-log/` | the architecture function | this document |
 
 The per-repo layer is **canonical**: a decision record's single source of truth is the repository where the decision was made. The enterprise ADL is a **derived index** harvested from those repos plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync — the central log never edits a project repo's records, and a project repo never writes into the central log.
@@ -135,7 +135,7 @@ Exit codes match the repo convention: `0` clean, `1` findings, `2` script error.
 
 The *down* flow — the central architecture repo publishing versioned object catalogs (the TOGAF *Standards Information Base*) that project repos pin and consume — is a separate component, deliberately not in this release. It will reuse the same principles (explicit version pins, "supersede with a new version, don't edit in place") and will close the loop with this log: a repo bumping its catalog-version pin is itself an architecturally-significant decision → it emits an `author: agent` ADR here. Until then, the ADL stands on its own as the up-flow.
 
-The *propagation mechanism* the down-flow will reuse — versioned transport, the named upgrade operation, and the agent ratification contract — is specified in [`methodology-update-propagation.md`](methodology-update-propagation.md). The reference-catalog layer is the next consumer of that mechanism.
+The *propagation mechanism* the down-flow will reuse — versioned transport, the named upgrade operation, and the agent ratification contract — is specified in [`04-methodology-update-propagation.md`](04-methodology-update-propagation.md). The reference-catalog layer is the next consumer of that mechanism.
 
 ## 10. Adopter setup
 
@@ -152,8 +152,8 @@ Templates: `.templates/operations/ADR-template.md` (per-repo record, with the ne
 
 ## 12. References
 
-- [Team Operations convention](team-operations.md) — the single-repo ADR/WI layer this builds on (record shape: §3.1).
-- [`method/methodology.md`](methodology.md) — repository structure and change lifecycle.
+- [Team Operations convention](02-team-operations.md) — the single-repo ADR/WI layer this builds on (record shape: §3.1).
+- [`method/01-methodology.md`](01-methodology.md) — repository structure and change lifecycle.
 - Design decision adopting this component: `docs/decisions/2026-06-11-architecture-decision-log.md`.
 
 ---

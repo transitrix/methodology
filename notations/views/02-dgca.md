@@ -368,4 +368,4 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 - Action schedule notation: [`07-action.md`](07-action.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
 - Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection
-- Methodology section 6.2: `method/methodology.md`
+- Methodology section 6.2: `method/01-methodology.md`

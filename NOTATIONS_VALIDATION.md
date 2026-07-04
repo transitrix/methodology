@@ -58,7 +58,7 @@ direction before any file moves.
    Settling the root prefix and sweeping it is a canon change — not yet made.
 
 2. **ArchiMate element IDs — prefix-IDs vs full-word TYPE-IDs.**
-   `method/methodology.md` §3a historically used legacy prefix tables
+   `method/01-methodology.md` §3a historically used legacy prefix tables
    (`GOAL-`, `APP-`, `ACTR-`, …); `IDS_AND_REFERENCES.md` uses full-word TYPEs
    (`ACTOR`, `CAPABILITY-V…`). The front-door reconcile made IDS authoritative
    and pointed §3a at it, but the underlying scheme choice is unresolved.
