@@ -1049,7 +1049,7 @@ def part_n_entity_resolution():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part O — extensions carry-through + canon/unresolved/ emission (strategy#197/#198) ──
+# ── Part O — extensions carry-through + canon/unresolved/ emission ──
 
 def part_o_unresolved_extensions():
     if not shutil.which("node"):

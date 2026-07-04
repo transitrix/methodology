@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""True end-to-end LLM drive of the Transitrix Onboarding Skill (strategy#56).
+"""True end-to-end LLM drive of the Transitrix Onboarding Skill.
 
 Unlike test_skill_integrity.py (deterministic, no key), this script drives the
 Skill the way a real newcomer would: it installs the bundle into an ephemeral

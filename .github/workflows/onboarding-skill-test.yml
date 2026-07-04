@@ -1,6 +1,6 @@
 name: Onboarding Skill install test
 
-# From-scratch install test for the Transitrix Onboarding Skill (strategy#56).
+# From-scratch install test for the Transitrix Onboarding Skill.
 # Proves a first-time user can install the Skill against a clean workspace and
 # end up with a working, canon-valid repo. Implementation + harness rationale:
 # transitrix/skills/onboard/tests/README.md.
