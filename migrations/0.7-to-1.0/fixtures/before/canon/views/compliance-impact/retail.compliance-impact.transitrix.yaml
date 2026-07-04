@@ -1,0 +1,10 @@
+notation: compliance-impact
+methodology_version: "0.7.0"
+id: COMPLIANCE_IMPACT-RETAIL-1
+name: "Retail GDPR compliance matrix"
+view:
+  # report_type is absent — COMPIMP-011 error at 1.0; add manually
+  grouping:
+    columns: product-by-name
+  subjects:
+    products: []

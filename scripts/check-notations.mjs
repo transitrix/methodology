@@ -41,6 +41,9 @@ const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
 const VERSION_PIN_ALLOWLIST = new Set([
   'transitrix/skills/onboard/templates/transitrix.yaml', // "pin a real release once the adopter chooses one"
   'migrations/0.6-to-0.7/README.md',                    // documents the target version, not the current pin
+  'migrations/0.7-to-1.0/README.md',                    // documents the source version, not the current pin
+  'migrations/0.7-to-1.0/fixtures/before/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',  // pre-migration fixture
+  'migrations/0.7-to-1.0/fixtures/after/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',   // post-migration fixture
 ]);
 
 // Directories never walked.
