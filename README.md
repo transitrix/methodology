@@ -47,13 +47,22 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 - **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`method/00-glossary.md`](method/00-glossary.md)** — standardised terminology.
-- **[`PROJECT_INDEX.md`](PROJECT_INDEX.md)** — full navigation guide.
+
+Process & releases:
+
+- **[`CHANGELOG.md`](CHANGELOG.md)** — release history (Keep a Changelog; SemVer with pre-1.0 caveats).
+- **[`RELEASING.md`](RELEASING.md)** — per-release operational checklist for the maintainer.
+- **[`NOTATIONS_VALIDATION.md`](NOTATIONS_VALIDATION.md)** — maintainer audit of open shape decisions a linter can't make.
+- **[`migrations/`](migrations/)** — per-release migration recipes.
 
 Tooling:
 
 - **[`integration/studio.md`](integration/studio.md)** — how to use Transitrix Studio (the reference VS Code extension and CLI for editing all Transitrix custom formats).
 - **[`integration/tooling.md`](integration/tooling.md)** — broader tooling and ecosystem notes.
 - **[`integration/ci-example.yaml`](integration/ci-example.yaml)** — CI template that gates pull requests on validation.
+- **[`transitrix/`](transitrix/)** — the Claude / Copilot Agent Skills plugin (`skills/onboard/`, `skills/ingest/`, …).
+- **[`packages/`](packages/)** — versioned tooling packages, e.g. `@transitrix/ingest-cli`.
+- **[`scripts/`](scripts/)** — repo-level doc-lint scripts.
 
 Per-organisation:
 
@@ -70,7 +79,7 @@ The repository has three buckets:
 - **Worked example** — a sample organisation to learn from, maintained as a standalone reference repo: [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp). Path references elsewhere in this repo of the form `organizations/acme_corp/...` point into that repo — clone it to `organizations/acme_corp/` locally to follow them verbatim, or browse it directly on GitHub.
 - **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
 
-For the full file map, see [`PROJECT_INDEX.md`](PROJECT_INDEX.md) — the single canonical navigation guide.
+See [Documentation](#documentation) above for the full list of root-level files and what each is for.
 
 ## How it works in five lines
 
