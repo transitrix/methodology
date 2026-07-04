@@ -8,6 +8,23 @@ It builds on **ArchiMate 3.2**, **BPMN 2.0**, and the **Capability Maturity Mode
 
 **License:** MIT.
 
+## Enterprise Memory
+
+Transitrix is the foundation for building an **Enterprise Memory** — a durable, EA-grounded store of organisational knowledge that humans and AI agents share and reason over. The methodology's structured notation captures two memory kinds in one Git-native repository:
+
+- **Semantic memory** — the stable model of the enterprise: goals, capabilities, processes, and products as typed YAML elements in `canon/`.
+- **Episodic memory** — the record of what happened: ADRs in `operations/decisions/`, change and requirement traces, and raw field observations with provenance in `field/`.
+
+Because the memory is built on a formal enterprise model at the motivation, strategy, and business layers — not free-form notes or opaque embeddings — it is structured enough to validate, version, and query precisely. The same model projects into every ArchiMate layer; derived views (sequence, ER, C4, journey) are generated from the same source rather than authored separately.
+
+**Personal scale:** a single Transitrix repo doubles as a personal second brain — decisions, goals, and observations accumulate incrementally with no extra infrastructure.
+
+**Enterprise scale:** add the [Knowledge Store](patterns/knowledge-store.md) pattern for multi-project environments where raw material volume needs a curation layer before reaching canon.
+
+See the **[Enterprise Memory deployment guide](patterns/enterprise-memory.md)** for both scales in detail, including how the pattern composes with the Knowledge Store.
+
+The autonomous organisation — where humans and machines run the enterprise together from this shared model — is the north-star destination. Enterprise Memory is the entry point.
+
 ## Quick start
 
 The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned repo and walks you through your first model file. In a Claude Code session:
