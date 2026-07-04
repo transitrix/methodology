@@ -3,9 +3,11 @@
 **Status:** tracked (was a gitignored local snapshot until 2026-05-30).
 **Last full review:** 2026-05-30. **Status check 2026-07-04:** re-verified
 every open item against the files on `main`; §2 item 3 resolved, §2 item 2
-partially resolved (see below), §1 and the minor nits in §3 confirmed still
-accurate. Not yet ready to archive — §2 items 1 and 2 and the §3/§4 nits
-remain open, Valerii-gated decisions with no other tracker.
+partially resolved (see below). **Phase 4 freeze pass (2026-07-04, same
+day):** a separate PR resolved §2 items 1 and 2 in full, plus the `BP-010`
+and stale-notation-count nits in §3/§4. **Only one open item remains**: the
+capability-map display-name nit in §3. Close to archivable — one trivial nit
+away — but not archiving while anything is still open.
 **Scope:** conformance of `notations/examples/**` and the per-notation specs in
 `notations/` to the canonical contract. Excludes `0. archive/`.
 
@@ -55,23 +57,20 @@ doc-lint so it cannot silently rot:
 These are unresolved **decisions**, not regressions. Each needs Valerii's
 direction before any file moves.
 
-1. **Catalogue-root prefix — `elements/…` vs `canon/elements/…`.**
-   `IDS_AND_REFERENCES.md` §3.1/§4 mix `elements/02_business/…` with
-   `canon/elements/…` / `canon/relations/` / `canon/assertions/`;
-   `CONTRACT.md` §7.1 and `notations/README.md` use `canon/elements/…`.
-   Settling the root prefix and sweeping it is a canon change — not yet made.
+1. ~~**Catalogue-root prefix — `elements/…` vs `canon/elements/…`.**~~ —
+   **resolved (Phase 4 freeze pass, 2026-07-04).** `IDS_AND_REFERENCES.md`
+   §3.1/§4 now use `canon/elements/…` / `canon/relations/` /
+   `canon/assertions/` throughout, consistent with `CONTRACT.md` §7.1 and
+   `notations/README.md`.
 
-2. **ArchiMate element IDs — prefix-IDs vs full-word TYPE-IDs.**
-   `method/01-methodology.md` §3a historically used legacy prefix tables
-   (`GOAL-`, `APP-`, `ACTR-`, …); `IDS_AND_REFERENCES.md` uses full-word TYPEs
-   (`ACTOR`, `CAPABILITY-V…`). The front-door reconcile made IDS authoritative
-   and pointed §3a at it. **Partially resolved 2026-07-04:** §3a.9's naming-rule
-   prescription (which restated the legacy scheme as if it were the ID grammar
-   to follow) now points at the canonical grammar instead. Still unresolved:
-   whether §3a.2–§3a.8's legacy-prefix vocabulary tables themselves should be
-   rewritten or purged — they carry an explicit "vocabulary, not canonical ID
-   forms" disclaimer (§3a, above §3a.1), but the underlying scheme choice for
-   those tables is Valerii's call.
+2. ~~**ArchiMate element IDs — prefix-IDs vs full-word TYPE-IDs.**~~ —
+   **resolved (Phase 4 freeze pass, 2026-07-04).** `method/01-methodology.md`
+   §3a.2–§3a.5's legacy abbreviated-prefix columns (`GOAL-`, `APP-`, `ACTR-`,
+   …) are replaced by a "Canonical TYPE" column showing the full-word TYPE
+   from `IDS_AND_REFERENCES.md` (`—` for ArchiMate types not yet registered).
+   §3a.9's naming rule and the §3a.7/§3a.8 YAML examples were already fixed
+   to the canonical grammar earlier the same day. Adopters who followed the
+   old §3a abbreviated prefixes migrate via the 0.7→1.0 migration recipe.
 
 3. ~~**SCENARIO / ISSUE reclassification**~~ — **resolved**. `SCENARIO` is now
    a standalone content element (`ELEMENT_PRIMITIVES.md` §7.18; view spec
@@ -120,9 +119,8 @@ Required fields: `notation`, `name` (doc root), `nested_blocks.id`,
 - All block entries carry `id` and `name` at every depth. ✅
 - Free-form IDs (no canonical-grammar prefix) used for all blocks — this is
   explicitly allowed by the spec (§5.2). ✅
-- Nit: spec intro (§ "File header") refers to "thirteen Transitrix notations"
-  — stale count (current is 15). Not fixed here; Valerii's call on whether
-  to maintain exact counts in spec intros or leave them as approximations.
+- ~~Nit: spec intro refers to "thirteen Transitrix notations"~~ — **resolved
+  (Phase 4 freeze pass, 2026-07-04):** now says "fifteen" (the actual count).
 
 ### action (`notations/views/07-action.md`)
 
@@ -153,14 +151,11 @@ Required fields: `notation`, `name` (doc root), `process_blueprint.id`,
 - `actors[]` entries with `id` use `ROLE-` prefix. ✅
 - `equipment[]` entries use free-form names (no `id`). ✅
 - Example uses `business_objects[]` (not deprecated `information_entities[]`). ✅
-- Nit (spec): `BP-010` validation rule lists prefix enforcement for `systems[]`,
-  `actors[]`, `equipment[]`, `information_entities[]` but **omits `business_objects[]`**
-  — the `BUSINESS_OBJECT-` prefix requirement from §5.3 is not reflected in
-  the validation rule table. Minor gap in the spec's rule enumeration; not
-  a regression (the rule text in §5.3 is authoritative). Valerii's call on
-  whether to add a `BP-012` or extend `BP-010`.
-- Nit: spec intro (§ "File header") refers to "twelve Transitrix notations"
-  — stale count (current is 15). Same note as blocks above.
+- ~~Nit (spec): `BP-010` validation rule omits `business_objects[]`~~ —
+  **resolved (Phase 4 freeze pass, 2026-07-04):** `BP-010` now explicitly
+  requires the `BUSINESS_OBJECT-` prefix for `business_objects[]` entries.
+- ~~Nit: spec intro refers to "twelve Transitrix notations"~~ — **resolved
+  (Phase 4 freeze pass, 2026-07-04):** now says "fifteen".
 
 ### action-card (`notations/views/18-action-card.md`)
 
@@ -187,6 +182,6 @@ notation. The spec is internally consistent; validation rules
 
 **Coverage after second pass (2026-06-29):** all 15 view-notation specs have
 now been walked at least once. The doc-lint covers mechanical invariants
-continuously. The two example bugs found by the manual walk are fixed. Open
-nits (stale notation counts in spec intros, `BP-010` missing `business_objects`
-coverage) are Valerii-gated.
+continuously. The two example bugs found by the manual walk are fixed. The
+stale notation counts and the `BP-010` gap were resolved in the Phase 4
+freeze pass (2026-07-04) — see §2 and §3 above.
