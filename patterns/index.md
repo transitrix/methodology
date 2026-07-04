@@ -7,12 +7,13 @@ Concrete deployment guides for common enterprise scenarios. Each pattern covers 
 | Transitrix Alone | [transitrix-alone.md](transitrix-alone.md) | Simple or Full | One repo as the enterprise architecture source of truth. Simplest deployment — greenfield, small org, single-domain pilot. |
 | Transitrix + Knowledge Store | [knowledge-store.md](knowledge-store.md) | Full | Three-layer architecture: raw sources feed a curated knowledge repo that feeds Transitrix canon. |
 | Transitrix + Enterprise ADR Registry | [enterprise-adr-registry.md](enterprise-adr-registry.md) | Full | Transitrix repo as the enterprise ADL, aggregating cross-project architecture decisions. |
+| Enterprise Memory | [enterprise-memory.md](enterprise-memory.md) | Simple or Full | A Transitrix repo as a durable, EA-grounded memory for humans and AI agents — semantic canon + episodic record. Composes with Knowledge Store at enterprise scale. |
 
 ---
 
 ## Choosing a pattern
 
-Start with **Transitrix Alone** unless you already have multiple source repos producing content (use Knowledge Store) or multiple project repos making cross-cutting decisions (use ADR Registry).
+Start with **Transitrix Alone** unless you already have multiple source repos producing content (use Knowledge Store) or multiple project repos making cross-cutting decisions (use ADR Registry). The **Enterprise Memory** pattern describes the role any Transitrix repo plays for humans and AI agents — read it alongside whichever deployment pattern you choose.
 
 The patterns are additive. Transitrix canon is always the centre; the other patterns wrap it. You can start with Alone and migrate later — the canon layer does not change shape.
 
