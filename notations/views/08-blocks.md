@@ -1,8 +1,8 @@
 ---
 notation: "Nested Block Diagrams"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-25"
+last_updated: "2026-07-05"
 status: "documented"
 file_extension: "*.blocks.transitrix.yaml"
 dsm_status: "not implemented — native TS renderer planned in Transitrix Studio (sibling task)"
