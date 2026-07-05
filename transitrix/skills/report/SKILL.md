@@ -2,7 +2,7 @@
 name: Transitrix Report
 description: "Produce a compliance report (obligation × subject impact matrix, or per-regime coverage metric) from a Transitrix repository, by conversation. Resolves the report's parameters — from the request, from the view spec's defaults, or from a named saved view-config — materialises a versioned view-config artefact, and renders it through the deterministic `cervin export-compliance` CLI to Markdown or PDF. The skill never computes a matrix itself; rendering stays in the CLI so the same config re-renders identically next quarter. Reports are reproducible and auditable: every report has a committed parameter artefact, and the skill states which spec defaults it assumed."
 when_to_use: 'User says "give me the compliance report", "show the obligation impact for product X", "what is our GDPR coverage", "export the compliance matrix to PDF", "run the Q3 obligations matrix", "which obligations have no assertion (the gap report)", or wants a reproducible compliance/coverage report rendered from canon rather than hand-assembled.'
-min_version: "0.6.0"
+min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 

@@ -2,7 +2,7 @@
 name: Transitrix Knowledge Store
 description: Ingest raw source material into the OKF single-repo MVP knowledge store — assess, archive, route to the OKF track (extract knowledge objects → human review → write to knowledge/) and/or the Canon track (extract Transitrix primitives → PR to canon/), and log every decision.
 when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", or drops a file into `_intake/inbox/` and wants it processed.
-min_version: "0.6.0"
+min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
