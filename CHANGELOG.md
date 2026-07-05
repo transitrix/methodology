@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
-## [1.0.0] — Unreleased
+## [1.0.0] — 2026-07-05
 
 The first stable release. Schema is frozen; all pre-1.0 deprecation-window
 aliases are now hard errors. A migration recipe covers every breaking change
@@ -52,7 +52,7 @@ since 0.7: [`migrations/0.7-to-1.0/`](migrations/0.7-to-1.0/).
 - **DGCA: Activities column renamed to Actions; project domain hierarchy added.** `*.dgca.transitrix.yaml` files that reference the old column key must update to `actions`. (#264)
 - **`BP-010` validation rule now covers `business_objects[]`.** Blueprint entries under `business_objects[]` must use the `BUSINESS_OBJECT-` prefix. (#313)
 - **`notations/NOTATIONS_VALIDATION.md` renamed to `NOTATIONS_AUDIT.md`.** Update any internal links. (#312)
-- **Pre-1.0 disclaimer removed from CHANGELOG header.** The methodology is now stable. Post-1.0 MINOR releases carry no breaking changes per CONTRACT §10. (#this)
+- **Pre-1.0 disclaimer removed from CHANGELOG header.** The methodology is now stable. Post-1.0 MINOR releases carry no breaking changes per CONTRACT §10. (#316)
 
 ### Fixed
 
