@@ -76,7 +76,73 @@ Validated primitives — DRIVER, GOAL, CHANGE, CAPABILITY, and others — promot
 
 Transitrix also distributes canonical vocabulary back downstream: a generated glossary or object-reference stubs committed to project repos keep source-layer teams aligned with the enterprise model.
 
-## Single-repo MVP
+## Quality gates
+
+Quality gates are the rules the methodology places at the boundaries between layers — at ingest (raw → refinement layer) and at promotion (refinement → canon). The **methodology owns the rules**: what must hold before admission and before promotion. The **implementation owns the enforcement**: the shape engine, dedup algorithm, and tooling that verify the rules. This split keeps the quality guarantee portable across implementations while allowing each to use the most appropriate technical approach.
+
+### Gate 1 — Quarantine on arrival
+
+Every document admitted to the knowledge store enters as a `source-document` record in `_intake/processed/` (or its equivalent in a multi-repo deployment). No content is cited, answered from, or promoted until it has passed through the refinement layer.
+
+**Rule:** raw material entering the refinement layer MUST be assigned the OKF `type: source-document` status on admission. Agents operating on the knowledge store MUST NOT read from `_intake/` as a source of answers; they read only from `knowledge/` (knowledge objects) and `canon/` (promoted primitives). The quarantine is not optional.
+
+**Rationale:** errors admitted as if true propagate to every downstream object that cites the source. Fail at write, not at read.
+
+### Gate 2 — One canonical definition per concept
+
+Before an extracted knowledge object is written to `knowledge/`, it MUST be checked against existing canon terms and existing knowledge objects. A new object either maps to an existing concept or explicitly proposes a new one.
+
+**Rule:** a knowledge object MUST NOT silently introduce a definition that conflicts with or duplicates an existing canon element. Mapping options:
+- **Confirms** — the object corroborates an existing element (link to it in the body; no new `canon/` entry needed).
+- **Extends** — the object adds detail to an existing element (update the knowledge object; open a PR to amend the existing canon element).
+- **Proposes** — the object describes a genuinely new concept (create a new knowledge object; open a PR to add a new `canon/` element).
+- **Conflicts** — the object contradicts an existing element; this MUST be flagged explicitly and held for human review before admission.
+
+**Rationale:** a second definition of the same concept breaks the single-model guarantee. Every downstream user who queries the knowledge store gets one answer; ambiguity devalues the store.
+
+### Gate 3 — Blast-radius-aware promotion
+
+Not all knowledge objects carry equal risk. Core vocabulary and widely-referenced elements touch every downstream citation; an error in them multiplies across the entire knowledge store.
+
+**Rule:** the promotion gate for an object is calibrated to its blast radius:
+
+| Risk tier | Characteristics | Required gate |
+|---|---|---|
+| Low | New, few or no dependents | Standard PR review |
+| Medium | Extends an existing element with 2–9 dependents | Reviewer must confirm no dependent is invalidated |
+| High | Touches core vocabulary or has 10+ dependents | Human sign-off required; re-validate all dependents after promotion |
+
+Implementations SHOULD compute dependent counts from the canon graph before emitting the risk tier. When dependent counts are unavailable, default to the Medium gate. Never auto-promote to High without explicit human confirmation.
+
+**Rationale:** the cost of a wrong high-blast-radius promotion is proportional to the number of objects that inherit the error. The gate scales the human review effort to the actual risk.
+
+### Gate 4 — Provenance and confidence mandatory
+
+Every object in the knowledge store — source-document records and knowledge objects alike — MUST carry provenance (`source:`) and epistemic confidence (`confidence:`). Missing provenance blocks admission; missing confidence blocks promotion.
+
+**Rules:**
+- `source:` (repo path or URI to the originating document) MUST be set before an object is admitted to `_intake/processed/`.
+- `confidence:` MUST be set (`observed` / `inferred` / `assumed`) before a knowledge object is promoted to `knowledge/`. Default is forbidden — a curator must make an explicit assessment.
+- `timestamp:` MUST be updated when an object is modified.
+- **Low confidence + high dependents = review flag.** An object with `confidence: assumed` that has 3 or more downstream dependents MUST NOT be promoted without a review note explaining the assumption. Flag it in `_intake/log.md` and hold for sign-off.
+
+**Rationale:** downstream consumers — human analysts and AI agents alike — need to know how much to trust each object and where it came from. Removing provenance makes the knowledge store an assertion engine with no accountability.
+
+### Methodology ↔ implementation boundary
+
+The four gates above are **methodology properties**: they hold regardless of which tool enforces them. A conformant implementation — whether Studio, DSM, a custom ingest pipeline, or a manual curation process — MUST satisfy all four gates at the boundaries described.
+
+What a conformant implementation MAY vary:
+- The mechanism for computing dependent counts (graph query, static analysis, cached index)
+- The fuzzy-match algorithm for deduplication
+- The UI for presenting quarantine and review queues
+- Whether enforcement is automated (CI check) or manual (checklist)
+
+What it MAY NOT vary: the four admission rules, the risk-tier table, and the mandatory-field requirements.
+
+---
+
+
 
 For early adoption where standing up a separate knowledge repo adds too much overhead, the refinement layer can live as folders inside the Transitrix repo:
 
