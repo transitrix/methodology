@@ -63,6 +63,8 @@ Together these cover every ArchiMate layer — Motivation, Strategy, Business, A
 
 ## Scales
 
+> **Individual adopters:** see [Personal Memory](personal-memory.md) for a standalone guide scoped to solo or small-team deployments — same dual-layer foundation, individual-friendly framing, no governance overhead.
+
 ### Personal scale — second brain
 
 A single Transitrix repo for one person or a small team. All memory kinds live in one repo under the [Transitrix Alone](transitrix-alone.md) pattern. Low ceremony: no separate knowledge repo, no dedicated curation role. The semantic canon grows incrementally; episodic entries are captured directly in `field/` and `operations/decisions/`.
