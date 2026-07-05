@@ -1,8 +1,8 @@
 ---
 notation: "Process Blueprint"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-10"
+last_updated: "2026-07-05"
 status: "draft"
 file_extension: "*.process-blueprint.transitrix.yaml"
 dsm_status: "not implemented — render module planned in Transitrix Studio (sibling task)"
