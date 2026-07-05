@@ -4,9 +4,9 @@ The deterministic CLI behind the **ingest skill** (`transitrix/skills/ingest/`, 
 
 It lives here — a standalone package at the repo root, **outside** the skill bundle and the plugin payload — because it is consumed as a **standalone package**, not vendored into the skill directory and not referenced by a repo-relative sibling path (which would dangle when only the skill directory ships into a Copilot `.github/skills/` install).
 
-## Install (pre-1.0)
+## Install
 
-The package is not yet published to npm; the planned npm publish rides the ~1.0 extraction to its own tooling repo (`IG-7`). Today the install is local from this checkout:
+The package is not yet published to npm; the planned npm publish rides the CLI's extraction to its own tooling repo (`IG-7`). Today the install is local from this checkout:
 
 ```
 npm install -g ./packages/ingest-cli   # provides the `transitrix-ingest` bin globally

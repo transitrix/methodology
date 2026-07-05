@@ -467,7 +467,7 @@ This methodology document follows semantic versioning at the methodology level:
 - **Minor** — new notations, new validation rules, additive schema changes.
 - **Patch** — wording, examples, clarifications.
 
-The methodology is **pre-1.0** — see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 for the full compatibility policy (pre-1.0 MINOR bumps may carry breaking changes). The current release is recorded in [`CHANGELOG.md`](../CHANGELOG.md) and pinned per adopter repository via `methodology_version` in `transitrix.yaml` (see [`notations/MANIFEST.md`](../notations/MANIFEST.md)); this document does not restate a version number. Tooling versions (Transitrix Studio, etc.) advance independently and declare their compatible methodology version range.
+The methodology is at **1.0** (stable) — see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 for the full compatibility policy (post-1.0, MINOR bumps are additive only; breaking changes require a MAJOR bump). The current release is recorded in [`CHANGELOG.md`](../CHANGELOG.md) and pinned per adopter repository via `methodology_version` in `transitrix.yaml` (see [`notations/MANIFEST.md`](../notations/MANIFEST.md)); this document does not restate a version number. Tooling versions (Transitrix Studio, etc.) advance independently and declare their compatible methodology version range.
 
 ## 14. License and contributing
 

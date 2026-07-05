@@ -93,7 +93,7 @@ status: draft | documented | stable
 
 ## Family selection
 
-Three notations — DGCA, the Goals tree, and the Activities network — sit on the same strategy-to-execution spectrum. They differ in which layers they carry; the right one for a given task is the one that names exactly the layers you need to talk about, no more.
+Three notations — DGCA, the Goals tree, and the Action schedule — sit on the same strategy-to-execution spectrum. They differ in which layers they carry; the right one for a given task is the one that names exactly the layers you need to talk about, no more.
 
 ### Layer composition
 

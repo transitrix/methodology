@@ -21,6 +21,6 @@ Operating a Transitrix repo, you periodically want a quick, shareable answer to 
 transitrix-ingest repo-check [org-root]    # defaults to the current repo; prints YAML to stdout
 ```
 
-The CLI is also reachable as `npx @transitrix/ingest-cli repo-check ...` once the package is published to npm; pre-1.0 the local-install form is primary.
+The CLI is also reachable as `npx @transitrix/ingest-cli repo-check ...` once the package is published to npm; until then, the local-install form is primary.
 
 See [`SKILL.md`](SKILL.md) for the agent-facing protocol and the report's field reference.

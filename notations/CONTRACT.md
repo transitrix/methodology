@@ -56,7 +56,7 @@ Every notation's compiler / validator enforces the same four header rules:
 |---|---|---|
 | `HDR-001` | error | Missing `notation` field. |
 | `HDR-002` | error | `notation` value does not match the short name expected for this notation. The file is probably in the wrong format for its extension. |
-| `HDR-003` | error | File extension does not match the canonical extension for the `notation` declared inside the file (extension/content mismatch). Every notation has its own extension: `*.dgca.transitrix.yaml` for `dgca`, `*.goals.transitrix.yaml` for `goals`, `*.activities.transitrix.yaml` for `activities`; for all other notations it is `*.<short-name>.transitrix.yaml`. |
+| `HDR-003` | error | File extension does not match the canonical extension for the `notation` declared inside the file (extension/content mismatch). Every notation has its own extension: `*.dgca.transitrix.yaml` for `dgca`, `*.goals.transitrix.yaml` for `goals`, `*.action.transitrix.yaml` for `action`; for all other notations it is `*.<short-name>.transitrix.yaml`. |
 | `HDR-004` | accepted | `spec_version` is accepted but not enforced until the notation reaches v1.0. |
 
 Additional notation-specific rules (per-field, semantic, structural) live in the respective spec's "Validation rules" section.
@@ -65,7 +65,7 @@ Additional notation-specific rules (per-field, semantic, structural) live in the
 
 ## 3. Extension / content match
 
-Each notation has exactly one canonical file extension: `*.<short-name>.transitrix.yaml`. The `dgca`, `goals`, and `activities` notations are each distinct and each carry their own extension (`*.dgca.transitrix.yaml`, `*.goals.transitrix.yaml`, `*.activities.transitrix.yaml` respectively), even though they describe related layers of the same strategy-execution family. The `notation:` header inside the file identifies the specific notation; the extension mirrors it. The validator enforces this per rule `HDR-003`.
+Each notation has exactly one canonical file extension: `*.<short-name>.transitrix.yaml`. The `dgca`, `goals`, and `action` notations are each distinct and each carry their own extension (`*.dgca.transitrix.yaml`, `*.goals.transitrix.yaml`, `*.action.transitrix.yaml` respectively), even though they describe related layers of the same strategy-execution family. The `notation:` header inside the file identifies the specific notation; the extension mirrors it. The validator enforces this per rule `HDR-003`.
 
 No aliases are accepted: one notation has exactly one extension. The full per-notation mapping lives in [README.md](README.md).
 
@@ -447,11 +447,11 @@ Methodology releases use [SemVer](https://semver.org) (`MAJOR.MINOR.PATCH`) with
 | **`MINOR`** | Additive only: new optional field, new notation, new validation code at `info` / `warning`, new TYPE in the registry, new section in a spec. Existing files validate cleanly against the new release. | None required. Adopter MAY adopt new fields when convenient. May update `methodology_version` in `transitrix.yaml` to make the upgrade explicit. |
 | **`PATCH`** | Clarifications, doc fixes, example fixes, no schema change. | None. |
 
-### 10.3 Pre-1.0 disclaimer
+### 10.3 Pre-1.0 disclaimer (historical — resolved at the 1.0 cut)
 
-> **The methodology is pre-1.0.** Until the methodology reaches `v1.0.0`, `MINOR` bumps **may carry breaking changes** — standard SemVer pre-1.0 rules apply. Adopters pinning a pre-1.0 version with a caret range (`^0.4.x`) may be broken by a subsequent `0.5.0`. **Pin exactly** (`0.4.2`) in production adopter repos until the 1.0 cut.
-
-Once the methodology hits `v1.0.0`, MINOR bumps will be additive only — the policy in §10.2 holds without the pre-1.0 exception.
+> **As of `v1.0.0` (2026-07-05), the methodology is past the 1.0 cut.** The policy in §10.2 now holds without exception: `MINOR` bumps are additive only; breaking changes require a `MAJOR` bump. Adopters on a released version may pin with a caret range (`^1.0.x`) and expect no breaking changes from subsequent `MINOR`/`PATCH` releases.
+>
+> **Historical note.** Before `v1.0.0`, `MINOR` bumps could carry breaking changes — standard SemVer pre-1.0 rules applied, and adopters on a `0.x` release were advised to pin exactly (`0.4.2`) rather than with a caret range. This no longer applies to any release from `1.0.0` onward.
 
 ### 10.4 The release promise
 
@@ -896,4 +896,4 @@ Two terms in the methodology carry closely related names and must not be conflat
 
 **Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
 
-**Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name has been deprecated in favour of `ACTION` to enforce this distinction. The deprecated `ACTIVITY` TYPE prefix, `activity_type` field, and `activities:` array name are accepted with `ACTION-005` / `ACT-020` warnings until the 1.0 cut; see [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.
+**Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name was deprecated in favour of `ACTION` to enforce this distinction, and as of the 1.0 release (2026-07-05) is fully removed: the `ACTIVITY` TYPE prefix, `activity_type` field, `activities:` array name, and `*.activities.transitrix.yaml` extension are no longer accepted — validators emit `ACTION-005` as an **error**, not a warning. See [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.

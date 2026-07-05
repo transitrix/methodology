@@ -2,7 +2,7 @@
 
 This document defines the per-release process for the Transitrix methodology. The compatibility policy itself — what `MAJOR` / `MINOR` / `PATCH` mean for adopters — is in [`notations/CONTRACT.md`](notations/CONTRACT.md) §10. This file describes the **process** the methodology maintainer follows to cut and ship a release.
 
-The methodology is **pre-1.0**. Standard pre-1.0 SemVer applies (see CONTRACT §10.3) — `MINOR` bumps may carry breaking changes until the 1.0 cut. The full versioning-and-compatibility policy lives in CONTRACT §10; this file is the operational checklist.
+The methodology is at **1.0** (stable, first tagged 2026-07-05). Post-1.0 SemVer applies (see CONTRACT §10.3) — `MINOR` releases carry only additive changes; breaking changes require a `MAJOR` bump. The full versioning-and-compatibility policy lives in CONTRACT §10; this file is the operational checklist.
 
 ---
 
@@ -10,9 +10,9 @@ The methodology is **pre-1.0**. Standard pre-1.0 SemVer applies (see CONTRACT §
 
 | Bump | Examples |
 |---|---|
-| **PATCH** (`0.x.0` → `0.x.1`) | Clarification of an existing spec sentence; fixing a broken link; correcting a typo in an example; renumbering subsections without changing rule codes or field names. No schema change of any kind. |
-| **MINOR** (`0.x` → `0.(x+1)`) | New optional field on an existing notation; new validation code at `info` or `warning` severity; new TYPE in `IDS_AND_REFERENCES.md` §3; new section in CONTRACT.md (e.g. §9 sidecar pattern); new notation spec file (e.g. `15-requirement.md`); pre-1.0 may also include changes that are technically breaking but that the maintainer judges low-impact. |
-| **MAJOR** (`0.x` → `1.0`, `1.x` → `2.0`) | Renamed or removed field on an existing notation; changed validation severity (`warning` → `error`); changed enum membership in a closed enum (relations type, status enum, etc.); changed canonical ID grammar; required new field on an existing notation. Post-1.0, anything that breaks a previously-valid adopter file. |
+| **PATCH** (`X.Y.0` → `X.Y.1`) | Clarification of an existing spec sentence; fixing a broken link; correcting a typo in an example; renumbering subsections without changing rule codes or field names. No schema change of any kind. |
+| **MINOR** (`X.Y` → `X.(Y+1)`) | New optional field on an existing notation; new validation code at `info` or `warning` severity; new TYPE in `IDS_AND_REFERENCES.md` §3; new section in CONTRACT.md (e.g. §9 sidecar pattern); new notation spec file (e.g. `15-requirement.md`). Additive only. |
+| **MAJOR** (`X.Y` → `(X+1).0`) | Renamed or removed field on an existing notation; changed validation severity (`warning` → `error`); changed enum membership in a closed enum (relations type, status enum, etc.); changed canonical ID grammar; required new field on an existing notation — anything that breaks a previously-valid adopter file. |
 
 If a single release combines multiple kinds of change, the bump is the **highest** of any individual change in the set.
 
@@ -50,12 +50,12 @@ When an adopter repo moves from one methodology version to another, **three arte
    ```
    transitrix-ingest validate <candidates-dir>
    ```
-4. **Reinstall `@transitrix/ingest-cli`** — the installed binary does not auto-update; it remains pinned to the version it was installed from. Re-run your install command and confirm `--version` reflects the new release. Pre-1.0 the package is not yet on npm, so the install is local from a fresh checkout of this repo:
+4. **Reinstall `@transitrix/ingest-cli`** — the installed binary does not auto-update; it remains pinned to the version it was installed from. Re-run your install command and confirm `--version` reflects the new release. The package is not yet published to npm, so the install is local from a fresh checkout of this repo:
    ```
    npm install -g ./packages/ingest-cli   # or `npm link` from inside the package
    transitrix-ingest --version
    ```
-   Once the CLI is published from its own tooling repo at the ~1.0 extraction, `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli --version`) becomes the equivalent shorthand.
+   Once the CLI is extracted to its own tooling repo and published, `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli --version`) becomes the equivalent shorthand.
 5. **Run `repo-check`** to confirm version currency:
    ```
    transitrix-ingest repo-check [org-root]
