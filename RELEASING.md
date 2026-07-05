@@ -23,7 +23,7 @@ If a single release combines multiple kinds of change, the bump is the **highest
 For every release, in order:
 
 1. **Confirm the bump category.** Read every PR landed since the previous tag; categorise each change per the table above; pick the bump.
-2. **Update `methodology_version` in `organizations/acme_corp/transitrix.yaml`** to the new version. acme_corp is the fixture adopter and tracks the latest released version.
+2. **Update `methodology_version` in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo's `transitrix.yaml`** to the new version, via a companion PR in that repo. acme-corp is the fixture adopter and tracks the latest released version.
 3. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
 4. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
 5. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
