@@ -1,6 +1,6 @@
 ---
 notation: "Action Card"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-25"
 status: "draft"

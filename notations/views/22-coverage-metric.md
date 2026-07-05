@@ -1,6 +1,6 @@
 ---
 notation: "Coverage Metric"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-07"
 status: "draft"
@@ -45,7 +45,7 @@ notation: coverage-metric
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "0.7.0"
+methodology_version: "1.0.0"
 view:
   # ... see §3
 ```
@@ -99,7 +99,7 @@ notation: coverage-metric
 spec_version: "0.1"
 name: "Retail product — regime coverage"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                  # optional per CONTRACT.md §4
-methodology_version: "0.7.0"
+methodology_version: "1.0.0"
 
 view:
   id: COVERAGE_METRIC-RETAIL-1
@@ -199,7 +199,7 @@ notation: coverage-metric
 spec_version: "0.1"
 name: "Full coverage metric"            # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "0.7.0"
+methodology_version: "1.0.0"
 view:
   id: COVERAGE_METRIC-ALL-1
   name: "Full coverage metric"

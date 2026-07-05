@@ -2,9 +2,74 @@
 
 All notable changes to the Transitrix methodology.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning is SemVer with pre-1.0 caveats — see [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning is SemVer — see [`notations/CONTRACT.md`](notations/CONTRACT.md) §10. Post-1.0: MINOR releases carry only additive changes; breaking changes require a MAJOR bump. Migration recipes live under `migrations/`.
 
-The methodology is **pre-1.0**. MINOR releases (`0.x` → `0.(x+1)`) may carry breaking changes per standard pre-1.0 SemVer; the breaking items are called out under **Changed** with a `BREAKING:` prefix. Pin exactly in production adopter repos until the 1.0 cut.
+---
+
+## [1.0.0] — Unreleased
+
+The first stable release. Schema is frozen; all pre-1.0 deprecation-window
+aliases are now hard errors. A migration recipe covers every breaking change
+since 0.7: [`migrations/0.7-to-1.0/`](migrations/0.7-to-1.0/).
+
+### Added
+
+- **`notations/elements/24-action.md`** — `ACTION` element TYPE (ArchiMate Work Package). Implementation-layer work package at Initiative / Programme / Project / Task scale. Replaces the former `ACTIVITY` TYPE (now a hard-error alias). Validation codes `ACTION-001..020`. (#261, #265)
+- **`notations/views/23-actions-tree.md`** — Actions tree view notation (`*.actions-tree.transitrix.yaml`). Hierarchical rendering of `ACTION` elements with focus-mode and root-node selection. Validation codes `ATREE-001..008`. (#262)
+- **`notations/elements/21-locations.md`** — `LOCATION` element TYPE (ArchiMate Location): `country`, `region`, `city`, `site`, `office`, `virtual`. Shared addressable place element; attached to `ACTOR` nodes via `located_at` REL. (#275)
+- **`notations/elements/25-business-services.md`** — `BUSINESS_SERVICE` element TYPE (ArchiMate Business Service): externally visible behaviour offered to consumers. Linked to offering unit via `offers` REL and to capability via `realizes` REL. (#278)
+- **`notations/elements/25-nodes.md`** — `NODE` element TYPE (ArchiMate Technology Node): physical or virtual compute/network/storage substrate. Hosts `TECHNOLOGY_SERVICE` via the `hosts` REL kind. (#279)
+- **`notations/elements/26-technology-services.md`** — `TECHNOLOGY_SERVICE` element TYPE (ArchiMate Technology Service): platform-level service exposed by a `NODE`. Consumed by `APPLICATION` via the `uses` REL kind. (#279)
+- **`requirement.parent`** — optional field linking a `REQUIREMENT` to its parent requirement; enables hierarchy and trace-chain audits across obligation families. Validation code `REQ-PARENT-001`. (#299)
+- **`requirement.next_review_at`** — optional ISO 8601 date for scheduled requirement review; `check-stale` CLI command emits `REQ-STALE-001` warning on overdue non-codex requirements. (#298)
+- **`requirement.origin`** — optional closed enum: `legislative`, `process-product`, `project-product`. Classification for the obligation source taxonomy; carried through the ingest pipeline. (#290)
+- **`change.addresses`** — optional field linking a `CHANGE` to the `REQUIREMENT` or `CONSTRAINT` it resolves; origin-agnostic subject reference. (#297)
+- **`coverage-metric` `view.regimes[].exclude_paths`** — optional list of glob patterns for non-catalogue folders to exclude from coverage computation. (#269)
+- **`former_ids`** — optional array on every element type carrying superseded IDs for migration bridging (cross-reference resolution grace period). (#268)
+- **`integration/` Application Interface mapping contract (Path B)** — defines the `APPLICATION_INTERFACE` mapping layer for integrations that do not map cleanly to a canonical `INTEGRATION` element. (#281)
+- **`method/04-methodology-update-propagation.md` Discovery** — scheduled discovery trigger, 14-day stale-proposed reminder, and downstream-consumer registry contract. Companion to the adopters registry. (#292, #295)
+- **`adopters.yaml`** — downstream-consumer registry file; enables the scheduled discovery job to emit bounded upgrade PRs. (#293, #295)
+- **`transitrix/skills/knowledge-store/`** — Knowledge Store agent skill (OKF templates + SKILL.md). Packages the knowledge-store operation pattern. (#286)
+- **Ingest privacy pre-admission gate** — Step 2b of the ingest pipeline: privacy-classification check before field artefacts are promoted to canon candidates. (#302)
+- **Ingest origin classification** — `origin` field wired through emit-candidates, validate, and extraction prompts. (#291)
+- **`patterns/enterprise-memory-pattern.md`** — Enterprise Memory pattern guide. Frames the field→canon pipeline and knowledge-store as the Transitrix Enterprise Memory model. (#300)
+- **`notations/CONTRACT.md` §10.4** — migration recipe format specification (README + codemod + validate + fixtures). (#274)
+- **`method/00-glossary.md`** — canonical glossary, rewritten for current element vocabulary. Supersedes the former inline glossary. (#308)
+- **`method/` reading-order numbering** — all `method/` files now carry a reading-order prefix (`00-`, `01-`, `02-`, …). (#304)
+- **Implementation tiers** — Simple and Full implementation tiers defined in `method/` and `patterns/implementation-tiers.md`. (#272)
+- **Windows CLI guidance** — `docs/windows-cli.md` documents `npx.cmd` invocation and canonical extension acceptance. (#284, #287)
+- **`tools/check_views_compliance.py`** — notation-aware view validator Python tool. (#258)
+- **Workflow-script integrity check** — CI job validates YAML + script integrity on every PR. (#260)
+
+### Changed
+
+- **BREAKING: `ACTIVITY` → `ACTION` rename (complete).** The `ACTIVITY-*` prefix, `notation: activity`, `activities:` root array, `activity_type:` field, `*.activities.transitrix.yaml` extension, `activity-card` notation alias, and `*.activity-card.transitrix.yaml` extension are all removed. Validators formerly emitting `ACTION-005` warnings now emit errors. Migration recipe: [`migrations/0.7-to-1.0/`](migrations/0.7-to-1.0/) Transform A. (#265 and related)
+- **BREAKING: `INFORMATION_ENTITY` → `BUSINESS_OBJECT` alias closed.** `INFORMATION_ENTITY-*` IDs and the `information_entities:` field in process-blueprint are hard errors. Migrate to `BUSINESS_OBJECT-*` and `business_objects:`. Migration recipe Transform B. (#257)
+- **BREAKING: `report_type` required on compliance-impact views.** All `*.compliance-impact.transitrix.yaml` files must declare `view.report_type: product | process | combined`. Validation code `COMPIMP-011` is now an error (was absent). Migration recipe Transform C. (#255)
+- **BREAKING: Deprecated abbreviated prefix IDs are hard errors.** The following abbreviated-ID forms are no longer accepted: `ACT-`, `CHG-`, `FAC-`, `SCEN-`, `SCN-`. The `FACTOR-*` grace period from the 0.7.0 release also closes — all remaining `FACTOR-*` values must become `DRIVER-*`. Migration recipe Transform D. (#313)
+- **BREAKING: Canonical element catalogue paths use `canon/` zone prefix.** `IDS_AND_REFERENCES.md` §3.1/§4 now consistently use `canon/elements/…`, `canon/relations/`, `canon/assertions/`. Adopters who authored element catalogue paths without the `canon/` prefix must add it. (#313)
+- **BREAKING: ArchiMate element IDs use full-word TYPE (canonical).** `method/01-methodology.md` §3a now shows the canonical full-word TYPE column (e.g. `ACTOR`, `PROCESS`, `APPLICATION`) and drops the legacy abbreviated-prefix tables (`ACTR-`, `PROC-`, `APP-`). This is a documentation fix — adopters who followed the old abbreviated forms must rename their IDs to the full-word form. Migration recipe Transform D. (#313)
+- **DGCA: Activities column renamed to Actions; project domain hierarchy added.** `*.dgca.transitrix.yaml` files that reference the old column key must update to `actions`. (#264)
+- **`BP-010` validation rule now covers `business_objects[]`.** Blueprint entries under `business_objects[]` must use the `BUSINESS_OBJECT-` prefix. (#313)
+- **`notations/NOTATIONS_VALIDATION.md` renamed to `NOTATIONS_AUDIT.md`.** Update any internal links. (#312)
+- **Pre-1.0 disclaimer removed from CHANGELOG header.** The methodology is now stable. Post-1.0 MINOR releases carry no breaking changes per CONTRACT §10. (#this)
+
+### Fixed
+
+- Stale notation counts in `08-blocks.md` and `13-process-blueprint.md` spec intros corrected to "fifteen". (#313)
+- `COMPIMP-006` duplicate validation code, severity inconsistency, and grammar errors in spec. (#253)
+- `PC-001` recursive resolver scope and diagnostic contract clarified in action-card spec. (#251)
+- Deprecated `FAC-`/`CAP-` IDs in scenarios examples migrated to canonical `DRIVER-`/`CAPABILITY-` form. (#256)
+- Onboard skill updated for FGCA→DGCA and Activity→Action notation renames. (#276, #271, #273)
+- Ingest CLI built-in presets aligned to methodology 0.7.0 vocabulary. (#289)
+- Example conformance bugs in `blocks` and `process-blueprint` notation examples. (#282)
+
+### Removed
+
+- **`ISSUE` element TYPE retired.** `method/01-methodology.md` §4.1 de-listed the model-side `ISSUE` notation (retired 2026-06-07). `SCENARIO` is now the canonical implementation-path primitive.
+- **`organizations/acme_corp/` embedded submodule retired.** The worked example lives at `transitrix/acme-corp` (standalone repo). (#306)
+- **`docs/decisions/` ADR tree tombstoned.** Architecture Decision Records are now maintained centrally; the `docs/decisions/` path is no longer active. (#307)
+- **`PROJECT_INDEX.md`** retired; content folded into `README.md`. (#311)
 
 ---
 

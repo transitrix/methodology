@@ -1,6 +1,6 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.3"
+version: "1.4"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-23"
 status: "documented"

@@ -29,7 +29,7 @@ A worked example lives at `transitrix.yaml` in the [acme-corp reference repo](ht
 
 ```yaml
 transitrix: 1                       # manifest schema version (integer)
-methodology_version: "0.7.0"        # the methodology release this repo conforms to
+methodology_version: "1.0.0"        # the methodology release this repo conforms to
 notations: [dgca, goals, activities, capability-map, codex]
 zones: [canon, field, codex]
 coverage_profile: full              # optional — see COVERAGE_PROFILES.md
