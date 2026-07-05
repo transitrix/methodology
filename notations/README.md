@@ -58,8 +58,9 @@ The `status:` field in each spec's front-matter describes the **spec's maturity*
 | `draft` | The spec is incomplete or has known open structural questions; content may change in non-backwards-compatible ways. |
 | `documented` | The spec is complete and internally consistent. No open structural questions. Minor additive revisions are expected. |
 | `stable` | The schema is locked. Future changes must be backwards-compatible (additive only). |
+| `deprecated` | The notation is retired. No new artefacts should use it; existing adopters must migrate. The spec file is kept for migration reference only. |
 
-The vocabulary is intentionally small. A future `deprecated` value will be added when a notation is retired.
+The vocabulary is intentionally small.
 
 ## Front-matter conventions
 
@@ -72,7 +73,7 @@ notation: "Human-readable diagram name"
 version: "X.Y"
 author: "..."
 last_updated: "YYYY-MM-DD"
-status: draft | documented | stable
+status: draft | documented | stable | deprecated
 file_extension: "*.short-name.transitrix.yaml"
 dsm_status: "..."          # see rule below
 ```
@@ -84,7 +85,7 @@ title: "Element Name — one-line summary"
 version: "X.Y"
 author: "..."
 last_updated: "YYYY-MM-DD"
-status: draft | documented | stable
+status: draft | documented | stable | deprecated
 ```
 
 **`dsm_status:` rule:** required for all view notations with `status: documented`. Optional for `draft` views — add when there is something specific to say about Studio implementation. Describes Transitrix Studio implementation state, not spec completeness.

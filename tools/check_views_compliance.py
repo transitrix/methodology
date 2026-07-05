@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+DEPRECATED — superseded by `npx @transitrix/cli validate <file>` (file-scope)
+and `python3 .validators/lint.py` (repo-scope). Kept for migration reference
+only; do not use in new adopter pipelines. See integration/tooling.md §"Validation
+tools — ownership matrix" for the current two-tool validation model.
+
 Transitrix Views Compliance Checker
 Validates view notation files against notation-specific rules.
 
