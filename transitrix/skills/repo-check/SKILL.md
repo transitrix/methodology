@@ -2,7 +2,7 @@
 name: Transitrix Repo-Check
 description: "Read-only health check (\"doctor\") for a Transitrix adopter repository. Emits a short, DATA-FREE report — methodology version, resolved coverage profile, per-zone and per-TYPE counts, an adoption-level indicator, integrity red flags (invalid IDs, misplaced canon elements, unresolved profile), and a tooling check. Reports aggregates and statuses only — never object ids, names, or contents — so the report is safe to share outside the organisation. Idempotent and non-mutating: it reads the zones and never writes one."
 when_to_use: 'User says "check my Transitrix repo", "is my model healthy", "run the repo doctor", "give me a status of the canon", "what state is this adopter repo in", or wants a shareable, data-free summary of a repository''s shape and integrity without exposing any model contents.'
-min_version: "0.6.0"
+min_version: "1.0.0"
 allowed-tools: Read, Bash, Glob, Grep
 ---
 

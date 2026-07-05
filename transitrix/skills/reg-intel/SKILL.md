@@ -2,7 +2,7 @@
 name: Transitrix Reg-Intel
 description: "Collect regulatory-source changes in practice — the operational counterpart to the methodology's codex / SEGMENT / AMENDMENT notation work. Watches codex sources flagged `monitoring_needed: true`, runs a cheap change-signal gate before any expensive extraction, then on signal-moved runs the SCAN → SEGMENT → CLASSIFY → OUTPUT pass: fetches and snapshots the source, slices it into obligation-bearing SEGMENT field artefacts, classifies each segment as a CONSTRAINT or REQUIREMENT candidate (positive obligation → REQUIREMENT by default), emits an AMENDMENT field artefact when an existing source has drifted, updates the codex `scan` block, and stages everything in a review digest for human admission. Never writes canon. Never auto-admits. Never silently drops."
 when_to_use: 'User says "stand up the regulatory watcher", "run the daily reg-intel scan", "scan my codex sources for amendments", "extract obligations from this regulation", "produce the reg-intel review digest", or has a codex repo with `monitoring_needed: true` sources and wants drift detection plus a draft-obligation pipeline routed through a human gate.'
-min_version: "0.6.0"
+min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
 
