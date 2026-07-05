@@ -140,6 +140,8 @@ What a conformant implementation MAY vary:
 
 What it MAY NOT vary: the four admission rules, the risk-tier table, and the mandatory-field requirements.
 
+**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1-4 over `_intake/processed/` and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), and blast-radius tiering with the assumed-confidence review flag (Gate 3-4). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same four gates. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
+
 ---
 
 
