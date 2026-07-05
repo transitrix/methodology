@@ -17,7 +17,7 @@ Transitrix is the foundation for building an **Enterprise Memory** — a durable
 
 Because the memory is built on a formal enterprise model at the motivation, strategy, and business layers — not free-form notes or opaque embeddings — it is structured enough to validate, version, and query precisely. The same model projects into every ArchiMate layer; derived views (sequence, ER, C4, journey) are generated from the same source rather than authored separately.
 
-**Personal scale:** a single Transitrix repo doubles as a personal second brain — decisions, goals, and observations accumulate incrementally with no extra infrastructure.
+**Personal scale:** a single Transitrix repo doubles as a [personal second brain](patterns/personal-memory.md) — decisions, goals, and observations accumulate incrementally with no extra infrastructure.
 
 **Enterprise scale:** add the [Knowledge Store](patterns/knowledge-store.md) pattern for multi-project environments where raw material volume needs a curation layer before reaching canon.
 
