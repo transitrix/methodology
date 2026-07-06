@@ -1,7 +1,7 @@
 # Transitrix Tooling & Integration
 
-**Version:** 1.0.0
-**Date:** 2026-05-03
+**Version:** 1.0.1
+**Date:** 2026-07-06
 **Status:** Active
 
 ---
@@ -9,6 +9,30 @@
 ## Overview
 
 The Transitrix methodology is supported by specialised tools for various aspects of architectural modelling. This document describes the available tools and their integration.
+
+---
+
+## Validation tools — ownership matrix
+
+Transitrix separates validation into two canonical axes (file scope and repo scope), each with a designated tool. A third tool covers the knowledge store. A fourth tool is deprecated. The table names each, its scope, what it checks, and its lifecycle status.
+
+| Tool | Scope | What it checks | When to run | Status |
+|---|---|---|---|---|
+| `npx @transitrix/cli validate <file>` | **File** — one `*.transitrix.yaml` at a time | Schema, required fields, notation-specific rules for all 15 canonical extensions (no `--ext` flag needed for canonical notations) | On every save; pre-commit hook; CI per-file job | **Active — canonical** |
+| `python3 .validators/lint.py` | **Repo** — whole `canon/` tree at once | Atomicity (no relations inside element files), referential integrity, ArchiMate semantics, policy (Active status requires an owner) | Before every PR; CI repo-integrity job | **Active — canonical.** Fetched from `tools/lint.py` at scaffold time; lives at `.validators/lint.py` in the adopter repo |
+| `python3 tools/knowledge_store_lint.py <root>` | **Knowledge store** — `_intake/processed/` + `knowledge/` | Quality Gates 1–4: quarantine, canonical-definition, blast-radius tiering, provenance/confidence — per `patterns/knowledge-store.md` | When promoting knowledge objects; when reviewing the store for drift | **Methodology-internal reference implementation.** Adopters may copy and adapt it; the methodology owns the rules, not this script. Documented in [`patterns/knowledge-store.md`](../patterns/knowledge-store.md) |
+| `python3 tools/check_views_compliance.py` | Methodology-repo only | Notation-specific rules on the methodology's own example files | Not for adopters | **Deprecated** — superseded by `@transitrix/cli`. Kept for migration reference only |
+
+### What to run when
+
+| Situation | Run |
+|---|---|
+| Editing or reviewing a single view notation file (`*.transitrix.yaml`) | `npx @transitrix/cli validate <file>` (or `npx.cmd` on Windows — see §"Windows PowerShell" below) |
+| Before opening a PR (any `canon/` change) | `python3 .validators/lint.py` |
+| Scaffold + batch changes | Both: CLI per file, then `lint.py` for the whole repo |
+| Promoting knowledge objects or auditing the knowledge store | `python3 tools/knowledge_store_lint.py <knowledge-store-root>` (only if your repo has a knowledge store) |
+
+**Planned evolution:** when `@transitrix/cli` gains `--scope=repo`, the repo-integrity job in [`integration/ci-example.yaml`](ci-example.yaml) will move fully onto the CLI runtime and `lint.py` will be retired, collapsing the two-tool model to one. That step is tracked in the CLI roadmap; adopter pipelines following `ci-example.yaml` will need no changes until then.
 
 ---
 
@@ -528,6 +552,6 @@ exit $status
 
 Make it executable (`chmod +x .git/hooks/pre-commit` on Unix; Git Bash on Windows respects this). The hook validates only staged `*.transitrix.yaml` files, so it runs quickly on typical commits. It uses `npx.cmd` so it works under a restricted PowerShell execution policy without any policy change.
 
-**Document version:** 1.0.2
-**Updated:** 2026-07-01
+**Document version:** 1.0.3
+**Updated:** 2026-07-06
 **Next update:** When new tools are added

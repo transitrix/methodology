@@ -3,7 +3,7 @@ notation: "FGA Strategy-to-Execution Chain (deprecated)"
 version: "0.3"
 author: "Valerii Korobeinikov"
 last_updated: "2026-06-23"
-status: "documented"
+status: "deprecated"
 file_extension: "*.fga.transitrix.yaml"
 dsm_status: "not implemented — superseded by dgca with layers.changes: off"
 ---
