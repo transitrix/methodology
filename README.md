@@ -35,9 +35,9 @@ The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned re
 /transitrix:onboard
 ```
 
-The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation. Your **first artefact is a Goals tree** — the simplest notation to start from.
+The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation for whichever notation fits — a **Goals tree** is a common starting point, the simplest notation to start from, but any notation is a valid first artefact.
 
-Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same first artefact, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
+Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same approach, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
 New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
 
@@ -50,7 +50,7 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 
 Process & releases:
 
-- **[`CHANGELOG.md`](CHANGELOG.md)** — release history (Keep a Changelog; SemVer with pre-1.0 caveats).
+- **[`CHANGELOG.md`](CHANGELOG.md)** — release history (Keep a Changelog; SemVer per [`notations/CONTRACT.md`](notations/CONTRACT.md) §10).
 - **[`RELEASING.md`](RELEASING.md)** — per-release operational checklist for the maintainer.
 - **[`NOTATIONS_AUDIT.md`](NOTATIONS_AUDIT.md)** — maintainer audit of open shape decisions a linter can't make.
 - **[`migrations/`](migrations/)** — per-release migration recipes.
@@ -118,5 +118,5 @@ Transitrix — including the FGCA / FGA notations that form part of it — is au
 
 ---
 
-**Methodology status:** pre-1.0 — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
-**Last updated:** 2026-06-11
+**Methodology status:** 1.0 (stable) — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
+**Last updated:** 2026-07-05
