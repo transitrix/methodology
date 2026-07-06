@@ -1,0 +1,16 @@
+notation: goal
+id: GOAL-REVENUE-1
+name: "Triple revenue by 2028"
+type: "Strategy"
+level: 0
+
+zone: canon
+admitted_at: "2026-05-01"
+admitted_by: "v.adopter"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-05-01"
+valid_to: null

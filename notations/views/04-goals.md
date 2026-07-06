@@ -1,8 +1,8 @@
 ---
 notation: "Goals Tree"
-version: "0.3"
+version: "1.0"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-26"
+last_updated: "2026-07-06"
 status: "documented"
 file_extension: "*.goals.transitrix.yaml"
 dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
@@ -10,8 +10,10 @@ dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 
 # Goals Tree Notation — Reference
 
-**Scope:** Hierarchy of strategic and tactical goals; mono-type tree composed entirely of Goal elements. Authored as a flat document — hierarchy is expressed through `parent` references on each goal.
+**Scope:** Hierarchy of strategic and tactical goals; mono-type tree rendered from `GOAL` elements in `canon/elements/01_motivation/goals/`. The view document carries only a `view_config` (scope + display settings) — no element data is authored inline. The renderer assembles the tree from canonical elements at view time.
 **Renderer:** Transitrix DSM — Visual Editor (G), Goals table; Transitrix Studio (planned)
+
+**Migration note (v2.0).** Documents authored in the v1 inline format (carrying `goals[]` at the root) must be migrated using the `migrations/1.0-to-2.0/` recipe. Inline `goals[]` is no longer accepted.
 
 ---
 
@@ -26,31 +28,25 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ---
 
-## Element lifecycle
+## Source of truth
 
-Every inline element this notation defines — entries in `goals[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each inline element entry; the goals-tree document itself does not carry a lifecycle field. The `goal_types[]` entries are a static vocabulary, not elements, and carry no lifecycle.
+**GOAL elements are standalone primitives in `canon/elements/01_motivation/goals/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The Goals Tree view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
 
----
+The goal hierarchy (`parent` field) and the goal type vocabulary (`type` field) live on the element files themselves. The view derives the rendered tree by loading all GOAL elements in scope and resolving the `parent` references at render time.
 
-## Time-aware relations
+The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `canon/views/goals/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
-A goal's **`parent`** relationship — its position under another goal in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a goal-to-goal parent link is a `REL-…` file under `canon/relations/` with `type: goal_parent` (see [17-relations.md](../elements/17-relations.md) §3 for the closed enum). A goal re-parented mid-stream — a tactical goal moved under a different strategic goal during a planning cycle — produces a new REL file; the old REL ends with `valid_to` set.
-
-**Inline `parent: GOAL-…` — v0.x transitional.** The inline `parent` field on goal entries (§5.2) stays available for authoring convenience while the relation files coexist for history; the renderer prefers REL files when both are present. `REL-004` will begin firing on inline `parent` once an adopter's validator is configured to enforce post-migration.
-
-The `goal_types[]` array is a **static vocabulary** and carries no time-awareness — it is not a relation between primitives but a per-document type declaration.
-
-The Action → Goal cross-reference (`action.goals: [GOAL-…]`) is documented as **time-aware** in [07-action.md](07-action.md); its canonical REL home uses `type: action_goal`.
+**Where goals are authored.** New goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
 
 ---
 
 ## 1. Overview
 
-A goals tree is a hierarchical view that arranges Goal elements from `elements/01_motivation/` into a top-down tree — from broad strategic ambitions down to specific tactical objectives.
+A goals tree is a hierarchical view that arranges GOAL elements from `canon/elements/01_motivation/goals/` into a top-down tree — from broad strategic ambitions down to specific tactical objectives.
 
-The hierarchy is expressed by `parent` references on each goal: a goal whose `parent` is omitted (or null) is a root; a goal whose `parent` is `GOAL-XYZ` is a child of that goal. The document itself is a flat list — the tree shape is derived from the `parent` references at render time.
+The hierarchy is derived at render time from the `parent` field on each GOAL element: a goal whose `parent` is omitted (or null) is a root; a goal whose `parent` is `GOAL-XYZ` is a child of that goal. The Goals Tree document itself contains only scope and display configuration.
 
-Goals trees live in `views/goals/`.
+Goals trees live in `canon/views/goals/`.
 
 ---
 
@@ -61,63 +57,49 @@ Goals trees live in `views/goals/`.
 | Show how strategic goals break into tactical ones | Goals tree |
 | Link goals to capabilities or processes | Capabilities map (`*.capability-map.transitrix.yaml`) |
 | Show what drives goals | DGCA (`*.dgca.transitrix.yaml`) |
-| Track goal delivery through activities | DGCA (full or DGA mode) |
+| Track goal delivery through actions | DGCA (full or DGA mode) |
 
 ---
 
 ## 3. File location and naming
 
 ```
-views/goals/<DOMAIN>.goals.transitrix.yaml
+canon/views/goals/<DOMAIN>.goals.transitrix.yaml
 ```
 
 Examples:
-- `views/goals/GROWTH.goals.transitrix.yaml`
-- `views/goals/OPERATIONS.goals.transitrix.yaml`
+- `canon/views/goals/GROWTH.goals.transitrix.yaml`
+- `canon/views/goals/OPERATIONS.goals.transitrix.yaml`
 
 ---
 
-## 4. Top-level structure — flat form
-
-The document carries document metadata, a `goal_types[]` array that defines the level vocabulary, and a flat `goals[]` array at the document root. There is no wrapper key. The tree shape is derived from the `parent` field on each goal.
-
-The same flat-with-references shape applies family-wide across all four strategy-chain notations (FGCA, FGA, Goals, Activities) — see [`README.md`](../README.md) § Family selection for the family-wide rule (decided 2026-05-26; supersedes the earlier "nested for trees, flat for DAGs" heuristic).
+## 4. Document structure
 
 ```yaml
 notation: goals
 spec_version: "0.1"
+methodology_version: "2.0.0"          # required from v2.0 onward
 
-id: GOALS-STRAT-1
-name: "Strategy 2026 — Goals Tree"
-generated_at: "2026-05-26"             # optional per CONTRACT.md §4
-description: "Goal hierarchy across Strategy → Strategic Goal → Project Goal levels for the 2026 plan."
-period: "2026"
-version: "0.1"
+id: GOALS-STRAT-2026-1                 # required — GOALS-[<middle>-]<INTEGER>
+name: "Strategy 2026 — Goals Tree"    # required per CONTRACT.md §1.1
+generated_at: "2026-07-06"            # optional per CONTRACT.md §4
+description: "Goal hierarchy for the 2026 plan."
+period: "2026"                         # optional — time period this view covers
 author: Transitrix
 
-goal_types:
-  - { name: "Strategy",       level: 0 }
-  - { name: "Strategic Goal", level: 1 }
-  - { name: "Project Goal",   level: 2 }
-
-goals:
-  - id: GOAL-REVENUE-1
-    name: "Triple revenue in 3 years"
-    type: "Strategy"
-    level: 0
-    # No parent — root.
-
-  - id: GOAL-EU-1
-    name: "Launch in 3 EU markets"
-    type: "Strategic Goal"
-    level: 1
-    parent: GOAL-REVENUE-1
-
-  - id: GOAL-BERLIN-1
-    name: "Open Berlin office"
-    type: "Project Goal"
-    level: 2
-    parent: GOAL-EU-1
+view_config:
+  scope:
+    root_goal: null                    # GOAL-… to anchor as tree root; null = show all roots
+    period: null                       # optional string filter on goal period metadata
+    type_filter: null                  # list of type names to include; null = all types
+    valid_at: null                     # ISO 8601 date; null = show all regardless of lifecycle
+  goal_types:                          # display vocabulary — configures level labels
+    - { name: "Strategy",       level: 0 }
+    - { name: "Strategic Goal", level: 1 }
+    - { name: "Project Goal",   level: 2 }
+  display:
+    depth: null                        # integer; null = unlimited depth
+    collapsed: []                      # GOAL-… IDs of collapsed nodes at load time
 ```
 
 A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
@@ -132,39 +114,45 @@ A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../ex
 |---|---|---|
 | `notation` | yes | MUST equal `goals` (per [CONTRACT.md](../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
-| `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar (the document-level TYPE `GOALS_TREE` in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2 is the historical label; document IDs use the short `GOALS-…` form for filenames and references) |
+| `methodology_version` | yes (from v2.0) | methodology release this document conforms to |
+| `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
 | `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the tree covers |
-| `version` | no | document version |
 | `author` | no | document author |
-| `goal_types` | yes | array of `{name, level}` entries defining the level vocabulary — see §5.1 |
-| `goals` | yes | flat array of goal entries — see §5.2 |
+| `view_config` | no | rendering configuration — see §5.1 |
 
-### 5.1 `goal_types[]`
+### 5.1 `view_config.scope`
+
+Scope fields filter which GOAL elements the renderer includes. All are optional; omitting the `scope` block (or the `view_config` block entirely) includes all active GOAL elements.
 
 | Field | Required | Description |
 |---|---|---|
-| `name` | yes | human-readable level name (`"Strategy"`, `"Strategic Goal"`, …) |
+| `root_goal` | no | `GOAL-…` ID to use as the tree root. When set, only that goal and its descendants are shown. Omit to show all root goals. |
+| `period` | no | String to match against goal metadata. When set, the renderer includes only goals tagged with this period. |
+| `type_filter` | no | Array of goal type names (must match names in `goal_types[]`). When non-empty, only goals of the listed types are shown. |
+| `valid_at` | no | Quoted ISO 8601 date. Renderer includes only goals whose `valid_from ≤ valid_at` and (`valid_to` is null or `valid_to ≥ valid_at`). Omit to include all goals regardless of lifecycle dates. |
+
+### 5.2 `view_config.goal_types`
+
+Display vocabulary configuring how the renderer labels and levels the goal hierarchy. Each entry has:
+
+| Field | Required | Description |
+|---|---|---|
+| `name` | yes | human-readable level name — must match `type` values on GOAL elements |
 | `level` | yes | non-negative integer; `0` is the root level |
 
-Organisations choose their own level vocabulary; the canonical 8-level default is listed in §8.1.
+Values must form a **contiguous** integer sequence starting at `0` (no gaps). Organisations choose their own vocabulary; the canonical 8-level default is listed in §7.
 
-### 5.2 `goals[]`
+If `goal_types` is absent, the renderer infers levels from the `parent` chain depth (root goals at 0, each step deeper adds 1). Level labels fall back to the `type` string on the GOAL element.
 
-| Field | Required | Description |
-|---|---|---|
-| `id` | yes | `GOAL-[<middle>-]<INTEGER>` per the canonical grammar |
-| `name` | yes | what the goal is |
-| `type` | yes | one of the `name` values from `goal_types[]` |
-| `level` | yes | non-negative integer matching the `level` of the named `type` |
-| `parent` | no | `GOAL-…` ID of the parent goal. Omit for a root (`level = 0`). |
-| `description` | no | one-paragraph elaboration |
-| `link` | no | URL pointing at supplementary documentation |
-| `tag` | no | free-form classifier string |
+### 5.3 `view_config.display`
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` from [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+| Field | Required | Default | Description |
+|---|---|---|---|
+| `depth` | no | `null` | Maximum depth to show; `null` = unlimited. |
+| `collapsed` | no | `[]` | `GOAL-…` IDs of subtrees collapsed at load time. Interactive renderers may allow runtime expand/collapse. |
 
 ---
 
@@ -172,44 +160,31 @@ ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>` f
 
 | Rule | Severity | Description |
 |---|---|---|
-| `GOALS-001` | error | document root is not an object, or `notation` field missing / does not equal `goals`. |
+| `GOALS-001` | error | `notation` missing or does not equal `goals`. |
 | `GOALS-002` | error | `id` missing or does not match `GOALS-[<middle>-]<INTEGER>`. |
 | `GOALS-003` | error | `name` missing or empty. |
-| `GOALS-004` | error | `goal_types` missing or empty; `goals` missing or empty. |
-| `GOALS-005` | error | every entry in `goal_types[]` must have a non-empty `name` and a non-negative integer `level`. |
-| `GOALS-006` | error | every entry in `goals[]` must have a non-empty `id`, `name`, `type`, and a non-negative integer `level`. |
-| `GOALS-007` | error | every `goals[].id` matches the canonical grammar and is unique within the document. |
-| `GOALS-008` | error | `goals[].type` references a `name` defined in `goal_types[]`; `goals[].level` equals the level associated with that type. |
-| `GOALS-009` | warn | `goals[].parent` references an `id` not defined in `goals[]` — the goal is treated as an orphan / backlog item. |
-| `GOALS-010` | error | the `parent` chain contains a cycle (a goal is its own ancestor). |
-| `GOALS-011` | warn | a non-root goal (`level ≥ 1`) has no `parent` set; either declare it as a root by promoting it to `level: 0`, or attach it to a parent. |
-| `GOALS-012` | error | `goals[].parent` MUST reference an existing goal whose `level` equals `goals[].level - 1` (strict N+1 hierarchy). A parent that resolves but sits more than one level above the child is rejected; an unresolved `parent` is the orphan case (`GOALS-009`). |
-| `GOALS-013` | error | `goal_types[].level` values MUST be contiguous integers starting at `0` (no gaps in the declared vocabulary). Contiguity is what makes `GOALS-012` enforceable against a document's custom level vocabulary. |
+| `GOALS-004` | error | `view_config.goal_types` present but any entry lacks `name` or has a non-integer `level`. |
+| `GOALS-005` | error | `view_config.goal_types[].level` values are not contiguous integers starting at `0`. |
+| `GOALS-006` | error | `view_config.scope.root_goal` is set but the referenced `GOAL-…` ID does not resolve to an admitted GOAL element in canon. |
+| `GOALS-007` | error | `view_config.scope.type_filter` contains a value not present in `goal_types[].name`. |
+| `GOALS-008` | error | Inline `goals[]` field detected at document root — not accepted from v2.0. Run `migrations/1.0-to-2.0/codemod.mjs` to promote inline goals to standalone element files. |
+
+Element-level validation (parent cycles, type/level consistency, ID grammar) lives in the GOAL element rules applied when the canonical element files are validated, not here.
 
 ---
 
-## 7. References
+## 7. DSM rendering & editor behaviour (non-normative)
 
-- Goal elements: `elements/01_motivation/*.yaml` (type: Goal)
-- DGCA notation: [`02-dgca.md`](02-dgca.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
-- Family selection across FGCA / FGA / Goals / Activities: [`README.md`](../README.md) § Family selection
-- Methodology section 6.1: `method/01-methodology.md`
+This section describes how Transitrix DSM renders and edits the Goals Tree. It is **non-normative**: the conformance rules live in §6.
 
----
+### 7.1 Hierarchy depth
 
-## 8. DSM rendering & editor behaviour (non-normative)
-
-This section describes how Transitrix DSM renders and edits the Goals Tree. It is **non-normative**: the conformance rules for the notation live in §6 (including strict N+1 hierarchy, `GOALS-012`, and contiguous level vocabulary, `GOALS-013`). The behaviour below is DSM-specific and is not required of other conforming renderers.
-
-### 8.1 Hierarchy depth
-
-The hierarchy depth is **not hardcoded** — it is configured in the `goal_types` table per organisation. The default configuration uses **8 levels**:
+The hierarchy depth is **not hardcoded** — it is configured in the `view_config.goal_types` table. The default configuration uses **8 levels**:
 
 | Level | Name | Scope |
 |:---:|---|---|
 | **0** | Strategy | Single root — the organisation's overall vision |
-| **1** | Strategic Intention | Broad areas of focus (e.g., "Market Expansion") |
+| **1** | Strategic Intention | Broad areas of focus |
 | **2** | Strategic Goal | Measurable strategic milestones |
 | **3** | Business Goal | Department / unit level outcomes |
 | **4** | Business Objective | Specific targets for teams |
@@ -217,28 +192,37 @@ The hierarchy depth is **not hardcoded** — it is configured in the `goal_types
 | **6** | Sprint Goal | Short-term iteration targets |
 | **7** | Task Goal | Granular executable items |
 
-All validation and visualisation logic adapts dynamically to the currently active `goal_types` configuration — organisations can rename or resize the hierarchy.
+All validation and visualisation logic adapts dynamically to the active `goal_types` configuration.
 
-### 8.2 Editor constraints
+### 7.2 Editor constraints
 
-Strict N+1 hierarchy is normative — see `GOALS-012` in §6. Beyond that, DSM's editor maintains two conventions:
+- **Single parent:** `parent` is a single reference per GOAL element.
+- **Single root:** DSM keeps one root (`level: 0`) per tree and will not create a second. This is an editor convention.
 
-- **Single parent:** `parent` is a single reference, so every non-root goal has exactly one parent. A goal with a missing or unresolved `parent` is treated as an **Orphan** (backlog, §8.4) and is not shown in the main tree until attached.
-- **Single root:** DSM keeps one root (`level: 0`, type Strategy) per tree and will not create a second. This is an editor convention, not a §6 validation rule.
-
-### 8.3 Editing and cascade updates
+### 7.3 Editing and cascade updates
 
 When a goal is moved to a new parent:
 
-1. **Level update:** the goal's level is immediately set to `new_parent.level + 1`.
-2. **Cascade update:** all descendants are updated recursively so that each child remains at `parent.level + 1`.
+1. **Level update:** the goal's level is set to `new_parent.level + 1`.
+2. **Cascade update:** all descendants are updated recursively.
 
 **Max-depth protection:** if moving a branch would push its deepest descendant beyond the configured maximum level, the operation is blocked.
 
-### 8.4 Backlog
+### 7.4 Backlog
 
-Goals without a valid parent (orphans) live in the **backlog**. They are visible in the Goals table but not rendered in the Visual Editor (G) tree. Dragging a backlog goal onto a tree node attaches it and triggers the cascade level update.
+Goals without a valid parent (orphans) live in the **backlog**. They are visible in the Goals table but not rendered in the Visual Editor (G) tree. Dragging a backlog goal onto a tree node attaches it.
 
-### 8.5 Relationship to DGCA
+### 7.5 Relationship to DGCA
 
-In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Activities via the `goals: [GOAL-…]` field on Activity records. The DGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-dgca.md`](02-dgca.md).
+In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Actions via `action_goal` REL records ([elements/17-relations.md](../elements/17-relations.md) §3), or transitionally via the inline `goals: [GOAL-…]` field on ACTION elements. The DGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-dgca.md`](02-dgca.md).
+
+---
+
+## 8. References
+
+- Goal elements: `canon/elements/01_motivation/goals/*.yaml` (notation: goal)
+- DGCA notation: [`02-dgca.md`](02-dgca.md)
+- GOAL element field schema: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.2
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
+- Family selection across FGCA / FGA / Goals / Actions: [`README.md`](../README.md) § Family selection
+- Methodology section 6.1: `method/01-methodology.md`

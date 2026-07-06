@@ -151,7 +151,7 @@ notation: dgca
 spec_version: "0.1"
 name: "Retail strategy chain 2026"      # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"              # optional per CONTRACT.md §4
-methodology_version: "1.0.0"
+methodology_version: "2.0.0"
 
 view:
   id: DGCA-RETAIL-1

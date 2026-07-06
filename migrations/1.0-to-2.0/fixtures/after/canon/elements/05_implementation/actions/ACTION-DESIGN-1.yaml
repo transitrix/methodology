@@ -1,0 +1,19 @@
+notation: action
+id: ACTION-DESIGN-1
+name: "Design phase"
+type: Project
+parent: ACTION-PLATFORM-LAUNCH-1
+duration: 30
+start_date: "2026-01-15"
+predecessors: []
+
+zone: canon
+admitted_at: "2026-01-15"
+admitted_by: "migration-1.0-to-2.0"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-15"
+valid_to: null

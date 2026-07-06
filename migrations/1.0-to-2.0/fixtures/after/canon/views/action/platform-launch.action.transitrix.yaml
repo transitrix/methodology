@@ -1,0 +1,19 @@
+notation: action
+spec_version: "0.1"
+methodology_version: "2.0.0"
+
+id: ACTION_SCHED-PLATFORM-LAUNCH-1
+name: "Platform Launch 2026"
+description: |
+  Deliver the customer-facing platform by Q4 2026.
+
+view_config:
+  scope:
+    root_action: ACTION-PLATFORM-LAUNCH-1
+    valid_at: null
+  schedule:
+    start_date: "2026-01-15"
+  display:
+    view: both
+    depth: null
+    collapsed: []

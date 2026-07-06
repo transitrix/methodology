@@ -1,0 +1,28 @@
+notation: action
+spec_version: "0.1"
+
+title: "Platform Launch 2026"
+description: |
+  Deliver the customer-facing platform by Q4 2026.
+version: "0.1"
+
+project:
+  start_date: "2026-01-15"
+
+actions:
+  - id: ACTION-PLATFORM-LAUNCH-1
+    name: "Platform Launch Initiative"
+    type: Initiative
+    goals: [GOAL-EU-1]
+    valid_from: "2026-01-15"
+    valid_to: null
+
+  - id: ACTION-DESIGN-1
+    name: "Design phase"
+    type: Project
+    parent: ACTION-PLATFORM-LAUNCH-1
+    duration: 30
+    start_date: "2026-01-15"
+    predecessors: []
+    valid_from: "2026-01-15"
+    valid_to: null
