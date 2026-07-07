@@ -142,21 +142,43 @@ The first-build gates (1–4) catch shape, provenance, and duplicate *candidates
 
 **Out of scope for the open tier:** semantic contradiction detection (natural-language "these two paragraphs disagree"), cross-store reasoning, or canon-graph traversal beyond the explicit `conflicts_with:` pointer. Those belong to the proprietary advanced reasoner in DSM (see boundary below) — the open tier stays useful standalone without it.
 
+### Gate 6 — Assisted ingest (propose–verify–dispose)
+
+Ingestion is **assisted**, not autonomous: a proposer (model or agent) drafts candidates; deterministic gates (Gates 1–5 via the reference linter) **dispose** structurally; **ambiguity** routes to a human queue — never auto-promoted.
+
+**Three tiers:**
+
+| Tier | Role | May write to | May cite for answers |
+|---|---|---|---|
+| **Proposer** | Model / agent extraction | `_intake/drafts/` only | No |
+| **Verifier** | Deterministic linter + gates | — (read-only check) | No |
+| **Curator** | Human review + admit authority | `knowledge/` after approval | Yes (via promoted objects) |
+
+**Workflow:**
+
+1. **Propose** — extracted candidates land in `_intake/drafts/` using the draft template. Each draft carries `review_status:` (`ready` / `ambiguous` / `blocked`) and, when ambiguous, a non-empty `ambiguity_note:` explaining what needs human judgement.
+2. **Verify** — run `tools/knowledge_store_lint.py` over the store **including drafts**. Fix every error on draft paths before presenting the batch to the curator. Warnings require explicit acknowledgment.
+3. **Review** — curator approves, rejects, or resolves ambiguous items. Agents MUST NOT write to `knowledge/` before explicit approval.
+4. **Dispose** — approved drafts are copied to `knowledge/` with draft-only fields (`review_status`, `ambiguity_note`) removed; the draft file is deleted; the linter runs again; `[admit]` is logged. Ambiguous items held for review are logged as `[ambig]` until resolved.
+
+**Rule:** agents operating on the knowledge store MUST NOT read from `_intake/drafts/` as a source of answers — same quarantine discipline as `_intake/processed/` (Gate 1). Only `knowledge/` and `canon/` are answer surfaces.
+
+**Rationale:** the proposer is fallible; the verifier is not. Separating draft from promoted zones localises model error to a disposable staging area and keeps promotion behind a human gate.
+
 ### Methodology ↔ implementation boundary
 
-The four gates above are **methodology properties**: they hold regardless of which tool enforces them. A conformant implementation — whether Studio, DSM, a custom ingest pipeline, or a manual curation process — MUST satisfy all four gates at the boundaries described. Gate 5 open-tier rules are likewise methodology properties; the advanced contradiction engine is not.
+The gates above are **methodology properties**: they hold regardless of which tool enforces them. A conformant implementation — whether Studio, DSM, a custom ingest pipeline, or a manual curation process — MUST satisfy all gates at the boundaries described. Gate 5 open-tier rules and the Gate 6 propose–verify–dispose workflow are likewise methodology properties; the advanced contradiction engine is not.
 
 What a conformant implementation MAY vary:
 - The mechanism for computing dependent counts (graph query, static analysis, cached index)
 - The fuzzy-match algorithm for deduplication
-- The UI for presenting quarantine and review queues
+- The UI for presenting quarantine, draft, and review queues
 - Whether enforcement is automated (CI check) or manual (checklist)
+- Whether `_intake/drafts/` is gitignored (ephemeral agent runs) or committed (audit trail during review)
 
-What it MAY NOT vary: the four admission rules, the risk-tier table, and the mandatory-field requirements.
+What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-field requirements, the Gate 5 open-tier consistency rules, and the Gate 6 rule that proposers MUST NOT write directly to `knowledge/`.
 
-What it MAY NOT vary: the four admission rules, the risk-tier table, the mandatory-field requirements, and the Gate 5 open-tier consistency rules.
-
-**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1–5 over `_intake/processed/` and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), blast-radius tiering with the assumed-confidence review flag (Gate 3–4), and scoped consistency checks (Gate 5 open tier). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same rules. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
+**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1–6 over `_intake/processed/`, `_intake/drafts/`, and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), blast-radius tiering with the assumed-confidence review flag (Gate 3–4), scoped consistency checks (Gate 5 open tier), and draft-zone assisted-ingest rules (Gate 6). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same rules. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
 
 **Validation codes (reference implementation):**
 
@@ -176,6 +198,9 @@ What it MAY NOT vary: the four admission rules, the risk-tier table, the mandato
 | `KS-012` | error | 5 | `mapping: conflicts` without a resolvable `conflicts_with:` target. |
 | `KS-013` | warning | 5 | Knowledge-object `confidence:` ranks higher than its cited source-document (epistemic ordering violation). |
 | `KS-014` | error | 5 | `mapping: conflicts` without a matching `[conflicts]` hold entry in `_intake/log.md`. |
+| `KS-015` | error | 6 | `review_status:` (draft marker) present on a promoted `knowledge/` object. |
+| `KS-016` | error | 6 | Draft missing or with invalid `review_status:` (`ready` / `ambiguous` / `blocked`). |
+| `KS-017` | error | 6 | `review_status: ambiguous` without a non-empty `ambiguity_note:`. |
 
 Integrity test harness: [`transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py`](../transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py) (CI job `knowledge-store-lint-test`).
 
@@ -190,7 +215,8 @@ _intake/
   inbox/           ← incoming documents (gitignored — temporary staging)
   originals/       ← source files archived by reference (gitignored)
   processed/       ← OKF source-document records (type: source-document)
-  log.md           ← all events: [route] / [admit] / [assert]
+  drafts/          ← proposer output (Gate 6 — not cited; not promoted until curator approves)
+  log.md           ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
 
 knowledge/         ← OKF knowledge objects (type: insight / finding / concept / ...)
   index.md         ← auto-generated bundle index
@@ -200,7 +226,7 @@ canon/             ← Transitrix primitives (unchanged)
 ```
 
 **Ingestion routing:** a single document can feed one or both tracks.
-- **OKF track** — extract knowledge objects → curator reviews chunks → write to `knowledge/` → update `index.md`
+- **OKF track** — extract knowledge object drafts → verify with linter → curator reviews → promote to `knowledge/` → update `index.md`
 - **Canon track** — extract Transitrix primitives → open PR to `canon/` → merge gate
 
 All incoming documents are always archived to `processed/` as OKF source-document records before routing begins. `originals/` is gitignored; the processed record carries `source:` (path or URI) and `source_hash:` (SHA-256) for integrity.
@@ -229,6 +255,7 @@ Starter templates for the two core OKF record types live alongside this pattern:
 
 - [`knowledge-store-templates/okf-source-document.md`](knowledge-store-templates/okf-source-document.md) — copy to `_intake/processed/` for each ingested document; covers `type`, `source`, `source_hash`, `confidence`, `tracks`, and routing notes
 - [`knowledge-store-templates/okf-knowledge-object.md`](knowledge-store-templates/okf-knowledge-object.md) — copy to `knowledge/` for each extracted concept; covers `type`, `description`, `resource`, `confidence`, citations, and examples
+- [`knowledge-store-templates/okf-knowledge-object-draft.md`](knowledge-store-templates/okf-knowledge-object-draft.md) — copy to `_intake/drafts/` during assisted ingest (Gate 6); adds `review_status` and `ambiguity_note`
 
 **Initialise the MVP bundle with these two files:**
 
@@ -236,7 +263,7 @@ Starter templates for the two core OKF record types live alongside this pattern:
 ```markdown
 # Intake log
 
-Entries are date-grouped. Each entry carries a type tag: [route] routing decision, [admit] chunk approval, [assert] assertion outcome.
+Entries are date-grouped. Each entry carries a type tag: [route] routing decision, [admit] chunk approval, [ambig] ambiguity hold, [conflicts] contradiction hold, [assert] assertion outcome.
 
 ## YYYY-MM-DD
 ```

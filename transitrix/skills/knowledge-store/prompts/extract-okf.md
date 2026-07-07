@@ -19,7 +19,7 @@ Do not extract:
 
 ## Output format
 
-For each candidate object, output a fenced block:
+Write each candidate to `_intake/drafts/<slug>.md` (do not write to `knowledge/`). Use this frontmatter shape:
 
 ~~~
 ---
@@ -29,9 +29,12 @@ description: "<one-sentence summary>"
 source: /_intake/processed/<source-document-filename>
 created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
-mapping: confirms | extends | proposes | conflicts   # optional — classify against existing knowledge
-conflicts_with: ""   # when mapping: conflicts — path to contradicted /knowledge/ object or canon id
+mapping: confirms | extends | proposes | conflicts   # optional
+conflicts_with: ""   # when mapping: conflicts
+review_status: ready | ambiguous | blocked
+ambiguity_note: ""   # required when review_status: ambiguous
 tags: [<topic>, ...]
+timestamp: YYYY-MM-DDTHH:MM:SSZ
 ---
 
 <Body: 2–5 sentences expanding the description. Cite the exact passage if helpful.>
@@ -55,12 +58,19 @@ When a candidate relates to something already in `knowledge/index.md`, set `mapp
 - `proposes` — new claim not yet in the store
 - `conflicts` — contradicts an existing object or canon assertion; set `conflicts_with:` to the `/knowledge/…` path or typed canon id
 
-Do not admit `mapping: conflicts` objects without flagging them for human review.
+Do not promote `mapping: conflicts` objects without flagging them for human review.
+
+## Review disposition (Gate 6)
+
+Set `review_status:` on every draft:
+- `ready` — grounded in the source, structurally complete, ready for curator review
+- `ambiguous` — multiple valid interpretations or unclear mapping; set `ambiguity_note:` explaining what the curator must decide
+- `blocked` — too vague or ungrounded to review; default is skip
 
 ## After extraction
 
-List all candidate objects, numbered. Then state:
-- How many were extracted
+List all draft files written under `_intake/drafts/`, numbered. Then state:
+- How many drafts were written
 - What was skipped and why (e.g. "2 items skipped: too vague / already in knowledge/index.md")
 
-Wait for the user to approve, reject, or revise each item before writing anything to `knowledge/`.
+Run the linter per [verify-drafts.md](verify-drafts.md) before presenting drafts to the curator. Wait for approval before promoting anything to `knowledge/`.

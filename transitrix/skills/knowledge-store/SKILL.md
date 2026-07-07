@@ -1,6 +1,6 @@
 ---
 name: Transitrix Knowledge Store
-description: Ingest raw source material into the OKF single-repo MVP knowledge store — assess, archive, route to the OKF track (extract knowledge objects → human review → write to knowledge/) and/or the Canon track (extract Transitrix primitives → PR to canon/), and log every decision.
+description: Ingest raw source material into the OKF single-repo MVP knowledge store — assess, archive, route to the OKF track (extract drafts → verify → human review → promote to knowledge/) and/or the Canon track (extract Transitrix primitives → PR to canon/), and log every decision.
 when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", or drops a file into `_intake/inbox/` and wants it processed.
 min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
@@ -14,15 +14,15 @@ Processes raw source material through the OKF single-repo MVP knowledge store. A
 
 ## The one rule
 
-**Propose, never write canon unilaterally.** For the OKF track, the agent drafts knowledge object chunks and presents them to the user for review before writing to `knowledge/`. For the Canon track, the agent opens a PR to `canon/` — it never merges it. The human gate is the only admission authority.
+**Propose, never promote unilaterally.** For the OKF track, the agent writes drafts to `_intake/drafts/` only — never directly to `knowledge/`. For the Canon track, the agent opens a PR to `canon/` — it never merges it. The human gate is the only admission authority.
 
-**Run the quality gates before promotion.** After writing approved objects to `knowledge/` (Step 4c), run the knowledge-store linter and fix every error before presenting the batch as done:
+**Run the quality gates before and after promotion.** After writing drafts (Step 4a) and again after promoting approved objects to `knowledge/` (Step 4d), run the knowledge-store linter and fix every error:
 
 ```bash
 python3 tools/knowledge_store_lint.py .
 ```
 
-The linter enforces Gates 1–5 from [patterns/knowledge-store.md §Quality gates](../../../../patterns/knowledge-store.md). Errors block promotion; warnings (duplicate titles, `confidence: assumed` with high dependents, epistemic ordering) require explicit human acknowledgment in `_intake/log.md`. See [tests/README.md](tests/README.md) for the KS-001..014 code reference.
+The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gates](../../../../patterns/knowledge-store.md). Errors block promotion; warnings require explicit human acknowledgment in `_intake/log.md`. See [tests/README.md](tests/README.md) for the KS-001..017 code reference.
 
 ---
 
@@ -35,14 +35,15 @@ _intake/
   inbox/        ← source files waiting for processing
   originals/    ← raw source files (gitignored)
   processed/    ← OKF source-document records (committed)
-  log.md        ← all events: [route] / [admit] / [assert]
+  drafts/       ← proposer output (Gate 6 — not cited; not promoted)
+  log.md        ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
 
 knowledge/
   index.md      ← bundle index (auto-maintained)
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-If `_intake/` or `knowledge/` are missing, scaffold them now. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*`.
+If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs).
 
 ---
 
@@ -97,46 +98,54 @@ Append to `_intake/log.md`:
 
 ## Step 4 — OKF track (if `okf` in tracks)
 
-### 4a — Extract knowledge object drafts
+### 4a — Propose drafts (Gate 6)
 
-Read the source document from `_intake/originals/` (or the processed record). Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects. Each object:
+Read the source document from `_intake/originals/` (or the processed record). Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects and **write each to `_intake/drafts/<slug>.md`** using the template at [patterns/knowledge-store-templates/okf-knowledge-object-draft.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object-draft.md).
 
+Each draft:
 - has a clear, discrete idea (one concept per file)
-- carries `type:` — choose from: `insight`, `finding`, `concept`, `question` (or descriptive alternatives)
-- carries `confidence:` — inherited from the source unless the specific claim warrants a lower rating
-- carries `source:` — bundle-relative path to the processed source-document record
-- carries `description:` — one sentence
+- carries `type:`, `confidence:`, `source:`, `description:` as for promoted objects
+- carries `review_status:` — `ready` (grounded, linter-clean candidate), `ambiguous` (needs human judgement; set non-empty `ambiguity_note:`), or `blocked` (too vague to review; skip by default)
+- carries `mapping:` / `conflicts_with:` when relating to existing knowledge (Gate 2)
 
-Present the full list of drafts to the user for review. Number each chunk. State what was skipped and why (too vague, duplicate of existing object, etc.).
+Do **not** write to `knowledge/` at this step.
 
-### 4b — User review gate
+### 4b — Verify drafts
 
-Wait for the user to approve, reject, or revise each chunk. Do not write anything to `knowledge/` until you have explicit approval.
+Follow [prompts/verify-drafts.md](prompts/verify-drafts.md). Run `python3 tools/knowledge_store_lint.py .` and fix every **error** on draft paths before presenting the batch. Then present drafts grouped by `review_status` (ready / ambiguous / blocked). State what was skipped and why.
 
-### 4c — Write approved objects
+### 4c — User review gate
 
-For each approved chunk, write to `knowledge/<slug>.md` using the template at [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md).
+Wait for the user to approve, reject, or revise each draft. Do not promote anything to `knowledge/` until you have explicit approval. For ambiguous drafts, log a hold (Step 4f) until resolved.
 
-Filename: kebab-case slug from the `title:`. Check for existing files with the same concept first — update rather than duplicate. Before admitting, classify the mapping per Gate 2 (`confirms` / `extends` / `proposes` / `conflicts`) and record it in the object's front matter (`mapping:`; `conflicts_with:` when `conflicts`).
+### 4d — Dispose approved drafts
 
-After all approved objects are written, run `python3 tools/knowledge_store_lint.py .` from the repo root. Fix every **error** before proceeding. Surface **warnings** (KS-008 duplicate title, KS-010 assumed-confidence + high dependents, KS-013 confidence ordering) to the user for explicit acknowledgment.
+For each approved draft, copy to `knowledge/<slug>.md` using [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md). **Remove** `review_status` and `ambiguity_note` from frontmatter. Delete the corresponding file under `_intake/drafts/`.
 
-### 4d — Regenerate knowledge/index.md
+Run `python3 tools/knowledge_store_lint.py .` again. Fix every **error** before proceeding. Surface **warnings** (KS-008, KS-010, KS-013) for explicit acknowledgment.
 
-After all approved objects are written, update `knowledge/index.md` to include new or updated rows. Do not remove rows for existing objects not touched in this ingestion.
+### 4e — Regenerate knowledge/index.md
 
-### 4e — Log admit decisions
+After all approved objects are promoted, update `knowledge/index.md` to include new or updated rows. Do not remove rows for existing objects not touched in this ingestion.
 
-Append to `_intake/log.md` for each admitted object:
+### 4f — Log admit decisions
+
+Append to `_intake/log.md` for each promoted object:
 
 ```markdown
 - [admit] `<knowledge-object-filename>` ← `<source-document-filename>` | approved | <one-line note>
 ```
 
-For each rejected chunk:
+For each rejected draft:
 
 ```markdown
 - [admit] rejected: "<title>" | reason: <one-line reason>
+```
+
+For each ambiguous draft held for review:
+
+```markdown
+- [ambig] `<draft-filename>` | <ambiguity_note one-liner> | held for review
 ```
 
 For each object held because it **conflicts** with existing knowledge (not admitted until reviewed):
@@ -194,7 +203,7 @@ Or for rejected:
 ## What this skill does NOT do
 
 - Does not merge PRs. The canon gate is always a human.
-- Does not write to `knowledge/` before user review of chunks.
+- Does not write to `knowledge/` before user review of drafts (Gate 6 — drafts land in `_intake/drafts/` only).
 - Does not assign `extraction_confidence: high` to relations — relations are flagged `medium` or lower unless the source text is unambiguous.
 - Does not remove existing knowledge objects. Only add or update.
 - Does not process multiple documents in the same run unless explicitly asked — one source per run keeps the log clean.
