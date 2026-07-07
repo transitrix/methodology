@@ -16,6 +16,14 @@ Processes raw source material through the OKF single-repo MVP knowledge store. A
 
 **Propose, never write canon unilaterally.** For the OKF track, the agent drafts knowledge object chunks and presents them to the user for review before writing to `knowledge/`. For the Canon track, the agent opens a PR to `canon/` — it never merges it. The human gate is the only admission authority.
 
+**Run the quality gates before promotion.** After writing approved objects to `knowledge/` (Step 4c), run the knowledge-store linter and fix every error before presenting the batch as done:
+
+```bash
+python3 tools/knowledge_store_lint.py .
+```
+
+The linter enforces Gates 1–4 from [patterns/knowledge-store.md §Quality gates](../../../../patterns/knowledge-store.md). Errors block promotion; warnings (duplicate titles, `confidence: assumed` with high dependents) require explicit human acknowledgment in `_intake/log.md`. See [tests/README.md](tests/README.md) for the KS-001..010 code reference.
+
 ---
 
 ## Step 0 — Check the MVP structure
@@ -109,7 +117,9 @@ Wait for the user to approve, reject, or revise each chunk. Do not write anythin
 
 For each approved chunk, write to `knowledge/<slug>.md` using the template at [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md).
 
-Filename: kebab-case slug from the `title:`. Check for existing files with the same concept first — update rather than duplicate.
+Filename: kebab-case slug from the `title:`. Check for existing files with the same concept first — update rather than duplicate. Before admitting, classify the mapping per Gate 2 (Confirms / Extends / Proposes / Conflicts) and note it in the admit log entry.
+
+After all approved objects are written, run `python3 tools/knowledge_store_lint.py .` from the repo root. Fix every **error** before proceeding. Surface **warnings** (KS-008 duplicate title, KS-010 assumed-confidence + high dependents) to the user for explicit acknowledgment.
 
 ### 4d — Regenerate knowledge/index.md
 

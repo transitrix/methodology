@@ -142,6 +142,23 @@ What it MAY NOT vary: the four admission rules, the risk-tier table, and the man
 
 **Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1-4 over `_intake/processed/` and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), and blast-radius tiering with the assumed-confidence review flag (Gate 3-4). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same four gates. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
 
+**Validation codes (reference implementation):**
+
+| Code | Severity | Gate | Description |
+|---|---|---|---|
+| `KS-001` | error | — | Frontmatter block missing or not valid YAML. |
+| `KS-002` | error | — | Missing required field `type:`. |
+| `KS-003` | error | 1 | `_intake/processed/` record does not carry `type: source-document` (quarantine violation). |
+| `KS-004` | error | 4 | Missing `source:` on an intake record — blocks admission. |
+| `KS-005` | error | 4 | Missing or invalid `confidence:` on a knowledge object — blocks promotion. |
+| `KS-006` | warning | 4 | Missing `timestamp:` on a knowledge object (recommended). |
+| `KS-007` | error | 6 | Dangling bundle-relative link (`/knowledge/…`) in object body. |
+| `KS-008` | warning | 2 | Title similarity suggests a possible duplicate — confirm Confirms/Extends, not silent mint. |
+| `KS-009` | info | 3 | Blast-radius tier (Low / Medium / High) from dependent-object count. |
+| `KS-010` | warning | 4 | `confidence: assumed` with 3+ dependents — requires review note in `_intake/log.md`. |
+
+Integrity test harness: [`transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py`](../transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py) (CI job `knowledge-store-lint-test`).
+
 ---
 
 
