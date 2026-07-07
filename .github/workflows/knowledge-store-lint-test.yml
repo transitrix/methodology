@@ -1,0 +1,35 @@
+name: Knowledge store lint test
+
+# Deterministic guard for tools/knowledge_store_lint.py and the Knowledge Store
+# skill — quality gates reference implementation per patterns/knowledge-store.md.
+# Harness: transitrix/skills/knowledge-store/tests/README.md
+
+on:
+  pull_request:
+    paths:
+      - 'tools/knowledge_store_lint.py'
+      - 'patterns/knowledge-store.md'
+      - 'transitrix/skills/knowledge-store/**'
+      - '.github/workflows/knowledge-store-lint-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:45 UTC — weekly safety net alongside ingest/onboard tests.
+    - cron: '45 9 * * 1'
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run Knowledge Store lint integrity test
+        run: python transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py
