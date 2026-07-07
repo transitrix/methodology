@@ -128,9 +128,23 @@ Every object in the knowledge store — source-document records and knowledge ob
 
 **Rationale:** downstream consumers — human analysts and AI agents alike — need to know how much to trust each object and where it came from. Removing provenance makes the knowledge store an assertion engine with no accountability.
 
+### Gate 5 — Scoped consistency (open tier)
+
+The first-build gates (1–4) catch shape, provenance, and duplicate *candidates*. Gate 5 adds **deterministic consistency rules** over admitted knowledge objects — contradictions and epistemic ordering that a structural linter can check without NLP or OWL reasoning.
+
+**Open-tier rules (methodology-owned, shipped in the reference linter):**
+
+| Rule | What it checks |
+|---|---|
+| **Mapping vocabulary** | Optional `mapping:` on a knowledge object MUST be one of `confirms` / `extends` / `proposes` / `conflicts` (Gate 2 vocabulary). |
+| **Declared conflicts** | `mapping: conflicts` MUST name the contradicted target in `conflicts_with:` (a `/knowledge/…` path or typed canon id). The object MUST NOT be treated as promoted until a human records the hold in `_intake/log.md`. |
+| **Confidence ordering** | A knowledge object's `confidence:` MUST NOT rank higher than the `source-document` it cites when that source resolves to an `_intake/processed/` record (`assumed` < `inferred` < `observed`). |
+
+**Out of scope for the open tier:** semantic contradiction detection (natural-language "these two paragraphs disagree"), cross-store reasoning, or canon-graph traversal beyond the explicit `conflicts_with:` pointer. Those belong to the proprietary advanced reasoner in DSM (see boundary below) — the open tier stays useful standalone without it.
+
 ### Methodology ↔ implementation boundary
 
-The four gates above are **methodology properties**: they hold regardless of which tool enforces them. A conformant implementation — whether Studio, DSM, a custom ingest pipeline, or a manual curation process — MUST satisfy all four gates at the boundaries described.
+The four gates above are **methodology properties**: they hold regardless of which tool enforces them. A conformant implementation — whether Studio, DSM, a custom ingest pipeline, or a manual curation process — MUST satisfy all four gates at the boundaries described. Gate 5 open-tier rules are likewise methodology properties; the advanced contradiction engine is not.
 
 What a conformant implementation MAY vary:
 - The mechanism for computing dependent counts (graph query, static analysis, cached index)
@@ -140,7 +154,9 @@ What a conformant implementation MAY vary:
 
 What it MAY NOT vary: the four admission rules, the risk-tier table, and the mandatory-field requirements.
 
-**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1-4 over `_intake/processed/` and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), and blast-radius tiering with the assumed-confidence review flag (Gate 3-4). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same four gates. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
+What it MAY NOT vary: the four admission rules, the risk-tier table, the mandatory-field requirements, and the Gate 5 open-tier consistency rules.
+
+**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1–5 over `_intake/processed/` and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), blast-radius tiering with the assumed-confidence review flag (Gate 3–4), and scoped consistency checks (Gate 5 open tier). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same rules. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
 
 **Validation codes (reference implementation):**
 
@@ -156,6 +172,10 @@ What it MAY NOT vary: the four admission rules, the risk-tier table, and the man
 | `KS-008` | warning | 2 | Title similarity suggests a possible duplicate — confirm Confirms/Extends, not silent mint. |
 | `KS-009` | info | 3 | Blast-radius tier (Low / Medium / High) from dependent-object count. |
 | `KS-010` | warning | 4 | `confidence: assumed` with 3+ dependents — requires review note in `_intake/log.md`. |
+| `KS-011` | error | 5 | `mapping:` present but not one of `confirms` / `extends` / `proposes` / `conflicts`. |
+| `KS-012` | error | 5 | `mapping: conflicts` without a resolvable `conflicts_with:` target. |
+| `KS-013` | warning | 5 | Knowledge-object `confidence:` ranks higher than its cited source-document (epistemic ordering violation). |
+| `KS-014` | error | 5 | `mapping: conflicts` without a matching `[conflicts]` hold entry in `_intake/log.md`. |
 
 Integrity test harness: [`transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py`](../transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py) (CI job `knowledge-store-lint-test`).
 

@@ -8,11 +8,12 @@ script validates the knowledge store's refinement layer instead:
 _intake/processed/ (OKF source-document records) and knowledge/ (OKF
 knowledge objects), per the Quality gates in patterns/knowledge-store.md.
 
-This is the "proof point" reference implementation for the four quality
-gates: the methodology owns the rules (documented in
-patterns/knowledge-store.md), this script is one conformant enforcement
-of them. A different implementation (Studio, DSM, a custom pipeline) MAY
-use a different shape/dedup engine as long as it satisfies the same rules.
+This is the "proof point" reference implementation for the five quality
+gates (Gates 1–4 plus Gate 5 open-tier consistency): the methodology owns
+the rules (documented in patterns/knowledge-store.md), this script is one
+conformant enforcement of them. A different implementation (Studio, DSM, a
+custom pipeline) MAY use a different shape/dedup engine as long as it
+satisfies the same rules.
 """
 
 import os
@@ -28,6 +29,9 @@ import yaml
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.DOTALL)
 BUNDLE_LINK_RE = re.compile(r"\]\((/knowledge/[^)\s]+\.md)\)")
 CONFIDENCE_ENUM = {"observed", "inferred", "assumed"}
+CONFIDENCE_RANK = {"assumed": 0, "inferred": 1, "observed": 2}
+MAPPING_ENUM = {"confirms", "extends", "proposes", "conflicts"}
+CANON_ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
 DUP_TITLE_SIMILARITY_THRESHOLD = 0.85
 HIGH_DEPENDENTS_THRESHOLD = 10
 MEDIUM_DEPENDENTS_THRESHOLD = 2
@@ -56,6 +60,7 @@ class KnowledgeStoreLinter:
         self.root = Path(root)
         self.intake_dir = self.root / "_intake" / "processed"
         self.knowledge_dir = self.root / "knowledge"
+        self.log_path = self.root / "_intake" / "log.md"
         self.findings: List[Finding] = []
         self.objects: List[KnowledgeObject] = []
 
@@ -73,6 +78,7 @@ class KnowledgeStoreLinter:
         self._check_referential_integrity()
         self._check_duplicates()
         self._check_blast_radius_and_confidence()
+        self._check_consistency()
 
         self._report()
         errors = [f for f in self.findings if f.severity == "error"]
@@ -224,6 +230,107 @@ class KnowledgeStoreLinter:
                     f"MUST NOT be promoted without a review note in _intake/log.md explaining the "
                     f"assumption (Gate 4).",
                 ))
+
+    # --- scoped consistency (Gate 5 open tier) ---------------------------
+
+    def _norm_source_path(self, source: str) -> str:
+        s = str(source).strip().replace("\\", "/")
+        if s.startswith("/"):
+            s = s.lstrip("/")
+        return s
+
+    def _intake_by_rel(self) -> Dict[str, KnowledgeObject]:
+        return {o.rel_path: o for o in self.objects if o.zone == "intake"}
+
+    def _knowledge_by_rel(self) -> Dict[str, KnowledgeObject]:
+        return {o.rel_path: o for o in self.objects if o.zone == "knowledge"}
+
+    def _resolve_intake_source(self, source: Optional[str]) -> Optional[KnowledgeObject]:
+        if not source:
+            return None
+        norm = self._norm_source_path(source)
+        intake = self._intake_by_rel()
+        if norm in intake:
+            return intake[norm]
+        # Also match when source omits leading path segments.
+        for rel, obj in intake.items():
+            if rel.endswith("/" + norm) or rel == norm:
+                return obj
+        return None
+
+    def _conflicts_with_resolves(self, target: str, knowledge: Dict[str, KnowledgeObject]) -> bool:
+        if not target:
+            return False
+        t = str(target).strip()
+        if t.startswith("/"):
+            t = t.lstrip("/")
+        if t in knowledge:
+            return True
+        if CANON_ID_RE.match(t):
+            return True
+        return False
+
+    def _log_text(self) -> str:
+        try:
+            return self.log_path.read_text(encoding="utf-8")
+        except OSError:
+            return ""
+
+    def _has_conflicts_log_entry(self, obj: KnowledgeObject) -> bool:
+        text = self._log_text()
+        if not text:
+            return False
+        base = obj.path.name
+        for line in text.splitlines():
+            if "[conflicts]" not in line.lower():
+                continue
+            if base in line or obj.rel_path in line:
+                return True
+        return False
+
+    def _check_consistency(self):
+        knowledge = self._knowledge_by_rel()
+        for obj in self.objects:
+            if obj.zone != "knowledge":
+                continue
+            fm = obj.frontmatter
+            mapping = fm.get("mapping")
+            if mapping is not None:
+                if mapping not in MAPPING_ENUM:
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-011", "error",
+                        f"`mapping: {mapping}` is not one of {sorted(MAPPING_ENUM)} (Gate 5 / Gate 2 vocabulary).",
+                    ))
+                elif mapping == "conflicts":
+                    target = fm.get("conflicts_with")
+                    if not self._conflicts_with_resolves(str(target or ""), knowledge):
+                        self.findings.append(Finding(
+                            obj.rel_path, "KS-012", "error",
+                            "`mapping: conflicts` requires a resolvable `conflicts_with:` "
+                            "(`/knowledge/…` path to an existing object, or a typed canon id).",
+                        ))
+                    if not self._has_conflicts_log_entry(obj):
+                        self.findings.append(Finding(
+                            obj.rel_path, "KS-014", "error",
+                            "`mapping: conflicts` requires a `[conflicts]` hold entry in "
+                            "_intake/log.md before promotion (Gate 5).",
+                        ))
+
+            src = self._resolve_intake_source(fm.get("source"))
+            if src:
+                obj_conf = fm.get("confidence")
+                src_conf = src.frontmatter.get("confidence")
+                if (
+                    obj_conf in CONFIDENCE_RANK
+                    and src_conf in CONFIDENCE_RANK
+                    and CONFIDENCE_RANK[obj_conf] > CONFIDENCE_RANK[src_conf]
+                ):
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-013", "warning",
+                        f"`confidence: {obj_conf}` ranks higher than the cited source-document "
+                        f"`{src.rel_path}` (`confidence: {src_conf}`) — epistemic ordering "
+                        f"violation (Gate 5). Downgrade the object or upgrade the source assessment.",
+                    ))
 
     # --- reporting -------------------------------------------------------
 

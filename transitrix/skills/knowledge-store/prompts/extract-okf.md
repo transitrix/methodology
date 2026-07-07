@@ -29,6 +29,8 @@ description: "<one-sentence summary>"
 source: /_intake/processed/<source-document-filename>
 created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
+mapping: confirms | extends | proposes | conflicts   # optional — classify against existing knowledge
+conflicts_with: ""   # when mapping: conflicts — path to contradicted /knowledge/ object or canon id
 tags: [<topic>, ...]
 ---
 
@@ -44,6 +46,16 @@ Inherit from the source document's `confidence:` unless the specific claim warra
 - `observed` → direct evidence in the source text (measurements, quotes, examples)
 - `inferred` → logical derivation from the source, not explicitly stated
 - `assumed` → hedged or uncorroborated claim in the source
+
+## Mapping classification (Gate 2)
+
+When a candidate relates to something already in `knowledge/index.md`, set `mapping:`:
+- `confirms` — restates or corroborates an existing object
+- `extends` — adds detail without contradicting
+- `proposes` — new claim not yet in the store
+- `conflicts` — contradicts an existing object or canon assertion; set `conflicts_with:` to the `/knowledge/…` path or typed canon id
+
+Do not admit `mapping: conflicts` objects without flagging them for human review.
 
 ## After extraction
 
