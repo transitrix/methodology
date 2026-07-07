@@ -148,13 +148,13 @@ valid_to: null
 
 ---
 
-## 4. Inline authoring before promotion
+## 4. Authoring — standalone files only (v2.0)
 
-An `ACTION` entry authored **inline inside a view document** (a schedule document `*.action.transitrix.yaml` or a DGCA `*.dgca.transitrix.yaml`) uses the same field set as the standalone element but without the admission record and lifecycle block — those belong on the view document itself. Inline `id` values (e.g. `A-001`, `PHASE-DESIGN`) are document-local and do not resolve to canonical `ACTION-…` IDs.
+From methodology v2.0, ACTION elements are authored exclusively as standalone files in `canon/elements/05_implementation/actions/`, following the canonical envelope (§2). View documents (`*.action.transitrix.yaml`, `*.dgca.transitrix.yaml`) are pure projections over these files — they carry only `view_config` and never inline element data.
 
-**Promotion** to a standalone element file happens when the action is **first referenced from a second document** (§1 promotion rule, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1). At promotion: assign a canonical `ACTION-…` ID, move the fields to the standalone envelope (this schema), update the view document's entry to reference the canonical ID. The document-local ID retires.
+**v1 inline form (historical).** In v1, an `ACTION` entry could be authored inline inside a schedule document. Document-local IDs (e.g. `A-001`, `PHASE-DESIGN`) were valid inline — they did not resolve to canonical `ACTION-…` IDs. The migration recipe (`migrations/1.0-to-2.0/`) automates extraction of inline entries to standalone element files.
 
-Inline shape: [views/07-action.md](../views/07-action.md) §5.2 (schedule document), [views/02-dgca.md](../views/02-dgca.md) §5.5 (DGCA).
+View spec: [views/07-action.md](../views/07-action.md) (pure projection, v2.0).
 
 ---
 

@@ -182,7 +182,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 
 ### 4.1 Why these assignments
 
-- **The strategy chain (`DRIVER` / `GOAL` / `CHANGE` / `ACTION`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, FGCA, FGA, Action schedule, Scenarios, and Issues; a `DRIVER` in FGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 already mandates their catalogue uniqueness when cross-referenced. The flat FGCA/FGA/Goals/Action schedule documents remain the authoring surface (README "Form rule"); the catalogue file is the canonical record once an element is shared. Defining their element-file shape (§7.1–§7.4) is exactly what unblocks the elements-population that surfaced this task.
+- **The strategy chain (`DRIVER` / `GOAL` / `CHANGE` / `ACTION`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, DGCA, FGA, Action schedule, Scenarios, and Issues; a `DRIVER` in DGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 mandates their catalogue uniqueness when cross-referenced. All five strategy-chain view notations — `02-dgca.md` ("No element data is authored inline"), `23-actions-tree.md` ("projection configuration, not an authoring surface"), `18-action-card.md` (explicit "View-purity" section), `04-goals.md` (pure projection, v2.0), and `07-action.md` (pure projection, v2.0) — are **pure projections over the standalone element catalogue**. Element data (name, description, goals, duration, predecessors, etc.) is authored exclusively in the standalone element files; the view documents carry only `view_config` (scope, display, schedule settings). Defining their element-file shape (§7.1–§7.4) is what enabled this complete view-purity migration.
 - **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
 - **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
@@ -283,13 +283,14 @@ Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.2.
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `type` | no | string | A goal-type label (e.g. `Strategy`, `Strategic Goal`, `Project Goal`) — drawn from the Goals-tree `goal_types[]` vocabulary ([views/04-goals.md](views/04-goals.md)). |
+| `type` | no | string | A goal-type label (e.g. `Strategy`, `Strategic Goal`, `Project Goal`) — matches a `name` in the rendering view's `view_config.goal_types[]` vocabulary ([views/04-goals.md](views/04-goals.md) §5.2). |
 | `level` | no | integer | Hierarchical level (Goals tree); ≥ 0. |
+| `parent` | no | string | `GOAL-…` ID of the parent goal in the hierarchy. Inline `parent` is v0.x transitional — see time-aware note below. |
 | `factors` | no | list | `DRIVER-…` IDs driving this goal. Legacy `FACTOR-…` IDs from before the rename remain valid. |
 | `description` | recommended | string | One-paragraph elaboration. |
 | `link` | no | string | URL to supplementary documentation. |
 
-**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — it lives in a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3), not as an inline `parent` field. Inline `parent` is v0.x transitional. Inline shape: [views/04-goals.md](views/04-goals.md), [views/02-dgca.md](views/02-dgca.md) §5.3.
+**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — its canonical home is a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3). Inline `parent` is v0.x transitional; renderers prefer REL files when both are present. View spec: [views/04-goals.md](views/04-goals.md) (pure projection, v2.0).
 
 ### 7.3 `CHANGE` — `05_implementation/changes/`
 
@@ -371,7 +372,7 @@ Both surface as impacted, without any per-CHANGE bookkeeping: the derivation fol
 
 ### 7.4 `ACTION` — `05_implementation/actions/`
 
-Full spec — field set, `type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, inline authoring, validation rules: **[elements/24-action.md](elements/24-action.md)**.
+Full spec — field set, `type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, validation rules: **[elements/24-action.md](elements/24-action.md)**. View spec (pure projection, v2.0): [views/07-action.md](views/07-action.md).
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 

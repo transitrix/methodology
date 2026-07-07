@@ -44,6 +44,9 @@ const VERSION_PIN_ALLOWLIST = new Set([
   'migrations/0.7-to-1.0/README.md',                    // documents the source version, not the current pin
   'migrations/0.7-to-1.0/fixtures/before/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',  // pre-migration fixture
   'migrations/0.7-to-1.0/fixtures/after/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',   // post-migration fixture
+  'migrations/1.0-to-2.0/README.md',                    // documents the target version, not the current pin
+  'migrations/1.0-to-2.0/fixtures/after/canon/views/goals/strategy-2026.goals.transitrix.yaml',   // post-migration fixture
+  'migrations/1.0-to-2.0/fixtures/after/canon/views/action/platform-launch.action.transitrix.yaml', // post-migration fixture
 ]);
 
 // Directories never walked.

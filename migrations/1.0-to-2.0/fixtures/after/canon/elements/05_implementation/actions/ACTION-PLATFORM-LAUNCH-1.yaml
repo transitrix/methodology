@@ -1,0 +1,16 @@
+notation: action
+id: ACTION-PLATFORM-LAUNCH-1
+name: "Platform Launch Initiative"
+type: Initiative
+goals: [GOAL-EU-1]
+
+zone: canon
+admitted_at: "2026-01-15"
+admitted_by: "migration-1.0-to-2.0"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-15"
+valid_to: null

@@ -1,0 +1,17 @@
+notation: goal
+id: GOAL-EU-1
+name: "Launch in 3 EU markets"
+type: "Strategic Goal"
+level: 1
+parent: GOAL-REVENUE-1
+
+zone: canon
+admitted_at: "2026-05-26"
+admitted_by: "migration-1.0-to-2.0"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-05-26"
+valid_to: null

@@ -1,6 +1,6 @@
 notation: dgca
 spec_version: "0.1"
-methodology_version: "1.0.0"
+methodology_version: "2.0.0"
 
 id: DGCA-STRATEGY-2026-DGA
 name: "Strategy 2026 — DGA view"

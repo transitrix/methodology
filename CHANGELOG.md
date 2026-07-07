@@ -6,6 +6,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [2.0.0] — 2026-07-06
+
+### Breaking changes
+
+- **BREAKING: Goals Tree — inline `goals[]` removed.** `*.goals.transitrix.yaml` files may no longer carry a root-level `goals:` array. All `GOAL-*` elements must be standalone files under `canon/elements/01_motivation/goals/`. View files carry only `view_config` (scope + goal_types + display). Validator emits `GOALS-008` error on inline `goals[]`. Migration recipe: [`migrations/1.0-to-2.0/`](migrations/1.0-to-2.0/) Transform A. (#514)
+- **BREAKING: Action Schedule — inline `actions[]` removed.** `*.action.transitrix.yaml` files may no longer carry a root-level `actions:` or `activities:` array. All `ACTION-*` elements must be standalone files under `canon/elements/05_implementation/actions/`. View files carry only `view_config` (scope + schedule + display). Validator emits `ACT-010` error on inline `actions[]`. Migration recipe: [`migrations/1.0-to-2.0/`](migrations/1.0-to-2.0/) Transform B. (#514)
+- **BREAKING: Action Schedule document ID format.** The document root must carry an `id: ACTION_SCHED-[<middle>-]<INTEGER>` field. The old `title:` field is replaced by `name:`. (#514)
+
+### Added
+
+- **`migrations/1.0-to-2.0/`** — migration recipe: codemod (`codemod.mjs`), validator (`validate.mjs`), fixtures (`fixtures/before/`, `fixtures/after/`), and README. Automates extraction of inline `goals[]` and `actions[]` to standalone element files and rewrites view files to `view_config` format. (#514)
+- **`notations/views/04-goals.md` v1.0** — Goals Tree respecified as a pure projection. New fields: `id` (`GOALS-…`), `view_config.scope` (root_goal, period, type_filter, valid_at), `view_config.goal_types[]`, `view_config.display` (depth, collapsed). Validation codes `GOALS-001..008`. (#514)
+- **`notations/views/07-action.md` v2.0** — Action Schedule respecified as a pure projection. New fields: `id` (`ACTION_SCHED-…`), `view_config.scope` (root_action, goals, type_filter, valid_at), `view_config.schedule` (start_date, calendar), `view_config.display` (view, depth, collapsed). Validation codes `ACT-001..010`, `ACT-020`. (#514)
+
+### Changed
+
+- **`notations/ELEMENT_PRIMITIVES.md` §4.1** — strategy-chain view-purity prose updated to reflect that all five strategy-chain notations are now pure projections (DGCA, Actions Tree, Action Card, Goals Tree, Action Schedule). (#514)
+- **`notations/elements/24-action.md` §4** — inline authoring section replaced with "standalone files only (v2.0)" note; inline form documented as historical v1 behaviour. (#514)
+
+---
+
 ## [1.0.0] — 2026-07-05
 
 The first stable release. Schema is frozen; all pre-1.0 deprecation-window
