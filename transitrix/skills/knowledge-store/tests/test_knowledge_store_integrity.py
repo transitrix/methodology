@@ -2,8 +2,8 @@
 """Deterministic integrity test for the Knowledge Store quality gates.
 
 Runs tools/knowledge_store_lint.py against fixture bundles and synthetic
-failure cases. Covers KS-001 through KS-010 — the reference implementation
-of Gates 1-4 from patterns/knowledge-store.md.
+failure cases. Covers KS-001 through KS-014 — the reference implementation
+of Gates 1-5 from patterns/knowledge-store.md.
 
 Run:  python transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py
 Exit: 0 = all pass; 1 = a check failed.
@@ -175,6 +175,61 @@ See [core](/knowledge/core-vocabulary.md).
     print("  OK\n")
 
 
+def part_e_gate5_consistency():
+    print("Part E — Gate 5 scoped consistency")
+
+    def bad_mapping(root):
+        path = os.path.join(root, "knowledge", "order-fulfilment-bottleneck.md")
+        text = open(path, encoding="utf-8").read()
+        text = text.replace("confidence: inferred", "confidence: inferred\nmapping: duplicate")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    code, out = _with_copy(bad_mapping)
+    check(code != 0 and "KS-011" in out, f"Invalid mapping should fail KS-011; code={code}\n{out}")
+
+    def conflicts_no_target(root):
+        path = os.path.join(root, "knowledge", "order-fulfilment-bottleneck.md")
+        text = open(path, encoding="utf-8").read()
+        text = text.replace("confidence: inferred", "confidence: inferred\nmapping: conflicts")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    code, out = _with_copy(conflicts_no_target)
+    check(code != 0 and "KS-012" in out, f"conflicts without target should fail KS-012; code={code}\n{out}")
+
+    def conflicts_no_log(root):
+        path = os.path.join(root, "knowledge", "order-fulfilment-bottleneck.md")
+        text = open(path, encoding="utf-8").read()
+        text = text.replace(
+            "confidence: inferred",
+            "confidence: inferred\nmapping: conflicts\n"
+            "conflicts_with: /knowledge/warehouse-finance-handoff.md",
+        )
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    code, out = _with_copy(conflicts_no_log)
+    check(code != 0 and "KS-014" in out, f"conflicts without log should fail KS-014; code={code}\n{out}")
+
+    def confidence_ordering(root):
+        intake_path = os.path.join(root, "_intake", "processed", "2026-07-01-cfo-interview.md")
+        intake_text = open(intake_path, encoding="utf-8").read().replace(
+            "confidence: observed", "confidence: inferred"
+        )
+        with open(intake_path, "w", encoding="utf-8") as f:
+            f.write(intake_text)
+        path = os.path.join(root, "knowledge", "order-fulfilment-bottleneck.md")
+        text = open(path, encoding="utf-8").read().replace("confidence: inferred", "confidence: observed")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    code, out = _with_copy(confidence_ordering)
+    check(code == 0 and "KS-013" in out, f"higher confidence than source should warn KS-013; code={code}\n{out}")
+
+    print("  OK\n")
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -182,6 +237,7 @@ def main():
     part_b_valid_fixture()
     part_c_gate_violations()
     part_d_warnings()
+    part_e_gate5_consistency()
 
     if _failures:
         print("FAILED:")

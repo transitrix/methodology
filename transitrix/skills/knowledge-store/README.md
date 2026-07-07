@@ -17,7 +17,7 @@ This directory is the **`knowledge-store` skill** within the `transitrix` plugin
 - [`SKILL.md`](SKILL.md) — the agent-facing protocol: five steps from document assessment through knowledge writing and canon PR.
 - [`prompts/extract-okf.md`](prompts/extract-okf.md) — extraction prompt for knowledge objects (OKF track).
 - [`prompts/extract-canon.md`](prompts/extract-canon.md) — extraction prompt for Transitrix primitives (Canon track).
-- [`tests/test_knowledge_store_integrity.py`](tests/test_knowledge_store_integrity.py) — deterministic CI guard for `tools/knowledge_store_lint.py` (KS-001..010).
+- [`tests/test_knowledge_store_integrity.py`](tests/test_knowledge_store_integrity.py) — deterministic CI guard for `tools/knowledge_store_lint.py` (KS-001..014).
 
 The skill reads its OKF templates from the methodology patterns directory:
 - [`patterns/knowledge-store-templates/okf-source-document.md`](../../../../patterns/knowledge-store-templates/okf-source-document.md)
