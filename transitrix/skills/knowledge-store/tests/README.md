@@ -1,6 +1,7 @@
 # Knowledge Store skill tests
 
-Deterministic integrity guard for epic [strategy#467](https://github.com/vkgeorgia/strategy/issues/467) — quality gates reference implementation.
+Deterministic integrity guard for the Knowledge Store quality gates reference
+implementation (`patterns/knowledge-store.md` §Quality gates).
 
 | Script | Purpose | When |
 |---|---|---|

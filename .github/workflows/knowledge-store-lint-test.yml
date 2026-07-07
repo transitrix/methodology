@@ -1,7 +1,7 @@
 name: Knowledge store lint test
 
 # Deterministic guard for tools/knowledge_store_lint.py and the Knowledge Store
-# skill — epic strategy#467 quality gates reference implementation.
+# skill — quality gates reference implementation per patterns/knowledge-store.md.
 # Harness: transitrix/skills/knowledge-store/tests/README.md
 
 on:

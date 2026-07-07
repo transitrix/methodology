@@ -3,7 +3,7 @@
 
 Runs tools/knowledge_store_lint.py against fixture bundles and synthetic
 failure cases. Covers KS-001 through KS-010 — the reference implementation
-of Gates 1-4 from patterns/knowledge-store.md (epic strategy#467).
+of Gates 1-4 from patterns/knowledge-store.md.
 
 Run:  python transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py
 Exit: 0 = all pass; 1 = a check failed.
@@ -134,9 +134,9 @@ def part_d_warnings():
     check("KS-009" in out, f"Valid fixture should emit KS-009 blast-radius info:\n{out}")
 
     def assumed_high_dependents(root):
-        # Create a hub object referenced by many others.
-        hub = os.path.join(root, "knowledge", "core-vocabulary.md")
-        with open(hub, "w", encoding="utf-8") as f:
+        # Create a widely-referenced object linked from many others.
+        core_vocab_path = os.path.join(root, "knowledge", "core-vocabulary.md")
+        with open(core_vocab_path, "w", encoding="utf-8") as f:
             f.write("""---
 type: concept
 title: Core vocabulary term
