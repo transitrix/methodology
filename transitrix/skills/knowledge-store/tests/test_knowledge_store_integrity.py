@@ -2,8 +2,8 @@
 """Deterministic integrity test for the Knowledge Store quality gates.
 
 Runs tools/knowledge_store_lint.py against fixture bundles and synthetic
-failure cases. Covers KS-001 through KS-014 — the reference implementation
-of Gates 1-5 from patterns/knowledge-store.md.
+failure cases. Covers KS-001 through KS-017 — the reference implementation
+of Gates 1-6 from patterns/knowledge-store.md.
 
 Run:  python transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py
 Exit: 0 = all pass; 1 = a check failed.
@@ -230,6 +230,72 @@ def part_e_gate5_consistency():
     print("  OK\n")
 
 
+def part_f_gate6_assisted_ingest():
+    print("Part F — Gate 6 assisted ingest")
+
+    def draft_missing_status(root):
+        drafts = os.path.join(root, "_intake", "drafts")
+        os.makedirs(drafts, exist_ok=True)
+        path = os.path.join(drafts, "candidate-insight.md")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("""---
+type: insight
+title: Candidate insight
+description: Draft without review_status.
+source: _intake/processed/2026-07-01-cfo-interview.md
+created_at: 2026-07-01
+confidence: inferred
+tags: [draft]
+timestamp: 2026-07-01T10:00:00Z
+---
+
+# Body
+
+Draft body.
+""")
+
+    code, out = _with_copy(draft_missing_status)
+    check(code != 0 and "KS-016" in out, f"Draft missing review_status should fail KS-016; code={code}\n{out}")
+
+    def draft_ambiguous_no_note(root):
+        drafts = os.path.join(root, "_intake", "drafts")
+        os.makedirs(drafts, exist_ok=True)
+        path = os.path.join(drafts, "ambiguous-insight.md")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("""---
+type: insight
+title: Ambiguous insight
+description: Needs human judgement.
+source: _intake/processed/2026-07-01-cfo-interview.md
+created_at: 2026-07-01
+confidence: inferred
+review_status: ambiguous
+tags: [draft]
+timestamp: 2026-07-01T10:00:00Z
+---
+
+# Body
+
+Unclear mapping.
+""")
+
+    code, out = _with_copy(draft_ambiguous_no_note)
+    check(code != 0 and "KS-017" in out, f"Ambiguous draft without note should fail KS-017; code={code}\n{out}")
+
+    def promoted_with_review_status(root):
+        path = os.path.join(root, "knowledge", "order-fulfilment-bottleneck.md")
+        text = open(path, encoding="utf-8").read().replace(
+            "confidence: inferred", "confidence: inferred\nreview_status: ready"
+        )
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    code, out = _with_copy(promoted_with_review_status)
+    check(code != 0 and "KS-015" in out, f"Promoted object with review_status should fail KS-015; code={code}\n{out}")
+
+    print("  OK\n")
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -238,6 +304,7 @@ def main():
     part_c_gate_violations()
     part_d_warnings()
     part_e_gate5_consistency()
+    part_f_gate6_assisted_ingest()
 
     if _failures:
         print("FAILED:")

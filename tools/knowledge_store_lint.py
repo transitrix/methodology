@@ -5,11 +5,12 @@ integrity, and duplicate detection over OKF knowledge objects.
 
 Companion to tools/lint.py (which validates canon/ YAML elements). This
 script validates the knowledge store's refinement layer instead:
-_intake/processed/ (OKF source-document records) and knowledge/ (OKF
-knowledge objects), per the Quality gates in patterns/knowledge-store.md.
+_intake/processed/ (OKF source-document records), _intake/drafts/ (proposer
+drafts), and knowledge/ (OKF knowledge objects), per the Quality gates in
+patterns/knowledge-store.md.
 
-This is the "proof point" reference implementation for the five quality
-gates (Gates 1–4 plus Gate 5 open-tier consistency): the methodology owns
+This is the "proof point" reference implementation for the six quality
+gates (Gates 1–4, Gate 5 open-tier consistency, Gate 6 assisted ingest): the methodology owns
 the rules (documented in patterns/knowledge-store.md), this script is one
 conformant enforcement of them. A different implementation (Studio, DSM, a
 custom pipeline) MAY use a different shape/dedup engine as long as it
@@ -32,6 +33,7 @@ CONFIDENCE_ENUM = {"observed", "inferred", "assumed"}
 CONFIDENCE_RANK = {"assumed": 0, "inferred": 1, "observed": 2}
 MAPPING_ENUM = {"confirms", "extends", "proposes", "conflicts"}
 CANON_ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
+REVIEW_STATUS_ENUM = {"ready", "ambiguous", "blocked"}
 DUP_TITLE_SIMILARITY_THRESHOLD = 0.85
 HIGH_DEPENDENTS_THRESHOLD = 10
 MEDIUM_DEPENDENTS_THRESHOLD = 2
@@ -52,13 +54,14 @@ class KnowledgeObject:
     rel_path: str
     frontmatter: Dict
     body: str
-    zone: str  # "intake" or "knowledge"
+    zone: str  # "intake", "draft", or "knowledge"
 
 
 class KnowledgeStoreLinter:
     def __init__(self, root: str = "."):
         self.root = Path(root)
         self.intake_dir = self.root / "_intake" / "processed"
+        self.drafts_dir = self.root / "_intake" / "drafts"
         self.knowledge_dir = self.root / "knowledge"
         self.log_path = self.root / "_intake" / "log.md"
         self.findings: List[Finding] = []
@@ -71,7 +74,7 @@ class KnowledgeStoreLinter:
 
         self._load_objects()
         if not self.objects:
-            print("No knowledge-store objects found under _intake/processed/ or knowledge/ — nothing to check.")
+            print("No knowledge-store objects found under _intake/processed/, _intake/drafts/, or knowledge/ — nothing to check.")
             return True
 
         self._check_structural()
@@ -79,6 +82,7 @@ class KnowledgeStoreLinter:
         self._check_duplicates()
         self._check_blast_radius_and_confidence()
         self._check_consistency()
+        self._check_assisted_ingest()
 
         self._report()
         errors = [f for f in self.findings if f.severity == "error"]
@@ -87,7 +91,11 @@ class KnowledgeStoreLinter:
     # --- loading -------------------------------------------------------
 
     def _load_objects(self):
-        for zone, directory in (("intake", self.intake_dir), ("knowledge", self.knowledge_dir)):
+        for zone, directory in (
+            ("intake", self.intake_dir),
+            ("draft", self.drafts_dir),
+            ("knowledge", self.knowledge_dir),
+        ):
             if not directory.exists():
                 continue
             for path in sorted(directory.rglob("*.md")):
@@ -138,12 +146,14 @@ class KnowledgeStoreLinter:
                         "Missing `source:` — required before admission to _intake/processed/ (Gate 4).",
                     ))
 
-            if obj.zone == "knowledge":
+            if obj.zone in ("knowledge", "draft"):
                 confidence = fm.get("confidence")
                 if not confidence:
                     self.findings.append(Finding(
                         obj.rel_path, "KS-005", "error",
-                        "Missing `confidence:` — required before promotion to knowledge/ (Gate 4). No default is permitted.",
+                        f"Missing `confidence:` — required before promotion to "
+                        f"{'knowledge/' if obj.zone == 'knowledge' else '_intake/drafts/'} "
+                        f"(Gate 4). No default is permitted.",
                     ))
                 elif confidence not in CONFIDENCE_ENUM:
                     self.findings.append(Finding(
@@ -154,6 +164,11 @@ class KnowledgeStoreLinter:
                     self.findings.append(Finding(
                         obj.rel_path, "KS-006", "warning",
                         "Missing `timestamp:` (recommended — tracks last modification).",
+                    ))
+                if not fm.get("source"):
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-004", "error",
+                        "Missing `source:` — required (Gate 4 provenance).",
                     ))
 
     # --- referential integrity (item 6a) --------------------------------
@@ -173,9 +188,9 @@ class KnowledgeStoreLinter:
     # --- duplicate detection (item 6b, Gate 2) --------------------------
 
     def _check_duplicates(self):
-        knowledge_objs = [o for o in self.objects if o.zone == "knowledge"]
+        promotable = [o for o in self.objects if o.zone in ("knowledge", "draft")]
         titles = []
-        for obj in knowledge_objs:
+        for obj in promotable:
             title = obj.frontmatter.get("title") or obj.path.stem
             titles.append((obj, str(title).strip().lower()))
 
@@ -291,7 +306,7 @@ class KnowledgeStoreLinter:
     def _check_consistency(self):
         knowledge = self._knowledge_by_rel()
         for obj in self.objects:
-            if obj.zone != "knowledge":
+            if obj.zone not in ("knowledge", "draft"):
                 continue
             fm = obj.frontmatter
             mapping = fm.get("mapping")
@@ -309,7 +324,7 @@ class KnowledgeStoreLinter:
                             "`mapping: conflicts` requires a resolvable `conflicts_with:` "
                             "(`/knowledge/…` path to an existing object, or a typed canon id).",
                         ))
-                    if not self._has_conflicts_log_entry(obj):
+                    if not self._has_conflicts_log_entry(obj) and obj.zone == "knowledge":
                         self.findings.append(Finding(
                             obj.rel_path, "KS-014", "error",
                             "`mapping: conflicts` requires a `[conflicts]` hold entry in "
@@ -331,6 +346,41 @@ class KnowledgeStoreLinter:
                         f"`{src.rel_path}` (`confidence: {src_conf}`) — epistemic ordering "
                         f"violation (Gate 5). Downgrade the object or upgrade the source assessment.",
                     ))
+
+    # --- assisted ingest (Gate 6) ----------------------------------------
+
+    def _check_assisted_ingest(self):
+        for obj in self.objects:
+            fm = obj.frontmatter
+            if obj.zone == "knowledge":
+                if fm.get("review_status") is not None:
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-015", "error",
+                        "`review_status:` is a draft-only field — remove it before promotion "
+                        "to knowledge/ (Gate 6).",
+                    ))
+                if fm.get("ambiguity_note"):
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-015", "error",
+                        "`ambiguity_note:` is a draft-only field — remove it before promotion "
+                        "to knowledge/ (Gate 6).",
+                    ))
+            elif obj.zone == "draft":
+                status = fm.get("review_status")
+                if status not in REVIEW_STATUS_ENUM:
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-016", "error",
+                        f"Draft requires `review_status:` one of {sorted(REVIEW_STATUS_ENUM)} "
+                        f"(Gate 6); found {status!r}.",
+                    ))
+                elif status == "ambiguous":
+                    note = fm.get("ambiguity_note")
+                    if not note or not str(note).strip():
+                        self.findings.append(Finding(
+                            obj.rel_path, "KS-017", "error",
+                            "`review_status: ambiguous` requires a non-empty `ambiguity_note:` "
+                            "(Gate 6).",
+                        ))
 
     # --- reporting -------------------------------------------------------
 
