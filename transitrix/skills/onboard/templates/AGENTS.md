@@ -4,6 +4,22 @@
 
 This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copilot, Windsurf, Gemini CLI, or another — operating inside an **adopter's** Transitrix repository how to behave. It is intentionally tool-neutral. It does **not** apply to assistants working on the methodology canon itself — that's a different repository with its own agent guide.
 
+---
+
+## Role split — choosing the right agent
+
+This repository ships with a **recommended set of specialised roles**. An assistant working inside this repo should pick the role that matches the task, because reading the model and writing the model need opposite context:
+
+| Role | File | Use when… |
+|---|---|---|
+| **Analyst** | [`ANALYST.md`](ANALYST.md) | Answering questions *about the organisation* — who owns X, what capabilities support goal Y, what breaks if app Z changes. Read-only; business language; cited retrieval from `canon/`. |
+| **Modeler** | This file (`AGENTS.md`) | Authoring or editing model files — creating elements, views, relations; validating files; running the onboarding or ingest skill. |
+| **Validator** *(coming)* | `VALIDATOR.md` | Reviewing a change before it lands — checking structure, relations, required fields, blast radius. |
+
+**Routing rule:** if the request is a question about the organisation → use the Analyst. If it involves writing or changing any file → use the Modeler (this guide). When in doubt, start with the Analyst; it will redirect you if the task requires writing.
+
+The Analyst requires a one-time MCP setup — see `ANALYST.md` §6 and the `.mcp.json` file at the repo root.
+
 ## Using this guide with your assistant
 
 `AGENTS.md` is the single, canonical, assistant-neutral guide for this repository — there is one source of truth, regardless of which assistant you use. Point your assistant at it:

@@ -126,6 +126,8 @@ After the directory tree exists, copy the three canonical root files from the sk
 - `templates/AGENTS.md` → `<repo-root>/AGENTS.md` — the assistant-neutral agent guide. It carries `ADOPTER-FILL-ME` placeholders the user should fill in later (language, confidentiality policy, task source — see its §7–9).
 - `templates/copilot-instructions.md` → `<repo-root>/.github/copilot-instructions.md` — the GitHub Copilot pointer that redirects to `AGENTS.md`.
 - `templates/transitrix.yaml` → `<repo-root>/transitrix.yaml` — the adopter manifest (schema: `notations/MANIFEST.md`). After copying, edit `notations:` to list only the notations the user picked in step 1 (plus `codex` if they will use the codex zone), and `zones:` to the subset of `canon, field, codex` they will maintain.
+- `templates/ANALYST.md` → `<repo-root>/ANALYST.md` — the **Analyst** role guide. The Analyst is a specialised read-only agent that answers questions about the organisation from the validated `canon/` model. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `ANALYST.md` instead of `AGENTS.md` when asking a business question.
+- `templates/analyst-mcp.json` → `<repo-root>/.mcp.json` — the MCP server configuration that backs the Analyst's cited retrieval. Points the `canon` MCP server at `canon/`. If the adopter repo already has a `.mcp.json`, merge the `"canon"` entry into the existing `mcpServers` object rather than overwriting the file.
 
 Additionally, write one generated file (no template — author it inline):
 
@@ -354,7 +356,7 @@ When in doubt, fetch the registry: `WebFetch https://raw.githubusercontent.com/t
 
 ## Templates
 
-The `${CLAUDE_SKILL_DIR}/templates/` directory contains starter files in three groups: **root scaffolding** (manifest + agent guide + Copilot pointer), **view notations** (one per `.transitrix.yaml` notation, placed in `canon/views/<notation>/`), and **codex zone primitives** (placed in `codex/external/<jurisdiction>/` or `codex/internal/`).
+The `${CLAUDE_SKILL_DIR}/templates/` directory contains starter files in three groups: **root scaffolding** (manifest + agent guides + Copilot pointer + MCP config), **view notations** (one per `.transitrix.yaml` notation, placed in `canon/views/<notation>/`), and **codex zone primitives** (placed in `codex/external/<jurisdiction>/` or `codex/internal/`).
 
 Each notation template carries the canonical `notation:` and `spec_version:` headers (per `notations/CONTRACT.md`), uses the canonical root key (or flat top-level arrays for the strategy-chain four), has placeholders labelled `FILL-ME`, and parses cleanly under the canonical validator.
 
@@ -363,7 +365,9 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | File | Template | Destination |
 |---|---|---|
 | Adopter manifest | `templates/transitrix.yaml` | `<repo-root>/transitrix.yaml` |
-| Agent guide (assistant-neutral) | `templates/AGENTS.md` | `<repo-root>/AGENTS.md` |
+| Agent guide — Modeler (assistant-neutral) | `templates/AGENTS.md` | `<repo-root>/AGENTS.md` |
+| Agent guide — Analyst (read-only Q&A) | `templates/ANALYST.md` | `<repo-root>/ANALYST.md` |
+| MCP config — Analyst canon server | `templates/analyst-mcp.json` | `<repo-root>/.mcp.json` *(merge if file exists)* |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 
 The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI workflow (`.github/workflows/architecture-validate.yaml`) are **not** bundled templates — they are fetched from the methodology canon at scaffold time. See "Scaffold validation tooling + CI" in Step 2.
