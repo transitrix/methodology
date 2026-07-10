@@ -136,3 +136,7 @@ DGCA supports toggling individual layers off via `view_config.layers`. The table
 ## Examples
 
 Worked example files for every notation live under [`examples/`](examples/); each subfolder has a short README of its own.
+
+## Notation selection guide
+
+[`NOTATION_SELECTION_GUIDE.md`](NOTATION_SELECTION_GUIDE.md) catalogues every Mermaid and PlantUML diagram type alongside the Transitrix notations above, with use-cases for when to recommend each — the reference an agent uses to pick the right notation for a user's request.
