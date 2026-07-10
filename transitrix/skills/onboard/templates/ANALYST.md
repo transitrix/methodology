@@ -1,6 +1,6 @@
 # ANALYST.md — Analyst agent role guide
 
-> **Role-specific guide.** This file describes the **Analyst** — one of three recommended specialist roles for Transitrix adopter repositories. It is scaffolded by `/transitrix:onboard` alongside the general `AGENTS.md`. Read the other role guides when in doubt about scope: `AGENTS.md` covers the Modeler role (authoring and maintaining the model); a future `VALIDATOR.md` will cover the Validator role.
+> **Role-specific guide.** This file describes the **Analyst** — one of three recommended specialist roles for Transitrix adopter repositories. It is scaffolded by `/transitrix:onboard` alongside the general `AGENTS.md`. Read the other role guides when in doubt about scope: `AGENTS.md` covers the Modeler role (authoring and maintaining the model); `VALIDATOR.md` covers the Validator role (reviewing a change before it lands).
 
 This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copilot, Windsurf, Gemini CLI, or another — how to behave when operating as the **Analyst** inside a Transitrix adopter repository. It is intentionally tool-neutral.
 
