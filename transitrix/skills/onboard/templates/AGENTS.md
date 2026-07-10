@@ -56,6 +56,7 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 - ID grammar and TYPE registry (`notations/IDS_AND_REFERENCES.md`).
 - Adopter manifest schema (`notations/MANIFEST.md`).
 - Notation index (`notations/README.md`).
+- Notation selection guide (`notations/NOTATION_SELECTION_GUIDE.md`) — use this when the user's request names a diagram/view but it's unclear which notation fits, or asks for something Mermaid/PlantUML could also draw; if the request itself is too vague to apply the guide (e.g. "make me a diagram"), ask a clarifying question first per its §1.1 before picking anything.
 
 **Resolution order when a local file and the canon disagree:**
 
