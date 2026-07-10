@@ -121,13 +121,14 @@ The `canon/views/` folder names are intentionally shorter than the canonical sho
 
 ### Drop in the canonical root files
 
-After the directory tree exists, copy the three canonical root files from the skill bundle's `templates/` directory into the repo root:
+After the directory tree exists, copy the canonical root files from the skill bundle's `templates/` directory into the repo root:
 
 - `templates/AGENTS.md` → `<repo-root>/AGENTS.md` — the assistant-neutral agent guide. It carries `ADOPTER-FILL-ME` placeholders the user should fill in later (language, confidentiality policy, task source — see its §7–9).
 - `templates/copilot-instructions.md` → `<repo-root>/.github/copilot-instructions.md` — the GitHub Copilot pointer that redirects to `AGENTS.md`.
 - `templates/transitrix.yaml` → `<repo-root>/transitrix.yaml` — the adopter manifest (schema: `notations/MANIFEST.md`). After copying, edit `notations:` to list only the notations the user picked in step 1 (plus `codex` if they will use the codex zone), and `zones:` to the subset of `canon, field, codex` they will maintain.
 - `templates/ANALYST.md` → `<repo-root>/ANALYST.md` — the **Analyst** role guide. The Analyst is a specialised read-only agent that answers questions about the organisation from the validated `canon/` model. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `ANALYST.md` instead of `AGENTS.md` when asking a business question.
 - `templates/analyst-mcp.json` → `<repo-root>/.mcp.json` — the MCP server configuration that backs the Analyst's cited retrieval. Points the `canon` MCP server at `canon/`. If the adopter repo already has a `.mcp.json`, merge the `"canon"` entry into the existing `mcpServers` object rather than overwriting the file.
+- `templates/VALIDATOR.md` → `<repo-root>/VALIDATOR.md` — the **Validator** role guide. The Validator is a specialised review agent that checks a change (a PR, a local diff) for structural validity, whole-repo referential integrity, and blast radius before it merges. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `VALIDATOR.md` instead of `AGENTS.md` when reviewing a change. No extra MCP setup — it uses the same repo-wide file tools as the Modeler.
 
 Additionally, write one generated file (no template — author it inline):
 
@@ -368,6 +369,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Agent guide — Modeler (assistant-neutral) | `templates/AGENTS.md` | `<repo-root>/AGENTS.md` |
 | Agent guide — Analyst (read-only Q&A) | `templates/ANALYST.md` | `<repo-root>/ANALYST.md` |
 | MCP config — Analyst canon server | `templates/analyst-mcp.json` | `<repo-root>/.mcp.json` *(merge if file exists)* |
+| Agent guide — Validator (review before merge) | `templates/VALIDATOR.md` | `<repo-root>/VALIDATOR.md` |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 
 The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI workflow (`.github/workflows/architecture-validate.yaml`) are **not** bundled templates — they are fetched from the methodology canon at scaffold time. See "Scaffold validation tooling + CI" in Step 2.
