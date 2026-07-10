@@ -412,6 +412,7 @@ When the user goes deeper than this cheat sheet covers, fetch the canonical spec
 - Adopter manifest schema (`transitrix.yaml`): `https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md`
 - Notation index + family selection: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/README.md`
 - Per-notation full specs: `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<short-name>.md` (including `14-codex.md` for the codex zone)
+- Notation selection guide (Mermaid / PlantUML / Transitrix side by side, with use-cases and a phrase-to-recommendation lookup table): `https://raw.githubusercontent.com/transitrix/methodology/main/notations/NOTATION_SELECTION_GUIDE.md` — fetch this when the user names a diagram/view but it's unclear which notation fits, or asks for something the family-selection table above doesn't resolve (e.g. a sequence diagram, a wireframe, a C4 diagram — things Mermaid/PlantUML cover and Transitrix doesn't, or vice versa). If the request is too vague to apply it (e.g. "make me a diagram"), ask a clarifying question first per the guide's §1.1 — don't guess.
 - Worked adopter example (the shape this skill scaffolds): `https://raw.githubusercontent.com/transitrix/acme-corp/main/AGENTS.md`
 
 Read sparingly — the cheat sheet above is enough for 80% of cases. Pull the full spec only when the user hits a validation rule they want to understand, or asks for a field's semantics that the summary doesn't cover.
