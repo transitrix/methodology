@@ -19,6 +19,18 @@ The three families are not interchangeable, and the difference matters more than
 - **Mermaid / PlantUML** are generic diagram-as-code renderers. A diagram is a single fenced text block, throwaway or living inside a doc/README/PR/wiki page, with no persistent data model behind it. Nothing about the diagram is validated against, or reused by, anything else.
 - **Transitrix** notations are not diagrams-for-illustration — they are projections of the adopter's canonical enterprise-architecture data (`canon/`, `field/`, `codex/` zones per [CONTRACT.md](CONTRACT.md)). The same element (a Goal, a Capability, an Actor) can be referenced from many views; the view renders a projection, the element is the governed record. Content is validated, versioned, and cross-referenced with the rest of the adopter's model.
 
+### 1.1 If the request is underspecified, ask before recommending
+
+Don't guess a notation from a vague ask ("make me a diagram", "show me the architecture", "visualize this"). None of the tables below can be applied until the actual subject is known. Ask one short clarifying question first — pick whichever fits the gap, don't fire all three:
+
+- "What's the problem or situation you want to describe?"
+- "What do you want the diagram to show?"
+- "What question should someone be able to answer just by looking at it?"
+
+One answer is usually enough to name a concrete subject (a process, a schedule, a data model, a real capability set, a compliance obligation, …). Once it does, apply §1.2 below.
+
+### 1.2 Decision table
+
 | Question | If yes → | If no → |
 |---|---|---|
 | Does this describe something true and lasting about the adopter's own organisation (a real process, capability, goal, obligation, schedule, actor) that should be versioned, queried, and cross-referenced with other canon artefacts? | **Transitrix** — pick the matching notation in §4 | Mermaid or PlantUML |
