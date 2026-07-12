@@ -1,37 +1,29 @@
 notation: goals
 spec_version: "0.1"
+methodology_version: "2.0.0"
 
-# Goals tree. Spec: notations/views/04-goals.md
-# Flat top-level arrays. Hierarchy via `parent: GOAL-…`; omit for root.
+# Goals tree — pure projection over standalone GOAL elements.
+# Spec: notations/views/04-goals.md (v2.0). No element data is authored inline.
+# Each GOAL-… lives in canon/elements/01_motivation/goals/<GOAL-…>.yaml with
+# its own notation:goal envelope, admission record, lifecycle, and parent link.
 
 id: GOALS-FILL-ME-1
 name: "FILL-ME goals tree"
 description: "FILL-ME — what this tree covers"
 period: "FILL-ME"
-version: "0.1"
 generated_at: "YYYY-MM-DD"
 author: "FILL-ME"
 
-goal_types:
-  - { name: "Strategy",       level: 0 }
-  - { name: "Strategic Goal", level: 1 }
-  - { name: "Project",        level: 2 }
-
-goals:
-  - id: GOAL-ROOT-1
-    name: "FILL-ME — the organisation's overall vision"
-    type: "Strategy"
-    level: 0
-    # No parent — single root.
-
-  - id: GOAL-FILL-ME-1
-    name: "FILL-ME strategic goal"
-    type: "Strategic Goal"
-    level: 1
-    parent: GOAL-ROOT-1
-
-  - id: GOAL-FILL-ME-2
-    name: "FILL-ME project goal"
-    type: "Project"
-    level: 2
-    parent: GOAL-FILL-ME-1
+view_config:
+  scope:
+    root_goal: null                    # GOAL-… to anchor as tree root; null = show all roots
+    period: null                       # optional string filter on goal period metadata
+    type_filter: null                  # list of type names to include; null = all types
+    valid_at: null                     # ISO 8601 date; null = show all regardless of lifecycle
+  goal_types:                          # display vocabulary — configures level labels
+    - { name: "Strategy",       level: 0 }
+    - { name: "Strategic Goal", level: 1 }
+    - { name: "Project Goal",   level: 2 }
+  display:
+    depth: null                        # integer; null = unlimited depth
+    collapsed: []                      # GOAL-… IDs of collapsed nodes at load time

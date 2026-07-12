@@ -126,42 +126,58 @@ def check_bundle_integrity():
 
 # ── Goals structural validation — stand-in for @transitrix/diagrams validateGoals ─
 # @transitrix/diagrams is not vendored into this repo (it ships separately), so we
-# assert the structural invariants the canonical validateGoals enforces. When the
-# package is available in CI, replace this with the real parser (see tests/README.md).
+# assert the structural invariants the canonical validateGoals enforces for the
+# v2.0 pure-projection shape (notations/views/04-goals.md §6): the view document
+# carries only a view_config over standalone GOAL element files; inline `goals[]`
+# at document root is a hard error (GOALS-008). Element-level checks (parent
+# cycles, type↔level consistency, ID grammar per goal) live on the standalone
+# element files and are out of scope for a single-file view validator. When the
+# package is available in CI, swap for the real parser (see tests/README.md).
 
 def validate_goals(doc):
     errs = []
     if not isinstance(doc, dict):
         return ["goals document is not a YAML mapping"]
     if doc.get("notation") != "goals":
-        errs.append(f"notation header is {doc.get('notation')!r}, expected 'goals' (HDR-002)")
-    type_levels = {t["name"]: t["level"] for t in doc.get("goal_types", []) if isinstance(t, dict)}
-    if not type_levels:
-        errs.append("goal_types[] is missing or empty")
-    goals = doc.get("goals", [])
-    if not isinstance(goals, list) or not goals:
-        return errs + ["goals[] is missing or empty"]
-    by_id = {g.get("id"): g for g in goals if isinstance(g, dict)}
-    for g in goals:
-        gid = g.get("id")
-        if not (gid and ID_RE.match(str(gid))):
-            errs.append(f"goal id {gid!r} violates the canonical ID grammar")
-        if not g.get("name"):
-            errs.append(f"goal {gid!r} missing name")
-        gtype, level = g.get("type"), g.get("level")
-        if gtype not in type_levels:
-            errs.append(f"goal {gid!r} type {gtype!r} not declared in goal_types[]")
-        elif level != type_levels[gtype]:
-            errs.append(f"goal {gid!r} level {level} != goal_types[{gtype!r}].level {type_levels[gtype]}")
-        parent = g.get("parent")
-        if parent is not None:
-            if parent not in by_id:
-                errs.append(f"goal {gid!r} parent {parent!r} does not resolve in this document")
-            elif isinstance(level, int) and isinstance(by_id[parent].get("level"), int):
-                if level != by_id[parent]["level"] + 1:
-                    errs.append(f"goal {gid!r} level {level} is not parent level + 1 (GOALS-012)")
-    if not any(g.get("parent") is None for g in goals):
-        errs.append("goals tree has no root (every goal has a parent)")
+        errs.append(f"notation header is {doc.get('notation')!r}, expected 'goals' (GOALS-001)")
+    gid = doc.get("id")
+    if not (gid and ID_RE.match(str(gid))):
+        errs.append(f"document id {gid!r} violates the canonical ID grammar (GOALS-002)")
+    if not doc.get("name"):
+        errs.append("document `name` is missing or empty (GOALS-003)")
+    if "methodology_version" not in doc:
+        errs.append("`methodology_version` is required from v2.0 (04-goals.md §5)")
+    if "goals" in doc:
+        errs.append("inline `goals[]` at document root — not accepted from v2.0 (GOALS-008); "
+                    "GOAL elements are standalone files under canon/elements/01_motivation/goals/")
+
+    vc = doc.get("view_config")
+    if vc is not None and not isinstance(vc, dict):
+        return errs + ["view_config is present but is not a YAML mapping"]
+
+    goal_types = (vc or {}).get("goal_types")
+    type_levels = {}
+    if goal_types is not None:
+        if not isinstance(goal_types, list) or not goal_types:
+            errs.append("view_config.goal_types[] is present but empty (GOALS-004)")
+        else:
+            for i, t in enumerate(goal_types):
+                if not (isinstance(t, dict) and t.get("name") and isinstance(t.get("level"), int)):
+                    errs.append(f"view_config.goal_types[{i}] missing `name` or non-integer `level` (GOALS-004)")
+                else:
+                    type_levels[t["name"]] = t["level"]
+            levels = sorted(t["level"] for t in goal_types
+                            if isinstance(t, dict) and isinstance(t.get("level"), int))
+            if levels and levels != list(range(len(levels))):
+                errs.append(f"view_config.goal_types[].level values {levels} are not contiguous starting at 0 (GOALS-005)")
+
+    scope = (vc or {}).get("scope") or {}
+    type_filter = scope.get("type_filter")
+    if isinstance(type_filter, list) and type_levels:
+        for name in type_filter:
+            if name not in type_levels:
+                errs.append(f"view_config.scope.type_filter value {name!r} is not declared in goal_types[] (GOALS-007)")
+
     return errs
 
 
