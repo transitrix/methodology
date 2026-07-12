@@ -1,39 +1,35 @@
 notation: action
 spec_version: "0.1"
+methodology_version: "2.0.0"
 
-# Action schedule (Activity-on-Node network). Spec: notations/views/07-action.md
-# Actions have string IDs and reference predecessors / goals / changes.
-# The compiler computes Early Start / Late Finish / slack and marks
-# the critical path. Optional `project.start_date` + per-action
-# `duration_days` enable a Gantt projection.
+# Action schedule — pure projection over standalone ACTION elements.
+# Spec: notations/views/07-action.md (v2.0). No action data is authored inline.
+# Each ACTION-… lives in canon/elements/05_implementation/actions/<ACTION-…>.yaml
+# with its own notation:action envelope, admission record, lifecycle, `duration`,
+# `predecessors[]`, `goals[]`, `delivers_changes[]`, etc.
+#
+# The renderer projects two views over the selected elements:
+#   - Network view (Activity-on-Node) with critical path (always renderable)
+#   - Gantt view (renderable when durations + predecessors + schedule.start_date,
+#     or when actions carry pinned start_date/end_date)
 
+id: ACTION_SCHED-FILL-ME-1
 name: "FILL-ME action schedule"
 description: "FILL-ME — what this schedule covers"
-version: "0.1"
 generated_at: "YYYY-MM-DD"
-author: "FILL-ME"
 
-project:
-  start_date: "2026-06-01"
-  calendar:
-    working_days: [mon, tue, wed, thu, fri]
-    hours_per_day: 8
-
-actions:
-  - id: ACTION-DISCOVERY-1
-    name: "FILL-ME — first action"
-    duration_days: 10
-    predecessors: []
-    goals: [GOAL-1]               # optional cross-ref to a goal
-
-  - id: ACTION-DESIGN-1
-    name: "FILL-ME — second action"
-    duration_days: 14
-    predecessors: [ACTION-DISCOVERY-1]
-    goals: [GOAL-1]
-
-  - id: ACTION-BUILD-1
-    name: "FILL-ME — third action"
-    duration_days: 30
-    predecessors: [ACTION-DESIGN-1]
-    delivers_changes: [CHANGE-1]  # optional cross-ref to a DGCA change
+view_config:
+  scope:
+    root_action: ACTION-FILL-ME-1      # scope to this action and its descendants
+    # goals: [GOAL-FILL-ME-1]          # alternative: scope by goal
+    # type_filter: [Project, Task]     # alternative: scope by action type
+    valid_at: null                     # ISO 8601 date; null = all lifecycle states
+  schedule:
+    start_date: "2026-06-01"           # project zero-time for computed Gantt
+    calendar:                          # optional; defaults: 7-day week, no holidays
+      working_days: [mon, tue, wed, thu, fri]
+      hours_per_day: 8
+  display:
+    view: both                         # network | gantt | both
+    depth: null                        # integer; null = unlimited depth
+    collapsed: []                      # ACTION-… IDs of collapsed nodes at load time
