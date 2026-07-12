@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
-## [2.0.0] — 2026-07-06
+## [2.0.0] — 2026-07-12
 
 ### Breaking changes
 
@@ -19,11 +19,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 - **`migrations/1.0-to-2.0/`** — migration recipe: codemod (`codemod.mjs`), validator (`validate.mjs`), fixtures (`fixtures/before/`, `fixtures/after/`), and README. Automates extraction of inline `goals[]` and `actions[]` to standalone element files and rewrites view files to `view_config` format. (#514)
 - **`notations/views/04-goals.md` v1.0** — Goals Tree respecified as a pure projection. New fields: `id` (`GOALS-…`), `view_config.scope` (root_goal, period, type_filter, valid_at), `view_config.goal_types[]`, `view_config.display` (depth, collapsed). Validation codes `GOALS-001..008`. (#514)
 - **`notations/views/07-action.md` v2.0** — Action Schedule respecified as a pure projection. New fields: `id` (`ACTION_SCHED-…`), `view_config.scope` (root_action, goals, type_filter, valid_at), `view_config.schedule` (start_date, calendar), `view_config.display` (view, depth, collapsed). Validation codes `ACT-001..010`, `ACT-020`. (#514)
+- **`deprecated` status value** added to the notation `status:` frontmatter enum, applied to FGA's spec (previously unrepresentable — FGA was already retired in substance with no valid enum value to say so). (#512)
+- **`notations/NOTATION_SELECTION_GUIDE.md`** — cross-family notation selection reference: every Mermaid diagram type, every PlantUML diagram type (incl. C4), and every Transitrix view/element notation side by side, with when-to-use guidance, a cross-family equivalence map, and a phrase-to-recommendation lookup table. Indexed from `notations/README.md`. (#532)
+- **`transitrix/skills/onboard/templates/VALIDATOR.md`** — the Validator role skill guide (structural validity, whole-repo referential integrity, blast-radius review before a commit/PR lands), completing the Analyst/Modeler/Validator role set shipped by `/transitrix:onboard`. (#532)
 
 ### Changed
 
 - **`notations/ELEMENT_PRIMITIVES.md` §4.1** — strategy-chain view-purity prose updated to reflect that all five strategy-chain notations are now pure projections (DGCA, Actions Tree, Action Card, Goals Tree, Action Schedule). (#514)
 - **`notations/elements/24-action.md` §4** — inline authoring section replaced with "standalone files only (v2.0)" note; inline form documented as historical v1 behaviour. (#514)
+- **`integration/tooling.md`** gains a validator ownership matrix and a "what to run when" quick-reference, so adopters can tell what `tools/lint.py`, `@transitrix/cli`, `tools/check_views_compliance.py`, and `tools/knowledge_store_lint.py` each cover. `tools/check_views_compliance.py` marked deprecated (docstring notice, kept for migration reference); `tools/knowledge_store_lint.py` documented as still-alive. (#512)
+- **`AGENTS.md` §2 / `SKILL.md`** — reference reads updated to fetch `notations/NOTATION_SELECTION_GUIDE.md` on demand (link-and-fetch, not inlined) when a diagram/view request's notation isn't obvious. (#532)
+- **`AGENTS.md`'s role-split table and `ANALYST.md`'s cross-reference** updated now that the Validator role has shipped (was listed as `(coming)`). (#532)
+
+### Fixed
+
+- Post-1.0 tail cleanup: `README.md`, `RELEASING.md`, `method/01-methodology.md`, and `notations/CONTRACT.md` §10.3 no longer assert "pre-1.0"; completed the remaining stragglers of the 2026-06-25 `activities`→`action` rename (`CONTRACT.md` HDR-003 + §3 + historical note, `notations/MANIFEST.md` example, `notations/README.md` wording); softened `README.md`'s "first artefact is a Goals tree" absolute claim to match `onboard/SKILL.md`'s "any notation is a valid first artefact". (PR #325)
 
 ---
 
