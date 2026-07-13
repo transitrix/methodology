@@ -4,7 +4,7 @@
 # at the pinned methodology_version.
 
 transitrix: 1                       # manifest schema version (integer; 1 today)
-methodology_version: "0.4.x"        # pin a real release once the adopter chooses one
+methodology_version: "2.0.0"        # pin the release you're onboarding against — update if newer
 notations:                          # short names from notations/README.md (+ codex)
   - dgca
   - goals
