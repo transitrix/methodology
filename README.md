@@ -27,7 +27,19 @@ The autonomous organisation — where humans and machines run the enterprise tog
 
 ## Quick start
 
-The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned repo and walks you through your first model file. In a Claude Code session:
+The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned repo and walks you through your first model file. Paste this into any coding agent — Claude Code, Cursor, Copilot Chat, Gemini CLI:
+
+```
+Fetch and follow
+https://raw.githubusercontent.com/transitrix/methodology/main/transitrix/skills/onboard/SKILL.md
+— for any templates/<file> path it references (incl. ${CLAUDE_SKILL_DIR}/templates/<file>),
+fetch it instead from
+https://raw.githubusercontent.com/transitrix/methodology/main/transitrix/skills/onboard/templates/<file>
+```
+
+The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation for whichever notation fits — a **Goals tree** is a common starting point, the simplest notation to start from, but any notation is a valid first artefact.
+
+Using the Claude Code plugin workflow instead? Same result, from the terminal `claude` CLI:
 
 ```
 /plugin marketplace add transitrix/methodology
@@ -35,9 +47,7 @@ The fastest way in is the **onboarding Skill** — it scaffolds a clean zoned re
 /transitrix:onboard
 ```
 
-The skill asks what you want to model first, scaffolds the `canon/` + `field/` + `codex/` layout, and authors a starter file with validation for whichever notation fits — a **Goals tree** is a common starting point, the simplest notation to start from, but any notation is a valid first artefact.
-
-Prefer to do it by hand, or not working in Claude Code? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same approach, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
+Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same approach, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
 New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
 
