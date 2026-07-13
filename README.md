@@ -2,6 +2,16 @@
 
 > **Open methodology and tools to describe an enterprise as text — and let humans and machines run it together.**
 
+## Two ways in
+
+**Just want to see a diagram render from text?**
+You don't need the methodology for that. Install Transitrix Studio, write a few
+lines of text, and watch it draw — about 5 minutes, no repository, no setup.
+→ **[Draw a diagram → Transitrix Studio](https://github.com/transitrix/transitrix-studio#quickstart)**
+
+**Setting up an architecture repository for a team or company?**
+You're in the right place. Start with the [Quick start](#quick-start) below.
+
 Transitrix is a lightweight, Git-native methodology for representing and managing enterprise architecture as text. Models, processes, capabilities, goals, and architectural relations live as YAML files in a repository. Diagrams, dashboards, and reports are derived from those files automatically.
 
 It builds on **ArchiMate 3.2**, **BPMN 2.0**, and the **Capability Maturity Model**, and adds value at the layer above: how the model is stored, versioned, validated, rendered, and acted upon by both humans and software agents.
@@ -10,20 +20,11 @@ It builds on **ArchiMate 3.2**, **BPMN 2.0**, and the **Capability Maturity Mode
 
 ## Enterprise Memory
 
-Transitrix is the foundation for building an **Enterprise Memory** — a durable, EA-grounded store of organisational knowledge that humans and AI agents share and reason over. The methodology's structured notation captures two memory kinds in one Git-native repository:
-
-- **Semantic memory** — the stable model of the enterprise: goals, capabilities, processes, and products as typed YAML elements in `canon/`.
-- **Episodic memory** — the record of what happened: ADRs in `operations/decisions/`, change and requirement traces, and raw field observations with provenance in `field/`.
-
-Because the memory is built on a formal enterprise model at the motivation, strategy, and business layers — not free-form notes or opaque embeddings — it is structured enough to validate, version, and query precisely. The same model projects into every ArchiMate layer; derived views (sequence, ER, C4, journey) are generated from the same source rather than authored separately.
-
-**Personal scale:** a single Transitrix repo doubles as a [personal second brain](patterns/personal-memory.md) — decisions, goals, and observations accumulate incrementally with no extra infrastructure.
-
-**Enterprise scale:** add the [Knowledge Store](patterns/knowledge-store.md) pattern for multi-project environments where raw material volume needs a curation layer before reaching canon.
-
-See the **[Enterprise Memory deployment guide](patterns/enterprise-memory.md)** for both scales in detail, including how the pattern composes with the Knowledge Store.
-
-The autonomous organisation — where humans and machines run the enterprise together from this shared model — is the north-star destination. Enterprise Memory is the entry point.
+Transitrix is the foundation for an **Enterprise Memory** — a durable, EA-grounded
+store of organisational knowledge that humans and AI agents share and reason over,
+built on a formal model rather than free-form notes or opaque embeddings.
+→ **[Enterprise Memory deployment guide](patterns/enterprise-memory.md)** (personal-scale
+second brain and enterprise-scale Knowledge Store).
 
 ## Quick start
 
