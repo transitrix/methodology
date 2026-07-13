@@ -8,9 +8,9 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 # Transitrix Onboarding Skill
 
-Drive a newcomer from zero to a working Transitrix enterprise-as-text repo in one session. The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for picking it up.
+Drive a newcomer from zero to a working Transitrix enterprise-as-text repo in one session. The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for picking it up — written for any coding agent that can read files, write files, run shell commands, and fetch URLs, not only Claude Code. The tool names below (`Read`, `Glob`, `WebFetch`, …) name the capability, not a literal tool you must have under that exact name — use whatever your own toolset calls it.
 
-The user has typed `/transitrix:onboard` (or you've decided to invoke this skill from a freeform request). Follow the six-step flow below. Don't deviate without telling the user.
+You may be reading this because the user typed `/transitrix:onboard`, because you decided to invoke this skill from a freeform request, or because you were pointed here directly — e.g. a fetch-and-follow prompt handed you this URL. However you got here, follow the six-step flow below. Don't deviate without telling the user.
 
 ---
 
@@ -18,7 +18,7 @@ The user has typed `/transitrix:onboard` (or you've decided to invoke this skill
 
 **Before asking anything,** check for signs of an existing Transitrix repo in the current working directory:
 
-- `Glob` for `transitrix.yaml` at the working directory root (the adopter manifest), or
+- search for `transitrix.yaml` at the working directory root (the adopter manifest), or
 - a `canon/` directory at the root.
 
 If either is found → switch to **Orient / Contribute mode** (§ below). Skip Steps 2–5.
@@ -48,11 +48,11 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 
 **1 — Read the repo silently.** Before speaking to the user:
 
-- `Read` `transitrix.yaml` — note `methodology_version`, `notations:`, `zones:`.
-- `Glob` `canon/views/` — list which notation sub-folders exist and which are non-empty.
-- `Glob` `canon/elements/` — note which ArchiMate layers have content.
+- Read `transitrix.yaml` — note `methodology_version`, `notations:`, `zones:`.
+- List `canon/views/` — note which notation sub-folders exist and which are non-empty.
+- List `canon/elements/` — note which ArchiMate layers have content.
 - Check whether `field/` and `codex/` directories exist and have files.
-- If `AGENTS.md` exists at the repo root, `Read` it — it carries adopter-specific rules that govern the rest of this session.
+- If `AGENTS.md` exists at the repo root, read it — it carries adopter-specific rules that govern the rest of this session.
 
 **2 — Orient the user.** Give a concise summary (3–5 bullets):
 
@@ -70,8 +70,8 @@ Example:
 
 **4 — Drive the first change.** Act on the user's response:
 
-- **Add a new notation file** → jump to **Step 3** (template copy → authoring → validate → PR). Before copying a template, use `Glob`/`Grep` over the existing tree to pick the right domain prefix and avoid ID clashes.
-- **Modify an existing file** → `Read` it first, summarise its current structure, then enter **Step 4** (interactive authoring with inline validation).
+- **Add a new notation file** → jump to **Step 3** (template copy → authoring → validate → PR). Before copying a template, search the existing tree to pick the right domain prefix and avoid ID clashes.
+- **Modify an existing file** → read it first, summarise its current structure, then enter **Step 4** (interactive authoring with inline validation).
 - **"Where is X?" / any question about the organization itself** → follow `AGENTS.md` §13 (canon-first sourcing): check `canon/` first, then `codex/`, cite the artefact ID/path; only fall back to `field/` with an explicit "unvalidated" caveat, and don't grep ad hoc top-level folders (scratch notes, `_intake/`) as if they were authoritative. If canon/codex genuinely don't cover it, say so rather than guessing from whatever's nearby.
 
 After the first change is authored and validated, continue to **Step 6** (suggest next steps).
@@ -192,9 +192,9 @@ A freshly scaffolded repo should be able to validate itself and gate pull reques
 
 **Fetch from a pinned methodology version, not `main`.** Read `methodology_version` from the `transitrix.yaml` you just wrote (e.g. `0.5.0`) and fetch the canonical files from the matching release tag `v<methodology_version>` (e.g. `v0.5.0`) — never from the floating `main` branch. This makes the scaffold reproducible: two repos onboarded weeks apart on the same `methodology_version` get byte-identical validators, and the manifest already records which version they got. If no tag exists yet for the pinned version, tell the user and fall back to the latest release tag rather than silently pulling `main`.
 
-1. **Whole-repo validator** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/tools/lint.py` and write it to `<repo-root>/.validators/lint.py`. This is the model-integrity linter: it scans `canon/elements/**` and `canon/relations/**` for atomicity, referential integrity, ArchiMate semantics, and policy. The canonical source is `tools/lint.py` at the methodology root — fetch the canon, **not** the acme-corp reference repo's copy.
+1. **Whole-repo validator** — fetch `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/tools/lint.py` and write it to `<repo-root>/.validators/lint.py`. This is the model-integrity linter: it scans `canon/elements/**` and `canon/relations/**` for atomicity, referential integrity, ArchiMate semantics, and policy. The canonical source is `tools/lint.py` at the methodology root — fetch the canon, **not** the acme-corp reference repo's copy.
 2. **Validator dependencies** — write `<repo-root>/.validators/requirements.txt` containing one line: `pyyaml`. (`python3 -m pip install -r .validators/requirements.txt` to run the linter locally.)
-3. **CI gate** — `WebFetch` `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/integration/ci-example.yaml` and write it to `<repo-root>/.github/workflows/architecture-validate.yaml`. It runs validation by `scope` — a repo-scope `model` job (structure + manifest, then `lint.py`: atomicity, referential integrity, ArchiMate semantics, policy) and a file-scope `views` job (`npx @transitrix/cli validate` per view) — and blocks merges on failure.
+3. **CI gate** — fetch `https://raw.githubusercontent.com/transitrix/methodology/v<methodology_version>/integration/ci-example.yaml` and write it to `<repo-root>/.github/workflows/architecture-validate.yaml`. It runs validation by `scope` — a repo-scope `model` job (structure + manifest, then `lint.py`: atomicity, referential integrity, ArchiMate semantics, policy) and a file-scope `views` job (`npx @transitrix/cli validate` per view) — and blocks merges on failure.
 
 What the agent does **not** install: **Transitrix Studio** (the VS Code extension — the user installs it from the Marketplace, see Step 5) and the global Node / Python runtimes. The CI workflow provisions Node and Python itself; for local runs the user needs both on PATH.
 
@@ -241,7 +241,7 @@ If the user makes a change that introduces a canon violation:
 - Offer one or two ways to fix it.
 - Don't auto-fix unless the user asks — surface the violation and let the user decide.
 
-When fetching the full spec for a notation, use `WebFetch` against `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<name>.md` (e.g. `02-dgca.md`, `04-goals.md`). Don't embed the full spec text in your context unless the user is going deep into a specific notation — the cheat sheet below is usually enough.
+When fetching the full spec for a notation, fetch `https://raw.githubusercontent.com/transitrix/methodology/main/notations/<NN>-<name>.md` (e.g. `02-dgca.md`, `04-goals.md`). Don't embed the full spec text in your context unless the user is going deep into a specific notation — the cheat sheet below is usually enough.
 
 Once a few files exist, the whole-repo linter scaffolded in Step 2 catches cross-file problems the single-file check can't see (a relation whose endpoint doesn't exist, a missing owner): run `python3 .validators/lint.py` from the repo root, or let the CI workflow run it on the pull request.
 
