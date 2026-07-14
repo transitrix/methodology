@@ -7,7 +7,7 @@ name: "EU MDR Conformity Programme"
 # The card binds to an existing project Action (ACTION-EU-PROGRAMME-1)
 # and adds two narrative milestones for the certification gate and the
 # market-launch follow-on. The motivation chain, child actions, and
-# remaining metadata are pulled by reference from sibling FGCA and
+# remaining metadata are pulled by reference from sibling DGCA and
 # Action documents — they are not duplicated here.
 
 action_card:

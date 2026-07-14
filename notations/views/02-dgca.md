@@ -25,9 +25,12 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Source of truth
 
-**DRIVER, GOAL, CHANGE, and ACTION elements are standalone primitives in `canon/elements/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The DGCA view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+A DGCA document has two valid authoring forms — both use the same YAML field schema:
 
-The inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) are **timeless inline relations** that stay on the element files themselves ([`elements/17-relations.md`](../elements/17-relations.md) §6). The view derives the rendered set by traversing these inline links from the selected goal set.
+- **Inline form (default):** `factors[]`, `goals[]`, `changes[]`, and `actions[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any DGCA chain where elements are not yet shared across documents.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects elements already admitted to `canon/elements/**`. No element data is in this file; the renderer traverses inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on the standalone element files to derive the rendered set. See [`elements/17-relations.md`](../elements/17-relations.md) §6.
+
+The **promotion trigger** is cross-document sharing: an element stays inline until a second document references it; at that point it is promoted to a standalone file in `canon/elements/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
 > **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is `ACTION` — element IDs use the `ACTION-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an `ACTION` element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package). The former element type name `ACTIVITY` is a deprecated alias accepted with `ACTION-005` warnings; see [CONTRACT.md](../CONTRACT.md) §15.
 
@@ -70,7 +73,7 @@ DGCA stands for:
 
 DGCA is read as a cause-and-delivery chain:
 
-**Drivers -> Goals -> Changes -> Activities**
+**Drivers → Goals → Changes → Actions**
 
 In practical management communication, this means:
 
@@ -142,21 +145,50 @@ Examples:
 
 ---
 
-## Structure — projection over canon elements
+## Structure
 
-A DGCA view document projects over DRIVER, GOAL, CHANGE, and ACTION elements already admitted to `canon/elements/**`. The document carries a header, a view identity block, and a `view_config` block. It does not inline element data.
+A DGCA document opens with a shared header block (`notation:`, `spec_version:`, `methodology_version:`, `id:`, `name:`, `description:`, `period:`, `generated_at:`), followed by the data layers.
+
+**Inline form** (self-contained; the normal starting point):
 
 ```yaml
 notation: dgca
 spec_version: "0.1"
-name: "Retail strategy chain 2026"      # required per CONTRACT.md §1.1
-generated_at: "YYYY-MM-DD"              # optional per CONTRACT.md §4
 methodology_version: "2.0.0"
+id: DGCA-LAUNCH-1
+name: "Product launch strategy chain"
+period: "2026"
 
-view:
-  id: DGCA-RETAIL-1
-  name: "Retail strategy chain 2026"
-  description: "DGCA projection for the 2026 retail strategy."
+factors:
+  - id: DRIVER-MARKET-1
+    name: "Growing market demand"
+    type: external
+
+goals:
+  - id: GOAL-1
+    name: "Launch our product to market"
+    factors: [DRIVER-MARKET-1]
+
+changes:
+  - id: CHANGE-1
+    name: "Build and release core features"
+    goals: [GOAL-1]
+
+actions:
+  - id: ACTION-1
+    name: "MVP development"
+    type: Project
+    changes: [CHANGE-1]
+```
+
+**Projection form** (Full-tier post-promotion — `view_config` only, elements in `canon/elements/**`):
+
+```yaml
+notation: dgca
+spec_version: "0.1"
+id: DGCA-RETAIL-1
+name: "Retail strategy chain 2026"
+methodology_version: "2.0.0"
 
 view_config:
   goals:
@@ -166,7 +198,7 @@ view_config:
   changes:
     surface: derived          # derive from change.goals inline links for the included goal set
   actions:
-    surface: derived          # derive from activity.changes links for the included change set
+    surface: derived          # derive from action.changes links for the included change set
   layers:
     drivers: on               # on | off — toggle the Drivers column
     goals: on                 # on | off — Goals column (always on recommended)
@@ -177,9 +209,9 @@ view_config:
     collapsed: []             # no collapsed nodes
 ```
 
-The DGCA semantic graph — one Change can deliver many Goals, one Activity deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `activity.changes`) on the element files themselves. The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
+The DGCA semantic graph — one Change can deliver many Goals, one Action deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on either the inline element entries (inline form) or standalone element files (projection form). The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
 
-A complete example of standalone element files for this notation: [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../examples/dgca/strategy-2026.dgca.transitrix.yaml).
+A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.yaml`](../examples/dgca/startup.dgca.transitrix.yaml). A Full-tier projection example (elements in `elements/` subfolder): [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../examples/dgca/strategy-2026.dgca.transitrix.yaml).
 
 ---
 
@@ -198,10 +230,11 @@ A complete example of standalone element files for this notation: [`examples/dgc
 | `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
 | `version` | no | document version |
 | `author` | no | document author |
-| `factors` | yes | array of driver entries — see below |
-| `goals` | yes | array of goal entries — see below |
-| `changes` | yes* | array of change entries — *optional when `view_config.layers.changes: off` |
-| `actions` | yes | array of action entries — see below. Deprecated alias: `activities:` (accepted with `DEPRECATED_NOTATION` warning; migrate to `actions:`). |
+| `factors` | yes (inline) / no (projection) | array of driver entries — see below. Required in inline form; absent in projection form. |
+| `goals` | yes (inline) / no (projection) | array of goal entries — see below. Required in inline form; absent in projection form. |
+| `changes` | yes* (inline) / no (projection) | array of change entries — *optional when `view_config.layers.changes: off`. Required in inline form unless Changes layer is off; absent in projection form. |
+| `actions` | yes (inline) / no (projection) | array of action entries — see below. Deprecated alias: `activities:` (accepted with `DEPRECATED_NOTATION` warning; migrate to `actions:`). Required in inline form; absent in projection form. |
+| `view_config` | no (inline) / yes (projection) | view configuration block — see §view_config. Optional in inline form (selects a subset of inline elements to render); required in projection form (is the only content of the file). |
 
 ### `factors[]`
 
@@ -340,7 +373,7 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `DGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `dgca`. |
 | `DGCA-002` | error | `id` missing or empty. |
 | `DGCA-003` | error | `name` missing or empty. |
-| `DGCA-004` | error | any of `factors` / `goals` / `actions` (or deprecated `activities`) missing or empty. `changes` is also required unless `view_config.layers.changes: off`. |
+| `DGCA-004` | error | In **inline form**: any of `factors` / `goals` / `actions` (or deprecated `activities`) missing or empty. `changes` is also required unless `view_config.layers.changes: off`. In **projection form** (document has `view_config:` and no element arrays): `view_config` must be a valid object. |
 | `DGCA-005` | error | every entry in the arrays must have a non-empty `id` and `name`. |
 | `DGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all layers within a document). |
 | `DGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |

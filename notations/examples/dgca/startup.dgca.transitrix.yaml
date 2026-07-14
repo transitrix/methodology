@@ -1,0 +1,39 @@
+notation: dgca
+spec_version: "0.1"
+methodology_version: "2.0.0"
+
+id: DGCA-STARTUP-1
+name: "Product launch — strategy chain"
+description: >
+  Simple inline DGCA example. All element data is authored directly in this
+  file — no separate elements/ folder. This is the normal starting point for
+  a new adopter. Elements are promoted to standalone files in canon/elements/
+  only when a second document needs to reference them.
+period: "2026"
+generated_at: "2026-07-14"
+
+factors:
+  - id: DRIVER-MARKET-1
+    name: "Growing demand for automated reporting"
+    type: external
+    category: technological
+
+goals:
+  - id: GOAL-1
+    name: "Launch our analytics product to market"
+    factors: [DRIVER-MARKET-1]
+
+changes:
+  - id: CHANGE-1
+    name: "Build and release the core reporting feature set"
+    goals: [GOAL-1]
+
+actions:
+  - id: ACTION-1
+    name: "Analytics MVP"
+    type: Project
+    changes: [CHANGE-1]
+  - id: ACTION-2
+    name: "Beta programme"
+    type: Project
+    changes: [CHANGE-1]

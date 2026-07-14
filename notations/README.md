@@ -28,7 +28,7 @@ Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Eve
 
 ## Elements
 
-The 8 element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The 13 element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -38,8 +38,13 @@ The 8 element notations live under [`elements/`](elements/) — each defines a z
 | [17-relations.md](elements/17-relations.md) | `relation` | First-class, time-aware relation between two canonical primitives — `parent` / `goal_parent` / `action_goal` / `unit_parent` / engagement kinds. | `canon/relations/REL-<…>.yaml` | documented |
 | [19-actors.md](elements/19-actors.md) | `actor` | Active-structure identity primitive — `person` / `business_unit` / `system` (replaces the former UNIT / EMPLOYEE TYPEs). | `canon/elements/02_business/actors/ACTOR-<…>.yaml` | draft |
 | [20-stakeholders.md](elements/20-stakeholders.md) | `stakeholder` | Motivation-layer interest primitive — `internal` / `external`; carries the stake profile and references an `ACTOR` for identity. | `canon/elements/01_motivation/stakeholders/STAKEHOLDER-<…>.yaml` | draft |
+| [21-locations.md](elements/21-locations.md) | `location` | Physical or virtual place primitive — where actors operate; linked to `ACTOR` via a `located_at` relation. | `canon/elements/02_business/locations/LOCATION-<…>.yaml` | draft |
 | [22-amendment.md](elements/22-amendment.md) | `amendment` | Field-zone primitive — structured detection record that a watched codex source has been amended; cites the source and (post-adjudication) the canon `CHANGE` / Gap elements it motivates. | `field/amendments/AMENDMENT-<…>.yaml` | draft |
 | [23-segment.md](elements/23-segment.md) | `segment` | Field-zone primitive — extracted chunk of a codex source (article / clause / paragraph) with a locator and the chunk text or its `sha256` fingerprint; the text-level provenance an `AMENDMENT` / `REQUIREMENT` / `ASSERTION` cites. | `field/segments/SEGMENT-<…>.yaml` | draft |
+| [24-action.md](elements/24-action.md) | `action` | Implementation-layer work package — Initiative / Programme / Project / Task hierarchy (supersedes the former ACTIVITY primitive). | `canon/elements/05_implementation/actions/ACTION-<…>.yaml` | draft |
+| [25-business-services.md](elements/25-business-services.md) | `business-service` | Externally visible business behaviour the organisation makes available to its environment (ArchiMate Business Service). | `canon/elements/02_business/business-services/BUSINESS_SERVICE-<…>.yaml` | draft |
+| [25-nodes.md](elements/25-nodes.md) | `node` | Technology-layer infrastructure node primitive — physical or virtual compute, network, or storage substrate (ArchiMate Technology Node). | `canon/elements/04_technology/nodes/NODE-<…>.yaml` | draft |
+| [26-technology-services.md](elements/26-technology-services.md) | `technology-service` | Platform-level service exposed by a NODE to the application layer (ArchiMate Technology Service). | `canon/elements/04_technology/services/TECHNOLOGY_SERVICE-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 

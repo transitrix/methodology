@@ -91,8 +91,9 @@ author: "Your Name"
 
 ## Examples in this folder
 
-| File | Description |
-|---|---|
-| `strategy-2026.dgca.transitrix.yaml` | Full DGCA chain (2 drivers, 3 goals, 3 changes, 5 actions) |
-| `constraint-driven.dgca.transitrix.yaml` | Constraint-driven DGCA (GDPR data-residency scenario) |
-| `strategy-2026-dga.dgca.transitrix.yaml` | DGA mode — Changes layer off (3 drivers, 3 goals, 7 actions) |
+| File | Form | Description |
+|---|---|---|
+| `startup.dgca.transitrix.yaml` | **Inline (Simple)** | Primary example — self-contained, no `elements/` folder. All element data authored in this file. |
+| `strategy-2026.dgca.transitrix.yaml` | Projection (Full) | Full-tier example — projection-only `view_config`; element data lives in the `elements/` subfolder. |
+| `constraint-driven.dgca.transitrix.yaml` | Projection (Full) | Full-tier example — constraint-driven chain, GDPR data-residency scenario; elements in `elements/`. |
+| `strategy-2026-dga.dgca.transitrix.yaml` | Projection (Full) | Full-tier DGA mode example — Changes layer off; elements in `elements/`. |

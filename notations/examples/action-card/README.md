@@ -1,6 +1,6 @@
 # Action Card
 
-Single-project narrative view. One document per project, naming the project Action it summarises plus a list of narrative milestones (decision gates, certifications, programme-level markers). The card pulls the rest of its content — name, dates, motivation chain, child actions — by reference from sibling FGCA and Action documents.
+Single-project narrative view. One document per project, naming the project Action it summarises plus a list of narrative milestones (decision gates, certifications, programme-level markers). The card pulls the rest of its content — name, dates, motivation chain, child actions — by reference from sibling DGCA and Action documents.
 
 **File extension:** `*.action-card.transitrix.yaml`
 **Spec:** [`notations/views/18-action-card.md`](../../views/18-action-card.md)

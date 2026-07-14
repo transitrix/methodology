@@ -73,7 +73,7 @@ The blueprint is a single, wide diagram. The horizontal axis is the value chain 
 
 Each stage also carries an explicit **goal** (what the stage should achieve) and a **result** (the deliverable that exits the stage).
 
-The blueprint is a **view**, not a flow. It does not describe procedural sequencing within a stage — that is the job of BPMN. It does not decompose strategy — that is the job of FGCA / Goals. It is the operational blueprint of a value chain at a glance.
+The blueprint is a **view**, not a flow. It does not describe procedural sequencing within a stage — that is the job of BPMN. It does not decompose strategy — that is the job of DGCA / Goals. It is the operational blueprint of a value chain at a glance.
 
 ---
 
@@ -107,7 +107,7 @@ Examples:
 
 Process Blueprint uses the **flat form**. The document carries a single `process_blueprint:` root key with parallel arrays: `stages[]` and one array per aspect category (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`). Each aspect entry references the stages it appears in via a `stages: [STAGE-…]` cross-reference field.
 
-This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the FGCA schema — places Process Blueprint on the flat side. See [README.md](../README.md) § Family selection.
+This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the DGCA schema — places Process Blueprint on the flat side. See [README.md](../README.md) § Family selection.
 
 ```yaml
 notation: process-blueprint
