@@ -328,4 +328,4 @@ The matching ACTION elements live in `canon/elements/05_implementation/actions/`
 - Transitrix DGCA notation: `notations/02-dgca.md` (for Driver → Goal → Change → Action decomposition)
 - Transitrix Goals notation: `notations/04-goals.md` (goal elements this notation's actions serve)
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Family selection across FGCA / FGA / Goals / Actions: `notations/README.md` § Family selection
+- Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection

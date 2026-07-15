@@ -68,9 +68,9 @@ Elements that get referenced across documents.
 
 | TYPE | What it is | Used by |
 |---|---|---|
-| `DRIVER` | strategic driver — external or internal | FGCA, FGA |
-| `GOAL` | strategic or tactical goal | Goals tree, FGCA, FGA, Action schedule |
-| `CHANGE` | business transformation (the BDN change layer) | FGCA, Action schedule (`delivers_changes:`) |
+| `DRIVER` | strategic driver — external or internal | DGCA |
+| `GOAL` | strategic or tactical goal | Goals tree, DGCA, Action schedule |
+| `CHANGE` | business transformation (the BDN change layer) | DGCA, Action schedule (`delivers_changes:`) |
 | `ACTION` | implementation-layer work package — Initiative / Programme / Project / Task (ArchiMate Work Package). **Deprecated alias:** `ACTIVITY` (accepted with `ACTION-005` warning until 1.0 cut). | FGCA, FGA, Action schedule, Actions tree, Action Card; see [elements/24-action.md](elements/24-action.md) |
 | `CAPABILITY` | capability — V/H sub-grammar, see §2 | Capability map, Products, Applications, Process map |
 | `PROCESS` | business process | Process landscape map, BPMN |
@@ -89,7 +89,7 @@ Elements that get referenced across documents.
 | `BUSINESS_OBJECT` | ArchiMate Business Object — passive information element at the business grain ("customer order", "customs declaration", "invoice"). Replaces `INFORMATION_ENTITY` (renamed for ArchiMate alignment). Catalogued at `canon/elements/02_business/business-objects/` (ADR 2026-06-08). `INFORMATION_ENTITY` is a deprecated alias for one release (see §6). | Process Blueprint; Business layer catalogue. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.15. |
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`canon/elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
 | `REGISTRY` | business-layer **operating-configuration** primitive — a curated, org-authored list the organisation maintains to drive an operating activity. Worked example: the regulatory **source registry** (which sources to watch, where, how, how often). Rows are inline, canonical-by-containment, promotable. Distinct from `RULE` (decision logic, not a maintained list), from codex (codex is *given to* the org; a registry is *authored by* it), and from the Field zone (a registry is curated/authoritative, not contradiction-tolerant evidence). | Registries catalogue (`canon/elements/02_business/registries/`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20. |
-| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`canon/elements/01_motivation/constraints/`); referenced from FGCA drivers via `references_constraint:` |
+| `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`canon/elements/01_motivation/constraints/`); referenced from DGCA drivers via `references_constraint:` |
 | `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`canon/elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](elements/15-requirement.md). |
 | `STAKEHOLDER` | motivation-layer interest primitive (ArchiMate Stakeholder) — `internal` / `external`. Carries the stake profile (concern, interest, influence) and **references an `ACTOR` for identity** (`actor:` required); never carries identity itself. | Stakeholders catalogue (`canon/elements/01_motivation/stakeholders/`); stakes in specific objects are `stakeholding` relations. Schema: [20-stakeholders.md](elements/20-stakeholders.md). |
 | `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `DRIVER`**, e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. | Assessments catalogue (`canon/elements/01_motivation/assessments/`); `assesses:` references one `DRIVER`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
@@ -165,7 +165,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 
 | TYPE | Uniqueness scope |
 |---|---|
-| `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the FGCA / FGA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |
+| `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the DGCA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`canon/elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`canon/elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
@@ -191,7 +191,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
 
-Document-level IDs (`FGCA-…`, `FGA-…`, etc.) are unique within the organisation.
+Document-level IDs (`DGCA-…`, `FGA-…`, etc.) are unique within the organisation.
 
 ---
 

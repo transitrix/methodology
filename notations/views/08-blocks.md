@@ -100,7 +100,7 @@ Examples:
 
 ## 4. Top-level structure — nested form
 
-The blocks notation is a tree: every child has exactly one parent. Hierarchy is expressed directly by YAML structure — no id-references between blocks. (The strategy-chain notations FGCA / FGA / Goals / Activities use a different shape — flat top-level arrays with `parent`/cross-reference fields — per the family-wide rule in [README.md](../README.md) § Family selection. Blocks pre-dates that family and is not part of it; the YAML-nested form is canonical here.)
+The blocks notation is a tree: every child has exactly one parent. Hierarchy is expressed directly by YAML structure — no id-references between blocks. (The strategy-chain notations DGCA / Goals / Activities use a different shape — flat top-level arrays with `parent`/cross-reference fields — per the family-wide rule in [README.md](../README.md) § Family selection. Blocks pre-dates that family and is not part of it; the YAML-nested form is canonical here.)
 
 A document carries a single `nested_blocks:` root key with the document's identifying fields and a `blocks: [...]` array of top-level blocks. A file MAY contain several top-level blocks; they are rendered as independent diagram sections in array order.
 

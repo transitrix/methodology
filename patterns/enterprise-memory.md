@@ -50,7 +50,7 @@ The semantic layer is the stable model; the episodic layer is the living record.
 
 | Memory kind | What it captures | Transitrix carrier |
 |---|---|---|
-| Semantic — intent | Goals, strategy, priorities | DRIVER, GOAL, FGCA / FGA chains |
+| Semantic — intent | Goals, strategy, priorities | DRIVER, GOAL, DGCA chains |
 | Semantic — capability | What the org can do | CAPABILITY, Capability Map views |
 | Semantic — operations | How the org works | PROCESS, BPMN, Process Map |
 | Semantic — landscape | Products, applications, actors | PRODUCT, APPLICATION, ACTOR |
