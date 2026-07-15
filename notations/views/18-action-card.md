@@ -12,7 +12,7 @@ file_extension: "*.action-card.transitrix.yaml"
 **Version:** 0.1
 **Status:** Draft
 **File extension:** `*.action-card.transitrix.yaml`
-**Scope:** A single-project narrative view that answers *"what is this project, why does it exist, and what does it deliver"* on one page. The card binds a project-typed Action to the FGCA chain it sits in plus its own narrative milestones.
+**Scope:** A single-project narrative view that answers *"what is this project, why does it exist, and what does it deliver"* on one page. The card binds a project-typed Action to the DGCA chain it sits in plus its own narrative milestones.
 **Renderer:** Transitrix Studio (planned)
 
 **Deprecated alias.** The former notation key `activity-card` and file extension `*.activity-card.transitrix.yaml` are accepted with a `PC-005` warning.

@@ -9,9 +9,8 @@ period: "2026"
 generated_at: "2026-05-26"
 author: Transitrix
 
-# Projection-only view (DGA mode — Changes layer off).
-# No element data is authored inline in this file.
-# The 2026 strategic element set lives in elements/ alongside this file.
+# Full-tier projection form example (DGA mode — Changes layer off).
+# Element data lives in elements/ alongside this file (post-promotion).
 # See notations/views/02-dgca.md §"Source of truth".
 
 view_config:

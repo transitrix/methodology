@@ -9,11 +9,11 @@ period: "2026"
 generated_at: "2026-05-26"
 author: Transitrix
 
-# Projection-only view. No element data is authored inline in this file.
-# The full D/G/C/A element set lives in elements/ alongside this file.
-# The renderer derives the displayed chain by traversing the inline cross-
-# reference fields (goal.factors, change.goals, action.changes) on those
-# element files — see notations/views/02-dgca.md §"Source of truth".
+# Full-tier projection form example. Element data lives in elements/ alongside
+# this file (post-promotion). The renderer derives the chain by traversing
+# inline cross-reference fields (goal.factors, change.goals, action.changes)
+# on those element files — see notations/views/02-dgca.md §"Source of truth".
+# For a self-contained inline example, see startup.dgca.transitrix.yaml.
 
 view_config:
   goals:

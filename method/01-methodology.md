@@ -300,9 +300,9 @@ Individual product and application instances are still stored as **atomic elemen
 
 Inline diagrams (Mermaid blocks in markdown, embedded ASCII block diagrams) are explicitly allowed when the diagram is bound to one specific document and has no independent life. Use stand-alone files in `views/` when the diagram is a first-class artefact of the model.
 
-### 6.2 FGCA — strategy-to-execution chain
+### 6.2 DGCA — strategy-to-execution chain
 
-FGCA is the Transitrix notation for translating strategy into coordinated execution. It answers a single management question:
+DGCA is the Transitrix notation for translating strategy into coordinated execution. It answers a single management question:
 
 > *How do our day-to-day initiatives directly support strategic intent?*
 
@@ -422,7 +422,7 @@ All documentation is Markdown. Default language is English; translations live in
 
 ## 11. Tooling
 
-Transitrix Studio is the reference implementation of this methodology — a unified VS Code extension and CLI that handles every Transitrix-specific format (BPMN, goals, capabilities, blocks, FGCA, FGA, process landscape map). Studio renders diagrams, validates files against schema, and applies pure data mutations.
+Transitrix Studio is the reference implementation of this methodology — a unified VS Code extension and CLI that handles every Transitrix-specific format (BPMN, goals, capabilities, blocks, DGCA, FGA, process landscape map). Studio renders diagrams, validates files against schema, and applies pure data mutations.
 
 Other tools in the ecosystem will use the same shared library (`@transitrix/diagrams`) so renders are identical wherever Transitrix files are viewed — Studio in VS Code, web browsers, embedded previews on documentation sites.
 
@@ -477,7 +477,7 @@ To contribute, see `CONTRIBUTING.md`. Contributions are accepted as pull request
 
 ## 15. Authorship
 
-Transitrix is authored by **Valerii Korobeinikov**. The methodology — including the FGCA / FGA notations and all other notations specified in §6 — forms a single authored work published as open documentation. The specification is freely reusable under the published license.
+Transitrix is authored by **Valerii Korobeinikov**. The methodology — including the DGCA / FGA notations and all other notations specified in §6 — forms a single authored work published as open documentation. The specification is freely reusable under the published license.
 
 ---
 

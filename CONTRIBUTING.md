@@ -53,7 +53,7 @@ Maintainer decisions on methodology-level changes (new notations, schema changes
 
 ## Authorship and IP
 
-- Transitrix — including the FGCA notation that forms part of it — is authored by **Valerii Korobeinikov**. The methodology is published under the **MIT license**.
+- Transitrix — including the DGCA notation that forms part of it — is authored by **Valerii Korobeinikov**. The methodology is published under the **MIT license**.
 - The project's history, including all branding decisions, was developed on personal equipment, on personal time, separately from any employer's work. Contributions accepted into the project inherit the same provenance expectation.
 - Contributors confirm — by submitting a pull request — that they have the right to license their contribution under the project's MIT license, and that the contribution is their original work.
 
