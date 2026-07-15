@@ -1,18 +1,28 @@
 #!/usr/bin/env node
 // Migration codemod — methodology 1.0 → 2.0.
 //
-// Applies two transforms to an adopter repo. Run with --dry-run first.
+// Run with --dry-run first; apply when ready.
+//
+// TRIGGER: run when inline goals[] or actions[] elements need to be promoted
+// to standalone canonical files so they can be shared across multiple views.
+// Inline authoring is the valid default — this codemod is optional, not a
+// mandatory migration step.
 //
 // TRANSFORMS (automated — idempotent):
-//   A. Goals Tree: extract inline goals[] → standalone GOAL-*.yaml element files
-//                  + rewrite view to view_config format
+//   A. Goals Tree: promote inline goals[] → standalone GOAL-*.yaml element files.
+//                  The view file is NOT changed — inline data is preserved.
 //
-//   B. Action Schedule: extract inline actions[] → standalone ACTION-*.yaml element files
-//                       + rewrite view to view_config format
+//   B. Action Schedule: promote inline actions[] → standalone ACTION-*.yaml element files.
+//                       The view file is NOT changed — inline data is preserved.
+//
+// After running, the view files are still self-contained (inline data intact).
+// Adopters who want a pure view_config projection may then manually remove the
+// inline arrays from the view (see notations/views/04-goals.md §4 and
+// notations/views/07-action.md §4 for the projection-form structure).
 //
 // Conventions:
 //   - Pure-Node, no native deps; Node ≥ 20.
-//   - Idempotent: a repo already on canonical v2.0 form is a no-op.
+//   - Idempotent: skips element files that already exist.
 //   - CLI: [--dry-run] [target-dir]. Default target = current working dir.
 
 import {
@@ -425,20 +435,16 @@ function findRootAction(entries) {
 function transformGoalsTree(file) {
   const yaml = readFileSync(file, 'utf8');
 
-  // Skip files that are already migrated (have view_config, no goals:)
-  if (yaml.includes('view_config:') && !yaml.match(/^goals:\s*\n/m)) {
-    return;
-  }
+  // Only process files that have inline goals[] at the root
   if (!yaml.match(/^goals:\s*\n/m)) return;
 
   const rel = relative(target, file);
   console.log(`A  ${rel}`);
 
-  const goalTypes = extractGoalTypes(yaml);
   const rawEntries = splitGoalsEntries(yaml);
   const goals = rawEntries.map(parseGoalEntry).filter(g => g.id);
 
-  // Write standalone element files
+  // Write standalone element files; view file is left unchanged (inline data preserved)
   for (const g of goals) {
     const elemDir = join(target, 'canon', 'elements', '01_motivation', 'goals');
     const elemFile = join(elemDir, `${g.id}.yaml`);
@@ -455,10 +461,7 @@ function transformGoalsTree(file) {
     }
   }
 
-  // Rewrite the view file
-  const newYaml = rewriteGoalsView(yaml, goalTypes);
-  console.log(`   ~ ${rel}`);
-  if (!dryRun) writeFileSync(file, newYaml, 'utf8');
+  console.log(`   (view ${rel} not changed — inline data preserved)`);
 }
 
 // ── Transform B — Action Schedule ────────────────────────────────────────────
@@ -466,8 +469,7 @@ function transformGoalsTree(file) {
 function transformActionSchedule(file) {
   const yaml = readFileSync(file, 'utf8');
 
-  // Skip files already migrated
-  if (yaml.includes('view_config:') && !yaml.match(/^actions:\s*\n/m)) return;
+  // Only process files that have inline actions[] at the root
   if (!yaml.match(/^actions:\s*\n/m)) return;
 
   const rel = relative(target, file);
@@ -475,10 +477,8 @@ function transformActionSchedule(file) {
 
   const rawEntries = splitActionsEntries(yaml);
   const actions = rawEntries.map(parseActionEntry).filter(a => a.id);
-  const startDate = extractProjectStartDate(yaml);
-  const rootActionId = findRootAction(rawEntries);
 
-  // Write standalone element files
+  // Write standalone element files; view file is left unchanged (inline data preserved)
   for (const a of actions) {
     const elemDir = join(target, 'canon', 'elements', '05_implementation', 'actions');
     const elemFile = join(elemDir, `${a.id}.yaml`);
@@ -495,10 +495,7 @@ function transformActionSchedule(file) {
     }
   }
 
-  // Rewrite the view file
-  const newYaml = rewriteActionView(yaml, rootActionId, startDate, null);
-  console.log(`   ~ ${rel}`);
-  if (!dryRun) writeFileSync(file, newYaml, 'utf8');
+  console.log(`   (view ${rel} not changed — inline data preserved)`);
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

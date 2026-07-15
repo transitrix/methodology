@@ -9,20 +9,24 @@ version 1.0 to 2.0. Format per [`notations/CONTRACT.md`](../../notations/CONTRAC
 
 ## What this recipe covers
 
-2.0.0 completes the **view-purity migration** for the Goals Tree and Action
-Schedule notations: both now project over the canonical element catalogue rather
-than authoring elements inline. Adopters who have:
+**Inline authoring is the default.** As of the 2026-07-14 inline-authoring ADR
+(`architecture/cross-project/2026-07-14-inline-authoring-until-promotion.md`),
+`*.goals.transitrix.yaml` files with inline `goals[]` and
+`*.action.transitrix.yaml` files with inline `actions[]` are valid and do not
+need migration. Inline is the self-contained default; the projection form is for
+Full-tier adopters whose elements are shared across documents.
 
-- `*.goals.transitrix.yaml` files carrying an inline `goals[]` array, **or**
-- `*.action.transitrix.yaml` files carrying an inline `actions[]` array
+This recipe is therefore **optional** — run it when you want to promote elements
+from an inline view to standalone canonical files so they can be shared across
+multiple views or documents. The trigger for promotion is cross-document sharing,
+not a methodology version requirement.
 
-must apply the transforms below. Adopters who never used these notations (e.g.
-DGCA-only shops) have nothing to migrate.
-
-| Transform | Old (v1 inline) | Canonical (required at v2.0) |
+| Transform | Inline (valid v1 and v2) | Promoted (canonical elements) |
 |---|---|---|
-| **A** | `*.goals.transitrix.yaml` with `goals[]` inline | `view_config` + standalone `GOAL-*.yaml` element files |
-| **B** | `*.action.transitrix.yaml` with `actions[]` inline | `view_config` + standalone `ACTION-*.yaml` element files |
+| **A** | `*.goals.transitrix.yaml` with `goals[]` inline | standalone `GOAL-*.yaml` element files in `canon/elements/01_motivation/goals/` |
+| **B** | `*.action.transitrix.yaml` with `actions[]` inline | standalone `ACTION-*.yaml` element files in `canon/elements/05_implementation/actions/` |
+
+The codemod writes the element files but **does not strip inline data from the view** — after promotion the view file is still self-contained. Adopters who want a pure `view_config` projection may then manually remove the inline arrays from the view.
 
 ---
 
@@ -60,58 +64,14 @@ valid_to: null                        # from the inline entry's valid_to
 If an element file already exists for an ID in `goals[]`, the existing file is
 authoritative — do not overwrite it. The codemod skips existing files.
 
-### A.2 — Rewrite the view file to `view_config` format
+### A.2 — View file is not changed
 
-Remove `goal_types[]` and `goals[]` from the document root. Add `view_config`
-with the vocabulary and display settings. Remove `id` from the document root
-if it conflicts (it moves to the view_config context; see §4 of the spec).
-
-Before:
-```yaml
-notation: goals
-spec_version: "0.1"
-
-id: GOALS-STRAT-2026-1
-name: "Strategy 2026 — Goals Tree"
-generated_at: "2026-05-26"
-description: "..."
-period: "2026"
-author: Transitrix
-
-goal_types:
-  - { name: "Strategy",       level: 0 }
-  - { name: "Strategic Goal", level: 1 }
-
-goals:
-  - id: GOAL-REVENUE-1
-    name: "Triple revenue by 2028"
-    type: "Strategy"
-    level: 0
-    valid_from: "2026-05-26"
-    valid_to: null
-```
-
-After:
-```yaml
-notation: goals
-spec_version: "0.1"
-methodology_version: "2.0.0"
-
-id: GOALS-STRAT-2026-1
-name: "Strategy 2026 — Goals Tree"
-generated_at: "2026-05-26"
-description: "..."
-period: "2026"
-author: Transitrix
-
-view_config:
-  goal_types:
-    - { name: "Strategy",       level: 0 }
-    - { name: "Strategic Goal", level: 1 }
-  display:
-    depth: null
-    collapsed: []
-```
+The codemod does **not** rewrite the view file. After running, the view file
+still carries its inline `goals[]` and `goal_types[]` — it remains self-contained
+and valid. Adopters who want to convert the view to a pure `view_config` projection
+(no inline data) may do so manually by removing `goal_types[]` and `goals[]` from
+the document root and adding the `view_config` block as shown in §4 of
+`notations/views/04-goals.md`.
 
 ---
 
@@ -156,57 +116,14 @@ valid_to: null                        # from the inline entry's valid_to
 If an element file already exists for an ID in `actions[]`, skip it — the
 existing file is authoritative.
 
-### B.2 — Rewrite the view file to `view_config` format
+### B.2 — View file is not changed
 
-Remove `project:` and `actions[]` from the document root. Add `view_config`
-with scope (root_action + optional goal filter) and the schedule settings.
-Add `id` field (`ACTION_SCHED-…`).
-
-Before:
-```yaml
-notation: action
-spec_version: "0.1"
-
-title: "GDPR Remediation Programme 2026"
-description: |
-  ...
-version: "0.2"
-
-project:
-  start_date: "2026-03-01"
-
-actions:
-  - id: ACTION-EU-COMPLIANCE-1
-    name: "EU Data Protection Compliance Initiative"
-    type: Initiative
-    goals: [GOAL-EU-1]
-    valid_from: "2026-01-01"
-    valid_to: null
-```
-
-After:
-```yaml
-notation: action
-spec_version: "0.1"
-methodology_version: "2.0.0"
-
-id: ACTION_SCHED-GDPR-REMEDIATION-1
-name: "GDPR Remediation Programme 2026"
-description: |
-  ...
-
-view_config:
-  scope:
-    root_action: ACTION-EU-COMPLIANCE-1  # top-level action from the old inline list
-  schedule:
-    start_date: "2026-03-01"             # from the old project.start_date
-```
-
-**Choosing `root_action`.** The codemod uses the first action entry with no
-`parent` field (or `parent: null`) as `root_action`. For programmes and
-initiatives that nest multi-level hierarchies, this is the Initiative or
-Programme at the top of the tree. Review the generated `view_config` and
-adjust if the codemod chose the wrong root.
+The codemod does **not** rewrite the view file. After running, the view file
+still carries its inline `actions[]` and `project:` block — it remains
+self-contained and valid. Adopters who want to convert the view to a pure
+`view_config` projection (no inline data) may do so manually by removing
+`project:` and `actions[]` from the document root and adding a `view_config`
+block as shown in §4 of `notations/views/07-action.md`.
 
 ---
 
@@ -229,7 +146,7 @@ The codemod requires Node ≥ 20. No external dependencies.
 
 ---
 
-## Step 2 — Review generated element files
+## Step 2 — Review generated element files and bump `methodology_version`
 
 The codemod generates element files with `admitted_by: "migration-1.0-to-2.0"`.
 Review each generated file and:
@@ -237,9 +154,7 @@ Review each generated file and:
 2. Confirm the `admitted_at` and `valid_from` dates are accurate.
 3. Add any fields that were not captured in the inline entry (e.g. `link`, `tag`).
 
----
-
-## Step 3 — Bump `methodology_version`
+Then bump the manifest:
 
 ```yaml
 # transitrix.yaml
@@ -248,14 +163,15 @@ methodology_version: "2.0.0"
 
 ---
 
-## Step 4 — Re-run validation
+## Step 3 — Re-run validation
 
 ```bash
 transitrix-ingest validate <candidates-dir>
 node migrations/1.0-to-2.0/validate.mjs <adopter-root>
 ```
 
-A clean run shows no inline-element errors (no `GOALS-008` or `ACT-010`).
+A clean run confirms all promoted element files are well-formed and resolve
+their cross-references correctly.
 
 ---
 
