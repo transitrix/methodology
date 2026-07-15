@@ -71,6 +71,9 @@ async function parseCatalogue() {
   for (let i = headerIdx + 2; i < lines.length; i++) {
     const line = lines[i];
     if (!line.startsWith('|')) break;
+    // Structural separator row marking the report-config block (e.g.
+    // "| — | **Report views (C = 4)** | | | |") — not a notation entry.
+    if (/^\|\s+—\s+\|/.test(line)) continue;
     const cells = line.split('|').map(c => c.trim());
     // cells: ['', Spec, ShortName, Purpose, FileExtension, Status, '']
     if (cells.length < 7) continue;
