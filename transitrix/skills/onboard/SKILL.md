@@ -132,17 +132,16 @@ After the directory tree exists, copy the canonical root files from the skill bu
 
 Additionally, write one generated file (no template — author it inline):
 
-- `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending the three VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview, **PlantUML** (`jebbs.plantuml`, VS Code Marketplace) for `.puml` diagram preview, and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
+- `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending the two VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview (including `.puml` files — no separate PlantUML extension needed), and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
 
 **Do not scaffold a Claude-specific `CLAUDE.md` agent guide.** The canonical guide for every assistant is `AGENTS.md`. If the user is on a tool that doesn't read `AGENTS.md` natively (e.g. Claude Code looks for `CLAUDE.md`, Cursor looks for `.cursor/rules/`), drop a one-line pointer file in that tool's location that reads *"Read `AGENTS.md` in the repo root and follow it."* The guidance itself stays in `AGENTS.md` only — see `AGENTS.md` §"Using this guide with your assistant".
 
 ### Suggest editor tooling — right after scaffolding, don't wait for Step 5
 
-As soon as the root files exist, also copy `templates/extensions.json` to `<repo-root>/.vscode/extensions.json` — this files the workspace extension recommendations so VS Code prompts the user to install the right tools immediately. Then check what's already installed: `code --list-extensions` (swap `code` for `cursor` / `codium` if that's the detected editor; on Windows PowerShell with a restricted execution policy use `code.cmd` / `cursor.cmd`). If **Transitrix Studio** (`transitrix.transitrix-studio`), **PlantUML** (`jebbs.plantuml`), or **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) is missing, surface the install command(s) prominently now, before Step 3:
+As soon as the root files exist, also copy `templates/extensions.json` to `<repo-root>/.vscode/extensions.json` — this files the workspace extension recommendations so VS Code prompts the user to install the right tools immediately. Then check what's already installed: `code --list-extensions` (swap `code` for `cursor` / `codium` if that's the detected editor; on Windows PowerShell with a restricted execution policy use `code.cmd` / `cursor.cmd`). If **Transitrix Studio** (`transitrix.transitrix-studio`) or **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`) is missing, surface the install command(s) prominently now, before Step 3:
 
 ```
 code --install-extension transitrix.transitrix-studio
-code --install-extension jebbs.plantuml
 code --install-extension bierner.markdown-mermaid
 ```
 
