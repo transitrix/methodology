@@ -1,8 +1,8 @@
 ---
 notation: "Goals Tree"
-version: "1.0"
+version: "1.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-06"
+last_updated: "2026-07-15"
 status: "documented"
 file_extension: "*.goals.transitrix.yaml"
 dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
@@ -10,10 +10,8 @@ dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 
 # Goals Tree Notation — Reference
 
-**Scope:** Hierarchy of strategic and tactical goals; mono-type tree rendered from `GOAL` elements in `canon/elements/01_motivation/goals/`. The view document carries only a `view_config` (scope + display settings) — no element data is authored inline. The renderer assembles the tree from canonical elements at view time.
+**Scope:** Hierarchy of strategic and tactical goals. The view document has two valid authoring forms: inline (`goal_types[]` and `goals[]` authored directly in the file; default for self-contained documents) and projection (a `view_config` block that selects from `GOAL` elements in `canon/elements/01_motivation/goals/`; used after elements are shared across documents). Both forms use the same field schema.
 **Renderer:** Transitrix DSM — Visual Editor (G), Goals table; Transitrix Studio (planned)
-
-**Migration note (v2.0).** Documents authored in the v1 inline format (carrying `goals[]` at the root) must be migrated using the `migrations/1.0-to-2.0/` recipe. Inline `goals[]` is no longer accepted.
 
 ---
 
@@ -30,13 +28,16 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Source of truth
 
-**GOAL elements are standalone primitives in `canon/elements/01_motivation/goals/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The Goals Tree view document is a **projection** over those elements — it contains only a `view_config` that selects and filters the elements to render. No element data is authored inline in the view document.
+A Goals Tree document has two valid authoring forms — both use the same YAML field schema:
 
-The goal hierarchy (`parent` field) and the goal type vocabulary (`type` field) live on the element files themselves. The view derives the rendered tree by loading all GOAL elements in scope and resolving the `parent` references at render time.
+- **Inline form (default):** `goal_types[]` and `goals[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any goals hierarchy where elements are not yet shared across documents.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects `GOAL` elements already admitted to `canon/elements/01_motivation/goals/`. No element data is in this file; the renderer loads the elements at view time. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4.
+
+The **promotion trigger** is cross-document sharing: a goal stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/01_motivation/goals/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
 The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `canon/views/goals/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
-**Where goals are authored.** New goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
+**Where goals are authored.** In the inline form, goals are authored directly in the view file under `goals[]`. In the projection form, new goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
 
 ---
 
@@ -75,6 +76,44 @@ Examples:
 
 ## 4. Document structure
 
+### Inline form (default — self-contained)
+
+Goals and their type vocabulary are authored directly in the view file. This is the standard form for a new adopter and for any tree where elements are not yet shared across documents.
+
+```yaml
+notation: goals
+spec_version: "0.1"
+
+id: GOALS-STRATEGY-2026                # GOALS-[<middle>-]<INTEGER>
+name: "Strategy 2026 — Goals Tree"
+description: "Goal hierarchy for the 2026 plan."
+period: "2026"
+author: Transitrix
+
+goal_types:                            # display vocabulary
+  - { name: "Strategy",       level: 0 }
+  - { name: "Strategic Goal", level: 1 }
+  - { name: "Project Goal",   level: 2 }
+
+goals:
+  - id: GOAL-REVENUE-1
+    name: "Triple revenue in 3 years"
+    type: "Strategy"
+    level: 0
+
+  - id: GOAL-EU-1
+    name: "Launch in 3 EU markets"
+    type: "Strategic Goal"
+    level: 1
+    parent: GOAL-REVENUE-1
+```
+
+A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
+
+### Projection form (Full tier — post-promotion)
+
+After goals are promoted to `canon/elements/01_motivation/goals/`, the view becomes a `view_config` projection. No element data is in this file; the renderer loads elements at view time.
+
 ```yaml
 notation: goals
 spec_version: "0.1"
@@ -102,8 +141,6 @@ view_config:
     collapsed: []                      # GOAL-… IDs of collapsed nodes at load time
 ```
 
-A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
-
 ---
 
 ## 5. Fields
@@ -121,7 +158,9 @@ A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../ex
 | `description` | no | one-paragraph context |
 | `period` | no | time period the tree covers |
 | `author` | no | document author |
-| `view_config` | no | rendering configuration — see §5.1 |
+| `goal_types` | no | **Inline form only.** Display vocabulary at document root — same semantics as `view_config.goal_types` (see §5.2). Mutually exclusive with `view_config.goal_types`. |
+| `goals` | no | **Inline form only.** Array of goal entries authored directly in the view file. Each entry carries `id`, `name`, `type`, `level`, and optionally `parent`, `description`, `link`, `valid_from`, `valid_to`. Mutually exclusive with `view_config`. |
+| `view_config` | no | **Projection form only.** Rendering configuration for Full-tier projection over canonical element files — see §5.1. Mutually exclusive with `goals`. |
 
 ### 5.1 `view_config.scope`
 
@@ -163,11 +202,10 @@ If `goal_types` is absent, the renderer infers levels from the `parent` chain de
 | `GOALS-001` | error | `notation` missing or does not equal `goals`. |
 | `GOALS-002` | error | `id` missing or does not match `GOALS-[<middle>-]<INTEGER>`. |
 | `GOALS-003` | error | `name` missing or empty. |
-| `GOALS-004` | error | `view_config.goal_types` present but any entry lacks `name` or has a non-integer `level`. |
-| `GOALS-005` | error | `view_config.goal_types[].level` values are not contiguous integers starting at `0`. |
+| `GOALS-004` | error | `goal_types[]` or `view_config.goal_types[]` present but any entry lacks `name` or has a non-integer `level`. |
+| `GOALS-005` | error | `goal_types[].level` or `view_config.goal_types[].level` values are not contiguous integers starting at `0`. |
 | `GOALS-006` | error | `view_config.scope.root_goal` is set but the referenced `GOAL-…` ID does not resolve to an admitted GOAL element in canon. |
 | `GOALS-007` | error | `view_config.scope.type_filter` contains a value not present in `goal_types[].name`. |
-| `GOALS-008` | error | Inline `goals[]` field detected at document root — not accepted from v2.0. Run `migrations/1.0-to-2.0/codemod.mjs` to promote inline goals to standalone element files. |
 
 Element-level validation (parent cycles, type/level consistency, ID grammar) lives in the GOAL element rules applied when the canonical element files are validated, not here.
 

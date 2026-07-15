@@ -1,8 +1,8 @@
 ---
 notation: "Action — Project Schedule"
-version: "2.0"
+version: "2.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-06"
+last_updated: "2026-07-15"
 status: "documented"
 file_extension: "*.action.transitrix.yaml"
 dsm_status: "partially implemented — Actions page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
@@ -10,10 +10,8 @@ dsm_status: "partially implemented — Actions page; multi-value fields (predece
 
 # Action Notation — Project Schedule (Network and Timeline)
 
-**Scope:** Text-native form of a project schedule. The view document carries a `view_config` (scope + schedule anchor + display settings) that selects `ACTION` elements from `canon/elements/05_implementation/actions/` and renders them as a Project Schedule Network Diagram (PSND / AoN) for the dependency view and as a Gantt chart for the timeline view. No action data is authored inline in the view document — element data (name, type, duration, predecessors, goals, cost) lives on the standalone ACTION element files.
+**Scope:** Text-native form of a project schedule. The view document has two valid authoring forms: inline (`project:` schedule settings and `actions[]` authored directly in the file; default for self-contained documents) and projection (a `view_config` block that selects `ACTION` elements from `canon/elements/05_implementation/actions/`; used after elements are shared across documents). Both forms render as a Project Schedule Network Diagram (PSND / AoN) for the dependency view and as a Gantt chart for the timeline view.
 **Renderer:** Transitrix DSM — Actions page (graphical AoN today; Gantt view planned in 0.4.x); Transitrix Studio — preview planned in v0.5.0.
-
-**Migration note (v2.0).** Documents authored in the v1 inline format (carrying `actions[]` at the root) must be migrated using the `migrations/1.0-to-2.0/` recipe. Inline `actions[]` is no longer accepted.
 
 **Deprecated alias.** The former notation key `activities`, file extension `*.activities.transitrix.yaml`, root array field `activities:`, and per-entry field `activity_type` are deprecated as of 2026-06-25. Validators emit `ACT-020` warnings on old names; they remain accepted for backward compatibility until the 2.0 cut.
 
@@ -34,13 +32,16 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 ## Source of truth
 
-**ACTION elements are standalone primitives in `canon/elements/05_implementation/actions/`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4). The Action Schedule view document is a **projection** over those elements — it contains only a `view_config` (scope, schedule anchor, display settings) and does not inline element data.
+An Action Schedule document has two valid authoring forms — both use the same YAML field schema:
 
-The scheduling fields — `duration`, `predecessors`, `start_date`, `end_date` — live on the ACTION element files themselves (see [elements/24-action.md](../elements/24-action.md) §2). The renderer reads those fields from the elements when computing CPM or rendering the Gantt.
+- **Inline form (default):** `project:` (schedule anchor + calendar) and `actions[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any schedule where elements are not yet shared across documents.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block (scope, schedule anchor, display settings) that selects `ACTION` elements already admitted to `canon/elements/05_implementation/actions/`. No element data is in this file; the renderer reads scheduling fields (`duration`, `predecessors`, `start_date`, `end_date`) from the element files when computing CPM or rendering the Gantt. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4 and [elements/24-action.md](../elements/24-action.md) §2.
+
+The **promotion trigger** is cross-document sharing: an action stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/05_implementation/actions/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
 The reconstruction invariant applies: `render(Elements, view_config)` → schedule diagram. Deleting `canon/views/action/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
 
-**Where actions are authored.** New actions are authored as standalone element files in `canon/elements/05_implementation/actions/<ACTION-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.4) and the ACTION schema ([elements/24-action.md](../elements/24-action.md)). The Action Schedule view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
+**Where actions are authored.** In the inline form, actions are authored directly in the view file under `actions[]`. In the projection form, new actions are authored as standalone element files in `canon/elements/05_implementation/actions/<ACTION-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.4) and the ACTION schema ([elements/24-action.md](../elements/24-action.md)). The Action Schedule view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
 
 ---
 
@@ -83,6 +84,46 @@ Examples:
 ---
 
 ## 4. Document structure
+
+### Inline form (default — self-contained)
+
+Actions and schedule settings are authored directly in the view file. This is the standard form for a new adopter and for any schedule where elements are not yet shared across documents.
+
+```yaml
+notation: action
+spec_version: "0.1"
+
+name: "Platform Launch 2026"
+description: |
+  Critical path through the customer-facing platform launch.
+  Used for Q3 2026 portfolio review.
+
+project:
+  start_date: "2026-06-01"            # project zero-time for computed Gantt
+  calendar:
+    working_days: [mon, tue, wed, thu, fri]
+    hours_per_day: 8
+
+actions:
+  - id: A-001
+    name: Requirements analysis
+    duration: 5
+    goals: [GOAL-CUST-001]
+    owner: ACTOR-PRODUCT-1
+
+  - id: A-002
+    name: Architecture design
+    duration: 8
+    predecessors: [A-001]
+    goals: [GOAL-CUST-001]
+    owner: ACTOR-ENGINEERING-1
+```
+
+Complete examples: [`examples/action/platform-launch.action.transitrix.yaml`](../examples/action/platform-launch.action.transitrix.yaml) and [`examples/action/office-relocation.action.transitrix.yaml`](../examples/action/office-relocation.action.transitrix.yaml).
+
+### Projection form (Full tier — post-promotion)
+
+After actions are promoted to `canon/elements/05_implementation/actions/`, the view becomes a `view_config` projection. No element data is in this file; the renderer loads elements at view time.
 
 ```yaml
 notation: action
@@ -131,7 +172,9 @@ view_config:
 | `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
 | `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
 | `description` | no | string | optional document-level description |
-| `view_config` | no | object | rendering configuration — see §5.1. When absent, all ACTION elements in canon are included with no schedule anchor. |
+| `project` | no | object | **Inline form only.** Schedule anchor and calendar settings at document root. Same semantics as `view_config.schedule` (see §5.2). Contains `start_date` (ISO 8601), and optionally `calendar` with `working_days`, `hours_per_day`, and `holidays`. Mutually exclusive with `view_config`. |
+| `actions` | no | array | **Inline form only.** Array of action entries authored directly in the view file. Each entry carries `id`, `name`, and optionally `duration`, `predecessors`, `start_date`, `end_date`, `goals`, `delivers_changes`, `owner`, `tags`, `type`, `parent`, `sort`, `description`, `valid_from`, `valid_to`. Mutually exclusive with `view_config`. Deprecated alias: `activities`. |
+| `view_config` | no | object | **Projection form only.** Rendering configuration for Full-tier projection over canonical element files — see §5.1. Mutually exclusive with `actions`. |
 
 ### 5.1 `view_config.scope`
 
@@ -179,7 +222,6 @@ The `schedule` block anchors the view on a calendar for Gantt rendering. Absent 
 | `ACT-007` | error | `view_config.schedule.calendar.working_days` values outside `{mon, tue, wed, thu, fri, sat, sun}` or duplicate |
 | `ACT-008` | error | `view_config.schedule.calendar.holidays` entries not valid ISO 8601 dates |
 | `ACT-009` | warn | `view_config.schedule.start_date` absent and no selected action has pinned dates → Gantt view will not render; the network view still does |
-| `ACT-010` | error | Inline `actions[]` or deprecated `activities[]` field detected at document root — not accepted from v2.0. Run `migrations/1.0-to-2.0/codemod.mjs` to promote inline actions to standalone element files. |
 | `ACT-020` | warn | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `type`. |
 
 Element-level validation (predecessor cycles, duration non-negativity, date consistency, ID grammar) lives in the ACTION element rules applied when the canonical element files are validated; see [elements/24-action.md](../elements/24-action.md) §6.
