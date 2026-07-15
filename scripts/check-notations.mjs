@@ -234,6 +234,99 @@ async function checkVersion(failures) {
   }
 }
 
+// --- C1: notation count lint -----------------------------------------------
+//
+// Derives A (diagram views), C (report-config views), and E (element notations)
+// from the filesystem + spec front-matter, then verifies that every stated count
+// in notations/README.md and transitrix/.claude-plugin/plugin.json matches.
+//
+// Classification rules:
+//   deprecated  — spec front-matter status: deprecated → excluded from A and C.
+//   report-config — short name appears in the README table after the
+//                   "| — | **Report views …" separator row → counted as C.
+//   diagram     — all other non-deprecated view specs → counted as A.
+//
+// Why the README table is used for classification (not spec front-matter alone):
+//   The separator row is a deliberate structural marker, not prose; the count
+//   in the prose header is what we're verifying against. Adding a `kind:` field
+//   to every spec would be redundant with the table that already separates them.
+
+const VIEWS_DIR    = join(REPO_ROOT, 'notations', 'views');
+const ELEMENTS_DIR = join(REPO_ROOT, 'notations', 'elements');
+const PLUGIN_JSON  = join(REPO_ROOT, 'transitrix', '.claude-plugin', 'plugin.json');
+const NON_SPEC_VIEW_FILES = new Set(['REPORT_VIEW_CONFIG.md']);
+
+// Returns the Set of short names that appear in the "Report views" block of the
+// README table (i.e., after the separator row).
+async function parseReportConfigShorts() {
+  const text = await readFile(CATALOGUE_PATH, 'utf8');
+  const lines = text.split('\n');
+  const viewsIdx = lines.findIndex(l => /^##\s+Views\s*$/.test(l));
+  if (viewsIdx < 0) throw new Error('notations/README.md: "## Views" section not found');
+  const nextSectionIdx = lines.findIndex((l, i) => i > viewsIdx && /^##\s/.test(l));
+  const end = nextSectionIdx < 0 ? lines.length : nextSectionIdx;
+
+  const out = new Set();
+  let pastSeparator = false;
+  for (let i = viewsIdx + 1; i < end; i++) {
+    const line = lines[i];
+    if (/^\|\s+—\s+\|.*Report views/.test(line)) { pastSeparator = true; continue; }
+    if (!pastSeparator || !line.startsWith('| [')) continue;
+    const shorts = [...line.matchAll(/`([a-z][a-z0-9-]*)`/g)].map(m => m[1]);
+    if (shorts[0]) out.add(shorts[0]);
+  }
+  return out;
+}
+
+async function checkNotationCounts(failures) {
+  // Derive counts from filesystem + spec front-matter.
+  const reportConfigShorts = await parseReportConfigShorts();
+
+  let diagCount = 0, reportCount = 0;
+  for (const e of await readdir(VIEWS_DIR, { withFileTypes: true })) {
+    if (!e.isFile() || !e.name.endsWith('.md') || NON_SPEC_VIEW_FILES.has(e.name)) continue;
+    const text = await readFile(join(VIEWS_DIR, e.name), 'utf8');
+    const statusM = text.match(/^status:\s*"?(\w+)"?/m);
+    if (statusM && statusM[1] === 'deprecated') continue;
+    const extM = text.match(/^file_extension:\s*"?\*\.([a-z0-9-]+)\.transitrix\.yaml"?/m);
+    const short = extM ? extM[1] : null;
+    if (short && reportConfigShorts.has(short)) { reportCount++; } else { diagCount++; }
+  }
+
+  const elemCount = (await readdir(ELEMENTS_DIR, { withFileTypes: true }))
+    .filter(e => e.isFile() && e.name.endsWith('.md')).length;
+
+  // Verify stated counts. `null` means the pattern wasn't found in the file.
+  function check(stated, actual, file, pattern) {
+    if (stated === null) {
+      failures.push({ check: 'C1', message: `${file}: ${pattern} not found — add it so the lint can guard this count.` });
+    } else if (stated !== actual) {
+      failures.push({ check: 'C1', message: `${file}: ${pattern} states ${stated} but filesystem has ${actual}.` });
+    }
+  }
+
+  const readmeText = await readFile(CATALOGUE_PATH, 'utf8');
+  const dm = readmeText.match(/\*\*(\d+)\s+diagram\s+views\*\*/);
+  check(dm ? parseInt(dm[1], 10) : null, diagCount, 'notations/README.md', '"**N diagram views**"');
+  const rm = readmeText.match(/\*\*(\d+)\s+report\s+views\*\*/);
+  check(rm ? parseInt(rm[1], 10) : null, reportCount, 'notations/README.md', '"**N report views**"');
+  const em = readmeText.match(/The\s+\*\*(\d+)\*\*\s+element\s+notations/);
+  check(em ? parseInt(em[1], 10) : null, elemCount, 'notations/README.md', '"The **N** element notations"');
+
+  // plugin.json — only verify counts that are actually stated there.
+  let pluginText;
+  try { pluginText = await readFile(PLUGIN_JSON, 'utf8'); } catch { return; }
+  const desc = JSON.parse(pluginText).description || '';
+  const pdm = desc.match(/(\d+)\s+diagram\s+view/);
+  if (pdm && parseInt(pdm[1], 10) !== diagCount) {
+    failures.push({ check: 'C1', message: `transitrix/.claude-plugin/plugin.json: description states ${pdm[1]} diagram views but filesystem has ${diagCount}.` });
+  }
+  const prm = desc.match(/(\d+)\s+report\s+view/);
+  if (prm && parseInt(prm[1], 10) !== reportCount) {
+    failures.push({ check: 'C1', message: `transitrix/.claude-plugin/plugin.json: description states ${prm[1]} report views but filesystem has ${reportCount}.` });
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -244,6 +337,7 @@ async function main() {
     await checkExamples(catalogue, failures);
     await checkLinks(failures);
     await checkVersion(failures);
+    await checkNotationCounts(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);
@@ -263,7 +357,7 @@ async function main() {
 
   console.log(
     `Notations doc-lint clean — ${catalogue.size} view notations; examples, ` +
-    `internal links, and methodology_version pins all consistent.`
+    `internal links, methodology_version pins, and notation counts all consistent.`
   );
   process.exit(0);
 }
