@@ -12,11 +12,12 @@ This repository ships with a **recommended set of specialised roles**. An assist
 
 | Role | File | Use when… |
 |---|---|---|
+| **Ingest** | [`INGEST.md`](INGEST.md) | Turning raw material — interviews, policies, spreadsheets, notes — into `field` artefacts and canon candidates, at scale. Source in → candidate elements → through the human review gate; never writes admitted canon. |
+| **Modeler** | This file (`AGENTS.md`) | Authoring or editing model files — creating elements, views, relations; validating files; running the onboarding skill. |
 | **Analyst** | [`ANALYST.md`](ANALYST.md) | Answering questions *about the organisation* — who owns X, what capabilities support goal Y, what breaks if app Z changes. Read-only; business language; cited retrieval from `canon/`. |
-| **Modeler** | This file (`AGENTS.md`) | Authoring or editing model files — creating elements, views, relations; validating files; running the onboarding or ingest skill. |
 | **Validator** | [`VALIDATOR.md`](VALIDATOR.md) | Reviewing a change before it lands — checking structure, relations, required fields, blast radius. Read-only; does not merge. |
 
-**Routing rule:** if the request is a question about the organisation → use the Analyst. If it involves writing or changing any file → use the Modeler (this guide). If it's reviewing a change before it merges → use the Validator. When in doubt, start with the Analyst; it will redirect you if the task requires writing.
+**Routing rule:** if the request is turning raw material into candidate elements → use Ingest. If it's a question about the organisation → use the Analyst. If it involves writing or changing any file → use the Modeler (this guide). If it's reviewing a change before it merges → use the Validator. When in doubt, start with the Analyst; it will redirect you if the task requires writing.
 
 The Analyst requires a one-time MCP setup — see `ANALYST.md` §6 and the `.mcp.json` file at the repo root. The Validator uses the same repo-wide file tools as the Modeler — no extra setup.
 
