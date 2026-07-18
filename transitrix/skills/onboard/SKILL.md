@@ -129,6 +129,7 @@ After the directory tree exists, copy the canonical root files from the skill bu
 - `templates/ANALYST.md` → `<repo-root>/ANALYST.md` — the **Analyst** role guide. The Analyst is a specialised read-only agent that answers questions about the organisation from the validated `canon/` model. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `ANALYST.md` instead of `AGENTS.md` when asking a business question.
 - `templates/analyst-mcp.json` → `<repo-root>/.mcp.json` — the MCP server configuration that backs the Analyst's cited retrieval. Points the `canon` MCP server at `canon/`. If the adopter repo already has a `.mcp.json`, merge the `"canon"` entry into the existing `mcpServers` object rather than overwriting the file.
 - `templates/VALIDATOR.md` → `<repo-root>/VALIDATOR.md` — the **Validator** role guide. The Validator is a specialised review agent that checks a change (a PR, a local diff) for structural validity, whole-repo referential integrity, and blast radius before it merges. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `VALIDATOR.md` instead of `AGENTS.md` when reviewing a change. No extra MCP setup — it uses the same repo-wide file tools as the Modeler.
+- `templates/INGEST.md` → `<repo-root>/INGEST.md` — the **Ingest** role guide. Ingest is the front-door agent that turns raw material (interviews, policies, spreadsheets, notes) into `field` artefacts and canon candidates via the `/transitrix:ingest` skill, never writing admitted canon directly. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `INGEST.md` instead of `AGENTS.md` when loading raw material into the repo.
 
 Additionally, write one generated file (no template — author it inline):
 
@@ -371,6 +372,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Agent guide — Analyst (read-only Q&A) | `templates/ANALYST.md` | `<repo-root>/ANALYST.md` |
 | MCP config — Analyst canon server | `templates/analyst-mcp.json` | `<repo-root>/.mcp.json` *(merge if file exists)* |
 | Agent guide — Validator (review before merge) | `templates/VALIDATOR.md` | `<repo-root>/VALIDATOR.md` |
+| Agent guide — Ingest (raw material → candidates) | `templates/INGEST.md` | `<repo-root>/INGEST.md` |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 | VS Code extension recommendations | `templates/extensions.json` | `<repo-root>/.vscode/extensions.json` |
 
