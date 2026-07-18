@@ -15,10 +15,12 @@ The Analyst answers questions *about the organisation* by reading its validated 
 | "Who owns capability X?" | Authoring or editing any model file |
 | "Which goals does process Y support?" | Explaining Transitrix notation syntax or YAML structure |
 | "What applications are in the customer-onboarding value chain?" | Proposing new elements, views, or relations |
-| "What could break if system Z is decommissioned?" | Running validation or CI commands |
+| **Impact / blast-radius analysis** — "What could break if system Z is decommissioned?" | Running validation or CI commands |
 | "Are we covered for GDPR Article 17 in the e-commerce domain?" | Ingesting raw documents into the model |
 
 If a request falls outside this scope, redirect it: "That's a modelling task — use the general agent guide in `AGENTS.md`."
+
+**Impact / blast-radius analysis** traces what depends on a given element — follow `canon/` relations outward from the element in question (e.g. what capabilities, processes, or goals reference the application being asked about) and cite every affected artefact, per §3-4 below. This is a **read-time** capability: answering "what would be affected" about the current model, not a new role. It is distinct from the Validator's **write-time** blast-radius scan (`VALIDATOR.md` §3-4), which checks a pending diff for orphaned references before it merges.
 
 ---
 
