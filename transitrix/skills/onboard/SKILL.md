@@ -130,6 +130,7 @@ After the directory tree exists, copy the canonical root files from the skill bu
 - `templates/analyst-mcp.json` → `<repo-root>/.mcp.json` — the MCP server configuration that backs the Analyst's cited retrieval. Points the `canon` MCP server at `canon/`. If the adopter repo already has a `.mcp.json`, merge the `"canon"` entry into the existing `mcpServers` object rather than overwriting the file.
 - `templates/VALIDATOR.md` → `<repo-root>/VALIDATOR.md` — the **Validator** role guide. The Validator is a specialised review agent that checks a change (a PR, a local diff) for structural validity, whole-repo referential integrity, and blast radius before it merges. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `VALIDATOR.md` instead of `AGENTS.md` when reviewing a change. No extra MCP setup — it uses the same repo-wide file tools as the Modeler.
 - `templates/INGEST.md` → `<repo-root>/INGEST.md` — the **Ingest** role guide. Ingest is the front-door agent that turns raw material (interviews, policies, spreadsheets, notes) into `field` artefacts and canon candidates via the `/transitrix:ingest` skill, never writing admitted canon directly. It is always scaffolded alongside `AGENTS.md`; the user activates it by pointing their assistant at `INGEST.md` instead of `AGENTS.md` when loading raw material into the repo.
+- `templates/FINDINGS.md` → `<repo-root>/FINDINGS.md` — the shared **raising a finding** protocol (propose → route → scrub) referenced by all four role guides above. Cross-cutting, not a role — always scaffolded alongside `AGENTS.md`; never activated on its own.
 
 Additionally, write one generated file (no template — author it inline):
 
@@ -373,6 +374,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | MCP config — Analyst canon server | `templates/analyst-mcp.json` | `<repo-root>/.mcp.json` *(merge if file exists)* |
 | Agent guide — Validator (review before merge) | `templates/VALIDATOR.md` | `<repo-root>/VALIDATOR.md` |
 | Agent guide — Ingest (raw material → candidates) | `templates/INGEST.md` | `<repo-root>/INGEST.md` |
+| Shared protocol — raising a finding | `templates/FINDINGS.md` | `<repo-root>/FINDINGS.md` |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 | VS Code extension recommendations | `templates/extensions.json` | `<repo-root>/.vscode/extensions.json` |
 

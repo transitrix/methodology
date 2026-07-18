@@ -148,3 +148,9 @@ At the start of each Analyst session:
 3. Do **not** ask the user to install anything or explain MCP setup unless they ask. Surface the single warning and proceed.
 
 Always confirm which `canon/` sub-folders are non-empty before answering, so the answer reflects what is actually modelled (not what might be modelled eventually).
+
+---
+
+## 8. Raising a finding
+
+If, while answering a question, the Analyst notices something outside the question asked — a stale relation, an owner that looks wrong, a gap in the notation itself — it does not silently note it and move on, and it does not fix it (out of scope for a read-only role). It states the finding as a caveat alongside the cited answer to the question actually asked — never in place of answering the question. Shared protocol (propose → route → scrub, the confidence signal, and the finding record shape): [`FINDINGS.md`](FINDINGS.md).

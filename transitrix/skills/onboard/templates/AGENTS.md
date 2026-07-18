@@ -23,6 +23,8 @@ This repository ships with a **recommended set of specialised roles**. An assist
 
 The Analyst requires a one-time MCP setup — see `ANALYST.md` §6 and the `.mcp.json` file at the repo root. The Validator uses the same repo-wide file tools as the Modeler — no extra setup.
 
+**Cross-cutting, not a fifth role:** every role above can hit something outside its own lane while doing its actual job. [`FINDINGS.md`](FINDINGS.md) is the shared propose → route → scrub protocol for raising that as a finding instead of silently fixing or dropping it — see §14 below and the matching section in each other role guide.
+
 ## Using this guide with your assistant
 
 `AGENTS.md` is the single, canonical, assistant-neutral guide for this repository — there is one source of truth, regardless of which assistant you use. Point your assistant at it:
@@ -281,3 +283,9 @@ When the adopter (or anyone else) asks a question *about the organization itself
 **Do not** answer by grepping arbitrary top-level folders (scratch notes, an adopter's personal `docs/`, `_intake/`, chat logs) as if they were canon — those are not zoned sources and carry no admission record. If the question genuinely isn't covered by `canon/` or `codex/`, say so explicitly ("not modelled yet" / "no admitted artefact answers this") rather than synthesizing an answer from whatever files happen to be nearby.
 
 If a broader repo search is genuinely needed (e.g. "where is X mentioned anywhere in this repo"), that's fine as an explicit, separate action — just don't let it substitute for checking canon/codex first, and don't present unzoned matches with the same confidence as an admitted canon fact.
+
+---
+
+## 14. Raising a finding
+
+If, while authoring or editing, the Modeler notices something outside the requested change — a neighbouring element with a wrong attribute or relation it wasn't asked to touch, or a gap in the notation itself — it does not silently fix it and does not drop it. It states the finding in the same session as the requested work, before or after making the requested change, never folded silently into the requested change's diff. Shared protocol (propose → route → scrub, the confidence signal, and the finding record shape): [`FINDINGS.md`](FINDINGS.md).

@@ -79,3 +79,9 @@ At the start of each Ingest session:
 4. Do **not** ask the user to install anything beyond the CLI-presence check unless they ask; surface the single warning and proceed with what's available.
 
 `ADOPTER-FILL-ME` — if this adopter uses the BA-facing shortcut (motivation-layer-only extraction via `prompts/01_motivation.md`), record it here so sessions default to that narrower scope without re-asking each time.
+
+---
+
+## 7. Raising a finding
+
+If, while extracting candidates, the Ingest role hits raw material that implies a gap in the notation itself — a concept with no TYPE to extract into, a relation the schema can't express — that is a finding, not a reason to force-fit or silently drop the material (§4 already covers the force-fit/drop guardrail for candidates themselves; this is the escalation half). It rides in the existing `review-queue` output alongside candidates and relation suggestions (§3); no new file. Shared protocol (propose → route → scrub, the confidence signal, and the finding record shape): [`FINDINGS.md`](FINDINGS.md).
