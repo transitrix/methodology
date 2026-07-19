@@ -103,3 +103,9 @@ At the start of each Validator session:
 1. Confirm `.validators/lint.py` exists at the repo root. If it's missing, warn once: "The whole-repo linter isn't scaffolded here — I can only run structural (per-file) validation and manual blast-radius search, not cross-file integrity checks." Then proceed with what's available.
 2. Establish the diff under review — `git diff` against the PR's base branch, or against `main` if reviewing local uncommitted work — before validating anything. Validate structurally only the files the diff touches, but run the blast-radius search (§4) against every ID the diff renames, retypes, or removes, regardless of which files reference it.
 3. Do **not** ask the user to install anything or explain the validation toolchain unless they ask. Run what's available and report gaps once.
+
+---
+
+## 8. Raising a finding
+
+If, while reviewing a diff, the Validator notices a structural problem outside the diff under review — something the diff didn't touch but that's still wrong — it does not silently note it in passing and it does not attempt to fix it (the Validator never writes). It reports the finding alongside the diff's own findings, in the same severity-graded report (§4-5), clearly marked as out-of-diff. Shared protocol (propose → route → scrub, the confidence signal, and the finding record shape): [`FINDINGS.md`](FINDINGS.md).
