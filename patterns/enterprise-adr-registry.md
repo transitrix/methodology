@@ -1,78 +1,55 @@
 # Transitrix + Enterprise ADR Registry
 
-**Pattern type:** three-tier  
-**Complexity:** medium  
-**System-agnostic counterpart:** Enterprise ADR Registry pattern
+**Pattern type:** three-tier
+**Complexity:** medium
+**Mechanism:** [`method/03-architecture-decision-log.md`](../method/03-architecture-decision-log.md) — this pattern is the when / why / choose entry point; the concrete record format, harvest job, and ratification gate are specified once, there.
 
 ---
 
 ## Problem
 
-Multiple project repos each maintain their own `docs/decisions/` folder. Decisions that affect shared interfaces, positioning, or cross-repo compatibility are made locally, reviewed locally, and never aggregated. There is no enterprise view of architecture decisions, no way to check whether a local ADR conflicts with a prior cross-project decision, and no immutable record of what was decided and why.
+Multiple project repos each accumulate architecture decisions locally, reviewed locally, never aggregated. There is no enterprise view of what was decided, no way to check whether a local decision conflicts with a prior cross-project one, and no immutable record of what was decided and why.
 
 ## Solution
 
-Transitrix repo as the enterprise Architecture Decision Log (ADL). Three tiers classify decisions by scope and route cross-cutting ones through a structured promotion path into an append-only enterprise registry.
+Adopt the [Architecture Decision Log (ADL)](../method/03-architecture-decision-log.md) convention: per-repo decision records feed a central, harvested enterprise log. This pattern tells you *when* to reach for the multi-repo layer and *how to start*; the mechanism itself — record format, the harvest job, the agent-authorship ratification gate, the CI guards — lives in `method/03`, not here.
 
-```
-┌────────────────────────────────────────────┐
-│              source tier                   │
-│                                            │
-│  project repos — local ADRs in docs/       │
-│  scope: single-repo decisions              │
-└──────────────────────┬─────────────────────┘
-                       │
-┌──────────────────────▼─────────────────────┐
-│              review tier                   │
-│                                            │
-│  cross-project ADR candidates              │
-│  scope: affects 2+ repos or shared API     │
-└──────────────────────┬─────────────────────┘
-                       │
-┌──────────────────────▼─────────────────────┐
-│               canon tier                   │
-│                                            │
-│  Architecture/INDEX.md — enterprise ADL    │
-│  Architecture/ — immutable, append-only    │
-└────────────────────────────────────────────┘
-```
+Two layers, unchanged from the canon:
 
-## Tiers
+| Layer | Where it lives | Canon reference |
+|---|---|---|
+| Per-repo decision records | `operations/decisions/ADR-NNNN-<slug>.md`, each project repo | [Team Operations](../method/02-team-operations.md) §3.1, extended by `method/03` §3 |
+| Enterprise ADL | `architecture/decision-log/`, the central architecture repo | `method/03` §1, §5 |
 
-### Source tier — project repos
+The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync.
 
-Each project repo keeps a `docs/decisions/` folder for local ADRs. Local decisions are those whose scope is entirely contained within one repo: a dependency choice, a local naming convention, a project-specific process. Standard ADR format applies (title, date, status, context, decision, consequences).
+## Start here — one repo, right now
 
-### Review tier — cross-project candidates
+Don't wait for a second repo to begin. An adopter with a single repo can stand up the per-repo half of the ADL immediately:
 
-A decision enters the review tier when its scope extends beyond one repo. Classification criteria:
+1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-NNNN-<slug>.md`, front-matter per `method/03` §3).
+2. **Write the first record** — `operations/decisions/ADR-0001-<slug>.md`, recording the decision to start keeping ADRs here. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
+3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it.
 
-- Affects the interface or contract between two or more repos.
-- Touches positioning, compatibility, or access policy shared across the enterprise.
-- Overrides or supersedes a prior enterprise-level decision.
+That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
 
-Cross-project candidates are nominated in a Transitrix PR. Reviewers validate scope classification and ensure the decision does not conflict with existing enterprise ADRs.
+## When to add the enterprise layer (multi-repo)
 
-### Canon tier — `Architecture/` in the Transitrix repo
+- Two or more project repos share interfaces, libraries, or cross-cutting concerns.
+- A governance or compliance requirement calls for an auditable, aggregated record across repos.
+- Recurring coordination overhead from repos silently diverging on a decision another repo already made.
+- An autonomous agent needs to make architecturally-significant changes across repos with a gated, auditable trace (`method/03` §6).
 
-Promoted decisions become enterprise ADRs under `Architecture/` in the Transitrix repo. Key rules:
+## How to stand up the central ADL
 
-- **Immutable once merged.** Never edit a merged enterprise ADR. If a decision is superseded, write a new ADR that explicitly references and supersedes the old one. The old ADR's `status:` field is updated to `superseded` — its content is not changed.
-- **Append-only.** No deletions. The record of what was decided, when, and why must survive even when the decision itself does not.
-- **Indexed.** `Architecture/INDEX.md` is the canonical registry — one line per ADR with its number, title, date, and status. Update it with every promotion.
+1. **Every source repo already has `operations/decisions/`** (see "Start here" above) — nothing to change per-repo to onboard it into the harvest.
+2. **Create the central architecture repo's `architecture/decision-log/`** with a `harvest.config.yaml` listing every source repo (`method/03` §5).
+3. **Run the harvest** (`scripts/adl-harvest.mjs`, scheduled + on demand) to regenerate `INDEX.md` and pull full copies of promoted records into `promoted/`.
+4. **Set the promotion scope** — which records count as enterprise-significant (`method/03` §5's `promote.scopes`) — and who has authority to mark a record as promoted.
+5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/03` §6). This is what makes it safe for an autonomous agent to author decisions across repos.
 
-## When to use
+Full detail — record front-matter, the harvest algorithm, immutability discipline, the CI guard, TOGAF mapping: `method/03-architecture-decision-log.md`.
 
-- Two or more project repos that share interfaces, shared libraries, or cross-cutting concerns.
-- A governance or compliance requirement to maintain an auditable record of architectural decisions.
-- Recurring coordination overhead from local ADRs that silently diverge on shared concerns.
-- Teams that need a single authoritative place to check "has this been decided before?"
+## Legacy path variants
 
-## How to start with Transitrix
-
-1. **Stand up the Transitrix repo first.** Follow the [Transitrix Alone](transitrix-alone.md) pattern. The ADR registry is an additional structure inside an existing Transitrix repo, not a separate one.
-2. **Create `Architecture/`.** Add `Architecture/INDEX.md` with a header row and one seed entry documenting the decision to adopt Transitrix as the enterprise ADL. This is enterprise ADR-0001.
-3. **Define the scope classification criteria.** Write them down in `Architecture/INDEX.md` (or a linked `Architecture/SCOPE.md`). The criteria from the review tier above are a starting point — adjust to your organisation's topology.
-4. **Instrument project repos.** Add a note to each project's `CONTRIBUTING.md`: what qualifies as a cross-project ADR candidate, how to nominate one (open a Transitrix PR), and how to check the enterprise registry before making a local decision.
-5. **Promote existing cross-cutting decisions.** Audit existing `docs/decisions/` across project repos for decisions that already belong in the enterprise registry. Promote them in a single batch PR. Link from the original local ADR to the enterprise record.
-6. **Establish the promotion cadence.** A nomination is a Transitrix pull request; review is the validation gate. Decide who has the authority to promote (enterprise architect, architecture review board, or explicit reviewer set in `CODEOWNERS`).
+Earlier drafts of this pattern used `docs/decisions/` (per-repo) and `Architecture/` / `Architecture/INDEX.md` (central). Those are **legacy aliases only** — not a co-equal option alongside the canonical paths above. If you find them in an existing adopter repo, migrate to `operations/decisions/` and `architecture/decision-log/` the next time you touch that repo; don't propagate the old paths into new setups.
