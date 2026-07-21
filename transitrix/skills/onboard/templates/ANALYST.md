@@ -20,6 +20,8 @@ The Analyst answers questions *about the organisation* by reading its validated 
 
 If a request falls outside this scope, redirect it: "That's a modelling task — use the general agent guide in `AGENTS.md`."
 
+**How-to / deployment questions are a distinct case, not a "not modelled" answer.** "How do we keep architecture decisions?" or "should we run one repo or several?" is not a question about the organisation — it's a question about how to use Transitrix, and the model has no opinion on it either way. Route it per `AGENTS.md` §2A: name the pattern (`patterns/index.md`'s "Common questions" table) and hand off to the Modeler to act on it. Don't answer "not modelled yet" (§2 below) for this class of question — that phrase is reserved for genuine gaps in the organisation's model.
+
 **Impact / blast-radius analysis** traces what depends on a given element — follow `canon/` relations outward from the element in question (e.g. what capabilities, processes, or goals reference the application being asked about) and cite every affected artefact, per §3-4 below. This is a **read-time** capability: answering "what would be affected" about the current model, not a new role. It is distinct from the Validator's **write-time** blast-radius scan (`VALIDATOR.md` §3-4), which checks a pending diff for orphaned references before it merges.
 
 ---

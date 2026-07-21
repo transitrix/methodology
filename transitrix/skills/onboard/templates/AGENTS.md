@@ -62,6 +62,7 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 - Adopter manifest schema (`notations/MANIFEST.md`).
 - Notation index (`notations/README.md`).
 - Notation selection guide (`notations/NOTATION_SELECTION_GUIDE.md`) — use this when the user's request names a diagram/view but it's unclear which notation fits, or asks for something Mermaid/PlantUML could also draw; if the request itself is too vague to apply the guide (e.g. "make me a diagram"), ask a clarifying question first per its §1.1 before picking anything.
+- Deployment patterns (`patterns/<name>.md`) — the "when to use / how to start" guide for a deployment scenario (multi-repo ADR aggregation, knowledge store, personal vs enterprise memory, …). This is the authority for **how-to / deployment** questions — see §2A below.
 
 **Resolution order when a local file and the canon disagree:**
 
@@ -72,6 +73,25 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 The agent reads the canon as **read-only**. It never edits methodology files from this repo, and it never copies methodology content into this repo wholesale (link to it instead).
 
 If the Transitrix onboarding Skill (`/transitrix:onboard`) is available, the agent may use its cheat sheet as a quick reference, but the canon remains the source of truth for any conflict.
+
+---
+
+## 2A. Question-class router
+
+Not every question is "what does our model say" (§13) or a request to author/edit a file (the rest of this guide). Route by question class before answering — this table is **cross-cutting**: every role below uses the same routing, only the follow-through differs.
+
+| Question class | Home | Example |
+|---|---|---|
+| How-to / deployment — "how do we set up X with Transitrix", "how do we keep ADRs", "one repo or several?" | `patterns/` in the methodology canon — start at `patterns/index.md`'s "Common questions" table | "How do we stand up an ADL?" → `patterns/enterprise-adr-registry.md` |
+| Notation / schema — "what fields does a GOAL element have", "why did this file fail validation" | `notations/` — the per-notation specs and `CONTRACT.md` | "Why is my BPMN file failing `HDR-003`?" → `notations/CONTRACT.md` |
+| Concept / vocabulary — canonical terms, ontology-level questions | `concepts/` *(stub — not yet published in the methodology; deferred)* | — |
+| About the organisation itself | `canon/` / `codex/` / `field/` — see §13 | "Who owns capability X?" |
+
+**The follow-through differs by role, once routed:**
+
+- **Modeler** (this guide) — acts on it: scaffolds what the pattern describes (e.g. creates `operations/decisions/` and the first ADR record per [`enterprise-adr-registry.md`](https://github.com/transitrix/methodology/blob/main/patterns/enterprise-adr-registry.md)).
+- **Analyst** (`ANALYST.md`) — routes rather than acts: names the pattern and hands off to the Modeler. A how-to/deployment question was never going to be *in* the model, so "not modelled yet" (§13) is the wrong answer for it — that phrase is reserved for genuine questions about the organisation.
+- **Validator** (`VALIDATOR.md`) / **Ingest** (`INGEST.md`) — out of scope for either; redirect to the Modeler.
 
 ---
 
