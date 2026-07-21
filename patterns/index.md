@@ -18,4 +18,17 @@ Start with **Transitrix Alone** unless you already have multiple source repos pr
 
 The patterns are additive. Transitrix canon is always the centre; the other patterns wrap it. You can start with Alone and migrate later — the canon layer does not change shape.
 
+## Common questions
+
+An adopter (or an adopter's agent) rarely asks "which pattern tier do I need" — it asks a concrete question. Match the question to a pattern below rather than reverse-engineering it from the scenario table above.
+
+| Question | Pattern |
+|---|---|
+| "How do we keep architecture decisions?" / "How do we stand up an ADL?" / "Where do ADRs live?" | [Enterprise ADR Registry](enterprise-adr-registry.md) — start with its "Start here" section for a single repo |
+| "How do we get started with Transitrix at all?" / "Where does everything go in one repo?" | [Transitrix Alone](transitrix-alone.md) |
+| "We have several repos producing raw material — how does it become canon?" | [Knowledge Store](knowledge-store.md) |
+| "How do we make this repo a shared memory for humans and agents?" | [Enterprise Memory](enterprise-memory.md) |
+| "Can I use Transitrix as a personal second brain?" | [Personal Memory](personal-memory.md) |
+| "Which deployment size fits us — Simple or Full?" | [`implementation-tiers.md`](implementation-tiers.md) |
+
 Not sure which tier fits your organisation? See [`implementation-tiers.md`](implementation-tiers.md) for the Simple vs Full comparison — what belongs in each, the upgrade trigger, and the upgrade path.
