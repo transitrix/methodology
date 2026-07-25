@@ -405,7 +405,7 @@ L1 (format), L2 (per-element), L3 (relations) map onto the rules above as:
 - **L2 — per-element:** `BL-002` … `BL-006`, `BL-013`.
 - **L3 — relations across the tree / grid / layers:** `BL-007` … `BL-012`, `BL-014`, `BL-015`, `BL-016`.
 
-**Matrix-level semantic invariants are out of scope here.** A pattern like RACI's "exactly one Accountable per row" is not a base-notation rule — it is specific to a template built on top of the grid form. Such invariants are routed to the repo-scope validator work (#719) as semantic rules layered on top of a valid `blocks` document, not encoded as `BL-*` codes.
+**Matrix-level semantic invariants are out of scope here.** A pattern like RACI's "exactly one Accountable per row" is not a base-notation rule — it is specific to a template built on top of the grid form. Such invariants belong to the repo-scope validator work as semantic rules layered on top of a valid `blocks` document, not encoded as `BL-*` codes.
 
 ---
 
