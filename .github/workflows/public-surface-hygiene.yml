@@ -7,6 +7,10 @@ name: Public-surface hygiene
 # only — never echoes the matched line, the diff hunk, the blocklist regex, or
 # any matched term. Reports file path only.
 #
+# An optional second secret, HYGIENE_BLOCKLIST_2, holds a further self-contained
+# regex read the same way and OR-ed into the same scan; it is a no-op when unset.
+# Same never-print discipline — patterns live only in the secret.
+#
 # Excluded from the diff scan: this workflow file itself and .gitignore — both
 # legitimately reference an internal-runner ignore pattern and would otherwise
 # self-trip.
@@ -31,6 +35,7 @@ jobs:
         env:
           BLOCKLIST: ${{ secrets.HYGIENE_BLOCKLIST }}
           BLOCKLIST_HUB: ${{ secrets.HYGIENE_BLOCKLIST_HUB }}
+          BLOCKLIST_2: ${{ secrets.HYGIENE_BLOCKLIST_2 }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -43,7 +48,7 @@ jobs:
             exit 0
           fi
 
-          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}"
+          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}${BLOCKLIST_2:+|(${BLOCKLIST_2})}"
 
           fail=0
 
