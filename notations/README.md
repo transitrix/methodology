@@ -146,3 +146,7 @@ Worked example files for every notation live under [`examples/`](examples/); eac
 ## Notation selection guide
 
 [`NOTATION_SELECTION_GUIDE.md`](NOTATION_SELECTION_GUIDE.md) catalogues every Mermaid and PlantUML diagram type alongside the Transitrix notations above, with use-cases for when to recommend each — the reference an agent uses to pick the right notation for a user's request.
+
+## External process-notation research
+
+[`PROCESS_NOTATION_RESEARCH.md`](PROCESS_NOTATION_RESEARCH.md) is a non-normative research note comparing UPN, EPC, and Nimbus against Transitrix's own `bpmn`, `process-map`, and `blocks` notations. It does not change any spec — it records where each external notation's ideas might inform future work.
