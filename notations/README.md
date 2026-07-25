@@ -29,7 +29,7 @@ Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Eve
 
 ## Elements
 
-The **13** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The **15** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -46,6 +46,8 @@ The **13** element notations live under [`elements/`](elements/) — each define
 | [25-business-services.md](elements/25-business-services.md) | `business-service` | Externally visible business behaviour the organisation makes available to its environment (ArchiMate Business Service). | `canon/elements/02_business/business-services/BUSINESS_SERVICE-<…>.yaml` | draft |
 | [25-nodes.md](elements/25-nodes.md) | `node` | Technology-layer infrastructure node primitive — physical or virtual compute, network, or storage substrate (ArchiMate Technology Node). | `canon/elements/04_technology/nodes/NODE-<…>.yaml` | draft |
 | [26-technology-services.md](elements/26-technology-services.md) | `technology-service` | Platform-level service exposed by a NODE to the application layer (ArchiMate Technology Service). | `canon/elements/04_technology/services/TECHNOLOGY_SERVICE-<…>.yaml` | draft |
+| [27-verification.md](elements/27-verification.md) | `verification` | Canon-zone primitive linking a REQUIREMENT to a V&V protocol, method, and pass/fail outcome — the engineering counterpart to ASSERTION. | `canon/verifications/VERIFICATION-<…>.yaml` | draft |
+| [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) | `hazard` / `risk-control` | ISO 14971 risk-management chain — `HAZARD` (potential source of harm) mitigated by `RISK_CONTROL` (control measure, optionally realised as a REQUIREMENT). | `canon/elements/01_motivation/hazards/HAZARD-<…>.yaml`, `canon/elements/01_motivation/risk-controls/RISK_CONTROL-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 

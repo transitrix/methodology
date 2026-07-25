@@ -1,0 +1,18 @@
+notation: requirement
+id: REQUIREMENT-DEVICE-ALARM-1
+name: "Low-battery alert during active use"
+description: "The device must alert the operator, both audibly and visually, when remaining battery capacity falls below the threshold needed to safely complete the longest supported procedure."
+
+origin: process-product
+severity: high
+
+zone: canon
+admitted_at: "2026-07-17"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-17"
+valid_to: null
