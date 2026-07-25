@@ -2,7 +2,7 @@
 notation: "Capabilities Map"
 version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-19"
+last_updated: "2026-07-25"
 status: "documented"
 file_extension: "*.capability-map.transitrix.yaml"
 dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
@@ -69,6 +69,8 @@ A capabilities map is a hierarchical view that shows what the organisation **can
 The capabilities map is a **view** over Capability elements stored in `elements/02_business/`. The elements carry the maturity history; the map defines how they are arranged and displayed.
 
 Capabilities maps live in `views/capabilities/`.
+
+**Relationship to Nested Block Diagrams.** The Capability Map is a *kin diagram* of the `blocks` grid form ([08-blocks.md](08-blocks.md) §9): the same underlying idea — a grid canvas whose cells carry business meaning — specialised with a fixed Vertical/Horizontal axis pair (§6), its own hierarchical `CAPABILITY-V`/`H` addressing (§4–§5) in place of raw grid coordinates, and its own three-level leveling constraint (§9). This is a conceptual relationship only: the schema, extension, and DSM implementation below are unchanged and unaffected by it.
 
 ---
 
@@ -348,6 +350,7 @@ Migration: adopters with existing inline values move each value into a single-en
 
 ## 15. References
 
+- Nested Block Diagrams — the general grid-canvas notation this map specialises: [08-blocks.md](08-blocks.md) §9
 - Capability elements: `elements/02_business/*.yaml` (type: Capability)
 - Element template: `organizations/acme_corp/.templates/elements/02_business_template.yaml`
 - Capability template: `organizations/acme_corp/.templates/capability-map_template.yaml`

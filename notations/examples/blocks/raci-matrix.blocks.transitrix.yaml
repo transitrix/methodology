@@ -1,0 +1,48 @@
+notation: blocks
+spec_version: "0.1"
+name: "RACI — Architecture change governance"
+generated_at: "2026-07-25"
+
+nested_blocks:
+  id: BLOCKS-RACI-GOVERNANCE-1
+  name: "RACI — Architecture change governance"
+  description: >
+    Who is Responsible / Accountable / Consulted / Informed across the
+    architecture-change lifecycle. Grid form of Nested Block Diagrams
+    (08-blocks.md §4.2) — a single-layer matrix, one row per activity, one
+    column per role. Exactly one Accountable per row is a modelling
+    convention here, not a base-notation rule (08-blocks.md §6).
+  version: "0.1"
+  author: "Valerii Korobeinikov"
+
+  blocks:
+    - id: RACI_ARCHGOV
+      name: "Architecture change governance"
+      grid:
+        columns:
+          - { id: ROLE-PRODUCT,      name: "Product Owner" }
+          - { id: ROLE-LEAD-ARCH,    name: "Lead Architect" }
+          - { id: ROLE-DOMAIN-ARCH,  name: "Domain Architect" }
+          - { id: ROLE-SECURITY,     name: "Security & Risk" }
+          - { id: ROLE-REVIEW-BOARD, name: "Architecture Review Board" }
+
+        rows:
+          - id: ACT-PROPOSE
+            name: "Propose a change"
+            assign: { ROLE-PRODUCT: "A", ROLE-DOMAIN-ARCH: "R", ROLE-LEAD-ARCH: "C", ROLE-REVIEW-BOARD: "I" }
+
+          - id: ACT-ASSESS
+            name: "Assess impact"
+            assign: { ROLE-LEAD-ARCH: "A", ROLE-DOMAIN-ARCH: "R", ROLE-SECURITY: "C", ROLE-PRODUCT: "C", ROLE-REVIEW-BOARD: "I" }
+
+          - id: ACT-DECIDE
+            name: "Approve / reject"
+            assign: { ROLE-REVIEW-BOARD: "A", ROLE-LEAD-ARCH: "R", ROLE-DOMAIN-ARCH: "C", ROLE-SECURITY: "C", ROLE-PRODUCT: "I" }
+
+          - id: ACT-IMPLEMENT
+            name: "Implement the change"
+            assign: { ROLE-LEAD-ARCH: "A", ROLE-DOMAIN-ARCH: "R", ROLE-SECURITY: "C", ROLE-PRODUCT: "I", ROLE-REVIEW-BOARD: "I" }
+
+          - id: ACT-VERIFY
+            name: "Verify & close"
+            assign: { ROLE-LEAD-ARCH: "A", ROLE-DOMAIN-ARCH: "R", ROLE-SECURITY: "C", ROLE-PRODUCT: "C", ROLE-REVIEW-BOARD: "I" }

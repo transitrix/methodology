@@ -1,0 +1,66 @@
+notation: blocks
+spec_version: "0.1"
+name: "Application landscape with ownership overlay"
+generated_at: "2026-07-25"
+
+nested_blocks:
+  id: BLOCKS-LAYERED-OVERLAY-1
+  name: "Application landscape with ownership overlay"
+  description: >
+    Two layers over the same grid: a base "Application landscape" layer
+    (Frontend / Backend, each nested one level deeper) and an "Ownership
+    overlay" layer where a single Platform Team block partially overlaps
+    both landscape blocks (08-blocks.md §4.3). Demonstrates layered
+    partial overlap and grid sub-nesting in one document.
+  version: "0.1"
+  author: "Valerii Korobeinikov"
+
+  layers:
+    - { id: LAYER-LANDSCAPE, name: "Application landscape" }
+    - { id: LAYER-OWNERSHIP, name: "Ownership overlay" }
+
+  blocks:
+    - id: LANDSCAPE
+      name: "Application landscape"
+      layer: LAYER-LANDSCAPE
+      grid:
+        columns:
+          - { id: COL-FRONTEND, name: "Frontend" }
+          - { id: COL-BACKEND,  name: "Backend" }
+        rows:
+          - { id: ROW-APPS, name: "Applications" }
+      children:
+        - id: FRONTEND_APP
+          name: "Storefront"
+          at: { col: COL-FRONTEND, row: ROW-APPS }
+
+        - id: BACKEND_APP
+          name: "Order Service"
+          at: { col: COL-BACKEND, row: ROW-APPS }
+          grid:
+            columns:
+              - { id: SUB-SVC,  name: "Service" }
+              - { id: SUB-DATA, name: "Datastore" }
+            rows:
+              - { id: SUB-ROW, name: "Component" }
+          children:
+            - id: BACKEND_SVC
+              name: "REST API"
+              at: { col: SUB-SVC, row: SUB-ROW }
+            - id: BACKEND_DB
+              name: "PostgreSQL"
+              at: { col: SUB-DATA, row: SUB-ROW }
+
+    - id: OWNERSHIP
+      name: "Platform team ownership"
+      layer: LAYER-OWNERSHIP
+      grid:
+        columns:
+          - { id: COL-FRONTEND, name: "Frontend" }
+          - { id: COL-BACKEND,  name: "Backend" }
+        rows:
+          - { id: ROW-APPS, name: "Applications" }
+      children:
+        - id: PLATFORM_OWNS_BOTH
+          name: "Owned by Platform Team"
+          span: { cols: [COL-FRONTEND, COL-BACKEND], rows: [ROW-APPS, ROW-APPS] }
