@@ -1,0 +1,80 @@
+notation: blocks
+spec_version: "0.1"
+name: "RACI — Quarterly Budget Cycle (starter template)"
+generated_at: "2026-07-25"
+description: "Starter RACI matrix laid out as a Nested Block Diagram — top-level blocks are activities in a quarterly budget cycle, child blocks are role assignments (R/A/C/I) for each activity. Fork this file: rename the activities and roles, and adapt the RACI codes to your own process. See ../README.md for the layout convention this template follows."
+
+nested_blocks:
+  id: BLOCKS-RACI-STARTER-1
+  name: "RACI — Quarterly Budget Cycle"
+  description: "Who is Responsible, Accountable, Consulted, and Informed at each step of preparing, reviewing, approving, and communicating the quarterly budget."
+  version: "0.1"
+
+  blocks:
+    - id: PREPARE_BUDGET_DRAFT
+      name: "1. Prepare Budget Draft"
+      description: "Finance drafts next quarter's budget numbers from historical actuals and department input."
+      children:
+        - id: PREPARE_BUDGET_DRAFT_R_FINANCE_MANAGER
+          name: "R — Finance Manager"
+          description: "Responsible: owns drafting the numbers."
+        - id: PREPARE_BUDGET_DRAFT_A_CFO
+          name: "A — CFO"
+          description: "Accountable: signs off that the draft is fit to circulate."
+        - id: PREPARE_BUDGET_DRAFT_C_DEPARTMENT_HEADS
+          name: "C — Department Heads"
+          description: "Consulted: give input on their department's forecast before the draft is finalised."
+        - id: PREPARE_BUDGET_DRAFT_I_EMPLOYEES
+          name: "I — Employees"
+          description: "Informed: notified once a draft exists."
+
+    - id: REVIEW_BUDGET
+      name: "2. Review Budget"
+      description: "Department heads and Finance walk through the draft together and flag issues."
+      children:
+        - id: REVIEW_BUDGET_R_DEPARTMENT_HEADS
+          name: "R — Department Heads"
+          description: "Responsible: review their own department's lines and raise concerns."
+        - id: REVIEW_BUDGET_A_CFO
+          name: "A — CFO"
+          description: "Accountable: owns the outcome of the review round."
+        - id: REVIEW_BUDGET_C_FINANCE_MANAGER
+          name: "C — Finance Manager"
+          description: "Consulted: clarifies assumptions behind the draft numbers."
+        - id: REVIEW_BUDGET_I_EMPLOYEES
+          name: "I — Employees"
+          description: "Informed: no action needed at this stage."
+
+    - id: APPROVE_BUDGET
+      name: "3. Approve Budget"
+      description: "The reviewed budget is formally approved and locked for the quarter."
+      children:
+        - id: APPROVE_BUDGET_R_FINANCE_MANAGER
+          name: "R — Finance Manager"
+          description: "Responsible: assembles the final approval package."
+        - id: APPROVE_BUDGET_A_CFO
+          name: "A — CFO"
+          description: "Accountable: makes the approval decision."
+        - id: APPROVE_BUDGET_C_DEPARTMENT_HEADS
+          name: "C — Department Heads"
+          description: "Consulted: confirm they can commit to their final numbers."
+        - id: APPROVE_BUDGET_I_EMPLOYEES
+          name: "I — Employees"
+          description: "Informed: no action needed at this stage."
+
+    - id: COMMUNICATE_BUDGET
+      name: "4. Communicate Budget"
+      description: "The approved budget is published to the organisation."
+      children:
+        - id: COMMUNICATE_BUDGET_R_FINANCE_MANAGER
+          name: "R — Finance Manager"
+          description: "Responsible: publishes the approved numbers and the supporting notes."
+        - id: COMMUNICATE_BUDGET_A_CFO
+          name: "A — CFO"
+          description: "Accountable: owns the communication as final and binding."
+        - id: COMMUNICATE_BUDGET_C_DEPARTMENT_HEADS
+          name: "C — Department Heads"
+          description: "Consulted: sanity-check the summary before it goes out company-wide."
+        - id: COMMUNICATE_BUDGET_I_EMPLOYEES
+          name: "I — Employees"
+          description: "Informed: receive the published budget."
