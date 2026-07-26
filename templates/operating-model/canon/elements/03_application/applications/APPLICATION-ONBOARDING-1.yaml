@@ -1,0 +1,31 @@
+# Template element — one minimal APPLICATION, standalone per
+# notations/ELEMENT_PRIMITIVES.md §7.7 + envelope §3. Time-varying fields
+# (owner_role, vendor, lifecycle_stage, maturity — CONTRACT.md §9) are
+# intentionally omitted rather than sidecar-versioned, to keep this
+# template to one file per building block.
+
+notation: application
+id: APPLICATION-ONBOARDING-1
+name: "Onboarding Platform"
+type: application
+domain: "Customer operations"
+description: >
+  Supports identity verification and account provisioning during customer
+  onboarding.
+capabilities:
+  - CAPABILITY-V1
+products:
+  - PRODUCT-ONBOARDING-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-26"
+admitted_by: "template"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-26"
+valid_to: null
