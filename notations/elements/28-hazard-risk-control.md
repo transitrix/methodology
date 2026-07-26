@@ -1,8 +1,8 @@
 ---
 title: "Hazard / Risk-Control — ISO 14971 risk-management chain"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-25"
+last_updated: "2026-07-26"
 status: "draft"
 ---
 
@@ -32,7 +32,7 @@ ISO 14971 (medical-device risk management) names a repeating chain: a **hazard**
                                                     VERIFICATION-DEVICE-ALARM-TEST-1
 ```
 
-`RISK_CONTROL.mitigates` is the **forward** link to the hazard(s) it addresses; `RISK_CONTROL.satisfies` is the **forward** link into the existing REQUIREMENT/VERIFICATION spine. Neither `HAZARD` nor `REQUIREMENT` carries a backward field — as with `REQUIREMENT` ← `ASSERTION.about` ([16-assertion.md](16-assertion.md) §1) and `REQUIREMENT` ← `VERIFICATION.verifies` ([27-verification.md](27-verification.md) §1), the reverse direction is answered by scanning the referencing catalogue, not by an inline field on the referenced element. Whether every hazard has an adequate control, and every control an adequate verification, is a cross-cutting completeness question deliberately **out of scope** for this spec (§6).
+`RISK_CONTROL.mitigates` is the **forward** link to the hazard(s) it addresses; `RISK_CONTROL.satisfies` is the **forward** link into the existing REQUIREMENT/VERIFICATION spine. Neither `HAZARD` nor `REQUIREMENT` carries a backward field — as with `REQUIREMENT` ← `ASSERTION.about` ([16-assertion.md](16-assertion.md) §1) and `REQUIREMENT` ← `VERIFICATION.verifies` ([27-verification.md](27-verification.md) §1), the reverse direction is answered by scanning the referencing catalogue, not by an inline field on the referenced element. Whether every hazard has an adequate control, and every control an adequate verification, is a cross-cutting completeness question answered by `HAZ-RISKCTL-COVERAGE-001` / `-002` and `RISKCTL-VERIF-COVERAGE-001` (§6).
 
 ---
 
@@ -182,18 +182,23 @@ The two folders sit alongside `canon/elements/01_motivation/requirements/` and `
 | `RISKCTL-003` | error | `control_type` is not one of `inherent_safety_by_design`, `protective_measure`, `information_for_safety` (§4). |
 | `RISKCTL-004` | error | `satisfies` is present and does not resolve to an artefact of TYPE `REQUIREMENT`. |
 | `RISKCTL-005` | error | `residual_risk` is present and not one of `acceptable`, `alarp`, `unacceptable` (§4). |
+| `HAZ-RISKCTL-COVERAGE-001` | warning | A `HAZARD` has no admitted `RISK_CONTROL` mitigating it — no file under `canon/elements/01_motivation/risk-controls/` carries this HAZARD id in `mitigates`. An identified hazard with no corresponding design output addressing it — "no orphan design output" read from the hazard side. Cross-cutting — fires on the HAZARD but is computed by scanning the risk-controls catalogue. |
+| `HAZ-RISKCTL-COVERAGE-002` | warning | A `HAZARD` has one or more admitted `RISK_CONTROL`s mitigating it, but none records `residual_risk: acceptable` or `residual_risk: alarp` — every mitigating control either omits `residual_risk` or records it `unacceptable`. The hazard is nominally addressed but not shown to be adequately controlled. Distinct from, and mutually exclusive with, `HAZ-RISKCTL-COVERAGE-001` by construction. |
+| `RISKCTL-VERIF-COVERAGE-001` | warning | A `RISK_CONTROL` carries `satisfies`, but the `REQUIREMENT` it references has no admitted `VERIFICATION` that has reached `outcome: pass` or `outcome: fail` (either none targets it at all, or every one that does is still `not_yet_run` / `inconclusive`). The same underlying gap as `REQ-VERIF-COVERAGE-001` / `-002` ([15-requirement.md](15-requirement.md) §4), surfaced directly on the RISK_CONTROL record so an ISO 14971 audit reader does not have to jump to the requirement file to see that a risk-mitigating design requirement lacks V&V closure. Does not fire when `satisfies` is absent — an early-lifecycle control recorded before decomposition into a formal design requirement (§3) is not an orphan. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to both TYPEs in addition to the rules above.
 
-**Deliberately out of scope here.** Whether every `HAZARD` has at least one adequately-controlled `RISK_CONTROL`, whether every `RISK_CONTROL` that carries `satisfies` has a corresponding `VERIFICATION`, and whether any requirement or control is an orphan — these reverse-trace completeness questions require scanning the full hazard / risk-control / requirement / verification catalogues together. They are tracked as a separate task coupled to this one and to [27-verification.md](27-verification.md).
+**Reverse-trace completeness.** Whether every `HAZARD` has at least one adequately-controlled `RISK_CONTROL` (`HAZ-RISKCTL-COVERAGE-001` / `-002` above), and whether every `RISK_CONTROL` that carries `satisfies` has a corresponding, closed `VERIFICATION` (`RISKCTL-VERIF-COVERAGE-001` above) — these cross-cutting questions require scanning the full hazard / risk-control / requirement / verification catalogues together. Paired with the REQUIREMENT-side reverse-trace rules in [27-verification.md](27-verification.md) §5 and [15-requirement.md](15-requirement.md) §4.
 
 ---
 
 ## 7. Evolution
 
-Out of scope for this initial schema:
+**Landed (v0.2, 2026-07-26):**
+- **Reverse-trace completeness** — `HAZ-RISKCTL-COVERAGE-001` / `-002` (orphan / inadequately-controlled hazard) and `RISKCTL-VERIF-COVERAGE-001` (risk-mitigating requirement lacking V&V closure), defined in §6. Paired with the REQUIREMENT-side rules in [27-verification.md](27-verification.md) §5 and [15-requirement.md](15-requirement.md) §4.
 
-- **Reverse-trace completeness.** See §6 — tracked as a separate task.
+Out of scope for this schema:
+
 - **Numeric risk scoring.** No risk-priority-number formula or acceptability matrix is defined; an adopter's own risk-management procedure supplies it.
 - **SDS / trace-matrix rendering.** A rendered design-controls trace matrix including the risk chain (Hazard → Risk-Control → Verification) is a separate report-config view, not yet implemented.
 - **Post-market surveillance / risk-file maintenance workflow.** Ceded to a dedicated ALM/QMS tool.

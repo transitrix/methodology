@@ -1,0 +1,17 @@
+notation: verification
+id: VERIFICATION-ENCLOSURE-DROP-TEST-1
+verifies: REQUIREMENT-ENCLOSURE-DROP-1
+method: test
+protocol: "Drop the enclosure from 1m onto a hard, flat surface in each of the six cardinal orientations; inspect for cracking, seal breach, and re-test ingress protection rating after each drop."
+outcome: not_yet_run
+
+zone: canon
+admitted_at: "2026-07-24"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-24"
+valid_to: null
