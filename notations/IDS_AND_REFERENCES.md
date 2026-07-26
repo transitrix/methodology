@@ -93,6 +93,8 @@ Elements that get referenced across documents.
 | `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`canon/elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](elements/15-requirement.md). |
 | `STAKEHOLDER` | motivation-layer interest primitive (ArchiMate Stakeholder) — `internal` / `external`. Carries the stake profile (concern, interest, influence) and **references an `ACTOR` for identity** (`actor:` required); never carries identity itself. | Stakeholders catalogue (`canon/elements/01_motivation/stakeholders/`); stakes in specific objects are `stakeholding` relations. Schema: [20-stakeholders.md](elements/20-stakeholders.md). |
 | `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `DRIVER`**, e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. | Assessments catalogue (`canon/elements/01_motivation/assessments/`); `assesses:` references one `DRIVER`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
+| `HAZARD` | motivation-layer ISO 14971 risk-management primitive — a potential source of harm, with severity, probability, and pre-mitigation risk classification. First link in the hazard → control → requirement → verification chain. | Hazards catalogue (`canon/elements/01_motivation/hazards/`); mitigated by `RISK_CONTROL.mitigates`. Schema: [elements/28-hazard-risk-control.md](elements/28-hazard-risk-control.md). |
+| `RISK_CONTROL` | motivation-layer ISO 14971 risk-management primitive — a measure that mitigates one or more `HAZARD`s, classified by the inherent-safety / protective-measure / information-for-safety control hierarchy. MAY realise its mitigation as a design `REQUIREMENT` via `satisfies`. | Risk-controls catalogue (`canon/elements/01_motivation/risk-controls/`); `mitigates` references `HAZARD`, `satisfies` references `REQUIREMENT`. Schema: [elements/28-hazard-risk-control.md](elements/28-hazard-risk-control.md). |
 | `TARGET_STATE` | implementation-layer **end-state** primitive (ArchiMate Plateau) — a structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met. The object an architect varies when presenting solution options; satisfies one or more `GOAL`s and is reached by one or more `SCENARIO` paths. | Target-states catalogue (`canon/elements/05_implementation/target-states/`); composition is inline (`capabilities[]`, `processes[]`, `applications[]`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `action_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. Deprecated alias: `activity_goal` → `action_goal`. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
 | `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Action Card's narrative. Distinct from a "schedule milestone" (a zero-duration action inside an Action schedule document, see [07-action.md](views/07-action.md) §5.9), which exists for critical-path computation. | Defined inside an Action Card document (`*.action-card.transitrix.yaml`); scope is the parent card document. Schema: [18-action-card.md](views/18-action-card.md). |
@@ -157,6 +159,14 @@ Compliance claims linking a `REQUIREMENT` to the elements that realise it. Asser
 |---|---|
 | `ASSERTION` | a claim that a subject (`PRODUCT` / `PROCESS` / `CAPABILITY`) satisfies a `REQUIREMENT`, with status and evidence |
 
+### 3.7 Verification type
+
+The engineering V&V counterpart to `ASSERTION` (§3.6) — a claim that a protocol was run against a `REQUIREMENT`, with method, result, and pass/fail outcome. Also canonical but living **outside** the `elements/` tree, under `canon/verifications/`. Schema: [27-verification.md](elements/27-verification.md).
+
+| TYPE | What it is |
+|---|---|
+| `VERIFICATION` | a claim that a protocol (test / analysis / inspection / demonstration) was run against a `REQUIREMENT`, with a pass/fail outcome |
+
 ---
 
 ## 4. Uniqueness scope
@@ -183,10 +193,13 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `REQUIREMENT` | within the organisation's element catalogue (`canon/elements/01_motivation/requirements/`), one file per REQUIREMENT. |
 | `STAKEHOLDER` | within the organisation's element catalogue (`canon/elements/01_motivation/stakeholders/`), one file per STAKEHOLDER. |
 | `ASSESSMENT` | within the organisation's element catalogue (`canon/elements/01_motivation/assessments/`), one file per ASSESSMENT. |
+| `HAZARD` | within the organisation's element catalogue (`canon/elements/01_motivation/hazards/`), one file per HAZARD. |
+| `RISK_CONTROL` | within the organisation's element catalogue (`canon/elements/01_motivation/risk-controls/`), one file per RISK_CONTROL. |
 | `TARGET_STATE` | within the organisation's element catalogue (`canon/elements/05_implementation/target-states/`), one file per TARGET_STATE. |
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
 | `MILESTONE` | within the action-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
+| `VERIFICATION` | within the organisation's `canon/verifications/` folder, one file per VERIFICATION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT`, `AMENDMENT`, `SEGMENT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |
