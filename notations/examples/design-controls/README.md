@@ -28,10 +28,11 @@ REQUIREMENT-DEVICE-ALARM-1
 VERIFICATION-DEVICE-ALARM-TEST-1  (outcome: pass)
 ```
 
-Every forward link (`mitigates`, `satisfies`, `verifies`) resolves in this fixture — no orphan or unverified element is seeded here. Reverse-trace completeness checking (deliberately flagging a seeded orphan/unverified requirement to prove the validator catches it) is the subject of a separate, coupled task; this fixture demonstrates the schema and the happy path only.
+Every forward link (`mitigates`, `satisfies`, `verifies`) resolves in this fixture — no orphan or unverified element is seeded here; it demonstrates the schema and the happy path only. The reverse-trace completeness rules (`REQ-VERIF-COVERAGE-*`, `HAZ-RISKCTL-COVERAGE-*`, `RISKCTL-VERIF-COVERAGE-001`) that check for a seeded orphan or unverified element are demonstrated in the sibling fixture [`reverse-trace-gaps/`](reverse-trace-gaps/).
 
 ## References
 
+- [`reverse-trace-gaps/`](reverse-trace-gaps/) — sibling fixture seeding each reverse-trace completeness gap this chain's rules check for.
 - [`../../elements/27-verification.md`](../../elements/27-verification.md) — `VERIFICATION` schema and validation rules.
 - [`../../elements/28-hazard-risk-control.md`](../../elements/28-hazard-risk-control.md) — `HAZARD` / `RISK_CONTROL` schema and validation rules.
 - [`../../elements/15-requirement.md`](../../elements/15-requirement.md) — `REQUIREMENT` schema.

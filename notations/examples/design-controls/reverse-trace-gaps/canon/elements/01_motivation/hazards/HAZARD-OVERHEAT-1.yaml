@@ -1,0 +1,20 @@
+notation: hazard
+id: HAZARD-OVERHEAT-1
+name: "Internal overheating during extended active use"
+description: "Extended continuous operation raises internal component temperature beyond the safe operating range, risking thermal damage to internal components and skin-contact burn risk at the enclosure surface."
+harm: "Thermal injury to the operator; permanent damage to internal components."
+
+severity: critical
+probability: occasional
+initial_risk: unacceptable
+
+zone: canon
+admitted_at: "2026-07-22"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-22"
+valid_to: null

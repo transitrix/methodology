@@ -1,8 +1,8 @@
 ---
 title: "Verification — REQUIREMENT V&V claim"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-25"
+last_updated: "2026-07-26"
 status: "draft"
 ---
 
@@ -29,7 +29,7 @@ A `REQUIREMENT` records *what the design must do*. A `VERIFICATION` records *tha
                                 evidence: […]
 ```
 
-`verifies` is the **forward** link (verification → requirement it targets). The **reverse** question — "which requirements have no verification, or an unresolved one?" — is a cross-cutting completeness check, deliberately **out of scope for this type** and tracked as a separate reverse-trace validator task (couples to this one; see §7).
+`verifies` is the **forward** link (verification → requirement it targets). The **reverse** question — "which requirements have no verification, or an unresolved one?" — is a cross-cutting completeness check, answered by `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002` ([15-requirement.md](15-requirement.md) §4; see §5 below).
 
 A `VERIFICATION` is distinct from an `ASSERTION`: an `ASSERTION` claims a *subject* (`PRODUCT` / `PROCESS` / `CAPABILITY`) is *compliant* with a requirement; a `VERIFICATION` claims a *protocol* was *run* against a requirement and records what it found. The two may coexist — an `ASSERTION.evidence[]` MAY cite a `VERIFICATION` via `kind: canonical_ref` — but neither implies the other.
 
@@ -138,7 +138,7 @@ A `VERIFICATION` carries no `subject` field: the thing verified is the requireme
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to VERIFICATION files in addition to the `VERIF-*` rules above.
 
-**Deliberately out of scope here.** Whether every `REQUIREMENT` has at least one `VERIFICATION` — the reverse-trace completeness question — is a cross-cutting check that requires scanning the full verifications catalogue against the full requirements catalogue. It is tracked as a separate task (paired with the equivalent check for `RISK_CONTROL`, [28-hazard-risk-control.md](28-hazard-risk-control.md)) and is not defined by this spec.
+**Reverse-trace completeness.** Whether every `REQUIREMENT` has at least one `VERIFICATION`, and whether every verification it has has actually closed (`pass` / `fail`, rather than stuck at `not_yet_run` / `inconclusive`) — is a cross-cutting check that requires scanning the full verifications catalogue against the full requirements catalogue. It is defined as `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002` in [15-requirement.md](15-requirement.md) §4 (paired with the equivalent risk-control-side check, `RISKCTL-VERIF-COVERAGE-001`, in [28-hazard-risk-control.md](28-hazard-risk-control.md) §6).
 
 ---
 
@@ -159,9 +159,11 @@ A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT`, `HAZ
 
 ## 7. Evolution
 
-Out of scope for this initial schema:
+**Landed (v0.2, 2026-07-26):**
+- **Reverse-trace completeness** — `REQ-VERIF-COVERAGE-001` (no `VERIFICATION` targets this REQUIREMENT) and `REQ-VERIF-COVERAGE-002` (every `VERIFICATION` that does is stuck at `not_yet_run` / `inconclusive`), defined in [15-requirement.md](15-requirement.md) §4. Paired with the risk-control-side reverse-trace rules in [28-hazard-risk-control.md](28-hazard-risk-control.md) §6.
 
-- **Reverse-trace completeness.** "Which requirements have no verification, or an unresolved (`not_yet_run` / `inconclusive`) one?" is a cross-cutting validator concern, tracked as a separate task coupled to this one and to [28-hazard-risk-control.md](28-hazard-risk-control.md).
+Out of scope for this schema:
+
 - **SDS / trace-matrix rendering.** A rendered design-controls trace matrix (User Need → Requirement → Design → Verification, plus the risk chain) is a separate report-config view, not yet implemented.
 - **Test execution management, 21 CFR Part 11 e-signatures, variant/configuration management.** Ceded to a dedicated ALM/QMS tool.
 

@@ -1,0 +1,21 @@
+notation: risk-control
+id: RISK_CONTROL-THERMAL-CUTOFF-1
+name: "Automatic thermal cutoff above safe operating temperature"
+description: "The device monitors internal temperature and automatically powers down when it exceeds the safe operating threshold, before the thermal-injury or component-damage threshold is reached."
+
+mitigates:
+  - HAZARD-OVERHEAT-1
+control_type: protective_measure
+satisfies: REQUIREMENT-THERMAL-CUTOFF-1
+residual_risk: unacceptable
+
+zone: canon
+admitted_at: "2026-07-23"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-23"
+valid_to: null
