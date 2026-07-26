@@ -17,6 +17,22 @@ name: Public-surface hygiene
 #
 # Skips cleanly when the secret is unavailable (e.g. PRs from forks) so external
 # contributors are not blocked by a guard that cannot evaluate them.
+#
+# Two further guards cover the CLAUDE.md/AGENTS.md leak channel (hub #770):
+#
+# - Filename guard (unconditional): `CLAUDE.md` is gitignored maintainer-local
+#   content and must never be committed anywhere in the tree. This check is
+#   the backstop that catches a force-add or merge regardless of gitignore.
+#
+# - Content-scan (conditional on the HYGIENE_INTERNAL_MARKERS secret): every
+#   committed `CLAUDE.md`/`AGENTS.md` in the tree (in practice just root
+#   `AGENTS.md` and the adopter template, since CLAUDE.md is banned above) is
+#   scanned in full against an internal-markers regex read from the
+#   HYGIENE_INTERNAL_MARKERS repository secret. `AGENTS.md` legitimately
+#   ships committed (adopter template + this repo's own content-clean guide),
+#   so it is checked by content rather than banned by name. Safe no-op when
+#   the secret is unset. Same never-print discipline as above — file path
+#   only, never the matched term.
 
 on:
   pull_request:
@@ -88,3 +104,42 @@ jobs:
             exit 1
           fi
           echo "OK - no internal-vocabulary matches on diff or PR metadata."
+
+      - name: Filename guard - CLAUDE.md must never be committed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git ls-files | grep -qiE '(^|/)CLAUDE\.md$'; then
+            echo "::error::CLAUDE.md is gitignored/maintainer-local — never commit it"
+            exit 1
+          fi
+          echo "OK - no CLAUDE.md committed."
+
+      - name: Content-scan committed CLAUDE.md/AGENTS.md for internal markers
+        shell: bash
+        env:
+          MARKERS: ${{ secrets.HYGIENE_INTERNAL_MARKERS }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${MARKERS:-}" ]; then
+            echo "HYGIENE_INTERNAL_MARKERS secret not available (unset, or a fork PR) - skipping."
+            exit 0
+          fi
+
+          fail=0
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ -f "$f" ] || continue
+            if grep -qiE "$MARKERS" "$f"; then
+              echo "::error file=$f::internal-ops content in a committed agent-doc"
+              fail=1
+            fi
+          done < <(git ls-files | grep -iE '(^|/)(CLAUDE|AGENTS)\.md$')
+
+          if [ "$fail" -ne 0 ]; then
+            echo "Neutralize the matched internal-ops content (or remove the file) and re-push. The matched terms are deliberately not printed; refer to the file path above."
+            exit 1
+          fi
+          echo "OK - no internal-ops markers in committed CLAUDE.md/AGENTS.md."
