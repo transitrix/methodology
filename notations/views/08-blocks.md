@@ -1,8 +1,8 @@
 ---
 notation: "Nested Block Diagrams"
-version: "0.5"
+version: "0.6"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-05"
+last_updated: "2026-07-26"
 status: "documented"
 file_extension: "*.blocks.transitrix.yaml"
 dsm_status: "not implemented — native TS renderer planned in Transitrix Studio (sibling task)"
@@ -32,7 +32,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `spec_version` | no | string | reserved field per the shared contract |
 | `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
 | `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
-| `nested_blocks` | yes | object | the nested blocks root — see §4 and §5 |
+| `nested_blocks` | one of `nested_blocks` / `grid` | object | the nested (tree) form's root — see §4 and §5 |
+| `grid` | one of `nested_blocks` / `grid` | object | the matrix-subset form's root — a rectangular grid of columns/rows instead of a containment tree; see §4a and §5 |
+
+A document declares **exactly one** of `nested_blocks` or `grid` at the root — never both, never neither (`BL-020`).
 
 Example header:
 
@@ -67,6 +70,8 @@ The notation carries no flow, no sequence, no relations between siblings — onl
 - Bounded context maps.
 
 The notation is **structured YAML**, not ASCII art. The previous Svgbob-rendered ASCII form (`*.blocks.transitrix.txt`) is retired in this version of the spec; it is replaced by a recursive `block` tree under a `nested_blocks:` root key.
+
+**Matrix subset (§4a).** The same notation short name also covers a single-layer rectangular matrix — a `grid:` root of `columns[]` / `rows[]` with per-cell `assign:` values (RACI-style matrices, coverage grids). It answers a different question — **who/what maps to what, per cell** — and does not depend on the (still-in-design) general layered-grid superset; see §4a.
 
 ---
 
@@ -149,6 +154,39 @@ A complete example: [`examples/blocks/architecture.blocks.transitrix.yaml`](../e
 
 ---
 
+## 4a. Top-level structure — matrix subset (`grid:` root)
+
+**Scope of this subset.** A single **layer**, **rectangular** grid: columns × rows, addressed by `(row-id, col-id)`. No layers, no cell overlap, no arbitrary (non-rectangular) cell sets, no sub-grids — those stay with the general layered-grid superset, which is still in design and out of scope here. This subset is forward-compatible with that superset: a `grid:` root document is a valid degenerate case of the eventual general form.
+
+A document in this subset carries a top-level `grid:` key **instead of** `nested_blocks:` (§4a header rule above). `grid.columns` declares the X axis; `grid.rows` declares the Y axis and, per row, the row's cell values via `assign:`.
+
+```yaml
+notation: blocks
+spec_version: "0.1"                    # matrix subset
+name: "Human-readable title"           # required per CONTRACT.md §1.1
+generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
+
+grid:
+  columns:
+    - { id: <col-id>, name: "<column label>" }
+    # ... one entry per column
+
+  rows:
+    - id: <row-id>
+      name: "<row label>"
+      assign:
+        <col-id>: <value>              # one entry per non-blank cell in this row
+      # ... a key omitted for a column means that cell is blank
+```
+
+- **Addressing.** A cell is `rows[r].assign[<col-id>]`; the pair `(row-id, col-id)` addresses it uniquely. An absent key in `assign` means the cell is blank — it is not an error to omit one.
+- **Cell values are template-defined.** The notation does not fix a vocabulary for `assign` values (`"A"`, `"done"`, `42`, …) — a template built on this subset defines its own vocabulary and, optionally, its own per-row or per-column invariant (e.g. the RACI template's "exactly one `A` per row", §6a).
+- **No document-level `id`.** Unlike the nested form's `nested_blocks.id` (§5.1), a matrix-subset document carries no `BLOCKS-…` document ID — the matrix-subset is scoped to a single grid, not a catalogue-linkable tree.
+
+A complete example: [`../../templates/raci/raci.blocks.transitrix.yaml`](../../templates/raci/raci.blocks.transitrix.yaml) — the RACI-as-matrix template (see its [fork-and-go guide](../../templates/raci/README.md)).
+
+---
+
 ## 5. Fields
 
 ### 5.1 `nested_blocks` root
@@ -176,6 +214,23 @@ A block entry is the same shape at every level: top-level (under `nested_blocks.
 
 Cross-reference semantics: when a block's `id` matches a canonical TYPE prefix from the registry (`APPLICATION-…`, `CAPABILITY-…`, `PROCESS-…`, `ROLE-…`, …), a renderer SHOULD treat the block as a cross-reference into the corresponding catalogue and MAY enrich the rendered box with information from that element (e.g. status, owner). When the `id` does not match a canonical prefix, the block is a free, notation-local label and no cross-document lookup is performed.
 
+### 5.3 `grid` root (matrix subset)
+
+| Field | Required | Description |
+|---|---|---|
+| `grid.columns` | yes | non-empty array of column entries — see §5.4. Declares the X axis. |
+| `grid.rows` | yes | non-empty array of row entries — see §5.4. Declares the Y axis and, via `assign`, the body cells. |
+
+### 5.4 `columns[]` / `rows[]` entries (matrix subset)
+
+| Field | Required | Description |
+|---|---|---|
+| `columns[].id` | yes | column identifier; unique among all column ids in the document. Notation-local label (any non-empty string, no whitespace) — the matrix subset does not apply the canonical `<TYPE>-…-<INTEGER>` cross-reference grammar. |
+| `columns[].name` | yes | column header label. |
+| `rows[].id` | yes | row identifier; unique among all row ids in the document (columns and rows share no namespace — a column and a row MAY reuse the same id string without conflict). |
+| `rows[].name` | yes | row label. |
+| `rows[].assign` | no | map of `<col-id>: <value>`; each key MUST match a declared `grid.columns[].id`. Omit the key entirely for a blank cell; omit `assign` entirely for an all-blank row. |
+
 ---
 
 ## 6. Validation rules
@@ -191,12 +246,26 @@ Cross-reference semantics: when a block's `id` matches a canonical TYPE prefix f
 | `BL-007` | error | block IDs must be unique within the document; no `id` may appear twice anywhere in the tree. |
 | `BL-008` | warn | nesting depth exceeds the recommended maximum of **5 levels** (root = level 1). Renderers MAY still produce output; very deep nesting tends to produce inner boxes too small to read. |
 | `BL-009` | warn | a `children` array is present but empty; remove the empty array or add child blocks. |
+| `BL-020` | error | document root must declare **exactly one** of `nested_blocks` or `grid` (§4a); both present or neither present is rejected. |
+| `BL-021` | error | `grid.columns` missing, not an array, or empty. |
+| `BL-022` | error | `grid.rows` missing, not an array, or empty. |
+| `BL-023` | error | every `grid.columns[]` / `grid.rows[]` entry must have non-empty `id` and `name`. |
+| `BL-024` | error | column ids must be unique among `grid.columns[]`; row ids must be unique among `grid.rows[]` (columns and rows are separate namespaces — see §5.4). |
+| `BL-025` | error | a `rows[].assign` key that does not match any declared `grid.columns[].id` ("unknown column reference"). |
 
 L1 (format), L2 (per-element), L3 (relations) map onto the rules above as:
 
-- **L1 — format:** the shared header rules from [CONTRACT.md](../CONTRACT.md) (`HDR-001` … `HDR-004`) plus `BL-001`.
-- **L2 — per-element:** `BL-002` … `BL-006`.
-- **L3 — relations across the tree:** `BL-007`, `BL-008`, `BL-009`.
+- **L1 — format:** the shared header rules from [CONTRACT.md](../CONTRACT.md) (`HDR-001` … `HDR-004`) plus `BL-001` / `BL-020`.
+- **L2 — per-element:** `BL-002` … `BL-006`, `BL-021` … `BL-023`.
+- **L3 — relations across the tree/grid:** `BL-007`, `BL-008`, `BL-009`, `BL-024`, `BL-025`.
+
+### 6a. Template-level invariants (matrix subset)
+
+`BL-020`–`BL-025` are the base notation's well-formedness rules — they hold for **every** `grid:` document regardless of what its cells mean. They do **not** constrain `assign` cell *values*, because the base notation deliberately does not fix a cell-value vocabulary (§4a).
+
+A **template** built on this subset MAY define a stricter invariant over that vocabulary — e.g. the RACI template's rule that exactly one column per row carries the value `"A"` (zero or two is invalid). This is a template-level concern, not a base-notation rule: it is documented and validated by the template itself (see [`templates/raci/README.md`](../../templates/raci/README.md) for the RACI case), not by a `BL-0xx` code here. The base notation intentionally leaves this extensible rather than special-casing one template's vocabulary into the shared spec.
+
+**Implementation status.** `BL-020`–`BL-025` require the `blocks` notation validator (Transitrix Studio, `packages/diagrams/src/blocks/validate.ts`) to recognise the `grid:` root form — as of this section landing, that validator only recognises `nested_blocks:` (tree form). Template-level invariant checking (the RACI cardinality rule) additionally needs a mechanism for a template to configure a custom constraint on top of the base validator — a design question for Studio to resolve, not fixed by this spec. Until both land, `npx @transitrix/cli validate` does not yet enforce this section against a `grid:` document.
 
 ---
 
@@ -230,6 +299,8 @@ What the renderer MUST NOT do:
 - Reach for Svgbob / ASCII rendering. The structured YAML form is canonical; legacy `.blocks.transitrix.txt` files are not part of this spec.
 - Re-order siblings; array order is significant and is preserved in the rendered output.
 
+**Scope note.** This render contract covers the nested (tree) form only. Rendering the matrix subset (§4a) as a laid-out grid/table is not yet specified — out of scope for the §4a addition, which covers schema and validation only.
+
 ---
 
 ## 8. Constraints and conventions
@@ -238,6 +309,7 @@ What the renderer MUST NOT do:
 - **One file, one purpose.** A document may carry multiple top-level blocks, but they should belong to one architectural narrative. Unrelated landscapes belong in separate files.
 - **Recommended max depth: 5.** Deeper nesting is permitted but produces inner boxes too small for most outputs. `BL-008` warns at depth 6+.
 - **Block IDs are document-local by default.** Cross-references to organisational catalogues are opt-in: declare a block's `id` using a canonical TYPE prefix when (and only when) the block represents a real catalogued element.
+- **Matrix subset is single-layer and rectangular (§4a).** Layers, cell overlap, arbitrary cell shapes, and sub-grids belong to the general layered-grid superset, which is still in design and out of scope for this subset.
 
 ---
 
@@ -250,3 +322,4 @@ What the renderer MUST NOT do:
 - Applications catalogue (source for cross-linked `APPLICATION-…` block IDs): [`10-applications.md`](10-applications.md)
 - Capabilities map (source for cross-linked `CAPABILITY-…` block IDs): [`05-capability-map.md`](05-capability-map.md)
 - Methodology section 6 (Notation kit): `method/01-methodology.md`
+- RACI-as-matrix template (matrix subset, §4a): [`../../templates/raci/`](../../templates/raci/)
