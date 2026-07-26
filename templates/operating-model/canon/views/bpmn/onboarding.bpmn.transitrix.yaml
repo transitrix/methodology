@@ -1,0 +1,49 @@
+# BPMN process diagram — projection of PROCESS-ONBOARDING-1's flow
+# (notations/views/01-bpmn.md). Processes building block of the
+# operating-model composition. Node ids below are file-local labels
+# (IDS_AND_REFERENCES.md §3.3), not canonical ids — the canonical step
+# identity is PROCESS-ONBOARDING-1.flow.steps[].id.
+#
+# Hand-authored to mirror PROCESS-ONBOARDING-1.yaml's `flow`, since this
+# template repository does not run the Studio generator that would derive
+# it automatically. See templates/operating-model/README.md.
+
+notation: bpmn
+spec_version: "0.1"
+name: "Customer onboarding — process flow"
+generated_at: "2026-07-26"
+
+process:
+  id: customer-onboarding
+  name: "Customer Onboarding"
+  pools:
+    - id: onboarding
+      name: "Customer Onboarding"
+      lanes:
+        - id: cs
+          name: "Customer Success"
+          performed_by_role: ROLE-CS-1
+          elements:
+            - id: start
+              type: startEvent
+            - id: confirm-agreement
+              type: task
+              name: "Confirm onboarding agreement"
+        - id: ops
+          name: "Onboarding Operations"
+          performed_by_role: ROLE-OPS-1
+          supported_by_application: APPLICATION-ONBOARDING-1
+          elements:
+            - id: verify-identity
+              type: task
+              name: "Verify identity"
+            - id: provision-access
+              type: task
+              name: "Provision account access"
+            - id: end
+              type: endEvent
+  flows:
+    - { from: start, to: confirm-agreement }
+    - { from: confirm-agreement, to: verify-identity }
+    - { from: verify-identity, to: provision-access }
+    - { from: provision-access, to: end }

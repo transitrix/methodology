@@ -11,6 +11,7 @@ Forkable starter artefacts — generic patterns expressed in Transitrix notation
 | Template | Notation | Description |
 |---|---|---|
 | [`raci/`](raci/) | `blocks` (matrix subset, [08-blocks.md](../notations/views/08-blocks.md) §4a) | RACI matrix — who is Responsible / Accountable / Consulted / Informed across a set of activities. |
+| [`operating-model/`](operating-model/) | Composite — Goals, Capability Map, Process Blueprint, BPMN, Nested Block Diagram, Products, Applications | Starter kit showing "your operating model" is a composition of building blocks already expressible in Transitrix notation — one minimal, cross-referenced scenario running through all eight blocks. |
 
 ## Using a template
 
@@ -21,4 +22,9 @@ Forkable starter artefacts — generic patterns expressed in Transitrix notation
 
 ## Contributing a template
 
-A template must be a **generic pattern, not a client instance** — no real organisation's data, names, or figures. Keep it small (one notation, one clear purpose) and pair it with a short README explaining the layout convention and any modelling caveats.
+A template must be a **generic pattern, not a client instance** — no real organisation's data, names, or figures. Pair it with a short README explaining the layout convention and any modelling caveats.
+
+Two categories of template are welcome:
+
+- **Single-notation.** Keep it small — one notation, one clear purpose (e.g. `raci/`). This is still the default shape for most templates.
+- **Composite / starter-kit.** A template whose whole *purpose* is the composition of several building blocks across notations (e.g. `operating-model/`) — the point being made requires more than one notation, so it cannot be single-notation by construction. Keep it small a different way: exactly **one minimal instance per building block**, cross-referenced by real ID, not a full worked example. If you find yourself adding a second instance of any one building block "for realism," that's a sign the template has drifted from composite-proof into worked-example territory — stop and reconsider scope.

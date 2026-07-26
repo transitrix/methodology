@@ -1,0 +1,26 @@
+# Template element — one minimal BUSINESS_OBJECT, standalone per
+# notations/ELEMENT_PRIMITIVES.md §7.15 + envelope §3. Shown inside the
+# Process Blueprint view (canon/views/process-blueprint/) — the information
+# building block is not a separate notation, it is a Business Object
+# surfaced in the value-stream view (notations/views/13-process-blueprint.md).
+
+notation: business_object
+id: BUSINESS_OBJECT-CUSTOMER-PROFILE-1
+name: "Customer profile"
+type: record
+description: >
+  The record created when the onboarding agreement is confirmed, read to
+  verify identity, and updated when account access is provisioned.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-26"
+admitted_by: "template"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-26"
+valid_to: null

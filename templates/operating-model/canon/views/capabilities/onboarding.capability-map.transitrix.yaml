@@ -1,0 +1,33 @@
+# Capability map — one capability, mirroring CAPABILITY-V1's stable fields.
+# Capabilities building block of the operating-model composition.
+# Notation spec: notations/views/05-capability-map.md.
+#
+# `current_maturity` is required inline by the shipped CLI validator
+# (packages/diagrams/src/capability-map/validate.ts, CMAP-003) even though
+# the spec (05-capability-map.md §13-14) designates it time-varying and
+# sidecar-only. Included here to pass validation — see the "Implementation
+# status" note in templates/operating-model/README.md.
+
+notation: capability-map
+spec_version: "0.1"
+name: "Customer onboarding — capability map"
+generated_at: "2026-07-26"
+
+capability_map:
+  id: CAPABILITY_MAP-ONBOARDING-1
+  name: "Customer Onboarding Capability Map"
+  description: "The single capability behind the customer-onboarding operating slice."
+  assessment_date: "2026-07-26"
+
+  capabilities:
+    - id: CAPABILITY-V1
+      name: "Customer Onboarding"
+      type: domain
+      current_maturity: 2
+      target_maturity: 3
+      owner_role: ROLE-OPS-1
+      business_process: PROCESS-ONBOARDING-1
+      applications:
+        - APPLICATION-ONBOARDING-1
+      valid_from: "2026-07-26"
+      valid_to: null

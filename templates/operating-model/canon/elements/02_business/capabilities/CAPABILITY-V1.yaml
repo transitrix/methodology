@@ -1,0 +1,36 @@
+# Template element — one minimal CAPABILITY, standalone per
+# notations/views/05-capability-map.md §13 + envelope (ELEMENT_PRIMITIVES.md §3).
+# Time-varying fields (current_maturity, owner_role, target_date — CONTRACT.md §9)
+# are intentionally omitted here rather than sidecar-versioned, to keep this
+# template to one file per building block. See templates/operating-model/README.md.
+
+notation: capability
+id: CAPABILITY-V1
+name: "Customer Onboarding"
+type: domain
+description: >
+  The organisation's ability to bring a newly signed customer to first
+  productive use of the offering — identity verification, account
+  provisioning, and initial activation.
+
+# Stable forward-looking aspiration — not time-varying
+target_maturity: 3
+
+# Relations — stay inline in v1 (Wave 3 may promote to first-class
+# time-aware relation files); see 05-capability-map.md §13a.
+business_process: PROCESS-ONBOARDING-1
+applications:
+  - APPLICATION-ONBOARDING-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-26"
+admitted_by: "template"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-26"
+valid_to: null
