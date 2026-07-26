@@ -1,0 +1,32 @@
+notation: design-controls-trace-matrix
+spec_version: "0.1"
+name: "Worked example — full design-controls trace matrix"
+generated_at: "2026-07-26"
+methodology_version: "2.0.0"
+
+view:
+  id: DC_TRACE_MATRIX-WORKED-EXAMPLE-1
+  name: "Worked example — full design-controls trace matrix"
+  description: >
+    Renders both chains over the union of the design-controls example fixtures
+    (../design-controls/ happy path + ../design-controls/reverse-trace-gaps/
+    seeded gaps), so every reverse-trace completeness rule this view can
+    annotate fires at least once. See ../README.md for the by-hand-computed
+    output.
+  report_type: combined
+
+  subjects:
+    requirements:
+      - REQUIREMENT-DEVICE-ALARM-1
+      - REQUIREMENT-THERMAL-CUTOFF-1
+      - REQUIREMENT-ENCLOSURE-DROP-1
+    hazards:
+      - HAZARD-BATTERY-DEPLETION-1
+      - HAZARD-ENCLOSURE-CRACK-1
+      - HAZARD-OVERHEAT-1
+
+  status_display:
+    show_outcomes: ["pass", "fail", "inconclusive", "not_yet_run"]
+    show_residual_risk: ["acceptable", "alarp", "unacceptable", "not_recorded"]
+
+  order_rows_by: "id"

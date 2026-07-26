@@ -161,10 +161,10 @@ A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT`, `HAZ
 
 **Landed (v0.2, 2026-07-26):**
 - **Reverse-trace completeness** — `REQ-VERIF-COVERAGE-001` (no `VERIFICATION` targets this REQUIREMENT) and `REQ-VERIF-COVERAGE-002` (every `VERIFICATION` that does is stuck at `not_yet_run` / `inconclusive`), defined in [15-requirement.md](15-requirement.md) §4. Paired with the risk-control-side reverse-trace rules in [28-hazard-risk-control.md](28-hazard-risk-control.md) §6.
+- **SDS / trace-matrix rendering.** The design-controls trace matrix (`REQUIREMENT` → `VERIFICATION`, plus the risk chain) now renders as a report-config view: [`24-design-controls-trace-matrix.md`](../views/24-design-controls-trace-matrix.md). It renders the two chains canon actually supports today — see that spec §1.2 for the known limitation that Transitrix does not yet define standalone `USER_NEED` / `DESIGN` element TYPEs, so the literal FDA-terminology four-column matrix is not rendered as such.
 
 Out of scope for this schema:
 
-- **SDS / trace-matrix rendering.** A rendered design-controls trace matrix (User Need → Requirement → Design → Verification, plus the risk chain) is a separate report-config view, not yet implemented.
 - **Test execution management, 21 CFR Part 11 e-signatures, variant/configuration management.** Ceded to a dedicated ALM/QMS tool.
 
 ---

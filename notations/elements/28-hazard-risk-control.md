@@ -196,11 +196,11 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 
 **Landed (v0.2, 2026-07-26):**
 - **Reverse-trace completeness** — `HAZ-RISKCTL-COVERAGE-001` / `-002` (orphan / inadequately-controlled hazard) and `RISKCTL-VERIF-COVERAGE-001` (risk-mitigating requirement lacking V&V closure), defined in §6. Paired with the REQUIREMENT-side rules in [27-verification.md](27-verification.md) §5 and [15-requirement.md](15-requirement.md) §4.
+- **SDS / trace-matrix rendering.** The design-controls trace matrix including the risk chain (Hazard → Risk-Control → Requirement → Verification) now renders as a report-config view: [`24-design-controls-trace-matrix.md`](../views/24-design-controls-trace-matrix.md).
 
 Out of scope for this schema:
 
 - **Numeric risk scoring.** No risk-priority-number formula or acceptability matrix is defined; an adopter's own risk-management procedure supplies it.
-- **SDS / trace-matrix rendering.** A rendered design-controls trace matrix including the risk chain (Hazard → Risk-Control → Verification) is a separate report-config view, not yet implemented.
 - **Post-market surveillance / risk-file maintenance workflow.** Ceded to a dedicated ALM/QMS tool.
 
 ---
