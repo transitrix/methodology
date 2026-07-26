@@ -1,7 +1,7 @@
 ---
 title: Transitrix — Methodology for Enterprise Architecture as Code
 status: active
-last_reviewed: 2026-05-30
+last_reviewed: 2026-07-26
 audience: public
 license: MIT
 tags: [transitrix, methodology, enterprise_architecture, architecture_as_code, archimate, bpmn]
@@ -22,6 +22,36 @@ It is built for organisations that want to:
 - **Reduce ceremony without losing rigour** — the methodology adopts ArchiMate 3.2 semantics where they bring value, and skips heavyweight artefacts that don't earn their cost.
 
 Transitrix is designed for environments where leadership wants tight feedback loops between strategic intent and operational delivery — and is willing to manage their enterprise the way good engineering teams manage their software.
+
+## 1a. How the to-be is obtained
+
+A frequent challenge to any as-is/to-be method: interviews cannot produce a finished target architecture, because an organisation does not hold its own end state ready to be drawn out. Transitrix's stance is that the to-be is **synthesized, not elicited and not merely copied** — from two inputs, split on a problem-space / solution-space cut.
+
+**Strategic intent of the organisation** (problem space — direction and binding requirements):
+
+- Goals, drivers, and desired outcomes.
+- Legal and regulatory requirements, including regulatory and compliance standards (e.g. GDPR, Basel, FDA).
+- Stakeholder needs and concerns.
+- Market forces and competitive pressure.
+- Business constraints — budget, time, risk appetite.
+
+Elicited as goals, drivers, and constraints — modelled in the motivation layer as `GOAL`, `DRIVER`, `CONSTRAINT`, `REQUIREMENT` (§3a.2) — **never as a finished target architecture**.
+
+**The architect's decision** (solution space — synthesis within feasibility):
+
+- Reference frameworks (ITIL, BIAN, SCOR, APQC PCF, BIZBOK, …).
+- Technological constraints — existing landscape, platform limits, feasibility.
+- Technical standards (e.g. OpenAPI, ISO technical specs).
+- Architectural patterns and trade-offs.
+- The as-is state, as a transition constraint.
+
+A reference framework is a generic model — it states the *standard of good*, not the priorities for *this* organisation. The architect weighs it, adapts it, and decides; a framework is an input to the synthesis, never a substitute for it.
+
+**The allocation principle.** The client is the source of intent and constraints, never of the solution. Reference frameworks are the source of the standard of good, never of the priorities. The specific target is the architect's synthesis of intent and standard, adapted to this organisation. Regulatory/compliance standards bind at the business level and belong to intent; technical standards are solution-space inputs and belong to the architect's decision — a considered split, not an oversight.
+
+This dissolves a common false binary between "the client knows the target" and "the framework dictates the target." Asking a client to draw their future architecture is naive elicitation of the *solution*. Asking for goals, drivers, and constraints is legitimate elicitation of *intent*. The two acts are not the same, and only the second one works.
+
+**In the model.** The synthesized target is captured as a `TARGET_STATE` (§3a.2; [`ELEMENT_PRIMITIVES.md`](../notations/ELEMENT_PRIMITIVES.md) §7.18) — the structural snapshot an architect varies when offering solution options — reached from the baseline state (`type: base`) via one or more `SCENARIO` paths (`ELEMENT_PRIMITIVES.md` §7.19). Motivation-layer intent (`GOAL`, `DRIVER`, `CONSTRAINT`, `REQUIREMENT`) is modelled independently of any target state; a `TARGET_STATE` records which goals it satisfies, never the reverse. The model never stores "the client's architecture" — only the intent and the architect's resulting synthesis.
 
 ## 2. Four core principles
 
@@ -481,5 +511,5 @@ Transitrix is authored by **Valerii Korobeinikov**. The methodology — includin
 
 ---
 
-**Last reviewed:** 2026-05-30. The methodology's own versioning is tracked in [`CHANGELOG.md`](../CHANGELOG.md); this document is maintained alongside the `notations/` specs.
+**Last reviewed:** 2026-07-26. The methodology's own versioning is tracked in [`CHANGELOG.md`](../CHANGELOG.md); this document is maintained alongside the `notations/` specs.
 **Status:** Active.
