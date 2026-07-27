@@ -11,7 +11,7 @@ tags: [transitrix, methodology, operations, adr, adl, togaf, governance]
 
 > How architecture decisions made across **many repositories** are aggregated into one enterprise-level **Architecture Decision Log**, and how an autonomous agent may author decisions safely. The ADL is the multi-repo layer on top of the single-repo [Team Operations](02-team-operations.md) convention — not a separate, parallel system.
 
-> **Starting out?** This document specifies the multi-repo mechanism; it is not the setup path and it does not restate the record format. To *begin* keeping decision records, read **[`05-adr-adl-adoption.md`](05-adr-adl-adoption.md)** — one file, from an empty repo to a running harvest. The record format itself (filename, front-matter, body, supersession) is defined in [`02-team-operations.md`](02-team-operations.md) §3.1, which this document extends with two fields (§3).
+> **Starting out?** Go to **§10 — Adopter setup**: the whole path, from creating the folder to a scheduled harvest, with the commands. Sections 1–9 specify what the mechanism guarantees; §10 is what you do. The record format itself (filename, front-matter, body, supersession) is defined in [`02-team-operations.md`](02-team-operations.md) §3.1, which this document extends with two fields (§3).
 
 This is a git-native, agent-operable realisation of **TOGAF's *Governance Log → Decision Log*** — the log of "architecturally significant" decisions, expressed as Markdown records under version control and aggregated across an organisation's repositories. The **structure** mirrors TOGAF's Decision Log; the **agent-authored** dimension (§3.1.1, §6) is a **Transitrix extension** the standard does not mandate. The companion construct TOGAF places alongside it — the *Standards Information Base* (the reference-catalog) — is out of scope for this release; see §9.
 
@@ -139,13 +139,110 @@ The *down* flow — the central architecture repo publishing versioned object ca
 
 The *propagation mechanism* the down-flow will reuse — versioned transport, the named upgrade operation, and the agent ratification contract — is specified in [`04-methodology-update-propagation.md`](04-methodology-update-propagation.md). The reference-catalog layer is the next consumer of that mechanism.
 
-## 10. Adopter setup
+## 10. Adopter setup — from an empty repo to a running harvest
 
-1. **Per project repo** — adopt Team Operations `operations/decisions/` (or use an existing `docs/decisions/`). Records carry `author` (and ideally `source`). Add the CI guard: run `scripts/check-adl.mjs` on PRs touching the decisions folder.
-2. **Central architecture repo** — create `architecture/decision-log/` with `harvest.config.yaml` listing every source repo. Run `scripts/adl-harvest.mjs` (scheduled + on demand) to regenerate `INDEX.md` and `promoted/`.
-3. **First entry** — the inaugural record of the ADL is, fittingly, the decision that the ADL is immutable (this is recorded as a methodology design decision — the "Architecture Decision Log (ADL) — multi-repo aggregation component" decision).
+The mechanism is specified above; this section is the path through it. Sections 10.1–10.3 stand up the per-repo half and are worth doing before a second repo exists; 10.4–10.5 add the enterprise layer.
 
-Templates: `.templates/operations/ADR-template.md` (per-repo record, with the new fields), `.templates/operations/central-adl-index.template.md` and `.templates/operations/adl-harvest.config.template.yaml` (central repo).
+### Step 1 — per-repo, start today (no second repo needed)
+
+In each repository, without waiting for the central layer:
+
+1. Create `operations/decisions/`.
+2. Write `ADR-0001-<slug>.md` — the first record is the decision to start keeping records here.
+3. Give it the front-matter of §3 — the Team Operations shape plus `author` / `source`, and optionally `scope:` if you already know this record should be promoted once a central log exists.
+
+Body is `Context → Decision → Consequences`. Template: [`transitrix/skills/adr/templates/ADR-template.md`](../transitrix/skills/adr/templates/ADR-template.md).
+
+**Two disciplines that make the whole thing trustworthy** (§7):
+
+- **Append-only.** An accepted record's body is immutable. A change of course is a **new** record plus a `superseded_by` / `supersedes` pointer flip on the old one — never a rewrite. The only mutable front-matter on an accepted record is its status pointers.
+- **A living design doc is not a decision.** A current-state spec that evolves as understanding improves carries `doc_type: living-design-doc` and evolves freely — it does not belong in an append-only log.
+
+---
+
+### Step 2 — the authoring skill
+
+Install the plugin (Claude Code; the skill itself is assistant-neutral and works with any coding agent that can read and write files and run shell commands):
+
+```
+/plugin marketplace add transitrix/methodology
+/plugin install transitrix@transitrix-methodology
+```
+
+Then, in any repo: `/transitrix:adr`.
+
+The skill runs a Context → Decision → Consequences interview, allocates the next `ADR-NNNN`, validates the record, and opens a pull request. Three invariants it enforces ([`transitrix/skills/adr/SKILL.md`](../transitrix/skills/adr/SKILL.md)):
+
+1. **Never self-accepts.** Anything it writes is `author: agent`, `status: proposed`.
+2. **Supersession, not mutation** — see above.
+3. **Routes living design docs away** from the log instead of forcing them in.
+
+---
+
+### Step 3 — the CI guard (per repo, recommended)
+
+[`scripts/check-adl.mjs`](../scripts/check-adl.mjs) lints every pull request touching the decisions folder:
+
+```
+node scripts/check-adl.mjs                      # default: **/operations/decisions/
+node scripts/check-adl.mjs --dir docs/decisions # a repo on the legacy path
+```
+
+Checks (§8): required front-matter and valid enum values (A1) · an accepted record's body cannot be modified (A2) · a new `author: agent` record cannot arrive already `accepted` (A3) · filename `ADR-NNNN` equals the `id:` field (A4). A2 and A3 are diff-based and skip rather than fail when no base ref is available. Exit `0` clean, `1` findings.
+
+---
+
+### Step 4 — the enterprise ADL (once a second repo needs to see the first repo's decisions)
+
+In the central architecture repo:
+
+```
+architecture/
+  decision-log/
+    harvest.config.yaml   # the only file maintained by hand
+    INDEX.md              # DERIVED — regenerated every run, never hand-edited
+    promoted/             # full copies of enterprise-significant records, by repo
+```
+
+Fill `harvest.config.yaml` with one entry per source repo — the schema, with both the `path` override and the `promote.scopes` list, is in §5.
+
+Run it:
+
+```
+node scripts/adl-harvest.mjs \
+  --config architecture/decision-log/harvest.config.yaml \
+  --workspace <dir-with-the-source-repos-checked-out> \
+  --out architecture/decision-log
+```
+
+The job clones nothing itself — CI (or a wrapper script) checks the source repos out into `--workspace`, one sub-directory per repo slug. A missing source is **warned and skipped**, not fatal: the index degrades rather than failing the run. Exit codes: `0` ok · `1` nothing harvested · `2` error.
+
+Output is a single Markdown table — namespaced id, title, date, status, author, source, and a backlink into the source repo — plus full copies of promoted records under `promoted/<repo-slug>/`. The run is **idempotent**: same inputs, byte-identical output. Status changes self-heal on the next harvest, because the index is rebuilt from front-matter every time.
+
+Schedule it in the central repo (cron / CI) and allow on-demand runs. Its output lands through a pull request like any other change.
+
+**Getting the two scripts.** `adl-harvest.mjs` and `check-adl.mjs` live in this repository under [`scripts/`](../scripts/), MIT-licensed — they are **not** part of the plugin payload, so installing the plugin does not get you the harvest. Copy `adl-harvest.mjs` into the central architecture repo and `check-adl.mjs` into each source repo that wants the guard, or vendor this repository. Node ≥ 18, no dependencies.
+
+---
+
+### Step 5 — the two policy decisions to make before the first harvest
+
+1. **Promotion scope.** Which records count as enterprise-significant (`promote.scopes`), and **who has the authority** to mark a record with that scope. Everything not promoted still appears in the index — by backlink, not by copy.
+2. **Ratification.** An `author: agent` record is **not in force** until a human flips `proposed → accepted` in a reviewed change (§6). This is what makes it safe to let an autonomous agent record consequential choices across repos: the worst an unattended agent can do is leave a proposal for review.
+
+---
+
+### Legacy paths — one caveat
+
+`docs/decisions/` (per repo) and `Architecture/INDEX.md` (central) are **legacy aliases** from earlier drafts, not co-equal options. If an existing repo uses them, point `path:` at them in the config and migrate the next time you touch that repo — do not create them in a new setup, and never run two parallel decision folders in one repo.
+
+---
+
+### Verification note
+
+The Step 4 harvest was run end to end on 2026-07-27 against the `acme-corp` worked example's `operations/decisions/`: **5 records indexed, 0 promoted** (no record carried a promoted scope), **0 sources skipped, exit 0**, and every generated backlink resolves. The commands above are the ones that were run, not a transcription from the spec.
+
+---
 
 ## 11. TOGAF mapping (honest attribution)
 

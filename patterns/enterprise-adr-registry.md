@@ -82,7 +82,7 @@ Full detail — record front-matter, the harvest algorithm, immutability discipl
 
 ### Setting it up
 
-Step-by-step — what to create, what to run, where the scripts come from (they are **not** in the plugin payload), and the two policy calls to make before the first harvest: [`method/05-adr-adl-adoption.md`](../method/05-adr-adl-adoption.md).
+Step-by-step — what to create, what to run, where the scripts come from (they are **not** in the plugin payload), and the two policy calls to make before the first harvest: [`method/03-architecture-decision-log.md`](../method/03-architecture-decision-log.md) §10.
 
 ## Legacy path variants
 
