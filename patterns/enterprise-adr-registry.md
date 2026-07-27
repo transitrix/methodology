@@ -29,6 +29,7 @@ Don't wait for a second repo to begin. An adopter with a single repo can stand u
 
 1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-NNNN-<slug>.md`, front-matter per `method/03` §3).
 2. **Write the first record** — `operations/decisions/ADR-0001-<slug>.md`, recording the decision to start keeping ADRs here. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
+   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, allocates the next `ADR-NNNN`, validates the record, and opens the PR. It is the authoring workflow for the flow `method/03` specifies; it never self-accepts (§6's gate).
 3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it.
 
 That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
@@ -49,6 +50,10 @@ That is a complete, working ADL for one repo. Move to the sections below only on
 5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/03` §6). This is what makes it safe for an autonomous agent to author decisions across repos.
 
 Full detail — record front-matter, the harvest algorithm, immutability discipline, the CI guard, TOGAF mapping: `method/03-architecture-decision-log.md`.
+
+### Getting the two scripts
+
+`scripts/adl-harvest.mjs` (the harvest) and `scripts/check-adl.mjs` (the CI guard) live in this repository, MIT-licensed, and are **not** part of the plugin payload — installing the plugin gets you the `adr` authoring skill, not the scripts. Copy `adl-harvest.mjs` into the central architecture repo and `check-adl.mjs` into each source repo that wants the guard, or vendor this repository. Node ≥ 18, no dependencies.
 
 ## Legacy path variants
 
