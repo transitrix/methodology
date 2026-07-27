@@ -93,6 +93,8 @@ A modelled organisation accumulates three kinds of knowledge with different trus
 
 **Data is not migrated between zones.** Each zone has its own admission gate (§6); an artefact admitted to one zone is never moved to another. A Canon record MAY *cite* the Field material that informed it via `derived_from:` (§6) — that citation is the link, not a migration. Re-deriving Canon from Field yields a *new* Canon artefact; the Field artefact stays where it is.
 
+**Packages are not a fourth zone.** An optional domain package ([`PACKAGES.md`](PACKAGES.md)) is a top-level folder sitting alongside `canon/`, `field/`, `codex/`, but it carries none of the zone trust contracts above — it is self-contained, removable, and may only reference into a zone, never be referenced from one.
+
 ---
 
 ## 6. Admission record
