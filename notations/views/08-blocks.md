@@ -183,7 +183,7 @@ grid:
 - **Cell values are template-defined.** The notation does not fix a vocabulary for `assign` values (`"A"`, `"done"`, `42`, …) — a template built on this subset defines its own vocabulary and, optionally, its own per-row or per-column invariant (e.g. the RACI template's "exactly one `A` per row", §6a).
 - **No document-level `id`.** Unlike the nested form's `nested_blocks.id` (§5.1), a matrix-subset document carries no `BLOCKS-…` document ID — the matrix-subset is scoped to a single grid, not a catalogue-linkable tree.
 
-A complete example: [`../../templates/raci/raci.blocks.transitrix.yaml`](../../templates/raci/raci.blocks.transitrix.yaml) — the RACI-as-matrix template (see its [fork-and-go guide](../../templates/raci/README.md)).
+A complete example: [`raci.blocks.transitrix.yaml`](https://github.com/transitrix/templates/blob/main/raci/raci.blocks.transitrix.yaml) — the RACI-as-matrix template (see its [fork-and-go guide](https://github.com/transitrix/templates/tree/main/raci)).
 
 ---
 
@@ -263,9 +263,9 @@ L1 (format), L2 (per-element), L3 (relations) map onto the rules above as:
 
 `BL-020`–`BL-025` are the base notation's well-formedness rules — they hold for **every** `grid:` document regardless of what its cells mean. They do **not** constrain `assign` cell *values*, because the base notation deliberately does not fix a cell-value vocabulary (§4a).
 
-A **template** built on this subset MAY define a stricter invariant over that vocabulary — e.g. the RACI template's rule that exactly one column per row carries the value `"A"` (zero or two is invalid). This is a template-level concern, not a base-notation rule: it is documented and validated by the template itself (see [`templates/raci/README.md`](../../templates/raci/README.md) for the RACI case), not by a `BL-0xx` code here. The base notation intentionally leaves this extensible rather than special-casing one template's vocabulary into the shared spec.
+A **template** built on this subset MAY define a stricter invariant over that vocabulary — e.g. the RACI template's rule that exactly one column per row carries the value `"A"` (zero or two is invalid). This is a template-level concern, not a base-notation rule: it is documented and validated by the template itself (see [`transitrix/templates`'s RACI README](https://github.com/transitrix/templates/tree/main/raci) for the RACI case), not by a `BL-0xx` code here. The base notation intentionally leaves this extensible rather than special-casing one template's vocabulary into the shared spec.
 
-**Implementation status.** `BL-020`–`BL-025` require the `blocks` notation validator (Transitrix Studio, `packages/diagrams/src/blocks/validate.ts`) to recognise the `grid:` root form — as of this section landing, that validator only recognises `nested_blocks:` (tree form). Template-level invariant checking (the RACI cardinality rule) additionally needs a mechanism for a template to configure a custom constraint on top of the base validator — a design question for Studio to resolve, not fixed by this spec. Until both land, `npx @transitrix/cli validate` does not yet enforce this section against a `grid:` document.
+**Implementation status.** `BL-020`–`BL-025` (the `grid:` root form) and template-level cell invariants via a `--template` flag are implemented as of `@transitrix/cli` 2.2.0 — `npx @transitrix/cli validate <file> --template raci` enforces the RACI template's "exactly one `A` per row" rule; the base `grid:` well-formedness rules apply without the flag.
 
 ---
 
@@ -322,4 +322,4 @@ What the renderer MUST NOT do:
 - Applications catalogue (source for cross-linked `APPLICATION-…` block IDs): [`10-applications.md`](10-applications.md)
 - Capabilities map (source for cross-linked `CAPABILITY-…` block IDs): [`05-capability-map.md`](05-capability-map.md)
 - Methodology section 6 (Notation kit): `method/01-methodology.md`
-- RACI-as-matrix template (matrix subset, §4a): [`../../templates/raci/`](../../templates/raci/)
+- RACI-as-matrix template (matrix subset, §4a): [`transitrix/templates`](https://github.com/transitrix/templates/tree/main/raci)
