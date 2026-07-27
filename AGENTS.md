@@ -29,7 +29,7 @@ Full human-facing policy: [`CONTRIBUTING.md`](CONTRIBUTING.md) — branch naming
 
 - **Any notation or example edit** — run `node scripts/check-notations.mjs` before committing. It checks example extensions, `notation:` headers, internal-link resolution, and `methodology_version` pin consistency.
 - **Before editing an existing example or notation spec** — re-read [`NOTATIONS_AUDIT.md`](NOTATIONS_AUDIT.md) at repo root for open judgement-call decisions a linter can't make (root-prefix conventions, ID scheme questions, reclassifications still under discussion).
-- **This repo's own design ADRs** live at `docs/decisions/` — gitignored but force-added (`git add -f`) and published via PR. This is a separate, intentional convention from the `operations/decisions/` pattern this methodology *specifies* for adopters (`method/03-architecture-decision-log.md`); `scripts/check-adl.mjs` explicitly excludes `docs/decisions/` from its scope for this reason. Don't conflate the two.
+- **This repo's own architecture decisions** are recorded centrally by the project maintainer, not as files in this repo — the single-hub ADR decision retired the old `docs/decisions/` folder (tombstone kept for git history; see the folder's own `README.md`). This is unrelated to the `operations/decisions/` pattern this methodology *specifies* for adopters (`method/03-architecture-decision-log.md`); `scripts/check-adl.mjs` explicitly excludes `docs/decisions/` from its scope for this reason. Don't conflate the two.
 
 ## 4. What NOT to do
 
