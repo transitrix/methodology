@@ -5,7 +5,7 @@ author: "Valerii Korobeinikov"
 last_updated: "2026-07-26"
 status: "draft"
 file_extension: "*.design-controls-trace-matrix.transitrix.yaml"
-dsm_status: "not implemented — Studio compliance-views renderer planned (consumer-side, tracked separately)"
+dsm_status: "reference renderer shipped (tools/render_trace_matrix.py); Studio compliance-views renderer planned (consumer-side, tracked separately)"
 ---
 
 # Design-Controls Trace Matrix — Report-Configuration View — Reference
@@ -15,7 +15,7 @@ dsm_status: "not implemented — Studio compliance-views renderer planned (consu
 **Status:** Draft — first cut of the canonical report-config for the design-controls trace matrix. Sibling of [Compliance Impact](21-compliance-impact.md) and [Coverage Metric](22-coverage-metric.md); same "presentation surface over canon, nothing stored twice" posture, adapted to a fixed audit-table shape instead of a configurable pivot matrix (see §1.1).
 **File extension:** `*.design-controls-trace-matrix.transitrix.yaml`
 **Scope:** A **rendering / filtering configuration** for the design-controls trace matrix — the audit-facing table a QA / Regulatory-Affairs reader points at to confirm the engineering V&V chain (`REQUIREMENT` → `VERIFICATION`) and the ISO 14971 risk chain (`HAZARD` → `RISK_CONTROL` → `REQUIREMENT` → `VERIFICATION`) against the actual model, not a promise. The document is a presentation surface — it carries no canonical content of its own. Everything the view displays is **derived** from `HAZARD` / `RISK_CONTROL` ([28-hazard-risk-control.md](../elements/28-hazard-risk-control.md)), `REQUIREMENT` ([15-requirement.md](../elements/15-requirement.md)), and `VERIFICATION` ([27-verification.md](../elements/27-verification.md)).
-**Renderer:** Transitrix Studio — compliance views (planned); Transitrix DSM (planned).
+**Renderer:** [`tools/render_trace_matrix.py`](../../tools/render_trace_matrix.py) — the reference renderer: deterministic Markdown from canon, implementing the §4 defaults and the §5 gap annotations. Transitrix Studio — compliance views (planned); Transitrix DSM (planned).
 
 ---
 
