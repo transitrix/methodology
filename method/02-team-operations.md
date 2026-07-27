@@ -101,6 +101,8 @@ Two front-matter fields record *who* authored a decision and *where* it came fro
 
 A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/03-architecture-decision-log.md`](03-architecture-decision-log.md)).
 
+For the step-by-step setup — creating the folder, the authoring skill, the CI guard, and (later) the central harvest — see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §10.
+
 ### 3.2 Work Item (`WI-…`)
 
 A short record of a piece of work the team has in flight or has queued. Work Items are mutable — `status` and the body are updated as work progresses — and short-lived: when the work is done the item is `closed`, not deleted.
