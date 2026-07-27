@@ -23,12 +23,42 @@ Two layers, unchanged from the canon:
 
 The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync.
 
+```
+   PROJECT REPOS (canonical)                    CENTRAL ARCHITECTURE REPO (derived)
+┌──────────────────────────────┐
+│ service-x/                   │             ┌────────────────────────────────────┐
+│   operations/decisions/      │             │ architecture/decision-log/         │
+│     ADR-0001-….md  ──────────┼──┐          │                                    │
+│     ADR-0002-….md  ──────────┼──┤          │   harvest.config.yaml              │
+└──────────────────────────────┘  │          │     one line per source repo       │
+                                  │          │                                    │
+┌──────────────────────────────┐  │ harvest  │   INDEX.md          ← regenerated  │
+│ platform/                    │  ├─────────▶│     service-x/ADR-0001  → backlink │
+│   docs/decisions/  (legacy)  │  │  (pull)  │     platform/ADR-0007   → backlink │
+│     ADR-0007-….md  ──────────┼──┘          │     …every record, namespaced      │
+└──────────────────────────────┘             │                                    │
+                                             │   promoted/         ← full copies  │
+     ▲                                       │     service-x/ADR-0002-….md        │
+     │  the record never moves;               │     (only `scope:` ∈ promote list) │
+     │  only its index entry is copied        └────────────────────────────────────┘
+     │
+   authored here ─── `author: agent` lands as `status: proposed`
+                     a human flips it to `accepted` ── the ratification gate
+```
+
+Three properties the diagram encodes, each load-bearing:
+
+- **One direction only.** The harvest reads source repos and writes the central log. It never writes back — so a project team's decisions cannot be edited by the architecture function, and the central log cannot drift from what the repos actually say.
+- **Namespacing happens at the index, not at the source.** `ADR-0001` exists in every repo; `service-x/ADR-0001` exists only centrally. Nothing to migrate, no id coordination between teams.
+- **The gate sits at the source.** Ratification of an agent-authored record happens in the repo where the decision was made, by the people it binds — not centrally, after the fact.
+
 ## Start here — one repo, right now
 
 Don't wait for a second repo to begin. An adopter with a single repo can stand up the per-repo half of the ADL immediately:
 
 1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-NNNN-<slug>.md`, front-matter per `method/03` §3).
 2. **Write the first record** — `operations/decisions/ADR-0001-<slug>.md`, recording the decision to start keeping ADRs here. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
+   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, allocates the next `ADR-NNNN`, validates the record, and opens the PR. It is the authoring workflow for the flow `method/03` specifies; it never self-accepts (§6's gate).
 3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it.
 
 That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
@@ -49,6 +79,10 @@ That is a complete, working ADL for one repo. Move to the sections below only on
 5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/03` §6). This is what makes it safe for an autonomous agent to author decisions across repos.
 
 Full detail — record front-matter, the harvest algorithm, immutability discipline, the CI guard, TOGAF mapping: `method/03-architecture-decision-log.md`.
+
+### Setting it up
+
+Step-by-step — what to create, what to run, where the scripts come from (they are **not** in the plugin payload), and the two policy calls to make before the first harvest: [`method/05-adr-adl-adoption.md`](../method/05-adr-adl-adoption.md).
 
 ## Legacy path variants
 
