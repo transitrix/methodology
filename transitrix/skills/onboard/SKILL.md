@@ -313,6 +313,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Single-project narrative view — goals served, dates, milestones, gate decisions | **Action Card** | `*.action-card.transitrix.yaml` |
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
 | Coverage of canon — which subjects are dark for each regulatory regime, splitting modelling gaps from modelled exclusions | **Coverage Metric** | `*.coverage-metric.transitrix.yaml` |
+| Design-controls audit trace — requirement → verification, and hazard → risk control → requirement → verification, with reverse-trace gaps annotated | **Design-Controls Trace Matrix** | `*.design-controls-trace-matrix.transitrix.yaml` |
 
 **Family rule:** the strategy-chain notations split by shape. **DGCA** uses the **flat form** — top-level arrays at the document root (`factors[]` / `goals[]` / `changes[]` / `actions[]`), cross-references upstream inside the flat arrays. **Goals tree** and **Action schedule** (both since v2.0) are **pure projections** — the view document carries only `view_config`, and each `GOAL-…` / `ACTION-…` lives as a standalone element file under `canon/elements/…`; the parent link (Goals) and predecessor / duration / cross-refs (Action) live on the element files, not in the view. In all three, hierarchy uses `parent: <SAME-TYPE>-…` on the child; no nested wrapper keys.
 
@@ -400,6 +401,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Compliance Impact | `templates/compliance-impact.compliance-impact.transitrix.yaml` |
 | Coverage Metric | `templates/coverage-metric.coverage-metric.transitrix.yaml` |
 | Actions tree | `templates/actions-tree.actions-tree.transitrix.yaml` |
+| Design-Controls Trace Matrix | `templates/design-controls-trace-matrix.design-controls-trace-matrix.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
