@@ -11,6 +11,8 @@ tags: [transitrix, methodology, operations, adr, adl, togaf, governance]
 
 > How architecture decisions made across **many repositories** are aggregated into one enterprise-level **Architecture Decision Log**, and how an autonomous agent may author decisions safely. The ADL is the multi-repo layer on top of the single-repo [Team Operations](02-team-operations.md) convention — not a separate, parallel system.
 
+> **Starting out?** This document specifies the multi-repo mechanism; it is not the setup path and it does not restate the record format. To *begin* keeping decision records, read **[`05-adr-adl-adoption.md`](05-adr-adl-adoption.md)** — one file, from an empty repo to a running harvest. The record format itself (filename, front-matter, body, supersession) is defined in [`02-team-operations.md`](02-team-operations.md) §3.1, which this document extends with two fields (§3).
+
 This is a git-native, agent-operable realisation of **TOGAF's *Governance Log → Decision Log*** — the log of "architecturally significant" decisions, expressed as Markdown records under version control and aggregated across an organisation's repositories. The **structure** mirrors TOGAF's Decision Log; the **agent-authored** dimension (§3.1.1, §6) is a **Transitrix extension** the standard does not mandate. The companion construct TOGAF places alongside it — the *Standards Information Base* (the reference-catalog) — is out of scope for this release; see §9.
 
 ## 1. The two layers
