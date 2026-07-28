@@ -1,7 +1,7 @@
 ---
 name: Transitrix ADR
-description: Help a user formulate an architecture decision and land it as a valid, gated Architecture Decision Record in the repo's per-repo decision log — the input door to the agent-authored decision flow method/03-architecture-decision-log.md specifies but ships no workflow for. Runs a Context → Decision → Consequences interview, allocates the next ADR-NNNN id, validates against scripts/check-adl.mjs, and opens a PR. Never self-accepts a decision and never edits an accepted record's body — course changes are a new record plus a status-pointer flip on the old one (supersession).
-when_to_use: User says "we decided X, write it up", "record this architecture decision", "log an ADR for this", "supersede ADR-NNNN", "we're changing course on decision NNNN", or an agent working autonomously in a Transitrix (or Team-Operations-adopting) repo needs to leave an auditable trace of a consequential choice it made (e.g. "bumped a version pin", "chose library X over Y").
+description: Help a user formulate an architecture decision and land it as a valid, gated Architecture Decision Record in the repo's per-repo decision log — the input door to the agent-authored decision flow method/03-architecture-decision-log.md specifies but ships no workflow for. Runs a Context → Decision → Consequences interview, derives the id from today's date and a slug (no allocation step), validates against scripts/check-adl.mjs, and opens a PR. Never self-accepts a decision and never edits an accepted record's body — course changes are a new record plus a status-pointer flip on the old one (supersession).
+when_to_use: User says "we decided X, write it up", "record this architecture decision", "log an ADR for this", "supersede ADR-…", "we're changing course on that decision", or an agent working autonomously in a Transitrix (or Team-Operations-adopting) repo needs to leave an auditable trace of a consequential choice it made (e.g. "bumped a version pin", "chose library X over Y").
 min_version: "0.6.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -124,17 +124,23 @@ the moment a human accepts it).
 
 ---
 
-## Step 3 — Allocate id + filename, write the record
+## Step 3 — Derive the id, write the record
 
-1. List `ADR-*.md` in the decisions folder (Step 0); take the highest `NNNN`, add 1,
-   zero-pad to four digits. First record in an empty folder is `ADR-0001`.
-2. Derive a short kebab-case slug from the title (3–6 words).
+1. Derive a short kebab-case slug from the title (3–6 words).
+2. The id is today's date plus that slug: `ADR-YYYY-MM-DD-<slug>`. No folder listing,
+   no counter, nothing to allocate — an author on a branch that cannot see another
+   author's unmerged work computes this alone, and two records authored the same day
+   get distinct filenames from their distinct slugs. **Existing repos with legacy
+   `ADR-NNNN` records:** do not renumber or touch them — the two forms coexist; only
+   new records use the date-slug form (`method/02` §3.1.2).
 3. Copy [`templates/ADR-template.md`](templates/ADR-template.md) to
-   `<decisions-folder>/ADR-NNNN-<slug>.md`.
-4. Fill in `id`, `title`, `date` (today), `source`, `relates_to`, and the three body
-   sections from Step 2. Leave `status: proposed` and `author: agent` — **never**
-   change these to `status: accepted` (Step 5's guard rejects it anyway, but don't
-   rely on the guard catching what you already know not to do).
+   `<decisions-folder>/ADR-YYYY-MM-DD-<slug>.md` — the same string for `id:` and the
+   filename.
+4. Fill in `id`, `title`, `date` (today — must equal the id's date), `source`,
+   `relates_to`, and the three body sections from Step 2. Leave `status: proposed` and
+   `author: agent` — **never** change these to `status: accepted` (Step 5's guard
+   rejects it anyway, but don't rely on the guard catching what you already know not
+   to do).
 
 ---
 
@@ -188,7 +194,7 @@ touched a different, already-accepted record) and needs fixing, not overriding.
 
 ## Step 6 — Supersede an existing decision (course change)
 
-Triggered by "supersede ADR-NNNN" / "we're changing decision NNNN" instead of a fresh
+Triggered by "supersede ADR-…" / "we're changing this decision" instead of a fresh
 decision:
 
 1. Read the target record. If its `status` is `proposed` (not yet ratified), a
@@ -196,11 +202,12 @@ decision:
    supersession to perform; just revise it and re-run Step 5.
 2. If its `status` is `accepted`, immutability applies (`method/03` §7) — do **not**
    edit its body or non-status front-matter:
-   - Run Steps 1–5 to author a **new** record (`ADR-<next-NNNN>`) capturing the
-     revised decision, its own Context/Decision/Consequences, and add
-     `supersedes: ADR-<old-NNNN>` to its front-matter.
+   - Run Steps 1–5 to author a **new** record (its id is always the date-slug form,
+     whichever form the record it supersedes uses) capturing the revised decision, its
+     own Context/Decision/Consequences, and add `supersedes: <old-id>` to its
+     front-matter.
    - On the **old** record, change only `status: superseded` and
-     `superseded_by: ADR-<new-NNNN>` — leave every other field and the entire body
+     `superseded_by: <new-id>` — leave every other field and the entire body
      untouched. This is the one front-matter edit Step 5's A2 check permits on an
      accepted record.
 3. Both changes land in the same PR (Step 7) — a supersession is one logical change,
@@ -210,7 +217,7 @@ decision:
 
 ## Step 7 — PR, not merge
 
-1. Branch: `adr/ADR-NNNN-<slug>` (or `adr/ADR-NNNN-supersedes-ADR-MMMM` for Step 6).
+1. Branch: `adr/<id>` (or `adr/<id>-supersedes-<old-id>` for Step 6).
 2. Commit the new record file (and, on a supersession, the old record's status-pointer
    edit) — nothing else. If Step 5 freshly fetched `.validators/check-adl.mjs` for the
    first time in this repo, that's a separate, reviewable addition; call it out in the

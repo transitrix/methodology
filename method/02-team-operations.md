@@ -37,9 +37,9 @@ organizations/<org>/operations/
 ├── README.md                      # Local rules (~1 screen)
 ├── feedback.md                    # Upstream feedback register (FB-… entries, one file; §3.3)
 ├── decisions/                     # Architecture decision records (ADR — human- or agent-authored; §3.1.1)
-│   ├── ADR-0001-<slug>.md
-│   ├── ADR-0002-<slug>.md
-│   └── …
+│   ├── ADR-2026-06-03-adopt-methodology.md
+│   ├── ADR-2026-06-05-pin-catalog-2-3-0.md
+│   └── …                          # legacy ADR-NNNN-<slug>.md records, if any, keep their form (§3.1.2)
 ├── work-items/                    # Team work items (human-authored)
 │   ├── WI-0001-<slug>.md
 │   ├── WI-0002-<slug>.md
@@ -60,13 +60,13 @@ The convention provides three **record** shapes (§3.1 ADR, §3.2 WI, §3.3 Feed
 
 A short, append-only record of a decision the team has made about how it runs the model, the repository, or its working setup. ADRs are immutable once accepted: a later decision that changes course supersedes the earlier one rather than overwriting it.
 
-Filename: `ADR-NNNN-<short-slug>.md` (`NNNN` is a four-digit zero-padded sequence, monotonically increasing within `operations/decisions/`).
+Filename: `ADR-YYYY-MM-DD-<short-slug>.md` — the id is today's date plus a short kebab-case slug, and `id:` carries the same string as the filename. There is no counter and no allocation step: an author on a branch that cannot see another author's unmerged work can compute this id alone, and two records authored the same day get distinct filenames from their distinct slugs. (Records written before this scheme carry the legacy `ADR-NNNN-<short-slug>.md` sequential form — see §3.1.2. Both forms are valid; nothing is renamed.)
 
 Front-matter:
 
 ```yaml
 ---
-id: ADR-0001
+id: ADR-2026-06-03-adopt-methodology
 title: "Adopt Transitrix methodology 0.5.x for the enterprise model"
 status: accepted            # proposed | accepted | superseded
 date: "2026-06-03"
@@ -103,6 +103,10 @@ Two front-matter fields record *who* authored a decision and *where* it came fro
 A team using only the single-repo convention may treat `author` as informational. The fields become load-bearing once records aggregate into the central Architecture Decision Log and an agent participates in authoring them ([`method/03-architecture-decision-log.md`](03-architecture-decision-log.md)).
 
 For the step-by-step setup — creating the folder, the authoring skill, the CI guard, and (later) the central harvest — see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §10.
+
+#### 3.1.2 Legacy identifiers (`ADR-NNNN`)
+
+Records written before the date-slug scheme use `ADR-NNNN-<short-slug>.md` — a four-digit zero-padded sequence, unique within `operations/decisions/`. They are **not** renamed or migrated: an existing `ADR-NNNN` id, filename, and history stand as-is, indefinitely. A folder may mix both forms — each is unique within its own form, and the two never collide (a date-slug id always carries two extra hyphen-delimited fields the four-digit form does not). `supersedes:` / `superseded_by:` treat an id as an opaque string, so a date-slug record may supersede a legacy one and vice versa.
 
 ### 3.2 Work Item (`WI-…`)
 
@@ -192,9 +196,9 @@ If a Work Item or ADR references a model ID that does not resolve (typo, deleted
 
 ## 5. IDs — distinct namespace from the model
 
-`ADR-`, `WI-`, and `FB-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…`, `WI-…`, and `FB-…` carry zero-padded four-digit sequences (`ADR-0001`, `WI-0042`, `FB-0002`) and are unique within their own folder (ADR/WI) or their own file (Feedback — see §3.3), not globally. They cannot be cross-referenced from inside the model.
+`ADR-`, `WI-`, and `FB-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…`, `WI-…`, and `FB-…` are unique within their own folder (ADR/WI) or their own file (Feedback — see §3.3), not globally, and cannot be cross-referenced from inside the model. An ADR id is either the date-slug form `ADR-YYYY-MM-DD-<slug>` (§3.1, new records) or the legacy zero-padded four-digit sequence `ADR-NNNN` (§3.1.2, existing records); a `WI-` id keeps the zero-padded four-digit sequence (`WI-0042`); `FB-…` carries a zero-padded four-digit sequence (`FB-0002`).
 
-This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping them mechanically distinguishable (four-digit padded sequence with no domain segment) prevents accidental collisions. (When records from several repos are aggregated, the central Architecture Decision Log namespaces them as `<repo-slug>/ADR-NNNN` — the local id is unchanged; see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §4. Feedback Records are not aggregated across repos — each repo's register is independent, and there is no `FB-` equivalent of the central Architecture Decision Log.)
+This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping ADR/WI/FB ids mechanically distinguishable from a model ID (no domain segment) prevents accidental collisions. Uniqueness within `operations/decisions/` is mechanically guarded — two records sharing an `id:` fail CI regardless of which id form each uses ([`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §8, check A5). (When records from several repos are aggregated, the central Architecture Decision Log namespaces them as `<repo-slug>/<id>` — the local id is unchanged, treated as an opaque string; see [`method/03-architecture-decision-log.md`](03-architecture-decision-log.md) §4. Feedback Records are not aggregated across repos — each repo's register is independent, and there is no `FB-` equivalent of the central Architecture Decision Log.)
 
 Operational config/state files (§3.4) carry **no** identifier at all — they are addressed by **path** (`operations/state/<domain>/<name>`), not by a sequenced `ADR-`/`WI-`/`FB-` id and not by a model ID. They are never cross-referenced from inside the model.
 

@@ -231,7 +231,7 @@ organizations/
 │   │   ├── external/<jurisdiction>/
 │   │   └── internal/
 │   ├── operations/                # Operational layer (NOT a zone) — team's own ADRs + Work Items (§4.1)
-│   │   ├── decisions/             #   ADR-NNNN-<slug>.md
+│   │   ├── decisions/             #   ADR-YYYY-MM-DD-<slug>.md (or legacy ADR-NNNN-<slug>.md)
 │   │   └── work-items/            #   WI-NNNN-<slug>.md
 │   ├── .templates/                # Copy-and-fill templates for elements / relations / views
 │   └── .validators/               # Lint and schema scripts
@@ -248,7 +248,7 @@ Every canonical artefact carries an **admission record** and a **primitive lifec
 
 Alongside the model zones, an adopter team optionally keeps an **operational layer** — its own decision log and in-flight work — at `organizations/<org>/operations/`. This is the **Team Operations** convention: a sibling folder containing `decisions/` (Architecture Decision Records, `ADR-…`) and `work-items/` (Work Items, `WI-…`), plus a one-screen local README.
 
-`operations/` is **not** a zone. It sits outside `canon` / `field` / `codex`, is not admitted through the zone gates, and its IDs (`ADR-NNNN`, `WI-NNNN`) are deliberately outside the canonical TYPE registry. It exists to keep the team's own working artefacts under the same version control and review surface as the model, without leaking into the model.
+`operations/` is **not** a zone. It sits outside `canon` / `field` / `codex`, is not admitted through the zone gates, and its IDs (`ADR-YYYY-MM-DD` or legacy `ADR-NNNN`, `WI-NNNN`) are deliberately outside the canonical TYPE registry. It exists to keep the team's own working artefacts under the same version control and review surface as the model, without leaking into the model.
 
 Team Operations Work Items record what the team itself is doing; a problem, risk, or weakness *about the modelled enterprise* is a model finding, captured as an `ASSESSMENT` in canon. (The former model-side `issues` notation was retired, 2026-06-07.)
 

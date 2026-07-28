@@ -19,7 +19,7 @@ This is a git-native, agent-operable realisation of **TOGAF's *Governance Log �
 
 | Layer | Where it lives | Owner | Defined by |
 |---|---|---|---|
-| **Per-repo decision records** | each project repo, `operations/decisions/ADR-NNNN-<slug>.md` | that repo's team | [Team Operations](02-team-operations.md) §3.1 (extended here with `author` / `source`) |
+| **Per-repo decision records** | each project repo, `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`) | that repo's team | [Team Operations](02-team-operations.md) §3.1 (extended here with `author` / `source`) |
 | **Enterprise ADL** | the central **architecture repository**, `architecture/decision-log/` | the architecture function | this document |
 
 The per-repo layer is **canonical**: a decision record's single source of truth is the repository where the decision was made. The enterprise ADL is a **derived index** harvested from those repos plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync — the central log never edits a project repo's records, and a project repo never writes into the central log.
@@ -42,11 +42,11 @@ It also makes **autonomous-agent decisions safe**. An agent that can read a repo
 
 ## 3. The record format — extends Team Operations §3.1
 
-A per-repo decision record is a Team Operations ADR with two added front-matter fields. Everything else (filename `ADR-NNNN-<slug>.md`, body `Context → Decision → Consequences`, supersession semantics) is unchanged.
+A per-repo decision record is a Team Operations ADR with two added front-matter fields. Everything else (filename per Team Operations §3.1 — either id form — body `Context → Decision → Consequences`, supersession semantics) is unchanged.
 
 ```yaml
 ---
-id: ADR-0001
+id: ADR-2026-06-11-pin-object-catalog
 title: "Pin @acme/object-catalog to 2.3.0 for service-x"
 status: accepted              # proposed | accepted | superseded
 date: "2026-06-11"
@@ -62,13 +62,14 @@ superseded_by: null
 
 ## 4. Cross-repo identity
 
-Within one repo, `ADR-NNNN` is unique (Team Operations §5). Across repos it is **not** — `ADR-0001` exists in every repo. The harvest therefore computes a globally-unique key by namespacing with the source repo:
+Within one repo, an ADR id — either form (Team Operations §3.1, §3.1.2) — is unique (Team Operations §5). Across repos it is **not** — `ADR-2026-06-11-pin-object-catalog` (or a legacy `ADR-0001`) exists, independently, in every repo. The harvest therefore computes a globally-unique key by namespacing with the source repo, treating the id as an opaque string regardless of its form:
 
 ```
-<repo-slug>/ADR-NNNN          e.g.  service-x/ADR-0001
+<repo-slug>/<id>          e.g.  service-x/ADR-2026-06-11-pin-object-catalog
+                                platform/ADR-0007                          (legacy form, unchanged)
 ```
 
-The local filename and `id:` stay `ADR-NNNN` — **no change to the per-repo convention, nothing to migrate.** The repo segment exists only in the central index. `supersedes` / `superseded_by` pointers remain repo-local (a decision is superseded by a later decision *in the same repo*); cross-repo supersession is not modelled — it is a new decision that references the other.
+The local filename and `id:` are unchanged — **no change to the per-repo convention, nothing to migrate.** The repo segment exists only in the central index. `supersedes` / `superseded_by` pointers remain repo-local (a decision is superseded by a later decision *in the same repo*, whichever id form each side uses); cross-repo supersession is not modelled — it is a new decision that references the other.
 
 ## 5. The harvest — central pull job
 
@@ -129,7 +130,8 @@ A dependency-free doc-lint, companion to `check-notations.mjs`, run in CI on eve
 - **A1 — front-matter validity.** Required keys present (`id`, `title`, `status`, `date`); `status` ∈ {proposed, accepted, superseded}; `author`, when present, ∈ {human-architect, agent} (absent = human-architect, which grandfathers legacy records that predate the field); `date` is ISO; a `superseded` record names a `superseded_by`.
 - **A2 — immutability.** For each record at `status: accepted` on the base branch, the PR must not change its body or its non-status front-matter. (Diff-based: compares against the merge base.)
 - **A3 — agent gate.** An `author: agent` record may not be introduced or changed to `status: accepted` in the same commit that authored it — acceptance is a separate, human-reviewed change.
-- **A4 — filename/id agreement.** `ADR-NNNN` in the filename equals `id:`.
+- **A4 — filename/id agreement.** The filename's id segment equals `id:` — for a date-slug record (`ADR-YYYY-MM-DD-<slug>.md`) that segment's date additionally must equal the `date:` field; for a legacy record (`ADR-NNNN-<slug>.md`) the four-digit segment must equal `id:`.
+- **A5 — uniqueness.** No two records under a decisions folder may share an `id:`, and a record added by a PR may not reuse an `id:` already present on the base branch — checked across both id forms. This is what makes the date-slug id safe to compute without coordination: two authors on separate unmerged branches can never merge a silent duplicate.
 
 Exit codes match the repo convention: `0` clean, `1` findings, `2` script error.
 
@@ -148,7 +150,7 @@ The mechanism is specified above; this section is the path through it. Sections 
 In each repository, without waiting for the central layer:
 
 1. Create `operations/decisions/`.
-2. Write `ADR-0001-<slug>.md` — the first record is the decision to start keeping records here.
+2. Write `ADR-YYYY-MM-DD-<slug>.md` (today's date + a short slug) — the first record is the decision to start keeping records here. No numbering to start at: the id is derived, not allocated.
 3. Give it the front-matter of §3 — the Team Operations shape plus `author` / `source`, and optionally `scope:` if you already know this record should be promoted once a central log exists.
 
 Body is `Context → Decision → Consequences`. Template: [`transitrix/skills/adr/templates/ADR-template.md`](../transitrix/skills/adr/templates/ADR-template.md).
@@ -171,7 +173,7 @@ Install the plugin (Claude Code; the skill itself is assistant-neutral and works
 
 Then, in any repo: `/transitrix:adr`.
 
-The skill runs a Context → Decision → Consequences interview, allocates the next `ADR-NNNN`, validates the record, and opens a pull request. Three invariants it enforces ([`transitrix/skills/adr/SKILL.md`](../transitrix/skills/adr/SKILL.md)):
+The skill runs a Context → Decision → Consequences interview, derives the id from today's date and a slug (no allocation step, no folder listing), validates the record, and opens a pull request. Three invariants it enforces ([`transitrix/skills/adr/SKILL.md`](../transitrix/skills/adr/SKILL.md)):
 
 1. **Never self-accepts.** Anything it writes is `author: agent`, `status: proposed`.
 2. **Supersession, not mutation** — see above.
@@ -188,7 +190,7 @@ node scripts/check-adl.mjs                      # default: **/operations/decisio
 node scripts/check-adl.mjs --dir docs/decisions # a repo on the legacy path
 ```
 
-Checks (§8): required front-matter and valid enum values (A1) · an accepted record's body cannot be modified (A2) · a new `author: agent` record cannot arrive already `accepted` (A3) · filename `ADR-NNNN` equals the `id:` field (A4). A2 and A3 are diff-based and skip rather than fail when no base ref is available. Exit `0` clean, `1` findings.
+Checks (§8): required front-matter and valid enum values (A1) · an accepted record's body cannot be modified (A2) · a new `author: agent` record cannot arrive already `accepted` (A3) · filename/id agreement, extended to the date-slug id's date (A4) · no two records share an `id:`, in the folder or against the base branch (A5). A2, A3, and the base-branch half of A5 are diff-based and skip rather than fail when no base ref is available. Exit `0` clean, `1` findings.
 
 ---
 
