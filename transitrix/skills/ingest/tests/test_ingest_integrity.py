@@ -3,11 +3,11 @@
 
 Deterministic, no-API-key guard. Nine parts:
 
-  A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
+  A. Bundle integrity — SKILL.md frontmatter, the four JSON schemas parse, the
      four layer prompts + READMEs exist, the _intake template is present.
   B. CLI pipeline drive — runs the real CLI end-to-end on a fixture
-     (scaffold-intake -> convert -> field-artefact -> emit-candidates -> validate
-     -> review-queue) and asserts the outputs: a conformant field artefact with a
+     (scaffold-intake -> convert -> privacy-scan -> field-artefact -> emit-candidates
+     -> validate -> review-queue) and asserts the outputs: a conformant field artefact with a
      proposed source_quality, candidate files, a review queue with the gate closed,
      the two-axes rule (a candidate carrying source_quality is flagged), and THE ONE
      RULE — canon/ is never written.
@@ -38,6 +38,16 @@ Deterministic, no-API-key guard. Nine parts:
   Q. origin pass-through + REQ-004 — emit-candidates carries origin through for all three
      valid values (legislative/process-product/project-product); validate enforces REQ-004
      (closed vocabulary) on the candidate origin field.
+  R. #807 privacy gate — privacy-scan CLEAN/STRIPPED/REJECTED outcomes; admit-source
+     (field zone) refuses with no scan record, refuses a stale record, and refuses the
+     original after STRIPPED (must admit the redacted copy); the epic's name+email+phone
+     reproduction is not admitted verbatim; privacy-report.yaml never leaks a fragment
+     verbatim; `enabled: false` is an explicit adopter opt-out.
+  S. workflow-status (vkgeorgia/strategy#824) — one invocation reports every human gate's
+     phase + count (ADR/WI/canon element/REQUIREMENT-CONSTRAINT-overdue/ingest batch);
+     author:agent ADRs counted separately from human-proposed; --data-free strips ids/paths;
+     --format yaml matches the default table's counts; an out-of-vocabulary or missing phase
+     value lands in `unknown`, never dropped; absent sources degrade to an omitted section.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -95,7 +105,7 @@ def part_a_bundle():
             for key in ("name", "description", "when_to_use", "allowed-tools"):
                 check(key in fm, f"SKILL.md frontmatter missing required key: {key}")
 
-    for short in ("field-artefact", "candidate", "review-queue"):
+    for short in ("field-artefact", "candidate", "review-queue", "privacy-report"):
         p = os.path.join(SKILL_DIR, "schemas", f"{short}.schema.json")
         if check(os.path.isfile(p), f"schema missing: schemas/{short}.schema.json"):
             try:
@@ -145,6 +155,10 @@ def part_b_pipeline():
         check(r.returncode == 0, f"convert failed: {r.stderr.strip()}")
         md = os.path.join(org, "_intake", "processing", "INTERVIEW-sample.md")
         check(os.path.isfile(md), "convert did not produce processing/INTERVIEW-sample.md")
+
+        r = run_cli("privacy-scan", md)
+        check(r.returncode == 0 and "CLEAN" in r.stdout,
+              f"privacy-scan should report CLEAN for the clean fixture: {r.stdout}{r.stderr}")
 
         r = run_cli("field-artefact", md, "--type", "INTERVIEW", "--role", "Head of Operations",
                     "--date", "2026-04-15", "--slug", "ops", "--admitted-at", "2026-04-16",
@@ -444,6 +458,7 @@ def part_f_ig3():
                 fh.write("# " + stem + "\n" + body + "\n")
 
         drop("INT", "note")
+        run_cli("privacy-scan", os.path.join(proc, "INT.md"))
         r = run_cli("admit-source", "--zone", "field", os.path.join(proc, "INT.md"),
                     "--type", "INTERVIEW", "--role", "Ops", "--date", "2026-01-01",
                     "--slug", "ops", "--admitted-at", "2026-01-02")
@@ -460,6 +475,7 @@ def part_f_ig3():
               "IG-3: admit-source --zone codex did not write a codex artefact")
 
         drop("INT2", "note2")
+        run_cli("privacy-scan", os.path.join(proc, "INT2.md"))
         r = run_cli("field-artefact", os.path.join(proc, "INT2.md"),
                     "--type", "INTERVIEW", "--role", "Ops2", "--date", "2026-01-01",
                     "--slug", "ops2", "--admitted-at", "2026-01-02")
@@ -755,6 +771,7 @@ def part_j_duplicate_source():
                 fh.write(content)
             run_cli("convert", os.path.join(inbox, "src.md"))
             md = os.path.join(org, "_intake", "processing", "src.md")
+            run_cli("privacy-scan", md)
             return run_cli("admit-source", md, "--zone", "field", "--type", "INTERVIEW",
                            "--role", "ops", "--date", "2026-01-01", "--slug", "ops",
                            "--admitted-at", "2026-01-02", *extra)
@@ -1262,6 +1279,261 @@ def part_q_origin_classification():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part R — #807 privacy pre-admission gate ──────────────────────
+
+def part_r_privacy_gate():
+    """privacy-scan CLEAN/STRIPPED/REJECTED; admit-source (field) refuses with no scan
+    record, a stale record, or the un-redacted original after STRIPPED; the epic's
+    name+email+phone reproduction is not admitted verbatim; enabled:false opts out."""
+    if not shutil.which("node"):
+        print("SKIP Part R: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-privacy-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+        inbox = os.path.join(org, "_intake", "inbox")
+        proc = os.path.join(org, "_intake", "processing")
+
+        # R1 — a clean document scans CLEAN.
+        with open(os.path.join(inbox, "clean.md"), "w", encoding="utf-8") as fh:
+            fh.write("The Head of Operations described rising churn over two quarters.\n")
+        run_cli("convert", os.path.join(inbox, "clean.md"))
+        clean_md = os.path.join(proc, "clean.md")
+        r = run_cli("privacy-scan", clean_md)
+        check(r.returncode == 0 and "CLEAN" in r.stdout, f"R1: clean fixture should scan CLEAN: {r.stdout}{r.stderr}")
+
+        # R2 — admit-source refuses a document with NO privacy-scan record.
+        with open(os.path.join(inbox, "unscanned.md"), "w", encoding="utf-8") as fh:
+            fh.write("Unscanned note.\n")
+        run_cli("convert", os.path.join(inbox, "unscanned.md"))
+        unscanned_md = os.path.join(proc, "unscanned.md")
+        r = run_cli("admit-source", "--zone", "field", unscanned_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "no privacy-scan record" in (r.stdout + r.stderr),
+              f"R2: admit-source must refuse a document with no privacy-scan record: {r.stdout}{r.stderr}")
+        check(not os.path.isdir(os.path.join(org, "field", "observations")),
+              "R2: a refused document must not be admitted")
+
+        # R3 — the epic's reproduction: full name + personal email + personal phone.
+        repro = ("Contact: Jane Doe\nEmail: jane.doe@personalmail.example\n"
+                 "Phone: +1 555-123-4567\n")
+        with open(os.path.join(inbox, "repro.md"), "w", encoding="utf-8") as fh:
+            fh.write(repro)
+        run_cli("convert", os.path.join(inbox, "repro.md"))
+        repro_md = os.path.join(proc, "repro.md")
+        r = run_cli("privacy-scan", repro_md)
+        check(r.returncode == 0 and "STRIPPED" in r.stdout,
+              f"R3: name+email+phone fixture should be STRIPPED (default on_detection: strip): {r.stdout}{r.stderr}")
+        redacted = os.path.join(proc, "repro.redacted.md")
+        check(os.path.isfile(redacted), "R3: STRIPPED must write a redacted copy")
+        redacted_text = open(redacted, encoding="utf-8").read()
+        check("jane.doe@personalmail.example" not in redacted_text and "555-123-4567" not in redacted_text,
+              "R3: the redacted copy must not carry the blocked email/phone verbatim")
+
+        # admit-source on the ORIGINAL (still carrying the blocked fragments) is refused...
+        r = run_cli("admit-source", "--zone", "field", repro_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "admit the redacted copy instead" in (r.stdout + r.stderr),
+              f"R3: admit-source on the original after STRIPPED must be refused: {r.stdout}{r.stderr}")
+
+        # ...but succeeds on the redacted copy, and the admitted artefact carries no PII verbatim.
+        r = run_cli("admit-source", "--zone", "field", redacted,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14",
+                    "--slug", "repro")
+        check(r.returncode == 0, f"R3: admit-source on the redacted copy should succeed: {r.stdout}{r.stderr}")
+        art = os.path.join(org, "field", "observations", "OBSERVATION-repro-20260714-1.yaml")
+        if check(os.path.isfile(art), "R3: the redacted-copy admission did not write a field artefact"):
+            body = open(art, encoding="utf-8").read()
+            check("jane.doe@personalmail.example" not in body and "555-123-4567" not in body,
+                  "R3: the admitted field artefact must not carry the blocked PII verbatim")
+
+        # R4 — a stale scan (content changed after scanning) is refused, not silently trusted.
+        with open(os.path.join(inbox, "stale.md"), "w", encoding="utf-8") as fh:
+            fh.write("Original content.\n")
+        run_cli("convert", os.path.join(inbox, "stale.md"))
+        stale_md = os.path.join(proc, "stale.md")
+        run_cli("privacy-scan", stale_md)
+        with open(stale_md, "a", encoding="utf-8") as fh:
+            fh.write("Changed after scanning.\n")
+        r = run_cli("admit-source", "--zone", "field", stale_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "stale" in (r.stdout + r.stderr),
+              f"R4: a stale privacy-scan record must be refused, not trusted: {r.stdout}{r.stderr}")
+
+        # R5 — on_detection: reject blocks the whole document (REJECTED, no redacted copy);
+        # privacy-report.yaml records it and never leaks a fragment verbatim.
+        org2 = os.path.join(work, "org2")
+        os.makedirs(org2)
+        run_cli("scaffold-intake", org2)
+        with open(os.path.join(org2, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
+                     'ingest:\n  privacy_gate:\n    enabled: true\n    on_detection: reject\n')
+        with open(os.path.join(org2, "_intake", "inbox", "bad.md"), "w", encoding="utf-8") as fh:
+            fh.write(repro)
+        run_cli("convert", os.path.join(org2, "_intake", "inbox", "bad.md"))
+        bad_md = os.path.join(org2, "_intake", "processing", "bad.md")
+        r = run_cli("privacy-scan", bad_md)
+        check(r.returncode == 1 and "REJECTED" in r.stdout,
+              f"R5: on_detection: reject should produce REJECTED, not STRIPPED: {r.stdout}{r.stderr}")
+        check(not os.path.isfile(os.path.join(org2, "_intake", "processing", "bad.redacted.md")),
+              "R5: REJECTED must not write a redacted copy")
+        report_path = os.path.join(org2, "_intake", "processing", "privacy-report.yaml")
+        if check(os.path.isfile(report_path), "R5: privacy-report.yaml was not written"):
+            rep = yaml.safe_load(open(report_path, encoding="utf-8"))
+            check(rep.get("summary", {}).get("rejected") == 1,
+                  f"R5: privacy-report summary.rejected should be 1: {rep.get('summary')}")
+            scanned = rep.get("scanned", [])
+            check(any(s.get("outcome") == "REJECTED" for s in scanned), "R5: privacy-report did not record the REJECTED scan")
+            for s in scanned:
+                for frag in (s.get("blocked_fragments") or []):
+                    check("jane.doe@personalmail.example" not in frag.get("fragment_preview", ""),
+                          "R5: privacy-report fragment_preview must never carry verbatim PII")
+
+        # R6 — enabled: false is an explicit adopter opt-out: admit-source proceeds
+        # with NO privacy-scan record at all.
+        org3 = os.path.join(work, "org3")
+        os.makedirs(org3)
+        run_cli("scaffold-intake", org3)
+        with open(os.path.join(org3, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
+                     'ingest:\n  privacy_gate:\n    enabled: false\n')
+        with open(os.path.join(org3, "_intake", "inbox", "off.md"), "w", encoding="utf-8") as fh:
+            fh.write("Note.\n")
+        run_cli("convert", os.path.join(org3, "_intake", "inbox", "off.md"))
+        off_md = os.path.join(org3, "_intake", "processing", "off.md")
+        r = run_cli("admit-source", "--zone", "field", off_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 0,
+              f"R6: enabled:false must let admit-source proceed without a privacy-scan record: {r.stdout}{r.stderr}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+# ── Part S — workflow-status (vkgeorgia/strategy#824) ────────────
+
+def part_s_workflow_status():
+    """workflow-status reports every human gate's phase + count in one invocation:
+    ADR (author:agent proposed broken out from human-proposed), Work Item, canon
+    element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batch awaiting
+    review. --data-free strips ids/paths; --format yaml matches the default
+    Markdown table's counts; a missing/out-of-vocabulary phase value lands in an
+    `unknown` row rather than being dropped; no output field carries a date/age;
+    running twice with no repo change is byte-identical; exit code is always 0."""
+    if not shutil.which("node"):
+        print("SKIP Part S: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-workflow-status-")
+    try:
+        org = os.path.join(work, "org")
+        decisions = os.path.join(org, "operations", "decisions")
+        work_items = os.path.join(org, "operations", "work-items")
+        goals = os.path.join(org, "canon", "elements", "01_motivation", "goals")
+        reqs = os.path.join(org, "canon", "elements", "01_motivation", "requirements")
+        processing = os.path.join(org, "_intake", "processing")
+        for d in (decisions, work_items, goals, reqs, processing):
+            os.makedirs(d)
+
+        def write(path, text):
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(text)
+
+        write(os.path.join(decisions, "ADR-0001-x.md"),
+              "---\nid: ADR-0001\ntitle: x\nstatus: accepted\ndate: \"2026-01-01\"\n---\n\n## Context\n")
+        write(os.path.join(decisions, "ADR-0002-y.md"),
+              "---\nid: ADR-0002\ntitle: y\nstatus: proposed\nauthor: agent\ndate: \"2026-01-02\"\n---\n\n## Context\n")
+        write(os.path.join(decisions, "ADR-0003-z.md"),
+              "---\nid: ADR-0003\ntitle: z\nstatus: proposed\ndate: \"2026-01-03\"\n---\n\n## Context\n")
+        write(os.path.join(decisions, "ADR-0004-w.md"),
+              "---\nid: ADR-0004\ntitle: w\nstatus: withdrawn\ndate: \"2026-01-04\"\n---\n\n## Context\n")
+
+        write(os.path.join(work_items, "WI-0001-a.md"),
+              "---\nid: WI-0001\ntitle: a\nstatus: in_progress\nopened: \"2026-01-01\"\n---\n\n## Outcome\n")
+        write(os.path.join(work_items, "WI-0002-b.md"),
+              "---\nid: WI-0002\ntitle: b\nstatus: done\nopened: \"2026-01-01\"\nclosed: \"2026-01-05\"\n---\n\n## Outcome\n")
+        write(os.path.join(work_items, "WI-0003-c.md"),
+              "---\nid: WI-0003\ntitle: c\nstatus: cancelled\nopened: \"2026-01-01\"\n---\n\n## Outcome\n")
+
+        write(os.path.join(goals, "GOAL-ACTIVE-1.yaml"), 'id: "GOAL-ACTIVE-1"\nname: "x"\nstatus: active\n')
+        write(os.path.join(goals, "GOAL-NOSTATUS-1.yaml"), 'id: "GOAL-NOSTATUS-1"\nname: "y"\n')
+        write(os.path.join(reqs, "REQUIREMENT-OVERDUE-1.yaml"),
+              'id: "REQUIREMENT-OVERDUE-1"\nname: "z"\nnext_review_at: "2020-01-01"\n')
+
+        write(os.path.join(processing, "review-queue.yaml"), "generated_by: \"@transitrix/ingest-cli\"\n")
+
+        r = run_cli("workflow-status", org)
+        check(r.returncode == 0, "S: workflow-status failed: %s" % (r.stderr or r.stdout))
+        md_out = r.stdout
+
+        check("ADR" in md_out and "Work Item" in md_out and "Canon element" in md_out
+              and "REQUIREMENT/CONSTRAINT" in md_out and "Ingest batch" in md_out,
+              "S: one invocation must cover all five sources: %r" % md_out)
+        check("| ADR | proposed (author: agent) | 1 |" in md_out,
+              "S: author:agent proposed ADR must be its own row, distinct from human-proposed: %r" % md_out)
+        check("| ADR | proposed (human) | 1 |" in md_out,
+              "S: human-authored proposed ADR must be counted separately: %r" % md_out)
+        check("| ADR | unknown | 1 |" in md_out,
+              "S: an ADR status outside the vocabulary (withdrawn) must land in unknown, not be dropped: %r" % md_out)
+        check("| Work Item | unknown | 1 |" in md_out,
+              "S: a WI status outside the vocabulary (cancelled) must land in unknown, not be dropped: %r" % md_out)
+        # 2, not 1: GOAL-NOSTATUS-1 has no status: field, and REQUIREMENT-OVERDUE-1
+        # is *also* a canon element with no status: field — the canon-element
+        # section scans every canon/** element regardless of TYPE, a separate
+        # dimension from the REQUIREMENT/CONSTRAINT overdue-review section below.
+        check("| Canon element | unknown | 2 |" in md_out,
+              "S: canon elements with no status: field must land in unknown, not be dropped or defaulted: %r" % md_out)
+        check("| REQUIREMENT/CONSTRAINT | review overdue | 1 |" in md_out,
+              "S: the overdue REQUIREMENT must be counted (reusing check-stale's scan): %r" % md_out)
+        check("| Ingest batch | awaiting review | 1 |" in md_out,
+              "S: the ingest batch with a review-queue.yaml must be counted: %r" % md_out)
+        check("ADR-0002" in md_out,
+              "S: default output must list ids in open (non-terminal) phases: %r" % md_out)
+        check("ADR-0001" not in md_out,
+              "S: an id in a terminal phase (accepted) must not appear in the open-items detail: %r" % md_out)
+        check(not re.search(r"\b\d+\s*(day|hour)s?\b", md_out, re.I),
+              "S: no output field may carry an age/duration: %r" % md_out)
+
+        # --data-free: no id, name, filename, or path anywhere in the output.
+        r = run_cli("workflow-status", org, "--data-free")
+        check(r.returncode == 0, "S: --data-free run failed: %s" % (r.stderr or r.stdout))
+        for leak in ("ADR-0001", "ADR-0002", "WI-0001", "GOAL-ACTIVE-1", "REQUIREMENT-OVERDUE-1", org):
+            check(leak not in r.stdout, "S: --data-free leaked %r" % leak)
+
+        # --format yaml must carry the identical counts as the default Markdown table.
+        r = run_cli("workflow-status", org, "--format", "yaml")
+        check(r.returncode == 0, "S: --format yaml failed: %s" % (r.stderr or r.stdout))
+        rep = yaml.safe_load(r.stdout)
+        counts = {}
+        for obj in rep.get("objects", []):
+            for ph in obj.get("phases", []):
+                counts[(obj["object"], ph["phase"])] = ph["count"]
+        check(counts.get(("ADR", "proposed (author: agent)")) == 1, "S: yaml/md count mismatch (ADR agent-proposed)")
+        check(counts.get(("ADR", "proposed (human)")) == 1, "S: yaml/md count mismatch (ADR human-proposed)")
+        check(counts.get(("Work Item", "in_progress")) == 1, "S: yaml/md count mismatch (WI in_progress)")
+        check(counts.get(("Canon element", "Active")) == 1, "S: yaml/md count mismatch (canon Active)")
+        check(counts.get(("REQUIREMENT/CONSTRAINT", "review overdue")) == 1, "S: yaml/md count mismatch (overdue)")
+        check(counts.get(("Ingest batch", "awaiting review")) == 1, "S: yaml/md count mismatch (ingest batch)")
+
+        # Running twice with no repo change yields identical output.
+        r2 = run_cli("workflow-status", org)
+        check(r2.stdout == md_out, "S: two runs with no repo change produced different output")
+
+        # A repo with none of the five sources degrades gracefully — omitted
+        # sections, not an error — and still exits 0.
+        empty_org = os.path.join(work, "empty")
+        os.makedirs(empty_org)
+        r = run_cli("workflow-status", empty_org)
+        check(r.returncode == 0, "S: an empty repo must still exit 0: %s" % (r.stderr or r.stdout))
+        check("ADR" not in r.stdout and "Work Item" not in r.stdout and "Canon element" not in r.stdout
+              and "Ingest batch" not in r.stdout,
+              "S: absent sources must produce an omitted section, not a zero-row placeholder: %r" % r.stdout)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1279,6 +1551,8 @@ part_n_entity_resolution()
 part_o_unresolved_extensions()
 part_p_preset_version_currency()
 part_q_origin_classification()
+part_r_privacy_gate()
+part_s_workflow_status()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

@@ -114,7 +114,7 @@ Fourteen days is chosen because it is short enough that a single missed weekly r
 
 The reminder is a *flag in the digest*, not a state change on the ADR. Discovery never edits an ADR; the record is immutable except for a human ratifying `proposed → accepted` in a reviewed change (§5, [`03-architecture-decision-log.md`](03-architecture-decision-log.md) §7). A ratification later than fourteen days is normal and is not itself a problem — the reminder exists so that ratification happens at all.
 
-The on-demand half of this visibility gap is closed by `transitrix-ingest workflow-status` ([`method/02-team-operations.md`](02-team-operations.md) §6.4) — an adopter or agent can run it at any time to see every ADR currently at `proposed`, `author: agent` broken out from human-authored, without waiting for a scheduled run. `workflow-status` deliberately reports phases and counts only, never age, so it has no equivalent of the fourteen-day filter above; the scheduled job may still consume its `--format yaml` output for the underlying list of proposed-ADR ids rather than re-walking `operations/decisions/` itself, then apply its own age threshold on top.
+The on-demand half of this visibility gap is closed by `transitrix-ingest workflow-status` ([`method/02-team-operations.md`](02-team-operations.md) §6.7) — an adopter or agent can run it at any time to see every ADR currently at `proposed`, `author: agent` broken out from human-authored, without waiting for a scheduled run. `workflow-status` deliberately reports phases and counts only, never age, so it has no equivalent of the fourteen-day filter above; the scheduled job may still consume its `--format yaml` output for the underlying list of proposed-ADR ids rather than re-walking `operations/decisions/` itself, then apply its own age threshold on top.
 
 ### 7.4 The downstream-consumer registry — contract
 
@@ -134,7 +134,7 @@ consumers:
     role: reference-adopter                     # optional — human label; drives digest grouping only
     pin_file: transitrix.yaml                   # required — path in the consumer repo carrying the pin
     pin_key: methodology_version                # required — YAML key inside pin_file
-    decisions_path: operations/decisions        # required — directory of ADR-NNNN-*.md records to scan
+    decisions_path: operations/decisions        # required — directory of ADR records to scan (date-slug or legacy id)
 ```
 
 Field semantics:
@@ -162,7 +162,7 @@ The digest is Discovery's only user-visible output beyond the PRs themselves. Wh
 
 Discovery runs on a schedule; two runs a day apart with no intervening release must not produce two PRs, two ADRs, or two digest reminders for the same drift. The mechanics:
 
-- **Bounded PR for a pin bump.** Before opening one, the job checks for an open PR on the consumer repo that already bumps `pin_key` to the target version and carries an `author: agent` + `status: proposed` ADR. If one exists, the digest links it; a new one is not opened. The ADR filename convention (`ADR-NNNN-pin-<component>-<version>.md`) makes the check a name lookup, not a semantic diff.
+- **Bounded PR for a pin bump.** Before opening one, the job checks for an open PR on the consumer repo that already bumps `pin_key` to the target version and carries an `author: agent` + `status: proposed` ADR. If one exists, the digest links it; a new one is not opened. The check matches on ADR front-matter — `title`/body naming the same `pin_key` and target version — not on filename: a date-slug id (`method/02-team-operations.md` §3.1) encodes the record's creation date, not the pinned component or version, so filename can no longer stand in for content.
 - **Stale-proposed reminder.** Re-flagging the same ADR on every run is intentional — the reminder is a standing signal until the ratification happens. It is not a notification storm because each run emits one digest, not one message per finding.
 
 ### 7.7 What this section does NOT define

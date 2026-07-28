@@ -10,7 +10,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 
 The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
-> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
+> **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `privacy-scan`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
 
 The methodology is canon at `github.com/transitrix/methodology`; this skill is the agent-facing protocol for operating the field→canon pipeline against it. It runs **agent-neutrally** under Claude and GitHub Copilot — all heavy logic is in the CLI, and this `SKILL.md` only sequences it.
 

@@ -14,6 +14,8 @@ A repository without a profile defaults to **`full`** — the entire vocabulary 
 
 The shape of the profile, the closure rule, and the document-validation behaviour below were settled by methodology canon on 2026-05-31.
 
+This document bounds the **depth** of the *core* vocabulary only. A repository may separately opt into an **optional domain package** — a bounded, removable extension that sits alongside the core registry rather than inside it. That second, orthogonal axis is defined in [`PACKAGES.md`](PACKAGES.md); it does not change anything below.
+
 ---
 
 ## 1. Where the profile lives
@@ -327,6 +329,7 @@ The Coverage Profile is the canonical realisation of the *Coverage Variants* exp
 ## 12. References
 
 - [`MANIFEST.md`](MANIFEST.md) — the `transitrix.yaml` manifest envelope (where `coverage_profile:` lives).
+- [`PACKAGES.md`](PACKAGES.md) — the orthogonal breadth axis (optional domain packages), not bounded by this document.
 - [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3 — TYPE registry the profile draws from.
 - [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §6 — per-TYPE layer placement (which layer each TYPE belongs to).
 - [`elements/17-relations.md`](elements/17-relations.md) §3 — relation `type` enum the profile draws from.

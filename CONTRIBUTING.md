@@ -81,6 +81,7 @@ This adds a `Signed-off-by: Your Name <you@example.com>` trailer to the commit.
 - Pull requests and issues are the primary channels.
 - For broader strategic discussion, use Discussions on the GitHub repository (when enabled).
 - For other enquiries — [hello@transitrix.com](mailto:hello@transitrix.com).
+- An adopter running the Team Operations convention (`method/02-team-operations.md`) raises a methodology-directed finding in their own repo's `operations/feedback.md`, not as a GitHub issue here. Sending an entry on to the project is opt-in and manual — the same [hello@transitrix.com](mailto:hello@transitrix.com) address above.
 - Keep tone professional. The project is a working tool, not a debate club.
 
 ## Code of conduct

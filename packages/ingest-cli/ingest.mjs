@@ -11,9 +11,9 @@
 //
 // Exit codes:  0 = ok  ·  1 = usage / findings that need review  ·  2 = error
 //
-// Implemented: --version, scaffold-intake, convert, admit-source (field + codex;
-// field-artefact / codex-artefact remain as deprecated aliases), emit-candidates,
-// validate, review-queue.
+// Implemented: --version, scaffold-intake, convert, privacy-scan, admit-source (field
+// + codex; field-artefact / codex-artefact remain as deprecated aliases),
+// emit-candidates, validate, review-queue.
 
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +31,10 @@ import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
 import { checkStale } from './src/check-stale.mjs';
+import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { dump } from './src/yaml.mjs';
+import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
+import { randomUUID } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -65,6 +68,8 @@ function usage() {
     'Commands:',
     '  scaffold-intake <org-root>     Create _intake/{inbox,processing,processed} (idempotent)',
     '  convert <inbox-file>           Convert a document to Markdown in _intake/processing/',
+    '  privacy-scan <processing/file.md>   Fail-closed PII/medical pre-admission gate (SKILL.md Step 2b)',
+    '                                 CLEAN|STRIPPED proceed to admit-source; REJECTED|ERROR halt the pipeline',
     '  admit-source <md> --zone field|codex   Admit a converted source to the field or codex zone',
     '                 field: --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role R --date YYYY-MM-DD',
     '                        [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
@@ -81,6 +86,8 @@ function usage() {
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
     '  check-stale [org-root]         List REQUIREMENT/CONSTRAINT elements whose next_review_at has passed (REQ-STALE-001)',
+    '  workflow-status [org-root]     Report every human gate\'s phase + count (ADR/WI/canon/overdue/ingest batch); read-only',
+    '                 [--out <path>] [--format md|yaml] [--data-free]',
     '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
@@ -121,6 +128,37 @@ async function cmdConvert(args) {
   }
 }
 
+async function cmdPrivacyScan(args) {
+  const { _ } = parseArgs(args);
+  const md = _[0];
+  if (!md) { console.error('privacy-scan: missing <processing/file.md>'); return 1; }
+  const mdPath = resolve(md);
+  try { await access(mdPath); } catch { console.error(`privacy-scan: file not found: ${md}`); return 2; }
+  const orgRoot = await findOrgRoot(mdPath);
+  if (!orgRoot) { console.error(`privacy-scan: "${md}" is not inside an _intake/ workspace.`); return 2; }
+
+  const config = parsePrivacyGateConfig(await readManifestText(orgRoot));
+  const processingDir = stageDir(orgRoot, 'processing');
+  const res = await runPrivacyScan({ mdPath, processingDir, config, runId: randomUUID() });
+
+  console.log(`privacy-scan  ${md}  ->  ${res.outcome}`);
+  if (res.outcome === 'STRIPPED') {
+    console.log(`  ${res.blockedFragments.filter((f) => !f.allowlist_cleared).length} fragment(s) redacted -> ${res.redactedFile}`);
+    console.log('  admit-source must be run on the redacted copy, not the original.');
+  }
+  if (res.outcome === 'REJECTED') {
+    console.error(`  ${res.blockedFragments.length} fragment(s) blocked — document not admissible; see privacy-report.yaml`);
+  }
+  if (res.outcome === 'ERROR') {
+    console.error(`  ${res.errorDetail}`);
+  }
+  console.log(`  privacy-report.yaml  ->  ${join(processingDir, 'privacy-report.yaml')}`);
+
+  if (res.outcome === 'CLEAN' || res.outcome === 'STRIPPED') return 0;
+  if (res.outcome === 'REJECTED') return 1;
+  return 2;
+}
+
 async function cmdFieldArtefact(args) {
   const { _, flags } = parseArgs(args);
   const md = _[0];
@@ -159,7 +197,7 @@ async function cmdFieldArtefact(args) {
       return 0;
     }
     console.error(`field-artefact: ${err.message}`);
-    return 2;
+    return err.privacyGate ? 1 : 2;
   }
 }
 
@@ -371,6 +409,37 @@ async function cmdCheckStale(args) {
   return stale.length > 0 ? 1 : 0;
 }
 
+// Report every human gate's phase + count in one table — ADR/WI status, canon
+// element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches
+// awaiting review. Read-only, always exit 0 — a report, not a gate.
+async function cmdWorkflowStatus(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('workflow-status: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const format = flags.format || 'md';
+  if (format !== 'md' && format !== 'yaml') {
+    console.error(`workflow-status: --format must be md|yaml (got ${JSON.stringify(format)})`);
+    return 1;
+  }
+  const dataFree = flags['data-free'] === true || flags['data-free'] === 'true';
+
+  const model = await computeWorkflowStatus(orgRoot);
+  const out = format === 'yaml' ? dump(toReportObject(model, { dataFree })) : renderMarkdown(model, { dataFree });
+
+  if (flags.out) {
+    const { writeFile } = await import('node:fs/promises');
+    const outPath = resolve(flags.out);
+    await writeFile(outPath, out, 'utf8');
+    console.log(`workflow-status  ->  ${outPath}`);
+  } else {
+    process.stdout.write(out);
+  }
+  return 0;
+}
+
 // Flag admitted elements sitting outside their §4 folder (read-only over canon/).
 async function cmdCheckPlacement(args) {
   const { _ } = parseArgs(args);
@@ -398,6 +467,7 @@ async function main(argv) {
   switch (cmd) {
     case 'scaffold-intake': return cmdScaffoldIntake(args);
     case 'convert':         return cmdConvert(args);
+    case 'privacy-scan':    return cmdPrivacyScan(args);
     case 'admit-source':    return cmdAdmitSource(args);
     case 'field-artefact':  return cmdFieldArtefact(args);
     case 'codex-artefact':  return cmdCodexArtefact(args);
@@ -408,6 +478,7 @@ async function main(argv) {
     case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
     case 'check-stale':     return cmdCheckStale(args);
+    case 'workflow-status': return cmdWorkflowStatus(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);

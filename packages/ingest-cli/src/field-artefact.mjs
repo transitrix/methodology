@@ -4,14 +4,16 @@
 // source is moved to _intake/processed/ for traceability; the artefact cites it.
 //
 // The skill PROPOSES source_quality; a human confirms at admission. This command
-// never touches canon/.
+// never touches canon/. Admission is fail-closed on the privacy pre-admission gate
+// (SKILL.md Step 2b, privacy-scan.mjs) unless the adopter has explicitly disabled it.
 
 import { readFile, writeFile, mkdir, readdir, rename, access } from 'node:fs/promises';
 import { join, resolve, basename, extname } from 'node:path';
 import { isValidId, makeId, slugSegment, parseId } from './ids.mjs';
 import { dump } from './yaml.mjs';
-import { INTAKE, stageDir } from './intake.mjs';
+import { INTAKE, stageDir, readManifestText } from './intake.mjs';
 import { hashFile, shortHash, findDuplicateSource, DuplicateSourceError } from './source-hash.mjs';
+import { checkPrivacyGate, parsePrivacyGateConfig } from './privacy-scan.mjs';
 
 // Field TYPE → field/ subfolder and body-block key.
 const TYPE_INFO = {
@@ -69,6 +71,12 @@ export async function emitFieldArtefact(opts) {
   if (sourceQuality && !SOURCE_QUALITY.has(sourceQuality)) {
     throw new Error(`--source-quality must be one of ${[...SOURCE_QUALITY].join(', ')}`);
   }
+
+  // Fail-closed privacy pre-admission gate (SKILL.md Step 2b): refuse to admit a
+  // document with no passing, content-matching privacy-scan record. Skipped only when
+  // an adopter has explicitly disabled the gate (`ingest.privacy_gate.enabled: false`).
+  const gateConfig = parsePrivacyGateConfig(await readManifestText(orgRoot));
+  if (gateConfig.enabled !== false) await checkPrivacyGate(mdPath);
 
   // Fingerprint the raw bytes up front and refuse a duplicate re-ingest (same content
   // already admitted to field/) unless --force — before minting an id or moving anything.
