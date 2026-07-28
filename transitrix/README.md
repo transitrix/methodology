@@ -27,6 +27,7 @@ Transitrix is a text-native methodology for enterprise architecture: every artef
 | **Report** | `/transitrix:report` | Produces a reproducible compliance report (obligation × subject impact matrix or per-regime coverage metric) via a committed view-config artefact and the `cervin` CLI renderer | 0.6.0 |
 | **Reg-intel** | `/transitrix:reg-intel` | Monitors regulatory sources, classifies new instruments against the organisation's obligation catalogue, and stages a review digest for human triage | 0.6.0 |
 | **ADR** | `/transitrix:adr` | Runs a Context/Decision/Consequences interview and lands the result as a gated Architecture Decision Record (`operations/decisions/ADR-YYYY-MM-DD-*.md`), never self-accepting and never editing an accepted record's body | 0.6.0 |
+| **Feedback** | `/transitrix:feedback` | Routes a methodology-directed finding away from data/model problems, runs a scrub-gated interview, and lands it as an anonymised `FB-NNNN` entry in `operations/feedback.md`; exports a ready-to-send message on request only, never transmits it itself | 2.1.0 |
 
 ---
 
