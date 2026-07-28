@@ -1,0 +1,9 @@
+package: reqif
+kind: spec-object-type
+id: sot-rationale-note-1
+name: "Rationale note"
+attributes:
+  - key: "ReqIF.Name"
+    datatype: STRING
+  - key: "ReqIF.Text"
+    datatype: XHTML

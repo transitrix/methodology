@@ -1,0 +1,10 @@
+# Worked package instance — notations/examples/packages/reqif/README.md.
+# A minimal adopter-repo slice: just enough canon/ to give the package's one
+# permitted cross-reference (Transitrix.CanonRef, reqif.md §3) something real
+# to cite, plus the reqif/ package folder itself.
+transitrix: 1
+methodology_version: "2.0.0"
+notations: [requirement]
+zones: [canon]
+coverage_profile: core
+packages: [reqif]

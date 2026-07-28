@@ -109,6 +109,12 @@ Each shipped package ships a spec document (convention: `notations/packages/<nam
 
 Like a coverage-profile preset, the set of packages a methodology version ships is part of that version's registry. A `packages:` entry naming a package the pinned `methodology_version` does not ship is rejected (§8, `PKG-001`) — the same discipline [`COVERAGE_PROFILES.md`](COVERAGE_PROFILES.md) §7 applies to preset names.
 
+### 7.1 Shipped packages
+
+| `packages:` name | Spec | Status |
+|---|---|---|
+| `reqif` | [`packages/reqif.md`](packages/reqif.md) | base object model landed; this spec's own §6-required experimental-status declaration and review date are pending — see its Evolution section |
+
 ---
 
 ## 8. Validation rules

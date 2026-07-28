@@ -1,0 +1,7 @@
+package: reqif
+kind: spec-object
+id: so-print-retry-rationale-1
+type: sot-rationale-note-1
+values:
+  ReqIF.Name: "Why 3 retries"
+  ReqIF.Text: "3 retries covers the observed transient-fault window (printer wake-from-sleep, brief network drop) without masking a genuine hardware fault behind repeated silent failures."
