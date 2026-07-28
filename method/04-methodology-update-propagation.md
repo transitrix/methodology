@@ -114,6 +114,8 @@ Fourteen days is chosen because it is short enough that a single missed weekly r
 
 The reminder is a *flag in the digest*, not a state change on the ADR. Discovery never edits an ADR; the record is immutable except for a human ratifying `proposed → accepted` in a reviewed change (§5, [`03-architecture-decision-log.md`](03-architecture-decision-log.md) §7). A ratification later than fourteen days is normal and is not itself a problem — the reminder exists so that ratification happens at all.
 
+The on-demand half of this visibility gap is closed by `transitrix-ingest workflow-status` ([`method/02-team-operations.md`](02-team-operations.md) §6.4) — an adopter or agent can run it at any time to see every ADR currently at `proposed`, `author: agent` broken out from human-authored, without waiting for a scheduled run. `workflow-status` deliberately reports phases and counts only, never age, so it has no equivalent of the fourteen-day filter above; the scheduled job may still consume its `--format yaml` output for the underlying list of proposed-ADR ids rather than re-walking `operations/decisions/` itself, then apply its own age threshold on top.
+
 ### 7.4 The downstream-consumer registry — contract
 
 Each source repo that participates in Discovery declares its known downstream consumers in a machine-readable registry at the repo root. The registry is the discovery job's iteration input: without it, "check each adopter" has no operand.
@@ -177,6 +179,7 @@ Discovery runs on a schedule; two runs a day apart with no intervening release m
 
 ## 9. References
 
+- [`packages/ingest-cli/README.md`](../packages/ingest-cli/README.md) — `workflow-status` command, the on-demand report §7.3's stale-proposed reminder builds visibility on top of.
 - [`RELEASING.md`](../RELEASING.md) — release process and the operational adopter upgrade procedure.
 - [`notations/CONTRACT.md`](../notations/CONTRACT.md) §10 — compatibility policy and version semantics.
 - [`notations/MANIFEST.md`](../notations/MANIFEST.md) §3 — the `methodology_version` field and the no-vendoring default.
