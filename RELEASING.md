@@ -37,7 +37,7 @@ For every release, in order:
 
 The conceptual companion to this section — the **propagation mechanism**: transport, the named operation, the ratification gate on autonomous agents, and what makes the upgrade *bounded / traceable / reproducible* — lives in [`method/04-methodology-update-propagation.md`](method/04-methodology-update-propagation.md). This section is the operational checklist; that document is the contract the checklist satisfies.
 
-When an adopter repo moves from one methodology version to another, **three artefacts must move together** — specs, skill bundle, and CLI — in this order:
+When an adopter repo moves from one methodology version to another, **four artefacts must move together** — specs, skill bundle, CLI, and the vendored whole-repo validator — in this order:
 
 1. **Bump `methodology_version`** in the adopter's `transitrix.yaml` to the new version string.
 2. **Run the migration recipe** (MAJOR bump only) from `migrations/<prev>-to-<this>/` in this repo:
@@ -56,14 +56,18 @@ When an adopter repo moves from one methodology version to another, **three arte
    transitrix-ingest --version
    ```
    Once the CLI is extracted to its own tooling repo and published, `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli --version`) becomes the equivalent shorthand.
-5. **Run `repo-check`** to confirm version currency:
+5. **Re-fetch `.validators/lint.py`** if `tools/lint.py` changed in this release (check the release notes) — this is a vendored copy, fetched once at scaffold time ([`transitrix/skills/onboard/SKILL.md`](transitrix/skills/onboard/SKILL.md) Step 2), and it does not auto-update either:
+   ```
+   curl -fsSL https://raw.githubusercontent.com/transitrix/methodology/vX.Y.Z/tools/lint.py -o .validators/lint.py
+   ```
+6. **Run `repo-check`** to confirm version currency:
    ```
    transitrix-ingest repo-check [org-root]
    ```
    A clean run shows `tooling.ok: true` and no version-mismatch red flag. If `tooling.ok: false` still appears, the installed binary is still the old version — repeat step 4.
-6. **Re-resolve the coverage profile** (if the new release changed the preset vocabulary — see `COVERAGE_PROFILES.md` §7 for what changes between versions). Fix `transitrix.yaml` if needed, then re-run `repo-check` to clear any `coverage_warning`.
+7. **Re-resolve the coverage profile** (if the new release changed the preset vocabulary — see `COVERAGE_PROFILES.md` §7 for what changes between versions). Fix `transitrix.yaml` if needed, then re-run `repo-check` to clear any `coverage_warning`.
 
-Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; steps 5–6 confirm the three artefacts are in sync. Skipping step 4 leaves the CLI binary stale — it will run against new artefacts with old validators and a mismatched coverage-preset vocabulary.
+Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; step 5 handles the **whole-repo validator**; steps 6–7 confirm all four artefacts are in sync. Skipping step 4 leaves the CLI binary stale — it will run against new artefacts with old validators and a mismatched coverage-preset vocabulary. Skipping step 5 leaves `.validators/lint.py` on its scaffold-time snapshot — any fix or rule change landed in `tools/lint.py` since then stays invisible to the adopter's own CI.
 
 ---
 

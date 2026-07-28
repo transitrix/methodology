@@ -28,6 +28,18 @@ import argparse
 import sys
 from pathlib import Path
 
+
+def _ensure_utf8_stdio() -> None:
+    # Same class of bug as tools/lint.py: the "✓ traced" / "⚠ traced"
+    # cells below aren't encodable on a legacy Windows console code page, and
+    # this renderer writes straight to stdout when --out is omitted.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
+_ensure_utf8_stdio()
+
 try:
     import yaml
 except ImportError:  # pragma: no cover - environment guard

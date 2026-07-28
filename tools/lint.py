@@ -12,6 +12,19 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
 
+
+def _ensure_utf8_stdio() -> None:
+    # A legacy Windows console code page (e.g. cp1252) can't encode the status
+    # glyphs printed below, crashing the linter mid-report with a
+    # UnicodeEncodeError regardless of whether the repo itself is clean.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
+_ensure_utf8_stdio()
+
+
 @dataclass
 class LintError:
     file: str
