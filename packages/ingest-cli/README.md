@@ -42,6 +42,7 @@ transitrix-ingest <command> [args]
 | `validate <candidates-dir>` | ✅ | Validate candidate `*.json` against the contract (in code) + coverage profile; flags, never drops. |
 | `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`; annotates each element candidate with its §4 `placement`. |
 | `resolve-placement <TYPE>` | ✅ | Print a TYPE's `ELEMENT_PRIMITIVES.md` §4 materialisation mode + layer + folder. |
+| `workflow-status [org-root]` | ✅ | Report every human gate's phase + count — ADR/WI status, canon element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches awaiting review. Read-only; phases and counts only, no age/time. `[--out <path>] [--format md\|yaml] [--data-free]`. |
 | `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
 
 ## Upgrading
@@ -65,6 +66,7 @@ packages/ingest-cli/
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue
     emit-candidates.mjs# shape the agent extraction result into candidates
+    workflow-status.mjs# every human gate's phase + count, read-only (vkgeorgia/strategy#819)
 ```
 
 The agent-facing extraction prompts that produce the `--from <result.json>` input live with the skill, at `transitrix/skills/ingest/prompts/`.
