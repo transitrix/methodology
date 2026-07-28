@@ -132,7 +132,7 @@ consumers:
     role: reference-adopter                     # optional — human label; drives digest grouping only
     pin_file: transitrix.yaml                   # required — path in the consumer repo carrying the pin
     pin_key: methodology_version                # required — YAML key inside pin_file
-    decisions_path: operations/decisions        # required — directory of ADR-NNNN-*.md records to scan
+    decisions_path: operations/decisions        # required — directory of ADR records to scan (date-slug or legacy id)
 ```
 
 Field semantics:
@@ -160,7 +160,7 @@ The digest is Discovery's only user-visible output beyond the PRs themselves. Wh
 
 Discovery runs on a schedule; two runs a day apart with no intervening release must not produce two PRs, two ADRs, or two digest reminders for the same drift. The mechanics:
 
-- **Bounded PR for a pin bump.** Before opening one, the job checks for an open PR on the consumer repo that already bumps `pin_key` to the target version and carries an `author: agent` + `status: proposed` ADR. If one exists, the digest links it; a new one is not opened. The ADR filename convention (`ADR-NNNN-pin-<component>-<version>.md`) makes the check a name lookup, not a semantic diff.
+- **Bounded PR for a pin bump.** Before opening one, the job checks for an open PR on the consumer repo that already bumps `pin_key` to the target version and carries an `author: agent` + `status: proposed` ADR. If one exists, the digest links it; a new one is not opened. The check matches on ADR front-matter — `title`/body naming the same `pin_key` and target version — not on filename: a date-slug id (`method/02-team-operations.md` §3.1) encodes the record's creation date, not the pinned component or version, so filename can no longer stand in for content.
 - **Stale-proposed reminder.** Re-flagging the same ADR on every run is intentional — the reminder is a standing signal until the ratification happens. It is not a notification storm because each run emits one digest, not one message per finding.
 
 ### 7.7 What this section does NOT define

@@ -31,7 +31,10 @@ const CONFIG = argVal('--config', 'architecture/decision-log/harvest.config.yaml
 const WORKSPACE = argVal('--workspace', '.');
 const OUT = argVal('--out', 'architecture/decision-log');
 
-const FILE_RE = /^ADR-\d{4}-[^/]+\.md$/;
+// Matches both id forms (date-slug ADR-YYYY-MM-DD-<slug>.md and legacy
+// ADR-NNNN-<slug>.md) — the id itself is opaque here, never parsed or sorted
+// numerically; see method/03-architecture-decision-log.md §4.
+const FILE_RE = /^ADR-[^/]+\.md$/;
 
 // --- minimal config parse (flat known shape) -------------------------------
 
@@ -112,7 +115,10 @@ async function main() {
     for (const abs of await walk(decisionsDir)) {
       const { fm: fmText } = splitFrontMatter(await readFile(abs, 'utf8'));
       const fm = parseFm(fmText);
-      const localId = fm.id || basename(abs).replace(/-.*$/, '');
+      // fm.id should always be present (check-adl.mjs A1 requires it); this
+      // fallback is opaque — the whole filename stem, no numeric assumption —
+      // for a record the source repo's own guard hasn't caught yet.
+      const localId = fm.id || basename(abs).replace(/\.md$/, '');
       const nsId = `${src.repo}/${localId}`;
       const rel = relative(join(WORKSPACE, src.repo), abs).split('\\').join('/');
       const backlink = src.clone

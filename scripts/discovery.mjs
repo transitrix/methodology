@@ -7,8 +7,8 @@
 //   * clones the consumer's default branch (shallow, read-only);
 //   * reads its `pin_key` from `pin_file` and compares against the latest tag
 //     on the source repo (this one);
-//   * scans its `decisions_path` for ADR-NNNN-*.md at `status: proposed` whose
-//     `date:` is older than fourteen calendar days.
+//   * scans its `decisions_path` for ADR records (date-slug or legacy id form)
+//     at `status: proposed` whose `date:` is older than fourteen calendar days.
 //
 // Emits one digest to stdout (YAML) and, when running under GitHub Actions,
 // a Markdown summary appended to $GITHUB_STEP_SUMMARY.
@@ -181,7 +181,9 @@ async function checkoutConsumer(consumer) {
   return dest;
 }
 
-// Walk decisions_path and return ADR-NNNN-*.md paths.
+// Walk decisions_path and return ADR record paths — date-slug
+// (ADR-YYYY-MM-DD-<slug>.md) or legacy (ADR-NNNN-<slug>.md); the id is opaque
+// here, never parsed numerically (method/03-architecture-decision-log.md §4).
 async function findAdrs(root, subpath) {
   const dir = join(root, subpath);
   if (!existsSync(dir)) return [];

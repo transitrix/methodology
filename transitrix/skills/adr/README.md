@@ -17,8 +17,9 @@ define the per-repo Architecture Decision Record format, its `author`/`source`
 provenance fields, the ratification gate that keeps an agent from self-accepting its
 own decisions, and the harvest job that aggregates records across repos into a central
 enterprise log. None of that ships a workflow for actually *authoring* a record — a
-user (or an autonomous agent) still had to hand-write the front-matter, work out the
-next `ADR-NNNN`, and remember the invariants. This skill is that workflow.
+user (or an autonomous agent) still had to hand-write the front-matter, derive the id
+from today's date and a slug, and remember the invariants. This skill is that
+workflow.
 
 ## What it is not
 

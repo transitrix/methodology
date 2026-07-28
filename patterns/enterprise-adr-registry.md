@@ -18,7 +18,7 @@ Two layers, unchanged from the canon:
 
 | Layer | Where it lives | Canon reference |
 |---|---|---|
-| Per-repo decision records | `operations/decisions/ADR-NNNN-<slug>.md`, each project repo | [Team Operations](../method/02-team-operations.md) §3.1, extended by `method/03` §3 |
+| Per-repo decision records | `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`), each project repo | [Team Operations](../method/02-team-operations.md) §3.1, extended by `method/03` §3 |
 | Enterprise ADL | `architecture/decision-log/`, the central architecture repo | `method/03` §1, §5 |
 
 The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync.
@@ -49,17 +49,17 @@ The per-repo layer is canonical — a decision's single source of truth is the r
 Three properties the diagram encodes, each load-bearing:
 
 - **One direction only.** The harvest reads source repos and writes the central log. It never writes back — so a project team's decisions cannot be edited by the architecture function, and the central log cannot drift from what the repos actually say.
-- **Namespacing happens at the index, not at the source.** `ADR-0001` exists in every repo; `service-x/ADR-0001` exists only centrally. Nothing to migrate, no id coordination between teams.
+- **Namespacing happens at the index, not at the source.** Each repo's ADR ids are its own — whichever form, date-slug or legacy — and only the harvest adds the repo-slug prefix at the index. Nothing to migrate, no id coordination between teams — and no coordination needed between two authors on unmerged branches either: a date-slug id is derived from today's date and a slug, not allocated from a shared counter.
 - **The gate sits at the source.** Ratification of an agent-authored record happens in the repo where the decision was made, by the people it binds — not centrally, after the fact.
 
 ## Start here — one repo, right now
 
 Don't wait for a second repo to begin. An adopter with a single repo can stand up the per-repo half of the ADL immediately:
 
-1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-NNNN-<slug>.md`, front-matter per `method/03` §3).
-2. **Write the first record** — `operations/decisions/ADR-0001-<slug>.md`, recording the decision to start keeping ADRs here. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
-   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, allocates the next `ADR-NNNN`, validates the record, and opens the PR. It is the authoring workflow for the flow `method/03` specifies; it never self-accepts (§6's gate).
-3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it.
+1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-YYYY-MM-DD-<slug>.md`, front-matter per `method/03` §3).
+2. **Write the first record** — `operations/decisions/ADR-<today's-date>-<slug>.md`, recording the decision to start keeping ADRs here. No numbering to start at — the id is today's date plus a slug. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
+   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, derives the id from today's date and a slug, validates the record, and opens the PR. It is the authoring workflow for the flow `method/03` specifies; it never self-accepts (§6's gate).
+3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it, including the uniqueness guard (A5) that makes two authors on separate branches safe to allocate independently.
 
 That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
 
