@@ -11,9 +11,9 @@
 //
 // Exit codes:  0 = ok  ·  1 = usage / findings that need review  ·  2 = error
 //
-// Implemented: --version, scaffold-intake, convert, admit-source (field + codex;
-// field-artefact / codex-artefact remain as deprecated aliases), emit-candidates,
-// validate, review-queue.
+// Implemented: --version, scaffold-intake, convert, privacy-scan, admit-source (field
+// + codex; field-artefact / codex-artefact remain as deprecated aliases),
+// emit-candidates, validate, review-queue.
 
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +33,8 @@ import { repoCheck } from './src/repo-check.mjs';
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { dump } from './src/yaml.mjs';
+import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
+import { randomUUID } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -66,6 +68,8 @@ function usage() {
     'Commands:',
     '  scaffold-intake <org-root>     Create _intake/{inbox,processing,processed} (idempotent)',
     '  convert <inbox-file>           Convert a document to Markdown in _intake/processing/',
+    '  privacy-scan <processing/file.md>   Fail-closed PII/medical pre-admission gate (SKILL.md Step 2b)',
+    '                                 CLEAN|STRIPPED proceed to admit-source; REJECTED|ERROR halt the pipeline',
     '  admit-source <md> --zone field|codex   Admit a converted source to the field or codex zone',
     '                 field: --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role R --date YYYY-MM-DD',
     '                        [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
@@ -124,6 +128,37 @@ async function cmdConvert(args) {
   }
 }
 
+async function cmdPrivacyScan(args) {
+  const { _ } = parseArgs(args);
+  const md = _[0];
+  if (!md) { console.error('privacy-scan: missing <processing/file.md>'); return 1; }
+  const mdPath = resolve(md);
+  try { await access(mdPath); } catch { console.error(`privacy-scan: file not found: ${md}`); return 2; }
+  const orgRoot = await findOrgRoot(mdPath);
+  if (!orgRoot) { console.error(`privacy-scan: "${md}" is not inside an _intake/ workspace.`); return 2; }
+
+  const config = parsePrivacyGateConfig(await readManifestText(orgRoot));
+  const processingDir = stageDir(orgRoot, 'processing');
+  const res = await runPrivacyScan({ mdPath, processingDir, config, runId: randomUUID() });
+
+  console.log(`privacy-scan  ${md}  ->  ${res.outcome}`);
+  if (res.outcome === 'STRIPPED') {
+    console.log(`  ${res.blockedFragments.filter((f) => !f.allowlist_cleared).length} fragment(s) redacted -> ${res.redactedFile}`);
+    console.log('  admit-source must be run on the redacted copy, not the original.');
+  }
+  if (res.outcome === 'REJECTED') {
+    console.error(`  ${res.blockedFragments.length} fragment(s) blocked — document not admissible; see privacy-report.yaml`);
+  }
+  if (res.outcome === 'ERROR') {
+    console.error(`  ${res.errorDetail}`);
+  }
+  console.log(`  privacy-report.yaml  ->  ${join(processingDir, 'privacy-report.yaml')}`);
+
+  if (res.outcome === 'CLEAN' || res.outcome === 'STRIPPED') return 0;
+  if (res.outcome === 'REJECTED') return 1;
+  return 2;
+}
+
 async function cmdFieldArtefact(args) {
   const { _, flags } = parseArgs(args);
   const md = _[0];
@@ -162,7 +197,7 @@ async function cmdFieldArtefact(args) {
       return 0;
     }
     console.error(`field-artefact: ${err.message}`);
-    return 2;
+    return err.privacyGate ? 1 : 2;
   }
 }
 
@@ -432,6 +467,7 @@ async function main(argv) {
   switch (cmd) {
     case 'scaffold-intake': return cmdScaffoldIntake(args);
     case 'convert':         return cmdConvert(args);
+    case 'privacy-scan':    return cmdPrivacyScan(args);
     case 'admit-source':    return cmdAdmitSource(args);
     case 'field-artefact':  return cmdFieldArtefact(args);
     case 'codex-artefact':  return cmdCodexArtefact(args);

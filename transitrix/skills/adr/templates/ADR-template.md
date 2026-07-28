@@ -1,5 +1,5 @@
 ---
-id: ADR-NNNN
+id: ADR-YYYY-MM-DD-<slug>
 title: "FILL-ME — one-sentence decision title"
 status: proposed
 date: "YYYY-MM-DD"

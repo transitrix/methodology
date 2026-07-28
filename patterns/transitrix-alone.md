@@ -53,4 +53,4 @@ The `operations/` layer (not a zone) holds the team's ADRs and work items — th
 3. **Author your first Goals tree.** A Goals view (`*.goals.transitrix.yaml`) in `canon/views/` anchors the model. Goals require no other elements to be in place and force the first alignment conversation.
 4. **Add elements top-down.** Goals → Drivers → Capabilities → Processes. Each layer elaborates the one above. Copy templates from `.templates/elements/` for each type.
 5. **Run the linter before every PR.** `python3 .validators/lint.py` catches YAML syntax errors, broken cross-references, and missing required fields. Fix all errors before requesting review.
-6. **Establish the ADR convention.** Create `operations/decisions/0001-initial-scope.md` to record the scope and purpose of this Transitrix deployment.
+6. **Establish the ADR convention.** Create `operations/decisions/ADR-<today's-date>-initial-scope.md` to record the scope and purpose of this Transitrix deployment.

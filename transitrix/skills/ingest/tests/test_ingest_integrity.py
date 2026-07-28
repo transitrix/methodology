@@ -3,11 +3,11 @@
 
 Deterministic, no-API-key guard. Nine parts:
 
-  A. Bundle integrity — SKILL.md frontmatter, the three JSON schemas parse, the
+  A. Bundle integrity — SKILL.md frontmatter, the four JSON schemas parse, the
      four layer prompts + READMEs exist, the _intake template is present.
   B. CLI pipeline drive — runs the real CLI end-to-end on a fixture
-     (scaffold-intake -> convert -> field-artefact -> emit-candidates -> validate
-     -> review-queue) and asserts the outputs: a conformant field artefact with a
+     (scaffold-intake -> convert -> privacy-scan -> field-artefact -> emit-candidates
+     -> validate -> review-queue) and asserts the outputs: a conformant field artefact with a
      proposed source_quality, candidate files, a review queue with the gate closed,
      the two-axes rule (a candidate carrying source_quality is flagged), and THE ONE
      RULE — canon/ is never written.
@@ -38,6 +38,11 @@ Deterministic, no-API-key guard. Nine parts:
   Q. origin pass-through + REQ-004 — emit-candidates carries origin through for all three
      valid values (legislative/process-product/project-product); validate enforces REQ-004
      (closed vocabulary) on the candidate origin field.
+  R. #807 privacy gate — privacy-scan CLEAN/STRIPPED/REJECTED outcomes; admit-source
+     (field zone) refuses with no scan record, refuses a stale record, and refuses the
+     original after STRIPPED (must admit the redacted copy); the epic's name+email+phone
+     reproduction is not admitted verbatim; privacy-report.yaml never leaks a fragment
+     verbatim; `enabled: false` is an explicit adopter opt-out.
   S. workflow-status (vkgeorgia/strategy#824) — one invocation reports every human gate's
      phase + count (ADR/WI/canon element/REQUIREMENT-CONSTRAINT-overdue/ingest batch);
      author:agent ADRs counted separately from human-proposed; --data-free strips ids/paths;
@@ -100,7 +105,7 @@ def part_a_bundle():
             for key in ("name", "description", "when_to_use", "allowed-tools"):
                 check(key in fm, f"SKILL.md frontmatter missing required key: {key}")
 
-    for short in ("field-artefact", "candidate", "review-queue"):
+    for short in ("field-artefact", "candidate", "review-queue", "privacy-report"):
         p = os.path.join(SKILL_DIR, "schemas", f"{short}.schema.json")
         if check(os.path.isfile(p), f"schema missing: schemas/{short}.schema.json"):
             try:
@@ -150,6 +155,10 @@ def part_b_pipeline():
         check(r.returncode == 0, f"convert failed: {r.stderr.strip()}")
         md = os.path.join(org, "_intake", "processing", "INTERVIEW-sample.md")
         check(os.path.isfile(md), "convert did not produce processing/INTERVIEW-sample.md")
+
+        r = run_cli("privacy-scan", md)
+        check(r.returncode == 0 and "CLEAN" in r.stdout,
+              f"privacy-scan should report CLEAN for the clean fixture: {r.stdout}{r.stderr}")
 
         r = run_cli("field-artefact", md, "--type", "INTERVIEW", "--role", "Head of Operations",
                     "--date", "2026-04-15", "--slug", "ops", "--admitted-at", "2026-04-16",
@@ -449,6 +458,7 @@ def part_f_ig3():
                 fh.write("# " + stem + "\n" + body + "\n")
 
         drop("INT", "note")
+        run_cli("privacy-scan", os.path.join(proc, "INT.md"))
         r = run_cli("admit-source", "--zone", "field", os.path.join(proc, "INT.md"),
                     "--type", "INTERVIEW", "--role", "Ops", "--date", "2026-01-01",
                     "--slug", "ops", "--admitted-at", "2026-01-02")
@@ -465,6 +475,7 @@ def part_f_ig3():
               "IG-3: admit-source --zone codex did not write a codex artefact")
 
         drop("INT2", "note2")
+        run_cli("privacy-scan", os.path.join(proc, "INT2.md"))
         r = run_cli("field-artefact", os.path.join(proc, "INT2.md"),
                     "--type", "INTERVIEW", "--role", "Ops2", "--date", "2026-01-01",
                     "--slug", "ops2", "--admitted-at", "2026-01-02")
@@ -760,6 +771,7 @@ def part_j_duplicate_source():
                 fh.write(content)
             run_cli("convert", os.path.join(inbox, "src.md"))
             md = os.path.join(org, "_intake", "processing", "src.md")
+            run_cli("privacy-scan", md)
             return run_cli("admit-source", md, "--zone", "field", "--type", "INTERVIEW",
                            "--role", "ops", "--date", "2026-01-01", "--slug", "ops",
                            "--admitted-at", "2026-01-02", *extra)
@@ -1267,6 +1279,140 @@ def part_q_origin_classification():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part R — #807 privacy pre-admission gate ──────────────────────
+
+def part_r_privacy_gate():
+    """privacy-scan CLEAN/STRIPPED/REJECTED; admit-source (field) refuses with no scan
+    record, a stale record, or the un-redacted original after STRIPPED; the epic's
+    name+email+phone reproduction is not admitted verbatim; enabled:false opts out."""
+    if not shutil.which("node"):
+        print("SKIP Part R: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-privacy-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+        inbox = os.path.join(org, "_intake", "inbox")
+        proc = os.path.join(org, "_intake", "processing")
+
+        # R1 — a clean document scans CLEAN.
+        with open(os.path.join(inbox, "clean.md"), "w", encoding="utf-8") as fh:
+            fh.write("The Head of Operations described rising churn over two quarters.\n")
+        run_cli("convert", os.path.join(inbox, "clean.md"))
+        clean_md = os.path.join(proc, "clean.md")
+        r = run_cli("privacy-scan", clean_md)
+        check(r.returncode == 0 and "CLEAN" in r.stdout, f"R1: clean fixture should scan CLEAN: {r.stdout}{r.stderr}")
+
+        # R2 — admit-source refuses a document with NO privacy-scan record.
+        with open(os.path.join(inbox, "unscanned.md"), "w", encoding="utf-8") as fh:
+            fh.write("Unscanned note.\n")
+        run_cli("convert", os.path.join(inbox, "unscanned.md"))
+        unscanned_md = os.path.join(proc, "unscanned.md")
+        r = run_cli("admit-source", "--zone", "field", unscanned_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "no privacy-scan record" in (r.stdout + r.stderr),
+              f"R2: admit-source must refuse a document with no privacy-scan record: {r.stdout}{r.stderr}")
+        check(not os.path.isdir(os.path.join(org, "field", "observations")),
+              "R2: a refused document must not be admitted")
+
+        # R3 — the epic's reproduction: full name + personal email + personal phone.
+        repro = ("Contact: Jane Doe\nEmail: jane.doe@personalmail.example\n"
+                 "Phone: +1 555-123-4567\n")
+        with open(os.path.join(inbox, "repro.md"), "w", encoding="utf-8") as fh:
+            fh.write(repro)
+        run_cli("convert", os.path.join(inbox, "repro.md"))
+        repro_md = os.path.join(proc, "repro.md")
+        r = run_cli("privacy-scan", repro_md)
+        check(r.returncode == 0 and "STRIPPED" in r.stdout,
+              f"R3: name+email+phone fixture should be STRIPPED (default on_detection: strip): {r.stdout}{r.stderr}")
+        redacted = os.path.join(proc, "repro.redacted.md")
+        check(os.path.isfile(redacted), "R3: STRIPPED must write a redacted copy")
+        redacted_text = open(redacted, encoding="utf-8").read()
+        check("jane.doe@personalmail.example" not in redacted_text and "555-123-4567" not in redacted_text,
+              "R3: the redacted copy must not carry the blocked email/phone verbatim")
+
+        # admit-source on the ORIGINAL (still carrying the blocked fragments) is refused...
+        r = run_cli("admit-source", "--zone", "field", repro_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "admit the redacted copy instead" in (r.stdout + r.stderr),
+              f"R3: admit-source on the original after STRIPPED must be refused: {r.stdout}{r.stderr}")
+
+        # ...but succeeds on the redacted copy, and the admitted artefact carries no PII verbatim.
+        r = run_cli("admit-source", "--zone", "field", redacted,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14",
+                    "--slug", "repro")
+        check(r.returncode == 0, f"R3: admit-source on the redacted copy should succeed: {r.stdout}{r.stderr}")
+        art = os.path.join(org, "field", "observations", "OBSERVATION-repro-20260714-1.yaml")
+        if check(os.path.isfile(art), "R3: the redacted-copy admission did not write a field artefact"):
+            body = open(art, encoding="utf-8").read()
+            check("jane.doe@personalmail.example" not in body and "555-123-4567" not in body,
+                  "R3: the admitted field artefact must not carry the blocked PII verbatim")
+
+        # R4 — a stale scan (content changed after scanning) is refused, not silently trusted.
+        with open(os.path.join(inbox, "stale.md"), "w", encoding="utf-8") as fh:
+            fh.write("Original content.\n")
+        run_cli("convert", os.path.join(inbox, "stale.md"))
+        stale_md = os.path.join(proc, "stale.md")
+        run_cli("privacy-scan", stale_md)
+        with open(stale_md, "a", encoding="utf-8") as fh:
+            fh.write("Changed after scanning.\n")
+        r = run_cli("admit-source", "--zone", "field", stale_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 1 and "stale" in (r.stdout + r.stderr),
+              f"R4: a stale privacy-scan record must be refused, not trusted: {r.stdout}{r.stderr}")
+
+        # R5 — on_detection: reject blocks the whole document (REJECTED, no redacted copy);
+        # privacy-report.yaml records it and never leaks a fragment verbatim.
+        org2 = os.path.join(work, "org2")
+        os.makedirs(org2)
+        run_cli("scaffold-intake", org2)
+        with open(os.path.join(org2, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
+                     'ingest:\n  privacy_gate:\n    enabled: true\n    on_detection: reject\n')
+        with open(os.path.join(org2, "_intake", "inbox", "bad.md"), "w", encoding="utf-8") as fh:
+            fh.write(repro)
+        run_cli("convert", os.path.join(org2, "_intake", "inbox", "bad.md"))
+        bad_md = os.path.join(org2, "_intake", "processing", "bad.md")
+        r = run_cli("privacy-scan", bad_md)
+        check(r.returncode == 1 and "REJECTED" in r.stdout,
+              f"R5: on_detection: reject should produce REJECTED, not STRIPPED: {r.stdout}{r.stderr}")
+        check(not os.path.isfile(os.path.join(org2, "_intake", "processing", "bad.redacted.md")),
+              "R5: REJECTED must not write a redacted copy")
+        report_path = os.path.join(org2, "_intake", "processing", "privacy-report.yaml")
+        if check(os.path.isfile(report_path), "R5: privacy-report.yaml was not written"):
+            rep = yaml.safe_load(open(report_path, encoding="utf-8"))
+            check(rep.get("summary", {}).get("rejected") == 1,
+                  f"R5: privacy-report summary.rejected should be 1: {rep.get('summary')}")
+            scanned = rep.get("scanned", [])
+            check(any(s.get("outcome") == "REJECTED" for s in scanned), "R5: privacy-report did not record the REJECTED scan")
+            for s in scanned:
+                for frag in (s.get("blocked_fragments") or []):
+                    check("jane.doe@personalmail.example" not in frag.get("fragment_preview", ""),
+                          "R5: privacy-report fragment_preview must never carry verbatim PII")
+
+        # R6 — enabled: false is an explicit adopter opt-out: admit-source proceeds
+        # with NO privacy-scan record at all.
+        org3 = os.path.join(work, "org3")
+        os.makedirs(org3)
+        run_cli("scaffold-intake", org3)
+        with open(os.path.join(org3, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
+                     'ingest:\n  privacy_gate:\n    enabled: false\n')
+        with open(os.path.join(org3, "_intake", "inbox", "off.md"), "w", encoding="utf-8") as fh:
+            fh.write("Note.\n")
+        run_cli("convert", os.path.join(org3, "_intake", "inbox", "off.md"))
+        off_md = os.path.join(org3, "_intake", "processing", "off.md")
+        r = run_cli("admit-source", "--zone", "field", off_md,
+                    "--type", "OBSERVATION", "--role", "ROLE-OPS-1", "--date", "2026-07-14")
+        check(r.returncode == 0,
+              f"R6: enabled:false must let admit-source proceed without a privacy-scan record: {r.stdout}{r.stderr}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 # ── Part S — workflow-status (vkgeorgia/strategy#824) ────────────
 
 def part_s_workflow_status():
@@ -1405,6 +1551,7 @@ part_n_entity_resolution()
 part_o_unresolved_extensions()
 part_p_preset_version_currency()
 part_q_origin_classification()
+part_r_privacy_gate()
 part_s_workflow_status()
 
 if _failures:

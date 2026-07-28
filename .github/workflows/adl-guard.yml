@@ -1,8 +1,9 @@
 name: ADL guard
 
 # Mechanical invariants for Architecture Decision Log records under
-# **/operations/decisions/ADR-NNNN-*.md: front-matter validity, accepted-record
-# immutability, the author:agent ratification gate, and filename/id agreement.
+# **/operations/decisions/ADR-YYYY-MM-DD-*.md (or legacy ADR-NNNN-*.md):
+# front-matter validity, accepted-record immutability, the author:agent
+# ratification gate, filename/id agreement, and id uniqueness.
 # Implementation: scripts/check-adl.mjs. Spec: method/03-architecture-decision-log.md.
 #
 # fetch-depth: 0 so the immutability check (A2) and agent gate (A3) can diff a
