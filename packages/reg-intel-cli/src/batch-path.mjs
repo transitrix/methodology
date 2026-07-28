@@ -3,17 +3,25 @@
 // first digest for an org still lands at the flat legacy path
 // `_intake/processing/<filename>` — untouched, so an existing single-batch
 // workflow keeps working exactly as before. Only once that stable path is
-// already occupied — and nothing here ever moves a resolved digest away, so
-// "the file exists" is the only signal available and is read as "unresolved"
-// — does a second, concurrent run get its own dated directory:
-// `_intake/processing/<stem>-<scope>-YYYYMMDD-<seq>/<filename>`.
+// already occupied does a second, concurrent run get its own dated
+// directory: `_intake/processing/<stem>-<scope>-YYYYMMDD-<seq>/<filename>`.
+//
+// "Occupied" does not simply mean "a file is sitting there": rerunning
+// against the SAME flat path on purpose (an idempotent refresh) must keep
+// updating it in place. The signal that distinguishes that refresh from a
+// genuinely separate concurrent run is content — if the freshly built
+// `content` differs from what's already on disk, real progress happened
+// against THIS digest and it is still the same one, so the flat file is
+// updated in place. Only when the fresh content would be byte-identical to
+// what is already there is the existing file read as untouched/unresolved,
+// and this run gets routed to its own dated directory instead.
 //
 // `scope` is a caller-supplied word (`--scope`), never an org-identifying
 // string — it defaults to the generic `batch` when absent or malformed. Same
 // mechanism as `@transitrix/ingest-cli`'s `src/batch-path.mjs` (each package
 // keeps its own copy — zero cross-package dependencies, by design).
 
-import { access } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
@@ -23,10 +31,17 @@ const SAFE_SCOPE_RE = /^[a-z][a-z0-9_-]*$/;
 function todayCompact() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
 
 // Resolve the path a batch's stable-filename artifact should be written to.
-// Non-destructive: never returns a path that already exists.
-export async function resolveBatchPath({ processingDir, filename, scope }) {
+// `content` is the freshly serialised artefact about to be written, used to
+// tell an in-place refresh of the same digest from a genuinely new one (see
+// above). Without `content`, falls back to the non-destructive default: never
+// returns a path that already exists.
+export async function resolveBatchPath({ processingDir, filename, scope, content }) {
   const flat = join(processingDir, filename);
   if (!(await exists(flat))) return flat;
+  if (content !== undefined) {
+    const onDisk = await readFile(flat, 'utf8').catch(() => null);
+    if (onDisk !== null && onDisk !== content) return flat;
+  }
 
   const stem = filename.replace(/\.[^.]+$/, '');
   const safeScope = typeof scope === 'string' && SAFE_SCOPE_RE.test(scope) ? scope : 'batch';

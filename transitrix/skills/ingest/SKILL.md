@@ -253,7 +253,7 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 ### Multi-batch naming — a stable filename, a dated directory when a batch is already unresolved
 
-`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Nothing here moves a resolved batch away, so an existing file at that path reads as an **unresolved** batch — `review-queue` never overwrites it. A second, concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
+`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Re-running `review-queue` against the same candidates — the everyday idempotent-refresh workflow, admit a few, re-run to see what's left — keeps updating that same file in place: the exclusion list changing is real progress on the same batch, not a new one. Only when a re-run would produce **byte-identical** output to what's already there — nothing has moved since it was last written — is the existing file read as untouched/unresolved, and a genuinely concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
 
 ```
 _intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml

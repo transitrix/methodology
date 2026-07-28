@@ -26,6 +26,7 @@ import { validateCandidate, loadCandidates } from './src/validate.mjs';
 import { readCoverageProfile, parseProfileDecl } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 import { resolveBatchPath } from './src/batch-path.mjs';
+import { dump } from './src/yaml.mjs';
 import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
@@ -33,7 +34,6 @@ import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
-import { dump } from './src/yaml.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
 import { randomUUID } from 'node:crypto';
 
@@ -304,7 +304,7 @@ async function cmdReviewQueue(args) {
   const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions });
   const out = flags.out
     ? resolve(flags.out)
-    : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope });
+    : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope, content: dump(queue) });
   await writeReviewQueue(queue, out);
   const flagged = queue.candidates.filter(c => c.validation_flags.length || c.coverage_flag === 'out_of_profile').length;
   if (queue.coverage_warning) console.error(`WARNING: ${queue.coverage_warning}`);

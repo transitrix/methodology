@@ -138,8 +138,8 @@ export async function writeDigest(digest, outPath) {
 // Non-destructive default (vkgeorgia/strategy#837): the flat legacy path for
 // the first digest of an org; a dated batch directory once that stable path
 // is already occupied by an unresolved digest. See src/batch-path.mjs.
-export async function defaultDigestPath(orgRoot, { scope } = {}) {
+export async function defaultDigestPath(orgRoot, { scope, content } = {}) {
   const dir = join(resolve(orgRoot), '_intake', 'processing');
   if (!(await exists(dir))) await mkdir(dir, { recursive: true });
-  return resolveBatchPath({ processingDir: dir, filename: 'review-digest.yaml', scope });
+  return resolveBatchPath({ processingDir: dir, filename: 'review-digest.yaml', scope, content });
 }

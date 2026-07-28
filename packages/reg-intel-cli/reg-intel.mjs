@@ -27,6 +27,7 @@ import { emitCandidates } from './src/classify.mjs';
 import { validateStaged } from './src/validate.mjs';
 import { emitAmendment } from './src/amendment.mjs';
 import { buildDigest, writeDigest, defaultDigestPath } from './src/digest.mjs';
+import { dump } from './src/yaml.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -368,7 +369,7 @@ async function cmdDigest(args) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) { console.error('digest: --as-of must be YYYY-MM-DD'); return 1; }
 
   const digest = await buildDigest({ orgRoot, asOf, runId: typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined });
-  const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot, { scope: flags.scope });
+  const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot, { scope: flags.scope, content: dump(digest) });
   await writeDigest(digest, out);
 
   const t = digest.tally;
