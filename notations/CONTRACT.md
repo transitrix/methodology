@@ -229,6 +229,8 @@ derived_from:
 
 The routing that decides which drafts a tool may auto-admit to `ai_reviewed` (high `extraction_confidence`) versus send to the expert queue (medium / low) is a **skill-level** rule, not a CONTRACT one — it lives in the ingest skill ([transitrix/skills/ingest/SKILL.md](../transitrix/skills/ingest/SKILL.md)). The CONTRACT defines the tiers; the skill defines the routing.
 
+**Recording the decision.** A human reviewing a `proposed` draft may record accept/reject/defer against the pipeline's review artifact (`review-queue.yaml` or `review-digest.yaml`) in a shared, machine-readable form — `decisions.reviewed.yaml`, applied by [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli). This is a recommended recording convention, not a new admission state or lifecycle: `apply` performs exactly the `proposed → active | rejected` transitions above (`defer` leaves the artefact `proposed`, same as not touching it at all), and never writes `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`). Recording by hand, without the CLI, remains equally valid.
+
 ---
 
 ## 7. Primitive lifecycle

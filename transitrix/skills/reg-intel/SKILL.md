@@ -258,6 +258,8 @@ The digest is the human gate. For each source touched in the run, it lists:
 
 The digest is **read by a human**, who then either runs the canon / field admission gates to admit candidates (flipping `proposed → active`) or records rejections (`proposed → rejected` with a `rejection_reason`) — per the pre-admission lifecycle in [CONTRACT §6.1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md). The skill **does not** flip those states itself.
 
+Recording each accept/reject/defer is optional but recommended: [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli)'s `record` writes one row per SEGMENT / candidate / AMENDMENT to `decisions.reviewed.yaml` beside the digest, and `apply` performs the CONTRACT §6.1 transition it names — never inventing a new admission state, never writing `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`).
+
 ---
 
 ## The run loop, end-to-end

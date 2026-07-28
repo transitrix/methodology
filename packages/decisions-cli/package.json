@@ -1,0 +1,23 @@
+{
+  "name": "@transitrix/decisions-cli",
+  "version": "0.0.1",
+  "description": "Deterministic CLI for the shared human-gate admission decision contract (decisions.reviewed.yaml) over the ingest review-queue and reg-intel review-digest. Records accept/reject/defer decisions and applies them as CONTRACT §6.1 admission transitions. Never invents new admission states.",
+  "type": "module",
+  "bin": {
+    "transitrix-decisions": "./decisions.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "decisions.mjs",
+    "src/",
+    "schemas/"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Transitrix"
+  },
+  "repository": "https://github.com/transitrix/methodology",
+  "dependencies": {}
+}

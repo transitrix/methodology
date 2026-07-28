@@ -251,6 +251,8 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 **Nothing lands in `canon/` from this skill.** A human reviews the queue, confirms or revises each proposed `source_quality`, and runs the canon admission gate (`uniqueness`, `consistency`, `completeness` — [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)) to admit candidates. When ingest is complete for a source, its raw file moves to `_intake/processed/`.
 
+Recording each accept/reject/defer is optional but recommended: [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli)'s `record` writes one row per candidate to `decisions.reviewed.yaml` beside the queue, and `apply` performs the CONTRACT §6.1 transition it names — never inventing a new admission state, never writing `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`).
+
 ### Placement is deterministic — pinned to ELEMENT_PRIMITIVES §4
 
 Where an admitted element lands is **not** a judgement call. Every element TYPE has a canonical **materialisation mode + layer + folder** in [`ELEMENT_PRIMITIVES.md` §4](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md); the CLI resolves it so equals are treated equally — `ACTOR`, `ROLE`, `PROCESS`, `PRODUCT`, `APPLICATION` are all `standalone` and each gets its own per-TYPE folder, never inline-by-accident.
