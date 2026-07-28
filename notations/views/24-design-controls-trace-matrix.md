@@ -45,7 +45,7 @@ notation: design-controls-trace-matrix
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 view:
   # ... see §3
 ```
@@ -110,7 +110,7 @@ notation: design-controls-trace-matrix
 spec_version: "0.1"
 name: "Device X — design-controls trace matrix"   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                        # optional per CONTRACT.md §4
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 
 view:
   id: DC_TRACE_MATRIX-DEVICE-X-1
@@ -177,7 +177,7 @@ notation: design-controls-trace-matrix
 spec_version: "0.1"
 name: "Full design-controls trace matrix"   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                 # optional per CONTRACT.md §4
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 view:
   id: DC_TRACE_MATRIX-ALL-1
   name: "Full design-controls trace matrix"

@@ -2,7 +2,7 @@ notation: design-controls-trace-matrix
 spec_version: "0.1"
 name: "Worked example — full design-controls trace matrix"
 generated_at: "2026-07-26"
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 
 view:
   id: DC_TRACE_MATRIX-WORKED-EXAMPLE-1

@@ -128,7 +128,7 @@ After actions are promoted to `canon/elements/05_implementation/actions/`, the v
 ```yaml
 notation: action
 spec_version: "0.1"
-methodology_version: "2.0.0"          # required from v2.0 onward
+methodology_version: "2.1.0"          # required from v2.0 onward
 
 id: ACTION_SCHED-PLATFORM-2026-1      # required — ACTION_SCHED-[<middle>-]<INTEGER>
 name: "Platform Launch 2026"          # required per CONTRACT.md §1.1
@@ -344,7 +344,7 @@ Both views are projections of the same underlying schedule. A document never "be
 ```yaml
 notation: action
 spec_version: "0.1"
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 id: ACTION_SCHED-MINIMAL-1
 name: "Minimal schedule example"           # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                # optional per CONTRACT.md §4

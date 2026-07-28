@@ -146,7 +146,7 @@ Deliberately **not** one-file-per-record like ADR/WI: a single file, `operations
 ---
 ### FB-0002
 type: notation-gap
-methodology_version: "2.0.0"
+methodology_version: "2.1.0"
 raised_by: modeler
 date: "2026-07-27"
 status: sent-upstream
