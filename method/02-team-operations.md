@@ -258,6 +258,10 @@ Operational config/state files (§3.4) carry **no** identifier at all — they a
 | `sent <date>` | Sent to `hello@transitrix.com` on `<date>`. |
 | `answered <date>` | The maintainer replied on `<date>`. |
 
+### 6.7 Read by a reporting command
+
+`transitrix-ingest workflow-status` (see [`method/04-methodology-update-propagation.md`](04-methodology-update-propagation.md) §7.3) reads the vocabularies above — `author: agent` proposed ADRs broken out from human-proposed per §6.2 — to report every human gate's phase and count in one on-demand view. This does not change the boundary already stated in §4–§5: the command reads `operations/` front-matter read-only, `operations/` stays outside the ID grammar and outside `scripts/check-notations.mjs`, and the command itself never writes a zone, an operations record, or a batch.
+
 ## 7. The 1-screen rules doc — `operations/README.md`
 
 Each adopter writes a short local README inside `operations/` covering:
