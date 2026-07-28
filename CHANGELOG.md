@@ -6,6 +6,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [2.1.0] — 2026-07-28
+
+Fifty-two commits since `v2.0.0`. Bump category: **MINOR** — additive notation, operations, and CLI surface only; no migration recipe required.
+
+### Added
+
+- **`notations/elements/27-verification.md`** and **`notations/elements/28-hazard-risk-control.md`** — `VERIFICATION`, `HAZARD`, and `RISK_CONTROL` element families for design-controls traceability. (#361)
+- **`notations/views/24-design-controls-trace-matrix.md`** — design-controls trace-matrix report-config view; reverse-trace completeness validator rules for the design-controls chain. (#372, #368)
+- **`notations/views/08-blocks.md`** — blocks matrix subset (grid root) plus a forkable RACI template. (#366)
+- **`notations/PACKAGES.md`** — optional removable domain-package mechanism (`packages:` in `transitrix.yaml`), orthogonal to `coverage_profile`. (#381)
+- **Feedback Record convention** — `FB-…` entries in `operations/feedback.md` (`type`, `status`, `upstream` vocabularies); wired into `escalate-methodology`. (#380)
+- **ADR date-slug ids** — new records use `ADR-YYYY-MM-DD-<slug>` (legacy `ADR-NNNN` retained); `check-adl.mjs` gains A5 uniqueness check and extends A4 for date-slug/date agreement. (#382)
+- **`transitrix-ingest privacy-scan`** — fail-closed PII pre-admission gate for field-zone `admit-source` (`CLEAN` / `STRIPPED` / `REJECTED`, stale-scan refusal, `enabled: false` opt-out). (#379)
+- **`transitrix-ingest workflow-status`** — one on-demand report across every human gate (ADR/WI/canon element/REQUIREMENT-CONSTRAINT overdue/ingest batch); `--data-free` and `--format yaml`. (#383, #384)
+- **`transitrix/skills/adr/`** — ADR authoring skill: formulate a decision and land it in the ADL. (#356)
+- **`tools/render_trace_matrix.py`** — reference renderer for design-controls trace-matrix views; ADR/ADL adoption guide. (#375)
+- **`TARGET_STATE.type` base/target classification.** (#354)
+- **Operating-model composite starter template** under `transitrix/templates/`. (#369)
+- **Composite notation count lint (C1)** — mechanical count check in `scripts/check-notations.mjs`. (#349)
+- **Onboard role-model refinements** — Ingest promoted to a first-class adopter role; Analyst gains named impact/blast-radius capability; cross-cutting raise-a-finding protocol; Modeler no longer creates repos. (#350, #352, #353, #351)
+- **UTF-8 stdio guard** for `tools/lint.py` and `render_trace_matrix.py` on Windows. (#385)
+
+### Changed
+
+- **`method/03-architecture-decision-log.md`** — setup path folded into §10 (single document for ADR/ADL). (#376)
+- **`method/02-team-operations.md`** — `workflow-status` wired as §6.7 reporting command; Feedback vocabularies §6.4–6.6. (#384, #380)
+- **`method/04-methodology-update-propagation.md`** — §7.3 names `workflow-status` as the on-demand visibility mechanism for stale proposed ADRs. (#384)
+- **ADR/ADL discoverability** reconciled across `patterns/`, `AGENTS.md`, and the onboarding skill. (#355)
+- **Repo-local `templates/` retired** — forkable templates now live under `transitrix/templates/`. (#377)
+- **`method/01-methodology.md`** — two-input to-be synthesis stance stated. (#365)
+- **Onboarding docs** — two-track README fork; Quick start leads with the self-hosted onboarding prompt; `SKILL.md` instructions made LLM-agnostic. (#343, #342, #341)
+- **`RELEASING.md`** — ingest-cli reinstall step clarified for local (pre-npm-publish) installs.
+
+### Fixed
+
+- **Goals Tree, Action Schedule, and DGCA** — inline authoring restored alongside the v2.0 pure-projection form; `1.0-to-2.0` codemod preserves inline data. (#348, #344)
+- **`AGENTS.md` §3** — ADR location corrected to the retired single-hub state. (#374)
+- **Onboard templates** — goals/action templates rewritten as v2.0 pure projections; `methodology_version` scaffold example no longer pins `0.4.x`. (#339, #340)
+- **PlantUML scaffold** — dropped `jebbs.plantuml` recommendation; Studio 3.0.6 renders `.puml` natively. (#347)
+- **Public-surface hygiene** — gitignore gaps closed; `CLAUDE.md`/`AGENTS.md` leak-channel guard in CI. (#371, #370)
+- **Cheat-sheet lint** — skip README table separator row. (#349)
+
+---
+
 ## [2.0.0] — 2026-07-12
 
 ### Breaking changes
