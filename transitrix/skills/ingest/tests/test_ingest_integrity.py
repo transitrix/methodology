@@ -34,7 +34,8 @@ Deterministic, no-API-key guard. Nine parts:
      name matches an existing canon element by primary name or alias; genuinely new
      candidates get no proposal; review-queue surfaces entity_match_proposals.
   P. #434 preset version currency — repo-check reports a version match (no false-negative)
-     for a repo correctly pinned to the CLI's built-in preset version (0.7.0).
+     for a repo correctly pinned to the CLI's built-in preset version (read from
+     coverage-presets.mjs, so this stays current across release bumps).
   Q. origin pass-through + REQ-004 — emit-candidates carries origin through for all three
      valid values (legislative/process-product/project-product); validate enforces REQ-004
      (closed vocabulary) on the candidate origin field.
@@ -75,6 +76,18 @@ SKILL_DIR = os.path.dirname(HERE)                                  # transitrix/
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(SKILL_DIR)))
 CLI = os.path.join(REPO_ROOT, "packages", "ingest-cli", "ingest.mjs")
 FIXTURES = os.path.join(HERE, "fixtures")
+
+
+def cli_presets_version():
+    """Read PRESETS_VERSION from the CLI source directly, so this test tracks
+    it automatically instead of going stale at the next methodology release bump."""
+    src = open(os.path.join(REPO_ROOT, "packages", "ingest-cli", "src", "coverage-presets.mjs"),
+                encoding="utf-8").read()
+    m = re.search(r"export const PRESETS_VERSION\s*=\s*['\"]([^'\"]+)['\"]", src)
+    if not m:
+        raise RuntimeError("could not find PRESETS_VERSION in coverage-presets.mjs")
+    return m.group(1)
+
 
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
 SOURCE_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -1166,34 +1179,36 @@ def part_o_unresolved_extensions():
 
 def part_p_preset_version_currency():
     """repo-check reports a version match for a repo pinned to the CLI's built-in
-    preset version (currently 0.7.0). Regression for the false-negative mismatch
-    caused by stale built-in presets frozen at an old methodology version."""
+    preset version (read from coverage-presets.mjs, not hardcoded). Regression for
+    the false-negative mismatch caused by stale built-in presets frozen at an old
+    methodology version."""
     if not shutil.which("node"):
         print("SKIP Part P: `node` not found.")
         return
+    version = cli_presets_version()
     work = tempfile.mkdtemp(prefix="ingest-p434-")
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
         run_cli("scaffold-intake", org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
-            fh.write('transitrix: 1\nmethodology_version: "0.7.0"\ncoverage_profile: core\n')
+            fh.write('transitrix: 1\nmethodology_version: "%s"\ncoverage_profile: core\n' % version)
 
         r = run_cli("repo-check", org)
-        check(r.returncode == 0, "P: repo-check failed on a 0.7.0 repo: %s" % (r.stderr or r.stdout))
+        check(r.returncode == 0, "P: repo-check failed on a %s repo: %s" % (version, r.stderr or r.stdout))
         rep = yaml.safe_load(r.stdout)
 
         tooling = rep.get("tooling", {})
         check(tooling.get("methodology_version_match") is True,
-              "P: repo-check must report methodology_version_match: true for a 0.7.0 repo "
-              "(false-negative regression from stale built-in presets); got tooling=%r" % tooling)
+              "P: repo-check must report methodology_version_match: true for a %s repo "
+              "(false-negative regression from stale built-in presets); got tooling=%r" % (version, tooling))
         check(tooling.get("ok") is True,
-              "P: repo-check tooling.ok must be true for a 0.7.0 repo; got tooling=%r" % tooling)
+              "P: repo-check tooling.ok must be true for a %s repo; got tooling=%r" % (version, tooling))
         red_flags = rep.get("integrity", {}).get("red_flags", [])
         version_flags = [f for f in red_flags if "does not match" in f and "CLI built-in" in f]
         check(len(version_flags) == 0,
-              "P: repo-check must not emit a version-mismatch red flag for a 0.7.0 repo; "
-              "got red_flags=%r" % red_flags)
+              "P: repo-check must not emit a version-mismatch red flag for a %s repo; "
+              "got red_flags=%r" % (version, red_flags))
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
