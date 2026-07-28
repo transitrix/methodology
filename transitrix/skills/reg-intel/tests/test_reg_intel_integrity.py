@@ -50,11 +50,17 @@ Deterministic, no-API-key, no-network guard for the CLI increments landed so far
      service + timer, fetch-recipes, snapshots README); the daily driver invokes the
      live run-loop commands and is valid bash; fetch-recipes states the API-first rule
      and names the check-signal methods; the timer defines an OnCalendar schedule.
+  L. #837 batch naming — the first digest of a run lands at the flat legacy
+     review-digest.yaml path unchanged; a second, concurrent digest does not overwrite
+     it and instead lands under a dated review-digest-<scope>-YYYYMMDD-<seq>/
+     directory (--scope defaults to "batch"), same mechanism as ingest-cli's
+     review-queue naming.
 
 Run:  python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
 """
 
+import datetime
 import hashlib
 import json
 import os
@@ -749,6 +755,49 @@ def part_k_templates():
 
 
 part_k_templates()
+
+
+# ── Part L — #837 batch naming (non-destructive digest default) ─
+
+def part_l_batch_naming():
+    """The first digest lands at the flat legacy path; a second, concurrent digest
+    does not overwrite it and lands under its own dated batch directory."""
+    if not shutil.which("node"):
+        print("SKIP Part L: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-batch-")
+    try:
+        org = _codex_org(work)
+        proc = os.path.join(org, "_intake", "processing")
+        today = datetime.datetime.utcnow().strftime("%Y%m%d")
+
+        r = run_cli("digest", org, "--as-of", "2026-06-08")
+        check(r.returncode == 0, f"L: first digest failed: {r.stderr.strip()}")
+        flat = os.path.join(proc, "review-digest.yaml")
+        check(os.path.isfile(flat), "L: first digest must land at the flat legacy path")
+        before = yaml.safe_load(open(flat, encoding="utf-8"))
+
+        # Second, concurrent digest — the flat path is still there (unresolved) — must
+        # NOT be overwritten; lands under its own dated batch directory.
+        r = run_cli("digest", org, "--as-of", "2026-06-08", "--scope", "daily")
+        check(r.returncode == 0, f"L: second digest failed: {r.stderr.strip()}")
+        after = yaml.safe_load(open(flat, encoding="utf-8"))
+        check(before == after, "L: the flat legacy review-digest.yaml must not be overwritten by a concurrent run")
+        dated_file = os.path.join(proc, f"review-digest-daily-{today}-1", "review-digest.yaml")
+        check(os.path.isfile(dated_file), f"L: second digest must land under a dated batch directory: {dated_file}")
+
+        # A third, concurrent digest with no --scope defaults to scope "batch" — never
+        # an org-identifying string.
+        r = run_cli("digest", org, "--as-of", "2026-06-08")
+        check(r.returncode == 0, f"L: third digest failed: {r.stderr.strip()}")
+        default_scope_file = os.path.join(proc, f"review-digest-batch-{today}-1", "review-digest.yaml")
+        check(os.path.isfile(default_scope_file),
+              f"L: a --scope-less concurrent digest must default to scope 'batch': {default_scope_file}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+part_l_batch_naming()
 
 if _failures:
     print("FAIL - Transitrix Reg-Intel skill + CLI test:")

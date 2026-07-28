@@ -9,6 +9,7 @@ import { readdir, readFile, writeFile, access, mkdir } from 'node:fs/promises';
 import { join, resolve, basename } from 'node:path';
 import { dump, readTopScalar, readBlockScalars, readScalarList } from './yaml.mjs';
 import { discoverCodex } from './codex.mjs';
+import { resolveBatchPath } from './batch-path.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -134,8 +135,11 @@ export async function writeDigest(digest, outPath) {
   return outPath;
 }
 
-export async function defaultDigestPath(orgRoot) {
+// Non-destructive default (vkgeorgia/strategy#837): the flat legacy path for
+// the first digest of an org; a dated batch directory once that stable path
+// is already occupied by an unresolved digest. See src/batch-path.mjs.
+export async function defaultDigestPath(orgRoot, { scope } = {}) {
   const dir = join(resolve(orgRoot), '_intake', 'processing');
   if (!(await exists(dir))) await mkdir(dir, { recursive: true });
-  return join(dir, 'review-digest.yaml');
+  return resolveBatchPath({ processingDir: dir, filename: 'review-digest.yaml', scope });
 }

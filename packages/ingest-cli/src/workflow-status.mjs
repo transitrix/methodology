@@ -135,18 +135,22 @@ async function scanCanon(root) {
   return { counts, ids };
 }
 
-// _intake/processing/** — any `review-queue.yaml` found is an ingest batch
-// awaiting review. Reads what `review-queue` already writes rather than
-// recomputing admission state; there is currently no move-away-when-resolved
-// step for a whole batch (only the raw source moves to _intake/processed/ —
-// intake.mjs), so this counts every review-queue.yaml on disk as open.
-async function scanBatches(root) {
+// _intake/processing/** — any `review-queue.yaml` (ingest) or `review-digest.yaml`
+// (reg-intel) found is a batch awaiting review. Reads what `review-queue` /
+// `digest` already write rather than recomputing admission state; there is
+// currently no move-away-when-resolved step for a whole batch (only the raw
+// source moves to _intake/processed/ — intake.mjs), so this counts every such
+// file on disk as open. A batch may sit at the flat legacy path (id
+// `(default)`) or under its own dated directory (vkgeorgia/strategy#837) —
+// the directory name (minus the trailing filename) becomes the display id.
+async function scanForPackage(root, filename) {
   const dir = join(root, '_intake', 'processing');
   if (!(await exists(dir))) return null;
-  const files = (await walkAll(dir)).filter(f => /(^|[\\/])review-queue\.yaml$/.test(f));
+  const re = new RegExp(`(^|[\\\\/])${filename.replace(/\./g, '\\.')}$`);
+  const files = (await walkAll(dir)).filter(f => re.test(f));
   const ids = files.map(f => {
     const rel = relative(dir, f).replace(/\\/g, '/');
-    return rel === 'review-queue.yaml' ? '(default)' : rel.replace(/\/review-queue\.yaml$/, '');
+    return rel === filename ? '(default)' : rel.replace(new RegExp(`/${filename.replace(/\./g, '\\.')}$`), '');
   });
   return { count: ids.length, ids };
 }
@@ -212,12 +216,22 @@ export async function computeWorkflowStatus(orgRoot) {
     });
   }
 
-  const batches = await scanBatches(root);
+  const batches = await scanForPackage(root, 'review-queue.yaml');
   if (batches) {
     sections.push({
       object: 'Ingest batch',
       rows: [
         { phase: 'awaiting review', count: batches.count, ids: batches.ids, terminal: false },
+      ],
+    });
+  }
+
+  const digests = await scanForPackage(root, 'review-digest.yaml');
+  if (digests) {
+    sections.push({
+      object: 'Reg-intel digest',
+      rows: [
+        { phase: 'awaiting review', count: digests.count, ids: digests.ids, terminal: false },
       ],
     });
   }

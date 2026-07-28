@@ -251,6 +251,16 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 **Nothing lands in `canon/` from this skill.** A human reviews the queue, confirms or revises each proposed `source_quality`, and runs the canon admission gate (`uniqueness`, `consistency`, `completeness` — [CONTRACT §6](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md)) to admit candidates. When ingest is complete for a source, its raw file moves to `_intake/processed/`.
 
+### Multi-batch naming — a stable filename, a dated directory when a batch is already unresolved
+
+`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Nothing here moves a resolved batch away, so an existing file at that path reads as an **unresolved** batch — `review-queue` never overwrites it. A second, concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
+
+```
+_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml
+```
+
+`<scope>` comes from `--scope <word>` (a generic word — never an org-identifying string) or defaults to `batch`; `<seq>` disambiguates same-day, same-scope batches. `transitrix-ingest workflow-status` discovers both the flat path and every dated directory, using the directory name as the batch's display id.
+
 ### Placement is deterministic — pinned to ELEMENT_PRIMITIVES §4
 
 Where an admitted element lands is **not** a judgement call. Every element TYPE has a canonical **materialisation mode + layer + folder** in [`ELEMENT_PRIMITIVES.md` §4](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md); the CLI resolves it so equals are treated equally — `ACTOR`, `ROLE`, `PROCESS`, `PRODUCT`, `APPLICATION` are all `standalone` and each gets its own per-TYPE folder, never inline-by-accident.

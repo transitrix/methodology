@@ -25,6 +25,7 @@ import { emitFieldArtefact } from './src/field-artefact.mjs';
 import { validateCandidate, loadCandidates } from './src/validate.mjs';
 import { readCoverageProfile, parseProfileDecl } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
+import { resolveBatchPath } from './src/batch-path.mjs';
 import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
@@ -81,7 +82,10 @@ function usage() {
     '                                 Shape the agent extraction result into candidates',
     '  validate <candidates-dir>      Validate candidate *.json against the contract + coverage profile',
     '  review-queue <candidates-dir>  Assemble the human review queue (writes review-queue.yaml)',
-    '                 [--out <path>]',
+    '                 [--out <path>] [--scope <word>]',
+    '                 Non-destructive default: an unresolved review-queue.yaml already at the flat',
+    '                 path is never overwritten — a concurrent batch lands under its own dated dir',
+    '                 review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml (--scope defaults to "batch").',
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
@@ -298,7 +302,9 @@ async function cmdReviewQueue(args) {
   try { suggestions = JSON.parse(await readFile(suggPath, 'utf8')); } catch { /* none */ }
 
   const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions });
-  const out = flags.out ? resolve(flags.out) : join(stageDir(r.orgRoot, 'processing'), 'review-queue.yaml');
+  const out = flags.out
+    ? resolve(flags.out)
+    : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope });
   await writeReviewQueue(queue, out);
   const flagged = queue.candidates.filter(c => c.validation_flags.length || c.coverage_flag === 'out_of_profile').length;
   if (queue.coverage_warning) console.error(`WARNING: ${queue.coverage_warning}`);

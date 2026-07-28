@@ -41,10 +41,14 @@ transitrix-ingest <command> [args]
 | `admit-source <md> --zone field\|codex` (`field-artefact` / `codex-artefact` deprecated aliases) | ✅ | Emit a field or codex artefact with provenance + (field only) proposed `source_quality`; retain the raw source in `_intake/processed/`. |
 | `emit-candidates <field-artefact> --from <result.json>` | ✅ | Shape the agent's extraction result into candidates (entity-strong, relation-conservative; non-`high` relations become suggestions). |
 | `validate <candidates-dir>` | ✅ | Validate candidate `*.json` against the contract (in code) + coverage profile; flags, never drops. |
-| `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`; annotates each element candidate with its §4 `placement`. |
+| `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`; annotates each element candidate with its §4 `placement`. `[--out <path>] [--scope <word>]` — non-destructive default, see "Multi-batch naming" below. |
 | `resolve-placement <TYPE>` | ✅ | Print a TYPE's `ELEMENT_PRIMITIVES.md` §4 materialisation mode + layer + folder. |
-| `workflow-status [org-root]` | ✅ | Report every human gate's phase + count — ADR/WI status, canon element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches awaiting review. Read-only; phases and counts only, no age/time. `[--out <path>] [--format md\|yaml] [--data-free]`. |
+| `workflow-status [org-root]` | ✅ | Report every human gate's phase + count — ADR/WI status, canon element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches awaiting review, reg-intel digests awaiting review. Read-only; phases and counts only, no age/time. `[--out <path>] [--format md\|yaml] [--data-free]`. |
 | `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
+
+## Multi-batch naming
+
+`review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`; nothing moves a resolved batch away, so an existing file there reads as *unresolved* and `review-queue` never overwrites it. A second, concurrent batch instead gets its own dated **batch directory** — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory (vkgeorgia/strategy#837).
 
 ## Upgrading
 
@@ -67,6 +71,7 @@ packages/ingest-cli/
     placement.mjs      # TYPE -> materialisation mode/layer/folder (ELEMENT_PRIMITIVES §4)
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue
+    batch-path.mjs     # non-destructive batch-directory naming (vkgeorgia/strategy#837)
     emit-candidates.mjs# shape the agent extraction result into candidates
     workflow-status.mjs# every human gate's phase + count, read-only (vkgeorgia/strategy#819)
 ```
