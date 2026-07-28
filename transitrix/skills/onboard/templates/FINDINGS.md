@@ -25,8 +25,8 @@ Two outcomes, always:
 2. **Route.** The finding goes to a human, who decides:
    - **Apply the fix** — author or approve the change into `canon/`, through the same gating as any other change (`AGENTS.md` §11).
    - **Escalate to the data owner or architect** — when the fix needs organisational judgement the raising role can't supply.
-   - **Escalate upstream to the methodology** — when the finding is a notation or spec limitation, not a data problem (e.g. "there is no relation kind connecting X to Y").
-3. **Scrub (mandatory for methodology-directed findings).** A finding routed upstream to `transitrix/methodology` is stripped of adopter specifics before it leaves this repo — a generic limitation only, never client model content. Same discipline as "publish pattern, not client instance" and the real-names rule, applied to this feedback channel too.
+   - **Escalate upstream to the methodology** — when the finding is a notation or spec limitation, not a data problem (e.g. "there is no relation kind connecting X to Y"). This lands as an entry in `operations/feedback.md` (`method/02-team-operations.md` §3.3) — the repo's own register of methodology-directed findings. Sending it beyond this repo is a separate, opt-in step (§3 below); routing here only writes the local record.
+3. **Scrub (mandatory for methodology-directed findings).** An entry written into `operations/feedback.md` is stripped of adopter specifics at the moment of writing — a generic limitation only, never client model content. Same discipline as "publish pattern, not client instance" and the real-names rule, applied to this feedback channel too. This is what makes the register safe to read, quote, or forward as-is — there is nothing left to redact when the team later decides to send an entry to `hello@transitrix.com`.
 
 No role auto-applies its own proposed fill. Raising a finding is never itself a write to `canon/` — the human act of applying or escalating is what moves it.
 
@@ -46,7 +46,7 @@ routing: apply | escalate-owner | escalate-methodology
 
 - `type` — `data-error` (canon disagrees with itself or its source), `model-suggestion` (canon is valid but could model something better), `methodology-feedback` (a canon-confirmed gap in the notation itself, not fixable by editing data).
 - `confidence` — the two-tier signal from §2 step 1. Not a numeric score; a role either has structural certainty or it doesn't.
-- `routing` — the role's recommendation; the human makes the final call regardless.
+- `routing` — the role's recommendation; the human makes the final call regardless. `escalate-methodology` is written into `operations/feedback.md` as a Feedback Record (`method/02-team-operations.md` §3.3) — a different, fixed field set from this raise-time shape, suited to a standalone register entry rather than an in-flow finding.
 
 This shape generalises two things that already exist in the methodology: the Ingest skill's `review-queue.schema.json` (candidates carry `extraction_confidence` and land in a human-reviewed queue) and the Validator's structured severity report (`VALIDATOR.md` §5, error/warning/pass). A role with an existing structured output surfaces a finding inline in that output rather than in a separate file — see §4.
 
