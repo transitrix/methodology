@@ -1,0 +1,7 @@
+package: reqif
+kind: spec-relation
+id: sr-battery-elaborates-1
+type: "elaborates"
+source: so-battery-shutdown-rationale-1
+target: so-battery-shutdown-req-1
+recorded_target_revision: 1
