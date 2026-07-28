@@ -31,6 +31,7 @@ import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
 import { checkStale } from './src/check-stale.mjs';
+import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { dump } from './src/yaml.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
 import { randomUUID } from 'node:crypto';
@@ -85,6 +86,8 @@ function usage() {
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
     '  check-stale [org-root]         List REQUIREMENT/CONSTRAINT elements whose next_review_at has passed (REQ-STALE-001)',
+    '  workflow-status [org-root]     Report every human gate\'s phase + count (ADR/WI/canon/overdue/ingest batch); read-only',
+    '                 [--out <path>] [--format md|yaml] [--data-free]',
     '  resolve-placement <TYPE>       Print a TYPE\'s §4 materialisation mode + layer + folder',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
@@ -406,6 +409,37 @@ async function cmdCheckStale(args) {
   return stale.length > 0 ? 1 : 0;
 }
 
+// Report every human gate's phase + count in one table — ADR/WI status, canon
+// element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches
+// awaiting review. Read-only, always exit 0 — a report, not a gate.
+async function cmdWorkflowStatus(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('workflow-status: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const format = flags.format || 'md';
+  if (format !== 'md' && format !== 'yaml') {
+    console.error(`workflow-status: --format must be md|yaml (got ${JSON.stringify(format)})`);
+    return 1;
+  }
+  const dataFree = flags['data-free'] === true || flags['data-free'] === 'true';
+
+  const model = await computeWorkflowStatus(orgRoot);
+  const out = format === 'yaml' ? dump(toReportObject(model, { dataFree })) : renderMarkdown(model, { dataFree });
+
+  if (flags.out) {
+    const { writeFile } = await import('node:fs/promises');
+    const outPath = resolve(flags.out);
+    await writeFile(outPath, out, 'utf8');
+    console.log(`workflow-status  ->  ${outPath}`);
+  } else {
+    process.stdout.write(out);
+  }
+  return 0;
+}
+
 // Flag admitted elements sitting outside their §4 folder (read-only over canon/).
 async function cmdCheckPlacement(args) {
   const { _ } = parseArgs(args);
@@ -444,6 +478,7 @@ async function main(argv) {
     case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
     case 'check-stale':     return cmdCheckStale(args);
+    case 'workflow-status': return cmdWorkflowStatus(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
     default:
       console.error(`unknown command: ${cmd}\n\n${usage()}`);
