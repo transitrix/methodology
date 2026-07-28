@@ -70,7 +70,7 @@ In v0 this convention is **skill-local** — documented here and in [`templates/
 | **CLI** ✓ landed | `@transitrix/ingest-cli` — the deterministic subcommands (`scaffold-intake`, `convert`, `admit-source`/`field-artefact`/`codex-artefact`, `emit-candidates`, `validate`, `review-queue`) + the forked extraction prompts in `prompts/`. |
 | **Tests + CI** ✓ landed | A no-API-key integrity test (bundle + dry CLI run on a fixture) and a weekly LLM-drive, plus a workflow — mirroring the onboarding skill's test harness. |
 | **Zero information loss** ✓ landed | `extensions:` carry-through + `canon/unresolved/` emission (CONTRACT §12/§13). `emit-candidates` carries `extensions:` onto candidates and parks untyped objects in `canon/unresolved/`; `validate` enforces `EXT-002`; `repo-check` reports the holding count; typed canon walkers skip the holding area (`UNRES-004`). Covered by Part O of the integrity test. |
-| **Privacy gate spec** ✓ landed | Step 2b `privacy-scan`: rule-based fail-closed pre-admission gate with six PII/medical detection categories, a narrow business-contact allowlist, `CLEAN`/`STRIPPED`/`REJECTED`/`ERROR` outcomes, and a per-run `privacy-report.yaml`. CLI implementation (`@transitrix/ingest-cli privacy-scan`) is the downstream delivery. |
+| **Privacy gate** ✓ landed | Step 2b `privacy-scan`: rule-based fail-closed pre-admission gate with six PII/medical detection categories, a narrow business-contact allowlist, `CLEAN`/`STRIPPED`/`REJECTED`/`ERROR` outcomes, and a per-run `privacy-report.yaml`. `@transitrix/ingest-cli privacy-scan` is implemented; `admit-source --zone field` refuses to proceed without a passing, content-matching scan record. |
 
 ---
 

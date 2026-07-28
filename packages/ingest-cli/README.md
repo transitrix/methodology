@@ -37,7 +37,8 @@ transitrix-ingest <command> [args]
 | `--version` / `--help` | ✅ | Version (the skill's Step-0 pre-check) and usage. |
 | `scaffold-intake <org-root>` | ✅ | Create `_intake/{inbox,processing,processed}` (idempotent). |
 | `convert <inbox-file>` | ✅ | Convert a document to Markdown in `_intake/processing/` (Markitdown; `.md`/`.txt` passthrough). |
-| `field-artefact <md> --type --role --date` | ✅ | Emit a field artefact with provenance + proposed `source_quality`; retain the raw source in `_intake/processed/`. |
+| `privacy-scan <processing/file.md>` | ✅ | Fail-closed PII/medical pre-admission gate; `CLEAN`/`STRIPPED`/`REJECTED`/`ERROR`, a `STRIPPED` run writes `<file>.redacted.md`. `admit-source --zone field` refuses without a passing, content-matching scan record. |
+| `admit-source <md> --zone field\|codex` (`field-artefact` / `codex-artefact` deprecated aliases) | ✅ | Emit a field or codex artefact with provenance + (field only) proposed `source_quality`; retain the raw source in `_intake/processed/`. |
 | `emit-candidates <field-artefact> --from <result.json>` | ✅ | Shape the agent's extraction result into candidates (entity-strong, relation-conservative; non-`high` relations become suggestions). |
 | `validate <candidates-dir>` | ✅ | Validate candidate `*.json` against the contract (in code) + coverage profile; flags, never drops. |
 | `review-queue <candidates-dir>` | ✅ | Stage the human review queue (`review-queue.yaml`); `gate.admits_to_canon: false`; annotates each element candidate with its §4 `placement`. |
@@ -58,6 +59,7 @@ packages/ingest-cli/
     intake.mjs         # _intake/ scaffolding + stage moves
     convert.mjs        # document -> Markdown (Markitdown shell-out)
     yaml.mjs           # zero-dep YAML emitter + manifest scalar reader
+    privacy-scan.mjs   # fail-closed PII pre-admission gate (detectors, sidecar records, privacy-report.yaml)
     field-artefact.mjs # emit a field artefact + proposed source_quality
     coverage.mjs       # resolve coverage_profile (preset/custom) + classify in/out
     coverage-presets.mjs # shipped preset membership (COVERAGE_PROFILES §3/§3.1)
