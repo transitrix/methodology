@@ -1,0 +1,18 @@
+notation: requirement
+id: REQUIREMENT-PRINT-QUEUE-RETRY-1
+name: "Automatic retry on transient print-job failure"
+description: "The system must retry a failed print job up to 3 times before flagging it for manual review, so a transient printer or network fault does not require operator intervention."
+
+origin: project-product
+severity: medium
+
+zone: canon
+admitted_at: "2026-07-28"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-28"
+valid_to: null

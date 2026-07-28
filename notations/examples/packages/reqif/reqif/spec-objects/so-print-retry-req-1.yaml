@@ -1,0 +1,8 @@
+package: reqif
+kind: spec-object
+id: so-print-retry-req-1
+type: sot-requirement-basic-1
+values:
+  ReqIF.Name: "Print-queue retry on transient failure"
+  ReqIF.Text: "The system shall retry a failed print job up to 3 times before flagging it for manual review."
+  Transitrix.CanonRef: "REQUIREMENT-PRINT-QUEUE-RETRY-1"

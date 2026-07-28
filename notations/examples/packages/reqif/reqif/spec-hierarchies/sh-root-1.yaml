@@ -1,0 +1,9 @@
+package: reqif
+kind: spec-hierarchy
+id: sh-root-1
+name: "Print-queue requirements outline"
+children:
+  - object: so-print-retry-req-1
+    children: []
+  - object: so-print-retry-rationale-1
+    children: []

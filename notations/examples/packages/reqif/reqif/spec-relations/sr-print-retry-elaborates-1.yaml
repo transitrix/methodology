@@ -1,0 +1,6 @@
+package: reqif
+kind: spec-relation
+id: sr-print-retry-elaborates-1
+type: "elaborates"
+source: so-print-retry-rationale-1
+target: so-print-retry-req-1

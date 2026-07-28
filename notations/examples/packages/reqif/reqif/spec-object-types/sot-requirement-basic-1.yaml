@@ -1,0 +1,11 @@
+package: reqif
+kind: spec-object-type
+id: sot-requirement-basic-1
+name: "Requirement (basic)"
+attributes:
+  - key: "ReqIF.Name"
+    datatype: STRING
+  - key: "ReqIF.Text"
+    datatype: XHTML
+  - key: "Transitrix.CanonRef"
+    datatype: STRING
