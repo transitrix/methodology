@@ -2,7 +2,7 @@
 title: "ReqIF-shaped requirements interchange — domain package"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-28"
+last_updated: "2026-07-29"
 status: "draft"
 ---
 
@@ -218,17 +218,41 @@ No rule here reaches into `canon/`, `field/`, or `codex/` — package-internal i
 
 ---
 
-## 7. Evolution
+## 7. Removal procedure
 
-**Landed (v0.1, 2026-07-28):** object model (§2), the one-way canon citation (§3), the package validator (§5), and the YAML↔ReqIF-XML converter (§6) — the base ReqIF-shaped layer.
+Per [`PACKAGES.md`](../PACKAGES.md) §4.3, removal is the baseline two-step procedure — this package adds no package-specific step:
 
-**Pending (separate, sibling package work):**
-- Workflow state (`draft → reviewed → approved → baselined → superseded`), revision history, and suspect-link mechanics on `spec-object` — this package's explicitly experimental surface, deliberately kept out of this document until it lands, per [`PACKAGES.md`](../PACKAGES.md) §6's instruction that a package's rough edges stay contained inside the package.
-- This document's **removal procedure** and **experimental-status declaration** — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated as a test against the worked package instance, rather than asserted in prose here.
+1. Delete the `reqif/` folder from the adopter repository root.
+2. Remove `reqif` from the `packages:` list in `transitrix.yaml` (or delete the whole `packages:` line, if `reqif` was the only entry).
+
+Nothing else changes. No `canon/`, `field/`, or `codex/` file is touched by either step, because per §4.1 no core element ever references a package object — there is nothing in `canon/` for the two steps above to leave dangling.
+
+Demonstrated as a test, not asserted in prose ([`PACKAGES.md`](../PACKAGES.md) §4.3): [`packages/reqif-cli/tests/test_reqif_integrity.py`](../../packages/reqif-cli/tests/test_reqif_integrity.py), Part F, copies the worked example ([`notations/examples/packages/reqif`](../examples/packages/reqif)), performs both steps against the copy, and asserts (a) `canon/` references no `reqif` package id even before removal — reversibility rule 1, package → canon only; (b) the `reqif/` folder and the `packages:` line are both gone after removal; (c) every remaining `canon/` file still parses and still contains no package-id reference. Run: `python packages/reqif-cli/tests/test_reqif_integrity.py` (also wired into CI, [`.github/workflows/reqif-cli-test.yml`](../../.github/workflows/reqif-cli-test.yml)).
 
 ---
 
-## 8. References
+## 8. Experimental status and review date
+
+This package is **experimental**, in full — not only its workflow-state/revisions/suspect-link surface (§9). Landed 2026-07-28. Reviewed by **2027-01-28** (six months out), or sooner if real adopter usage surfaces a shape problem before then.
+
+What "review" means here: re-read this spec against how the reference implementation has actually been used, then choose one of — keep as-is (still experimental, set a new review date); promote to stable (replace this section with a statement that the package graduated); revise the object model or workflow-state mechanics based on what usage showed; or remove the package (§7 makes this the cheap option by design).
+
+Per [`PACKAGES.md`](../PACKAGES.md) §6, core specs are never refactored to accommodate this package's experimental surface while it carries this status. Confirmed for v0.1: the mechanism task (epic `vkgeorgia/strategy#813`, PR #381) and this package's own content PRs (object model, workflow-state) between them touch no core spec file except `PACKAGES.md`'s own §7.1 shipped-packages row and `README.md`'s notation index — never `IDS_AND_REFERENCES.md`, `CONTRACT.md`, `COVERAGE_PROFILES.md`, or a core validator (`scripts/check-notations.mjs`, `packages/ingest-cli`).
+
+---
+
+## 9. Evolution
+
+**Landed (v0.1, 2026-07-28):** object model (§2), the one-way canon citation (§3), the package validator (§5), and the YAML↔ReqIF-XML converter (§6) — the base ReqIF-shaped layer.
+
+**Landed (v0.1, 2026-07-29):** removal procedure (§7) and experimental-status declaration (§8) — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated against the worked example that landed with the base layer above.
+
+**Pending (separate, sibling package work):**
+- Workflow state (`draft → reviewed → approved → baselined → superseded`), revision history, and suspect-link mechanics on `spec-object` — this package's explicitly experimental surface, deliberately kept out of this document until it lands, per [`PACKAGES.md`](../PACKAGES.md) §6's instruction that a package's rough edges stay contained inside the package.
+
+---
+
+## 10. References
 
 - [`PACKAGES.md`](../PACKAGES.md) — the mechanism this package is shipped under: where a package is declared, the reversibility contract, absence-is-silence, what a package's spec must state.
 - [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1 — the core id grammar this package's grammar (§2.2) is disjoint from.
