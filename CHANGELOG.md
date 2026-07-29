@@ -8,7 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [3.0.0] — 2026-07-29
 
-Bump category: **MAJOR** — the ISO 14971 risk-management chain is removed from the public core. `VERIFICATION` and the rest of the compliance/V&V spine are unaffected. Decision of record: ADR `cross-project/2026-07-29-design-controls-private-module` (strategy hub), superseding `methodology/2026-07-29-design-controls-as-a-package`.
+Bump category: **MAJOR** — the ISO 14971 risk-management chain is removed from the public core. `VERIFICATION` and the rest of the compliance/V&V spine are unaffected. Decision of record: the 2026-07-29 core-scope decision.
 
 ### Breaking changes
 

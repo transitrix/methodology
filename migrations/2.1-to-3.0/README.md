@@ -12,8 +12,7 @@ version 2.1 to 3.0. Format per [`notations/CONTRACT.md`](../../notations/CONTRAC
 **3.0 removes the ISO 14971 risk-management chain from the public core.**
 `HAZARD`, `RISK_CONTROL`, the design-controls trace-matrix view, its reference
 renderer, and their validation rules leave this repository (decision of record:
-ADR `cross-project/2026-07-29-design-controls-private-module` in the strategy
-hub). `VERIFICATION` and the rest of the compliance/V&V spine
+the 2026-07-29 core-scope decision). `VERIFICATION` and the rest of the compliance/V&V spine
 (`REQUIREMENT`, `ASSERTION`) are **unaffected** — this is not a schema change to
 any type that stays in core.
 
