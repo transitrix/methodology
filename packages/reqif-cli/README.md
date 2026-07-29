@@ -31,6 +31,12 @@ transitrix-reqif <command> [args]
 | `import <in.reqif> <reqif-folder>` | Read a ReqIF XML document and write the four object kinds back out as YAML. |
 | `validate <reqif-folder>` | Run the package's own validator — `REQIF-001..007`, [`notations/packages/reqif.md`](../../notations/packages/reqif.md) §5. Package-internal only; never resolves a `Transitrix.CanonRef` against an adopter's `canon/`. |
 | `roundtrip <reqif-folder>` | Export then re-import in memory (no disk write) and assert the resulting object set is identical to the one loaded from the folder — the package's own demonstration of the epic's round-trip success signal. |
+| `transition <reqif-folder> <spec-object-id> <new-state>` | Advance a `spec-object`'s `workflow_state` by exactly one legal step (`draft → reviewed → approved → baselined → superseded`); rejects any other edge. |
+| `revise <reqif-folder> <spec-object-id> <ReqIF.Attr> <new-value>` | Change one value, bumping `revision` and snapshotting the pre-change `values` into `revisions`. |
+| `history <reqif-folder> <spec-object-id>` | Print a `spec-object`'s revision history, oldest first. |
+| `suspect <reqif-folder>` | List every `spec-relation` with its computed suspect status — flagged when its target's text changed since the relation was recorded. |
+
+The last four commands are the package's experimental surface (`REQIF-008`/`REQIF-009`, [`notations/packages/reqif.md`](../../notations/packages/reqif.md) §2.9) — not represented in ReqIF XML, so a folder exercising them is not expected to round-trip identically through `roundtrip`. Worked example: [`notations/examples/packages/reqif-workflow/`](../../notations/examples/packages/reqif-workflow/).
 
 ## The object model
 

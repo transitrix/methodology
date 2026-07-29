@@ -1,0 +1,10 @@
+package: reqif
+kind: spec-object
+id: so-battery-shutdown-req-1
+type: sot-requirement-workflow-1
+workflow_state: reviewed
+revision: 1
+values:
+  ReqIF.Name: "Graceful shutdown on critical battery level"
+  ReqIF.Text: "The system shall save all open state and power down gracefully once battery level falls below the critical threshold."
+  Transitrix.CanonRef: "REQUIREMENT-BATTERY-LOW-POWER-SHUTDOWN-1"

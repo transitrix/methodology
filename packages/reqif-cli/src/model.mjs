@@ -53,6 +53,15 @@ export async function writePackage(dir, model) {
   }
 }
 
+// Writes a single object back to its own file, leaving every other file in
+// `dir` untouched — used by commands (`transition`, `revise`) that update
+// exactly one spec-object or spec-relation in place.
+export async function writeOne(dir, kind, item) {
+  const sub = join(dir, SUBFOLDER[kind]);
+  await mkdir(sub, { recursive: true });
+  await writeFile(join(sub, `${item.id}.yaml`), dump(item), 'utf8');
+}
+
 // Deep-sorts a model's four arrays by id so two models built from the same
 // object set compare equal regardless of read/write order (directory listing
 // order, XML section order, etc.).
