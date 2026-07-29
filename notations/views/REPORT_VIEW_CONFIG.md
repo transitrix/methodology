@@ -8,7 +8,7 @@ status: "draft"
 
 # Named view-config convention
 
-**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the four report-config view specs ([`11-scenarios.md`](11-scenarios.md), [`21-compliance-impact.md`](21-compliance-impact.md), [`22-coverage-metric.md`](22-coverage-metric.md), [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md)) — it does not introduce a new notation. Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
+**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the three report-config view specs ([`11-scenarios.md`](11-scenarios.md), [`21-compliance-impact.md`](21-compliance-impact.md), [`22-coverage-metric.md`](22-coverage-metric.md)) — it does not introduce a new notation. Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
 
 The convention is also the natural home for **any view document**, not only report-configs: every view notation in the catalogue ([README.md](../README.md) §Views) follows the same location and naming rule.
 
@@ -106,7 +106,7 @@ The CLI surface above is the convention this document fixes. The CLI implementat
 
 ## 6. Zero-configuration default
 
-Every report-producing view spec ([`11-scenarios.md`](11-scenarios.md) §4, [`21-compliance-impact.md`](21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](22-coverage-metric.md) §4 + §4.1, [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
+Every report-producing view spec ([`11-scenarios.md`](11-scenarios.md) §4, [`21-compliance-impact.md`](21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](22-coverage-metric.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
 
 This is the surface the report skill leans on for its "what I assumed" message (per the *reports rendered from declarative view-configs* architecture decision, §4): given a free-text request without enough parameters, the skill materialises a minimal view-config under [§2](#2-location), renders it, and **states back** which defaults the spec applied ("full matrix, no jurisdiction filter — showing all"). The skill never invents defaults of its own; it never carries render logic.
 
@@ -116,7 +116,7 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
 
 ## 7. What this document does not change
 
-- **No new notation.** This convention extends the four report-config view specs and the wider view-notation catalogue ([README.md](../README.md) §Views); no new `notation:` header, no new file extension, no new validation rule.
+- **No new notation.** This convention extends the three report-config view specs and the wider view-notation catalogue ([README.md](../README.md) §Views); no new `notation:` header, no new file extension, no new validation rule.
 - **No new validator gate.** The doc-lint [`scripts/check-notations.mjs`](../../scripts/check-notations.mjs) (E1, E2) already covers the extension + header + parent-folder rules this document leans on. The location convention in [§2](#2-location) is a **deployment** convention — the existing extension rule already lets the lint catch most filesystem drift.
 - **No render-logic homing.** The render contract for each view stays in its spec (e.g. [`21-compliance-impact.md`](21-compliance-impact.md) §5). This document is about the registry — where the parameter artefact lives and how it's named, listed, and re-run.
 
@@ -134,4 +134,3 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
   - [`11-scenarios.md`](11-scenarios.md) — Scenarios.
   - [`21-compliance-impact.md`](21-compliance-impact.md) — Compliance Impact.
   - [`22-coverage-metric.md`](22-coverage-metric.md) — Coverage Metric.
-  - [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md) — Design-Controls Trace Matrix.

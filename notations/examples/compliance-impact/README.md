@@ -25,7 +25,7 @@ A compliance-impact view file carries the shared envelope (`notation:`, `spec_ve
 ```yaml
 notation: compliance-impact
 spec_version: "0.1"
-methodology_version: "2.1.0"
+methodology_version: "3.0.0"
 
 view:
   id: COMPLIANCE_IMPACT-<NAME>-1
