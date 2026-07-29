@@ -52,6 +52,7 @@ jobs:
           BLOCKLIST: ${{ secrets.HYGIENE_BLOCKLIST }}
           BLOCKLIST_HUB: ${{ secrets.HYGIENE_BLOCKLIST_HUB }}
           BLOCKLIST_2: ${{ secrets.HYGIENE_BLOCKLIST_2 }}
+          BLOCKLIST_3: ${{ secrets.HYGIENE_BLOCKLIST_3 }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -64,7 +65,7 @@ jobs:
             exit 0
           fi
 
-          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}${BLOCKLIST_2:+|(${BLOCKLIST_2})}"
+          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}${BLOCKLIST_2:+|(${BLOCKLIST_2})}${BLOCKLIST_3:+|(${BLOCKLIST_3})}"
 
           fail=0
 
@@ -104,6 +105,40 @@ jobs:
             exit 1
           fi
           echo "OK - no internal-vocabulary matches on diff or PR metadata."
+
+      - name: Full-tree scan
+        shell: bash
+        env:
+          BLOCKLIST_3: ${{ secrets.HYGIENE_BLOCKLIST_3 }}
+        run: |
+          set -euo pipefail
+
+          # The diff scan above only sees what a PR adds, so anything already in
+          # the tree stays invisible to it forever. This pass reads every tracked
+          # text file. Deliberately scoped to the BLOCKLIST_3 pattern alone: the
+          # older slots have never been evaluated tree-wide, and switching them on
+          # here would fail every PR on pre-existing content rather than on the
+          # change under review. Same never-print discipline - path only.
+          if [ -z "${BLOCKLIST_3:-}" ]; then
+            echo "HYGIENE_BLOCKLIST_3 secret not available (unset, or a fork PR) - skipping."
+            exit 0
+          fi
+
+          fail=0
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            case "$f" in .github/workflows/public-surface-hygiene.yml|.gitignore) continue ;; esac
+            if grep -Iqi -e "$BLOCKLIST_3" "$f" 2>/dev/null; then
+              echo "::error file=$f::public-surface hygiene check failed on tree content"
+              fail=1
+            fi
+          done < <(git ls-files)
+
+          if [ "$fail" -ne 0 ]; then
+            echo "A tracked file carries content this repository does not put on a public surface. Use the neutral form documented in the contributor guide. The matched terms are deliberately not printed; refer to the file paths above."
+            exit 1
+          fi
+          echo "OK - full-tree scan clean."
 
       - name: Filename guard - CLAUDE.md must never be committed
         shell: bash

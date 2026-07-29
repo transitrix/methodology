@@ -48,7 +48,7 @@ transitrix-ingest <command> [args]
 
 ## Multi-batch naming
 
-`review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Re-running against the same candidates keeps updating that file in place as long as the output actually changes (e.g. admitted candidates drop out of the queue) — that is a refresh of the same batch, not a new one. Only a re-run that would produce byte-identical output routes to its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory (vkgeorgia/strategy#837).
+`review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Re-running against the same candidates keeps updating that file in place as long as the output actually changes (e.g. admitted candidates drop out of the queue) — that is a refresh of the same batch, not a new one. Only a re-run that would produce byte-identical output routes to its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory (HUB-837).
 
 ## Upgrading
 
@@ -71,9 +71,9 @@ packages/ingest-cli/
     placement.mjs      # TYPE -> materialisation mode/layer/folder (ELEMENT_PRIMITIVES §4)
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue
-    batch-path.mjs     # non-destructive batch-directory naming (vkgeorgia/strategy#837)
+    batch-path.mjs     # non-destructive batch-directory naming (HUB-837)
     emit-candidates.mjs# shape the agent extraction result into candidates
-    workflow-status.mjs# every human gate's phase + count, read-only (vkgeorgia/strategy#819)
+    workflow-status.mjs# every human gate's phase + count, read-only (HUB-819)
 ```
 
 The agent-facing extraction prompts that produce the `--from <result.json>` input live with the skill, at `transitrix/skills/ingest/prompts/`.

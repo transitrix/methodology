@@ -6,7 +6,7 @@
 // package's own tooling always arrived via a legal edge.
 //
 // Strictly linear, one step at a time — no skips, no jump straight to
-// `superseded` from an earlier state (epic vkgeorgia/strategy#813's own
+// `superseded` from an earlier state (epic HUB-813's own
 // acceptance criterion for #829: "no skipping draft -> approved without
 // reviewed").
 
