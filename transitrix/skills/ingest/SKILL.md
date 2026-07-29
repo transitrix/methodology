@@ -253,6 +253,16 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 Recording each accept/reject/defer is optional but recommended: [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli)'s `record` writes one row per candidate to `decisions.reviewed.yaml` beside the queue, and `apply` performs the CONTRACT §6.1 transition it names — never inventing a new admission state, never writing `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`).
 
+### Multi-batch naming — a stable filename, a dated directory when a batch is already unresolved
+
+`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Re-running `review-queue` against the same candidates — the everyday idempotent-refresh workflow, admit a few, re-run to see what's left — keeps updating that same file in place: the exclusion list changing is real progress on the same batch, not a new one. Only when a re-run would produce **byte-identical** output to what's already there — nothing has moved since it was last written — is the existing file read as untouched/unresolved, and a genuinely concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
+
+```
+_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml
+```
+
+`<scope>` comes from `--scope <word>` (a generic word — never an org-identifying string) or defaults to `batch`; `<seq>` disambiguates same-day, same-scope batches. `transitrix-ingest workflow-status` discovers both the flat path and every dated directory, using the directory name as the batch's display id.
+
 ### Placement is deterministic — pinned to ELEMENT_PRIMITIVES §4
 
 Where an admitted element lands is **not** a judgement call. Every element TYPE has a canonical **materialisation mode + layer + folder** in [`ELEMENT_PRIMITIVES.md` §4](https://raw.githubusercontent.com/transitrix/methodology/main/notations/ELEMENT_PRIMITIVES.md); the CLI resolves it so equals are treated equally — `ACTOR`, `ROLE`, `PROCESS`, `PRODUCT`, `APPLICATION` are all `standalone` and each gets its own per-TYPE folder, never inline-by-accident.

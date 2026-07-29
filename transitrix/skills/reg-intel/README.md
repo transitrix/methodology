@@ -60,7 +60,7 @@ The two skills are siblings, not subordinate. They share `_intake/` as their ope
 | **Primary outputs** | Field artefacts (INTERVIEW / SURVEY / OBSERVATION / DRAFT / codex), typed canon candidates, review queue | SEGMENT field artefacts, REQUIREMENT / CONSTRAINT canon candidates, AMENDMENT field artefacts, codex `scan`-block updates, review digest |
 | **Cardinality** | One run per batch of dropped files | One run per daily tick, fan-out over due codex sources |
 
-Both skills share the same rule: propose, never write canon. Both produce a human-gated review surface; the ingest skill's is `review-queue.yaml`, the reg-intel skill's is `review-digest.yaml`.
+Both skills share the same rule: propose, never write canon. Both produce a human-gated review surface; the ingest skill's is `review-queue.yaml`, the reg-intel skill's is `review-digest.yaml`. Both are stable package filenames that fall back to a dated batch directory when a run is concurrent with an unresolved one — see `@transitrix/ingest-cli`'s README "Multi-batch naming" (vkgeorgia/strategy#837).
 
 ---
 

@@ -4,8 +4,8 @@
 // + validation flags, and any below-threshold relation suggestions. Emitted as YAML
 // (write-only via the dumper). NOTHING here is admitted to canon.
 
-import { readFile, writeFile, access, readdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { readFile, writeFile, access, readdir, mkdir } from 'node:fs/promises';
+import { join, resolve, dirname } from 'node:path';
 import { dump, readTopScalar } from './yaml.mjs';
 import { validateCandidate, loadCandidates } from './validate.mjs';
 import { buildCanonIndex, admittedMatch } from './canon.mjs';
@@ -153,6 +153,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
 }
 
 export async function writeReviewQueue(queue, outPath) {
+  await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, dump(queue), 'utf8');
   return outPath;
 }
