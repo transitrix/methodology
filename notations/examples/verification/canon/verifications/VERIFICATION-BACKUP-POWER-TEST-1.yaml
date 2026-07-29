@@ -1,0 +1,25 @@
+notation: verification
+id: VERIFICATION-BACKUP-POWER-TEST-1
+verifies: REQUIREMENT-BACKUP-POWER-1
+method: test
+protocol: "Cut mains supply under full rated load; measure switchover latency and confirm every operation in flight completes. Repeat over 10 cycles."
+result: "Switchover at 1.4 s mean latency across 10/10 runs; no operation dropped or corrupted."
+outcome: pass
+evidence:
+  - kind: external_doc
+    title: "Backup-power switchover test protocol TP-014, run log"
+    url: "https://internal.example/reports/tp-014-run-log.pdf"
+
+performed_at: "2026-07-20"
+performed_by: "ROLE-VERIFICATION-ENG-1"
+
+zone: canon
+admitted_at: "2026-07-21"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-21"
+valid_to: null
