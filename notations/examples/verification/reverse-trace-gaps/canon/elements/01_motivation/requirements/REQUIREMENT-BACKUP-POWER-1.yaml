@@ -1,0 +1,18 @@
+notation: requirement
+id: REQUIREMENT-BACKUP-POWER-1
+name: "Uninterrupted operation on loss of mains power"
+description: "The system must switch to backup power within 2 seconds of losing mains supply, and must not drop or corrupt any operation in flight while switching."
+
+origin: process-product
+severity: high
+
+zone: canon
+admitted_at: "2026-07-17"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-17"
+valid_to: null

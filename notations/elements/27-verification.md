@@ -72,7 +72,7 @@ valid_to: null
 | `notation` | yes | string | Fixed value `verification`. Machine-readable type tag (redundant with the ID prefix, useful for tooling that reads files without parsing IDs). |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `VERIFICATION-[<middle>-]<INTEGER>`. |
 | `verifies` | yes | string | Typed ID of the `REQUIREMENT` this verification targets. The validator resolves it (`VERIF-002`). |
-| `method` | yes | string | One of `test`, `analysis`, `inspection`, `demonstration` — the classic V&V method vocabulary (IEEE/IEC/ISO 15288, and the same four methods FDA design-controls guidance names for 21 CFR 820.30(f)). See §3. |
+| `method` | yes | string | One of `test`, `analysis`, `inspection`, `demonstration` — the classic V&V method vocabulary (IEEE / IEC / ISO-IEC-IEEE 15288). See §3. |
 | `protocol` | yes | string | The verification procedure — what was done, under what conditions, against what acceptance criteria. |
 | `result` | no | string | Narrative of what was observed when the protocol ran. Distinct from `outcome` — `result` is the finding, `outcome` is the judgement. |
 | `outcome` | yes | string | One of `pass`, `fail`, `inconclusive`, `not_yet_run`. See §3. |
@@ -138,7 +138,7 @@ A `VERIFICATION` carries no `subject` field: the thing verified is the requireme
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to VERIFICATION files in addition to the `VERIF-*` rules above.
 
-**Reverse-trace completeness.** Whether every `REQUIREMENT` has at least one `VERIFICATION`, and whether every verification it has has actually closed (`pass` / `fail`, rather than stuck at `not_yet_run` / `inconclusive`) — is a cross-cutting check that requires scanning the full verifications catalogue against the full requirements catalogue. It is defined as `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002` in [15-requirement.md](15-requirement.md) §4 (paired with the equivalent risk-control-side check, `RISKCTL-VERIF-COVERAGE-001`, in [28-hazard-risk-control.md](28-hazard-risk-control.md) §6).
+**Reverse-trace completeness.** Whether every `REQUIREMENT` has at least one `VERIFICATION`, and whether every verification it has has actually closed (`pass` / `fail`, rather than stuck at `not_yet_run` / `inconclusive`) — is a cross-cutting check that requires scanning the full verifications catalogue against the full requirements catalogue. It is defined as `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002` in [15-requirement.md](15-requirement.md) §4.
 
 ---
 
@@ -153,19 +153,18 @@ One artefact per file, named by its canonical ID. The folder sits at the canon-z
 - `canon/verifications/VERIFICATION-DEVICE-ALARM-TEST-1.yaml`
 - `canon/verifications/VERIFICATION-ENCLOSURE-DROP-TEST-1.yaml`
 
-A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT`, `HAZARD`, and `RISK_CONTROL` lives at [`../examples/design-controls/`](../examples/design-controls/).
+A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives at [`../examples/verification/`](../examples/verification/).
 
 ---
 
 ## 7. Evolution
 
 **Landed (v0.2, 2026-07-26):**
-- **Reverse-trace completeness** — `REQ-VERIF-COVERAGE-001` (no `VERIFICATION` targets this REQUIREMENT) and `REQ-VERIF-COVERAGE-002` (every `VERIFICATION` that does is stuck at `not_yet_run` / `inconclusive`), defined in [15-requirement.md](15-requirement.md) §4. Paired with the risk-control-side reverse-trace rules in [28-hazard-risk-control.md](28-hazard-risk-control.md) §6.
-- **SDS / trace-matrix rendering.** The design-controls trace matrix (`REQUIREMENT` → `VERIFICATION`, plus the risk chain) now renders as a report-config view: [`24-design-controls-trace-matrix.md`](../views/24-design-controls-trace-matrix.md). It renders the two chains canon actually supports today — see that spec §1.2 for the known limitation that Transitrix does not yet define standalone `USER_NEED` / `DESIGN` element TYPEs, so the literal FDA-terminology four-column matrix is not rendered as such.
-
+- **Reverse-trace completeness** — `REQ-VERIF-COVERAGE-001` (no `VERIFICATION` targets this REQUIREMENT) and `REQ-VERIF-COVERAGE-002` (every `VERIFICATION` that does is stuck at `not_yet_run` / `inconclusive`), defined in [15-requirement.md](15-requirement.md) §4. 
 Out of scope for this schema:
 
-- **Test execution management, 21 CFR Part 11 e-signatures, variant/configuration management.** Ceded to a dedicated ALM/QMS tool.
+- **Test execution management, electronic-signature management, variant/configuration management.** Ceded to a dedicated ALM/QMS tool.
+- **Domain-specific risk-management chains** (hazard analysis, control-measure classification, residual-risk judgement). Not part of the core vocabulary — see [`../README.md`](../README.md) §"Expressing risk" for what the core does offer.
 
 ---
 
@@ -175,4 +174,3 @@ Out of scope for this schema:
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - The REQUIREMENT element type verifications are about: [15-requirement.md](15-requirement.md).
 - The compliance-domain peer primitive: [16-assertion.md](16-assertion.md).
-- The risk chain a RISK_CONTROL's `satisfies` link joins to the same REQUIREMENT: [28-hazard-risk-control.md](28-hazard-risk-control.md).

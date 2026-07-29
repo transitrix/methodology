@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Design-controls baseline manifest — read-only, git-native.
+// Baseline manifest — read-only, git-native.
 //
-// A `git tag` IS a design-controls baseline: the ref names a frozen commit,
+// A `git tag` IS a baseline: the ref names a frozen commit,
 // and this script reads the admitted REQUIREMENT / ASSERTION set exactly as
 // it stood at that ref — via `git show <ref>:<path>`, never `git checkout`,
-// so running it never disturbs the working tree. See patterns/design-controls.md.
+// so running it never disturbs the working tree. See patterns/baseline-and-audit-trail.md.
 //
 // Usage:
 //   node scripts/baseline-manifest.mjs <ref> [--root <adopter-repo>] [--out <file.md>]

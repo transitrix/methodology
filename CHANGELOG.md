@@ -6,6 +6,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.0.0] — 2026-07-29
+
+Bump category: **MAJOR** — two element TYPEs and one view leave the core vocabulary. Migration recipe: [`migrations/2.1-to-3.0/`](migrations/2.1-to-3.0/), with a read-only detector that names the affected files before anything else runs.
+
+**A repository that uses `REQUIREMENT` → `VERIFICATION` and nothing else is unaffected — 3.0 is a no-op for it.**
+
+### Removed
+
+- **`notations/elements/28-hazard-risk-control.md`** — the `HAZARD` and `RISK_CONTROL` element TYPEs, their registry entries, their canon folders (`canon/elements/01_motivation/hazards/`, `.../risk-controls/`), and their rules `HAZ-001..004`, `RISKCTL-001..005`, `HAZ-RISKCTL-COVERAGE-001/-002`, `RISKCTL-VERIF-COVERAGE-001`. A domain-specific risk-management chain is a specialisation of one regulated domain, not general architecture vocabulary, and it does not ship in the core.
+- **`notations/views/24-design-controls-trace-matrix.md`** and its reference renderer `tools/render_trace_matrix.py` — the view existed to render the removed chain.
+- **`transitrix/skills/onboard/templates/design-controls-trace-matrix.*`** — the onboarding template for that view.
+- **`notations/examples/design-controls/`** and **`notations/examples/design-controls-trace-matrix/`** — replaced by `notations/examples/verification/` (below).
+
+### Added
+
+- **`notations/README.md` §"Expressing risk"** — how to say *risk* with the primitives the core already has, following the Open Group's ArchiMate *Risk and Security Overlay* mapping (risk / vulnerability → `ASSESSMENT`, threat → `DRIVER`, control objective → `GOAL`, control measure → `REQUIREMENT` / `CONSTRAINT`), plus an explicit statement of what the mapping does **not** express. No new TYPE, no new folder, no new rule — ArchiMate 3.x has no risk element either.
+- **`notations/examples/verification/`** — generic worked example for the `REQUIREMENT` → `VERIFICATION` leg, with a sibling `reverse-trace-gaps/` fixture seeding `REQ-VERIF-COVERAGE-001` and `-002`.
+- **`migrations/2.1-to-3.0/detect.mjs`** — read-only detector for removed vocabulary in an adopter repository; exits non-zero with the file list, changes nothing.
+
+### Changed
+
+- **`patterns/design-controls.md` → `patterns/baseline-and-audit-trail.md`** — same three mechanisms (a `git tag` baseline plus `scripts/baseline-manifest.mjs`, git history as the audit trail, the admission record plus `reviewer_authority` as the review/approval record), stated for any adopter under a review obligation instead of one regulated domain. Its guardrail is now the general one: a commit is a strong audit trail and baseline, never an electronic signature.
+- **`notations/CONTRACT.md` §8** — retitled "Compliance and verification domain rules"; the aggregated table now covers `REQUIREMENT`, `ASSERTION` and `VERIFICATION`.
+- **`notations/elements/27-verification.md`** — method vocabulary cited to IEEE / IEC / ISO-IEC-IEEE 15288; risk-chain cross-references dropped; out-of-scope list names domain-specific risk-management chains explicitly.
+
+### Unchanged, and worth stating
+
+- **`VERIFICATION` stays core** — the generic engineering V&V claim against a `REQUIREMENT`. `REQ-VERIF-COVERAGE-001` / `-002` remain core rules on the core `REQUIREMENT` spec, and `ASSERTION.evidence[]` still cites a verification as an ordinary `canonical_ref`, resolved and checked by core validators.
+
+---
+
 ## [2.1.0] — 2026-07-28
 
 Fifty-two commits since `v2.0.0`. Bump category: **MINOR** — additive notation, operations, and CLI surface only; no migration recipe required.

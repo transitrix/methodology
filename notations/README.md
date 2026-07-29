@@ -4,7 +4,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 ## Views
 
-The view notations live under [`views/`](views/) in two groups: **11 diagram views** that each render a visual diagram, and **5 report views** that produce a derived report or table. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
+The view notations live under [`views/`](views/) in two groups: **11 diagram views** that each render a visual diagram, and **4 report views** that produce a derived report or table. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
@@ -24,13 +24,12 @@ The view notations live under [`views/`](views/) in two groups: **11 diagram vie
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 | [23-actions-tree.md](views/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
-| [24-design-controls-trace-matrix.md](views/24-design-controls-trace-matrix.md) | `design-controls-trace-matrix` | Report-config view over the design-controls chain — renders `REQUIREMENT` → `VERIFICATION` and `HAZARD` → `RISK_CONTROL` → `REQUIREMENT` → `VERIFICATION` as a fixed audit table, annotating rows with the reverse-trace completeness gaps already defined on those elements. | `*.design-controls-trace-matrix.transitrix.yaml` | draft |
 
 Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 
 ## Elements
 
-The **15** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The **14** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -48,7 +47,6 @@ The **15** element notations live under [`elements/`](elements/) — each define
 | [25-nodes.md](elements/25-nodes.md) | `node` | Technology-layer infrastructure node primitive — physical or virtual compute, network, or storage substrate (ArchiMate Technology Node). | `canon/elements/04_technology/nodes/NODE-<…>.yaml` | draft |
 | [26-technology-services.md](elements/26-technology-services.md) | `technology-service` | Platform-level service exposed by a NODE to the application layer (ArchiMate Technology Service). | `canon/elements/04_technology/services/TECHNOLOGY_SERVICE-<…>.yaml` | draft |
 | [27-verification.md](elements/27-verification.md) | `verification` | Canon-zone primitive linking a REQUIREMENT to a V&V protocol, method, and pass/fail outcome — the engineering counterpart to ASSERTION. | `canon/verifications/VERIFICATION-<…>.yaml` | draft |
-| [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) | `hazard` / `risk-control` | ISO 14971 risk-management chain — `HAZARD` (potential source of harm) mitigated by `RISK_CONTROL` (control measure, optionally realised as a REQUIREMENT). | `canon/elements/01_motivation/hazards/HAZARD-<…>.yaml`, `canon/elements/01_motivation/risk-controls/RISK_CONTROL-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 
@@ -59,6 +57,33 @@ The cross-cutting **Coverage Profile** — the mechanism an adopter uses to decl
 The cross-cutting **Domain Packages** mechanism — the orthogonal `packages:` field an adopter uses to opt into a bounded, removable domain extension (e.g. a requirements-interchange layer) on top of the core vocabulary — is defined in [`PACKAGES.md`](PACKAGES.md). Absent ⇒ no package active, silently. The first shipped package — a ReqIF-shaped requirements-interchange layer — is [`packages/reqif.md`](packages/reqif.md).
 
 The cross-cutting **Named view-config convention** — where saved view-configs live in an adopter repo, how they're named, listed, and re-run — is defined in [`views/REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md). The convention applies uniformly across every view notation, and is the registry the report-config view specs ([`11-scenarios.md`](views/11-scenarios.md), [`21-compliance-impact.md`](views/21-compliance-impact.md), [`22-coverage-metric.md`](views/22-coverage-metric.md)) and the future report skill (per the *reports rendered from declarative view-configs* architecture decision) lean on.
+
+## Expressing risk
+
+The core vocabulary carries **no risk element**, and this is deliberate: ArchiMate
+3.x has none either. Risk is expressed with motivation-layer primitives the core
+already has, following the mapping the Open Group's *Risk and Security Overlay*
+(ArchiMate / SABSA) uses:
+
+| What you want to say | Core primitive |
+|---|---|
+| A risk; a vulnerability | `ASSESSMENT` — a dated finding about a `DRIVER` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3) |
+| A threat, or its source | `DRIVER`, assessed by one or more `ASSESSMENT`s |
+| A control objective | `GOAL` |
+| A control measure | `REQUIREMENT` (a positive obligation) or `CONSTRAINT` (a restriction) — [15-requirement.md](elements/15-requirement.md) |
+| That a control was checked | `VERIFICATION` — [27-verification.md](elements/27-verification.md) |
+| The asset at risk | whatever element the assessment is about |
+
+Nothing further is needed to model risk at the level ArchiMate models it: one
+driver accrues assessments over time, goals state what control is meant to achieve,
+and requirements or constraints state what is actually imposed.
+
+**What this mapping does not express.** Domain-specific risk-management chains —
+hazard → hazardous situation → harm, severity / probability evaluation, control-measure
+classification hierarchies, residual-risk judgement, verification of control
+effectiveness — are **not** part of the core vocabulary and are not expressible in the
+mapping above. That is a specialisation of a particular regulated domain, not a
+general architecture concern, and it does not ship here.
 
 ## Status vocabulary
 

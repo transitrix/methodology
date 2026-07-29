@@ -1,0 +1,18 @@
+notation: verification
+id: VERIFICATION-FAILOVER-DRILL-1
+verifies: REQUIREMENT-FAILOVER-1
+method: demonstration
+protocol: "Scheduled failover drill under production-equivalent load: kill the primary node, measure standby takeover time, reconcile the transaction log against the pre-failure baseline."
+result: null
+outcome: not_yet_run
+
+zone: canon
+admitted_at: "2026-07-21"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-21"
+valid_to: null
