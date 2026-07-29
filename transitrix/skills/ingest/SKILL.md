@@ -253,6 +253,19 @@ The queue is the human gate. It lists every field artefact (with its proposed `s
 
 Recording each accept/reject/defer is optional but recommended: [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli)'s `record` writes one row per candidate to `decisions.reviewed.yaml` beside the queue, and `apply` performs the CONTRACT §6.1 transition it names — never inventing a new admission state, never writing `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`).
 
+### Conversational one-card review (optional)
+
+When the reviewer works through the agent rather than the CLI's own TTY loop (`transitrix-decisions review`), drive the same `decisions.reviewed.yaml` contract one card at a time:
+
+1. Run `transitrix-decisions list-undecided <org-root> [--source-gate <path>]` — every candidate the queue currently presents that has no `decisions[]` row yet.
+2. Present **one card at a time**: id/kind, source, `extraction_confidence`, any validation/coverage flags, and a recommendation if one is present. Ask the reviewer for `accept` | `reject` | `defer` | `stop`.
+3. On `accept` / `reject` / `defer` → call `transitrix-decisions record <org-root> --item-ref <ref> --decision <accept|reject|defer> --by <handle> --at <date> [--reason <text>]` — never hand-edit `decisions.reviewed.yaml` when the CLI is available. Move to the next card.
+4. On `stop` → exit immediately. Summarise `N recorded, M undecided` from what `list-undecided` now reports. Do **not** apply. Do **not** defer the remaining cards — an unanswered card stays **undecided** (absence of a row is not a rejection), never silently marked anything.
+5. **Resume**, in a later session, is the same step: re-run `list-undecided` against the same `--source-gate` — it recomputes the pending set as a set-difference against `decisions.reviewed.yaml`, so only the still-undecided cards are re-presented. No separate session-state file.
+6. **Applying is a separate, explicit human ask.** Only when the reviewer asks to apply recorded decisions does the agent run `transitrix-decisions apply <org-root> [--source-gate <path>]` — never automatically at the end of a review loop, never on `stop`.
+
+Hard rules carried from the epic and CONTRACT unchanged: `merge` is not a new decision verb in v1 — a "these are duplicates" call from the reviewer is recorded as `accept` or `defer` with a reason string naming the existing id, never a new enum. `ADMIT-007` (tiered `reviewer_authority`) still applies to whatever `--by` handle the agent passes through. This is the agent-assisted counterpart to `transitrix-decisions review`'s TTY loop — same `list-undecided`/`record` contract, different surface; it never replaces the CLI path and never writes canon itself.
+
 ### Multi-batch naming — a stable filename, a dated directory when a batch is already unresolved
 
 `review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Re-running `review-queue` against the same candidates — the everyday idempotent-refresh workflow, admit a few, re-run to see what's left — keeps updating that same file in place: the exclusion list changing is real progress on the same batch, not a new one. Only when a re-run would produce **byte-identical** output to what's already there — nothing has moved since it was last written — is the existing file read as untouched/unresolved, and a genuinely concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
