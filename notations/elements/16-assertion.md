@@ -1,8 +1,8 @@
 ---
 title: "Assertion — REQUIREMENT realisation claim"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-15"
+last_updated: "2026-07-29"
 status: "draft"
 ---
 
@@ -180,7 +180,7 @@ Status is the **current** judgement. Status history over an assertion's lifecycl
 
 ---
 
-## 4. Evidence — three kinds
+## 4. Evidence — four kinds
 
 Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freely within one assertion.
 
@@ -194,9 +194,19 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 
 - kind: note              # free-text observation
   text: "..."              # required
+
+- kind: verification_ref  # a citation of a design-controls VERIFICATION — opaque, unresolved
+  ref: "VERIFICATION-DEVICE-ALARM-TEST-1"   # required; plain string, not a typed-ID cross-reference
 ```
 
 `canonical_ref` is preferred when the evidence already lives in the model (a process file, a rule file, a process-blueprint stage). `external_doc` is the fallback when the evidence is a PDF / web report / vendor attestation. `note` is the lightweight form for human-readable observations that do not justify a separate artefact.
+
+**`verification_ref` — the compliance ↔ V&V bridge, kept as an opaque citation.** Before 2026-07-29, an assertion cited a `VERIFICATION` via `kind: canonical_ref` like any other canon element, and `ASSERT-005` resolved it. `VERIFICATION` has since moved to the `design-controls` domain package ([`../packages/design-controls.md`](../packages/design-controls.md)) — a core → package reference is no longer permitted ([`../PACKAGES.md`](../PACKAGES.md) §4.1), so this dedicated kind replaces that use of `canonical_ref` for good, per the ADR's compliance-↔-V&V-bridge amendment (`methodology/2026-07-29-design-controls-as-a-package` §2.1):
+
+- `ref` is a **plain string**, not a typed-ID cross-reference field. **No core validator resolves it** — `ASSERT-005` applies only to `kind: canonical_ref` entries and explicitly does not extend to `verification_ref` (§5). Core treats the value exactly as it treats a `note`'s `text` — inert content.
+- When a repository declares `packages: [design-controls]`, that package's own validator MAY resolve `ref` against its `VERIFICATION` catalogue and check the cited verification's outcome ([`../packages/design-controls.md`](../packages/design-controls.md) §3.1).
+- When the package is absent, the citation carries **no integrity guarantee whatsoever** — nothing confirms the cited id exists, ever existed, or is well-formed. A reader must not mistake a `verification_ref` entry for a checked link unless the package is declared.
+- This is a **deliberately asymmetric** guarantee — checked when the package is present, inert when it is not — the price of keeping the compliance-↔-V&V bridge without a core → package reference (ADR §2.1, §2.5).
 
 ---
 
@@ -208,7 +218,7 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-002` | error | `about` is missing, malformed, or resolves to an artefact whose TYPE is not `REQUIREMENT`. |
 | `ASSERT-003` | error | `subject` is missing, does not resolve, or resolves to an artefact whose TYPE is not in `{PRODUCT, PROCESS, CAPABILITY}`. |
 | `ASSERT-004` | error | A value in `realised_via` does not resolve to any admitted canonical element. |
-| `ASSERT-005` | error | An `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve. |
+| `ASSERT-005` | error | An `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve. **Does not apply to `kind: verification_ref`** (§4) — that kind's `ref` is an opaque string no core rule resolves, checked only by the `design-controls` package's own validator when declared. |
 | `ASSERT-006` | error | `status` is not one of `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. |
 | `ASSERT-007` | warning | `evidence` is empty AND `status` is `compliant` or `partial`. A positive status without evidence is undefended. |
 | `ASSERT-008` | warning | `next_review_at` is set and is in the past relative to today. The assertion is stale and due for re-review. |
@@ -238,6 +248,8 @@ A typical naming convention encodes the subject + requirement in the middle segm
 ---
 
 ## 7. Evolution
+
+**Landed (v0.2, 2026-07-29):** `evidence[]` gained a fourth kind, `verification_ref` (§4) — an opaque citation of a `VERIFICATION` record, replacing the prior `kind: canonical_ref` use for that purpose now that `VERIFICATION` has moved to the `design-controls` domain package and a core → package reference is no longer permitted. `ASSERT-005` (§5) does not apply to it. Per ADR `methodology/2026-07-29-design-controls-as-a-package` §2.1 and epic `vkgeorgia/strategy#852`.
 
 Out of scope for this initial schema:
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Design-controls trace matrix — deterministic renderer.
 
-Renders the audit table specified in notations/views/24-design-controls-trace-matrix.md
-from an adopter repository's canon, as Markdown on stdout.
+Renders the audit table specified in notations/packages/design-controls/trace-matrix-view.md
+from an adopter repository's canon plus its design-controls/ package folder, as Markdown on stdout.
 
 The view document carries no facts: every cell here is read from REQUIREMENT /
 VERIFICATION / HAZARD / RISK_CONTROL primitives, and every gap annotation is a
@@ -51,9 +51,9 @@ except ImportError:  # pragma: no cover - environment guard
 
 CANON_DIRS = {
     "requirement": "canon/elements/01_motivation/requirements",
-    "hazard": "canon/elements/01_motivation/hazards",
-    "risk-control": "canon/elements/01_motivation/risk-controls",
-    "verification": "canon/verifications",
+    "hazard": "design-controls/hazards",
+    "risk-control": "design-controls/risk-controls",
+    "verification": "design-controls/verifications",
 }
 
 DEFAULT_GAP_LABELS = {

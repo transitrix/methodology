@@ -1,6 +1,6 @@
 # Design-Controls Trace Matrix — worked example
 
-A worked render of [`24-design-controls-trace-matrix.md`](../../views/24-design-controls-trace-matrix.md) over the union of the two existing design-controls element fixtures:
+A worked render of [`packages/design-controls.md`](../../../packages/design-controls.md) §4 (the trace-matrix view, [full spec](../../../packages/design-controls/trace-matrix-view.md)) over the union of the two existing design-controls element fixtures:
 
 - [`../design-controls/`](../design-controls/) — the happy-path chain (nothing seeded as incomplete).
 - [`../design-controls/reverse-trace-gaps/`](../design-controls/reverse-trace-gaps/) — the seeded-gap chain (each reverse-trace completeness rule trips exactly once).
@@ -44,6 +44,6 @@ Every branch of §5.2 and every gap label in §5.3 is exercised at least once by
 
 ## References
 
-- [`24-design-controls-trace-matrix.md`](../../views/24-design-controls-trace-matrix.md) — the spec this example renders.
+- [`packages/design-controls/trace-matrix-view.md`](../../../packages/design-controls/trace-matrix-view.md) — the spec this example renders.
 - [`../design-controls/README.md`](../design-controls/README.md) — the happy-path source fixture.
 - [`../design-controls/reverse-trace-gaps/README.md`](../design-controls/reverse-trace-gaps/README.md) — the seeded-gap source fixture and the rule-by-rule breakdown its authoring already did.

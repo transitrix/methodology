@@ -1,0 +1,10 @@
+# Worked package instance — notations/examples/packages/design-controls/README.md.
+# A minimal adopter-repo slice: the core REQUIREMENT the chain realises/verifies
+# against, plus the design-controls/ package folder itself (hazards, risk
+# controls, verifications — the ISO 14971 + V&V chain).
+transitrix: 1
+methodology_version: "2.1.0"
+notations: [requirement]
+zones: [canon]
+coverage_profile: core
+packages: [design-controls]

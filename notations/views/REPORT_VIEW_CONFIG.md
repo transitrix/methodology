@@ -8,7 +8,7 @@ status: "draft"
 
 # Named view-config convention
 
-**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the four report-config view specs ([`11-scenarios.md`](11-scenarios.md), [`21-compliance-impact.md`](21-compliance-impact.md), [`22-coverage-metric.md`](22-coverage-metric.md), [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md)) — it does not introduce a new notation. Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
+**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the core report-config view specs ([`11-scenarios.md`](11-scenarios.md), [`21-compliance-impact.md`](21-compliance-impact.md), [`22-coverage-metric.md`](22-coverage-metric.md)) — it does not introduce a new notation. The convention extends to package-shipped report-config views too, e.g. the `design-controls` package's trace-matrix view ([`../packages/design-controls/trace-matrix-view.md`](../packages/design-controls/trace-matrix-view.md), moved out of core 2026-07-29). Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
 
 The convention is also the natural home for **any view document**, not only report-configs: every view notation in the catalogue ([README.md](../README.md) §Views) follows the same location and naming rule.
 
@@ -106,7 +106,7 @@ The CLI surface above is the convention this document fixes. The CLI implementat
 
 ## 6. Zero-configuration default
 
-Every report-producing view spec ([`11-scenarios.md`](11-scenarios.md) §4, [`21-compliance-impact.md`](21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](22-coverage-metric.md) §4 + §4.1, [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
+Every report-producing view spec ([`11-scenarios.md`](11-scenarios.md) §4, [`21-compliance-impact.md`](21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](22-coverage-metric.md) §4 + §4.1, and the `design-controls` package's [`trace-matrix-view.md`](../packages/design-controls/trace-matrix-view.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
 
 This is the surface the report skill leans on for its "what I assumed" message (per the *reports rendered from declarative view-configs* architecture decision, §4): given a free-text request without enough parameters, the skill materialises a minimal view-config under [§2](#2-location), renders it, and **states back** which defaults the spec applied ("full matrix, no jurisdiction filter — showing all"). The skill never invents defaults of its own; it never carries render logic.
 
@@ -134,4 +134,4 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
   - [`11-scenarios.md`](11-scenarios.md) — Scenarios.
   - [`21-compliance-impact.md`](21-compliance-impact.md) — Compliance Impact.
   - [`22-coverage-metric.md`](22-coverage-metric.md) — Coverage Metric.
-  - [`24-design-controls-trace-matrix.md`](24-design-controls-trace-matrix.md) — Design-Controls Trace Matrix.
+  - [`../packages/design-controls/trace-matrix-view.md`](../packages/design-controls/trace-matrix-view.md) — Design-Controls Trace Matrix, shipped as the `design-controls` domain package since 2026-07-29.

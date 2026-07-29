@@ -1,0 +1,8 @@
+# Worked package instance — notations/examples/packages/design-controls/reverse-trace-gaps/README.md.
+# Sibling fixture to ../, seeding each reverse-trace completeness gap.
+transitrix: 1
+methodology_version: "2.1.0"
+notations: [requirement]
+zones: [canon]
+coverage_profile: core
+packages: [design-controls]

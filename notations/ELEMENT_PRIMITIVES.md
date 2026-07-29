@@ -50,8 +50,7 @@ canon/
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
-      hazards/        HAZARD-*.yaml          # elements/28-hazard-risk-control.md (ISO 14971)
-      risk-controls/  RISK_CONTROL-*.yaml    # elements/28-hazard-risk-control.md (mitigates HAZARD, satisfies REQUIREMENT)
+      # hazards/ and risk-controls/ moved to the design-controls package 2026-07-29 — see below and packages/design-controls.md
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -77,9 +76,15 @@ canon/
       # room reserved for DELIVERABLE if it ever becomes a first-class TYPE
   relations/          REL-*.yaml              # elements/17-relations.md (flat, not under elements/)
   assertions/         ASSERTION-*.yaml        # elements/16-assertion.md (flat, not under elements/)
-  verifications/      VERIFICATION-*.yaml     # elements/27-verification.md (flat, not under elements/)
   views/              *.<short>.transitrix.yaml   # the render-able projections
+
+design-controls/                              # OPTIONAL — only present when packages: [design-controls] is declared
+  hazards/            HAZARD-*.yaml           # packages/design-controls.md §2 (ISO 14971) — top-level, sibling to canon/
+  risk-controls/      RISK_CONTROL-*.yaml     # packages/design-controls.md §2 (mitigates HAZARD, satisfies REQUIREMENT)
+  verifications/      VERIFICATION-*.yaml     # packages/design-controls.md §2 — moved out of canon/ 2026-07-29
 ```
+
+`hazards/`, `risk-controls/`, and `verifications/` shipped as core (nested under `canon/` as shown above, `verifications/` flat alongside `assertions/`) through methodology 2.1.0. As of 2026-07-29 all three moved to the optional `design-controls/` package folder, sibling to `canon/` rather than nested inside it — see [`packages/design-controls.md`](packages/design-controls.md) and [`PACKAGES.md`](PACKAGES.md) §3. A repository that does not declare the package has none of the three folders and none of the three TYPEs.
 
 - The **element notations** (`14-codex` / `15-requirement` / `16-assertion` / `17-relations` / `19-actors`) define specific element families with their own per-notation specs. This appendix is the *general* schema those specs specialise: REQUIREMENT (`elements/15`) and the capability element (`views/05` §13) are already-published instances of the `standalone` envelope below. Where an element notation spec exists, it remains authoritative for that TYPE's per-element fields; this document carries the cross-TYPE envelope and the placement/mode decisions, and gives the field set for the TYPEs that have no dedicated spec yet (`DRIVER`, `GOAL`, `CHANGE`, `ACTION`, `PROCESS`, `PRODUCT`, `APPLICATION`, `INTEGRATION`, `ROLE`, `CONSTRAINT`, `RULE`). `ACTOR` additionally has [elements/19-actors.md](elements/19-actors.md).
 - `REL` (`canon/relations/`) and `ASSERTION` (`canon/assertions/`) are canon-zone primitives that deliberately sit **outside** the `elements/` tree (their specs say so); they carry the same admission + lifecycle envelope but are not layer-placed elements. They are out of scope for the §4 element table but listed here for completeness.
