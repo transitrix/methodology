@@ -1,7 +1,7 @@
 name: lint.py encoding regression test
 
 # Regression test for the Windows UnicodeEncodeError crash in tools/lint.py
-# (and the same-root-cause instance in tools/render_trace_matrix.py): a
+# (and the same-root-cause instance in packages/design-controls-cli/render_trace_matrix.py): a
 # legacy, non-UTF-8 console code page must not crash either script mid-report.
 # Runs on windows-latest since the bug is Windows-console-specific.
 
@@ -9,14 +9,14 @@ on:
   pull_request:
     paths:
       - 'tools/lint.py'
-      - 'tools/render_trace_matrix.py'
+      - 'packages/design-controls-cli/render_trace_matrix.py'
       - 'tools/tests/test_lint_encoding.py'
       - '.github/workflows/lint-encoding-test.yml'
   push:
     branches: [main]
     paths:
       - 'tools/lint.py'
-      - 'tools/render_trace_matrix.py'
+      - 'packages/design-controls-cli/render_trace_matrix.py'
   workflow_dispatch:
 
 jobs:

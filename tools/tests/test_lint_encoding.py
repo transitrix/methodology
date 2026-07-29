@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Windows legacy-code-page regression test for tools/lint.py and
-tools/render_trace_matrix.py.
+packages/design-controls-cli/render_trace_matrix.py.
 
 Both scripts print/write non-ASCII status glyphs straight to stdout/stderr.
 Under a legacy Windows console code page (e.g. cp1252 — the default when
@@ -23,7 +23,7 @@ import tempfile
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LINT = os.path.join(REPO_ROOT, "tools", "lint.py")
-TRACE_MATRIX = os.path.join(REPO_ROOT, "tools", "render_trace_matrix.py")
+TRACE_MATRIX = os.path.join(REPO_ROOT, "packages", "design-controls-cli", "render_trace_matrix.py")
 LEGACY_CODE_PAGE = "cp1252"
 
 _failures = []
@@ -123,7 +123,7 @@ def check_trace_matrix_stdout():
             "id: REQUIREMENT-1\nname: Test requirement\n",
         )
         _write(
-            os.path.join(work, "canon", "verifications", "verif.yaml"),
+            os.path.join(work, "design-controls", "verifications", "verif.yaml"),
             "id: VERIFICATION-1\nverifies: REQUIREMENT-1\nmethod: test\noutcome: pass\n",
         )
         code, out = _run(TRACE_MATRIX, "--root", work)
