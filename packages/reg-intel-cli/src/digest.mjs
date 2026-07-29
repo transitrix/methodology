@@ -135,7 +135,7 @@ export async function writeDigest(digest, outPath) {
   return outPath;
 }
 
-// Non-destructive default (vkgeorgia/strategy#837): the flat legacy path for
+// Non-destructive default (HUB-837): the flat legacy path for
 // the first digest of an org; a dated batch directory once that stable path
 // is already occupied by an unresolved digest. See src/batch-path.mjs.
 export async function defaultDigestPath(orgRoot, { scope, content } = {}) {

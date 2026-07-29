@@ -5,7 +5,7 @@
 // operations record, or a batch.
 //
 // Phases and counts only. Time is deliberately out of scope here (no age, no
-// threshold, no "oldest" figure) — vkgeorgia/strategy#819 constraints.
+// threshold, no "oldest" figure) — HUB-819 constraints.
 //
 // Reuses existing logic rather than reimplementing it: the REQUIREMENT/
 // CONSTRAINT overdue scan is check-stale's; the ingest-batch scan reads what
@@ -63,7 +63,7 @@ function todayIso() { return new Date().toISOString().slice(0, 10); }
 // operations/decisions/ADR-*.md — status: proposed|accepted|superseded
 // (method/02 §6.1), author:agent proposed broken out as its own phase
 // (method/02 §3.1.1). ADR ids are opaque strings throughout — both
-// ADR-NNNN and ADR-YYYY-MM-DD-<slug> forms (vkgeorgia/strategy#818) work
+// ADR-NNNN and ADR-YYYY-MM-DD-<slug> forms (HUB-818) work
 // without special-casing, since only `status`/`author` front-matter fields
 // are read here, never the id's shape.
 async function scanAdr(root) {
@@ -141,7 +141,7 @@ async function scanCanon(root) {
 // currently no move-away-when-resolved step for a whole batch (only the raw
 // source moves to _intake/processed/ — intake.mjs), so this counts every such
 // file on disk as open. A batch may sit at the flat legacy path (id
-// `(default)`) or under its own dated directory (vkgeorgia/strategy#837) —
+// `(default)`) or under its own dated directory (HUB-837) —
 // the directory name (minus the trailing filename) becomes the display id.
 async function scanForPackage(root, filename) {
   const dir = join(root, '_intake', 'processing');
