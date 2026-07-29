@@ -2,9 +2,9 @@
 
 `dsm-demo-seed.sql` populates a running [DSM](https://github.com/transitrix/transitrix-dsm) instance with the `acme-corp` worked example's DGCA chain (Driver → Goal → Change → Action), for demo and development purposes.
 
-**Why it's here and not in `acme-corp`:** this is internal demo/dev tooling for the DSM product, not something the company Acme Corp itself would hold — it doesn't belong in an adopter repo. It moved out of `acme-corp/tools/` (HUB-804, vkgeorgia/strategy#862).
+**Why it's here and not in `acme-corp`:** this is internal demo/dev tooling for the DSM product, not something the company Acme Corp itself would hold — it doesn't belong in an adopter repo. It moved out of `acme-corp/tools/`.
 
-**Why it's here and not in `transitrix-dsm`:** methodology has no write access into `transitrix-dsm`, and no demo-tooling home has been designated there yet. This `integration/` folder is the closest existing "how methodology connects to other Transitrix tools" home in this repo — staged here until the DSM or Coordinator agent gives it a permanent location (most likely somewhere under `transitrix-dsm`'s own tooling).
+**Why it's here and not in `transitrix-dsm`:** methodology has no write access into `transitrix-dsm`, and no demo-tooling home has been designated there yet. This `integration/` folder is the closest existing "how methodology connects to other Transitrix tools" home in this repo — staged here until a permanent location is decided (most likely somewhere under `transitrix-dsm`'s own tooling).
 
 **How:**
 
