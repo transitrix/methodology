@@ -260,6 +260,8 @@ The digest is **read by a human**, who then either runs the canon / field admiss
 
 Recording each accept/reject/defer is optional but recommended: [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli)'s `record` writes one row per SEGMENT / candidate / AMENDMENT to `decisions.reviewed.yaml` beside the digest, and `apply` performs the CONTRACT §6.1 transition it names — never inventing a new admission state, never writing `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`).
 
+**Conversational one-card review (optional).** Same contract, same loop as the ingest skill's [conversational review step](https://github.com/transitrix/methodology/blob/main/transitrix/skills/ingest/SKILL.md#step-6--produce-the-review-queue): run `transitrix-decisions list-undecided <org-root> --source-gate <path to review-digest.yaml>`, present one SEGMENT / candidate / AMENDMENT at a time (id/kind, source, `extraction_confidence`, flags, recommendation if present), and record `accept` | `reject` | `defer` via `transitrix-decisions record`. `stop` exits without applying and without deferring whatever is left undecided; resume in a later session is just re-running `list-undecided` against the same digest. `apply` only runs on an explicit ask. Only the source artefact differs (`review-digest.yaml` instead of `review-queue.yaml`) — the rules, including the `merge`-is-not-a-verb and `ADMIT-007` constraints, are identical.
+
 ---
 
 ## The run loop, end-to-end
