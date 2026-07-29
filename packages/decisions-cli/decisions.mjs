@@ -15,11 +15,13 @@
 import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { createInterface } from 'node:readline/promises';
 
 import { loadGateItems, undecided } from './src/map-in.mjs';
 import { loadDecisions, findSourceGate } from './src/io.mjs';
 import { record, RecordError } from './src/record.mjs';
 import { applyDecisions } from './src/apply.mjs';
+import { runReview } from './src/review.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -60,6 +62,12 @@ function usage() {
     '  apply <org-root> [--source-gate <path>]',
     '                                 Apply every accept/reject row as a CONTRACT §6.1 transition;',
     '                                 defer rows are left untouched (audit trail only).',
+    '  review <org-root> [--source-gate <path>] [--by <handle>]',
+    '                                 Interactive one-card review: present each undecided item',
+    '                                 (id/kind, confidence/flags, source, summary), prompt',
+    '                                 accept|reject|defer|stop, call `record`. `stop` exits without',
+    '                                 `apply` and without deciding the rest. TTY only — requires a',
+    '                                 real terminal on stdin.',
     '  --version, -v                  Print the CLI version',
     '  --help, -h                     Show this help',
   ].join('\n');
@@ -148,6 +156,39 @@ async function cmdApply(args) {
   return problems > 0 ? 1 : 0;
 }
 
+async function cmdReview(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = _[0];
+  if (!orgRoot) { console.error('review: missing <org-root>'); return 1; }
+
+  if (!process.stdin.isTTY) {
+    console.error(
+      'review: stdin is not a TTY — this is an interactive command.\n' +
+      'Use `list-undecided` / `record` directly instead (the ingest/reg-intel skill\'s conversational review step covers agent-assisted review).'
+    );
+    return 1;
+  }
+
+  let sourceGatePath;
+  try { sourceGatePath = await resolveSourceGate(orgRoot, flags); }
+  catch (err) { console.error(`review: ${err.message}`); return 2; }
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const result = await runReview({
+      orgRoot,
+      sourceGatePath,
+      by: flags.by,
+      asOf: flags['as-of'] || today(),
+      ask: (prompt) => rl.question(prompt),
+      log: (msg) => console.log(msg),
+    });
+    return result.undecided > 0 ? 1 : 0;
+  } finally {
+    rl.close();
+  }
+}
+
 async function main() {
   const [, , cmd, ...rest] = process.argv;
   if (!cmd || cmd === '--help' || cmd === '-h') { console.log(usage()); return 0; }
@@ -157,6 +198,7 @@ async function main() {
     case 'list-undecided': return cmdListUndecided(rest);
     case 'record':         return cmdRecord(rest);
     case 'apply':           return cmdApply(rest);
+    case 'review':          return cmdReview(rest);
     default:
       console.error(`Unknown command: ${cmd}\n`);
       console.error(usage());

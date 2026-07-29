@@ -24,20 +24,46 @@ export function detectSourceGateKind(path) {
   return null;
 }
 
+// Beyond item_ref/kind, an item MAY carry `confidence`, `flags` (array of strings)
+// and `summary` — all read straight off fields the gate artifact already emits, for
+// `review`'s one-card view (HUB-855). No LLM, no synthesis: absent fields are
+// simply omitted from the card.
 function itemsFromReviewQueue(text) {
-  const candidates = readMapList(text, 'candidates');
+  const candidates = readMapList(text, 'candidates', ['validation_flags']);
   return candidates
     .filter((c) => c.ref)
-    .map((c) => ({ item_ref: c.ref, kind: c.kind || 'unknown' }));
+    .map((c) => {
+      const flags = [
+        ...(c.coverage_flag ? [c.coverage_flag] : []),
+        ...(Array.isArray(c.validation_flags) ? c.validation_flags : []),
+      ];
+      return {
+        item_ref: c.ref,
+        kind: c.kind || 'unknown',
+        ...(c.extraction_confidence != null ? { confidence: c.extraction_confidence } : {}),
+        ...(flags.length ? { flags } : {}),
+        ...(c.coverage_reason ? { summary: c.coverage_reason } : {}),
+      };
+    });
 }
 
 function itemsFromReviewDigest(text) {
   const sources = readNestedList(text, 'sources', ['segments', 'candidates', 'amendments']);
   const items = [];
   for (const src of sources) {
-    for (const s of src.segments || []) if (s.id) items.push({ item_ref: s.id, kind: 'segment', derived_from_source: src.id });
-    for (const c of src.candidates || []) if (c.id) items.push({ item_ref: c.id, kind: c.kind || 'candidate', derived_from_source: src.id });
-    for (const a of src.amendments || []) if (a.id) items.push({ item_ref: a.id, kind: 'amendment', derived_from_source: src.id });
+    for (const s of src.segments || []) if (s.id) items.push({
+      item_ref: s.id, kind: 'segment', derived_from_source: src.id,
+      ...(s.extraction_confidence != null ? { confidence: s.extraction_confidence } : {}),
+      ...(s.locator ? { summary: s.locator } : {}),
+    });
+    for (const c of src.candidates || []) if (c.id) items.push({
+      item_ref: c.id, kind: c.kind || 'candidate', derived_from_source: src.id,
+      ...(c.extraction_confidence != null ? { confidence: c.extraction_confidence } : {}),
+    });
+    for (const a of src.amendments || []) if (a.id) items.push({
+      item_ref: a.id, kind: 'amendment', derived_from_source: src.id,
+      ...(a.change_description ? { summary: a.change_description } : {}),
+    });
   }
   return items;
 }
