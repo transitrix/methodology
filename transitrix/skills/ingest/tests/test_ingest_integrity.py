@@ -34,7 +34,7 @@ Deterministic, no-API-key guard. Nine parts:
      name matches an existing canon element by primary name or alias; genuinely new
      candidates get no proposal; review-queue surfaces entity_match_proposals.
   P. #434 preset version currency — repo-check reports a version match (no false-negative)
-     for a repo correctly pinned to the CLI's built-in preset version (0.7.0).
+     for a repo correctly pinned to the CLI's built-in preset version (read from source).
   Q. origin pass-through + REQ-004 — emit-candidates carries origin through for all three
      valid values (legislative/process-product/project-product); validate enforces REQ-004
      (closed vocabulary) on the candidate origin field.
@@ -48,6 +48,11 @@ Deterministic, no-API-key guard. Nine parts:
      author:agent ADRs counted separately from human-proposed; --data-free strips ids/paths;
      --format yaml matches the default table's counts; an out-of-vocabulary or missing phase
      value lands in `unknown`, never dropped; absent sources degrade to an omitted section.
+  T. #837 batch naming — the first review-queue batch lands at the flat legacy path
+     unchanged; a second, concurrent batch does not overwrite it and instead lands under
+     a dated `review-queue-<scope>-YYYYMMDD-<seq>/` directory (`--scope` defaults to
+     `batch`); workflow-status discovers the flat path plus every dated directory as one
+     combined count, using the directory name as the batch's display id.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -56,6 +61,7 @@ Run:  python transitrix/skills/ingest/tests/test_ingest_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
 """
 
+import datetime
 import hashlib
 import json
 import os
@@ -75,6 +81,18 @@ SKILL_DIR = os.path.dirname(HERE)                                  # transitrix/
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(SKILL_DIR)))
 CLI = os.path.join(REPO_ROOT, "packages", "ingest-cli", "ingest.mjs")
 FIXTURES = os.path.join(HERE, "fixtures")
+
+def _presets_version():
+    """Read PRESETS_VERSION straight from the CLI source (Part P) instead of
+    hardcoding it here, so the two can never drift apart at a release cut."""
+    src = os.path.join(REPO_ROOT, "packages", "ingest-cli", "src", "coverage-presets.mjs")
+    text = open(src, encoding="utf-8").read()
+    m = re.search(r"export const PRESETS_VERSION = '([^']+)'", text)
+    if not m:
+        sys.exit("FAIL: could not read PRESETS_VERSION from " + src)
+    return m.group(1)
+
+PRESETS_VERSION = _presets_version()
 
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
 SOURCE_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -1166,8 +1184,9 @@ def part_o_unresolved_extensions():
 
 def part_p_preset_version_currency():
     """repo-check reports a version match for a repo pinned to the CLI's built-in
-    preset version (currently 0.7.0). Regression for the false-negative mismatch
-    caused by stale built-in presets frozen at an old methodology version."""
+    preset version (PRESETS_VERSION, read from source above). Regression for the
+    false-negative mismatch caused by stale built-in presets frozen at an old
+    methodology version."""
     if not shutil.which("node"):
         print("SKIP Part P: `node` not found.")
         return
@@ -1177,23 +1196,23 @@ def part_p_preset_version_currency():
         os.makedirs(org)
         run_cli("scaffold-intake", org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
-            fh.write('transitrix: 1\nmethodology_version: "0.7.0"\ncoverage_profile: core\n')
+            fh.write('transitrix: 1\nmethodology_version: "%s"\ncoverage_profile: core\n' % PRESETS_VERSION)
 
         r = run_cli("repo-check", org)
-        check(r.returncode == 0, "P: repo-check failed on a 0.7.0 repo: %s" % (r.stderr or r.stdout))
+        check(r.returncode == 0, "P: repo-check failed on a %s repo: %s" % (PRESETS_VERSION, r.stderr or r.stdout))
         rep = yaml.safe_load(r.stdout)
 
         tooling = rep.get("tooling", {})
         check(tooling.get("methodology_version_match") is True,
-              "P: repo-check must report methodology_version_match: true for a 0.7.0 repo "
-              "(false-negative regression from stale built-in presets); got tooling=%r" % tooling)
+              "P: repo-check must report methodology_version_match: true for a %s repo "
+              "(false-negative regression from stale built-in presets); got tooling=%r" % (PRESETS_VERSION, tooling))
         check(tooling.get("ok") is True,
-              "P: repo-check tooling.ok must be true for a 0.7.0 repo; got tooling=%r" % tooling)
+              "P: repo-check tooling.ok must be true for a %s repo; got tooling=%r" % (PRESETS_VERSION, tooling))
         red_flags = rep.get("integrity", {}).get("red_flags", [])
         version_flags = [f for f in red_flags if "does not match" in f and "CLI built-in" in f]
         check(len(version_flags) == 0,
-              "P: repo-check must not emit a version-mismatch red flag for a 0.7.0 repo; "
-              "got red_flags=%r" % red_flags)
+              "P: repo-check must not emit a version-mismatch red flag for a %s repo; "
+              "got red_flags=%r" % (PRESETS_VERSION, red_flags))
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -1534,6 +1553,77 @@ def part_s_workflow_status():
         shutil.rmtree(work, ignore_errors=True)
 
 
+def part_t_batch_naming():
+    """#837 — first batch flat path, concurrent second batch dated dir, workflow-status
+    discovers both (flat legacy path + every dated directory) as one combined count."""
+    if not shutil.which("node"):
+        print("SKIP Part T: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-batch-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        cdir = os.path.join(org, "_intake", "processing", "candidates")
+        os.makedirs(cdir, exist_ok=True)
+        fid = "INTERVIEW-x-20260101-1"
+        with open(os.path.join(cdir, "GOAL.json"), "w", encoding="utf-8") as fh:
+            json.dump({"kind": "element", "id": "GOAL-BATCH-1", "name": "g", "element_type": "GOAL",
+                       "derived_from": [fid], "admitted_to": "pending",
+                       "extraction_confidence": "high"}, fh)
+
+        proc = os.path.join(org, "_intake", "processing")
+        today = datetime.datetime.utcnow().strftime("%Y%m%d")
+
+        # First batch — the flat legacy path, unchanged from every prior release.
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, "T: first review-queue failed: %s" % (r.stderr or r.stdout))
+        flat = os.path.join(proc, "review-queue.yaml")
+        check(os.path.isfile(flat), "T: first batch must land at the flat legacy path")
+        before = yaml.safe_load(open(flat, encoding="utf-8"))
+
+        # Second, concurrent batch — the flat path is still there (unresolved) — must
+        # NOT be overwritten; lands under its own dated batch directory.
+        r = run_cli("review-queue", cdir, "--scope", "acme")
+        check(r.returncode == 0, "T: second review-queue failed: %s" % (r.stderr or r.stdout))
+        after = yaml.safe_load(open(flat, encoding="utf-8"))
+        check(before == after, "T: the flat legacy review-queue.yaml must not be overwritten by a concurrent batch")
+        dated_file = os.path.join(proc, f"review-queue-acme-{today}-1", "review-queue.yaml")
+        check(os.path.isfile(dated_file), "T: second batch must land under a dated batch directory: %s" % dated_file)
+
+        # A third, concurrent batch with no --scope defaults to scope "batch" — never an
+        # org-identifying string — and gets its own seq (independent of the "acme" scope).
+        r = run_cli("review-queue", cdir)
+        check(r.returncode == 0, "T: third review-queue failed: %s" % (r.stderr or r.stdout))
+        default_scope_file = os.path.join(proc, f"review-queue-batch-{today}-1", "review-queue.yaml")
+        check(os.path.isfile(default_scope_file),
+              "T: a --scope-less concurrent batch must default to scope 'batch': %s" % default_scope_file)
+
+        # workflow-status discovers all three batches as one combined "Ingest batch" count.
+        r = run_cli("workflow-status", org, "--format", "yaml")
+        check(r.returncode == 0, "T: workflow-status failed: %s" % (r.stderr or r.stdout))
+        rep = yaml.safe_load(r.stdout)
+        counts = {}
+        for obj in rep.get("objects", []):
+            for ph in obj.get("phases", []):
+                counts[(obj["object"], ph["phase"])] = ph["count"]
+        check(counts.get(("Ingest batch", "awaiting review")) == 3,
+              "T: workflow-status must count the flat batch plus both dated batches: %r" % counts)
+
+        r_md = run_cli("workflow-status", org)
+        check(f"review-queue-acme-{today}-1" in r_md.stdout,
+              "T: workflow-status must use the dated directory name as the batch's display id")
+        check(f"review-queue-batch-{today}-1" in r_md.stdout,
+              "T: workflow-status must use the default-scope dated directory name as the batch's display id")
+        check("(default)" in r_md.stdout,
+              "T: workflow-status must still label the flat legacy path '(default)'")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1553,6 +1643,7 @@ part_p_preset_version_currency()
 part_q_origin_classification()
 part_r_privacy_gate()
 part_s_workflow_status()
+part_t_batch_naming()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

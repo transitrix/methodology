@@ -165,6 +165,43 @@ children:
 | `name` | no | Human-readable long name (ReqIF `SPECIFICATION` `LONG-NAME`). |
 | `children` | yes | List of outline nodes. Each node is `{ object, children }`: `object` is a `so-…` id (must resolve within the package, REQIF-006, §5); `children` is the same shape, recursively — an empty list for a leaf node. |
 
+### 2.9 Workflow state, revisions, and suspect links — experimental surface
+
+The epic's own experimental surface (vkgeorgia/strategy#813): tool behaviour layered on top of `spec-object` and `spec-relation`, not part of the ReqIF standard itself. **Not carried through the converter (§6) in v1** — these are top-level YAML fields the reference implementation's own tooling reads and writes; `transitrix-reqif export`/`import` do not represent them in ReqIF XML, so a folder using this surface should not be expected to round-trip identically through `transitrix-reqif roundtrip` (the worked example demonstrating this surface is kept separate from the one demonstrating round trip — see [`notations/examples/packages/reqif-workflow/`](../../notations/examples/packages/reqif-workflow/)).
+
+**Workflow state** — a `spec-object` MAY carry `workflow_state`, one of `draft`, `reviewed`, `approved`, `baselined`, `superseded`. Absent means `draft`. Transitions are **strictly linear, one step at a time** — `draft → reviewed → approved → baselined → superseded`, no skipping and no going backward. The reference implementation's `transition` command (§6) is the only sanctioned writer of this field; it rejects any edge that is not the object's current state's single legal next step.
+
+```yaml
+package: reqif
+kind: spec-object
+id: so-print-retry-req-1
+type: sot-requirement-basic-1
+workflow_state: reviewed
+values: { ... }
+```
+
+**Revisions** — a `spec-object` MAY carry `revision` (its current revision number, a positive integer; absent means `1`) and `revisions` (a list of prior snapshots, oldest first). Each snapshot is `{ revision, values, recorded_at }` — the object's `values` map exactly as it stood before the edit that ended that revision, and an ISO-8601 timestamp. The reference implementation's `revise` command (§6) is the only sanctioned writer of both fields together, so the two never drift apart; "what changed, when" (per requirement object) is answered by the `history` command, or by reading `revisions` directly.
+
+```yaml
+revision: 2
+revisions:
+  - revision: 1
+    values: { "ReqIF.Text": "previous wording" }
+    recorded_at: "2026-07-28T21:45:04Z"
+```
+
+**Suspect links** — a `spec-relation` MAY carry `recorded_target_revision` (a positive integer; absent means `1`, i.e. recorded against the target's original text). A relation is **suspect** when its target's current `revision` has moved past `recorded_target_revision` — its target's text changed after the relation was drawn. Suspicion is always **computed**, never stored as a mutable flag on the relation (a stored flag could go stale the moment a further revision happens without a matching re-check); the reference implementation's `suspect` command (§6) computes it fresh from the two revision numbers. A relation whose target does not resolve at all is a distinct failure (`REQIF-004`) and never appears in the `suspect` report — a suspect link and "no relation exists" are never visually indistinguishable.
+
+```yaml
+package: reqif
+kind: spec-relation
+id: sr-print-retry-elaborates-1
+type: "elaborates"
+source: so-print-retry-rationale-1
+target: so-print-retry-req-1
+recorded_target_revision: 1
+```
+
 ---
 
 ## 3. The one permitted cross-reference — `Transitrix.CanonRef`
@@ -201,6 +238,8 @@ Run by `@transitrix/reqif-cli validate <reqif-folder>` ([`packages/reqif-cli`](.
 | `REQIF-005` | error | A `Transitrix.CanonRef` attribute value is present but is not a grammar-valid core id, or its TYPE prefix is not `REQUIREMENT` or `CONSTRAINT` (§3). |
 | `REQIF-006` | error | A `spec-hierarchy` node's `object` does not resolve to a `spec-object` id present in the package. |
 | `REQIF-007` | error | A `spec-object-type` attribute, or a `spec-object` value keyed by one, names a datatype outside the supported set (§2.6). |
+| `REQIF-008` | error | A `spec-object.workflow_state` value is present but is not one of the five states in §2.9. |
+| `REQIF-009` | error | A `spec-object.revision` or a `spec-relation.recorded_target_revision` value is present but is not a positive integer (§2.9). |
 
 No rule here reaches into `canon/`, `field/`, or `codex/` — package-internal integrity only, per [`PACKAGES.md`](../PACKAGES.md) §4.2.
 
@@ -213,8 +252,14 @@ No rule here reaches into `canon/`, `field/`, or `codex/` — package-internal i
 - `transitrix-reqif export <reqif-folder> <out.reqif>` — reads the four object kinds from a `reqif/` folder and emits a ReqIF-conformant XML document (`REQ-IF` root, `DATATYPES` / `SPEC-TYPES` / `SPEC-OBJECTS` / `SPEC-RELATIONS` / `SPECIFICATIONS` sections).
 - `transitrix-reqif import <in.reqif> <reqif-folder>` — reads a ReqIF XML document and writes the four object kinds back out as YAML files.
 - `transitrix-reqif roundtrip <reqif-folder>` — exports then re-imports into memory (no disk write) and asserts the resulting object set is identical to the one loaded from `<reqif-folder>` — the package's own demonstration of the epic's round-trip success signal.
+- `transitrix-reqif transition <reqif-folder> <spec-object-id> <new-state>` — advances a `spec-object`'s `workflow_state` by exactly one legal step (§2.9); rejects (exit 1, no write) any other edge.
+- `transitrix-reqif revise <reqif-folder> <spec-object-id> <ReqIF.Attr> <new-value>` — changes one value, bumping `revision` and appending the pre-change `values` snapshot to `revisions` (§2.9).
+- `transitrix-reqif history <reqif-folder> <spec-object-id>` — prints a `spec-object`'s revision history, oldest first.
+- `transitrix-reqif suspect <reqif-folder>` — lists every `spec-relation` with its computed suspect status (§2.9).
 
 **`Transitrix.CanonRef` in XML.** The one-way core citation (§3) is not a special XML construct — it is exported as an ordinary `ATTRIBUTE-VALUE-STRING` like any other attribute on the `spec-object`'s type, so it survives the round trip without any converter-side special case.
+
+**The experimental surface (§2.9) is not carried through this converter in v1.** `workflow_state`, `revision`, `revisions`, and `recorded_target_revision` are top-level fields the four `export`/`import`/`validate`/`roundtrip` commands do not read or write — only `transition`, `revise`, `history`, and `suspect` do. A folder exercising the experimental surface is not expected to round-trip identically through `roundtrip`; the worked example demonstrating it ([`notations/examples/packages/reqif-workflow/`](../../notations/examples/packages/reqif-workflow/)) is kept separate from the one demonstrating round trip ([`notations/examples/packages/reqif/`](../../notations/examples/packages/reqif/)) for exactly this reason.
 
 ---
 
@@ -233,7 +278,7 @@ Demonstrated as a test, not asserted in prose ([`PACKAGES.md`](../PACKAGES.md) �
 
 ## 8. Experimental status and review date
 
-This package is **experimental**, in full — not only its workflow-state/revisions/suspect-link surface (§9). Landed 2026-07-28. Reviewed by **2027-01-28** (six months out), or sooner if real adopter usage surfaces a shape problem before then.
+This package is **experimental**, in full — not only its workflow-state/revisions/suspect-link surface (§2.9). Landed 2026-07-28. Reviewed by **2027-01-28** (six months out), or sooner if real adopter usage surfaces a shape problem before then.
 
 What "review" means here: re-read this spec against how the reference implementation has actually been used, then choose one of — keep as-is (still experimental, set a new review date); promote to stable (replace this section with a statement that the package graduated); revise the object model or workflow-state mechanics based on what usage showed; or remove the package (§7 makes this the cheap option by design).
 
@@ -245,10 +290,9 @@ Per [`PACKAGES.md`](../PACKAGES.md) §6, core specs are never refactored to acco
 
 **Landed (v0.1, 2026-07-28):** object model (§2), the one-way canon citation (§3), the package validator (§5), and the YAML↔ReqIF-XML converter (§6) — the base ReqIF-shaped layer.
 
-**Landed (v0.1, 2026-07-29):** removal procedure (§7) and experimental-status declaration (§8) — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated against the worked example that landed with the base layer above.
+**Landed (2026-07-29):** workflow state, revision history, and suspect-link mechanics (§2.9) — the package's explicitly experimental surface. `REQIF-008`/`REQIF-009` (§5) and the `transition`/`revise`/`history`/`suspect` commands (§6). Not carried through the XML converter in v1 (§6). Worked example: [`notations/examples/packages/reqif-workflow/`](../../notations/examples/packages/reqif-workflow/).
 
-**Pending (separate, sibling package work):**
-- Workflow state (`draft → reviewed → approved → baselined → superseded`), revision history, and suspect-link mechanics on `spec-object` — this package's explicitly experimental surface, deliberately kept out of this document until it lands, per [`PACKAGES.md`](../PACKAGES.md) §6's instruction that a package's rough edges stay contained inside the package.
+**Landed (2026-07-29):** removal procedure (§7) and experimental-status declaration (§8) — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated against the worked example that landed with the base layer above.
 
 ---
 

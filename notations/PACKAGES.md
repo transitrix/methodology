@@ -113,7 +113,7 @@ Like a coverage-profile preset, the set of packages a methodology version ships 
 
 | `packages:` name | Spec | Status |
 |---|---|---|
-| `reqif` | [`packages/reqif.md`](packages/reqif.md) | base object model landed; experimental, reviewed by 2027-01-28 ([`reqif.md`](packages/reqif.md) §8); workflow-state/revisions/suspect-links pending as a sibling package task |
+| `reqif` | [`packages/reqif.md`](packages/reqif.md) | object model + workflow-state/revisions/suspect-links landed; experimental, reviewed by 2027-01-28 ([`reqif.md`](packages/reqif.md) §8) |
 
 ---
 

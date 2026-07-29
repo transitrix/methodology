@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://transitrix.com/schemas/decisions/decisions-reviewed.schema.json",
+  "title": "Transitrix shared human-gate admission decision package",
+  "description": "One accept/reject/defer decision per row, recorded against a review-queue.yaml (ingest) or review-digest.yaml (reg-intel) presentation artifact. Never canon itself (gate.admits_to_canon is always false); @transitrix/decisions-cli's `apply` command is what performs the CONTRACT §6.1 admission transition this file records. Absence of a row for a given item_ref means undecided, never rejected. See hub ADR architecture/methodology/2026-07-28-ingest-admission-decision-contract.md.",
+  "type": "object",
+  "required": ["generated_by", "org_root", "as_of", "source_gate", "gate", "decisions"],
+  "additionalProperties": true,
+  "properties": {
+    "generated_by": {
+      "type": "string",
+      "description": "Tool or human identifier that wrote this package (e.g. @transitrix/decisions-cli)."
+    },
+    "org_root": {
+      "type": "string",
+      "description": "Path to the adopter organisation root the source gate was built for."
+    },
+    "as_of": {
+      "type": "string",
+      "description": "Quoted ISO 8601 date this package was assembled or last updated.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "source_gate": {
+      "type": "string",
+      "description": "review-queue.yaml or review-digest.yaml — the presentation artifact this package answers. Lives beside it in the same batch directory."
+    },
+    "gate": {
+      "type": "object",
+      "description": "Invariant statement for auditors and tooling: this package itself is never canon.",
+      "required": ["admits_to_canon"],
+      "properties": {
+        "admits_to_canon": { "const": false }
+      },
+      "additionalProperties": true
+    },
+    "decisions": {
+      "type": "array",
+      "description": "One row per item a human has decided on. An item present in the source gate with no row here is undecided, not rejected.",
+      "items": {
+        "type": "object",
+        "required": ["item_ref", "decision", "by", "at"],
+        "additionalProperties": true,
+        "properties": {
+          "item_ref": {
+            "type": "string",
+            "description": "Identifies the candidate / segment / amendment this decision is against — the bare id for a review-digest.yaml item, or the candidate file reference for a review-queue.yaml item."
+          },
+          "kind": {
+            "type": "string",
+            "description": "Optional; aids apply routing (e.g. element, relation, segment, requirement, constraint, amendment)."
+          },
+          "decision": {
+            "type": "string",
+            "enum": ["accept", "reject", "defer"]
+          },
+          "by": {
+            "type": "string",
+            "description": "Who made the decision — a human handle, or a tool id when reviewer_authority: ai_reviewed (CONTRACT ADMIT-007)."
+          },
+          "at": {
+            "type": "string",
+            "description": "ISO-8601 date or timestamp the decision was made."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Required for reject; recommended for defer; optional for accept."
+          },
+          "reviewer_authority": {
+            "type": "string",
+            "enum": ["ai_reviewed", "expert_confirmed"],
+            "description": "Only meaningful when decision: accept — same tiers and write-authority rule as CONTRACT §6.2. Absent on accept means expert_confirmed (same default as §6.2). A tool may write ai_reviewed; only a human writes expert_confirmed."
+          }
+        }
+      }
+    }
+  }
+}

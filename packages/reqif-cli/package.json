@@ -1,6 +1,6 @@
 {
   "name": "@transitrix/reqif-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Reference converter + validator for the ReqIF-shaped domain package (notations/packages/reqif.md) — YAML ↔ ReqIF XML, package-internal referential integrity. Standalone: never wired into @transitrix/ingest-cli or core validators.",
   "type": "module",
   "bin": {
