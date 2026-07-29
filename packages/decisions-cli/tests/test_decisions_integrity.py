@@ -25,6 +25,15 @@ against synthetic fixtures for both source gates it must answer:
   E. Schema conformance — the decisions.reviewed.yaml `apply` just read
      back satisfies schemas/decisions-reviewed.schema.json's required
      top-level keys, the decisions[] row shape, and its enums.
+  F. `review`'s non-TTY guard: piped stdin (no real terminal) is refused with
+     a message pointing at list-undecided / record, never a silent hang or a
+     partial interactive session (issue #855 item 7).
+  G. Stop/resume semantics via record + list-undecided, the same primitives
+     `review` calls: seed 3 undecided, record 1 (simulating "answer one card,
+     then stop"), assert list-undecided still shows exactly 2 (never marked
+     rejected by the stop), record the rest, assert 0 undecided, and confirm
+     apply's per-decision outcome is unaffected by having been recorded across
+     two sessions instead of one (issue #855 item 9).
 
 Run:  python packages/decisions-cli/tests/test_decisions_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).
@@ -326,6 +335,98 @@ def part_e_schema_conformance(org):
             check(row["reviewer_authority"] in authority_enum, f"E: decision row {row.get('item_ref')} has reviewer_authority {row['reviewer_authority']!r} outside the schema enum")
 
 
+# ── Part F — `review` refuses a non-TTY stdin ─────────────────────────────
+
+def part_f_review_non_tty():
+    with tempfile.TemporaryDirectory(prefix="decisions-review-tty-") as td:
+        org = Path(td)
+        processing = org / "_intake" / "processing"
+        write(processing / "review-queue.yaml", (
+            'generated_by: "@transitrix/ingest-cli"\n'
+            f'org_root: "{org}"\n'
+            'field_artefacts: []\n'
+            'candidates:\n'
+            '  - ref: "cand-x"\n'
+            '    kind: "element"\n'
+        ))
+
+        r = subprocess.run(["node", CLI, "review", str(org)], capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        check(r.returncode != 0, f"F: review with non-TTY stdin expected a non-zero exit, got {r.returncode}")
+        check("list-undecided" in r.stderr and "record" in r.stderr,
+              f"F: expected the non-TTY message to point at list-undecided/record, got: {r.stderr!r}")
+        check(not (processing / "decisions.reviewed.yaml").exists(),
+              "F: a refused non-TTY review must not create decisions.reviewed.yaml")
+
+
+# ── Part G — stop/resume via record + list-undecided (what `review` calls) ─
+
+def part_g_stop_resume():
+    with tempfile.TemporaryDirectory(prefix="decisions-stop-resume-") as td:
+        org = Path(td)
+        processing = org / "_intake" / "processing"
+        cand_dir = processing / "candidates"
+        cand_dir.mkdir(parents=True)
+
+        cand_a, cand_b, cand_c = (cand_dir / f"cand-{s}.json" for s in ("a", "b", "c"))
+        for f in (cand_a, cand_b, cand_c):
+            f.write_text(json.dumps({"kind": "element", "admitted_to": "pending"}), encoding="utf-8")
+        ref_a, ref_b, ref_c = str(cand_a), str(cand_b), str(cand_c)
+
+        write(processing / "review-queue.yaml", (
+            'generated_by: "@transitrix/ingest-cli"\n'
+            f'org_root: "{org}"\n'
+            'field_artefacts: []\n'
+            'candidates:\n'
+            f'  - ref: "{ref_a}"\n'
+            '    kind: "element"\n'
+            f'  - ref: "{ref_b}"\n'
+            '    kind: "element"\n'
+            f'  - ref: "{ref_c}"\n'
+            '    kind: "element"\n'
+        ))
+
+        r = run_cli("list-undecided", str(org))
+        check("total: 3  decided: 0  undecided: 3" in r.stdout, f"G: expected 3 undecided at seed, got: {r.stdout!r}")
+
+        # Simulate "answer one card, then stop" — the rest must stay undecided,
+        # never defaulted to any decision.
+        r = run_cli("record", str(org), "--item-ref", ref_a, "--decision", "accept", "--by", "j.reviewer", "--at", "2026-07-29")
+        check(r.returncode == 0, f"G: record cand-a failed: {r.stderr or r.stdout}")
+
+        r = run_cli("list-undecided", str(org))
+        check("total: 3  decided: 1  undecided: 2" in r.stdout, f"G: expected 2 undecided after simulated stop, got: {r.stdout!r}")
+        check(ref_b in r.stdout and ref_c in r.stdout, f"G: expected cand-b and cand-c still listed as undecided, got: {r.stdout!r}")
+
+        # Resume: record the rest in a later "session".
+        r = run_cli("record", str(org), "--item-ref", ref_b, "--decision", "reject", "--by", "j.reviewer", "--at", "2026-07-29", "--reason", "duplicate")
+        check(r.returncode == 0, f"G: record cand-b failed: {r.stderr or r.stdout}")
+        r = run_cli("record", str(org), "--item-ref", ref_c, "--decision", "defer", "--by", "j.reviewer", "--at", "2026-07-29")
+        check(r.returncode == 0, f"G: record cand-c failed: {r.stderr or r.stdout}")
+
+        r = run_cli("list-undecided", str(org))
+        check("total: 3  decided: 3  undecided: 0" in r.stdout, f"G: expected 0 undecided after resume, got: {r.stdout!r}")
+
+        # apply's per-decision outcome is the same regardless of how many sessions it
+        # took to record it — accept/reject on a pre-canon ingest candidate both come
+        # back not_admission_state_bearing (part A); a deferred row never reaches
+        # artefact lookup at all (no_transition, ADR §3) — none silently skipped or
+        # fabricated into a transition.
+        r = run_cli("apply", str(org))
+
+        def outcome_for(ref):
+            for line in r.stdout.splitlines():
+                if line.startswith(ref):
+                    return line
+            return None
+
+        a_line = outcome_for(ref_a)
+        check(a_line is not None and "not_admission_state_bearing" in a_line, f"G: expected cand-a (accept) outcome not_admission_state_bearing, got: {a_line!r}")
+        b_line = outcome_for(ref_b)
+        check(b_line is not None and "not_admission_state_bearing" in b_line, f"G: expected cand-b (reject) outcome not_admission_state_bearing, got: {b_line!r}")
+        c_line = outcome_for(ref_c)
+        check(c_line is not None and "no_transition" in c_line, f"G: expected cand-c (defer) outcome no_transition, got: {c_line!r}")
+
+
 if not shutil.which("node"):
     print("SKIP: `node` not found on PATH (the CLI is Node).")
     sys.exit(0)
@@ -340,6 +441,8 @@ part_c_record_validation()
 part_d_apply_is_idempotent(_reg_intel_org)
 part_e_schema_conformance(_reg_intel_org)
 shutil.rmtree(_reg_intel_org, ignore_errors=True)
+part_f_review_non_tty()
+part_g_stop_resume()
 
 if _failures:
     print("FAIL - decisions-cli integrity:")

@@ -6,8 +6,11 @@ name: decisions-cli test
 # architecture/methodology/2026-07-28-ingest-admission-decision-contract.md).
 # Deterministic, no API key. Drives the real CLI end-to-end against synthetic
 # fixtures: list-undecided / record / apply across both source gates, the
-# ADMIT-007 tool/human authority guard, and schema conformance.
-# Implementation: packages/decisions-cli/tests/test_decisions_integrity.py.
+# ADMIT-007 tool/human authority guard, review's non-TTY refusal, and schema
+# conformance (test_decisions_integrity.py); plus a Node unit test driving the
+# interactive `review` one-card loop directly — stop/resume, reject-requires-
+# reason — since its TTY guard makes it untestable from a piped subprocess
+# (test_review_unit.mjs). Epic vkgeorgia/strategy#854.
 
 on:
   pull_request:
@@ -42,3 +45,6 @@ jobs:
 
       - name: Run decisions-cli integrity test
         run: python packages/decisions-cli/tests/test_decisions_integrity.py
+
+      - name: Run decisions-cli review unit test
+        run: node packages/decisions-cli/tests/test_review_unit.mjs

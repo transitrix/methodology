@@ -61,22 +61,33 @@ export function readBlockScalars(text, key) {
 }
 
 // Read a top-level list-of-maps `key:` (e.g. `decisions:`). Returns an array of flat
-// objects (one per `- ` item; each item's scalar fields only — no nested sub-lists).
-export function readMapList(text, key) {
+// objects (one per `- ` item; each item's scalar fields only — no nested sub-lists),
+// except for any field named in `arrayKeys`, which is instead collected as a string
+// array (e.g. review-queue.yaml's per-candidate `validation_flags: [...]`). Still not
+// a general YAML parser — arrayKeys is for the one known list-of-scalars shape a
+// caller needs, not arbitrary nesting.
+export function readMapList(text, key, arrayKeys = []) {
   if (typeof text !== 'string') return [];
+  const arraySet = new Set(arrayKeys);
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex((l) => new RegExp(`^${key}:[ \\t]*(#.*)?$`).test(l));
   if (start < 0) return [];
   const items = [];
   let cur = null;
+  let openArrayKey = null;
   for (let i = start + 1; i < lines.length; i++) {
     const l = lines[i];
     if (l.trim() === '') continue;
     if (/^\S/.test(l)) break;
     let m = l.match(/^[ \t]+-[ \t]+([A-Za-z0-9_]+):[ \t]*(.*)$/);
-    if (m) { cur = {}; cur[m[1]] = cleanScalar(m[2]); items.push(cur); continue; }
+    if (m) { cur = {}; cur[m[1]] = cleanScalar(m[2]); items.push(cur); openArrayKey = null; continue; }
+    if (!cur) continue;
+    const lm = l.match(/^[ \t]+-[ \t]+(.+)$/);
+    if (lm && openArrayKey) { cur[openArrayKey].push(cleanScalar(lm[1])); continue; }
+    m = l.match(/^[ \t]+([A-Za-z0-9_]+):[ \t]*$/);
+    if (m && arraySet.has(m[1])) { cur[m[1]] = []; openArrayKey = m[1]; continue; }
     m = l.match(/^[ \t]+([A-Za-z0-9_]+):[ \t]*(.*)$/);
-    if (m && cur) cur[m[1]] = cleanScalar(m[2]);
+    if (m) { cur[m[1]] = cleanScalar(m[2]); openArrayKey = null; }
   }
   return items;
 }

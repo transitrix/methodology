@@ -39,6 +39,7 @@ Absence of a `decisions[]` row for an item means **undecided**, never rejected �
 | `list-undecided <org-root> [--source-gate <path>]` | Every candidate / segment / amendment the source gate currently presents that has no matching `decisions[]` row yet. |
 | `record <org-root> --item-ref <ref> --decision accept\|reject\|defer --by <id> --at <date> [--reason <text>] [--kind <k>] [--reviewer-authority ai_reviewed\|expert_confirmed] [--source-gate <path>]` | Upsert one decision row — idempotent per `item_ref`; a later `record` call for the same item replaces the earlier row. |
 | `apply <org-root> [--source-gate <path>]` | Apply every `accept` / `reject` row as a CONTRACT §6.1 transition on the artefact it names; `defer` rows are left untouched (the row is the audit trail). |
+| `review <org-root> [--source-gate <path>] [--by <handle>]` | Interactive one-card review over `list-undecided`: present each undecided item (id/kind, confidence, flags, source, summary — whatever the gate artifact already carries, no LLM), prompt `accept`\|`reject`\|`defer`\|`stop`, and call `record` for each answer. |
 
 ## What `apply` can and cannot transition
 
@@ -47,6 +48,16 @@ Absence of a `decisions[]` row for an item means **undecided**, never rejected �
 This only works on an artefact that is **already admission_state-bearing** — today, that means reg-intel's proposed `SEGMENT` / `REQUIREMENT` / `CONSTRAINT` / `AMENDMENT` artefacts under `_intake/processing/{segments,candidates,amendments}/<id>.yaml`. An ingest-pipeline candidate (`_intake/processing/candidates/<ref>.json`) is pre-canon and carries `admitted_to: pending`, not `admission_state` — it has no CONTRACT §6.1 lifecycle to transition yet. `record` / `list-undecided` work the same way for both pipelines; `apply` reports an ingest candidate's row as `not_admission_state_bearing` rather than silently skipping it or fabricating a transition — promoting a candidate into canon-shaped form is still a manual step (CONTRACT §6), same as before this CLI existed.
 
 **ADMIT-007.** `apply` refuses to write `reviewer_authority: ai_reviewed` when `--by` doesn't look like a tool id, and refuses `expert_confirmed` when it does (a hyphenated `*-cli` / `*-reviewer` / `*-bot` / `*-scanner` id or an `@scope/name`). This is a footgun-catcher, not a security boundary — CONTRACT ADMIT-007 is a content-based rule about who actually admitted the record, which no string heuristic can fully verify.
+
+## `review` — interactive one-card admission review
+
+`review` is an optional convenience over `list-undecided` + `record` for a human working a queue at a terminal, one item at a time (hub epic `vkgeorgia/strategy#854`). It invents no new decision path: every `accept` / `reject` / `defer` answer is exactly one `record` call, same contract as above.
+
+- **One card at a time.** Each undecided item is shown with whatever the gate artifact already carries — `id` / `kind`, `confidence`, `flags` (`coverage_flag` + `validation_flags` for a review-queue candidate), `source` (`derived_from_source` for a review-digest item), and a short `summary` (`coverage_reason` / segment `locator` / amendment `change_description`). No LLM involved — absent fields are simply omitted from the card.
+- **`stop` (alias `quit`) is a first-class exit**, not a decision. It leaves the current card and everything after it in the snapshot **undecided** — absence of a `decisions[]` row is never `reject`. `apply` is never run automatically on stop.
+- **Resume** is just running `review` again on the same gate: the queue is recomputed via `list-undecided`'s same set-difference, so only what's still undecided is presented.
+- **`--by`** sets the reviewer handle used for every `record` call this session; if omitted, `review` prompts for it once before the first card.
+- **TTY only.** If stdin is not a TTY, `review` exits non-zero pointing at `list-undecided` / `record` directly — the ingest / reg-intel skill's conversational review step is the agent-assisted path for a non-interactive session.
 
 ## Layout
 
@@ -60,6 +71,7 @@ packages/decisions-cli/
     map-in.mjs         # review-queue.yaml / review-digest.yaml -> flat gate-item list; undecided diff
     record.mjs          # upsert one decision row
     apply.mjs           # locate the admission_state artefact by item_ref; perform the §6.1 transition
+    review.mjs           # interactive one-card review loop over list-undecided / record
   schemas/
     decisions-reviewed.schema.json
 ```
@@ -70,4 +82,10 @@ A deterministic, no-API-key, no-network integrity test drives the CLI end-to-end
 
 ```
 python packages/decisions-cli/tests/test_decisions_integrity.py
+```
+
+`review`'s TTY guard makes its interactive loop untestable from a piped subprocess by design (the integrity test above covers the non-TTY refusal); the loop itself — one card at a time, stop/resume, reject-requires-reason — is covered by a Node unit test that drives `runReview()` directly with a scripted `ask()` in place of a real terminal:
+
+```
+node packages/decisions-cli/tests/test_review_unit.mjs
 ```
