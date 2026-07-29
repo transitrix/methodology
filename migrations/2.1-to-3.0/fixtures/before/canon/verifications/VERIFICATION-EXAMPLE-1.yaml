@@ -1,0 +1,17 @@
+notation: verification
+id: VERIFICATION-EXAMPLE-1
+verifies: REQUIREMENT-EXAMPLE-1
+method: test
+protocol: "Placeholder protocol, unaffected by this migration."
+outcome: pass
+
+zone: canon
+admitted_at: "2026-07-01"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-01"
+valid_to: null

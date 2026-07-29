@@ -4,7 +4,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 ## Views
 
-The view notations live under [`views/`](views/) in two groups: **11 diagram views** that each render a visual diagram, and **5 report views** that produce a derived report or table. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
+The view notations live under [`views/`](views/) in two groups: **11 diagram views** that each render a visual diagram, and **4 report views** that produce a derived report or table. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
@@ -19,18 +19,17 @@ The view notations live under [`views/`](views/) in two groups: **11 diagram vie
 | [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
 | [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 | [18-action-card.md](views/18-action-card.md) | `action-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.action-card.transitrix.yaml` | draft |
-| — | **Report views (C = 5)** | | | |
+| — | **Report views (C = 4)** | | | |
 | [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
 | [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 | [23-actions-tree.md](views/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
-| [24-design-controls-trace-matrix.md](views/24-design-controls-trace-matrix.md) | `design-controls-trace-matrix` | Report-config view over the design-controls chain — renders `REQUIREMENT` → `VERIFICATION` and `HAZARD` → `RISK_CONTROL` → `REQUIREMENT` → `VERIFICATION` as a fixed audit table, annotating rows with the reverse-trace completeness gaps already defined on those elements. | `*.design-controls-trace-matrix.transitrix.yaml` | draft |
 
 Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 
 ## Elements
 
-The **15** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The **14** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -48,7 +47,6 @@ The **15** element notations live under [`elements/`](elements/) — each define
 | [25-nodes.md](elements/25-nodes.md) | `node` | Technology-layer infrastructure node primitive — physical or virtual compute, network, or storage substrate (ArchiMate Technology Node). | `canon/elements/04_technology/nodes/NODE-<…>.yaml` | draft |
 | [26-technology-services.md](elements/26-technology-services.md) | `technology-service` | Platform-level service exposed by a NODE to the application layer (ArchiMate Technology Service). | `canon/elements/04_technology/services/TECHNOLOGY_SERVICE-<…>.yaml` | draft |
 | [27-verification.md](elements/27-verification.md) | `verification` | Canon-zone primitive linking a REQUIREMENT to a V&V protocol, method, and pass/fail outcome — the engineering counterpart to ASSERTION. | `canon/verifications/VERIFICATION-<…>.yaml` | draft |
-| [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) | `hazard` / `risk-control` | ISO 14971 risk-management chain — `HAZARD` (potential source of harm) mitigated by `RISK_CONTROL` (control measure, optionally realised as a REQUIREMENT). | `canon/elements/01_motivation/hazards/HAZARD-<…>.yaml`, `canon/elements/01_motivation/risk-controls/RISK_CONTROL-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 

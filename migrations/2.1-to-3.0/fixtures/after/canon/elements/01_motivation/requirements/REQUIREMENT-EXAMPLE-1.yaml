@@ -1,0 +1,15 @@
+notation: requirement
+id: REQUIREMENT-EXAMPLE-1
+name: "Example requirement"
+description: "A placeholder requirement, unaffected by this migration."
+
+zone: canon
+admitted_at: "2026-07-01"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-01"
+valid_to: null

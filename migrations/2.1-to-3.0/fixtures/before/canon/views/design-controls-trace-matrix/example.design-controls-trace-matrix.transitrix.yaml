@@ -1,0 +1,8 @@
+notation: design-controls-trace-matrix
+spec_version: "0.1"
+name: "Example design-controls trace matrix"
+methodology_version: "2.1.0"
+view:
+  id: DC_TRACE_MATRIX-EXAMPLE-1
+  name: "Example design-controls trace matrix"
+  report_type: combined

@@ -6,6 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.0.0] — 2026-07-29
+
+Bump category: **MAJOR** — the ISO 14971 risk-management chain is removed from the public core. `VERIFICATION` and the rest of the compliance/V&V spine are unaffected. Decision of record: ADR `cross-project/2026-07-29-design-controls-private-module` (strategy hub), superseding `methodology/2026-07-29-design-controls-as-a-package`.
+
+### Breaking changes
+
+- **BREAKING: `HAZARD` and `RISK_CONTROL` element types removed.** `notations/elements/28-hazard-risk-control.md`, the two TYPEs, and their canon folders (`canon/elements/01_motivation/hazards/`, `canon/elements/01_motivation/risk-controls/`) leave the public core. The ISO 14971 design-controls capability (hazard → risk-control → requirement → verification, with severity/probability/residual-risk classification) is no longer part of this repository. Migration recipe: [`migrations/2.1-to-3.0/`](migrations/2.1-to-3.0/).
+- **BREAKING: Design-Controls Trace Matrix view removed.** `notations/views/24-design-controls-trace-matrix.md`, its reference renderer (`tools/render_trace_matrix.py`), and its onboarding template leave the public core.
+- **BREAKING: Rules removed.** `HAZ-001..004`, `RISKCTL-001..005`, `HAZ-RISKCTL-COVERAGE-001/-002`, `RISKCTL-VERIF-COVERAGE-001`, and `DCTM-001..007` no longer exist — core tooling has no message for these codes; the migration recipe explains why and what to do.
+- **BREAKING: Worked examples removed.** `notations/examples/design-controls/` and `notations/examples/design-controls-trace-matrix/` leave the public core.
+
+### Added
+
+- **`notations/CONTRACT.md` §8.1** — a mapping note expressing generic risk with core primitives already defined (`ASSESSMENT`, `DRIVER`, `GOAL`, `REQUIREMENT`, `CONSTRAINT`), per the Open Group's ArchiMate Risk and Security Overlay. No new element, folder, validator, or view — hazard/hazardous-situation/harm chains and residual-risk judgement are explicitly out of scope for this mapping.
+- **`migrations/2.1-to-3.0/`** — migration recipe: detects `canon/elements/01_motivation/hazards/`, `canon/elements/01_motivation/risk-controls/`, and `*.design-controls-trace-matrix.transitrix.yaml` content, quarantines it out of `canon/` (never deletes), and states an affected repository's options.
+
+### Changed
+
+- **`VERIFICATION` is unaffected.** `notations/elements/27-verification.md` (now v0.3), `REQ-VERIF-COVERAGE-001/-002`, and `COVERAGE_PROFILES.md` §2.1's cross-cutting list are unchanged — `VERIFICATION` was never part of this removal.
+- **`patterns/design-controls.md` renamed to [`patterns/baseline-audit-trail.md`](patterns/baseline-audit-trail.md) and generalised** off the ISO 14971 vocabulary — the baseline / audit-trail / review-approval mechanism it names (`git tag`, git history, the admission record) is domain-neutral and stays over `REQUIREMENT` / `ASSERTION` / `VERIFICATION`.
+- **`notations/README.md`, `notations/views/REPORT_VIEW_CONFIG.md`, `notations/IDS_AND_REFERENCES.md`, `notations/ELEMENT_PRIMITIVES.md`, `transitrix/skills/onboard/SKILL.md`, `transitrix/.claude-plugin/plugin.json`** — catalogue counts, TYPE registry, and template listings updated to drop the removed TYPEs/view (11 diagram + 4 report views; 14 element notations).
+
+---
+
 ## [2.1.0] — 2026-07-28
 
 Fifty-two commits since `v2.0.0`. Bump category: **MINOR** — additive notation, operations, and CLI surface only; no migration recipe required.

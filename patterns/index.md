@@ -9,7 +9,7 @@ Concrete deployment guides for common enterprise scenarios. Each pattern covers 
 | Transitrix + Enterprise ADR Registry | [enterprise-adr-registry.md](enterprise-adr-registry.md) | Full | Transitrix repo as the enterprise ADL, aggregating cross-project architecture decisions. |
 | Enterprise Memory | [enterprise-memory.md](enterprise-memory.md) | Simple or Full | A Transitrix repo as a durable, EA-grounded memory for humans and AI agents — semantic canon + episodic record. Composes with Knowledge Store at enterprise scale. |
 | Personal Memory | [personal-memory.md](personal-memory.md) | Simple | Individual or small-team deployment: one repo as a personal second brain — goals, contacts, and decisions as structured, agent-queryable memory. |
-| Design-Controls Audit Story | [design-controls.md](design-controls.md) | Full | Overlay for adopters running the design-controls domain — a `git tag` baseline, git history as the audit trail, and the admission record as the review/approval record. No new schema. |
+| Baseline & Audit Trail | [baseline-audit-trail.md](baseline-audit-trail.md) | Full | Overlay for adopters with a review/audit obligation over `REQUIREMENT` / `ASSERTION` / `VERIFICATION` content — a `git tag` baseline, git history as the audit trail, and the admission record as the review/approval record. No new schema. |
 
 ---
 
@@ -30,7 +30,7 @@ An adopter (or an adopter's agent) rarely asks "which pattern tier do I need" �
 | "We have several repos producing raw material — how does it become canon?" | [Knowledge Store](knowledge-store.md) |
 | "How do we make this repo a shared memory for humans and agents?" | [Enterprise Memory](enterprise-memory.md) |
 | "Can I use Transitrix as a personal second brain?" | [Personal Memory](personal-memory.md) |
-| "How do we baseline the design-controls model for an audit / design review?" | [Design-Controls Audit Story](design-controls.md) |
+| "How do we baseline the model for an audit / design review?" | [Baseline & Audit Trail](baseline-audit-trail.md) |
 | "Which deployment size fits us — Simple or Full?" | [`implementation-tiers.md`](implementation-tiers.md) |
 
 Not sure which tier fits your organisation? See [`implementation-tiers.md`](implementation-tiers.md) for the Simple vs Full comparison — what belongs in each, the upgrade trigger, and the upgrade path.

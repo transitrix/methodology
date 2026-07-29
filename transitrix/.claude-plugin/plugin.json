@@ -1,6 +1,6 @@
 {
   "name": "transitrix",
-  "description": "Scaffold a Transitrix enterprise-architecture-as-text repository and author your first notation file with inline canonical validation. Drops the canonical zoned canon/ + field/ + codex/ layout with an assistant-neutral AGENTS.md guide and a pinned transitrix.yaml manifest, then walks the user through one of the 11 diagram views (BPMN, DGCA / DGA, Goals, Capability map, Process landscape map, Process Blueprint, Action schedule, Nested blocks, Applications, Products, Action Card) + PlantUML rendering, or one of the 5 report views (Scenarios, Actions tree, Compliance Impact, Coverage Metric, Design-Controls Trace Matrix), or a codex artefact.",
+  "description": "Scaffold a Transitrix enterprise-architecture-as-text repository and author your first notation file with inline canonical validation. Drops the canonical zoned canon/ + field/ + codex/ layout with an assistant-neutral AGENTS.md guide and a pinned transitrix.yaml manifest, then walks the user through one of the 11 diagram views (BPMN, DGCA / DGA, Goals, Capability map, Process landscape map, Process Blueprint, Action schedule, Nested blocks, Applications, Products, Action Card) + PlantUML rendering, or one of the 4 report views (Scenarios, Actions tree, Compliance Impact, Coverage Metric), or a codex artefact.",
   "version": "0.1.0",
   "author": {
     "name": "Transitrix"

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Windows legacy-code-page regression test for tools/lint.py and
-tools/render_trace_matrix.py.
+"""Windows legacy-code-page regression test for tools/lint.py.
 
-Both scripts print/write non-ASCII status glyphs straight to stdout/stderr.
+The script prints non-ASCII status glyphs straight to stdout/stderr.
 Under a legacy Windows console code page (e.g. cp1252 — the default when
 stdout isn't a UTF-8-configured terminal), that used to crash mid-report with
 a UnicodeEncodeError, even on a fully valid repo. Forces PYTHONIOENCODING to a
 legacy code page for the subprocess so the regression reproduces
-deterministically on any OS, and drives each script down its happy, error, and
+deterministically on any OS, and drives the script down its happy, error, and
 warning-reporting paths so all of the glyphs are exercised, not just the
 easy ones.
 
@@ -23,7 +22,6 @@ import tempfile
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LINT = os.path.join(REPO_ROOT, "tools", "lint.py")
-TRACE_MATRIX = os.path.join(REPO_ROOT, "tools", "render_trace_matrix.py")
 LEGACY_CODE_PAGE = "cp1252"
 
 _failures = []
@@ -113,32 +111,10 @@ def check_lint_warning():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── render_trace_matrix.py: default stdout write, "traced" cell ─────────────
-
-def check_trace_matrix_stdout():
-    work = tempfile.mkdtemp(prefix="trace-matrix-encoding-")
-    try:
-        _write(
-            os.path.join(work, "canon", "elements", "01_motivation", "requirements", "req.yaml"),
-            "id: REQUIREMENT-1\nname: Test requirement\n",
-        )
-        _write(
-            os.path.join(work, "canon", "verifications", "verif.yaml"),
-            "id: VERIFICATION-1\nverifies: REQUIREMENT-1\nmethod: test\noutcome: pass\n",
-        )
-        code, out = _run(TRACE_MATRIX, "--root", work)
-        check(code == 0, f"render_trace_matrix.py: expected exit 0, got {code}: {out}")
-        check("UnicodeEncodeError" not in out, f"render_trace_matrix.py crashed on encoding: {out}")
-        check("traced" in out, f"render_trace_matrix.py: missing rendered trace status: {out}")
-    finally:
-        shutil.rmtree(work, ignore_errors=True)
-
-
 def main():
     check_lint_clean()
     check_lint_error()
     check_lint_warning()
-    check_trace_matrix_stdout()
 
     if _failures:
         print(f"FAIL: {len(_failures)} check(s) failed:")

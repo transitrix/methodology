@@ -50,8 +50,6 @@ canon/
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
-      hazards/        HAZARD-*.yaml          # elements/28-hazard-risk-control.md (ISO 14971)
-      risk-controls/  RISK_CONTROL-*.yaml    # elements/28-hazard-risk-control.md (mitigates HAZARD, satisfies REQUIREMENT)
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml

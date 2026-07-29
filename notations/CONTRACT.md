@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and design-controls domain (REQUIREMENT + ASSERTION + VERIFICATION + HAZARD + RISK_CONTROL) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and verification domain (REQUIREMENT + ASSERTION + VERIFICATION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves — and §8.1 maps generic risk onto the ArchiMate Risk and Security Overlay using core primitives already defined. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -290,9 +290,9 @@ The lifecycle fields are required on every canonical primitive once a notation s
 
 ---
 
-## 8. Compliance and design-controls domain rules
+## 8. Compliance and verification domain rules
 
-The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](elements/15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](elements/16-assertion.md)). The **design-controls** extension of the same spine (engineering V&V + ISO 14971 risk) adds three more TYPEs — **`VERIFICATION`** (canon-zone primitive linking a requirement to a V&V protocol and pass/fail outcome, [27-verification.md](elements/27-verification.md)) and the **`HAZARD`** / **`RISK_CONTROL`** motivation-layer pair ([28-hazard-risk-control.md](elements/28-hazard-risk-control.md)). For discoverability, the validation rules for all five are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
+The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](elements/15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](elements/16-assertion.md)). Generic engineering verification-and-validation adds one more TYPE — **`VERIFICATION`** (canon-zone primitive linking a requirement to a V&V protocol and pass/fail outcome, [27-verification.md](elements/27-verification.md)). For discoverability, the validation rules for all three are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
 
 | Rule | Severity | Notation | Short description | Authoritative spec |
 |---|---|---|---|---|
@@ -300,7 +300,7 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](elements/15-requirement.md) §4 |
-| `REQ-VERIF-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no VERIFICATION targeting it — engineering V&V gap, the design-controls analogue of `REQ-COVERAGE-001` | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-VERIF-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no VERIFICATION targeting it — engineering V&V gap, the V&V-side analogue of `REQ-COVERAGE-001` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-VERIF-COVERAGE-002` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has VERIFICATION(s) but none reached `pass`/`fail` — trace exists but hasn't closed | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-STALE-001` | warning | REQUIREMENT / CONSTRAINT | `next_review_at` is set and is in the past — obligation due for re-review; applies symmetrically to CONSTRAINT ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.13) | [15-requirement.md](elements/15-requirement.md) §4 |
 | `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](elements/16-assertion.md) §5 |
@@ -321,22 +321,26 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `VERIF-004` | error | VERIFICATION | `outcome` not in `{pass, fail, inconclusive, not_yet_run}` | [27-verification.md](elements/27-verification.md) §5 |
 | `VERIF-005` | error | VERIFICATION | an `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve | [27-verification.md](elements/27-verification.md) §5 |
 | `VERIF-006` | warning | VERIFICATION | `evidence` is empty AND `outcome` is `pass` — undefended positive claim | [27-verification.md](elements/27-verification.md) §5 |
-| `HAZ-001` | error | HAZARD | `id` grammar invalid, or any required field missing | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `HAZ-002` | error | HAZARD | `severity` not in the ordinal enum (`negligible`…`catastrophic`) | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `HAZ-003` | error | HAZARD | `probability` present and not in the ordinal enum (`improbable`…`frequent`) | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `HAZ-004` | error | HAZARD | `initial_risk` present and not in `{acceptable, alarp, unacceptable}` | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-001` | error | RISK_CONTROL | `id` grammar invalid, or any required field missing | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-002` | error | RISK_CONTROL | `mitigates` missing, empty, or an entry does not resolve to a HAZARD | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-003` | error | RISK_CONTROL | `control_type` not in `{inherent_safety_by_design, protective_measure, information_for_safety}` | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-004` | error | RISK_CONTROL | `satisfies` present and does not resolve to a REQUIREMENT | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-005` | error | RISK_CONTROL | `residual_risk` present and not in `{acceptable, alarp, unacceptable}` | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `HAZ-RISKCTL-COVERAGE-001` | warning | HAZARD (cross-cutting) | HAZARD has no RISK_CONTROL mitigating it — orphaned hazard, no design output addressing it | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `HAZ-RISKCTL-COVERAGE-002` | warning | HAZARD (cross-cutting) | HAZARD has mitigating RISK_CONTROL(s) but none records `residual_risk: acceptable`/`alarp` — not shown adequately controlled | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
-| `RISKCTL-VERIF-COVERAGE-001` | warning | RISK_CONTROL (cross-cutting) | RISK_CONTROL carries `satisfies` but the REQUIREMENT it references has no closed VERIFICATION — risk-mitigating requirement lacks V&V closure | [28-hazard-risk-control.md](elements/28-hazard-risk-control.md) §6 |
 
-In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT, ASSERTION, VERIFICATION, HAZARD, and RISK_CONTROL files as they do to every other canonical artefact.
+In addition, the shared header rules (`HDR-001..004`, §2) and primitive-lifecycle rules (`LIFECYCLE-001..004`, §7.3) apply to REQUIREMENT, ASSERTION, and VERIFICATION files as they do to every other canonical artefact.
 
-The `*-COVERAGE-001` / `*-DEAD-LINK-001` rules and `ASSERT-009` are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references; `ASSERT-009`'s promotion check depends on the `PROCESS` flows and the `STEP` files; `PROCESS-COVERAGE-001`'s check depends on the assertions catalogue; `JURISDICTION-CONSISTENCY-001`'s check depends on the codex catalogue). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue. The `VERIF-*`, `HAZ-*`, and `RISKCTL-*` rules above are all notation-local (single-file or single-reference resolution). The reverse-trace completeness questions for the design-controls chain — every requirement verified (`REQ-VERIF-COVERAGE-001`/`-002`), every risk control verified (`RISKCTL-VERIF-COVERAGE-001`), no orphaned or inadequately-controlled hazard (`HAZ-RISKCTL-COVERAGE-001`/`-002`) — are themselves cross-cutting: like `REQ-COVERAGE-001` and `PROCESS-COVERAGE-001` above, each requires the validator to be loaded with the full canon catalogue (verifications, risk-controls, and requirements together), not just the file being checked.
+The `*-COVERAGE-001` / `*-DEAD-LINK-001` rules and `ASSERT-009` are **cross-cutting**: their checks span more than one file (a REQUIREMENT's coverage depends on the assertions catalogue; an ASSERTION's dead-link state depends on the lifecycle dates of the primitives it references; `ASSERT-009`'s promotion check depends on the `PROCESS` flows and the `STEP` files; `PROCESS-COVERAGE-001`'s check depends on the assertions catalogue; `JURISDICTION-CONSISTENCY-001`'s check depends on the codex catalogue). Notation-local rules check a single file in isolation; cross-cutting rules require the validator to be loaded with the full canon catalogue. The `VERIF-*` rules above are all notation-local (single-file or single-reference resolution). The reverse-trace completeness question — every requirement verified (`REQ-VERIF-COVERAGE-001`/`-002`) — is itself cross-cutting: like `REQ-COVERAGE-001` and `PROCESS-COVERAGE-001` above, it requires the validator to be loaded with the full canon catalogue (verifications and requirements together), not just the file being checked.
+
+### 8.1 Modelling risk with core primitives — the ArchiMate Risk and Security Overlay mapping
+
+Core carries no dedicated risk TYPE — ArchiMate 3.x itself has no risk element. The Open Group's *Risk and Security Overlay* (ArchiMate/SABSA) expresses risk entirely through the motivation layer, and every primitive it needs already exists in this core:
+
+| Overlay concept | Core primitive |
+|---|---|
+| Risk; vulnerability | `ASSESSMENT` (dated finding about a `DRIVER`) |
+| Threat / threat source | `DRIVER`, assessed by `ASSESSMENT` |
+| Control objective | `GOAL` |
+| Control measure | `REQUIREMENT` (positive obligation) / `CONSTRAINT` (restriction) |
+| Asset at risk | any core element the assessment is about |
+
+This is a mapping note, not a schema — no new element file, no new folder, no new validator, no new view. A reader modelling a generic risk uses `ASSESSMENT` / `DRIVER` / `GOAL` / `REQUIREMENT` / `CONSTRAINT` exactly as those types are already defined.
+
+**What this mapping does not cover.** Hazard → hazardous-situation → harm chains, severity/probability evaluation, residual-risk judgement, and verification of control effectiveness (the ISO 14971 design-controls specialisation) are not expressible in this mapping and are not part of the core — that specialisation is out of scope for this repository.
 
 ---
 
@@ -790,7 +794,7 @@ Structural layout of a view document:
 ```yaml
 notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
-methodology_version: "2.1.0"  # manifest-pinned methodology version
+methodology_version: "3.0.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
@@ -871,7 +875,7 @@ views/
 ```yaml
 view_id: DGCA-RETAIL-1               # canonical ID of the view being captured
 generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
-methodology_version: "2.1.0"          # methodology version in use at generation time
+methodology_version: "3.0.0"          # methodology version in use at generation time
 # …notation-specific element list follows (format defined per notation spec)…
 ```
 
