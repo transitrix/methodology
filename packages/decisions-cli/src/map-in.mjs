@@ -26,7 +26,7 @@ export function detectSourceGateKind(path) {
 
 // Beyond item_ref/kind, an item MAY carry `confidence`, `flags` (array of strings)
 // and `summary` — all read straight off fields the gate artifact already emits, for
-// `review`'s one-card view (issue #855). No LLM, no synthesis: absent fields are
+// `review`'s one-card view (HUB-855). No LLM, no synthesis: absent fields are
 // simply omitted from the card.
 function itemsFromReviewQueue(text) {
   const candidates = readMapList(text, 'candidates', ['validation_flags']);

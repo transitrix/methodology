@@ -27,13 +27,13 @@ against synthetic fixtures for both source gates it must answer:
      top-level keys, the decisions[] row shape, and its enums.
   F. `review`'s non-TTY guard: piped stdin (no real terminal) is refused with
      a message pointing at list-undecided / record, never a silent hang or a
-     partial interactive session (issue #855 item 7).
+     partial interactive session (HUB-855 item 7).
   G. Stop/resume semantics via record + list-undecided, the same primitives
      `review` calls: seed 3 undecided, record 1 (simulating "answer one card,
      then stop"), assert list-undecided still shows exactly 2 (never marked
      rejected by the stop), record the rest, assert 0 undecided, and confirm
      apply's per-decision outcome is unaffected by having been recorded across
-     two sessions instead of one (issue #855 item 9).
+     two sessions instead of one (HUB-855 item 9).
 
 Run:  python packages/decisions-cli/tests/test_decisions_integrity.py
 Exit: 0 = all pass; 1 = a check failed (message localises the problem).

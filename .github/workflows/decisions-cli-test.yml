@@ -10,7 +10,7 @@ name: decisions-cli test
 # conformance (test_decisions_integrity.py); plus a Node unit test driving the
 # interactive `review` one-card loop directly — stop/resume, reject-requires-
 # reason — since its TTY guard makes it untestable from a piped subprocess
-# (test_review_unit.mjs). Epic vkgeorgia/strategy#854.
+# (test_review_unit.mjs). Epic HUB-854.
 
 on:
   pull_request:
