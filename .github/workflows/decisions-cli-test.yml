@@ -1,0 +1,44 @@
+name: decisions-cli test
+
+# Integration test for @transitrix/decisions-cli — the shared human-gate
+# admission decision contract over the ingest review-queue and reg-intel
+# review-digest (hub ADR
+# architecture/methodology/2026-07-28-ingest-admission-decision-contract.md).
+# Deterministic, no API key. Drives the real CLI end-to-end against synthetic
+# fixtures: list-undecided / record / apply across both source gates, the
+# ADMIT-007 tool/human authority guard, and schema conformance.
+# Implementation: packages/decisions-cli/tests/test_decisions_integrity.py.
+
+on:
+  pull_request:
+    paths:
+      - 'packages/decisions-cli/**'
+      - 'notations/CONTRACT.md'
+      - '.github/workflows/decisions-cli-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 10:00 UTC — weekly safety net, offset from the other Monday 09:xx crons.
+    - cron: '0 10 * * 1'
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run decisions-cli integrity test
+        run: python packages/decisions-cli/tests/test_decisions_integrity.py
