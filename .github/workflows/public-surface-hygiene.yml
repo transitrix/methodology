@@ -11,6 +11,11 @@ name: Public-surface hygiene
 # self-contained regexes read the same way; each is a no-op when unset. Same
 # never-print discipline — patterns live only in the secret.
 #
+# A secret's value may hold one pattern or several, one per line — grep's own
+# `-f` semantics. Blank lines are dropped before use: a blank line is an empty
+# pattern that matches every input, which turns the guard from a filter into a
+# wall and is indistinguishable from a real hit.
+#
 # The guard fails closed, and that is a correction, not a nicety. Every slot
 # used to be concatenated into one alternation and evaluated with a single
 # `grep -qiE` inside an `if` condition. Two consequences, both silent:
@@ -89,58 +94,62 @@ jobs:
           add_slot HYGIENE_BLOCKLIST_2   "${BLOCKLIST_2:-}"
           add_slot HYGIENE_BLOCKLIST_3   "${BLOCKLIST_3:-}"
 
-          # Shape check. A secret's value may carry a line break, and grep reads
-          # a multi-line pattern as a LIST of patterns - so a blank line in it
-          # becomes an empty pattern that matches every input, and the break
-          # also splits the value apart wherever it is composed with anything
-          # else. Both failures are silent. A value must be one line.
+          tmp="$(mktemp -d)"
+
+          # Normalize each slot into a pattern FILE, one pattern per line, and
+          # scan with `grep -f`. This is grep's own semantics for a multi-line
+          # pattern, so a value authored as a list keeps working - but a blank
+          # line in such a value is an empty pattern that matches every input,
+          # which silently turns the guard into a wall. Blank lines and stray
+          # carriage returns are dropped here; a slot left with nothing usable
+          # is a misconfiguration and fails the build by name.
           bad=0
           for i in "${!SLOT_PATTERNS[@]}"; do
-            if [ "$(printf '%s' "${SLOT_PATTERNS[$i]}" | wc -l | tr -d ' ')" != "0" ]; then
-              echo "::error::blocklist slot ${SLOT_NAMES[$i]} contains a line break - the value must be a single-line pattern (grep reads a multi-line value as a list of patterns, and a blank line among them matches every input)"
+            printf '%s\n' "${SLOT_PATTERNS[$i]}" \
+              | tr -d '\r' \
+              | grep -v '^[[:space:]]*$' > "$tmp/slot-$i" || true
+            if [ ! -s "$tmp/slot-$i" ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} carries no usable pattern - it is set but holds only blank lines"
               bad=1
             fi
           done
           if [ "$bad" -ne 0 ]; then
-            echo "Re-enter the named repository secret as one line, with no trailing newline. The value is deliberately not printed."
+            echo "Re-enter or unset the named repository secret. The value is deliberately not printed."
             exit 1
           fi
 
-          # Compile check. grep exits 0/1 when it ran, 2 when the regex is
+          # Compile check. grep exits 0/1 when it ran, 2 when a pattern is
           # malformed. A slot that cannot compile fails the build - the whole
           # point of the guard is that it cannot pass by being unable to look.
           bad=0
           for i in "${!SLOT_PATTERNS[@]}"; do
             rc=0
-            printf 'x' | grep -qiE -e "${SLOT_PATTERNS[$i]}" >/dev/null 2>&1 || rc=$?
+            printf 'x' | grep -qiE -f "$tmp/slot-$i" >/dev/null 2>&1 || rc=$?
             if [ "$rc" -gt 1 ]; then
               echo "::error::blocklist slot ${SLOT_NAMES[$i]} is not a valid POSIX extended regex - the scan cannot evaluate it"
               bad=1
             fi
           done
           if [ "$bad" -ne 0 ]; then
-            echo "Fix the named repository secret's value. It must be a valid 'grep -E' pattern - a literal parenthesis has to be escaped as \\( and every group closed. The value is deliberately not printed."
+            echo "Fix the named repository secret's value. Every line must be a valid 'grep -E' pattern - a literal parenthesis has to be escaped as \\( and every group closed. The value is deliberately not printed."
             exit 1
           fi
 
           echo "Blocklist slots loaded and compiled: ${#SLOT_PATTERNS[@]}"
 
-          tmp="$(mktemp -d)"
-
-          # Canary. A compile check proves a slot can be evaluated; it does not
-          # prove the slot is discriminating. A value carrying an empty
-          # alternative (`a||b`) or a bare `.*` compiles perfectly and then
-          # matches every input, which fails every PR for no reason and is
-          # indistinguishable from a real hit. So each slot is run against a
-          # deliberately meaningless control string that nothing legitimate can
-          # blocklist. A slot that matches it is over-broad and fails the build
-          # by name. Values are still never printed.
+          # Canary. Compiling proves a slot can be evaluated; it does not prove
+          # the slot discriminates. An empty alternative (`a||b`) or a bare `.*`
+          # compiles perfectly and then matches every input - indistinguishable
+          # from a real hit, and it fails every PR for no reason. So each slot is
+          # run against a deliberately meaningless control string that nothing
+          # legitimate can blocklist. A slot that matches it is over-broad and
+          # fails the build by name. Values are still never printed.
           CANARY='zq-canary-000 lorem ipsum dolor sit amet zq-canary-999'
           printf '%s\n' "$CANARY" > "$tmp/canary"
           broad=0
           for i in "${!SLOT_PATTERNS[@]}"; do
             rc=0
-            grep -qiE -e "${SLOT_PATTERNS[$i]}" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+            grep -qiE -f "$tmp/slot-$i" "$tmp/canary" >/dev/null 2>&1 || rc=$?
             if [ "$rc" -eq 0 ]; then
               echo "::error::blocklist slot ${SLOT_NAMES[$i]} matches a meaningless control string - the value is over-broad (a stray empty alternative or an unanchored wildcard matches every input)"
               broad=1
@@ -157,7 +166,7 @@ jobs:
             local target="$1" i rc found=1
             for i in "${!SLOT_PATTERNS[@]}"; do
               rc=0
-              grep -qiE -e "${SLOT_PATTERNS[$i]}" "$target" >/dev/null 2>&1 || rc=$?
+              grep -qiE -f "$tmp/slot-$i" "$target" >/dev/null 2>&1 || rc=$?
               if [ "$rc" -eq 0 ]; then
                 found=0
               elif [ "$rc" -gt 1 ]; then
@@ -225,19 +234,39 @@ jobs:
             exit 0
           fi
 
-          # This pass historically used basic-regex grep while the diff scan read
+          # Same normalization as the diff pass: one pattern per line, blank
+          # lines dropped, scanned with `grep -f`.
+          tmp="$(mktemp -d)"
+          printf '%s\n' "$BLOCKLIST_3" \
+            | tr -d '\r' \
+            | grep -v '^[[:space:]]*$' > "$tmp/slot" || true
+          if [ ! -s "$tmp/slot" ]; then
+            echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 carries no usable pattern - it is set but holds only blank lines"
+            exit 1
+          fi
+
+          # This pass historically used basic-regex grep while the diff pass read
           # the same secret as an extended regex - so a pattern using alternation
           # or grouping would have been enforced in one place and silently inert
           # in the other. Both dialects are now tried and a match in either fails.
           # At least one must compile.
           use_ere=0
           use_bre=0
-          rc=0; printf 'x' | grep -qiE -e "$BLOCKLIST_3" >/dev/null 2>&1 || rc=$?
+          rc=0; printf 'x' | grep -qiE -f "$tmp/slot" >/dev/null 2>&1 || rc=$?
           [ "$rc" -le 1 ] && use_ere=1
-          rc=0; printf 'x' | grep -qi -e "$BLOCKLIST_3" >/dev/null 2>&1 || rc=$?
+          rc=0; printf 'x' | grep -qi -f "$tmp/slot" >/dev/null 2>&1 || rc=$?
           [ "$rc" -le 1 ] && use_bre=1
           if [ "$use_ere" -eq 0 ] && [ "$use_bre" -eq 0 ]; then
             echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 does not compile as either a basic or an extended regex - the tree scan cannot evaluate it"
+            exit 1
+          fi
+
+          # Same canary as the diff pass - an over-broad value would otherwise
+          # flag every tracked file.
+          printf '%s\n' 'zq-canary-000 lorem ipsum dolor sit amet zq-canary-999' > "$tmp/canary"
+          rc=0; grep -qiE -f "$tmp/slot" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 matches a meaningless control string - the value is over-broad"
             exit 1
           fi
 
@@ -248,13 +277,13 @@ jobs:
             hit=0
             if [ "$use_ere" -eq 1 ]; then
               rc=0
-              grep -IqiE -e "$BLOCKLIST_3" "$f" >/dev/null 2>&1 || rc=$?
+              grep -IqiE -f "$tmp/slot" "$f" >/dev/null 2>&1 || rc=$?
               [ "$rc" -eq 0 ] && hit=1
               [ "$rc" -gt 1 ] && hit=2
             fi
             if [ "$hit" -eq 0 ] && [ "$use_bre" -eq 1 ]; then
               rc=0
-              grep -Iqi -e "$BLOCKLIST_3" "$f" >/dev/null 2>&1 || rc=$?
+              grep -Iqi -f "$tmp/slot" "$f" >/dev/null 2>&1 || rc=$?
               [ "$rc" -eq 0 ] && hit=1
               [ "$rc" -gt 1 ] && hit=2
             fi
@@ -298,10 +327,26 @@ jobs:
 
           # Same fail-closed rule as the blocklist slots: a marker pattern that
           # does not compile fails the build instead of quietly matching nothing.
+          tmp="$(mktemp -d)"
+          printf '%s\n' "$MARKERS" \
+            | tr -d '\r' \
+            | grep -v '^[[:space:]]*$' > "$tmp/markers" || true
+          if [ ! -s "$tmp/markers" ]; then
+            echo "::error::HYGIENE_INTERNAL_MARKERS carries no usable pattern - it is set but holds only blank lines"
+            exit 1
+          fi
+
           rc=0
-          printf 'x' | grep -qiE -e "$MARKERS" >/dev/null 2>&1 || rc=$?
+          printf 'x' | grep -qiE -f "$tmp/markers" >/dev/null 2>&1 || rc=$?
           if [ "$rc" -gt 1 ]; then
             echo "::error::HYGIENE_INTERNAL_MARKERS is not a valid POSIX extended regex - the scan cannot evaluate it"
+            exit 1
+          fi
+
+          printf '%s\n' 'zq-canary-000 lorem ipsum dolor sit amet zq-canary-999' > "$tmp/canary"
+          rc=0; grep -qiE -f "$tmp/markers" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::HYGIENE_INTERNAL_MARKERS matches a meaningless control string - the value is over-broad"
             exit 1
           fi
 
@@ -310,7 +355,7 @@ jobs:
             [ -z "$f" ] && continue
             [ -f "$f" ] || continue
             rc=0
-            grep -qiE -e "$MARKERS" "$f" >/dev/null 2>&1 || rc=$?
+            grep -qiE -f "$tmp/markers" "$f" >/dev/null 2>&1 || rc=$?
             if [ "$rc" -eq 0 ]; then
               echo "::error file=$f::internal-ops content in a committed agent-doc"
               fail=1
