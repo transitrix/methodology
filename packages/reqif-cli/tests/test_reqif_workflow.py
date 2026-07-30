@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Integration test for the ReqIF package's experimental surface — workflow
 state, revision history, and suspect links (notations/packages/reqif.md
-§2.9; HUB-813, task #829).
+§2.9).
 
 Deterministic, no-API-key guard. Drives the real CLI end-to-end against a
 temp-dir copy of the worked fixture
