@@ -370,3 +370,77 @@ jobs:
             exit 1
           fi
           echo "OK - no internal-ops markers in committed CLAUDE.md/AGENTS.md."
+
+      - name: Bare hash-number references to hub work
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # A hub work item written as a bare `#813` is the worst of the banned
+          # forms: GitHub auto-links it to issue 813 OF THIS REPOSITORY, which
+          # has its own items at those numbers - so it renders as a WORKING link
+          # to something unrelated. A dead reference at least reads as broken.
+          #
+          # Unlike the blocklist above, this pattern names nothing confidential,
+          # so it lives here in the open and the failure message prints the
+          # matched token. A contributor who cannot see why the build failed
+          # routes around the rule, which is how this class of reference got
+          # onto public surfaces in the first place.
+          #
+          # Scoped to the words that precede hub work (`task`, `epic`, `hub`) so
+          # that a legitimate reference to THIS repository's own issue - the
+          # ordinary `#12`, and the `closes #12` / `fixes #12` auto-close
+          # keywords - is untouched. Write `HUB-813`; for a local item, `#12`
+          # stays correct but do not dress it as a task or an epic.
+          HASHREF='\b(task|epic|hub)s?[[:space:]:]+#[0-9]+'
+
+          fail=0
+          tmp="$(mktemp -d)"
+
+          # report <label> <file-to-scan> [annotation]
+          # Returns 0 when something matched. The matched token is printed on
+          # purpose - it is a work-item reference, never protected content.
+          report() {
+            local hits tag
+            hits="$(grep -oIiE "$HASHREF" "$2" 2>/dev/null | sort -u | tr '\n' ' ' || true)"
+            [ -n "$hits" ] || return 1
+            if [ -n "${3:-}" ]; then tag="::error ${3}::"; else tag="::error::"; fi
+            echo "${tag}bare hash-number reference to hub work in the ${1} ( ${hits}) - write HUB-<number> instead; a bare #NNN auto-links to this repository's own item of that number"
+            return 0
+          }
+
+          # 1) Added diff lines.
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ -f "$f" ] || continue
+            git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" | grep -E '^\+[^+]' > "$tmp/added" || true
+            [ -s "$tmp/added" ] || continue
+            if report diff "$tmp/added" "file=$f"; then fail=1; fi
+          done < <(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+              | grep -vxE '\.github/workflows/public-surface-hygiene\.yml' \
+              || true
+          )
+
+          # 2) PR title/body.
+          printf '%s' "$PR_TITLE" > "$tmp/title"
+          printf '%s' "$PR_BODY" > "$tmp/body"
+          if report title "$tmp/title" ""; then fail=1; fi
+          if report body "$tmp/body" ""; then fail=1; fi
+
+          # 3) Full tree - the diff pass cannot see what already landed.
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            case "$f" in .github/workflows/public-surface-hygiene.yml) continue ;; esac
+            if report tree "$f" "file=$f"; then fail=1; fi
+          done < <(git ls-files)
+
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+          echo "OK - no bare hash-number references to hub work."
