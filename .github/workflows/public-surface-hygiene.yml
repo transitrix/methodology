@@ -89,6 +89,23 @@ jobs:
           add_slot HYGIENE_BLOCKLIST_2   "${BLOCKLIST_2:-}"
           add_slot HYGIENE_BLOCKLIST_3   "${BLOCKLIST_3:-}"
 
+          # Shape check. A secret's value may carry a line break, and grep reads
+          # a multi-line pattern as a LIST of patterns - so a blank line in it
+          # becomes an empty pattern that matches every input, and the break
+          # also splits the value apart wherever it is composed with anything
+          # else. Both failures are silent. A value must be one line.
+          bad=0
+          for i in "${!SLOT_PATTERNS[@]}"; do
+            if [ "$(printf '%s' "${SLOT_PATTERNS[$i]}" | wc -l | tr -d ' ')" != "0" ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} contains a line break - the value must be a single-line pattern (grep reads a multi-line value as a list of patterns, and a blank line among them matches every input)"
+              bad=1
+            fi
+          done
+          if [ "$bad" -ne 0 ]; then
+            echo "Re-enter the named repository secret as one line, with no trailing newline. The value is deliberately not printed."
+            exit 1
+          fi
+
           # Compile check. grep exits 0/1 when it ran, 2 when the regex is
           # malformed. A slot that cannot compile fails the build - the whole
           # point of the guard is that it cannot pass by being unable to look.
