@@ -108,6 +108,32 @@ jobs:
 
           echo "Blocklist slots loaded and compiled: ${#SLOT_PATTERNS[@]}"
 
+          tmp="$(mktemp -d)"
+
+          # Canary. A compile check proves a slot can be evaluated; it does not
+          # prove the slot is discriminating. A value carrying an empty
+          # alternative (`a||b`) or a bare `.*` compiles perfectly and then
+          # matches every input, which fails every PR for no reason and is
+          # indistinguishable from a real hit. So each slot is run against a
+          # deliberately meaningless control string that nothing legitimate can
+          # blocklist. A slot that matches it is over-broad and fails the build
+          # by name. Values are still never printed.
+          CANARY='zq-canary-000 lorem ipsum dolor sit amet zq-canary-999'
+          printf '%s\n' "$CANARY" > "$tmp/canary"
+          broad=0
+          for i in "${!SLOT_PATTERNS[@]}"; do
+            rc=0
+            grep -qiE -e "${SLOT_PATTERNS[$i]}" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+            if [ "$rc" -eq 0 ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} matches a meaningless control string - the value is over-broad (a stray empty alternative or an unanchored wildcard matches every input)"
+              broad=1
+            fi
+          done
+          if [ "$broad" -ne 0 ]; then
+            echo "Repair the named repository secret's value. The value is deliberately not printed."
+            exit 1
+          fi
+
           # scan <file> -> 0 when any slot matches, 1 when none does.
           # A slot that errors at scan time counts as a match (fail closed).
           scan() {
@@ -126,7 +152,6 @@ jobs:
           }
 
           fail=0
-          tmp="$(mktemp -d)"
 
           # 1) Diff scan. Restrict to added/changed lines (unified-diff lines
           # starting with a single '+', excluding the '+++' file header). Two
