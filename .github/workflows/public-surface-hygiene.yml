@@ -210,11 +210,24 @@ jobs:
             fail=1
           fi
 
+          # 3) Commit-message scan, over this pull request's own commits.
+          #
+          # This surface was scanned by nothing until 2026-07-30, and it is the
+          # one that holds the most: a message is written once, lands in the
+          # default branch, and no later pass over files or PR metadata can see
+          # it. Only BASE..HEAD is read, so a PR is judged on what it adds and
+          # existing history is not re-litigated on every run.
+          git log --format=%B "$BASE_SHA..$HEAD_SHA" > "$tmp/messages" 2>/dev/null || true
+          if [ -s "$tmp/messages" ] && scan "$tmp/messages"; then
+            echo "::error::public-surface hygiene check failed on a commit message"
+            fail=1
+          fi
+
           if [ "$fail" -ne 0 ]; then
-            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. Note that a PR body is scanned on push only - editing the body does not re-run this check, so an empty commit is needed to re-trigger it. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
+            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. Note that PR metadata is read on push - editing a title or body does not re-run this check, so an empty commit is needed to re-trigger it. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
             exit 1
           fi
-          echo "OK - no internal-vocabulary matches on diff or PR metadata."
+          echo "OK - no internal-vocabulary matches on the diff, PR metadata, or a commit message."
 
       - name: Full-tree scan
         shell: bash
@@ -381,32 +394,41 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Two rules, on two different surfaces.
+          # A work-item reference does not go on a public surface at all. Not in
+          # committed content, not in a PR title, not in a PR body, not in a
+          # commit message. The reference lives in the hub issue, which already
+          # carries a link to this pull request - the trail exists in the one
+          # place that can resolve it.
           #
-          # 1. COMMITTED CONTENT carries no reference to a work item at all -
-          # not the neutral `HUB-813` form, not a bare `#813`. The evidence for
-          # the stronger rule is the sweep that produced it: of ~110 such
-          # references across this repository and its sibling, not one carried
-          # information a reader could use. The prose beside them already said
-          # what the code does and why; the number was decoration that only a
-          # maintainer with private access could resolve, and it aged badly the
-          # moment a task was renumbered or closed. What a line of code needs is
-          # the REASON, and a durable reason is a decision - cited by name and
-          # date ("the 2026-07-27 packages decision"), which is stable, public,
-          # and resolvable by anyone.
+          # Two findings put it here, in order.
           #
-          # 2. PR TITLE AND BODY may cite a work item, and there `HUB-813` is
-          # the form. A pull request is a transient coordination surface, not
-          # content anyone reads later. A bare `#813` is still forbidden there:
-          # GitHub auto-links it to the item numbered 813 IN THIS REPOSITORY,
-          # which renders as a working link to something unrelated - worse than
-          # a dead reference, because it reads as correct.
+          # The first was that the reference is not the reason. Of ~110 such
+          # references swept out of this repository and its sibling, not one
+          # carried information a reader could use: the prose beside them said
+          # what the code does and why, the number resolved only for a
+          # maintainer with private access, and it rotted the moment a work item
+          # was renumbered or closed. What a line needs is the REASON, and a
+          # durable reason is a decision - cited by name and date ("the
+          # 2026-07-27 packages decision"), stable and resolvable by anyone.
           #
-          # A reference to this repository's own issue or PR is untouched by
-          # either rule: a plain `#12`, and the `closes #12` / `fixes #12`
-          # auto-close keywords, mean what they say. Only work-item forms match:
-          # the `HUB-` prefix, or a hash-number dressed as task / epic / hub
-          # work.
+          # The second killed the carve-out that briefly allowed a citation in
+          # PR metadata on the theory that a pull request is transient. It is
+          # not: this repository squashes with COMMIT_OR_PR_TITLE and merges
+          # with PR_TITLE, so a PR title BECOMES a commit subject on the default
+          # branch - permanently, and on a public surface. A rule that depends
+          # on a per-repository merge setting breaks quietly the day the setting
+          # differs. So: nowhere.
+          #
+          # Commit messages are scanned for the same reason, and because nothing
+          # was scanning them at all - the sweeps that cleaned files and PR
+          # metadata never looked at a commit message, and the history shows it.
+          # Only the pull request's own commits are read, so history is not
+          # re-litigated on every PR.
+          #
+          # A reference to this repository's own issue or PR is untouched: a
+          # plain `#12`, and the `closes #12` / `fixes #12` auto-close keywords,
+          # mean what they say. Only work-item forms match: the `HUB-` prefix,
+          # or a hash-number dressed as task / epic / hub work.
           #
           # These patterns name nothing confidential, so they live here in the
           # open and the matched token IS printed. A contributor who cannot see
@@ -415,7 +437,6 @@ jobs:
           # excluded from its own scan; that exclusion is also the escape hatch
           # for a doc that must legitimately show the form.
           HUBREF='(\bHUB-[0-9]+|\b(task|epic|hub)s?[[:space:]:]+#[0-9]+)'
-          HASHREF='\b(task|epic|hub)s?[[:space:]:]+#[0-9]+'
 
           fail=0
           tmp="$(mktemp -d)"
@@ -431,8 +452,7 @@ jobs:
             return 0
           }
 
-          COMMITTED_ADVICE="committed content carries no work-item reference; keep the reason and drop the number, or cite the decision by name and date"
-          METADATA_ADVICE="write HUB-<number>; a bare #NNN auto-links to this repository's own item of that number"
+          ADVICE="a work-item reference does not go on a public surface - keep the reason and drop the number, cite the decision by name and date, and leave the work-item trail in the hub issue"
 
           # 1) Added diff lines.
           while IFS= read -r f; do
@@ -440,27 +460,36 @@ jobs:
             [ -f "$f" ] || continue
             git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" | grep -E '^\+[^+]' > "$tmp/added" || true
             [ -s "$tmp/added" ] || continue
-            if report "$HUBREF" diff "$tmp/added" "file=$f" "$COMMITTED_ADVICE"; then fail=1; fi
+            if report "$HUBREF" diff "$tmp/added" "file=$f" "$ADVICE"; then fail=1; fi
           done < <(
             git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
               | grep -vxE '\.github/workflows/public-surface-hygiene\.yml' \
               || true
           )
 
-          # 2) PR title/body - HUB-NNN is allowed here, the bare form is not.
+          # 2) PR title and body. The title becomes a commit subject on merge,
+          # so it is committed content with a delay.
           printf '%s' "$PR_TITLE" > "$tmp/title"
           printf '%s' "$PR_BODY" > "$tmp/body"
-          if report "$HASHREF" title "$tmp/title" "" "$METADATA_ADVICE"; then fail=1; fi
-          if report "$HASHREF" body "$tmp/body" "" "$METADATA_ADVICE"; then fail=1; fi
+          if report "$HUBREF" title "$tmp/title" "" "$ADVICE"; then fail=1; fi
+          if report "$HUBREF" body "$tmp/body" "" "$ADVICE"; then fail=1; fi
 
-          # 3) Full tree - the diff pass cannot see what already landed.
+          # 3) This pull request's own commit messages.
+          if [ -n "${BASE_SHA:-}" ] && [ -n "${HEAD_SHA:-}" ]; then
+            git log --format=%B "$BASE_SHA..$HEAD_SHA" > "$tmp/messages" 2>/dev/null || true
+            if [ -s "$tmp/messages" ]; then
+              if report "$HUBREF" "commit message" "$tmp/messages" "" "$ADVICE"; then fail=1; fi
+            fi
+          fi
+
+          # 4) Full tree - the diff pass cannot see what already landed.
           while IFS= read -r f; do
             [ -f "$f" ] || continue
             case "$f" in .github/workflows/public-surface-hygiene.yml) continue ;; esac
-            if report "$HUBREF" tree "$f" "file=$f" "$COMMITTED_ADVICE"; then fail=1; fi
+            if report "$HUBREF" tree "$f" "file=$f" "$ADVICE"; then fail=1; fi
           done < <(git ls-files)
 
           if [ "$fail" -ne 0 ]; then
             exit 1
           fi
-          echo "OK - no work-item references in committed content, none in the banned form in PR metadata."
+          echo "OK - no work-item references on any scanned surface."
