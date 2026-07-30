@@ -51,7 +51,7 @@ This only works on an artefact that is **already admission_state-bearing** — t
 
 ## `review` — interactive one-card admission review
 
-`review` is an optional convenience over `list-undecided` + `record` for a human working a queue at a terminal, one item at a time. It invents no new decision path: every `accept` / `reject` / `defer` answer is exactly one `record` call, same contract as above.
+`review` is an optional convenience over `list-undecided` + `record` for a human working a queue at a terminal, one item at a time (hub epic `HUB-854`). It invents no new decision path: every `accept` / `reject` / `defer` answer is exactly one `record` call, same contract as above.
 
 - **One card at a time.** Each undecided item is shown with whatever the gate artifact already carries — `id` / `kind`, `confidence`, `flags` (`coverage_flag` + `validation_flags` for a review-queue candidate), `source` (`derived_from_source` for a review-digest item), and a short `summary` (`coverage_reason` / segment `locator` / amendment `change_description`). No LLM involved — absent fields are simply omitted from the card.
 - **`stop` (alias `quit`) is a first-class exit**, not a decision. It leaves the current card and everything after it in the snapshot **undecided** — absence of a `decisions[]` row is never `reject`. `apply` is never run automatically on stop.

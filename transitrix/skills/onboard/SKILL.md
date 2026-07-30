@@ -412,6 +412,43 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 
 Codex artefacts carry no `notation:` header (they are zone primitives, not view documents). Schema: `notations/elements/14-codex.md`.
 
+### Element primitive templates (reference — not yet wired into Step 2/3)
+
+One copy-and-fill template per ArchiMate layer, at `canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml` once filled. These are reference copies for manual use; the automated flow in Step 3 still authors element files inline per-TYPE (see § there) rather than copying these.
+
+| Layer | Template file |
+|---|---|
+| 01 Motivation (DRIVER, GOAL, CONSTRAINT, REQUIREMENT) | `templates/elements/01_motivation_template.yaml` |
+| 02 Business (CAPABILITY, PROCESS, PRODUCT, ROLE, UNIT, EMPLOYEE, RULE) | `templates/elements/02_business_template.yaml` |
+| 03 Application (APPLICATION, INTEGRATION) | `templates/elements/03_application_template.yaml` |
+| 04 Technology (no TYPE registered yet) | `templates/elements/04_technology_template.yaml` |
+| 05 Implementation (ACTION, CHANGE) | `templates/elements/05_implementation_template.yaml` |
+
+### Relations template (reference)
+
+| Purpose | Template file | Destination |
+|---|---|---|
+| First-class time-aware relation (REL) | `templates/relations/relation_template.yaml` | `canon/relations/<ID>.yaml` |
+
+Schema: `notations/elements/17-relations.md`.
+
+### Operations zone templates (reference — see `method/02-team-operations.md` §8)
+
+Copied into an adopter's own `.templates/operations/` when it adopts the operations convention; not part of the `canon`/`field`/`codex` model zones.
+
+| Purpose | Template file |
+|---|---|
+| Architecture Decision Record | `../adr/templates/ADR-template.md` |
+| Work Item | `templates/operations/WI-template.md` |
+| Central ADL harvest config | `templates/operations/adl-harvest.config.template.yaml` |
+| Central ADL index placeholder | `templates/operations/central-adl-index.template.md` |
+| Per-user settings | `templates/operations/settings-template.md` |
+
+
+### Additional BPMN example (reference)
+
+`templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml` — a multi-lane, multi-application worked BPMN flow, alongside the minimal starter at `templates/bpmn.bpmn.transitrix.yaml` used by Step 3.
+
 ---
 
 ## Reference reads on demand

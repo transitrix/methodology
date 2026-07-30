@@ -1,0 +1,44 @@
+# Transitrix element-primitive template — Business layer (02_business)
+# Canonical schema: notations/ELEMENT_PRIMITIVES.md §3 (common envelope) + the
+# per-TYPE field sets in §7. One element per file, at
+#   canon/elements/02_business/<plural-type>/<ID>.yaml
+#
+# TYPEs in this layer:
+#   CAPABILITY   notation: capability   folder capabilities/  fields: notations/views/05-capability-map.md §13
+#   PROCESS      notation: process      folder processes/     fields: ELEMENT_PRIMITIVES.md §7.5
+#   PRODUCT      notation: product      folder products/      fields: §7.6
+#   ROLE         notation: role         folder roles/         fields: §7.9
+#   UNIT         notation: unit         folder units/         fields: §7.10
+#   EMPLOYEE     notation: employee     folder employees/     fields: §7.11
+#   RULE         notation: rule         folder rules/         fields: §7.12
+#
+# Worked examples: organizations/acme_corp/canon/elements/02_business/.
+# CAPABILITY uses the V/H ID sub-grammar (IDS §2); its time-varying attributes
+# (current_maturity, owner_role, target_date) live in a <id>.history.yaml sidecar
+# (CONTRACT.md §9), never inline.
+
+notation: process                      # element TYPE short name (lowercased TYPE)
+id: PROCESS-EXAMPLE-1                   # canonical ID — IDS_AND_REFERENCES.md §1
+name: "Human-readable label"
+# type: "digital_product"              # per-TYPE subtype where defined (PRODUCT, APPLICATION)
+description: >
+  One-paragraph elaboration.
+
+# ── per-TYPE fields (ELEMENT_PRIMITIVES.md §7) ──
+# PROCESS:  owner_role: ROLE-… ; capability: CAPABILITY-… ; maturity: 1-5 ; participants: [ROLE-…|ACTOR-…] ; flow: { steps, sequence }
+# PRODUCT:  type ; capabilities: [CAPABILITY-…] ; processes: [PROCESS-…] ; supporting_apps: [APPLICATION-…]
+# ROLE / UNIT / EMPLOYEE:  responsibility_area / unit / roles …
+# RULE:     statement ; applies_to: [PROCESS-…|APPLICATION-…] ; severity ; source ; owner_role
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-01-01"              # quoted ISO 8601 (CONTRACT.md §4)
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-01"
+valid_to: null

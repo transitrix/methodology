@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Unit test for `review` — the interactive one-card admission review loop
-// (src/review.mjs). The CLI's TTY guard
+// (src/review.mjs, HUB-854, task HUB-855). The CLI's TTY guard
 // makes the real `review` command untestable from a piped subprocess (by design —
 // see test_decisions_integrity.py's non-TTY guard check), so this test drives
 // runReview() directly with a scripted `ask()` in place of a real terminal.

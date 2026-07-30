@@ -1,0 +1,32 @@
+# Transitrix element-primitive template — Technology layer (04_technology)
+#
+# NOTE: the TYPE registry (notations/IDS_AND_REFERENCES.md §3.1) does not yet
+# register any element TYPE for the technology layer. The layer folder exists
+# for forward compatibility; when a technology-layer TYPE is registered it will
+# follow the common envelope below (ELEMENT_PRIMITIVES.md §3), one element per
+# file at canon/elements/04_technology/<plural-type>/<ID>.yaml.
+#
+# Until then, do not author technology-layer element files — there is no
+# canonical TYPE prefix to use. (The legacy ArchiMate Node / SystemSoftware /
+# Artifact shape this template previously carried has been removed; it predated
+# the canonical schema and is not part of the registry.)
+
+# Common envelope to use once a technology TYPE is registered:
+#
+# notation: <type>                     # lowercased registry TYPE
+# id: <TYPE>-EXAMPLE-1                  # canonical ID — IDS_AND_REFERENCES.md §1
+# name: "Human-readable label"
+# description: >
+#   One-paragraph elaboration.
+#
+# # per-TYPE fields per ELEMENT_PRIMITIVES.md §7
+#
+# # Admission record (CONTRACT.md §6)
+# zone: canon
+# admitted_at: "2026-01-01"
+# admitted_by: "firstname.lastname"
+# gate_checks: { uniqueness: pass, consistency: pass, completeness: pass }
+#
+# # Primitive lifecycle (CONTRACT.md §7)
+# valid_from: "2026-01-01"
+# valid_to: null

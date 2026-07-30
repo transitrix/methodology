@@ -1,0 +1,38 @@
+# Transitrix element-primitive template — Motivation layer (01_motivation)
+# Canonical schema: notations/ELEMENT_PRIMITIVES.md §3 (common envelope) + the
+# per-TYPE field sets in §7. One element per file, at
+#   canon/elements/01_motivation/<plural-type>/<ID>.yaml
+#
+# TYPEs in this layer:
+#   DRIVER       notation: driver        folder factors/       fields: ELEMENT_PRIMITIVES.md §7.1
+#   GOAL         notation: goal          folder goals/         fields: §7.2
+#   CONSTRAINT   notation: constraint    folder constraints/   fields: §7.13
+#   REQUIREMENT  notation: requirement   folder requirements/  fields: notations/elements/15-requirement.md
+#
+# Worked examples: organizations/acme_corp/canon/elements/01_motivation/.
+# Copy the envelope below, set notation/id/name, and add the per-TYPE fields.
+
+notation: goal                         # element TYPE short name (lowercased TYPE)
+id: GOAL-EXAMPLE-1                      # canonical ID — IDS_AND_REFERENCES.md §1 (no leading zeros)
+name: "Human-readable label"           # single label field — no `title` alias (§3)
+# type: "Strategic Goal"               # per-TYPE subtype where defined (DRIVER: external|internal; GOAL: goal-type label)
+description: >
+  One-paragraph elaboration.
+
+# ── per-TYPE fields (ELEMENT_PRIMITIVES.md §7) ──
+# GOAL:        factors: [DRIVER-…]            (parent is a time-aware REL, not inline — §7.2)
+# DRIVER:      references_constraint: [CONSTRAINT-…]
+# CONSTRAINT / REQUIREMENT: statement / derived_from / severity / source / owner_role …
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-01-01"              # quoted ISO 8601 (CONTRACT.md §4)
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-01"
+valid_to: null
