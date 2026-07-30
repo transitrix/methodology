@@ -1,0 +1,38 @@
+# Transitrix element-primitive template — Application layer (03_application)
+# Canonical schema: notations/ELEMENT_PRIMITIVES.md §3 (common envelope) + the
+# per-TYPE field sets in §7. One element per file, at
+#   canon/elements/03_application/<plural-type>/<ID>.yaml
+#
+# TYPEs in this layer:
+#   APPLICATION  notation: application   folder applications/  fields: ELEMENT_PRIMITIVES.md §7.7
+#   INTEGRATION  notation: integration   folder integrations/  fields: §7.8 (view-defined/nested in v1; promotable)
+#
+# Worked examples: organizations/acme_corp/canon/elements/03_application/.
+# Time-varying fields (owner_role, vendor, lifecycle_stage, maturity) live in a
+# <id>.history.yaml sidecar (CONTRACT.md §9), never inline (would trigger VERSIONED-004).
+
+notation: application                  # element TYPE short name (lowercased TYPE)
+id: APPLICATION-EXAMPLE-1              # canonical ID — IDS_AND_REFERENCES.md §1
+name: "Human-readable label"
+type: application                      # application | integration | platform | data_store (REQUIRED)
+description: >
+  One-paragraph elaboration.
+
+# ── per-TYPE fields (ELEMENT_PRIMITIVES.md §7.7) ──
+# domain: "…"
+# capabilities: [CAPABILITY-…]
+# products: [PRODUCT-…]
+# (owner_role / vendor / lifecycle_stage / maturity are time-varying — sidecar, not inline)
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-01-01"              # quoted ISO 8601 (CONTRACT.md §4)
+admitted_by: "firstname.lastname"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-01-01"
+valid_to: null

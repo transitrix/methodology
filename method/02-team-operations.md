@@ -277,10 +277,10 @@ A starter template lives at [`operations/README.md`](https://github.com/transitr
 
 ## 8. Templates
 
-Two starter templates live under `.templates/operations/` in the adopter repository:
+Two starter templates live in this repository (an adopter copies one into its own `.templates/operations/` when starting the convention):
 
-- [`ADR-template.md`](https://github.com/transitrix/acme-corp/blob/main/.templates/operations/ADR-template.md)
-- [`WI-template.md`](https://github.com/transitrix/acme-corp/blob/main/.templates/operations/WI-template.md)
+- [`ADR-template.md`](../transitrix/skills/adr/templates/ADR-template.md) — under `transitrix/skills/adr/templates/`, alongside the skill that writes records. Its front matter carries the date-slug id of §3.1; there is deliberately no second copy seeding the legacy `ADR-NNNN` form, which §3.1.2 keeps for existing records only.
+- [`WI-template.md`](../transitrix/skills/onboard/templates/operations/WI-template.md) — under `transitrix/skills/onboard/templates/operations/`.
 
 Copy a template into the matching subfolder, fill in the front-matter and body, commit.
 

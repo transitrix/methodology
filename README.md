@@ -48,15 +48,12 @@ Using the Claude Code plugin workflow instead? Same result, from the terminal `c
 /transitrix:onboard
 ```
 
-Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — same approach, illustrated against the worked [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
+Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](https://github.com/transitrix/acme-corp/blob/main/GETTING_STARTED.md)** in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo — same approach, against the worked `acme_corp` example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
 New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
 
 ## Documentation
 
-- **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — a first modelling session, step by step, illustrated against the `acme-corp` worked example.
-- **[`WALKTHROUGH.md`](WALKTHROUGH.md)** — a guided tour of the `acme-corp` worked example, read as one story.
-- **[`notations/CONVENTIONS.md`](notations/CONVENTIONS.md)** — ID grammar, naming, and best-practice checklist for authoring canon content.
 - **[`patterns/implementation-tiers.md`](patterns/implementation-tiers.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
 - **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
@@ -74,7 +71,6 @@ Process & releases:
 Tooling:
 
 - **[`integration/studio.md`](integration/studio.md)** — how to use Transitrix Studio (the reference VS Code extension and CLI for editing all Transitrix custom formats).
-- **[`integration/plantuml.md`](integration/plantuml.md)** — adopter guide for the supplementary `.puml` diagram workflow (sequence, component, deployment, …).
 - **[`integration/tooling.md`](integration/tooling.md)** — broader tooling and ecosystem notes.
 - **[`integration/ci-example.yaml`](integration/ci-example.yaml)** — CI template that gates pull requests on validation.
 - **[`transitrix/`](transitrix/)** — the Claude / Copilot Agent Skills plugin (`skills/onboard/`, `skills/ingest/`, …).

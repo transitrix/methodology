@@ -43,7 +43,7 @@ Deterministic, no-API-key guard. Nine parts:
      original after STRIPPED (must admit the redacted copy); the epic's name+email+phone
      reproduction is not admitted verbatim; privacy-report.yaml never leaks a fragment
      verbatim; `enabled: false` is an explicit adopter opt-out.
-  S. workflow-status — one invocation reports every human gate's
+  S. workflow-status (HUB-824) — one invocation reports every human gate's
      phase + count (ADR/WI/canon element/REQUIREMENT-CONSTRAINT-overdue/ingest batch);
      author:agent ADRs counted separately from human-proposed; --data-free strips ids/paths;
      --format yaml matches the default table's counts; an out-of-vocabulary or missing phase
@@ -1217,7 +1217,7 @@ def part_p_preset_version_currency():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part Q — origin pass-through + REQ-004 validation ───────────
+# ── Part Q — origin pass-through + REQ-004 validation (task #439) ─
 
 def part_q_origin_classification():
     """emit-candidates carries origin through for REQUIREMENT elements; validate enforces
@@ -1432,7 +1432,7 @@ def part_r_privacy_gate():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part S — workflow-status ──────────────────────
+# ── Part S — workflow-status (HUB-824) ────────────
 
 def part_s_workflow_status():
     """workflow-status reports every human gate's phase + count in one invocation:

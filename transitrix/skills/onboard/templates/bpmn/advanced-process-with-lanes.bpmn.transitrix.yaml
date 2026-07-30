@@ -1,0 +1,130 @@
+# Transitrix BPMN process template — multi-lane (copy-and-fill)
+# Spec:      notations/views/01-bpmn.md
+# Extension: *.bpmn.transitrix.yaml
+# Location:  canon/views/bpmn/   (one pool; lanes partition it; file-local node labels)
+#
+# Swimlanes are the actors: each lane sets performed_by_role (and optionally
+# supported_by_application) as the default for its tasks; a task overrides with its
+# own performed_by_role / supported_by_application (01-bpmn.md §7.2). These reference
+# canon primitives (ROLE-… / APPLICATION-…) and are validated by BPMN-XREF-001.
+#
+# Worked order-fulfilment flow: place → validate → (reject | fulfil) → pick/pack →
+# QC (with a rework loop) → ship → deliver → confirm.
+
+notation: bpmn
+spec_version: "0.1"
+
+process:
+  id: order-fulfilment
+  name: "Order Fulfilment"
+  pools:
+    - id: acme
+      name: "Acme Corp"
+      lanes:
+        - id: customer
+          name: "Customer"
+          performed_by_role: ROLE-CUSTOMER-1
+          elements:
+            - id: start
+              type: startEvent
+              name: "Order placed"
+            - id: confirm-delivery
+              type: task
+              name: "Confirm delivery"
+            - id: end-delivered
+              type: endEvent
+              name: "Order delivered"
+
+        - id: sales
+          name: "Sales Team"
+          performed_by_role: ROLE-SALES-1
+          supported_by_application: APPLICATION-CRM-1     # lane default system
+          elements:
+            - id: receive-order
+              type: task
+              name: "Receive order"
+            - id: validate-order
+              type: serviceTask
+              name: "Validate order"
+            - id: order-valid
+              type: exclusiveGateway
+              name: "Order valid?"
+            - id: notify-rejected
+              type: serviceTask
+              name: "Notify customer — rejected"
+              supported_by_application: APPLICATION-NOTIFICATION-1   # override the lane CRM default
+            - id: end-rejected
+              type: endEvent
+              name: "Order rejected"
+            - id: send-to-warehouse
+              type: task
+              name: "Send order to warehouse"
+              supported_by_application: APPLICATION-WMS-1
+            - id: notify-shipped
+              type: serviceTask
+              name: "Notify customer — shipped"
+              supported_by_application: APPLICATION-NOTIFICATION-1
+
+        - id: warehouse
+          name: "Warehouse"
+          performed_by_role: ROLE-WAREHOUSE-MANAGER-1
+          supported_by_application: APPLICATION-WMS-1
+          elements:
+            - id: pick-items
+              type: userTask
+              name: "Pick items"
+              performed_by_role: ROLE-WAREHOUSE-PICKER-1    # override the lane manager default
+            - id: pack-items
+              type: userTask
+              name: "Pack items"
+              performed_by_role: ROLE-WAREHOUSE-PACKER-1
+            - id: ready-for-qc
+              type: exclusiveGateway
+              name: "Ready for QC"                          # join: first pack, or a repack loop-back
+            - id: quality-check
+              type: serviceTask
+              name: "Quality check"
+              supported_by_application: APPLICATION-QMS-1
+            - id: package-approved
+              type: exclusiveGateway
+              name: "Package approved?"
+            - id: repack
+              type: userTask
+              name: "Repack package"
+              performed_by_role: ROLE-WAREHOUSE-PACKER-1
+            - id: handoff-logistics
+              type: task
+              name: "Hand off to logistics"
+
+        - id: logistics
+          name: "Logistics Partner"
+          performed_by_role: ROLE-LOGISTICS-PROVIDER-1
+          supported_by_application: APPLICATION-LOGISTICS-1
+          elements:
+            - id: ship-package
+              type: task
+              name: "Ship package"
+            - id: deliver-package
+              type: task
+              name: "Deliver package"
+
+  flows:
+    - { from: start, to: receive-order }
+    - { from: receive-order, to: validate-order }
+    - { from: validate-order, to: order-valid }
+    - { from: order-valid, to: send-to-warehouse, condition: "order_valid == true" }
+    - { from: order-valid, to: notify-rejected, default: true }
+    - { from: notify-rejected, to: end-rejected }
+    - { from: send-to-warehouse, to: pick-items }
+    - { from: pick-items, to: pack-items }
+    - { from: pack-items, to: ready-for-qc }
+    - { from: repack, to: ready-for-qc }
+    - { from: ready-for-qc, to: quality-check }
+    - { from: quality-check, to: package-approved }
+    - { from: package-approved, to: handoff-logistics, condition: "package_approved == true" }
+    - { from: package-approved, to: repack, default: true }
+    - { from: handoff-logistics, to: ship-package }
+    - { from: ship-package, to: notify-shipped }
+    - { from: notify-shipped, to: deliver-package }
+    - { from: deliver-package, to: confirm-delivery }
+    - { from: confirm-delivery, to: end-delivered }
