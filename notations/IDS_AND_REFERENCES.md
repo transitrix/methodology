@@ -159,7 +159,7 @@ Compliance claims linking a `REQUIREMENT` to the elements that realise it. Asser
 
 ### 3.7 Verification type
 
-The engineering V&V counterpart to `ASSERTION` (§3.6) — a claim that a protocol was run against a `REQUIREMENT`, with method, result, and pass/fail outcome. Also canonical but living **outside** the `elements/` tree, under `canon/verifications/`. Schema: [27-verification.md](elements/27-verification.md).
+The engineering verification counterpart to `ASSERTION` (§3.6) — a claim that a protocol was run against a `REQUIREMENT`, with method, result, and pass/fail outcome. Verification only, not full verification-and-validation (V&V): `verifies` resolves to `REQUIREMENT`, not a stakeholder/user need, so there is currently no validation anchor. Also canonical but living **outside** the `elements/` tree, under `canon/verifications/`. Schema: [27-verification.md](elements/27-verification.md).
 
 | TYPE | What it is |
 |---|---|
