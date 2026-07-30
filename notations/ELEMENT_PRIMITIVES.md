@@ -50,6 +50,7 @@ canon/
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
+      metrics/        METRIC-*.yaml          # §7.26 — managed indicator; measures GOAL/CAPABILITY/PROCESS
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -160,6 +161,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
 | `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
 | `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
+| `METRIC` | standalone | `metric` | motivation | `01_motivation/metrics/` | §7.26 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `STEP` | contained (in `PROCESS.flow`) → standalone (promotable) | `step` | business | `02_business/steps/` | §7.20 (inline shape: §7.5) |
@@ -188,6 +190,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `DRIVER` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the driver without losing that history. It is therefore its own catalogue element that references its `DRIVER` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
+- **`METRIC` is `standalone`, as the managed indicator, distinct from a rendered coverage figure.** A metric is what the organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing — it needs its own admission record and lifecycle because it is authored once and re-read continuously, not a fact re-derived per view render. That is also what separates it from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a report-config document with no canonical content of its own, computing a regulatory dark-cell count from `ASSERTION`/`REQUIREMENT`/codex data at render time; `METRIC` is the opposite — a first-class catalogue element naming what is measured, never a rendering. Motivation layer (`01_motivation/`) matches its grain: like `ASSESSMENT`, it is a measurement primitive over the organisation's intent, not a business/application/technology fact — even though what it measures (`GOAL` / `CAPABILITY` / `PROCESS`) may sit in a different layer. ArchiMate 3.x has no indicator/KPI element — vocabulary rule, 2026-07-30 decision — so `METRIC` carries no ArchiMate mapping (§7.26).
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is an M:N relation that lands as a `REL` kind in a separate sub-task — never inline on this element.
 - **`LOCATION` is `standalone`, justified by shared reference.** A location (an office, a country, a virtual zone) is referenced by many actors — multiple business units at the same site, many persons at the same office. Making it a first-class catalogue element lets each actor reference the same `LOCATION-…` ID without repeating the address, timezone, and country code. It is **not** a property of the actor (actors can move; the location persists), and it is not a motivation-layer element (no normative force — regulatory implications of location live in `CONSTRAINT` / `REQUIREMENT`). Business layer (`02_business/`) matches its grain: it describes where the organisation operates, not what it intends or how it executes.
 - **`BUSINESS_SERVICE` is `standalone`, as the named behaviour the organisation offers.** A Business Service (ArchiMate §8.3.4) is the externally visible behaviour a unit or role makes available to its consumers — internal teams, external customers, or partners. It is a first-class catalogue element because it is shared: multiple processes, actors, and products may reference the same service, and its ownership (which unit offers it) and capability realisation (what it exposes) are time-aware events tracked as `offers` and `realizes` REL kinds ([elements/17-relations.md](elements/17-relations.md) §3). It is not a `PROCESS` (internal execution flow), a `CAPABILITY` (the ability to perform), or a `PRODUCT` (a packaged, versioned offering). Business layer (`02_business/`) is the correct placement — it describes what the organisation does for its environment, not what the organisation intends (`01_motivation`) or how it executes internally.
@@ -240,7 +243,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
-| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
+| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`), `METRIC` (`metrics/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
@@ -818,6 +821,58 @@ A platform-level service exposed by a NODE or group of NODEs to the application 
 
 **Relations:** `uses` (`APPLICATION` → `TECHNOLOGY_SERVICE`) records application-layer consumption; `hosts` (`NODE` → `TECHNOLOGY_SERVICE`) records infrastructure hosting. Both are first-class relation kinds ([elements/17-relations.md](elements/17-relations.md) §3). The `APPLICATION` side may also carry a `technology_services[]` inline field in a future additive revision.
 
+### 7.26 `METRIC` — `01_motivation/metrics/`
+
+Motivation-layer **managed indicator** — the measure an organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing as intended. Distinct from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a **report-config document** that carries no canonical content of its own and computes a regulatory dark-cell count from `ASSERTION` / `REQUIREMENT` / codex data at render time ([views/22-coverage-metric.md](views/22-coverage-metric.md) §1); `METRIC` is the opposite — a first-class, admitted catalogue element naming what the organisation measures, with its own lifecycle, never a rendering of derived data.
+
+There is no ArchiMate counterpart for `METRIC`: ArchiMate 3.x has no dedicated indicator/KPI element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `metric`. |
+| `measures` | **yes** | list | Typed IDs of what this metric tracks — `GOAL-…`, `CAPABILITY-…`, or `PROCESS-…`. Non-empty; no other TYPE is a valid entry. |
+| `unit` | **yes** | string | The unit the value and `target` are expressed in — free-form, not enumerated (e.g. `percent`, `days`, `count`, `USD`). |
+| `target` | **yes** | number | The value the organisation aims for, in `unit`. |
+| `direction_of_good` | **yes** | string | `higher_is_better` \| `lower_is_better` \| `on_target` — how to read movement relative to `target`. `on_target` means deviation in either direction is a regression (e.g. a staffing-ratio metric where both over- and under-staffing are bad). |
+| `owner_role` | **yes** | string | `ROLE-…` accountable for tracking this metric and acting on it. |
+| `description` | recommended | string | One-paragraph elaboration of what the metric measures and why it was chosen. |
+
+**`measures` is inline, not a first-class time-aware `REL`** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A metric re-scoped to measure a different `GOAL` / `CAPABILITY` / `PROCESS` is captured by versioning the `METRIC` element itself (`valid_to` the old, admit a new), not by relation re-binding. `METRIC` carries no time series of its own — the observed value over time is an operating-state concern ([CONTRACT.md](CONTRACT.md) §9.6), not a field on this element; `METRIC` names what is measured, its unit, its target, and its direction of good, not the history of readings.
+
+```yaml
+# canon/elements/01_motivation/metrics/METRIC-CHECKOUT-CONVERSION-1.yaml
+notation: metric
+id: METRIC-CHECKOUT-CONVERSION-1
+name: "Checkout conversion rate"
+description: >
+  Share of started checkouts that complete successfully. Tracks whether
+  the checkout-simplification goal is moving the organisation's core
+  revenue lever in the intended direction.
+
+measures:
+  - GOAL-CHECKOUT-SIMPLIFICATION-1
+
+unit: percent
+target: 68
+direction_of_good: higher_is_better
+owner_role: ROLE-ECOMMERCE-LEAD-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-30"
+valid_to: null
+```
+
+No view inline shape: `METRIC` is standalone-only, like `ASSESSMENT` — it is not authored inline inside any view document.
+
 ---
 
 ## 8. Alignment with the ID grammar and TYPE registry
@@ -862,6 +917,10 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `TSVC-001` | error | A `TECHNOLOGY_SERVICE` element is missing `id`, `name`, `type`, or any required envelope field; or `id` does not match `TECHNOLOGY_SERVICE-[<middle>-]<INTEGER>`. |
 | `TSVC-002` | error | `type` is not one of `messaging`, `storage`, `api_gateway`, `database`, `compute`. |
 | `TSVC-003` | error | `node` is present but does not resolve to an admitted `NODE` in canon. |
+| `METRIC-001` | error | A `METRIC` element is missing `id`, `name`, or any required envelope field; or `id` does not match `METRIC-[<middle>-]<INTEGER>`; or a required per-TYPE field (`measures`, `unit`, `target`, `direction_of_good`, `owner_role`) is missing. |
+| `METRIC-002` | error | `measures` is empty, or an entry does not resolve to an admitted `GOAL`, `CAPABILITY`, or `PROCESS` in canon. |
+| `METRIC-003` | error | `direction_of_good` is not one of `higher_is_better`, `lower_is_better`, `on_target`. |
+| `METRIC-004` | error | `owner_role` does not resolve to an admitted `ROLE` in canon. |
 
 ---
 
