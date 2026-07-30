@@ -7,18 +7,33 @@ name: Public-surface hygiene
 # only — never echoes the matched line, the diff hunk, the blocklist regex, or
 # any matched term. Reports file path only.
 #
-# An optional second secret, HYGIENE_BLOCKLIST_2, holds a further self-contained
-# regex read the same way and OR-ed into the same scan; it is a no-op when unset.
-# Same never-print discipline — patterns live only in the secret.
+# Further optional secrets (HYGIENE_BLOCKLIST_HUB, _2, _3) hold additional
+# self-contained regexes read the same way; each is a no-op when unset. Same
+# never-print discipline — patterns live only in the secret.
+#
+# A secret's value may hold one pattern or several, one per line — grep's own
+# `-f` semantics. Blank lines are dropped before use: a blank line is an empty
+# pattern that matches every input, which turns the guard from a filter into a
+# wall and is indistinguishable from a real hit.
+#
+# The guard fails closed, and that is a correction, not a nicety. Every slot
+# used to be concatenated into one alternation and evaluated with a single
+# `grep -qiE` inside an `if` condition. Two consequences, both silent:
+# one malformed slot invalidated the whole expression, and grep's exit code 2
+# (bad regex) reads as "no match" in a condition — so a guard unable to evaluate
+# anything printed OK and passed the build. Now: each slot is a separate regex,
+# every slot is compile-checked before use, a slot that does not compile fails
+# the build by name, and a slot that errors mid-scan counts as a match.
 #
 # Excluded from the diff scan: this workflow file itself and .gitignore — both
 # legitimately reference an internal-runner ignore pattern and would otherwise
-# self-trip.
+# self-trip. Note that this exclusion is also a blind spot: content in these two
+# files is scanned by nothing. Keep them clean by hand.
 #
-# Skips cleanly when the secret is unavailable (e.g. PRs from forks) so external
-# contributors are not blocked by a guard that cannot evaluate them.
+# Skips cleanly when HYGIENE_BLOCKLIST is unavailable (e.g. PRs from forks) so
+# external contributors are not blocked by a guard that cannot evaluate them.
 #
-# Two further guards cover the CLAUDE.md/AGENTS.md leak channel (hub #770):
+# Two further guards cover the CLAUDE.md/AGENTS.md leak channel (HUB-770):
 #
 # - Filename guard (unconditional): `CLAUDE.md` is gitignored maintainer-local
 #   content and must never be committed anywhere in the tree. This check is
@@ -65,43 +80,138 @@ jobs:
             exit 0
           fi
 
-          PATTERN="${BLOCKLIST}${BLOCKLIST_HUB:+|${BLOCKLIST_HUB}}${BLOCKLIST_2:+|(${BLOCKLIST_2})}${BLOCKLIST_3:+|(${BLOCKLIST_3})}"
+          # Slots are held as parallel arrays: a name (safe to print - it is
+          # already in this file) and a pattern (never printed).
+          SLOT_NAMES=()
+          SLOT_PATTERNS=()
+          add_slot() {
+            [ -n "${2:-}" ] || return 0
+            SLOT_NAMES+=("$1")
+            SLOT_PATTERNS+=("$2")
+          }
+          add_slot HYGIENE_BLOCKLIST     "${BLOCKLIST:-}"
+          add_slot HYGIENE_BLOCKLIST_HUB "${BLOCKLIST_HUB:-}"
+          add_slot HYGIENE_BLOCKLIST_2   "${BLOCKLIST_2:-}"
+          add_slot HYGIENE_BLOCKLIST_3   "${BLOCKLIST_3:-}"
+
+          tmp="$(mktemp -d)"
+
+          # Normalize each slot into a pattern FILE, one pattern per line, and
+          # scan with `grep -f`. This is grep's own semantics for a multi-line
+          # pattern, so a value authored as a list keeps working - but a blank
+          # line in such a value is an empty pattern that matches every input,
+          # which silently turns the guard into a wall. Blank lines and stray
+          # carriage returns are dropped here; a slot left with nothing usable
+          # is a misconfiguration and fails the build by name.
+          bad=0
+          for i in "${!SLOT_PATTERNS[@]}"; do
+            printf '%s\n' "${SLOT_PATTERNS[$i]}" \
+              | tr -d '\r' \
+              | grep -v '^[[:space:]]*$' > "$tmp/slot-$i" || true
+            if [ ! -s "$tmp/slot-$i" ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} carries no usable pattern - it is set but holds only blank lines"
+              bad=1
+            fi
+          done
+          if [ "$bad" -ne 0 ]; then
+            echo "Re-enter or unset the named repository secret. The value is deliberately not printed."
+            exit 1
+          fi
+
+          # Compile check. grep exits 0/1 when it ran, 2 when a pattern is
+          # malformed. A slot that cannot compile fails the build - the whole
+          # point of the guard is that it cannot pass by being unable to look.
+          bad=0
+          for i in "${!SLOT_PATTERNS[@]}"; do
+            rc=0
+            printf 'x' | grep -qiE -f "$tmp/slot-$i" >/dev/null 2>&1 || rc=$?
+            if [ "$rc" -gt 1 ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} is not a valid POSIX extended regex - the scan cannot evaluate it"
+              bad=1
+            fi
+          done
+          if [ "$bad" -ne 0 ]; then
+            echo "Fix the named repository secret's value. Every line must be a valid 'grep -E' pattern - a literal parenthesis has to be escaped as \\( and every group closed. The value is deliberately not printed."
+            exit 1
+          fi
+
+          echo "Blocklist slots loaded and compiled: ${#SLOT_PATTERNS[@]}"
+
+          # Canary. Compiling proves a slot can be evaluated; it does not prove
+          # the slot discriminates. An empty alternative (`a||b`) or a bare `.*`
+          # compiles perfectly and then matches every input - indistinguishable
+          # from a real hit, and it fails every PR for no reason. So each slot is
+          # run against a deliberately meaningless control string that nothing
+          # legitimate can blocklist. A slot that matches it is over-broad and
+          # fails the build by name. Values are still never printed.
+          CANARY='zq-canary-000 lorem ipsum dolor sit amet zq-canary-999'
+          printf '%s\n' "$CANARY" > "$tmp/canary"
+          broad=0
+          for i in "${!SLOT_PATTERNS[@]}"; do
+            rc=0
+            grep -qiE -f "$tmp/slot-$i" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+            if [ "$rc" -eq 0 ]; then
+              echo "::error::blocklist slot ${SLOT_NAMES[$i]} matches a meaningless control string - the value is over-broad (a stray empty alternative or an unanchored wildcard matches every input)"
+              broad=1
+            fi
+          done
+          if [ "$broad" -ne 0 ]; then
+            echo "Repair the named repository secret's value. The value is deliberately not printed."
+            exit 1
+          fi
+
+          # scan <file> -> 0 when any slot matches, 1 when none does.
+          # A slot that errors at scan time counts as a match (fail closed).
+          scan() {
+            local target="$1" i rc found=1
+            for i in "${!SLOT_PATTERNS[@]}"; do
+              rc=0
+              grep -qiE -f "$tmp/slot-$i" "$target" >/dev/null 2>&1 || rc=$?
+              if [ "$rc" -eq 0 ]; then
+                found=0
+              elif [ "$rc" -gt 1 ]; then
+                echo "::error::blocklist slot ${SLOT_NAMES[$i]} could not be evaluated at scan time"
+                found=0
+              fi
+            done
+            return $found
+          }
 
           fail=0
 
           # 1) Diff scan. Restrict to added/changed lines (unified-diff lines
           # starting with a single '+', excluding the '+++' file header). Two
           # paths are excluded: this workflow itself and .gitignore.
-          mapfile -t changed < <(
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ -f "$f" ] || continue
+            git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" | grep -E '^\+[^+]' > "$tmp/added" || true
+            [ -s "$tmp/added" ] || continue
+            if scan "$tmp/added"; then
+              echo "::error file=$f::public-surface hygiene check failed on file diff"
+              fail=1
+            fi
+          done < <(
             git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
               | grep -vxE '\.gitignore' \
               | grep -vxE '\.github/workflows/public-surface-hygiene\.yml' \
               || true
           )
 
-          for f in "${changed[@]:-}"; do
-            [ -z "$f" ] && continue
-            [ -f "$f" ] || continue
-            if git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" \
-                 | grep -E '^\+[^+]' \
-                 | grep -qiE -e "$PATTERN"; then
-              echo "::error file=$f::public-surface hygiene check failed on file diff"
-              fail=1
-            fi
-          done
-
           # 2) PR title/body scan.
-          if printf '%s' "$PR_TITLE" | grep -qiE -e "$PATTERN"; then
+          printf '%s' "$PR_TITLE" > "$tmp/title"
+          printf '%s' "$PR_BODY" > "$tmp/body"
+          if scan "$tmp/title"; then
             echo "::error::public-surface hygiene check failed on PR title"
             fail=1
           fi
-          if printf '%s' "$PR_BODY" | grep -qiE -e "$PATTERN"; then
+          if scan "$tmp/body"; then
             echo "::error::public-surface hygiene check failed on PR body"
             fail=1
           fi
 
           if [ "$fail" -ne 0 ]; then
-            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
+            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. Note that a PR body is scanned on push only - editing the body does not re-run this check, so an empty commit is needed to re-trigger it. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
             exit 1
           fi
           echo "OK - no internal-vocabulary matches on diff or PR metadata."
@@ -124,12 +234,64 @@ jobs:
             exit 0
           fi
 
+          # Same normalization as the diff pass: one pattern per line, blank
+          # lines dropped, scanned with `grep -f`.
+          tmp="$(mktemp -d)"
+          printf '%s\n' "$BLOCKLIST_3" \
+            | tr -d '\r' \
+            | grep -v '^[[:space:]]*$' > "$tmp/slot" || true
+          if [ ! -s "$tmp/slot" ]; then
+            echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 carries no usable pattern - it is set but holds only blank lines"
+            exit 1
+          fi
+
+          # This pass historically used basic-regex grep while the diff pass read
+          # the same secret as an extended regex - so a pattern using alternation
+          # or grouping would have been enforced in one place and silently inert
+          # in the other. Both dialects are now tried and a match in either fails.
+          # At least one must compile.
+          use_ere=0
+          use_bre=0
+          rc=0; printf 'x' | grep -qiE -f "$tmp/slot" >/dev/null 2>&1 || rc=$?
+          [ "$rc" -le 1 ] && use_ere=1
+          rc=0; printf 'x' | grep -qi -f "$tmp/slot" >/dev/null 2>&1 || rc=$?
+          [ "$rc" -le 1 ] && use_bre=1
+          if [ "$use_ere" -eq 0 ] && [ "$use_bre" -eq 0 ]; then
+            echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 does not compile as either a basic or an extended regex - the tree scan cannot evaluate it"
+            exit 1
+          fi
+
+          # Same canary as the diff pass - an over-broad value would otherwise
+          # flag every tracked file.
+          printf '%s\n' 'zq-canary-000 lorem ipsum dolor sit amet zq-canary-999' > "$tmp/canary"
+          rc=0; grep -qiE -f "$tmp/slot" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::blocklist slot HYGIENE_BLOCKLIST_3 matches a meaningless control string - the value is over-broad"
+            exit 1
+          fi
+
           fail=0
           while IFS= read -r f; do
             [ -f "$f" ] || continue
             case "$f" in .github/workflows/public-surface-hygiene.yml|.gitignore) continue ;; esac
-            if grep -Iqi -e "$BLOCKLIST_3" "$f" 2>/dev/null; then
+            hit=0
+            if [ "$use_ere" -eq 1 ]; then
+              rc=0
+              grep -IqiE -f "$tmp/slot" "$f" >/dev/null 2>&1 || rc=$?
+              [ "$rc" -eq 0 ] && hit=1
+              [ "$rc" -gt 1 ] && hit=2
+            fi
+            if [ "$hit" -eq 0 ] && [ "$use_bre" -eq 1 ]; then
+              rc=0
+              grep -Iqi -f "$tmp/slot" "$f" >/dev/null 2>&1 || rc=$?
+              [ "$rc" -eq 0 ] && hit=1
+              [ "$rc" -gt 1 ] && hit=2
+            fi
+            if [ "$hit" -eq 1 ]; then
               echo "::error file=$f::public-surface hygiene check failed on tree content"
+              fail=1
+            elif [ "$hit" -eq 2 ]; then
+              echo "::error file=$f::hygiene tree scan could not evaluate this file"
               fail=1
             fi
           done < <(git ls-files)
@@ -163,15 +325,45 @@ jobs:
             exit 0
           fi
 
+          # Same fail-closed rule as the blocklist slots: a marker pattern that
+          # does not compile fails the build instead of quietly matching nothing.
+          tmp="$(mktemp -d)"
+          printf '%s\n' "$MARKERS" \
+            | tr -d '\r' \
+            | grep -v '^[[:space:]]*$' > "$tmp/markers" || true
+          if [ ! -s "$tmp/markers" ]; then
+            echo "::error::HYGIENE_INTERNAL_MARKERS carries no usable pattern - it is set but holds only blank lines"
+            exit 1
+          fi
+
+          rc=0
+          printf 'x' | grep -qiE -f "$tmp/markers" >/dev/null 2>&1 || rc=$?
+          if [ "$rc" -gt 1 ]; then
+            echo "::error::HYGIENE_INTERNAL_MARKERS is not a valid POSIX extended regex - the scan cannot evaluate it"
+            exit 1
+          fi
+
+          printf '%s\n' 'zq-canary-000 lorem ipsum dolor sit amet zq-canary-999' > "$tmp/canary"
+          rc=0; grep -qiE -f "$tmp/markers" "$tmp/canary" >/dev/null 2>&1 || rc=$?
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::HYGIENE_INTERNAL_MARKERS matches a meaningless control string - the value is over-broad"
+            exit 1
+          fi
+
           fail=0
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             [ -f "$f" ] || continue
-            if grep -qiE "$MARKERS" "$f"; then
+            rc=0
+            grep -qiE -f "$tmp/markers" "$f" >/dev/null 2>&1 || rc=$?
+            if [ "$rc" -eq 0 ]; then
               echo "::error file=$f::internal-ops content in a committed agent-doc"
               fail=1
+            elif [ "$rc" -gt 1 ]; then
+              echo "::error file=$f::marker scan could not evaluate this file"
+              fail=1
             fi
-          done < <(git ls-files | grep -iE '(^|/)(CLAUDE|AGENTS)\.md$')
+          done < <(git ls-files | grep -iE '(^|/)(CLAUDE|AGENTS)\.md$' || true)
 
           if [ "$fail" -ne 0 ]; then
             echo "Neutralize the matched internal-ops content (or remove the file) and re-push. The matched terms are deliberately not printed; refer to the file path above."
