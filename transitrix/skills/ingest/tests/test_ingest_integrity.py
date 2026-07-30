@@ -1217,7 +1217,7 @@ def part_p_preset_version_currency():
         shutil.rmtree(work, ignore_errors=True)
 
 
-# ── Part Q — origin pass-through + REQ-004 validation (task #439) ─
+# ── Part Q — origin pass-through + REQ-004 validation (HUB-439) ─
 
 def part_q_origin_classification():
     """emit-candidates carries origin through for REQUIREMENT elements; validate enforces
