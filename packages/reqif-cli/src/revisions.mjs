@@ -6,9 +6,8 @@
 //
 // A snapshot captures the object's `values` map exactly as it stood *before*
 // the edit being applied, tagged with the revision number that is ending —
-// so "what changed, when" (epic HUB-813's #829 acceptance
-// criterion) is answerable by diffing two adjacent entries (or the last
-// entry against the object's current `values`).
+// so "what changed, when" is answerable by diffing two adjacent entries
+// (or the last entry against the object's current `values`).
 
 export function currentRevision(specObject) {
   return Number.isInteger(specObject.revision) ? specObject.revision : 1;

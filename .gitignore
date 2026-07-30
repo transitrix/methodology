@@ -227,8 +227,8 @@ docs/decisions/
 
 # Keep all .md files (documentation) EXCEPT internal-only files listed above
 # Keep all .yaml files in elements/, relations/, views/ (architecture)
-# Keep all forkable templates in templates/ (see templates/README.md) — these
-# ARE committed; not to be confused with the ignored AGENT RULES FILES above.
+# Forkable starter templates live in the separate transitrix/templates repo
+# (retired from a local templates/ dir here 2026-07-28).
 # Archive old files in 0.archive/ instead of deleting them
 # Only files explicitly listed above are ignored
 

@@ -1,0 +1,49 @@
+name: PR description policy
+
+# Judges the pull-request title and body against the repository's disclosure
+# policy — the part of it that is not a pattern. `public-surface-hygiene` matches
+# strings; this asks whether the description explains why the change was wanted,
+# or recounts how a rule came about, instead of stating what changed and how it
+# works. The judgment runs on GitHub Models with the built-in token, so no key
+# and no external service are involved.
+#
+# Runs on `edited` and on label changes as well as on push: unlike a pattern
+# scan, the thing being judged IS the description, so editing it must re-run the
+# check, and applying the escape-hatch label must clear it.
+#
+# The step fails open on infrastructure and closed on a verdict, and prints no
+# part of the text it flagged. Both properties, and the escape hatch, are
+# explained in `scripts/check-pr-description.mjs`.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  description-policy:
+    runs-on: ubuntu-latest
+    name: PR description policy
+    # A model's judgment must never be able to hold a merge hostage.
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'policy:reviewed') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/check-pr-description.mjs
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Judge the description
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/check-pr-description.mjs
