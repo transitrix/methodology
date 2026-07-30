@@ -8,7 +8,7 @@ worked example fixture (notations/examples/packages/reqif/):
   A. Validator — the worked example's reqif/ folder validates clean.
   B. Round trip — `roundtrip` exits 0 on the worked example: export then
      re-import produces an identical object set (the epic's round-trip
-     success signal, HUB-828's own acceptance criterion).
+     success signal, this package's own acceptance criterion).
   C. SpecRelation is a first-class file — its own file under spec-relations/,
      never an inline field on a spec-object file.
   D. Canon citation — at least one spec-object's Transitrix.CanonRef resolves,

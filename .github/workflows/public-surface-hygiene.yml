@@ -33,7 +33,7 @@ name: Public-surface hygiene
 # Skips cleanly when HYGIENE_BLOCKLIST is unavailable (e.g. PRs from forks) so
 # external contributors are not blocked by a guard that cannot evaluate them.
 #
-# Two further guards cover the CLAUDE.md/AGENTS.md leak channel (HUB-770):
+# Two further guards cover the CLAUDE.md/AGENTS.md leak channel:
 #
 # - Filename guard (unconditional): `CLAUDE.md` is gitignored maintainer-local
 #   content and must never be committed anywhere in the tree. This check is
@@ -370,3 +370,97 @@ jobs:
             exit 1
           fi
           echo "OK - no internal-ops markers in committed CLAUDE.md/AGENTS.md."
+
+      - name: Work-item references
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # Two rules, on two different surfaces.
+          #
+          # 1. COMMITTED CONTENT carries no reference to a work item at all -
+          # not the neutral `HUB-813` form, not a bare `#813`. The evidence for
+          # the stronger rule is the sweep that produced it: of ~110 such
+          # references across this repository and its sibling, not one carried
+          # information a reader could use. The prose beside them already said
+          # what the code does and why; the number was decoration that only a
+          # maintainer with private access could resolve, and it aged badly the
+          # moment a task was renumbered or closed. What a line of code needs is
+          # the REASON, and a durable reason is a decision - cited by name and
+          # date ("the 2026-07-27 packages decision"), which is stable, public,
+          # and resolvable by anyone.
+          #
+          # 2. PR TITLE AND BODY may cite a work item, and there `HUB-813` is
+          # the form. A pull request is a transient coordination surface, not
+          # content anyone reads later. A bare `#813` is still forbidden there:
+          # GitHub auto-links it to the item numbered 813 IN THIS REPOSITORY,
+          # which renders as a working link to something unrelated - worse than
+          # a dead reference, because it reads as correct.
+          #
+          # A reference to this repository's own issue or PR is untouched by
+          # either rule: a plain `#12`, and the `closes #12` / `fixes #12`
+          # auto-close keywords, mean what they say. Only work-item forms match:
+          # the `HUB-` prefix, or a hash-number dressed as task / epic / hub
+          # work.
+          #
+          # These patterns name nothing confidential, so they live here in the
+          # open and the matched token IS printed. A contributor who cannot see
+          # why the build failed routes around the rule - which is how this
+          # class of reference accumulated in the first place. This file is
+          # excluded from its own scan; that exclusion is also the escape hatch
+          # for a doc that must legitimately show the form.
+          HUBREF='(\bHUB-[0-9]+|\b(task|epic|hub)s?[[:space:]:]+#[0-9]+)'
+          HASHREF='\b(task|epic|hub)s?[[:space:]:]+#[0-9]+'
+
+          fail=0
+          tmp="$(mktemp -d)"
+
+          # report <pattern> <label> <file> [annotation] <advice>
+          # Returns 0 when something matched.
+          report() {
+            local pat="$1" label="$2" target="$3" anno="$4" advice="$5" hits tag
+            hits="$(grep -oIiE "$pat" "$target" 2>/dev/null | sort -u | tr '\n' ' ' || true)"
+            [ -n "$hits" ] || return 1
+            if [ -n "$anno" ]; then tag="::error ${anno}::"; else tag="::error::"; fi
+            echo "${tag}work-item reference in the ${label} ( ${hits}) - ${advice}"
+            return 0
+          }
+
+          COMMITTED_ADVICE="committed content carries no work-item reference; keep the reason and drop the number, or cite the decision by name and date"
+          METADATA_ADVICE="write HUB-<number>; a bare #NNN auto-links to this repository's own item of that number"
+
+          # 1) Added diff lines.
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            [ -f "$f" ] || continue
+            git diff "$BASE_SHA" "$HEAD_SHA" -- "$f" | grep -E '^\+[^+]' > "$tmp/added" || true
+            [ -s "$tmp/added" ] || continue
+            if report "$HUBREF" diff "$tmp/added" "file=$f" "$COMMITTED_ADVICE"; then fail=1; fi
+          done < <(
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+              | grep -vxE '\.github/workflows/public-surface-hygiene\.yml' \
+              || true
+          )
+
+          # 2) PR title/body - HUB-NNN is allowed here, the bare form is not.
+          printf '%s' "$PR_TITLE" > "$tmp/title"
+          printf '%s' "$PR_BODY" > "$tmp/body"
+          if report "$HASHREF" title "$tmp/title" "" "$METADATA_ADVICE"; then fail=1; fi
+          if report "$HASHREF" body "$tmp/body" "" "$METADATA_ADVICE"; then fail=1; fi
+
+          # 3) Full tree - the diff pass cannot see what already landed.
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            case "$f" in .github/workflows/public-surface-hygiene.yml) continue ;; esac
+            if report "$HUBREF" tree "$f" "file=$f" "$COMMITTED_ADVICE"; then fail=1; fi
+          done < <(git ls-files)
+
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+          echo "OK - no work-item references in committed content, none in the banned form in PR metadata."
