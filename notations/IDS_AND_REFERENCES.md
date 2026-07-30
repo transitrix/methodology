@@ -90,8 +90,9 @@ Elements that get referenced across documents.
 | `RULE` | business rule (business layer per ArchiMate 3.2) | Rules catalogue (`canon/elements/02_business/rules/`); referenceable from any notation via `applies_to:` |
 | `REGISTRY` | business-layer **operating-configuration** primitive — a curated, org-authored list the organisation maintains to drive an operating activity. Worked example: the regulatory **source registry** (which sources to watch, where, how, how often). Rows are inline, canonical-by-containment, promotable. Distinct from `RULE` (decision logic, not a maintained list), from codex (codex is *given to* the org; a registry is *authored by* it), and from the Field zone (a registry is curated/authoritative, not contradiction-tolerant evidence). | Registries catalogue (`canon/elements/02_business/registries/`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20. |
 | `CONSTRAINT` | design / operating constraint (motivation layer per ArchiMate 3.2) — a restriction or prohibition the organisation must not cross | Constraints catalogue (`canon/elements/01_motivation/constraints/`); referenced from DGCA drivers via `references_constraint:` |
-| `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`canon/elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`). Schema: [15-requirement.md](elements/15-requirement.md). |
+| `REQUIREMENT` | regulatory or organisational requirement (motivation layer per ArchiMate 3.2) — a positive obligation the organisation must fulfil. Distinct from `CONSTRAINT` by **form of the obligation**: REQUIREMENT = positive action ("must submit", "must register", "must obtain approval"); CONSTRAINT = restriction ("must not", "cannot exceed"). | Requirements catalogue (`canon/elements/01_motivation/requirements/`); cites its source via `derived_from:` (codex `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`) and, optionally, the upstream `NEED` it serves via `serves:`. Schema: [15-requirement.md](elements/15-requirement.md). |
 | `STAKEHOLDER` | motivation-layer interest primitive (ArchiMate Stakeholder) — `internal` / `external`. Carries the stake profile (concern, interest, influence) and **references an `ACTOR` for identity** (`actor:` required); never carries identity itself. | Stakeholders catalogue (`canon/elements/01_motivation/stakeholders/`); stakes in specific objects are `stakeholding` relations. Schema: [20-stakeholders.md](elements/20-stakeholders.md). |
+| `NEED` | motivation-layer **stakeholder/user need** — what must be true for whoever depends on it, independent of how it will be met. Upstream of `REQUIREMENT`, which traces back to it via `serves:`. No ArchiMate counterpart (ArchiMate 3.x has no need element). | Needs catalogue (`canon/elements/01_motivation/needs/`). Schema: [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §7.26. |
 | `ASSESSMENT` | motivation-layer finding (ArchiMate Assessment) — a **dated finding/judgement about the state of a `DRIVER`**, e.g. "support response time 8h, degrading". Carries the finding and its observation date; **no polarity / SWOT field** (polarity lives on the `INFLUENCE` relation). One driver accrues many assessments over time, which is what justifies it as its own element. Also the core primitive for expressing generic risk — see [CONTRACT.md](CONTRACT.md) §8.1. | Assessments catalogue (`canon/elements/01_motivation/assessments/`); `assesses:` references one `DRIVER`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.17. |
 | `TARGET_STATE` | implementation-layer **end-state** primitive (ArchiMate Plateau) — a structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met. The object an architect varies when presenting solution options; satisfies one or more `GOAL`s and is reached by one or more `SCENARIO` paths. | Target-states catalogue (`canon/elements/05_implementation/target-states/`); composition is inline (`capabilities[]`, `processes[]`, `applications[]`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `action_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. Deprecated alias: `activity_goal` → `action_goal`. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
@@ -165,6 +166,14 @@ The engineering V&V counterpart to `ASSERTION` (§3.6) — a claim that a protoc
 |---|---|
 | `VERIFICATION` | a claim that a protocol (test / analysis / inspection / demonstration) was run against a `REQUIREMENT`, with a pass/fail outcome |
 
+### 3.8 Validation type
+
+The validation-domain counterpart to `VERIFICATION` (§3.7) — a claim that a protocol was run against a `NEED`, with method, result, and pass/fail outcome. Also canonical but living **outside** the `elements/` tree, under `canon/validations/`. Schema: [28-validation.md](elements/28-validation.md).
+
+| TYPE | What it is |
+|---|---|
+| `VALIDATION` | a claim that a protocol (user acceptance / field trial / stakeholder review / usability study) was run against a `NEED`, with a pass/fail outcome |
+
 ---
 
 ## 4. Uniqueness scope
@@ -191,11 +200,13 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `REQUIREMENT` | within the organisation's element catalogue (`canon/elements/01_motivation/requirements/`), one file per REQUIREMENT. |
 | `STAKEHOLDER` | within the organisation's element catalogue (`canon/elements/01_motivation/stakeholders/`), one file per STAKEHOLDER. |
 | `ASSESSMENT` | within the organisation's element catalogue (`canon/elements/01_motivation/assessments/`), one file per ASSESSMENT. |
+| `NEED` | within the organisation's element catalogue (`canon/elements/01_motivation/needs/`), one file per NEED. |
 | `TARGET_STATE` | within the organisation's element catalogue (`canon/elements/05_implementation/target-states/`), one file per TARGET_STATE. |
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
 | `MILESTONE` | within the action-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `ASSERTION` | within the organisation's `canon/assertions/` folder, one file per ASSERTION. |
 | `VERIFICATION` | within the organisation's `canon/verifications/` folder, one file per VERIFICATION. |
+| `VALIDATION` | within the organisation's `canon/validations/` folder, one file per VALIDATION. |
 | `INTERVIEW`, `SURVEY`, `OBSERVATION`, `DRAFT`, `AMENDMENT`, `SEGMENT` | within the organisation's `field/` zone. Contradictions between Field artefacts are allowed; only the IDs must be unique. |
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD` | within the organisation's `codex/internal/` zone. |

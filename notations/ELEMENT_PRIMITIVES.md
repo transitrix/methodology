@@ -50,6 +50,7 @@ canon/
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
+      needs/          NEED-*.yaml            # §7.26 — stakeholder/user need; REQUIREMENT.serves points here
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -160,6 +161,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
 | `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
 | `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
+| `NEED` | standalone | `need` | motivation | `01_motivation/needs/` | §7.26 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `STEP` | contained (in `PROCESS.flow`) → standalone (promotable) | `step` | business | `02_business/steps/` | §7.20 (inline shape: §7.5) |
@@ -188,6 +190,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `DRIVER` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the driver without losing that history. It is therefore its own catalogue element that references its `DRIVER` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
+- **`NEED` is `standalone`, upstream of `REQUIREMENT`.** A need is *what a stakeholder requires*, independent of how it is met — the ArchiMate-unmapped motivation-layer primitive a `REQUIREMENT` traces to via its own `serves` field (§7.26). Referenced from any `REQUIREMENT` that serves it and from the `VALIDATION` claims that check whether the delivered thing actually meets it, so it needs its own admission record and lifecycle, not an inline fragment of the requirement it motivates — the same "referenced from two directions" justification as `RISK`. Motivation layer (`01_motivation/`) matches its grain: a need is an intent-layer concern (what the stakeholder wants), not a business, application, or technology fact.
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is an M:N relation that lands as a `REL` kind in a separate sub-task — never inline on this element.
 - **`LOCATION` is `standalone`, justified by shared reference.** A location (an office, a country, a virtual zone) is referenced by many actors — multiple business units at the same site, many persons at the same office. Making it a first-class catalogue element lets each actor reference the same `LOCATION-…` ID without repeating the address, timezone, and country code. It is **not** a property of the actor (actors can move; the location persists), and it is not a motivation-layer element (no normative force — regulatory implications of location live in `CONSTRAINT` / `REQUIREMENT`). Business layer (`02_business/`) matches its grain: it describes where the organisation operates, not what it intends or how it executes.
 - **`BUSINESS_SERVICE` is `standalone`, as the named behaviour the organisation offers.** A Business Service (ArchiMate §8.3.4) is the externally visible behaviour a unit or role makes available to its consumers — internal teams, external customers, or partners. It is a first-class catalogue element because it is shared: multiple processes, actors, and products may reference the same service, and its ownership (which unit offers it) and capability realisation (what it exposes) are time-aware events tracked as `offers` and `realizes` REL kinds ([elements/17-relations.md](elements/17-relations.md) §3). It is not a `PROCESS` (internal execution flow), a `CAPABILITY` (the ability to perform), or a `PRODUCT` (a packaged, versioned offering). Business layer (`02_business/`) is the correct placement — it describes what the organisation does for its environment, not what the organisation intends (`01_motivation`) or how it executes internally.
@@ -240,7 +243,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
-| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`) |
+| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`), `NEED` (`needs/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
@@ -818,6 +821,53 @@ A platform-level service exposed by a NODE or group of NODEs to the application 
 
 **Relations:** `uses` (`APPLICATION` → `TECHNOLOGY_SERVICE`) records application-layer consumption; `hosts` (`NODE` → `TECHNOLOGY_SERVICE`) records infrastructure hosting. Both are first-class relation kinds ([elements/17-relations.md](elements/17-relations.md) §3). The `APPLICATION` side may also carry a `technology_services[]` inline field in a future additive revision.
 
+### 7.26 `NEED` — `01_motivation/needs/`
+
+Motivation-layer **stakeholder/user need** — what must be true for whoever depends on it, independent of how it will be met. Upstream of `REQUIREMENT`: a `REQUIREMENT` records *what the design must do*; a `NEED` records *what a stakeholder requires*, before any design decision commits to a particular obligation. One `NEED` may be served by one or more `REQUIREMENT`s (§7.26.1); a `REQUIREMENT` traces back to the `NEED` it serves via its own optional `serves` field ([elements/15-requirement.md](elements/15-requirement.md) §2.5).
+
+There is no ArchiMate counterpart for `NEED`: ArchiMate 3.x has no need element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit). This is distinct from `STAKEHOLDER` (§7.15, [elements/20-stakeholders.md](elements/20-stakeholders.md)), which is the *interest profile* of a party (concern / interest / influence) — `NEED` is a specific, expressible thing that party requires, not the party's general stake.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `need`. |
+| `stakeholder` | **yes** | string | `STAKEHOLDER-…` whose need this is. The validator resolves it (`NEED-002`). |
+| `description` | recommended | string | What is needed, stated independent of how it will be met — the "what", not the "how". |
+
+**`stakeholder` is inline, not a first-class time-aware `REL`** — consistent with `ASSESSMENT.assesses` (§7.16) and `STAKEHOLDER.actor` (§7.15). A need re-attributed to a different stakeholder is captured by versioning the `NEED` element itself (`valid_to` the old, admit a new), not by relation re-binding.
+
+```yaml
+# canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml
+notation: need
+id: NEED-TIMELY-OUTAGE-STATUS-1
+name: "Customers need to know service status within minutes of an outage starting"
+description: >
+  When the service is degraded or unavailable, affected customers need a
+  reliable, timely signal that something is wrong and that it is being
+  worked on — independent of whatever mechanism (status page, email,
+  in-app banner) ends up delivering that signal.
+
+stakeholder: STAKEHOLDER-ENTERPRISE-CUSTOMERS-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-30"
+valid_to: null
+```
+
+No view inline shape: `NEED` is standalone-only, like `ASSESSMENT` and `RISK` — it is not authored inline inside any view document.
+
+#### 7.26.1 The validation anchor — `NEED` → `VALIDATION`
+
+Before `NEED` existed, there was no anchor for the claim that a delivered thing satisfies a stakeholder/user need — `VERIFICATION.verifies` has only ever resolved to `REQUIREMENT` ([elements/27-verification.md](elements/27-verification.md) §1), which checks a design-input obligation, not the upstream need that motivated it. `NEED` closes that gap together with a dedicated **`VALIDATION`** claim type ([elements/28-validation.md](elements/28-validation.md)) — the validation-domain counterpart to `VERIFICATION`, structured the same way but anchored on `NEED` instead of `REQUIREMENT`, and using a validation-appropriate method vocabulary (user acceptance / field trial / stakeholder review / usability study) instead of `VERIFICATION`'s engineering methods (test / analysis / inspection / demonstration). See [CONTRACT.md](CONTRACT.md) §8 for the trade-off argued against widening `VERIFICATION.verifies` instead.
+
 ---
 
 ## 8. Alignment with the ID grammar and TYPE registry
@@ -862,6 +912,11 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `TSVC-001` | error | A `TECHNOLOGY_SERVICE` element is missing `id`, `name`, `type`, or any required envelope field; or `id` does not match `TECHNOLOGY_SERVICE-[<middle>-]<INTEGER>`. |
 | `TSVC-002` | error | `type` is not one of `messaging`, `storage`, `api_gateway`, `database`, `compute`. |
 | `TSVC-003` | error | `node` is present but does not resolve to an admitted `NODE` in canon. |
+| `NEED-001` | error | A `NEED` element is missing `id`, `name`, or any required envelope field; or `id` does not match `NEED-[<middle>-]<INTEGER>`; or `stakeholder` is missing. |
+| `NEED-002` | error | `stakeholder` does not resolve to an admitted `STAKEHOLDER` in canon. |
+| `NEED-COVERAGE-001` | warning | A `NEED` has no admitted `REQUIREMENT` targeting it — no file under `canon/elements/01_motivation/requirements/` carries `serves: <this NEED id>` ([elements/15-requirement.md](elements/15-requirement.md) §2.5). Surfaces an unaddressed need, the NEED-side analogue of `REQ-COVERAGE-001` ([CONTRACT.md](CONTRACT.md) §8). `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted NEED legitimately has no serving requirement yet. Cross-cutting — fires on the NEED but is computed by scanning the requirements catalogue. |
+| `NEED-VALIDATION-COVERAGE-001` | warning | A `NEED` has no admitted `VALIDATION` targeting it — no file under `canon/validations/` carries `validates: <this NEED id>` ([elements/28-validation.md](elements/28-validation.md) §2). The validation-side analogue of `REQ-VERIF-COVERAGE-001`: the claim that the delivered thing actually satisfies this need is missing. Cross-cutting — fires on the NEED but is computed by scanning the validations catalogue. |
+| `NEED-VALIDATION-COVERAGE-002` | warning | A `NEED` has one or more admitted `VALIDATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every validation against it is still `not_yet_run` or `inconclusive` ([elements/28-validation.md](elements/28-validation.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `NEED-VALIDATION-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
 
 ---
 

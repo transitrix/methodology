@@ -1,0 +1,21 @@
+notation: need
+id: NEED-TIMELY-OUTAGE-STATUS-1
+name: "Customers need to know service status within minutes of an outage starting"
+description: >
+  When the service is degraded or unavailable, affected customers need a
+  reliable, timely signal that something is wrong and that it is being
+  worked on — independent of whatever mechanism (status page, email,
+  in-app banner) ends up delivering that signal.
+
+stakeholder: STAKEHOLDER-ENTERPRISE-CUSTOMERS-1
+
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-30"
+valid_to: null
