@@ -1,5 +1,5 @@
 // `review` — optional interactive one-card admission review loop over
-// list-undecided / record (HUB-854, task HUB-855). Every
+// list-undecided / record. Every
 // accept/reject/defer here is exactly one `record` call — this module invents no
 // new decision path or schema. `stop` is a first-class exit: the pending queue is
 // a snapshot taken at review start, so a card left unanswered when the reviewer

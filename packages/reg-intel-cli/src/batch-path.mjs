@@ -1,4 +1,4 @@
-// Two-layer review-artifact naming (HUB-837): a stable package
+// Two-layer review-artifact naming: a stable package
 // filename (`review-digest.yaml`) inside a human-facing batch directory. The
 // first digest for an org still lands at the flat legacy path
 // `_intake/processing/<filename>` — untouched, so an existing single-batch

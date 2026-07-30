@@ -191,7 +191,7 @@ ArchiMate 3.2 terminology alignment: `FACTOR` → `DRIVER`. Renames the element 
 
 ## [0.6.0] — 2026-06-24
 
-The Actors / Stakeholders identity model (epics HUB-98 / HUB-99). Unifies active-structure identity under one `ACTOR` TYPE and adds the `STAKEHOLDER` interest primitive; retires `UNIT` / `EMPLOYEE`. One pre-1.0 breaking change, called out below.
+The Actors / Stakeholders identity model. Unifies active-structure identity under one `ACTOR` TYPE and adds the `STAKEHOLDER` interest primitive; retires `UNIT` / `EMPLOYEE`. One pre-1.0 breaking change, called out below.
 
 ### Added
 

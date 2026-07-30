@@ -322,7 +322,7 @@ Same handling as 01_motivation: emit **both** candidates with `confidence: low`,
 - **Do NOT merge across Field artefacts.** Two interviews mentioning what sounds like the same role → two separate primitives; admission deduplicates, you do not.
 - **Do NOT emit admitted records.** Every draft has `admitted_to: pending` / `gate_checks: pending`.
 - **Do NOT cross layer boundaries silently.** Material belonging to 01_motivation or 03_application surfaces in `cross_layer_hints:`, never as a wrong-TYPE primitive.
-- **Do NOT emit STAKEHOLDER, ACTOR, or SERVICE.** Those TYPEs are not registered in IDS §3.1 in v1 (epics HUB-98 / HUB-99 introduce some of them). Surface stakeholder / actor / service material in `cross_layer_hints:` until the registry includes them.
+- **Do NOT emit STAKEHOLDER, ACTOR, or SERVICE.** Those TYPEs are not registered in IDS §3.1 in v1 (the Actors / Stakeholders identity model introduces some of them). Surface stakeholder / actor / service material in `cross_layer_hints:` until the registry includes them.
 - **Do NOT extract `EMPLOYEE` for individuals the source mentions only in passing.** Only when the assertion is about *that individual*. Default to `ROLE` for "the head of X said Y".
 - **Do NOT translate canonical fields.** Multilingual handling translates *prose*; IDs, TYPE prefixes, enum values stay in English regardless.
 - **Do NOT invent new TYPE prefixes.** Only the six TYPEs in §"Extraction target" are valid output for this layer.
