@@ -29,7 +29,7 @@ Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Eve
 
 ## Elements
 
-The **14** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The **15** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
@@ -47,6 +47,7 @@ The **14** element notations live under [`elements/`](elements/) — each define
 | [25-nodes.md](elements/25-nodes.md) | `node` | Technology-layer infrastructure node primitive — physical or virtual compute, network, or storage substrate (ArchiMate Technology Node). | `canon/elements/04_technology/nodes/NODE-<…>.yaml` | draft |
 | [26-technology-services.md](elements/26-technology-services.md) | `technology-service` | Platform-level service exposed by a NODE to the application layer (ArchiMate Technology Service). | `canon/elements/04_technology/services/TECHNOLOGY_SERVICE-<…>.yaml` | draft |
 | [27-verification.md](elements/27-verification.md) | `verification` | Canon-zone primitive linking a REQUIREMENT to a verification protocol, method, and pass/fail outcome — the engineering counterpart to ASSERTION. | `canon/verifications/VERIFICATION-<…>.yaml` | draft |
+| [28-validation.md](elements/28-validation.md) | `validation` | Canon-zone primitive linking a NEED to a validation protocol, method, and pass/fail outcome — the validation-domain counterpart to VERIFICATION. | `canon/validations/VALIDATION-<…>.yaml` | draft |
 
 Element notations don't carry the `*.transitrix.yaml` extension convention — they're addressed by ID, and their file location is governed by the per-notation rule above.
 

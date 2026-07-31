@@ -1,0 +1,25 @@
+notation: validation
+id: VALIDATION-OUTAGE-STATUS-UAT-1
+validates: NEED-TIMELY-OUTAGE-STATUS-1
+method: user_acceptance
+protocol: "Simulate a service outage in the staging environment; observe whether ten enterprise-customer participants notice the status-page update within 5 minutes without being prompted."
+result: "9/10 participants noticed the status update within 5 minutes; the tenth noticed at 6 minutes 40 seconds."
+outcome: pass
+evidence:
+  - kind: external_doc
+    title: "Outage-status usability study, session recordings and notes"
+    url: "https://internal.example/reports/outage-status-uat-1.pdf"
+
+performed_at: "2026-07-22"
+performed_by: "ROLE-UX-RESEARCH-LEAD-1"
+
+zone: canon
+admitted_at: "2026-07-23"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-23"
+valid_to: null

@@ -1,6 +1,6 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "1.0"
+version: "1.1"
 author: "Valerii Korobeinikov"
 last_updated: "2026-07-30"
 status: "draft"
@@ -89,6 +89,7 @@ level: system                   # stakeholder | system | software — ISO/IEC/IE
 kind: functional                # functional | quality — see §2.6
 parent: REQUIREMENT-PERSONAL-DATA-PROTECTION-1  # optional; same-TYPE decomposition — see §2.4
 next_review_at: "2027-06-01"    # optional; drives REQ-STALE-001 — see §2.3
+serves: NEED-DATA-SUBJECT-CONTROL-1  # optional; the NEED this requirement traces to — see §2.7
 derived_from:                   # typed IDs of source documents this requirement is drawn from
   - LAW-PERSONAL-DATA-2017-1
   - REGULATION-GDPR-2016-1
@@ -119,6 +120,7 @@ valid_to: null
 | `kind` | no | string | One of `functional`, `quality` — whether the obligation is a behaviour/capability or a non-functional attribute. See §2.6. |
 | `parent` | no | string | `REQUIREMENT-…` — the higher-scale REQUIREMENT this one decomposes from. Enables authoring a broad obligation once and decomposing it into more specific sub-requirements. Inline; not time-aware (v0.x transitional, same shape as `CHANGE.parent` in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.3 and `LOCATION.parent` in §7.22). Origin-agnostic — see §2.4. |
 | `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
+| `serves` | no | string | `NEED-…` — the stakeholder/user need this requirement traces to. See §2.7. |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
@@ -227,8 +229,6 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 
 **Precedent — one convention across `parent` fields.** Same-TYPE inline `parent` is the settled v0.x shape across multi-scale primitives: `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3, capability → process → step decomposition) and `LOCATION.parent` (§7.22, enclosing location). Reusing that shape here keeps the authoring surface uniform; no new pattern is introduced.
 
----
-
 ### 2.5 `level` — specification tier (ISO/IEC/IEEE 29148 ladder)
 
 `level` records which specification tier the requirement belongs to, per the ISO/IEC/IEEE 29148 StRS → SyRS → SRS ladder:
@@ -277,6 +277,15 @@ One artefact per file, named by its canonical ID. Examples:
 
 The folder sits alongside `canon/elements/01_motivation/constraints/` — the two motivation-layer obligation catalogues are peers, not nested.
 
+
+### 2.7 `serves` — tracing to the upstream `NEED`
+
+A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28) records *what a stakeholder requires*, independent of how it is met. `serves` is the forward link from the design-input obligation back to the stakeholder/user need it exists to satisfy — the same relationship ISO/IEC/IEEE 29148 describes between a stakeholder requirement and the system/software requirements that realise it.
+
+- **Optional, singular.** Not every REQUIREMENT traces to a recorded NEED — a `legislative`-origin requirement extracted from a regulation typically has no upstream stakeholder need to cite (its motivator is the codex source in `derived_from`, not a NEED); a `project-product` requirement extracted from a BRD frequently does. Where a requirement serves more than one need, author the primary one here and note the others in `description` — same posture as `parent` staying singular (§2.4) rather than modelling a general M:N graph in v1.
+- **Cross-TYPE, not same-TYPE.** Unlike `parent` (§2.4, same-TYPE REQUIREMENT → REQUIREMENT), `serves` points at a different TYPE (REQUIREMENT → NEED), the same shape as `derived_from` pointing at codex TYPEs. `REQ-SERVES-001` (§4) enforces that it resolves to an admitted `NEED`.
+- **Not a substitute for `derived_from`.** A `legislative` requirement may carry both — `derived_from` cites the codex text that imposes the obligation; `serves` (if authored) cites the stakeholder need the codex-driven obligation happens to also satisfy. The two answer different questions ("where does this obligation come from" vs. "whose need does satisfying it serve") and neither implies the other.
+- **Reverse-trace completeness** — whether a NEED has at least one REQUIREMENT serving it — is a cross-cutting check computed by scanning the requirements catalogue, defined as `NEED-COVERAGE-001` on the NEED side ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §9), the same shape as `REQ-COVERAGE-001` below.
 ---
 
 ## 4. Validation rules
@@ -289,6 +298,7 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
 | `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
+| `REQ-SERVES-001` | error | `serves` is present but does not resolve to an admitted `NEED` in canon ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28). |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 | `REQ-VERIF-COVERAGE-001` | warning | A REQUIREMENT has no admitted `VERIFICATION` targeting it — no file under `canon/verifications/` carries `verifies: <this REQ id>` ([27-verification.md](27-verification.md) §2). The engineering verification analogue of `REQ-COVERAGE-001`: the ASSERTION and VERIFICATION catalogues are independent ([27-verification.md](27-verification.md) §4), so a REQUIREMENT may carry compliance coverage with no verification evidence, or vice versa. `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted REQUIREMENT legitimately has no verification yet, and a purely compliance-origin REQUIREMENT may never accrue one. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the verifications catalogue. |
 | `REQ-VERIF-COVERAGE-002` | warning | A REQUIREMENT has one or more admitted `VERIFICATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every verification against it is still `not_yet_run` or `inconclusive` ([27-verification.md](27-verification.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `REQ-VERIF-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
@@ -304,6 +314,7 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 - §2.5 + §2 schema — optional `level: stakeholder | system | software` field, the ISO/IEC/IEEE 29148 StRS → SyRS → SRS specification-tier ladder. No new TYPE. Distinct from `origin` (authority chain) and `parent` (structural decomposition, no level semantics) — both documented explicitly to head off conflation. `REQ-005` enforces the closed vocabulary.
 - §2.6 + §2 schema — optional `kind: functional | quality` field, classifying whether the obligation is a behaviour/capability or a non-functional attribute. Distinct from the still-pending `requirement_type` field below — orthogonal axes, not substitutes. `REQ-006` enforces the closed vocabulary.
 - Both fields are additive: absent on existing requirements, no migration recipe, no change to required fields.
+- §2.7 + §2 schema — optional `serves: NEED-…` field, tracing a REQUIREMENT back to the upstream stakeholder/user `NEED` it satisfies ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28). `REQ-SERVES-001` (§4) validates resolution. Ships alongside the `NEED` element and the `VALIDATION` claim type ([elements/28-validation.md](28-validation.md)) — the core-vocabulary validation-anchor task.
 
 **Landed (v0.6, 2026-07-26):**
 - §4 — `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002`, the reverse-trace completeness rules for the REQUIREMENT ↔ `VERIFICATION` leg ([27-verification.md](27-verification.md)): no verification targets the requirement at all, or every one that does is still unresolved (`not_yet_run` / `inconclusive`). Resolves the "deliberately out of scope" question left open when `VERIFICATION` landed.
@@ -340,3 +351,5 @@ A worked example yaml under `organizations/acme_corp/canon/elements/01_motivatio
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - Codex source documents that requirements derive from: [14-codex.md](14-codex.md).
 - The engineering verification counterpart that `REQ-VERIF-COVERAGE-001`/`-002` (§4) check for: [27-verification.md](27-verification.md).
+- The engineering V&V counterpart that `REQ-VERIF-COVERAGE-001`/`-002` (§4) check for: [27-verification.md](27-verification.md).
+- The upstream stakeholder/user need `serves` (§2.7) traces to, and the `VALIDATION` claim that checks whether it is actually met: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28, [28-validation.md](28-validation.md).
