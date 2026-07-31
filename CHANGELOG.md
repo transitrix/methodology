@@ -6,6 +6,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.1.0] — 2026-07-31
+
+Bump category: **MINOR** — additive core vocabulary and tooling only; no migration recipe required.
+
+### Added
+
+- **`RISK` element type** (`ELEMENT_PRIMITIVES.md` §7.26) — motivation-layer projected event (likelihood / impact / residual / owner; `threatens` / `treated_by`). Additive alongside the ArchiMate Risk and Security Overlay mapping in `CONTRACT.md` §8.1. Rules `RISK-001..004`, `RISK-COVERAGE-001`. (#416)
+- **`METRIC` element type** (`ELEMENT_PRIMITIVES.md` §7.27) — managed indicator (unit / target / `direction_of_good` / `measures`), distinct from report-config `COVERAGE_METRIC`. Rules `METRIC-001..004`. (#417)
+- **`NEED` element type + `VALIDATION` claim** (`ELEMENT_PRIMITIVES.md` §7.28, `elements/28-validation.md`) — stakeholder/user need upstream of `REQUIREMENT`; `VALIDATION` mirrors `VERIFICATION` but anchors on `NEED` with a validation-method vocabulary. `REQUIREMENT.serves` optional back-reference. Rules `NEED-001..002`, `NEED-COVERAGE-001`, `NEED-VALIDATION-COVERAGE-001..002`, `REQ-SERVES-001`, `VALID-001..006`. Worked example under `notations/examples/validation/`. (#419)
+- **`REQUIREMENT.level` and `REQUIREMENT.kind`** — optional ISO/IEC/IEEE 29148 specification-tier ladder (`stakeholder` / `system` / `software`) and functional/quality classification. Rules `REQ-005`, `REQ-006`. (#418)
+- **Weekly Dependabot** with gated auto-merge for this repository's manifests and Actions. (#420)
+- **Interactive one-card admission review** on `@transitrix/decisions-cli` (`review`), plus ingest/reg-intel conversational one-card review + stop/resume skill docs. (#397, #398)
+- **Onboard skill** absorbs adopter starter templates previously living in the companion reference repo; teaching-content docs migrate into this repository. (#406, #405)
+- **CI gates** — PR-description disclosure policy; commit-message scan with no PR-metadata carve-out; fail-closed when a hygiene value cannot be evaluated; committed content carries no work-item reference. (#413, #412, #408, #411)
+
+### Changed
+
+- **`VERIFICATION` wording** — documents verification only (not full V&V); `verifies` has only ever resolved to `REQUIREMENT`. (#415)
+- **Public-surface hygiene** — work-item references use a neutral form in committed content; four remaining neutral-form cleanups. (#409, #403)
+
+### Fixed
+
+- **Stale-base squash restore** — content a stale-base squash had reverted is restored. (#414)
+- **`.gitignore` notes** — stale `templates/` commentary trimmed. (#410, #404)
+
+---
+
 ## [3.0.0] — 2026-07-29
 
 Bump category: **MAJOR** — the ISO 14971 risk-management chain is removed from the public core. `VERIFICATION` and the rest of the compliance/V&V spine are unaffected. Decision of record: the 2026-07-29 core-scope decision.
