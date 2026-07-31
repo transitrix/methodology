@@ -1,0 +1,39 @@
+name: Dependabot auto-merge
+
+# Weekly Dependabot updates auto-merge on green, gated by this repository's
+# own CI — including Public-surface hygiene, since this repo is public.
+# `dependabot.yml` already excludes major-version bumps; the metadata check
+# below is a second, independent gate on the same property.
+#
+# `gh pr checks --watch` blocks until every check on the PR has concluded and
+# exits non-zero on any failure, so the merge step below never runs unless
+# every required workflow — including hygiene — has already passed.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Wait for checks, then merge on green
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+          gh pr checks "$PR_URL" --watch --fail-fast
+          gh pr merge --squash --delete-branch "$PR_URL"
