@@ -1,14 +1,14 @@
 ---
-title: "Verification — REQUIREMENT V&V claim"
-version: "0.3"
+title: "Verification — REQUIREMENT verification claim"
+version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-29"
+last_updated: "2026-07-30"
 status: "draft"
 ---
 
 # Verification — Reference
 
-**Scope:** The `VERIFICATION` type — a first-class engineering verification-and-validation (V&V) claim that a **`REQUIREMENT`** was checked against a stated protocol, with an explicit method, result, and pass/fail outcome. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.7.
+**Scope:** The `VERIFICATION` type — a first-class engineering verification claim that a **`REQUIREMENT`** was checked against a stated protocol, with an explicit method, result, and pass/fail outcome. This is verification against a design-input requirement, not full verification-and-validation (V&V): `verifies` resolves only to `REQUIREMENT` (§2), so there is currently no anchor for validating that the delivered thing meets a stakeholder/user need. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.7.
 
 Verifications are canon-zone artefacts that live **outside** the `elements/` tree, under `canon/verifications/` — the same structural choice as `ASSERTION` ([16-assertion.md](16-assertion.md)). Each verification is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the verification-specific frontmatter below.
 
@@ -16,7 +16,7 @@ Verifications are canon-zone artefacts that live **outside** the `elements/` tre
 
 ## 1. What a Verification is
 
-A `REQUIREMENT` records *what the design must do*. A `VERIFICATION` records *that a specific protocol was run against the requirement, and what it found* — the engineering V&V counterpart to the regulatory-compliance `ASSERTION` ([16-assertion.md](16-assertion.md) §1). Before this type, verification existed only as a free-text `evidence[]` entry on an `ASSERTION`; `VERIFICATION` promotes that to a first-class, independently addressable claim with its own method, protocol, and pass/fail outcome.
+A `REQUIREMENT` records *what the design must do*. A `VERIFICATION` records *that a specific protocol was run against the requirement, and what it found* — the engineering verification counterpart to the regulatory-compliance `ASSERTION` ([16-assertion.md](16-assertion.md) §1). Before this type, verification existed only as a free-text `evidence[]` entry on an `ASSERTION`; `VERIFICATION` promotes that to a first-class, independently addressable claim with its own method, protocol, and pass/fail outcome.
 
 ```
    REQUIREMENT-DEVICE-ALARM-1              ─── verifies ──┐
@@ -117,7 +117,7 @@ valid_to: null
 | | `ASSERTION` | `VERIFICATION` |
 |---|---|---|
 | Claims | a *subject* (PRODUCT / PROCESS / CAPABILITY) is compliant with the requirement | a *protocol* was run against the requirement |
-| Domain | regulatory / organisational compliance | engineering V&V |
+| Domain | regulatory / organisational compliance | engineering verification |
 | Required link | `about` (REQUIREMENT) + `subject` (PRODUCT/PROCESS/CAPABILITY) | `verifies` (REQUIREMENT) only — no separate subject field |
 | Judgement field | `status` (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | `outcome` (`pass` / `fail` / `inconclusive` / `not_yet_run`) |
 
@@ -158,6 +158,8 @@ A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives
 ---
 
 ## 7. Evolution
+
+**Corrected (v0.4, 2026-07-30):** Wording fix — this spec, the TYPE registry entry, and related docs previously described `VERIFICATION` as a "verification-and-validation (V&V)" claim. `verifies` has only ever resolved to `REQUIREMENT`; there was no anchor for validating against a stakeholder/user need, so the "V&V" framing overstated the type's scope. Reworded to "verification" throughout (§1, §4, title, scope). No schema or behavioural change. If a future change (the `NEED` element + validation-anchor task) widens `verifies` to admit a second anchor kind, or adds a dedicated `VALIDATION` type, this wording is revisited then — not before.
 
 **Landed (v0.2, 2026-07-26):**
 - **Reverse-trace completeness** — `REQ-VERIF-COVERAGE-001` (no `VERIFICATION` targets this REQUIREMENT) and `REQ-VERIF-COVERAGE-002` (every `VERIFICATION` that does is stuck at `not_yet_run` / `inconclusive`), defined in [15-requirement.md](15-requirement.md) §4.
