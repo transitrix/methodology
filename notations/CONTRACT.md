@@ -292,7 +292,7 @@ The lifecycle fields are required on every canonical primitive once a notation s
 
 ## 8. Compliance and verification domain rules
 
-The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](elements/15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](elements/16-assertion.md)). Generic engineering verification-and-validation adds one more TYPE — **`VERIFICATION`** (canon-zone primitive linking a requirement to a V&V protocol and pass/fail outcome, [27-verification.md](elements/27-verification.md)). For discoverability, the validation rules for all three are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
+The compliance domain spans two notations — **`REQUIREMENT`** (motivation-layer element, [15-requirement.md](elements/15-requirement.md)) and **`ASSERTION`** (canon-zone primitive linking a requirement to a subject, [16-assertion.md](elements/16-assertion.md)). Generic engineering verification adds one more TYPE — **`VERIFICATION`** (canon-zone primitive linking a requirement to a verification protocol and pass/fail outcome, [27-verification.md](elements/27-verification.md)). For discoverability, the validation rules for all three are aggregated below in a single table. The per-notation specs remain the authoritative source for the rule definitions; this table is an index.
 
 | Rule | Severity | Notation | Short description | Authoritative spec |
 |---|---|---|---|---|
@@ -300,7 +300,7 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](elements/15-requirement.md) §4 |
-| `REQ-VERIF-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no VERIFICATION targeting it — engineering V&V gap, the V&V-side analogue of `REQ-COVERAGE-001` | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-VERIF-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no VERIFICATION targeting it — engineering verification gap, the verification-side analogue of `REQ-COVERAGE-001` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-VERIF-COVERAGE-002` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has VERIFICATION(s) but none reached `pass`/`fail` — trace exists but hasn't closed | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-STALE-001` | warning | REQUIREMENT / CONSTRAINT | `next_review_at` is set and is in the past — obligation due for re-review; applies symmetrically to CONSTRAINT ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.13) | [15-requirement.md](elements/15-requirement.md) §4 |
 | `ASSERT-001` | error | ASSERTION | a required field is missing, or `id` grammar invalid | [16-assertion.md](elements/16-assertion.md) §5 |
