@@ -2,7 +2,7 @@
 title: "Requirement — motivation-layer positive obligation"
 version: "1.0"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-26"
+last_updated: "2026-07-30"
 status: "draft"
 ---
 
@@ -85,6 +85,8 @@ description: "On request from a data subject, the controller must erase personal
 # Optional attributes
 origin: legislative             # legislative | process-product | project-product — see §2.1
 severity: high                  # high | medium | low — organisation-defined priority
+level: system                   # stakeholder | system | software — ISO/IEC/IEEE 29148 ladder — see §2.5
+kind: functional                # functional | quality — see §2.6
 parent: REQUIREMENT-PERSONAL-DATA-PROTECTION-1  # optional; same-TYPE decomposition — see §2.4
 next_review_at: "2027-06-01"    # optional; drives REQ-STALE-001 — see §2.3
 derived_from:                   # typed IDs of source documents this requirement is drawn from
@@ -113,6 +115,8 @@ valid_to: null
 | `description` | yes | string | Longer-form explanation of the obligation, its scope, and the conditions under which it applies. |
 | `origin` | no | string | Origin / kind distinguishing the context from which the requirement was derived. Closed vocabulary — see §2.1. Omitted requirements are treated as `legislative` by tooling that supports filtering. |
 | `severity` | no | string | One of `high`, `medium`, `low`. Organisation-defined priority for planning and reporting. Distinct from `obligation_level` (regulatory force, RFC 2119 — out of scope for v1; see [§5](#5-evolution)). |
+| `level` | no | string | One of `stakeholder`, `system`, `software` — the ISO/IEC/IEEE 29148 specification tier. Distinct from `origin` and `parent` — see §2.5. |
+| `kind` | no | string | One of `functional`, `quality` — whether the obligation is a behaviour/capability or a non-functional attribute. See §2.6. |
 | `parent` | no | string | `REQUIREMENT-…` — the higher-scale REQUIREMENT this one decomposes from. Enables authoring a broad obligation once and decomposing it into more specific sub-requirements. Inline; not time-aware (v0.x transitional, same shape as `CHANGE.parent` in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.3 and `LOCATION.parent` in §7.22). Origin-agnostic — see §2.4. |
 | `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
 | `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
@@ -225,6 +229,41 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 
 ---
 
+### 2.5 `level` — specification tier (ISO/IEC/IEEE 29148 ladder)
+
+`level` records which specification tier the requirement belongs to, per the ISO/IEC/IEEE 29148 StRS → SyRS → SRS ladder:
+
+| Value | Tier | Meaning |
+|---|---|---|
+| `stakeholder` | Stakeholder Requirements Specification (StRS) | What a stakeholder needs, in stakeholder/business language — solution- and technology-agnostic. |
+| `system` | System Requirements Specification (SyRS) | What the system as a whole must do to satisfy the stakeholder requirements it realises — still solution-agnostic at the software level. |
+| `software` | Software Requirements Specification (SRS) | What a specific software component must do — the most granular tier, closest to implementation. |
+
+**Closed vocabulary.** Values outside `stakeholder | system | software` are rejected by `REQ-005` (§4).
+
+**Distinct from `origin`.** `origin` (§2.1) records the *authority chain* a requirement was drawn from (a law, a process spec, a project brief) — orthogonal to `level`. A `legislative`-origin requirement can be authored at any tier: a clause quoted near-verbatim from a regulation is typically `stakeholder`-level; a `system`-level requirement decomposed from it (§2.4, `parent`) inherits the same `origin` but narrows the tier, not the source.
+
+**Distinct from `parent`.** `parent` (§2.4) records structural decomposition — which broader REQUIREMENT this one narrows from — with no level semantics of its own. `parent` linkage may span tiers (a `system`-level child of a `stakeholder`-level parent, the typical direction of decomposition) or stay within one (splitting a broad `stakeholder` requirement into two narrower `stakeholder` requirements). The ladder above describes the *typical* decomposition direction; it is authoring guidance, not a validator constraint in v1 — `REQ-005` checks only that a present `level` value is one of the three, not that a child's `level` deepens relative to its parent's.
+
+**Optional.** Requirements without `level` are level-agnostic — the same posture as pre-existing requirements admitted before this field was introduced. Backfilling `level` on existing admitted requirements is optional.
+
+### 2.6 `kind` — functional vs quality
+
+`kind` classifies the obligation's nature:
+
+| Value | Meaning | Example |
+|---|---|---|
+| `functional` | A behaviour, action, or capability the subject must provide — *what* it must do. | "must erase personal data on request", "must notify the competent authority within 24 hours" |
+| `quality` | A non-functional attribute the subject must exhibit — performance, reliability, security, usability, maintainability, or a similar cross-cutting property that qualifies *how* functional behaviour is delivered rather than adding new behaviour. | "must retain logs for at least 12 months", "must respond within 200ms", "must be available 99.9% of the time" |
+
+**Closed vocabulary.** Values outside `functional | quality` are rejected by `REQ-006` (§4).
+
+**Not `requirement_type`.** The planned `requirement_type` field ([§5](#5-evolution), pending design work — `DEFINITIONAL` / `PRODUCT` / `PROCESS` / `DOCUMENTATION` / `ORGANIZATIONAL` / `REPORTING`) classifies what *domain* a requirement targets. `kind` classifies whether the obligation itself is functional or a quality attribute — an orthogonal axis. The two are not substitutes for one another and may eventually coexist on the same REQUIREMENT.
+
+**Optional.** Absent `kind` means unclassified; no default value is assumed by tooling.
+
+---
+
 ## 3. File location and naming
 
 ```
@@ -248,6 +287,8 @@ The folder sits alongside `canon/elements/01_motivation/constraints/` — the tw
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
 | `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
+| `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
+| `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 | `REQ-VERIF-COVERAGE-001` | warning | A REQUIREMENT has no admitted `VERIFICATION` targeting it — no file under `canon/verifications/` carries `verifies: <this REQ id>` ([27-verification.md](27-verification.md) §2). The engineering verification analogue of `REQ-COVERAGE-001`: the ASSERTION and VERIFICATION catalogues are independent ([27-verification.md](27-verification.md) §4), so a REQUIREMENT may carry compliance coverage with no verification evidence, or vice versa. `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted REQUIREMENT legitimately has no verification yet, and a purely compliance-origin REQUIREMENT may never accrue one. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the verifications catalogue. |
 | `REQ-VERIF-COVERAGE-002` | warning | A REQUIREMENT has one or more admitted `VERIFICATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every verification against it is still `not_yet_run` or `inconclusive` ([27-verification.md](27-verification.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `REQ-VERIF-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
@@ -258,6 +299,11 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (v0.7, 2026-07-30):**
+- §2.5 + §2 schema — optional `level: stakeholder | system | software` field, the ISO/IEC/IEEE 29148 StRS → SyRS → SRS specification-tier ladder. No new TYPE. Distinct from `origin` (authority chain) and `parent` (structural decomposition, no level semantics) — both documented explicitly to head off conflation. `REQ-005` enforces the closed vocabulary.
+- §2.6 + §2 schema — optional `kind: functional | quality` field, classifying whether the obligation is a behaviour/capability or a non-functional attribute. Distinct from the still-pending `requirement_type` field below — orthogonal axes, not substitutes. `REQ-006` enforces the closed vocabulary.
+- Both fields are additive: absent on existing requirements, no migration recipe, no change to required fields.
 
 **Landed (v0.6, 2026-07-26):**
 - §4 — `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002`, the reverse-trace completeness rules for the REQUIREMENT ↔ `VERIFICATION` leg ([27-verification.md](27-verification.md)): no verification targets the requirement at all, or every one that does is still unresolved (`not_yet_run` / `inconclusive`). Resolves the "deliberately out of scope" question left open when `VERIFICATION` landed.
