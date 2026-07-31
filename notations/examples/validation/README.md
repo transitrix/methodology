@@ -10,7 +10,7 @@ A small, generic fixture exercising the validation-anchor leg — `NEED` → `RE
 |---|---|---|
 | [`canon/elements/02_business/actors/ACTOR-ENTERPRISE-CUSTOMERS-1.yaml`](canon/elements/02_business/actors/ACTOR-ENTERPRISE-CUSTOMERS-1.yaml) | `ACTOR` | The identity the stakeholder's stake attaches to ([`19-actors.md`](../../elements/19-actors.md)). |
 | [`canon/elements/01_motivation/stakeholders/STAKEHOLDER-ENTERPRISE-CUSTOMERS-1.yaml`](canon/elements/01_motivation/stakeholders/STAKEHOLDER-ENTERPRISE-CUSTOMERS-1.yaml) | `STAKEHOLDER` | Whose need this is ([`20-stakeholders.md`](../../elements/20-stakeholders.md)). |
-| [`canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml`](canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml) | `NEED` | The stakeholder need to be met, independent of how ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.26). |
+| [`canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml`](canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml) | `NEED` | The stakeholder need to be met, independent of how ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.28). |
 | [`canon/elements/01_motivation/requirements/REQUIREMENT-OUTAGE-STATUS-PAGE-1.yaml`](canon/elements/01_motivation/requirements/REQUIREMENT-OUTAGE-STATUS-PAGE-1.yaml) | `REQUIREMENT` | The design-input obligation written to satisfy the need, tracing back via `serves` ([`15-requirement.md`](../../elements/15-requirement.md) §2.5). |
 | [`canon/validations/VALIDATION-OUTAGE-STATUS-UAT-1.yaml`](canon/validations/VALIDATION-OUTAGE-STATUS-UAT-1.yaml) | `VALIDATION` | The user-acceptance protocol that checks the need was actually met (`validates`), with method, result, and pass/fail outcome ([`28-validation.md`](../../elements/28-validation.md)). |
 
@@ -40,7 +40,7 @@ Every forward link in this fixture resolves — nothing is seeded as incomplete;
 ## References
 
 - [`../../elements/28-validation.md`](../../elements/28-validation.md) — `VALIDATION` schema, validation rules, and the trade-off argument for a separate TYPE rather than widening `VERIFICATION.verifies`.
-- [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.26 — `NEED` schema and validation rules, including the reverse-trace completeness rules (`NEED-COVERAGE-001`, `NEED-VALIDATION-COVERAGE-001`/`-002`).
+- [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.28 — `NEED` schema and validation rules, including the reverse-trace completeness rules (`NEED-COVERAGE-001`, `NEED-VALIDATION-COVERAGE-001`/`-002`).
 - [`../../elements/15-requirement.md`](../../elements/15-requirement.md) §2.5 — the `REQUIREMENT.serves` field.
 - [`../../CONTRACT.md`](../../CONTRACT.md) §8 — aggregated compliance, verification, and validation domain validation rules.
 - [`../verification/`](../verification/) — the sibling fixture for the `REQUIREMENT` → `VERIFICATION` engineering-verification leg.

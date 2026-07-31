@@ -50,7 +50,9 @@ canon/
       requirements/   REQUIREMENT-*.yaml     # elements/15-requirement.md
       stakeholders/   STAKEHOLDER-*.yaml     # elements/20-stakeholders.md (actor: REQUIRED)
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
-      needs/          NEED-*.yaml            # §7.26 — stakeholder/user need; REQUIREMENT.serves points here
+      needs/          NEED-*.yaml            # §7.28 — stakeholder/user need; REQUIREMENT.serves points here
+      metrics/        METRIC-*.yaml          # §7.27 — managed indicator; measures GOAL/CAPABILITY/PROCESS
+      risks/          RISK-*.yaml            # §7.26 — projected event; threatens / treated_by
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
       processes/      PROCESS-*.yaml
@@ -161,7 +163,9 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
 | `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
 | `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
-| `NEED` | standalone | `need` | motivation | `01_motivation/needs/` | §7.26 (no dedicated spec) |
+| `NEED` | standalone | `need` | motivation | `01_motivation/needs/` | §7.28 (no dedicated spec) |
+| `METRIC` | standalone | `metric` | motivation | `01_motivation/metrics/` | §7.27 (no dedicated spec) |
+| `RISK` | standalone | `risk` | motivation | `01_motivation/risks/` | §7.26 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
 | `STEP` | contained (in `PROCESS.flow`) → standalone (promotable) | `step` | business | `02_business/steps/` | §7.20 (inline shape: §7.5) |
@@ -190,7 +194,9 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `DRIVER` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the driver without losing that history. It is therefore its own catalogue element that references its `DRIVER` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
-- **`NEED` is `standalone`, upstream of `REQUIREMENT`.** A need is *what a stakeholder requires*, independent of how it is met — the ArchiMate-unmapped motivation-layer primitive a `REQUIREMENT` traces to via its own `serves` field (§7.26). Referenced from any `REQUIREMENT` that serves it and from the `VALIDATION` claims that check whether the delivered thing actually meets it, so it needs its own admission record and lifecycle, not an inline fragment of the requirement it motivates — the same "referenced from two directions" justification as `RISK`. Motivation layer (`01_motivation/`) matches its grain: a need is an intent-layer concern (what the stakeholder wants), not a business, application, or technology fact.
+- **`NEED` is `standalone`, upstream of `REQUIREMENT`.** A need is *what a stakeholder requires*, independent of how it is met — the ArchiMate-unmapped motivation-layer primitive a `REQUIREMENT` traces to via its own `serves` field (§7.28). Referenced from any `REQUIREMENT` that serves it and from the `VALIDATION` claims that check whether the delivered thing actually meets it, so it needs its own admission record and lifecycle, not an inline fragment of the requirement it motivates — the same "referenced from two directions" justification as `RISK`. Motivation layer (`01_motivation/`) matches its grain: a need is an intent-layer concern (what the stakeholder wants), not a business, application, or technology fact.
+- **`METRIC` is `standalone`, as the managed indicator, distinct from a rendered coverage figure.** A metric is what the organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing — it needs its own admission record and lifecycle because it is authored once and re-read continuously, not a fact re-derived per view render. That is also what separates it from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a report-config document with no canonical content of its own, computing a regulatory dark-cell count from `ASSERTION`/`REQUIREMENT`/codex data at render time; `METRIC` is the opposite — a first-class catalogue element naming what is measured, never a rendering. Motivation layer (`01_motivation/`) matches its grain: like `ASSESSMENT`, it is a measurement primitive over the organisation's intent, not a business/application/technology fact — even though what it measures (`GOAL` / `CAPABILITY` / `PROCESS`) may sit in a different layer. ArchiMate 3.x has no indicator/KPI element — vocabulary rule, 2026-07-30 decision — so `METRIC` carries no ArchiMate mapping (§7.27).
+- **`RISK` is `standalone`, as a projected event distinct from a dated finding.** A risk is *forward-looking* — the projected event, its likelihood, its impact, and who owns treating it — not a finding about the present state of something (that is `ASSESSMENT`, §7.16). It is referenced from wherever it threatens (typically a `DRIVER`, but any core element) and from the `REQUIREMENT` / `CONSTRAINT` that treats it, so it needs its own admission record and lifecycle rather than living as an inline fragment of either side. Motivation layer (`01_motivation/`) matches its grain: a risk is an intent-layer concern (what the organisation must reckon with), not a business, application, or technology fact. ArchiMate 3.x has no risk element — vocabulary rule, 2026-07-30 decision — so `RISK` carries no ArchiMate mapping (§7.26). The prior guidance for expressing risk purely through existing motivation primitives ([CONTRACT.md](CONTRACT.md) §8.1) stays valid for repositories that prefer it; `RISK` is an additional, not exclusive, way to model risk.
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is an M:N relation that lands as a `REL` kind in a separate sub-task — never inline on this element.
 - **`LOCATION` is `standalone`, justified by shared reference.** A location (an office, a country, a virtual zone) is referenced by many actors — multiple business units at the same site, many persons at the same office. Making it a first-class catalogue element lets each actor reference the same `LOCATION-…` ID without repeating the address, timezone, and country code. It is **not** a property of the actor (actors can move; the location persists), and it is not a motivation-layer element (no normative force — regulatory implications of location live in `CONSTRAINT` / `REQUIREMENT`). Business layer (`02_business/`) matches its grain: it describes where the organisation operates, not what it intends or how it executes.
 - **`BUSINESS_SERVICE` is `standalone`, as the named behaviour the organisation offers.** A Business Service (ArchiMate §8.3.4) is the externally visible behaviour a unit or role makes available to its consumers — internal teams, external customers, or partners. It is a first-class catalogue element because it is shared: multiple processes, actors, and products may reference the same service, and its ownership (which unit offers it) and capability realisation (what it exposes) are time-aware events tracked as `offers` and `realizes` REL kinds ([elements/17-relations.md](elements/17-relations.md) §3). It is not a `PROCESS` (internal execution flow), a `CAPABILITY` (the ability to perform), or a `PRODUCT` (a packaged, versioned offering). Business layer (`02_business/`) is the correct placement — it describes what the organisation does for its environment, not what the organisation intends (`01_motivation`) or how it executes internally.
@@ -243,7 +249,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
-| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`), `NEED` (`needs/`) |
+| `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`), `RISK` (`risks/`), `METRIC` (`metrics/`), `NEED` (`needs/`) |
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
@@ -821,9 +827,158 @@ A platform-level service exposed by a NODE or group of NODEs to the application 
 
 **Relations:** `uses` (`APPLICATION` → `TECHNOLOGY_SERVICE`) records application-layer consumption; `hosts` (`NODE` → `TECHNOLOGY_SERVICE`) records infrastructure hosting. Both are first-class relation kinds ([elements/17-relations.md](elements/17-relations.md) §3). The `APPLICATION` side may also carry a `technology_services[]` inline field in a future additive revision.
 
-### 7.26 `NEED` — `01_motivation/needs/`
+### 7.26 `RISK` — `01_motivation/risks/`
 
-Motivation-layer **stakeholder/user need** — what must be true for whoever depends on it, independent of how it will be met. Upstream of `REQUIREMENT`: a `REQUIREMENT` records *what the design must do*; a `NEED` records *what a stakeholder requires*, before any design decision commits to a particular obligation. One `NEED` may be served by one or more `REQUIREMENT`s (§7.26.1); a `REQUIREMENT` traces back to the `NEED` it serves via its own optional `serves` field ([elements/15-requirement.md](elements/15-requirement.md) §2.5).
+Motivation-layer **projected event** — something that has not happened yet and might. Distinct from `ASSESSMENT` (§7.16), which is a *dated finding about the observed state of a `DRIVER`* — a fact about the present. `RISK` is a claim about the future: its likelihood, its impact if it occurs, and the residual exposure once treatment is in place.
+
+There is no ArchiMate counterpart for `RISK`: ArchiMate 3.x has no risk element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit). `ASSESSMENT` keeps its present meaning and is not overloaded by this addition. The **Risk and Security Overlay** mapping that expresses generic risk entirely through `ASSESSMENT` / `DRIVER` / `GOAL` / `REQUIREMENT` / `CONSTRAINT` ([CONTRACT.md](CONTRACT.md) §8.1) remains valid guidance for a repository that prefers to model risk that way; `RISK` is an additional, not exclusive, primitive — the two approaches are not in conflict and may be mixed in the same repository (e.g. a `RISK.threatens` reference and an `ASSESSMENT.assesses` reference may name the same `DRIVER`).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `risk`. |
+| `likelihood` | **yes** | string | `low` \| `medium` \| `high` — the projected probability of the event occurring. |
+| `impact` | **yes** | string | `low` \| `medium` \| `high` — the severity if the event occurs, before treatment. |
+| `residual` | **yes** | string | `low` \| `medium` \| `high` — the exposure judged to remain once the `treated_by` obligations (if any) are in effect. Distinct from `impact`: `impact` is the untreated severity; `residual` is the post-treatment judgement. A `residual` lower than `impact` with an empty `treated_by` is an unfounded claim, flagged by `RISK-COVERAGE-001` (§9). |
+| `owner_role` | **yes** | string | `ROLE-…` accountable for tracking and treating this risk. |
+| `threatens` | **yes** | list | Typed IDs of the elements this risk threatens — commonly `DRIVER-…`, but any core element the risk bears on. Non-empty. |
+| `treated_by` | no | list | `REQUIREMENT-…` / `CONSTRAINT-…` IDs — the treatment obligations that address this risk. Absent ⇒ untreated (`RISK-COVERAGE-001`). |
+| `description` | recommended | string | One-paragraph elaboration of the projected event itself — what would happen, not a finding about what already has. |
+
+**`threatens` and `treated_by` are inline, not first-class time-aware `REL`s** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A risk re-scoped to threaten a different element, or re-treated by a different obligation, is captured by versioning the `RISK` element itself (`valid_to` the old, admit a new), not by relation re-binding.
+
+```yaml
+# canon/elements/01_motivation/risks/RISK-VENDOR-OUTAGE-1.yaml
+notation: risk
+id: RISK-VENDOR-OUTAGE-1
+name: "Primary payment-gateway vendor suffers an extended outage"
+description: >
+  The organisation's sole payment-gateway integration has no failover
+  provider; an extended vendor-side outage would stop order checkout
+  entirely for the duration of the incident.
+
+likelihood: medium
+impact: high
+residual: medium
+owner_role: ROLE-PAYMENTS-LEAD-1
+
+threatens:
+  - DRIVER-CHECKOUT-AVAILABILITY-1
+
+treated_by:
+  - REQUIREMENT-PAYMENT-FAILOVER-1
+
+```yaml
+6 `RISK` — `01_motivation/risks/`
+
+Motivation-layer **projected event** — something that has not happened yet and might. Distinct from `ASSESSMENT` (§7.16), which is a *dated finding about the observed state of a `DRIVER`* — a fact about the present. `RISK` is a claim about the future: its likelihood, its impact if it occurs, and the residual exposure once treatment is in place.
+
+There is no ArchiMate counterpart for `RISK`: ArchiMate 3.x has no risk element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit). `ASSESSMENT` keeps its present meaning and is not overloaded by this addition. The **Risk and Security Overlay** mapping that expresses generic risk entirely through `ASSESSMENT` / `DRIVER` / `GOAL` / `REQUIREMENT` / `CONSTRAINT` ([CONTRACT.md](CONTRACT.md) §8.1) remains valid guidance for a repository that prefers to model risk that way; `RISK` is an additional, not exclusive, primitive — the two approaches are not in conflict and may be mixed in the same repository (e.g. a `RISK.threatens` reference and an `ASSESSMENT.assesses` reference may name the same `DRIVER`).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `risk`. |
+| `likelihood` | **yes** | string | `low` \| `medium` \| `high` — the projected probability of the event occurring. |
+| `impact` | **yes** | string | `low` \| `medium` \| `high` — the severity if the event occurs, before treatment. |
+| `residual` | **yes** | string | `low` \| `medium` \| `high` — the exposure judged to remain once the `treated_by` obligations (if any) are in effect. Distinct from `impact`: `impact` is the untreated severity; `residual` is the post-treatment judgement. A `residual` lower than `impact` with an empty `treated_by` is an unfounded claim, flagged by `RISK-COVERAGE-001` (§9). |
+| `owner_role` | **yes** | string | `ROLE-…` accountable for tracking and treating this risk. |
+| `threatens` | **yes** | list | Typed IDs of the elements this risk threatens — commonly `DRIVER-…`, but any core element the risk bears on. Non-empty. |
+| `treated_by` | no | list | `REQUIREMENT-…` / `CONSTRAINT-…` IDs — the treatment obligations that address this risk. Absent ⇒ untreated (`RISK-COVERAGE-001`). |
+| `description` | recommended | string | One-paragraph elaboration of the projected event itself — what would happen, not a finding about what already has. |
+
+**`threatens` and `treated_by` are inline, not first-class time-aware `REL`s** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A risk re-scoped to threaten a different element, or re-treated by a different obligation, is captured by versioning the `RISK` element itself (`valid_to` the old, admit a new), not by relation re-binding.
+
+```yaml
+# canon/elements/01_motivation/risks/RISK-VENDOR-OUTAGE-1.yaml
+notation: risk
+id: RISK-VENDOR-OUTAGE-1
+name: "Primary payment-gateway vendor suffers an extended outage"
+description: >
+  The organisation's sole payment-gateway integration has no failover
+  provider; an extended vendor-side outage would stop order checkout
+  entirely for the duration of the incident.
+
+likelihood: medium
+impact: high
+residual: medium
+owner_role: ROLE-PAYMENTS-LEAD-1
+
+threatens:
+  - DRIVER-CHECKOUT-AVAILABILITY-1
+
+treated_by:
+  - REQUIREMENT-PAYMENT-FAILOVER-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-30"
+valid_to: null
+```
+
+No view inline shape: `RISK` is standalone-only, like `ASSESSMENT` — it is not authored inline inside any view document.
+
+### 7.27 `METRIC` — `01_motivation/metrics/`
+
+Motivation-layer **managed indicator** — the measure an organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing as intended. Distinct from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a **report-config document** that carries no canonical content of its own and computes a regulatory dark-cell count from `ASSERTION` / `REQUIREMENT` / codex data at render time ([views/22-coverage-metric.md](views/22-coverage-metric.md) §1); `METRIC` is the opposite — a first-class, admitted catalogue element naming what the organisation measures, with its own lifecycle, never a rendering of derived data.
+
+There is no ArchiMate counterpart for `METRIC`: ArchiMate 3.x has no dedicated indicator/KPI element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `metric`. |
+| `measures` | **yes** | list | Typed IDs of what this metric tracks — `GOAL-…`, `CAPABILITY-…`, or `PROCESS-…`. Non-empty; no other TYPE is a valid entry. |
+| `unit` | **yes** | string | The unit the value and `target` are expressed in — free-form, not enumerated (e.g. `percent`, `days`, `count`, `USD`). |
+| `target` | **yes** | number | The value the organisation aims for, in `unit`. |
+| `direction_of_good` | **yes** | string | `higher_is_better` \| `lower_is_better` \| `on_target` — how to read movement relative to `target`. `on_target` means deviation in either direction is a regression (e.g. a staffing-ratio metric where both over- and under-staffing are bad). |
+| `owner_role` | **yes** | string | `ROLE-…` accountable for tracking this metric and acting on it. |
+| `description` | recommended | string | One-paragraph elaboration of what the metric measures and why it was chosen. |
+
+**`measures` is inline, not a first-class time-aware `REL`** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A metric re-scoped to measure a different `GOAL` / `CAPABILITY` / `PROCESS` is captured by versioning the `METRIC` element itself (`valid_to` the old, admit a new), not by relation re-binding. `METRIC` carries no time series of its own — the observed value over time is an operating-state concern ([CONTRACT.md](CONTRACT.md) §9.6), not a field on this element; `METRIC` names what is measured, its unit, its target, and its direction of good, not the history of readings.
+
+```yaml
+# canon/elements/01_motivation/metrics/METRIC-CHECKOUT-CONVERSION-1.yaml
+notation: metric
+id: METRIC-CHECKOUT-CONVERSION-1
+name: "Checkout conversion rate"
+description: >
+  Share of started checkouts that complete successfully. Tracks whether
+  the checkout-simplification goal is moving the organisation's core
+  revenue lever in the intended direction.
+
+measures:
+  - GOAL-CHECKOUT-SIMPLIFICATION-1
+
+unit: percent
+target: 68
+direction_of_good: higher_is_better
+owner_role: ROLE-ECOMMERCE-LEAD-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-30"
+valid_to: null
+```
+
+No view inline shape: `METRIC` is standalone-only, like `ASSESSMENT` — it is not authored inline inside any view document.
+
+### 7.28 `NEED` — `01_motivation/needs/`
+
+Motivation-layer **stakeholder/user need** — what must be true for whoever depends on it, independent of how it will be met. Upstream of `REQUIREMENT`: a `REQUIREMENT` records *what the design must do*; a `NEED` records *what a stakeholder requires*, before any design decision commits to a particular obligation. One `NEED` may be served by one or more `REQUIREMENT`s (§7.28.1); a `REQUIREMENT` traces back to the `NEED` it serves via its own optional `serves` field ([elements/15-requirement.md](elements/15-requirement.md) §2.7).
 
 There is no ArchiMate counterpart for `NEED`: ArchiMate 3.x has no need element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit). This is distinct from `STAKEHOLDER` (§7.15, [elements/20-stakeholders.md](elements/20-stakeholders.md)), which is the *interest profile* of a party (concern / interest / influence) — `NEED` is a specific, expressible thing that party requires, not the party's general stake.
 
@@ -864,9 +1019,10 @@ valid_to: null
 
 No view inline shape: `NEED` is standalone-only, like `ASSESSMENT` and `RISK` — it is not authored inline inside any view document.
 
-#### 7.26.1 The validation anchor — `NEED` → `VALIDATION`
+#### 7.28.1 The validation anchor — `NEED` → `VALIDATION`
 
 Before `NEED` existed, there was no anchor for the claim that a delivered thing satisfies a stakeholder/user need — `VERIFICATION.verifies` has only ever resolved to `REQUIREMENT` ([elements/27-verification.md](elements/27-verification.md) §1), which checks a design-input obligation, not the upstream need that motivated it. `NEED` closes that gap together with a dedicated **`VALIDATION`** claim type ([elements/28-validation.md](elements/28-validation.md)) — the validation-domain counterpart to `VERIFICATION`, structured the same way but anchored on `NEED` instead of `REQUIREMENT`, and using a validation-appropriate method vocabulary (user acceptance / field trial / stakeholder review / usability study) instead of `VERIFICATION`'s engineering methods (test / analysis / inspection / demonstration). See [CONTRACT.md](CONTRACT.md) §8 for the trade-off argued against widening `VERIFICATION.verifies` instead.
+
 
 ---
 
@@ -917,6 +1073,15 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `NEED-COVERAGE-001` | warning | A `NEED` has no admitted `REQUIREMENT` targeting it — no file under `canon/elements/01_motivation/requirements/` carries `serves: <this NEED id>` ([elements/15-requirement.md](elements/15-requirement.md) §2.5). Surfaces an unaddressed need, the NEED-side analogue of `REQ-COVERAGE-001` ([CONTRACT.md](CONTRACT.md) §8). `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted NEED legitimately has no serving requirement yet. Cross-cutting — fires on the NEED but is computed by scanning the requirements catalogue. |
 | `NEED-VALIDATION-COVERAGE-001` | warning | A `NEED` has no admitted `VALIDATION` targeting it — no file under `canon/validations/` carries `validates: <this NEED id>` ([elements/28-validation.md](elements/28-validation.md) §2). The validation-side analogue of `REQ-VERIF-COVERAGE-001`: the claim that the delivered thing actually satisfies this need is missing. Cross-cutting — fires on the NEED but is computed by scanning the validations catalogue. |
 | `NEED-VALIDATION-COVERAGE-002` | warning | A `NEED` has one or more admitted `VALIDATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every validation against it is still `not_yet_run` or `inconclusive` ([elements/28-validation.md](elements/28-validation.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `NEED-VALIDATION-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
+| `METRIC-001` | error | A `METRIC` element is missing `id`, `name`, or any required envelope field; or `id` does not match `METRIC-[<middle>-]<INTEGER>`; or a required per-TYPE field (`measures`, `unit`, `target`, `direction_of_good`, `owner_role`) is missing. |
+| `METRIC-002` | error | `measures` is empty, or an entry does not resolve to an admitted `GOAL`, `CAPABILITY`, or `PROCESS` in canon. |
+| `METRIC-003` | error | `direction_of_good` is not one of `higher_is_better`, `lower_is_better`, `on_target`. |
+| `METRIC-004` | error | `owner_role` does not resolve to an admitted `ROLE` in canon. |
+| `RISK-001` | error | A `RISK` element is missing `id`, `name`, or any required envelope field; or `id` does not match `RISK-[<middle>-]<INTEGER>`; or a required per-TYPE field (`likelihood`, `impact`, `residual`, `owner_role`, `threatens`) is missing. |
+| `RISK-002` | error | `likelihood`, `impact`, or `residual` is not one of `low`, `medium`, `high`. |
+| `RISK-003` | error | `threatens` is empty, or an entry does not resolve to an admitted element in canon. |
+| `RISK-004` | error | A `treated_by` entry does not resolve, or does not resolve to a `REQUIREMENT` or `CONSTRAINT` in canon. |
+| `RISK-COVERAGE-001` | warning | A `RISK` has an empty or absent `treated_by` — an untreated risk, the RISK-side analogue of `REQ-COVERAGE-001` ([CONTRACT.md](CONTRACT.md) §8). Unlike that cross-cutting rule, this check reads only the `RISK` element's own field — no catalogue scan required. |
 
 ---
 

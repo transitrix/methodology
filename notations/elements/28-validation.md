@@ -8,7 +8,7 @@ status: "draft"
 
 # Validation — Reference
 
-**Scope:** The `VALIDATION` type — a first-class claim that a **`NEED`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.26) was checked against the stakeholder/user it belongs to, with an explicit method, result, and pass/fail outcome. `VALIDATION` is the validation-domain counterpart to `VERIFICATION` ([27-verification.md](27-verification.md)) — same claim shape, anchored one layer further upstream. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.8.
+**Scope:** The `VALIDATION` type — a first-class claim that a **`NEED`** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28) was checked against the stakeholder/user it belongs to, with an explicit method, result, and pass/fail outcome. `VALIDATION` is the validation-domain counterpart to `VERIFICATION` ([27-verification.md](27-verification.md)) — same claim shape, anchored one layer further upstream. The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.8.
 
 Validations are canon-zone artefacts that live **outside** the `elements/` tree, under `canon/validations/` — the same structural choice as `ASSERTION` ([16-assertion.md](16-assertion.md)) and `VERIFICATION` ([27-verification.md](27-verification.md)). Each validation is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the validation-specific frontmatter below.
 
@@ -185,7 +185,7 @@ A generic worked example exercising `VALIDATION` alongside `NEED` and `REQUIREME
 
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.8 (entry), §1 (grammar), §4 (uniqueness scope).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
-- The `NEED` element type validations are about: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.26.
+- The `NEED` element type validations are about: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28.
 - The `REQUIREMENT` a NEED's serving obligation lives on, and its `serves` back-reference: [15-requirement.md](15-requirement.md) §2.5.
 - The engineering-verification peer primitive, and the trade-off argument for keeping `VALIDATION` a separate TYPE rather than widening `verifies`: [27-verification.md](27-verification.md).
 - The compliance-domain peer primitive: [16-assertion.md](16-assertion.md).
