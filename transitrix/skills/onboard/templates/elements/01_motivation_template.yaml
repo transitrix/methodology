@@ -24,7 +24,9 @@ description: >
 # DRIVER:      references_constraint: [CONSTRAINT-…]
 # CONSTRAINT / REQUIREMENT: statement / derived_from / severity / source / owner_role …
 
-# Admission record (CONTRACT.md §6)
+# Admission record (CONTRACT.md §6) — computed by the assistant driving the
+# onboarding skill, not hand-typed (SKILL.md "Admission record and lifecycle").
+# Values below are illustrative only.
 zone: canon
 admitted_at: "2026-01-01"              # quoted ISO 8601 (CONTRACT.md §4)
 admitted_by: "firstname.lastname"
@@ -33,6 +35,7 @@ gate_checks:
   consistency: pass
   completeness: pass
 
-# Primitive lifecycle (CONTRACT.md §7)
+# Primitive lifecycle (CONTRACT.md §7) — valid_from/valid_to default to
+# today/null; also computed by the assistant, not the author.
 valid_from: "2026-01-01"
 valid_to: null
