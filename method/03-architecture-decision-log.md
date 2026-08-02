@@ -22,7 +22,9 @@ This is a git-native, agent-operable realisation of **TOGAF's *Governance Log �
 | **Per-repo decision records** | each project repo, `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`) | that repo's team | [Team Operations](02-team-operations.md) §3.1 (extended here with `author` / `source`) |
 | **Enterprise ADL** | the central **architecture repository**, `architecture/decision-log/` | the architecture function | this document |
 
-The per-repo layer is **canonical**: a decision record's single source of truth is the repository where the decision was made. The enterprise ADL is a **derived index** harvested from those repos plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync — the central log never edits a project repo's records, and a project repo never writes into the central log.
+The per-repo layer is **canonical only where the repository can hold the decision's reasoning** — where the repository's readership is the reasoning's intended audience, a decision record's single source of truth is the repository where the decision was made. Where a project repository is **public**, or otherwise readable by parties the reasoning is not intended for, that condition fails: the decision's home is the **central architecture repository** instead, and what remains in the project repository is at most a pointer that carries no motivation — a commit message, an issue comment, or a line stating that a decision was made and where to read it, never a `Context → Decision → Consequences` body.
+
+Where the per-repo layer is canonical, the enterprise ADL is a **derived index** harvested from those repos plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync — the central log never edits a project repo's records, and a project repo never writes into the central log.
 
 ```
 project-repo-a/                     project-repo-b/            central architecture repo/
@@ -111,6 +113,8 @@ The harvest runs on a schedule (cron / CI in the central repo) and on demand. It
 
 An agent may author a record and open it as `status: proposed`. It may **not** self-promote to `accepted`. Ratification is a human flipping `proposed → accepted` in a reviewed change. This is the mechanism that lets an agent do consequential work (e.g. record "bumped catalog pin to 2.3.0") while a human remains the gate — the worst an unattended agent can do is leave a *proposed* record for review.
 
+**The authorship limit — where, not just what.** An agent may author a decision record that is local to its own repository; it may **not** author one that crosses a boundary outside that repository — including writing directly into the central architecture repository, another project repository, or any location its own repository's agent cannot itself read. The control is structural rather than a review step: the crossing is defined by material the agent does not have (another repository's audience, confidentiality boundary, or reasoning), so the agent cannot reliably detect that it has crossed one — the boundary has to be enforced by *who may author where*, not by checking the record afterward. An agent that judges its own repository's decision belongs in the central log (§1) proposes that move to whoever can write there; it never writes across the boundary itself.
+
 ## 7. Immutability discipline
 
 The ADL is **append-only**. The discipline is identical to Team Operations §3.1, stated here as the property the central log depends on:
@@ -147,7 +151,12 @@ The mechanism is specified above; this section is the path through it. Sections 
 
 ### Step 1 — per-repo, start today (no second repo needed)
 
-In each repository, without waiting for the central layer:
+**First, check repository visibility** — it decides which path below applies (§1):
+
+- **Public repository, or otherwise readable by parties the reasoning isn't intended for:** do not create `operations/decisions/` here. The record's home is the central architecture repository from the start — go to Step 4 for its shape, and treat this repository's own `operations/decisions/` (or `docs/decisions/`, if one predates this rule) as retired: a pointer only, never a `Context → Decision → Consequences` body.
+- **Private repository whose readership is the reasoning's intended audience:** continue below.
+
+In each such repository, without waiting for the central layer:
 
 1. Create `operations/decisions/`.
 2. Write `ADR-YYYY-MM-DD-<slug>.md` (today's date + a short slug) — the first record is the decision to start keeping records here. No numbering to start at: the id is derived, not allocated.

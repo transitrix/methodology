@@ -1,12 +1,14 @@
-# Methodology decision records — moved
+# Methodology decision records — recorded centrally
 
-Repo-local architecture decisions for this methodology are now maintained
-centrally by the project maintainer, rather than as individual files in this
-folder.
+This repository is public. Per [`method/03-architecture-decision-log.md`](../../method/03-architecture-decision-log.md)
+§1, the per-repo decision layer is canonical only where a repository's
+readership is the reasoning's intended audience — a public repository fails
+that condition, so this repository's architecture decisions are recorded in
+the central architecture repository, not as individual files in this folder.
 
-Historical records are preserved in this repository's git history — see
-`docs/decisions/` at any commit before this one for the original files and
-index.
+Historical records predating that rule are preserved in this repository's
+git history — see `docs/decisions/` at any commit before this one for the
+original files and index.
 
-Future architecture decisions local to this repo are recorded centrally, not
-back into this folder.
+This folder carries no future records. A decision affecting this repository
+is proposed from here and recorded centrally once made.
