@@ -149,7 +149,7 @@ applications_catalogue:
 | `applications[].owner_role` | No | BusinessRole element ID of the technical owner. **Time-varying** — lives in the sidecar `<app_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
 | `applications[].vendor` | No | Vendor name or `Internal`. **Time-varying** — sidecar, not inline (an organisation may switch vendors mid-life). |
 | `applications[].status` | Yes | `Draft` / `Active` / `Deprecated` / `Decommissioning`. Operational state — stays inline; teams wanting status history MAY promote to sidecar voluntarily. |
-| `applications[].maturity` | No | CMM level 1–5. **Time-varying** — sidecar, not inline. |
+| `applications[].maturity` | No | CMM level ([CONTRACT.md](../CONTRACT.md) §9.4 shared CMMI V2.0 scale). **Time-varying** — sidecar, not inline. |
 | `applications[].description` | No | Short description of the application's purpose. |
 | `applications[].capabilities` | No | List of capability IDs this application enables. Stays inline in v1 (relations are Wave 3 territory). |
 | `applications[].products` | No | List of Product element IDs this application supports. Stays inline in v1 (relations are Wave 3 territory). |
