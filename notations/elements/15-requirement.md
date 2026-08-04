@@ -10,7 +10,7 @@ status: "draft"
 
 **Scope:** The `REQUIREMENT` element type in the motivation layer of an organisation's canon — a positive obligation the organisation must fulfil ("must submit", "must register", "must obtain approval"). The shared header / zone / admission / lifecycle contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
 
-Requirements are **zone primitives**: each requirement is a single YAML file under `canon/elements/01_motivation/requirements/`, named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the requirement-specific frontmatter below.
+Requirements are **zone primitives**: each requirement is a single YAML file under `canon/elements/01_motivation/requirements/`, named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`) plus the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) and the requirement-specific frontmatter below. A REQUIREMENT MAY also carry the **agreement axis** ([CONTRACT.md](../CONTRACT.md) §6.3, `agreement: draft | agreed | disputed`) — a second, independent axis from admission, recording whether the accountable party has committed to the obligation. Absent ⇒ `agreed`; only a human may write `agreed` (`AGREE-002`).
 
 ---
 
@@ -304,11 +304,14 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 | `REQ-VERIF-COVERAGE-002` | warning | A REQUIREMENT has one or more admitted `VERIFICATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every verification against it is still `not_yet_run` or `inconclusive` ([27-verification.md](27-verification.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `REQ-VERIF-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
 | `REQ-STALE-001` | warning | `next_review_at` is set and is in the past relative to today (§2.3). The requirement is due for re-review. Time-dependent — the same file may pass on one day and fire on the next; surfaced by the `check-stale` CLI command (§5) so evaluation is explicit rather than embedded in every validate pass. Applies symmetrically to CONSTRAINT ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13). Malformed / unparseable `next_review_at` values silently skip evaluation (the CLI flags them in a separate line rather than firing a false stale). Mirrors `ASSERT-008` ([16-assertion.md](16-assertion.md) §5). |
 
-The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-and-verification-domain rules table (covering REQUIREMENT, ASSERTION, and VERIFICATION) lives in [CONTRACT.md](../CONTRACT.md) §8.
+The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3), header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2), and agreement-axis (`AGREE-001..003`, [CONTRACT.md](../CONTRACT.md) §6.3.1) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-and-verification-domain rules table (covering REQUIREMENT, ASSERTION, and VERIFICATION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-04, agreement axis):**
+- [CONTRACT.md](../CONTRACT.md) §6.3 — the `agreement: draft | agreed | disputed` axis, independent of admission, applying symmetrically to REQUIREMENT / CONSTRAINT / NEED. Absent ⇒ `agreed` (back-compat, no migration). `AGREE-001..003` (§6.3.1) validate the closed vocabulary, the required `agreed_by` writer attribution, and the human-only write authority on `agreed` (mirrors `ADMIT-007`). Per the 2026-07-31 requirements-management cut-line decision, which also moves the `reqif` package's `draft` / `approved` workflow states down into this axis (`approved` renamed `agreed`, since "approval" is spoken for by tiered approval, §6.2).
 
 **Landed (v0.7, 2026-07-30):**
 - §2.5 + §2 schema — optional `level: stakeholder | system | software` field, the ISO/IEC/IEEE 29148 StRS → SyRS → SRS specification-tier ladder. No new TYPE. Distinct from `origin` (authority chain) and `parent` (structural decomposition, no level semantics) — both documented explicitly to head off conflation. `REQ-005` enforces the closed vocabulary.
