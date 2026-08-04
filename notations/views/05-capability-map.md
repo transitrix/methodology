@@ -88,19 +88,10 @@ Capabilities are more stable than processes (which change with optimisation), te
 
 ## 3. CMMI V2.0 maturity levels
 
-Transitrix applies the **CMMI V2.0** standard to measure capability maturity.
-
-| Level | Name | Description | Characteristics |
-|-------|------|-------------|-----------------|
-| **1** | Initial | Unpredictable, reactive | Poorly controlled; success depends on individual heroics |
-| **2** | Managed | Project-level management | Processes planned, performed, measured, and controlled at project level |
-| **3** | Defined | Organisation-wide standards | Processes documented and standardised across the organisation |
-| **4** | Quantitatively Managed | Measured & controlled | Sub-processes controlled using statistical/quantitative techniques; performance is predictable |
-| **5** | Optimising | Continuous improvement | Focus on incremental and innovative process improvement |
+Transitrix applies the **CMMI V2.0** standard (levels 1–5) to measure capability maturity — the scale is defined once, in [CONTRACT.md](../CONTRACT.md) §9.4, and referenced here rather than restated.
 
 **Maturity assessment rules in DSM:**
-- Maturity is set **per capability per period** (start date + end date); a planned/future maturity level has a period in the future.
-- If the interval is open on the left (no start date) the level is effective from the past without restriction; if open on the right (no end date) it is effective indefinitely into the future.
+- Maturity is a **step function**, not a period ([CONTRACT.md](../CONTRACT.md) §9.2): each assessment is `{ valid_from, value }`, and the value holds until the next entry's `valid_from`. What reads as an "open-left" assessment is simply the array's first entry — effective from the past without restriction; an "open-right" assessment is simply the last entry — effective indefinitely into the future. A future-dated entry takes effect from that date, not before.
 - Each node in Editor (C) (except the root) shows a **round maturity indicator** in the top-left corner; colours are configured in Settings → Dictionaries → Capability Maturity Levels.
 
 ---
@@ -242,20 +233,17 @@ capability_map:
     - id: "CAPABILITY-V1"
       name: "Order Management"
       type: "domain"                       # domain | supporting
-      target_maturity: 3                   # stable planning aspiration (forward-looking)
       business_process: "PROC-ORD-FULFILL-001"
       applications:
         - "APP-OMS-001"
         - "APP-CRM-001"
-      # current_maturity, owner_role, target_date are time-varying — they
-      # live in CAPABILITY-V1.history.yaml (CONTRACT.md §9), not inline.
+      # current_maturity, target_maturity, owner_role, target_date are
+      # time-varying — they live in CAPABILITY-V1.history.yaml (CONTRACT.md §9), not inline.
       children:
         - id: "CAPABILITY-V1.1"
           name: "Order Intake"
-          target_maturity: 3
         - id: "CAPABILITY-V1.2"
           name: "Order Fulfilment"
-          target_maturity: 3
 ```
 
 ---
@@ -270,8 +258,8 @@ capability_map:
 | `id` | Yes | Capability ID — canonical form `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-H1` (see [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §2) |
 | `name` | Yes | Capability name |
 | `type` | Yes | `domain` or `supporting` |
-| `current_maturity` | Yes | Current CMM level (1–5). **Time-varying** — lives in the sidecar `<capability_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
-| `target_maturity` | No | Target CMM level. Stable forward-looking aspiration; stays inline. |
+| `current_maturity` | Yes | Current CMM level ([CONTRACT.md](../CONTRACT.md) §9.4 scale). **Time-varying** — lives in the sidecar `<capability_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `target_maturity` | No | Target CMM level ([CONTRACT.md](../CONTRACT.md) §9.4 scale). **Time-varying** — a target is a statement made on a date and may be revised on a later date; lives in the sidecar, not inline. Inline placement triggers `VERSIONED-004`. |
 | `target_date` | No | When the target should be reached (YYYY-MM-DD). **Time-varying** — sidecar, not inline. |
 | `owner_role` | No | Reference to BusinessRole element ID. **Time-varying** — sidecar, not inline. |
 | `business_process` | No | Reference to BusinessProcess element ID. Stays inline in v1 (relations are Wave 3 territory). |
@@ -314,7 +302,7 @@ A `relates_to` field on capabilities — if any adopter has added one — stays 
 
 ## 14. Time-varying attributes — sidecar history
 
-A capability's `current_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
+A capability's `current_maturity`, `target_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
 
 ```
 canon/elements/02_business/capabilities/CAPABILITY-V1.yaml          # stable fields
@@ -330,6 +318,9 @@ attribute_versions:
     - { valid_from: "2024-01-01", value: 1 }
     - { valid_from: "2025-06-01", value: 2 }
     - { valid_from: "2026-09-15", value: 3 }
+  target_maturity:
+    - { valid_from: "2024-01-01", value: 3 }
+    - { valid_from: "2026-09-15", value: 4 }
   owner_role:
     - { valid_from: "2024-01-01", value: ROLE-OPS-1 }
     - { valid_from: "2026-07-01", value: ROLE-OPS-2 }
@@ -342,7 +333,7 @@ Current-value resolution: pick the entry with the largest `valid_from <= today`.
 
 Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = capability.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../CONTRACT.md) §9.3).
 
-`target_maturity` is **not** time-varying — it is a stable forward-looking planning aspiration and stays inline on the capability.
+`target_maturity` is time-varying, alongside `current_maturity` and `target_date` — a target is a statement made on a date and may be revised on a later date, so both the level and its date live in the sidecar. `current_maturity` (what was observed) and `target_maturity` (what was undertaken) remain **two separate attribute series**, never merged into one: a future-dated entry never appears in `current_maturity`, since that would assert as fact something nobody has assessed.
 
 ---
 

@@ -427,11 +427,21 @@ A notation spec MAY declare specific attributes as `time_varying`. v1 candidate 
 | Notation | Candidate `time_varying` attributes |
 |---|---|
 | Capability map ([05-capability-map.md](views/05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
-| Applications catalogue ([10-applications.md](views/10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life) |
+| Applications catalogue ([10-applications.md](views/10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life), `maturity` |
 | Process map ([06-process-map.md](views/06-process-map.md)) | `maturity` |
 | Organisational unit (future) | `headcount`, `head_role` |
 
 Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR, mark its `time_varying` attributes and remove inline syntax for them. Adopters with existing inline values migrate by moving the value into a single-entry sidecar with `valid_from` set to the primitive's `valid_from`.
+
+**The maturity scale is defined once, here.** Every notation that declares a maturity-shaped `time_varying` attribute — currently the capability map's `current_maturity` / `target_maturity` and the applications catalogue's `maturity` — uses the same scale, **CMMI V2.0, levels 1–5**, and references this definition rather than restating it:
+
+| Level | Name | Description | Characteristics |
+|-------|------|-------------|-----------------|
+| **1** | Initial | Unpredictable, reactive | Poorly controlled; success depends on individual heroics |
+| **2** | Managed | Project-level management | Processes planned, performed, measured, and controlled at project level |
+| **3** | Defined | Organisation-wide standards | Processes documented and standardised across the organisation |
+| **4** | Quantitatively Managed | Measured & controlled | Sub-processes controlled using statistical/quantitative techniques; performance is predictable |
+| **5** | Optimising | Continuous improvement | Focus on incremental and innovative process improvement |
 
 ### 9.5 Out of scope (v1)
 
