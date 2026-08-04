@@ -1,0 +1,38 @@
+notation: mrd
+spec_version: "0.1"
+
+# MRD — Marketing Requirements Document. Spec: notations/views/documents/29-mrd.md
+# Document-config over NEED + REQUIREMENT (sibling of Compliance Impact / Actions
+# tree). Carries no canonical content — every section is DERIVED from the NEED
+# catalogue and the REQUIREMENT elements that serve it. This file only declares
+# which slice to render and how.
+
+name: "FILL-ME — e.g. Incident status communication — MRD"   # required per CONTRACT.md §1.1
+
+view:
+  id: MRD-FILL-ME-1
+  name: "FILL-ME — same as document name, or a shorter view label"
+  description: "FILL-ME — which needs, which requirement slice, why"
+
+  # Reserved — inert in this version of the spec. Do not set a standard identifier.
+  standard: null
+
+  # What the document covers. Use `include` OR `filter` per scope block (include wins).
+  scope:
+    needs:
+      include: [NEED-FILL-ME-1]
+      # filter:
+      #   stakeholder: [STAKEHOLDER-FILL-ME-1]
+    requirements:
+      # include: [REQUIREMENT-FILL-ME-1]
+      filter:
+        origin: [project-product]   # legislative | process-product | project-product
+
+  # Whether a need with zero matching requirements still gets an (empty) section.
+  include_unserved_needs: true
+  empty_section_label: "No requirement traces to this need (current model)"
+
+  # Ordering knobs.
+  grouping:
+    order_needs_by: "id"           # id | name | stakeholder
+    order_requirements_by: "id"    # id | name | severity
