@@ -332,6 +332,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
 | Coverage of canon — which subjects are dark for each regulatory regime, splitting modelling gaps from modelled exclusions | **Coverage Metric** | `*.coverage-metric.transitrix.yaml` |
 | Stakeholder-facing document listing design-input requirements grouped under the need each satisfies | **MRD** | `*.mrd.transitrix.yaml` |
+| Design-facing document listing which application/technology elements realise which requirements | **SDD** | `*.sdd.transitrix.yaml` |
 
 **Family rule:** the strategy-chain notations split by shape. **DGCA** uses the **flat form** — top-level arrays at the document root (`factors[]` / `goals[]` / `changes[]` / `actions[]`), cross-references upstream inside the flat arrays. **Goals tree** and **Action schedule** (both since v2.0) are **pure projections** — the view document carries only `view_config`, and each `GOAL-…` / `ACTION-…` lives as a standalone element file under `canon/elements/…`; the parent link (Goals) and predecessor / duration / cross-refs (Action) live on the element files, not in the view. In all three, hierarchy uses `parent: <SAME-TYPE>-…` on the child; no nested wrapper keys.
 
@@ -421,6 +422,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Coverage Metric | `templates/coverage-metric.coverage-metric.transitrix.yaml` |
 | Actions tree | `templates/actions-tree.actions-tree.transitrix.yaml` |
 | MRD | `templates/mrd.mrd.transitrix.yaml` |
+| SDD | `templates/sdd.sdd.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 
