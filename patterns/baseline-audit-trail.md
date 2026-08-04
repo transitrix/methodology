@@ -69,7 +69,7 @@ No new field, no separate sign-off document: **PR approver + `reviewer_authority
 
 - **Git ≠ Part 11 e-signatures.** A git commit authenticated by an SSH key or a GitHub account is not a 21 CFR Part 11 electronic signature. This pattern documents an audit trail and a review/approval mapping; it makes no claim of Part 11 compliance, and an adopter operating under Part 11 needs a signature mechanism this pattern does not provide.
 - **Pattern, not adopter instance.** Nothing here names or implies any specific adopter, product, or regulatory submission. `scripts/baseline-manifest.mjs` and the mapping above are generic over any repository that carries `REQUIREMENT` / `ASSERTION` / `VERIFICATION`.
-- **No new claim about coverage reporting.** Compliance and V&V coverage over the baselined content is specified and shipped independently ([21-compliance-impact.md](../notations/views/21-compliance-impact.md), [22-coverage-metric.md](../notations/views/22-coverage-metric.md)). This pattern adds nothing to that surface — it only names the baseline/audit-trail/review-approval story that sits alongside it.
+- **No new claim about coverage reporting.** Compliance and V&V coverage over the baselined content is specified and shipped independently ([21-compliance-impact.md](../notations/views/reports/21-compliance-impact.md), [22-coverage-metric.md](../notations/views/reports/22-coverage-metric.md)). This pattern adds nothing to that surface — it only names the baseline/audit-trail/review-approval story that sits alongside it.
 
 ## When to use
 
@@ -79,4 +79,4 @@ Once an adopter has admitted its first `REQUIREMENT` and expects a design review
 
 - [`notations/CONTRACT.md`](../notations/CONTRACT.md) §6, §6.1, §6.2, §7, §8 — the underlying mechanism.
 - [`notations/elements/15-requirement.md`](../notations/elements/15-requirement.md), [`16-assertion.md`](../notations/elements/16-assertion.md), [`27-verification.md`](../notations/elements/27-verification.md) — the elements a baseline manifest reads.
-- [`notations/views/21-compliance-impact.md`](../notations/views/21-compliance-impact.md), [`22-coverage-metric.md`](../notations/views/22-coverage-metric.md) — the sibling audit surfaces over the same content.
+- [`notations/views/21-compliance-impact.md`](../notations/views/reports/21-compliance-impact.md), [`22-coverage-metric.md`](../notations/views/reports/22-coverage-metric.md) — the sibling audit surfaces over the same content.

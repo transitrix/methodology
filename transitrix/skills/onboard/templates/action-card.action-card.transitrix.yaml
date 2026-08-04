@@ -1,7 +1,7 @@
 notation: action-card
 spec_version: "0.1"
 
-# Single-project narrative view. Spec: notations/views/18-action-card.md
+# Single-project narrative view. Spec: notations/views/diagrams/18-action-card.md
 # One project per document, identified by the `project:` ref into an
 # existing project Action (must resolve; type must be Project).
 # Document-scoped MILESTONE elements in milestones[] for narrative gates.

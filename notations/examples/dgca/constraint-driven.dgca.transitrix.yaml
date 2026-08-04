@@ -13,7 +13,7 @@ generated_at: "2026-05-26"
 author: Transitrix
 
 # Full-tier projection form example. Element data lives in elements/ alongside
-# this file (post-promotion). See notations/views/02-dgca.md §"Source of truth".
+# this file (post-promotion). See notations/views/diagrams/02-dgca.md §"Source of truth".
 
 view_config:
   goals:

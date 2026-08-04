@@ -284,7 +284,7 @@ The lifecycle fields are required on every canonical primitive once a notation s
 ### 7.5 Out of scope (v1)
 
 - **Bitemporality.** No separate `transaction_time` vs `valid_time`. v1 records what is true *now* about what was true *then*; back-dating corrections rewrite the file via git, and the git history is the audit trail.
-- **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/views/11-scenarios.md`), not of the primitive lifecycle.
+- **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/views/reports/11-scenarios.md`), not of the primitive lifecycle.
 - **Sub-day precision.** ISO 8601 date precision only; no timestamps, no timezones in canon. "Today" is the date of the query or render.
 - **First-class time-aware relations.** Promoting relations like `parent` / `applies_to` / activity→goal to first-class lifecycle-bearing files is planned for Wave 3 of the temporal model. In v1 such relations remain inline and timeless on their host primitive.
 
@@ -322,7 +322,7 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 | `ASSERT-009` | warning | ASSERTION (cross-cutting) | `realised_via` references a flow step (`STEP-…`) not yet promoted to a standalone element — promote per [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.20 (stage/task-level impact idiom, [16-assertion.md](elements/16-assertion.md) §2.1) | [16-assertion.md](elements/16-assertion.md) §5 |
 | `ASSERT-DEAD-LINK-001` | warning | ASSERTION (cross-cutting) | `subject` or `realised_via` references a primitive whose `valid_to` is in the past — bound to a currently-retired element | [16-assertion.md](elements/16-assertion.md) §5 |
 | `PROCESS-COVERAGE-001` | warning | PROCESS (cross-cutting) | PROCESS has no admitted ASSERTION with it as `subject` — regulatory obligations entirely unmodelled; an `n_a` assertion counts as coverage | [16-assertion.md](elements/16-assertion.md) §5 |
-| `JURISDICTION-CONSISTENCY-001` | warning | PROCESS_BLUEPRINT (cross-cutting) | a jurisdiction code in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` of any resolved codex source in scope — filter references an unrecognised code | [views/13-process-blueprint.md](views/13-process-blueprint.md) §6 |
+| `JURISDICTION-CONSISTENCY-001` | warning | PROCESS_BLUEPRINT (cross-cutting) | a jurisdiction code in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` of any resolved codex source in scope — filter references an unrecognised code | [views/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §6 |
 | `VERIF-001` | error | VERIFICATION | `id` grammar invalid, or any required field missing | [27-verification.md](elements/27-verification.md) §5 |
 | `VERIF-002` | error | VERIFICATION | `verifies` is missing, malformed, or resolves to a non-REQUIREMENT | [27-verification.md](elements/27-verification.md) §5 |
 | `VERIF-003` | error | VERIFICATION | `method` not in `{test, analysis, inspection, demonstration}` | [27-verification.md](elements/27-verification.md) §5 |
@@ -426,9 +426,9 @@ A notation spec MAY declare specific attributes as `time_varying`. v1 candidate 
 
 | Notation | Candidate `time_varying` attributes |
 |---|---|
-| Capability map ([05-capability-map.md](views/05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
-| Applications catalogue ([10-applications.md](views/10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life), `maturity` |
-| Process map ([06-process-map.md](views/06-process-map.md)) | `maturity` |
+| Capability map ([05-capability-map.md](./views/diagrams/05-capability-map.md)) | `maturity_level` (current/target), `responsible_role`, `target_date` |
+| Applications catalogue ([10-applications.md](./views/diagrams/10-applications.md)) | `lifecycle_stage` (planned / active / sunset), `responsible_unit`, `vendor` (when an organisation switches vendors mid-life), `maturity` |
+| Process map ([06-process-map.md](./views/diagrams/06-process-map.md)) | `maturity` |
 | Organisational unit (future) | `headcount`, `head_role` |
 
 Each notation's "Element lifecycle" or "Fields" section will, in a follow-up PR, mark its `time_varying` attributes and remove inline syntax for them. Adopters with existing inline values migrate by moving the value into a single-entry sidecar with `valid_from` set to the primitive's `valid_from`.

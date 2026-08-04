@@ -12,16 +12,16 @@ dsm_status: "not implemented — Studio compliance-views renderer planned (consu
 
 **Version:** 0.1
 **Date:** 2026-06-07
-**Status:** Draft — first cut of the canonical report-config for the coverage-of-canon read of the compliance overlay. Sibling of the Compliance Impact view ([21-compliance-impact.md](21-compliance-impact.md)); shares its canonical inputs and adds a coverage-axis aggregation per **jurisdiction / regulatory regime**.
+**Status:** Draft — first cut of the canonical report-config for the coverage-of-canon read of the compliance overlay. Sibling of the Compliance Impact view ([21-compliance-impact.md](./21-compliance-impact.md)); shares its canonical inputs and adds a coverage-axis aggregation per **jurisdiction / regulatory regime**.
 **File extension:** `*.coverage-metric.transitrix.yaml`
-**Scope:** A **rendering / grouping / filtering configuration** for the coverage read of canon — the count of subjects (`PRODUCT` / `PROCESS` / process stage / process task) for which **zero admitted obligations** from a given regime have been recorded, broken down per jurisdiction and per regime. The document is a presentation surface — it carries no canonical content of its own. Everything the view displays is **derived** from `ASSERTION` ([16-assertion.md](../elements/16-assertion.md)), the process-blueprint ([13-process-blueprint.md](13-process-blueprint.md)), the `REQUIREMENT` it points at ([15-requirement.md](../elements/15-requirement.md)), and the codex source the requirement is `derived_from` ([14-codex.md](../elements/14-codex.md)).
+**Scope:** A **rendering / grouping / filtering configuration** for the coverage read of canon — the count of subjects (`PRODUCT` / `PROCESS` / process stage / process task) for which **zero admitted obligations** from a given regime have been recorded, broken down per jurisdiction and per regime. The document is a presentation surface — it carries no canonical content of its own. Everything the view displays is **derived** from `ASSERTION` ([16-assertion.md](../../elements/16-assertion.md)), the process-blueprint ([13-process-blueprint.md](../diagrams/13-process-blueprint.md)), the `REQUIREMENT` it points at ([15-requirement.md](../../elements/15-requirement.md)), and the codex source the requirement is `derived_from` ([14-codex.md](../../elements/14-codex.md)).
 **Renderer:** Transitrix Studio — compliance views (planned); Transitrix DSM (planned).
 
 ---
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -32,10 +32,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `coverage-metric` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `coverage-metric` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `view` | yes | object | the coverage-metric view config — see §3 and §4 |
 
 Example header:
@@ -63,7 +63,7 @@ The view's purpose is to make **coverage** — the completeness of the model's r
 
 A flat impact view conflates the two. A coverage-metric view does not: every zero-cell is classified, and the per-regime breakdown surfaces dark stretches that a single-axis impact view would hide. (When only one regime has been harvested, the stages governed by another regime sit empty on the impact matrix — *blank because no one looked*, not blank because nothing applies. The Coverage Metric view names that condition.)
 
-This mirrors how the Compliance Impact view ([21-compliance-impact.md](21-compliance-impact.md)) is a report-config over the same canonical inputs — `ASSERTION` × subject — but rendered as the obligation × subject matrix. Both views obey the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1): the canon is reconstructible from the elements alone; the view document adds no fact.
+This mirrors how the Compliance Impact view ([21-compliance-impact.md](./21-compliance-impact.md)) is a report-config over the same canonical inputs — `ASSERTION` × subject — but rendered as the obligation × subject matrix. Both views obey the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1): the canon is reconstructible from the elements alone; the view document adds no fact.
 
 The mechanism is regime- and industry-agnostic. No jurisdiction, regime, or sector is baked into this notation.
 
@@ -77,16 +77,16 @@ The mechanism is regime- and industry-agnostic. No jurisdiction, regime, or sect
 | Prioritise the regulatory-intelligence collector — which regimes need to be harvested next, by counting the modelling gaps they would close. | Coverage Metric view |
 | Track coverage progress over time — the count of modelling gaps trending towards zero as the model matures. | Coverage Metric view |
 | Compare two slices of canon side-by-side (e.g. coverage of `PROCESS-A` vs `PROCESS-B` against the same regimes) to surface uneven harvesting. | Coverage Metric view |
-| Render the actual obligation × subject overlay, including statuses. | **Compliance Impact view** ([21-compliance-impact.md](21-compliance-impact.md)). The Coverage Metric view is the *second read* of the same data, not a replacement. |
+| Render the actual obligation × subject overlay, including statuses. | **Compliance Impact view** ([21-compliance-impact.md](./21-compliance-impact.md)). The Coverage Metric view is the *second read* of the same data, not a replacement. |
 
 For the canonical authoring of the inputs the view reads, use the element primitives, not this view:
 
 | Concern | Authored as |
 |---|---|
-| The codex artefact that defines a regime (a law, a regulation, an internal standard). | `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
-| The obligation extracted from a regime. | `REQUIREMENT` element ([15-requirement.md](../elements/15-requirement.md)), with `derived_from: [REGULATION-… \| LAW-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
-| The claim that a subject is bound by an obligation. | `ASSERTION` element ([16-assertion.md](../elements/16-assertion.md)). |
-| The modelled fact that an obligation explicitly does not apply to a subject. | `ASSERTION.status: n_a` ([16-assertion.md](../elements/16-assertion.md) §3). |
+| The codex artefact that defines a regime (a law, a regulation, an internal standard). | `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
+| The obligation extracted from a regime. | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)), with `derived_from: [REGULATION-… \| LAW-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
+| The claim that a subject is bound by an obligation. | `ASSERTION` element ([16-assertion.md](../../elements/16-assertion.md)). |
+| The modelled fact that an obligation explicitly does not apply to a subject. | `ASSERTION.status: n_a` ([16-assertion.md](../../elements/16-assertion.md) §3). |
 
 ---
 
@@ -152,7 +152,7 @@ view:
     show_grand_total: true
 ```
 
-The document carries the canonical envelope (`notation:` header, `spec_version:`, `methodology_version:` pin per [CONTRACT.md](../CONTRACT.md) §10), a `view` object, and presentation fields under it. Nothing under `view` is canonical content — it is all rendering configuration.
+The document carries the canonical envelope (`notation:` header, `spec_version:`, `methodology_version:` pin per [CONTRACT.md](../../CONTRACT.md) §10), a `view` object, and presentation fields under it. Nothing under `view` is canonical content — it is all rendering configuration.
 
 ---
 
@@ -162,20 +162,20 @@ Every field carries an explicit default, so a view with only the required envelo
 
 | Field | Required | Type | Default | Semantics |
 |---|---|---|---|---|
-| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COVERAGE_METRIC-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`COVERAGE_METRIC` document-level TYPE). |
+| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`COVERAGE_METRIC-…`) per [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.2 (`COVERAGE_METRIC` view-level TYPE). |
 | `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
 | `view.description` | no | string | empty | Short description of the purpose of this view (which subjects, which regimes, why). |
 | `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
 | `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to count over, in addition to (or instead of) the processes derived from `products`. |
-| `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../elements/14-codex.md)). |
-| `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
+| `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../../elements/14-codex.md)). |
+| `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
 | `view.regimes.exclude_paths` | no ² | list of strings | unset (no path exclusions) | Glob patterns relative to the `codex/` root. Any file whose path (relative to `codex/`) matches a pattern is excluded from the regime candidate set before `filter` is applied. Supports `*` (any characters except `/`) and `**` (any characters including `/`). **Ignored when `view.regimes.include` is set** — an explicit include list bypasses path-based exclusion entirely. Useful for omitting non-catalogue sub-folders (templates, service files, drafts) without duplicating their paths across every view config. Example: `["templates/**", "service/**"]`. |
 | `view.grouping.rows` | no | string | `subject` | Row dimension: `subject` (one row per subject at `subject_grain`), `regime` (one row per regime). |
 | `view.grouping.subject_grain` | no | string | `task` | Subject grain when `rows: subject` or when the matrix is per-subject: `product` (one row per `PRODUCT`), `product-stage` (one row per stage of each process), `task` (one row per flow step). |
 | `view.grouping.columns` | no | string | `regime` | Column dimension: `regime` (one column per codex artefact), `jurisdiction` (one column per jurisdiction; collapses all regimes from the same jurisdiction). |
 | `view.coverage_rule.counts_as_covered` | no | string | `any-active-assertion` | Defines which admitted `ASSERTION`s count a (subject, regime) pair as **covered**: `any-active-assertion` (an admitted assertion with any `status` value, including `n_a`; means *the model has considered the regime against the subject*) or `any-non-na-assertion` (only admitted assertions with `status` in `{compliant, partial, non_compliant, under_review}`; means *the model carries a substantive obligation, not just an n/a exclusion*). |
-| `view.coverage_rule.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to coverage) or `shown-distinct` (rendered as a distinct partial-coverage marker so a reviewer sees the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
-| `view.coverage_rule.treat_ai_reviewed_as` | no | string | `shown-distinct` | How to count admitted `ASSERTION`s carrying `reviewer_authority: ai_reviewed` ([CONTRACT.md](../CONTRACT.md) §6.2): `shown-distinct` (**counts toward coverage**, rendered as a distinct AI-reviewed marker), `shown-same` (counts identically to `expert_confirmed`), or `hidden` (does not count toward coverage). Both tiers are admitted canon, so by **default `ai_reviewed` counts toward coverage**, shown distinct — an adopter who wants an expert-only coverage figure sets `hidden`. Coverage resting on a dependency chain containing an `ai_reviewed` node is reported at the **weakest-link** authority (§6.2). |
+| `view.coverage_rule.treat_proposed_as` | no | string | `hidden` | How to handle `ASSERTION`s in `proposed` admission state ([16-assertion.md](../../elements/16-assertion.md) §2.2): `hidden` (the proposed assertion contributes nothing to coverage) or `shown-distinct` (rendered as a distinct partial-coverage marker so a reviewer sees the harvester's draft alongside admitted canon). The default matches the §2.2 rule that proposed assertions are excluded from every derived view until a human admits them. |
+| `view.coverage_rule.treat_ai_reviewed_as` | no | string | `shown-distinct` | How to count admitted `ASSERTION`s carrying `reviewer_authority: ai_reviewed` ([CONTRACT.md](../../CONTRACT.md) §6.2): `shown-distinct` (**counts toward coverage**, rendered as a distinct AI-reviewed marker), `shown-same` (counts identically to `expert_confirmed`), or `hidden` (does not count toward coverage). Both tiers are admitted canon, so by **default `ai_reviewed` counts toward coverage**, shown distinct — an adopter who wants an expert-only coverage figure sets `hidden`. Coverage resting on a dependency chain containing an `ai_reviewed` node is reported at the **weakest-link** authority (§6.2). |
 | `view.empty_cells.not_yet_modelled_label` | no | string | `"Not yet modelled"` (§5.3) | Label for cells where coverage is zero **and** no admitted `ASSERTION` with `status: n_a` exists from the regime against the subject. |
 | `view.empty_cells.no_obligation_asserted_label` | no | string | `"No obligation asserted (modelled fact)"` (§5.3) | Label for cells where coverage is zero **and** every admitted `ASSERTION` from the regime against the subject has `status: n_a` (a modelled exclusion). |
 | `view.order_rows_by` | no | string | `id` | Row ordering key: `id`, `name`, `gap-count-desc` (largest modelling gap first — drives harvesting prioritisation), `gap-count-asc`. |
@@ -188,7 +188,7 @@ Every field carries an explicit default, so a view with only the required envelo
 
 ² **`regimes`** — all three keys are optional and only ever *narrow* the regime axis. Omitting them enumerates every codex artefact in the `codex/` zone as a regime column. **Priority**: `include` wins over everything — when set, `filter` and `exclude_paths` are both ignored. When `include` is absent, `exclude_paths` is applied first (path-based exclusion from the candidate set), then `filter` (type / jurisdiction filter).
 
-All references in `view.subjects.*` and `view.regimes.include` / `view.regimes.filter` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
+All references in `view.subjects.*` and `view.regimes.include` / `view.regimes.filter` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §5).
 
 ### 4.1 Zero-configuration default
 
@@ -207,7 +207,7 @@ view:
 
 — renders **deterministically**: per-regime coverage over **every `PRODUCT` in canon** against **every codex artefact** in the `codex/` zone, rows `subject` at `task` grain, columns by `regime`, `any-active-assertion` coverage rule, proposed assertions hidden, all three summary totals shown, rows and columns ordered by `id`. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user. Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
-Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
+Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md).
 
 ---
 
@@ -221,8 +221,8 @@ A conformant renderer reads exactly these canonical inputs:
 
 1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or process-blueprint stage to localise the impact), and `status`.
 2. **`REQUIREMENT` catalogue** — every `REQUIREMENT-…` file under `canon/elements/01_motivation/requirements/`. Each contributes its `derived_from[]` list of codex artefact IDs. The renderer joins each admitted `ASSERTION`'s `about` to a `REQUIREMENT`, and the `REQUIREMENT`'s `derived_from[]` to the regime axis.
-3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
-4. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20).
+3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
+4. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.20).
 5. **Process-blueprint stages** — when a process-blueprint document covers the same processes, its `stages[]` are the canonical stage grain for `subject_grain: product-stage`. The blueprint is read as supplementary structure; nothing in the view derivation requires it (a renderer without a blueprint falls back to `subject_grain: task`).
 
 The renderer reads **no other input**. In particular: the view document itself contributes only filter / grouping / labelling configuration — never a cell value.
@@ -248,7 +248,7 @@ The aggregation order is fixed so two renderers given the same canon produce ide
 
 ### 5.3 Zero-cell classification
 
-Two distinct zero-cell conditions exist; the view MUST distinguish them in the rendered output. Adopters changing the label strings (via `view.empty_cells.*`) MUST preserve the distinction. The distinction mirrors §5.3 of the Compliance Impact view ([21-compliance-impact.md](21-compliance-impact.md)) and codifies it as a first-class coverage axis.
+Two distinct zero-cell conditions exist; the view MUST distinguish them in the rendered output. Adopters changing the label strings (via `view.empty_cells.*`) MUST preserve the distinction. The distinction mirrors §5.3 of the Compliance Impact view ([21-compliance-impact.md](./21-compliance-impact.md)) and codifies it as a first-class coverage axis.
 
 | Condition | Canonical label | Meaning |
 |---|---|---|
@@ -276,7 +276,7 @@ Coverage Metric view (this notation — report-config)
   └── reads   → process-blueprint stages[]      (13-process-blueprint.md — the stage grain, when present)
 ```
 
-Pairs with the **Compliance Impact view** ([21-compliance-impact.md](21-compliance-impact.md)) — the first read of the same canonical inputs, rendered as the obligation × subject matrix with cell statuses. The Coverage Metric view is the second read: the per-regime count of dark cells, classified into modelling gaps and modelled facts.
+Pairs with the **Compliance Impact view** ([21-compliance-impact.md](./21-compliance-impact.md)) — the first read of the same canonical inputs, rendered as the obligation × subject matrix with cell statuses. The Coverage Metric view is the second read: the per-regime count of dark cells, classified into modelling gaps and modelled facts.
 
 Pairs with **Transitrix Studio compliance views / export** (consumer side, tracked separately) — the in-Studio renderer that implements §5.
 
@@ -286,30 +286,30 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 
 | Rule | Severity | Description |
 |---|---|---|
-| `COVMET-001` | error | A required field from §4 is missing, or `id` does not match the canonical grammar `COVERAGE_METRIC-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1). |
+| `COVMET-001` | error | A required field from §4 is missing, or `id` does not match the canonical grammar `COVERAGE_METRIC-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §1). |
 | `COVMET-002` | error | `view.subjects` is empty (neither `products` nor `processes` present). |
 | `COVMET-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.regimes.include` does not resolve to an admitted canonical element of the expected TYPE. A value in `view.regimes.include` whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` is the same error. |
 | `COVMET-004` | error | `view.grouping.rows`, `view.grouping.subject_grain`, or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
 | `COVMET-005` | error | `view.coverage_rule.counts_as_covered`, `view.coverage_rule.treat_proposed_as`, or `view.coverage_rule.treat_ai_reviewed_as` is set to a value outside its enumeration (the last per CONTRACT §6.2: `shown-distinct` \| `shown-same` \| `hidden`). |
 | `COVMET-006` | warning | A pattern in `view.regimes.exclude_paths` is not a valid glob string (unbalanced brackets or other malformed syntax). The renderer MUST skip the malformed pattern and emit this warning; it MUST NOT abort the render. |
-| `COVMET-006` | warning | `view.regimes.filter.jurisdiction` contains a value that is not ISO 3166-1 alpha-2, `eu`, or `intl` (the only values codex external artefacts permit, [14-codex.md](../elements/14-codex.md) §3). |
+| `COVMET-006` | warning | `view.regimes.filter.jurisdiction` contains a value that is not ISO 3166-1 alpha-2, `eu`, or `intl` (the only values codex external artefacts permit, [14-codex.md](../../elements/14-codex.md) §3). |
 | `COVMET-007` | warning | Both `view.regimes.include` and `view.regimes.filter` are present (the include wins; the filter is silently ignored). |
 | `COVMET-008` | warning | The view selects zero regimes after applying `include` / `filter` — the rendered matrix will have no columns. Usually indicates a typo or that no codex artefacts of the requested kind have been admitted. |
 | `COVMET-009` | warning | `view.empty_cells.not_yet_modelled_label` or `view.empty_cells.no_obligation_asserted_label` overrides the default but is a string the §5.3 distinction was introduced to retire (e.g. "No direct obligation", "Not applicable", "Out of scope" used ambiguously). |
 
-The shared header rules `HDR-001..004` ([CONTRACT.md](../CONTRACT.md) §2) apply in addition.
+The shared header rules `HDR-001..004` ([CONTRACT.md](../../CONTRACT.md) §2) apply in addition.
 
 ---
 
 ## 8. References
 
-- ASSERTION element schema (the canonical compliance claim): [16-assertion.md](../elements/16-assertion.md).
-- REQUIREMENT element schema (the obligation; the `derived_from` link to a codex regime): [15-requirement.md](../elements/15-requirement.md).
-- Codex artefacts and the `jurisdiction:` field: [14-codex.md](../elements/14-codex.md).
-- Process flow and the STEP grain: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5 (process flow), §7.20 (standalone STEP, promotion mechanic).
-- Process-blueprint stages: [13-process-blueprint.md](13-process-blueprint.md).
-- Compliance Impact — the sibling report-config view (same canonical inputs, different read): [21-compliance-impact.md](21-compliance-impact.md).
-- ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) (`COVERAGE_METRIC` registered in §3.2).
-- Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1.
-- Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
+- ASSERTION element schema (the canonical compliance claim): [16-assertion.md](../../elements/16-assertion.md).
+- REQUIREMENT element schema (the obligation; the `derived_from` link to a codex regime): [15-requirement.md](../../elements/15-requirement.md).
+- Codex artefacts and the `jurisdiction:` field: [14-codex.md](../../elements/14-codex.md).
+- Process flow and the STEP grain: [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5 (process flow), §7.20 (standalone STEP, promotion mechanic).
+- Process-blueprint stages: [13-process-blueprint.md](../diagrams/13-process-blueprint.md).
+- Compliance Impact — the sibling report-config view (same canonical inputs, different read): [21-compliance-impact.md](./21-compliance-impact.md).
+- ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) (`COVERAGE_METRIC` registered in §3.2).
+- Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1.
+- Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md).
 - Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.

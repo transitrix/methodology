@@ -74,7 +74,7 @@ direction before any file moves.
 
 3. ~~**SCENARIO / ISSUE reclassification**~~ — **resolved**. `SCENARIO` is now
    a standalone content element (`ELEMENT_PRIMITIVES.md` §7.18; view spec
-   [`11-scenarios.md`](notations/views/11-scenarios.md) is a report-config
+   [`11-scenarios.md`](./notations/views/reports/11-scenarios.md) is a report-config
    surface over it, not a content home). The former model-side `ISSUE`
    notation was retired 2026-06-07 (`method/01-methodology.md` §4.1). No
    non-promotable `view-defined` rows remain (`ELEMENT_PRIMITIVES.md` §4.2).
@@ -107,7 +107,7 @@ note: `activities` → `action` and `activity-card` → `action-card` were
 renamed since the first pass). Findings below; two conformance bugs fixed
 in the same PR that updated this file.
 
-### blocks (`notations/views/08-blocks.md`)
+### blocks (`notations/views/diagrams/08-blocks.md`)
 
 Required fields: `notation`, `name` (doc root), `nested_blocks.id`,
 `nested_blocks.name`, `nested_blocks.blocks[]` (each entry: `id`, `name`).
@@ -122,7 +122,7 @@ Required fields: `notation`, `name` (doc root), `nested_blocks.id`,
 - ~~Nit: spec intro refers to "thirteen Transitrix notations"~~ — **resolved
   (Phase 4 freeze pass, 2026-07-04):** now says "fifteen" (the actual count).
 
-### action (`notations/views/07-action.md`)
+### action (`notations/views/diagrams/07-action.md`)
 
 Required fields: `notation`, `name` (doc root), `actions[]` (each entry: `id`,
 `name`). Deprecated aliases: `activities`, `activity_type`.
@@ -136,7 +136,7 @@ Both example files (`office-relocation.action.transitrix.yaml`,
 - No deprecated `activities` / `activity_type` aliases in examples. ✅
 - `owner` references use `ACTOR-…` prefix. ✅
 
-### process-blueprint (`notations/views/13-process-blueprint.md`)
+### process-blueprint (`notations/views/diagrams/13-process-blueprint.md`)
 
 Required fields: `notation`, `name` (doc root), `process_blueprint.id`,
 `process_blueprint.name`, `process_blueprint.stages[]` (each entry: `id`,
@@ -157,7 +157,7 @@ Required fields: `notation`, `name` (doc root), `process_blueprint.id`,
 - ~~Nit: spec intro refers to "twelve Transitrix notations"~~ — **resolved
   (Phase 4 freeze pass, 2026-07-04):** now says "fifteen".
 
-### action-card (`notations/views/18-action-card.md`)
+### action-card (`notations/views/diagrams/18-action-card.md`)
 
 Required fields: `notation`, `name` (doc root), `action_card.id`,
 `action_card.project`. Milestone entries: `id`, `name`, `date`. Deprecated
@@ -172,7 +172,7 @@ walks clean:
 - No deprecated `activity-card` aliases in example. ✅
 - `generated_at` absent — optional, acceptable. ✅
 
-### actions-tree (`notations/views/23-actions-tree.md`)
+### actions-tree (`notations/views/reports/23-actions-tree.md`)
 
 Status: `draft`. No example file yet — by design for a newly drafted
 notation. The spec is internally consistent; validation rules

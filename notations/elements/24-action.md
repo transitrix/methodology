@@ -47,7 +47,7 @@ Both are optional on any given element. An action may carry `parent` without `ty
 
 **`Strategic Initiative` alias:** `Strategic Initiative` and `Initiative` are the same level. `Initiative` is the canonical stored value; `Strategic Initiative` is an accepted alias. Tooling should normalise `Strategic Initiative` → `Initiative` on ingest and treat both as equivalent in display.
 
-**Action Card binding:** An action rendered as an Action Card ([views/18-action-card.md](../views/18-action-card.md)) must carry `type: Project` (validation rule PC-002). Action Cards are project-scoped artefacts; using an Initiative or Programme as the card anchor is not supported in v1.
+**Action Card binding:** An action rendered as an Action Card ([views/18-action-card.md](../views/diagrams/18-action-card.md)) must carry `type: Project` (validation rule PC-002). Action Cards are project-scoped artefacts; using an Initiative or Programme as the card anchor is not supported in v1.
 
 ---
 
@@ -154,7 +154,7 @@ From methodology v2.0, ACTION elements are authored exclusively as standalone fi
 
 **v1 inline form (historical).** In v1, an `ACTION` entry could be authored inline inside a schedule document. Document-local IDs (e.g. `A-001`, `PHASE-DESIGN`) were valid inline — they did not resolve to canonical `ACTION-…` IDs. The migration recipe (`migrations/1.0-to-2.0/`) automates extraction of inline entries to standalone element files.
 
-View spec: [views/07-action.md](../views/07-action.md) (pure projection, v2.0).
+View spec: [views/07-action.md](../views/diagrams/07-action.md) (pure projection, v2.0).
 
 ---
 
@@ -177,7 +177,7 @@ One action per file, named by its canonical ID. Examples: `ACTION-PLATFORM-LAUNC
 | `ACTION-001` | error | `id` missing or not matching `ACTION-[<middle>-]<INTEGER>`; or a required field (`notation`, `name`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `ACTION-002` | error | `type` is present and not one of `Initiative`, `Strategic Initiative`, `Programme`, `Project`, `Task`. |
 | `ACTION-003` | warning | `parent` is present and both the parent and child have `type` values, but the child's level is not lower than the parent's (e.g. an `Initiative` whose `parent` is a `Project`). |
-| `ACTION-004` | error | `type` is not `Project` and the action is referenced as the project anchor in an Action Card ([views/18-action-card.md](../views/18-action-card.md)) — action-card binding rule PC-002. |
+| `ACTION-004` | error | `type` is not `Project` and the action is referenced as the project anchor in an Action Card ([views/18-action-card.md](../views/diagrams/18-action-card.md)) — action-card binding rule PC-002. |
 | `ACTION-005` | warning | Deprecated alias detected: `notation: activity`, `id` matching `ACTIVITY-…`, field `activity_type`, or path prefix `activities/`. Migrate to `action` / `ACTION-…` / `type` / `actions/`. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to ACTION files in addition to the ACTION-* rules above.
@@ -186,7 +186,7 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 
 ## 7. Evolution
 
-- **Actions tree view** — a tree rendering of the `parent`-linked Initiative → Programme → Project → Task hierarchy, analogous to the Goals tree ([views/04-goals.md](../views/04-goals.md)). Specified in `views/23-actions-tree.md`; Studio implementation tracked separately.
+- **Actions tree view** — a tree rendering of the `parent`-linked Initiative → Programme → Project → Task hierarchy, analogous to the Goals tree ([views/04-goals.md](../views/diagrams/04-goals.md)). Specified in `views/23-actions-tree.md`; Studio implementation tracked separately.
 - **`type` normalisation** — tooling should normalise `Strategic Initiative` → `Initiative` on ingest. A validator `ACTION-006` warning for `Strategic Initiative` (use canonical `Initiative`) may be added once migration tooling is in place.
 - **Milestone** — a zero-duration action (`duration: 0`) marks a milestone within the current model. A dedicated `MILESTONE` TYPE (`05_implementation/milestones/`) is reserved in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.2 for a future first-class milestone element.
 
@@ -198,9 +198,9 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 - Common element-primitive envelope: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §3.
 - Layer placement (`05_implementation`): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6, §6.1.
 - Materialisation mode and promotion rule: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1, §4 (row: `ACTION`).
-- Schedule document inline shape: [views/07-action.md](../views/07-action.md) §5.2.
-- DGCA inline shape: [views/02-dgca.md](../views/02-dgca.md) §5.5.
-- Action Card binding: [views/18-action-card.md](../views/18-action-card.md) §1, PC-002.
+- Schedule document inline shape: [views/07-action.md](../views/diagrams/07-action.md) §5.2.
+- DGCA inline shape: [views/02-dgca.md](../views/diagrams/02-dgca.md) §5.5.
+- Action Card binding: [views/18-action-card.md](../views/diagrams/18-action-card.md) §1, PC-002.
 - Time-aware goal relation: [17-relations.md](17-relations.md) §3 (`action_goal` kind).
 - Actor ownership: [19-actors.md](19-actors.md).
 - Stakeholder interests: [20-stakeholders.md](20-stakeholders.md).

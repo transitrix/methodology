@@ -1,7 +1,7 @@
 notation: process-map
 spec_version: "0.1"
 
-# Process landscape map. Spec: notations/views/06-process-map.md
+# Process landscape map. Spec: notations/views/diagrams/06-process-map.md
 # Groups: operating (revenue-generating), supporting (enabling),
 # management (governance / oversight). Each entry references a
 # BusinessProcess element by its PROCESS-… ID.

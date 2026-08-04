@@ -195,6 +195,6 @@ Out of scope for this initial schema; tracked as follow-up work:
 - Zone model, admission record, pre-admission lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §6.1.
 - The codex artefacts an AMENDMENT records changes to: [14-codex.md](14-codex.md), especially §3.4 (`monitoring_needed`) and §3.5 (scanner-agent `scan` block).
 - The extracted source chunks an AMENDMENT cites via `segment_refs[]`: [23-segment.md](23-segment.md).
-- The canon `CHANGE` (ArchiMate Gap) elements an AMENDMENT motivates: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`CHANGE`); used by DGCA ([views/02-dgca.md](../views/02-dgca.md)) and Action schedule ([views/07-action.md](../views/07-action.md)).
+- The canon `CHANGE` (ArchiMate Gap) elements an AMENDMENT motivates: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`CHANGE`); used by DGCA ([views/02-dgca.md](../views/diagrams/02-dgca.md)) and Action schedule ([views/07-action.md](../views/diagrams/07-action.md)).
 - The motivation-layer obligations whose re-derivation an amendment may trigger: [15-requirement.md](15-requirement.md), [16-assertion.md](16-assertion.md).
 - Confidence and source trust on field artefacts: [CONTRACT.md](../CONTRACT.md) §11.

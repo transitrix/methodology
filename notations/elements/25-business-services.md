@@ -139,4 +139,4 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 - First-class time-aware relations (`offers`, `realizes`): [17-relations.md](17-relations.md) §3.
 - Business layer placement: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.
 - Offering actor identity: [19-actors.md](19-actors.md).
-- Realized capability: [views/05-capability-map.md](../views/05-capability-map.md).
+- Realized capability: [views/05-capability-map.md](../views/diagrams/05-capability-map.md).

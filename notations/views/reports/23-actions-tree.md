@@ -19,7 +19,7 @@ dsm_status: "planned"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -125,11 +125,11 @@ view_config:
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `actions-tree` (per [CONTRACT.md](../CONTRACT.md) §3). Deprecated alias: `activities-tree`. |
+| `notation` | yes | MUST equal `actions-tree` (per [CONTRACT.md](../../CONTRACT.md) §3). Deprecated alias: `activities-tree`. |
 | `spec_version` | no | reserved field per the shared contract |
-| `id` | yes | document ID — `ATREE-[<middle>-]<INTEGER>` per the canonical ID grammar ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1) |
+| `id` | yes | document ID — `ATREE-[<middle>-]<INTEGER>` per the canonical ID grammar ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §1) |
 | `name` | yes | human-readable name for this tree document |
-| `generated_at` | no | date the document was generated or last revised — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4 |
+| `generated_at` | no | date the document was generated or last revised — quoted ISO 8601 per [CONTRACT.md](../../CONTRACT.md) §4 |
 | `description` | no | one-paragraph context |
 | `period` | no | time period this portfolio view covers |
 | `view_config` | no | rendering configuration — see §5.1 |
@@ -218,7 +218,7 @@ The virtual root is never exported to YAML and carries no `ACTION-…` ID.
 
 An action is an **orphan** if it has no `parent` and is not classified as `type: Initiative`. Orphans are not placed in the main tree.
 
-Renderers SHOULD expose orphans in a separate **backlog** panel (analogous to the Goals tree backlog, §8.4 in [04-goals.md](04-goals.md)). Dragging a backlog action onto a tree node sets its `parent` in the underlying element file. Orphans are not reachable via focus mode (§7.2) until attached to the tree.
+Renderers SHOULD expose orphans in a separate **backlog** panel (analogous to the Goals tree backlog, §8.4 in [04-goals.md](../diagrams/04-goals.md)). Dragging a backlog action onto a tree node sets its `parent` in the underlying element file. Orphans are not reachable via focus mode (§7.2) until attached to the tree.
 
 ---
 
@@ -235,7 +235,7 @@ Renderers SHOULD expose orphans in a separate **backlog** panel (analogous to th
 | `ATREE-007` | error | `view_config.display.collapse_depth` is present and not an integer between 1 and 4. |
 | `ATREE-008` | warn | Deprecated alias detected: `notation: activities-tree` or file extension `*.activities-tree.transitrix.yaml`. Migrate to `actions-tree` / `*.actions-tree.transitrix.yaml`. |
 
-The shared header rules (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) apply to actions-tree documents.
+The shared header rules (`HDR-001..004`, [CONTRACT.md](../../CONTRACT.md) §2) apply to actions-tree documents.
 
 Actions tree documents do **not** carry an admission record or primitive lifecycle — they are view configuration, not canon primitives.
 
@@ -243,10 +243,10 @@ Actions tree documents do **not** carry an admission record or primitive lifecyc
 
 ## 11. References
 
-- Action element spec and `type` vocabulary: [elements/24-action.md](../elements/24-action.md)
-- Action schedule notation (network + Gantt): [07-action.md](07-action.md)
-- Action Card notation: [18-action-card.md](18-action-card.md)
-- Goals tree (analogous view for goals): [04-goals.md](04-goals.md)
-- ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1
-- Canon zone and element catalogue: [CONTRACT.md](../CONTRACT.md) §5
-- Virtual root concept: [elements/24-action.md](../elements/24-action.md) §1
+- Action element spec and `type` vocabulary: [elements/24-action.md](../../elements/24-action.md)
+- Action schedule notation (network + Gantt): [07-action.md](../diagrams/07-action.md)
+- Action Card notation: [18-action-card.md](../diagrams/18-action-card.md)
+- Goals tree (analogous view for goals): [04-goals.md](../diagrams/04-goals.md)
+- ID grammar: [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §1
+- Canon zone and element catalogue: [CONTRACT.md](../../CONTRACT.md) §5
+- Virtual root concept: [elements/24-action.md](../../elements/24-action.md) §1

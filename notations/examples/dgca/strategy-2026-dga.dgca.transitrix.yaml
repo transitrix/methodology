@@ -11,7 +11,7 @@ author: Transitrix
 
 # Full-tier projection form example (DGA mode — Changes layer off).
 # Element data lives in elements/ alongside this file (post-promotion).
-# See notations/views/02-dgca.md §"Source of truth".
+# See notations/views/diagrams/02-dgca.md §"Source of truth".
 
 view_config:
   goals:

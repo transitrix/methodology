@@ -17,7 +17,7 @@ dsm_status: "not implemented — render module planned in Transitrix Studio (sib
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all fifteen Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all fifteen Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,10 +28,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `process-blueprint` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `process-blueprint` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `process_blueprint` | yes | object | the process blueprint root — see §4 and §5 |
 
 Example header:
@@ -52,10 +52,10 @@ process_blueprint:
 This notation's inline arrays split into two groups for lifecycle purposes:
 
 - **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`, `equipment[]`. These entries are scoped to the blueprint document and do not carry their own lifecycle. `EQUIPMENT-…` IDs are notation-local in v0.1 (promotable to an org-wide catalogue without renaming — the IDs already conform to the canonical grammar). When a `systems[]` or `actors[]` entry references a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
-- **Canonical-TYPE entries** — `business_objects[]` (`BUSINESS_OBJECT`). `BUSINESS_OBJECT` has an org-wide catalogue at `canon/elements/02_business/business-objects/` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1, ADR 2026-06-08). Entries with a `BUSINESS_OBJECT-…` `id` reference that catalogue and carry the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../CONTRACT.md) §7. Inline entries without an `id` are free-form labels (document-local only).
-- **Deprecated** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). See [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`. Validators emit `BOBJ-D001` for this field.
+- **Canonical-TYPE entries** — `business_objects[]` (`BUSINESS_OBJECT`). `BUSINESS_OBJECT` has an org-wide catalogue at `canon/elements/02_business/business-objects/` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.1, ADR 2026-06-08). Entries with a `BUSINESS_OBJECT-…` `id` reference that catalogue and carry the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../../CONTRACT.md) §7. Inline entries without an `id` are free-form labels (document-local only).
+- **Deprecated** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). See [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`. Validators emit `BOBJ-D001` for this field.
 
-The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. Per [CONTRACT.md](../CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
+The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../../CONTRACT.md) §7. Per [CONTRACT.md](../../CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
 
 ---
 
@@ -107,7 +107,7 @@ Examples:
 
 Process Blueprint uses the **flat form**. The document carries a single `process_blueprint:` root key with parallel arrays: `stages[]` and one array per aspect category (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`). Each aspect entry references the stages it appears in via a `stages: [STAGE-…]` cross-reference field.
 
-This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the DGCA schema — places Process Blueprint on the flat side. See [README.md](../README.md) § Family selection.
+This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the DGCA schema — places Process Blueprint on the flat side. See [README.md](../../README.md) § Family selection.
 
 ```yaml
 notation: process-blueprint
@@ -163,7 +163,7 @@ process_blueprint:
       stages: [STAGE-3]
 ```
 
-A complete example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](../examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml).
+A complete example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](../../examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml).
 
 ---
 
@@ -187,7 +187,7 @@ A complete example: [`examples/process-blueprint/order-fulfilment.process-bluepr
 | `process_blueprint.actors` | no | array of actor entries — see §5.3 |
 | `process_blueprint.equipment` | no | array of equipment entries — see §5.3 |
 | `process_blueprint.business_objects` | no | array of business-object entries — see §5.3 |
-| `process_blueprint.information_entities` | no *(deprecated)* | **Deprecated** — use `business_objects` instead. [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6; validator emits `BOBJ-D001`. |
+| `process_blueprint.information_entities` | no *(deprecated)* | **Deprecated** — use `business_objects` instead. [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6; validator emits `BOBJ-D001`. |
 | `lane_config` | no | optional rendering-config block controlling which lanes are visible — see §5.4 |
 
 The four authored aspect arrays are each optional individually; a blueprint MAY omit any aspect that does not apply (a fully digital process may have no `equipment:`, for example). At least one aspect array SHOULD be present — a blueprint with stages but no aspects renders as an empty grid and provides no operational context. The compliance lane (§5.4) is a fifth, opt-in, derived lane; it requires no authored array.
@@ -223,15 +223,15 @@ All four aspect arrays share the same entry shape. Each entry is an object with 
 | `actors[]` | `ROLE-…` | roles in the organisation's element catalogue |
 | `equipment[]` | `EQUIPMENT-…` | notation-local in v0.1; promotable to a catalogue (see below) |
 | `business_objects[]` | `BUSINESS_OBJECT-…` | org-wide catalogue at `canon/elements/02_business/business-objects/` (ADR 2026-06-08); entries may be inline (no `id`) or catalogue-referenced (with `BUSINESS_OBJECT-…` `id`) |
-| `information_entities[]` *(deprecated)* | `INFORMATION_ENTITY-…` | **Deprecated** — use `business_objects[]`; see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6 |
+| `information_entities[]` *(deprecated)* | `INFORMATION_ENTITY-…` | **Deprecated** — use `business_objects[]`; see [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6 |
 
 For every aspect category, an entry with an `id` MUST use the TYPE prefix listed above. An entry without an `id` is a free-form label — useful for sketches and for elements that have not yet been promoted into a catalogue.
 
 `systems[]` and `actors[]` cross-reference established catalogues: `APPLICATION-…` resolves into the applications catalogue (`*.applications.transitrix.yaml`); `ROLE-…` resolves into the organisation's roles list. A validator MUST resolve these references against the relevant catalogue once cross-document linking is wired up.
 
-`EQUIPMENT` was registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for `EQUIPMENT` in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
+`EQUIPMENT` was registered alongside `PROCESS_BLUEPRINT` (see [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.1). No organisation-wide catalogue is mandated for `EQUIPMENT` in v0.1: an entry's `id` is currently a document-local typed label, scoped to the blueprint that declares it. If and when a catalogue is introduced, the IDs already conform to the canonical grammar and can be promoted out of the blueprint without renaming.
 
-`BUSINESS_OBJECT` replaces the deprecated `INFORMATION_ENTITY` (renamed for ArchiMate alignment, ADR 2026-06-08). `BUSINESS_OBJECT` has a canonical catalogue at `canon/elements/02_business/business-objects/`; migrate any remaining `INFORMATION_ENTITY-…` IDs and `information_entities[]` fields per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §6.
+`BUSINESS_OBJECT` replaces the deprecated `INFORMATION_ENTITY` (renamed for ArchiMate alignment, ADR 2026-06-08). `BUSINESS_OBJECT` has a canonical catalogue at `canon/elements/02_business/business-objects/`; migrate any remaining `INFORMATION_ENTITY-…` IDs and `information_entities[]` fields per [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6.
 
 ### 5.4 Compliance lane
 
@@ -316,7 +316,7 @@ lane_config:
 | `BP-009` | error | if an aspect entry has an `id`, the ID must match the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. |
 | `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. For `equipment[]`, the prefix MUST be `EQUIPMENT-`. For `business_objects[]`, the prefix MUST be `BUSINESS_OBJECT-`. For `information_entities[]` *(deprecated)*, the prefix MUST be `INFORMATION_ENTITY-`. |
 | `BP-011` | warn | a stage with no aspect entries pointing at it from any of the four aspect arrays is structurally empty and SHOULD be reviewed. |
-| `JURISDICTION-CONSISTENCY-001` | warning | a jurisdiction code listed in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` field of any codex source resolved in scope for this blueprint — the filter references an unrecognised or out-of-scope jurisdiction code, so the compliance lane will silently return no obligations for that code. Cross-cutting — requires the codex catalogue to evaluate. Indexed in [CONTRACT.md](../CONTRACT.md) §8. |
+| `JURISDICTION-CONSISTENCY-001` | warning | a jurisdiction code listed in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` field of any codex source resolved in scope for this blueprint — the filter references an unrecognised or out-of-scope jurisdiction code, so the compliance lane will silently return no obligations for that code. Cross-cutting — requires the codex catalogue to evaluate. Indexed in [CONTRACT.md](../../CONTRACT.md) §8. |
 
 ---
 
@@ -367,13 +367,13 @@ What the renderer MUST NOT do:
 
 ## 9. References
 
-- File header contract: [`CONTRACT.md`](../CONTRACT.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) — registers `PROCESS_BLUEPRINT` (§3.2) and the aspect element TYPEs `EQUIPMENT` and `INFORMATION_ENTITY` (§3.1).
-- Goals notation (uses the same diagram engine): [`04-goals.md`](04-goals.md)
-- BPMN notation (procedural flow of one process): [`01-bpmn.md`](01-bpmn.md)
-- Process landscape map (catalogue of all processes): [`06-process-map.md`](06-process-map.md)
-- Applications catalogue (source for `systems[].id`): [`10-applications.md`](10-applications.md)
-- Nested blocks (uses the same diagram engine): [`08-blocks.md`](08-blocks.md)
-- Compliance impact view (flat obligation matrix; compliance lane is the blueprint-shaped realisation): [`21-compliance-impact.md`](21-compliance-impact.md)
+- File header contract: [`CONTRACT.md`](../../CONTRACT.md)
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md) — registers `PROCESS_BLUEPRINT` (§3.2) and the aspect element TYPEs `EQUIPMENT` and `INFORMATION_ENTITY` (§3.1).
+- Goals notation (uses the same diagram engine): [`04-goals.md`](./04-goals.md)
+- BPMN notation (procedural flow of one process): [`01-bpmn.md`](./01-bpmn.md)
+- Process landscape map (catalogue of all processes): [`06-process-map.md`](./06-process-map.md)
+- Applications catalogue (source for `systems[].id`): [`10-applications.md`](./10-applications.md)
+- Nested blocks (uses the same diagram engine): [`08-blocks.md`](./08-blocks.md)
+- Compliance impact view (flat obligation matrix; compliance lane is the blueprint-shaped realisation): [`21-compliance-impact.md`](../reports/21-compliance-impact.md)
 - Architecture decision — compliance lane decision.
 - Methodology: `method/01-methodology.md`

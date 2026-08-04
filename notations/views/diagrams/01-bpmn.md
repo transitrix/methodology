@@ -18,7 +18,7 @@ dsm_status: "not implemented in DSM — renders via Transitrix Studio"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -29,10 +29,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `bpmn` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `bpmn` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `process` | yes | object | the BPMN process root — see §3 |
 
 Example header:
@@ -50,12 +50,12 @@ process:
 
 ## Relationship to the PROCESS element — BPMN is a projection
 
-A `.bpmn.transitrix.yaml` document is a **projection** of a `PROCESS` element's `flow`, not the definition home of the process. The canonical behaviour — participants, steps, gateways, sequence flows — lives on the `PROCESS-…` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); this notation defines how that flow **renders** to BPMN 2.0. A BPMN file is derived output: it can be deleted and regenerated from the element with no loss (the reconstruction invariant, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
+A `.bpmn.transitrix.yaml` document is a **projection** of a `PROCESS` element's `flow`, not the definition home of the process. The canonical behaviour — participants, steps, gateways, sequence flows — lives on the `PROCESS-…` element ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5); this notation defines how that flow **renders** to BPMN 2.0. A BPMN file is derived output: it can be deleted and regenerated from the element with no loss (the reconstruction invariant, [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1).
 
 Two consequences:
 
 - **The view stores no behaviour and no captions of its own.** Lane captions are **derived** from each participant's `name`; the role / system bindings are the `PROCESS` `participants` and per-step `performed_by`. The only thing this notation adds on top of the element is layout, and layout is computed deterministically at compile time (§1) — so it carries no information either. The view is `render(PROCESS.flow)` and nothing more.
-- **Lifecycle and identity live on the element.** The node labels in a rendered BPMN file (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) remain file-local labels in the *projection* ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3); the canonical, addressable identity of each step is the `PROCESS` `flow.steps[].id` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5). Neither the BPMN file nor its labels carry the primitive lifecycle (`valid_from` / `valid_to`, [CONTRACT.md](../CONTRACT.md) §7); that lives on the `PROCESS` element registered in the process landscape map ([06-process-map.md](06-process-map.md)).
+- **Lifecycle and identity live on the element.** The node labels in a rendered BPMN file (`POOL-…`, `GW-…`, `TASK-…`, `SF-…`, `SE-…`, `EE-…`) remain file-local labels in the *projection* ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3); the canonical, addressable identity of each step is the `PROCESS` `flow.steps[].id` ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5). Neither the BPMN file nor its labels carry the primitive lifecycle (`valid_from` / `valid_to`, [CONTRACT.md](../../CONTRACT.md) §7); that lives on the `PROCESS` element registered in the process landscape map ([06-process-map.md](./06-process-map.md)).
 
 > **Inversion (this change).** Until now the BPMN file was the detailed flow representation that the `PROCESS` element pointed at via `bpmn_file`. That pointer is inverted: the element's `flow` is the source, the BPMN file is derived. The structural schema in §3–§8 below describes the **projected (serialised) form** the renderer emits and consumes.
 
@@ -75,7 +75,7 @@ The compiled output is consumable by any BPMN 2.0–conformant tool (Camunda Mod
 
 The file extension is **`.bpmn.transitrix.yaml`**. Files outside this extension are rejected by the compiler with an explicit error.
 
-Until 2026-05-20 the short form `.bpmn.yaml` was also accepted as an alias. Per the family-consistency decision recorded that day, the long form is now the sole canonical extension — every Transitrix notation uses the `*.<short-name>.transitrix.<ext>` form per [`CONTRACT.md`](../CONTRACT.md), and BPMN is no longer an exception.
+Until 2026-05-20 the short form `.bpmn.yaml` was also accepted as an alias. Per the family-consistency decision recorded that day, the long form is now the sole canonical extension — every Transitrix notation uses the `*.<short-name>.transitrix.<ext>` form per [`CONTRACT.md`](../../CONTRACT.md), and BPMN is no longer an exception.
 
 ---
 
@@ -147,7 +147,7 @@ The `pools` array must contain exactly one entry. Two or more entries cause a co
 
 ## 6. Lanes
 
-Lanes (a.k.a. swimlanes) partition a pool into horizontal bands, each representing one **participant** — a `ROLE-…` or `ACTOR-…` (person / business_unit / system). Every element belongs to exactly one lane. In the canonical form a lane is the projection of one entry in the `PROCESS` `participants` list ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5).
+Lanes (a.k.a. swimlanes) partition a pool into horizontal bands, each representing one **participant** — a `ROLE-…` or `ACTOR-…` (person / business_unit / system). Every element belongs to exactly one lane. In the canonical form a lane is the projection of one entry in the `PROCESS` `participants` list ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5).
 
 ```yaml
 lanes:
@@ -165,7 +165,7 @@ lanes:
 |---|---|---|
 | `id` | string | Identifier pattern; must differ from pool id and from any element id |
 | `performed_by_role` | string | Optional. `ROLE-…` for the role responsible for this lane — the default for every element in the lane (see §7.2). |
-| `name` | string | The rendered lane caption. **Derived** from the participant's `name` — not authored (reconstruction invariant, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). Present in the serialised projection only. |
+| `name` | string | The rendered lane caption. **Derived** from the participant's `name` — not authored (reconstruction invariant, [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1). Present in the serialised projection only. |
 | `elements` | array | At least one element required |
 | `supported_by_application` | string | Optional. `APPLICATION-…` used for the work in this lane — the default for every element in it (see §7.2). |
 
@@ -227,10 +227,10 @@ A gateway with exactly one incoming and one outgoing flow is forbidden — use a
 
 ### 7.2. Role and system association (cross-references to canon)
 
-A process records **who** performs each piece of work and **which system** supports it by referencing canon primitives. In the canonical form these are the `PROCESS` `participants` and per-step `performed_by` / `supported_by_application` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); the BPMN projection carries them through:
+A process records **who** performs each piece of work and **which system** supports it by referencing canon primitives. In the canonical form these are the `PROCESS` `participants` and per-step `performed_by` / `supported_by_application` ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5); the BPMN projection carries them through:
 
-- `performed_by_role: ROLE-…` — the responsible role ([elements/19-actors.md](../elements/19-actors.md) defines `ROLE` as the position that fills a lane or step).
-- `supported_by_application: APPLICATION-…` — the supporting application ([10-applications.md](10-applications.md)).
+- `performed_by_role: ROLE-…` — the responsible role ([elements/19-actors.md](../../elements/19-actors.md) defines `ROLE` as the position that fills a lane or step).
+- `supported_by_application: APPLICATION-…` — the supporting application ([10-applications.md](./10-applications.md)).
 
 Both may appear at **lane** level (the default for every element in the lane — the standard swimlane-is-a-participant reading) and at **element** level (an override for one task). Precedence, per element:
 
@@ -240,7 +240,7 @@ Both may appear at **lane** level (the default for every element in the lane —
 
 This keeps a 10-task lane from repeating the field ten times while still allowing a single automated task inside a human lane to point at a system.
 
-These are **inline cross-references from a BPMN-local label to a canon primitive**, not `REL` files: a BPMN task / lane id is a document-local label ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.3), not a canon primitive, so the link is one-way (canon never points back at a local label) and is validated by canon-existence (`BPMN-XREF-001`, §11), not by the `REL` rules. This is the same view-references-canon pattern used by capability-map (`business_process`), process-map (`capability`), and the products / applications catalogues — see [elements/17-relations.md](../elements/17-relations.md) §3.
+These are **inline cross-references from a BPMN-local label to a canon primitive**, not `REL` files: a BPMN task / lane id is a document-local label ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3), not a canon primitive, so the link is one-way (canon never points back at a local label) and is validated by canon-existence (`BPMN-XREF-001`, §11), not by the `REL` rules. This is the same view-references-canon pattern used by capability-map (`business_process`), process-map (`capability`), and the products / applications catalogues — see [elements/17-relations.md](../../elements/17-relations.md) §3.
 
 ---
 

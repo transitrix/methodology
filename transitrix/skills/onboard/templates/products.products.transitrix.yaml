@@ -1,7 +1,7 @@
 notation: products
 spec_version: "0.1"
 
-# Products catalogue. Spec: notations/views/09-products.md
+# Products catalogue. Spec: notations/views/diagrams/09-products.md
 # Inventory of digital products / services. Each PRODUCT-… is a
 # canonical element ID; categories group products by domain.
 

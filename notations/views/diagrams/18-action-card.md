@@ -21,7 +21,7 @@ file_extension: "*.action-card.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -34,10 +34,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `action-card` (per [CONTRACT.md](../CONTRACT.md)). Deprecated alias: `activity-card`. |
+| `notation` | yes | string | MUST equal `action-card` (per [CONTRACT.md](../../CONTRACT.md)). Deprecated alias: `activity-card`. |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `action_card` | yes | object | the action card root — see §3 and §4. Deprecated alias: `activity_card`. |
 
 Example header:
@@ -57,13 +57,13 @@ action_card:
 
 An Action Card is a **view** over an existing project Action. It does not duplicate the action's data; it references the action by ID and adds card-specific narrative content — project-level milestones — that does not naturally belong on the action itself.
 
-A "project" is an Action at the project scale of the recursive ACTION hierarchy (initiative → programme → project → task, all one TYPE per [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.1/§7.4). No new top-level entity is introduced for projects — the action hierarchy already expresses what a project is. The Action Card is the **narrative surface** on top of the project action: dates, motivation chain, child actions, and narrative milestones that live on the card itself.
+A "project" is an Action at the project scale of the recursive ACTION hierarchy (initiative → programme → project → task, all one TYPE per [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §6.1/§7.4). No new top-level entity is introduced for projects — the action hierarchy already expresses what a project is. The Action Card is the **narrative surface** on top of the project action: dates, motivation chain, child actions, and narrative milestones that live on the card itself.
 
-**View-purity.** Like every other view, the Action Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.action.*`, `*.dgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
+**View-purity.** Like every other view, the Action Card is a *projection over the canonical elements and relations* ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1) — it never reads from other view documents (`*.action.*`, `*.dgca.*`). The renderer assembles the card from two canonical sources plus the card itself:
 
 1. The card document itself — `notation: action-card` — references the project Action by ID and declares its narrative milestones.
 2. The **canon element store** (`canon/elements/**`) — the project ACTION element (`valid_from`, `start_date`, `end_date`, `delivers_changes`) and its child ACTION elements (any action with `parent` = the project's ID); the DRIVER / GOAL / CHANGE elements the motivation chain expands (`goal.factors`, `change.goals` carried inline on the elements).
-3. The **canon relation store** (`canon/relations/**`) — the project's goals come from the first-class `action_goal` relations (`from` = the project ID); see [17-relations.md](../elements/17-relations.md) §3. The action element's transitional inline `goals: []` is used only as a fallback when no such relation exists.
+3. The **canon relation store** (`canon/relations/**`) — the project's goals come from the first-class `action_goal` relations (`from` = the project ID); see [17-relations.md](../../elements/17-relations.md) §3. The action element's transitional inline `goals: []` is used only as a fallback when no such relation exists.
 
 The card does not vendor copies of any of this data; the renderer pulls by reference at view time.
 
@@ -74,8 +74,8 @@ The card does not vendor copies of any of this data; the renderer pulls by refer
 | Use case | Notation |
 |---|---|
 | Single-page summary of a project for an executive review | Action Card |
-| Project network with dates + dependencies + critical path | Action schedule ([07-action.md](07-action.md)) |
-| Project's strategic context — drivers underlying its goals | DGCA ([02-dgca.md](02-dgca.md)) |
+| Project network with dates + dependencies + critical path | Action schedule ([07-action.md](./07-action.md)) |
+| Project's strategic context — drivers underlying its goals | DGCA ([02-dgca.md](./02-dgca.md)) |
 | Programme / portfolio overview across many projects | Out of scope for v0.1 (future) |
 
 The card is **specifically** a single-project view. A multi-project programme deck or a portfolio dashboard would be a separate notation.
@@ -139,7 +139,7 @@ Each entry in `milestones[]` is a MILESTONE element. Per IDS §3.1 + §4, MILEST
 |---|---|---|
 | `id` | Yes | Document-scoped MILESTONE ID per IDS §1 (`MILESTONE-<MIDDLE>-<INTEGER>`). |
 | `name` | Yes | One-line milestone label. |
-| `date` | Yes | Date the milestone is reached — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
+| `date` | Yes | Date the milestone is reached — quoted ISO 8601 per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `description` | No | Longer-form context for the milestone. |
 | `delivers_changes` | No | Array of `CHANGE-…` IDs the milestone delivers. Each entry MUST resolve to a CHANGE that appears in the project Action's `delivers_changes:` (`PC-003`). |
 
@@ -152,7 +152,7 @@ The renderer assembles the card from references into the canon element + relatio
 | Card section | Source |
 |---|---|
 | **Project name** | `ACTION.name` (the project ACTION element in `canon/elements/`) |
-| **Dates: initiation** | `ACTION.valid_from` ([CONTRACT.md](../CONTRACT.md) §7 — the decision-to-initiate date) |
+| **Dates: initiation** | `ACTION.valid_from` ([CONTRACT.md](../../CONTRACT.md) §7 — the decision-to-initiate date) |
 | **Dates: planned work** | `ACTION.start_date` / `ACTION.end_date` (the scheduled work window, distinct from `valid_from`) |
 | **Milestones (timeline)** | `action_card.milestones[]` in this document |
 | **Motivation chain — Goals** | The goals the project serves, read from the `action_goal` relations in `canon/relations/` (`from` = the project ID); falls back to the project ACTION's transitional inline `goals: []` when no relation exists |
@@ -176,7 +176,7 @@ Rendered example:
 - Action node label: `Launch new product (Work Package)`
 - Milestone node label: `Beta release (Implementation Event)`
 
-This is a **renderer-side convention, not a data field** — the class is derived from the node's TYPE. Adopters do **not** add an `archimate_class:` key to the YAML. (The `ACTION` → Work Package mapping is the recursive Implementation & Migration model settled in the Actors decision; see [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §6.1.) Scope of this convention is the Action Card; extending it to other view notations is a separate proposal.
+This is a **renderer-side convention, not a data field** — the class is derived from the node's TYPE. Adopters do **not** add an `archimate_class:` key to the YAML. (The `ACTION` → Work Package mapping is the recursive Implementation & Migration model settled in the Actors decision; see [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §6.1.) Scope of this convention is the Action Card; extending it to other view notations is a separate proposal.
 
 ---
 
@@ -211,17 +211,17 @@ A validator that cannot find the ID after exhausting both paths MUST raise `PC-0
 | `PC-004` | warning | A `milestone.date` falls outside `[Action.valid_from, Action.valid_to]`. A milestone before the project initiated or after it ended is suspicious. |
 | `PC-005` | warning | Deprecated alias detected: `notation: activity-card`, `activity_card:` root field, or file extension `*.activity-card.transitrix.yaml`. Migrate to `action-card` / `action_card:` / `*.action-card.transitrix.yaml`. |
 
-The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to action-card files in addition to PC-001..005. The card document itself carries `valid_from` / `valid_to` per the lifecycle contract — the card's window is when the narrative artefact is in effect; the project Action has its own independent lifecycle.
+The shared header (`HDR-001..004`, [CONTRACT.md](../../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../../CONTRACT.md) §7.3) rules apply to action-card files in addition to PC-001..005. The card document itself carries `valid_from` / `valid_to` per the lifecycle contract — the card's window is when the narrative artefact is in effect; the project Action has its own independent lifecycle.
 
 ---
 
 ## 8. Reconciliation with 07-action §5.9 schedule milestones
 
-The Action schedule notation already defines a "milestone" — a zero-duration action used for critical-path computation ([07-action.md](07-action.md) §5.9). The Action Card introduces a **separate** MILESTONE element for narrative gates.
+The Action schedule notation already defines a "milestone" — a zero-duration action used for critical-path computation ([07-action.md](./07-action.md) §5.9). The Action Card introduces a **separate** MILESTONE element for narrative gates.
 
 The two are deliberately distinct:
 
-| Aspect | Schedule milestone ([07-action.md](07-action.md) §5.9) | Action-card milestone (this notation) |
+| Aspect | Schedule milestone ([07-action.md](./07-action.md) §5.9) | Action-card milestone (this notation) |
 |---|---|---|
 | What it is | An Action with `duration: 0` | A MILESTONE element inside an Action Card |
 | Where it lives | Action schedule document | Action Card document |
@@ -244,8 +244,8 @@ Pending design work (separate epics):
 
 ## 10. References
 
-- TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`ACTION_CARD` document type), §4 (uniqueness scope — both document-scoped).
-- The project Action TYPE this card binds: [07-action.md](07-action.md) §5.2 (`type: Project`).
-- Schedule milestones — distinct from action-card milestones: [07-action.md](07-action.md) §5.9.
-- Motivation chain the card pulls: [02-dgca.md](02-dgca.md) (DGCA).
-- Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5–7.
+- TYPE registry: [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.1 (`MILESTONE`), §3.2 (`ACTION_CARD` document type), §4 (uniqueness scope — both document-scoped).
+- The project Action TYPE this card binds: [07-action.md](./07-action.md) §5.2 (`type: Project`).
+- Schedule milestones — distinct from action-card milestones: [07-action.md](./07-action.md) §5.9.
+- Motivation chain the card pulls: [02-dgca.md](./02-dgca.md) (DGCA).
+- Zone model, admission record, primitive lifecycle: [CONTRACT.md](../../CONTRACT.md) §5–7.

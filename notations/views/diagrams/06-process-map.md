@@ -16,7 +16,7 @@ file_extension: "*.process-map.transitrix.yaml"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -27,10 +27,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `process-map` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `process-map` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `process_map` | yes | object | the process map root — see §4 and §5 |
 
 Example header:
@@ -48,7 +48,7 @@ process_map:
 
 ## Element lifecycle
 
-Every inline process entry under `groups[].processes[]` carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each process entry; neither the process-map document nor the process groups carry a lifecycle field — groups are organisational containers, not elements.
+Every inline process entry under `groups[].processes[]` carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../../CONTRACT.md) §7.1, the lifecycle sits on each process entry; neither the process-map document nor the process groups carry a lifecycle field — groups are organisational containers, not elements.
 
 ---
 
@@ -56,7 +56,7 @@ Every inline process entry under `groups[].processes[]` carries the canonical pr
 
 The process landscape map answers the question: **what processes does the organisation have?**
 
-It is a structured catalogue — not a flow diagram. Individual process flows are defined on each `PROCESS` element itself (its `participants` + `flow`, [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5); a BPMN file (`*.bpmn.transitrix.yaml`) is a **derived projection** of that flow, not its source ([views/01-bpmn.md](01-bpmn.md)). The landscape map is the inventory that sits above the elements: it shows the full set of processes, how they are grouped, and their relationships to capabilities and organisational units. It references each process by `process_id`; the element is the definition home.
+It is a structured catalogue — not a flow diagram. Individual process flows are defined on each `PROCESS` element itself (its `participants` + `flow`, [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5); a BPMN file (`*.bpmn.transitrix.yaml`) is a **derived projection** of that flow, not its source ([views/01-bpmn.md](./01-bpmn.md)). The landscape map is the inventory that sits above the elements: it shows the full set of processes, how they are grouped, and their relationships to capabilities and organisational units. It references each process by `process_id`; the element is the definition home.
 
 The two notations are complementary:
 
@@ -154,10 +154,10 @@ process_map:
 | `processes[].name` | Yes | Process name (should match the element) |
 | `processes[].owner_role` | No | Reference to BusinessRole element ID |
 | `processes[].capability` | No | Capability ID this process realises (V1, H1, etc.) |
-| `processes[].maturity` | No | Current CMM level (1–5). **Time-varying** — lives in the sidecar `<process_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `processes[].maturity` | No | Current CMM level (1–5). **Time-varying** — lives in the sidecar `<process_id>.history.yaml` ([CONTRACT.md](../../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
 | `processes[].status` | Yes | `Draft` / `Active` / `Deprecated` |
 
-> **No `bpmn_file` pointer.** Earlier revisions carried an optional `processes[].bpmn_file` path to "the detailed BPMN diagram." It is **removed**: a BPMN file is a *derived projection* of the referenced `PROCESS` element's `flow` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.5, [views/01-bpmn.md](01-bpmn.md)), not a source artefact. Storing a path to generated output in the inventory would violate the view-purity corollary ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1). The map references the process by `process_id`; the diagram is regenerated from that element's `flow` and located by convention, so no separate pointer is held here.
+> **No `bpmn_file` pointer.** Earlier revisions carried an optional `processes[].bpmn_file` path to "the detailed BPMN diagram." It is **removed**: a BPMN file is a *derived projection* of the referenced `PROCESS` element's `flow` ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5, [views/01-bpmn.md](./01-bpmn.md)), not a source artefact. Storing a path to generated output in the inventory would violate the view-purity corollary ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1). The map references the process by `process_id`; the diagram is regenerated from that element's `flow` and located by convention, so no separate pointer is held here.
 
 ---
 
@@ -185,7 +185,7 @@ Process Landscape Map    →  lists all processes
 
 ## 8. Time-varying attributes — sidecar history
 
-A process's `maturity` evolves within the process's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, this field is stored in a sidecar file co-located with the process's element file, **not inline** on the process-map view or on the element file:
+A process's `maturity` evolves within the process's overall lifetime. Per [CONTRACT.md](../../CONTRACT.md) §9, this field is stored in a sidecar file co-located with the process's element file, **not inline** on the process-map view or on the element file:
 
 ```
 canon/elements/02_business/processes/PROCESS-ORD-FULFILL-1.yaml          # stable fields
@@ -203,6 +203,6 @@ attribute_versions:
     - { valid_from: "2026-09-15", value: 3 }
 ```
 
-Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../CONTRACT.md) §9.2.
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../../CONTRACT.md) §9.2.
 
-Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = process.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../CONTRACT.md) §9.3).
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = process.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../../CONTRACT.md) §9.3).

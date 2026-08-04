@@ -20,6 +20,6 @@ dsm_status: "not implemented — superseded by dgca with layers.changes: off"
 >     changes: off
 > ```
 >
-> This produces a Driver → Goal → Activity view inside the unified DGCA notation. See [`02-dgca.md`](02-dgca.md) for the full spec.
+> This produces a Driver → Goal → Activity view inside the unified DGCA notation. See [`02-dgca.md`](./02-dgca.md) for the full spec.
 
 `fga` was the pre-2026-06 notation key for the 3-layer Driver → Goal → Activity chain. It is now a degenerate case of `dgca` with the Changes layer disabled via `view_config.layers.changes: off`.

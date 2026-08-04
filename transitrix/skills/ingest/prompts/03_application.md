@@ -58,5 +58,5 @@ Extract only the **stable** identity fields. Time-varying attributes (a system's
 ## See also
 
 - TYPE registry: [IDS §3.1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md).
-- Applications notation: [10-applications.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/10-applications.md).
+- Applications notation: [10-applications.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/diagrams/10-applications.md).
 - Versioned attributes (sidecar): [CONTRACT §9](https://raw.githubusercontent.com/transitrix/methodology/main/notations/CONTRACT.md).

@@ -169,7 +169,7 @@ A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives
 Out of scope for this schema:
 
 - **Test execution management, 21 CFR Part 11 e-signatures, variant/configuration management.** Ceded to a dedicated ALM/QMS tool.
-- **A dedicated `REQUIREMENT` → `VERIFICATION` report-config view.** Compliance and V&V coverage over this element are read via the existing report views ([21-compliance-impact.md](../views/21-compliance-impact.md), [22-coverage-metric.md](../views/22-coverage-metric.md)) or a future dedicated view — not scoped here.
+- **A dedicated `REQUIREMENT` → `VERIFICATION` report-config view.** Compliance and V&V coverage over this element are read via the existing report views ([21-compliance-impact.md](../views/reports/21-compliance-impact.md), [22-coverage-metric.md](../views/reports/22-coverage-metric.md)) or a future dedicated view — not scoped here.
 
 ---
 

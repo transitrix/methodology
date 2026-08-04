@@ -7,7 +7,7 @@ Layer toggle: individual columns (D, G, C, A) can be disabled via `view_config.l
 
 **File extension:** `*.dgca.transitrix.yaml`
 
-See the canonical spec: [`../../views/02-dgca.md`](../../views/02-dgca.md).
+See the canonical spec: [`../../views/02-dgca.md`](../../views/diagrams/02-dgca.md).
 
 ## Minimal structure — full DGCA (4 layers)
 

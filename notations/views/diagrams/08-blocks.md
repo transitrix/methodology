@@ -17,7 +17,7 @@ dsm_status: "not implemented — native TS renderer planned in Transitrix Studio
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all fifteen Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all fifteen Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,10 +28,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `blocks` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `blocks` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `nested_blocks` | one of `nested_blocks` / `grid` | object | the nested (tree) form's root — see §4 and §5 |
 | `grid` | one of `nested_blocks` / `grid` | object | the matrix-subset form's root — a rectangular grid of columns/rows instead of a containment tree; see §4a and §5 |
 
@@ -52,9 +52,9 @@ nested_blocks:
 
 ## Element lifecycle
 
-A `block.id` MAY follow the canonical `<TYPE>-…-<INTEGER>` grammar to cross-link into an organisational catalogue element (e.g. `CAPABILITY-V1.2`, `APPLICATION-OMS-1`), OR it MAY be a document-local label that the block diagram authors solely for layout purposes. The canonical primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7) is borne by the **target element's own file** when a block cross-links — the block here is a layout placement, not a separate element. When `block.id` is a document-local label there is no canonical element to bear lifecycle, and none is required.
+A `block.id` MAY follow the canonical `<TYPE>-…-<INTEGER>` grammar to cross-link into an organisational catalogue element (e.g. `CAPABILITY-V1.2`, `APPLICATION-OMS-1`), OR it MAY be a document-local label that the block diagram authors solely for layout purposes. The canonical primitive lifecycle ([CONTRACT.md](../../CONTRACT.md) §7) is borne by the **target element's own file** when a block cross-links — the block here is a layout placement, not a separate element. When `block.id` is a document-local label there is no canonical element to bear lifecycle, and none is required.
 
-The nested_blocks document itself does not carry a `valid_from` / `valid_to` field — it is a view, not an element ([CONTRACT.md](../CONTRACT.md) §7.1).
+The nested_blocks document itself does not carry a `valid_from` / `valid_to` field — it is a view, not an element ([CONTRACT.md](../../CONTRACT.md) §7.1).
 
 ---
 
@@ -105,7 +105,7 @@ Examples:
 
 ## 4. Top-level structure — nested form
 
-The blocks notation is a tree: every child has exactly one parent. Hierarchy is expressed directly by YAML structure — no id-references between blocks. (The strategy-chain notations DGCA / FGA / Goals / Action schedule use a different shape — flat top-level arrays with `parent`/cross-reference fields — per the family-wide rule in [README.md](../README.md) § Family selection. Blocks pre-dates that family and is not part of it; the YAML-nested form is canonical here.)
+The blocks notation is a tree: every child has exactly one parent. Hierarchy is expressed directly by YAML structure — no id-references between blocks. (The strategy-chain notations DGCA / FGA / Goals / Action schedule use a different shape — flat top-level arrays with `parent`/cross-reference fields — per the family-wide rule in [README.md](../../README.md) § Family selection. Blocks pre-dates that family and is not part of it; the YAML-nested form is canonical here.)
 
 A document carries a single `nested_blocks:` root key with the document's identifying fields and a `blocks: [...]` array of top-level blocks. A file MAY contain several top-level blocks; they are rendered as independent diagram sections in array order.
 
@@ -150,7 +150,7 @@ nested_blocks:
           name: "Redis Cache"
 ```
 
-A complete example: [`examples/blocks/architecture.blocks.transitrix.yaml`](../examples/blocks/architecture.blocks.transitrix.yaml).
+A complete example: [`examples/blocks/architecture.blocks.transitrix.yaml`](../../examples/blocks/architecture.blocks.transitrix.yaml).
 
 ---
 
@@ -193,7 +193,7 @@ A complete example: [`raci.blocks.transitrix.yaml`](https://github.com/transitri
 
 | Field | Required | Description |
 |---|---|---|
-| `nested_blocks.id` | yes | document ID — `BLOCKS-[<middle>-]<INTEGER>` per the canonical grammar in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md). |
+| `nested_blocks.id` | yes | document ID — `BLOCKS-[<middle>-]<INTEGER>` per the canonical grammar in [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md). |
 | `nested_blocks.name` | yes | human-readable name of the diagram. |
 | `nested_blocks.description` | no | one-paragraph context. |
 | `nested_blocks.version` | no | document version. |
@@ -242,7 +242,7 @@ Cross-reference semantics: when a block's `id` matches a canonical TYPE prefix f
 | `BL-003` | error | `nested_blocks.name` missing or empty. |
 | `BL-004` | error | `nested_blocks.blocks` missing or empty. |
 | `BL-005` | error | every block entry (at any depth) must have non-empty `id` and `name`. |
-| `BL-006` | error | a block `id` that matches the canonical grammar `<TYPE>-…-<INTEGER>` MUST use a TYPE registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md); an unknown TYPE prefix is rejected. A free-form local label (any non-empty string with no whitespace) is accepted unchanged. |
+| `BL-006` | error | a block `id` that matches the canonical grammar `<TYPE>-…-<INTEGER>` MUST use a TYPE registered in [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md); an unknown TYPE prefix is rejected. A free-form local label (any non-empty string with no whitespace) is accepted unchanged. |
 | `BL-007` | error | block IDs must be unique within the document; no `id` may appear twice anywhere in the tree. |
 | `BL-008` | warn | nesting depth exceeds the recommended maximum of **5 levels** (root = level 1). Renderers MAY still produce output; very deep nesting tends to produce inner boxes too small to read. |
 | `BL-009` | warn | a `children` array is present but empty; remove the empty array or add child blocks. |
@@ -255,7 +255,7 @@ Cross-reference semantics: when a block's `id` matches a canonical TYPE prefix f
 
 L1 (format), L2 (per-element), L3 (relations) map onto the rules above as:
 
-- **L1 — format:** the shared header rules from [CONTRACT.md](../CONTRACT.md) (`HDR-001` … `HDR-004`) plus `BL-001` / `BL-020`.
+- **L1 — format:** the shared header rules from [CONTRACT.md](../../CONTRACT.md) (`HDR-001` … `HDR-004`) plus `BL-001` / `BL-020`.
 - **L2 — per-element:** `BL-002` … `BL-006`, `BL-021` … `BL-023`.
 - **L3 — relations across the tree/grid:** `BL-007`, `BL-008`, `BL-009`, `BL-024`, `BL-025`.
 
@@ -315,11 +315,11 @@ What the renderer MUST NOT do:
 
 ## 9. References
 
-- File header contract: [`CONTRACT.md`](../CONTRACT.md)
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) — the `BLOCKS` document-level TYPE is registered there.
-- Goals notation (uses the same diagram engine): [`04-goals.md`](04-goals.md)
-- Process Blueprint (uses the same diagram engine): [`13-process-blueprint.md`](13-process-blueprint.md)
-- Applications catalogue (source for cross-linked `APPLICATION-…` block IDs): [`10-applications.md`](10-applications.md)
-- Capabilities map (source for cross-linked `CAPABILITY-…` block IDs): [`05-capability-map.md`](05-capability-map.md)
+- File header contract: [`CONTRACT.md`](../../CONTRACT.md)
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md) — the `BLOCKS` document-level TYPE is registered there.
+- Goals notation (uses the same diagram engine): [`04-goals.md`](./04-goals.md)
+- Process Blueprint (uses the same diagram engine): [`13-process-blueprint.md`](./13-process-blueprint.md)
+- Applications catalogue (source for cross-linked `APPLICATION-…` block IDs): [`10-applications.md`](./10-applications.md)
+- Capabilities map (source for cross-linked `CAPABILITY-…` block IDs): [`05-capability-map.md`](./05-capability-map.md)
 - Methodology section 6 (Notation kit): `method/01-methodology.md`
 - RACI-as-matrix template (matrix subset, §4a): [`transitrix/templates`](https://github.com/transitrix/templates/tree/main/raci)

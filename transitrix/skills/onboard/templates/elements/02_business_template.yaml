@@ -4,7 +4,7 @@
 #   canon/elements/02_business/<plural-type>/<ID>.yaml
 #
 # TYPEs in this layer:
-#   CAPABILITY   notation: capability   folder capabilities/  fields: notations/views/05-capability-map.md §13
+#   CAPABILITY   notation: capability   folder capabilities/  fields: notations/views/diagrams/05-capability-map.md §13
 #   PROCESS      notation: process      folder processes/     fields: ELEMENT_PRIMITIVES.md §7.5
 #   PRODUCT      notation: product      folder products/      fields: §7.6
 #   ROLE         notation: role         folder roles/         fields: §7.9

@@ -176,7 +176,7 @@ A generic worked example exercising `VALIDATION` alongside `NEED` and `REQUIREME
 ## 7. Out of scope
 
 - **Test execution management, 21 CFR Part 11 e-signatures, variant/configuration management.** Ceded to a dedicated ALM/QMS tool — same posture as `VERIFICATION` ([27-verification.md](27-verification.md) §7).
-- **A dedicated `NEED` → `VALIDATION` report-config view.** Coverage over this element is read via the existing report views ([21-compliance-impact.md](../views/21-compliance-impact.md), [22-coverage-metric.md](../views/22-coverage-metric.md)) or a future dedicated view — not scoped here.
+- **A dedicated `NEED` → `VALIDATION` report-config view.** Coverage over this element is read via the existing report views ([21-compliance-impact.md](../views/reports/21-compliance-impact.md), [22-coverage-metric.md](../views/reports/22-coverage-metric.md)) or a future dedicated view — not scoped here.
 - **Formal usability metrics (SUS scores, task-success statistical thresholds).** `result` is narrative free text in v1; a structured metrics block is a future additive extension if a concrete need surfaces.
 
 ---

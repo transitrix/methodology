@@ -1,7 +1,7 @@
 notation: actions-tree
 spec_version: "0.1"
 
-# Actions tree. Spec: notations/views/23-actions-tree.md
+# Actions tree. Spec: notations/views/reports/23-actions-tree.md
 # Report-config view over the ACTION element catalogue.
 # No action data is defined here — the tree is built from
 # canon/elements/05_implementation/actions/ at render time.

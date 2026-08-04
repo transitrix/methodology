@@ -1,5 +1,5 @@
 # Transitrix BPMN process template — multi-lane (copy-and-fill)
-# Spec:      notations/views/01-bpmn.md
+# Spec:      notations/views/diagrams/01-bpmn.md
 # Extension: *.bpmn.transitrix.yaml
 # Location:  canon/views/bpmn/   (one pool; lanes partition it; file-local node labels)
 #

@@ -54,7 +54,7 @@ canon/
       metrics/        METRIC-*.yaml          # §7.27 — managed indicator; measures GOAL/CAPABILITY/PROCESS
       risks/          RISK-*.yaml            # §7.26 — projected event; threatens / treated_by
     02_business/
-      capabilities/   CAPABILITY-*.yaml      # views/05-capability-map.md §13
+      capabilities/   CAPABILITY-*.yaml      # views/diagrams/05-capability-map.md §13
       processes/      PROCESS-*.yaml
       steps/          STEP-*.yaml            # §7.20 — promoted process-flow steps (canonical-by-containment in a PROCESS)
       products/       PRODUCT-*.yaml
@@ -141,7 +141,7 @@ valid_to: null
 | `derived_from` | no | list | Typed IDs of the Field / Codex artefacts this element was derived from — [CONTRACT.md](CONTRACT.md) §6. A citation, never a migration. |
 | `valid_from` | yes | string | Date the element took effect — [CONTRACT.md](CONTRACT.md) §7. |
 | `valid_to` | yes | string \| null | Date the element ceased to be in effect, or `null` if still in effect — [CONTRACT.md](CONTRACT.md) §7. |
-| `status` | no | string | Organisation-defined workflow state (e.g. `active`, `draft`, `deprecated`). **Distinct** from the Planned/Active/Retired state *derived* from `valid_from`/`valid_to` (see [views/05-capability-map.md](views/05-capability-map.md) §7). Optional; where present it records authoring/governance state, not temporal validity. |
+| `status` | no | string | Organisation-defined workflow state (e.g. `active`, `draft`, `deprecated`). **Distinct** from the Planned/Active/Retired state *derived* from `valid_from`/`valid_to` (see [views/05-capability-map.md](./views/diagrams/05-capability-map.md) §7). Optional; where present it records authoring/governance state, not temporal validity. |
 | `owner_role` | no | string | Typed `ROLE-…` ID of the accountable role. Replaces the legacy free-text `owner` (§5). Some TYPEs declare `owner_role` **time-varying** (sidecar-bound — [CONTRACT.md](CONTRACT.md) §9); §7 notes which. |
 | `tags` | no | list | Free-form classifier strings. |
 
@@ -158,7 +158,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | TYPE | Mode | `notation` | Layer | Folder | Per-element fields owned by |
 |---|---|---|---|---|---|
 | `DRIVER` | standalone | `driver` | motivation | `01_motivation/factors/` | §7.1 (no dedicated spec) |
-| `GOAL` | standalone | `goal` | motivation | `01_motivation/goals/` | §7.2 + [views/04-goals.md](views/04-goals.md) |
+| `GOAL` | standalone | `goal` | motivation | `01_motivation/goals/` | §7.2 + [views/04-goals.md](./views/diagrams/04-goals.md) |
 | `CONSTRAINT` | standalone | `constraint` | motivation | `01_motivation/constraints/` | §7.13 (worked-example precedent) |
 | `REQUIREMENT` | standalone | `requirement` | motivation | `01_motivation/requirements/` | [elements/15-requirement.md](elements/15-requirement.md) |
 | `STAKEHOLDER` | standalone | `stakeholder` | motivation | `01_motivation/stakeholders/` | §7.15 + [elements/20-stakeholders.md](elements/20-stakeholders.md) |
@@ -166,45 +166,45 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `NEED` | standalone | `need` | motivation | `01_motivation/needs/` | §7.28 (no dedicated spec) |
 | `METRIC` | standalone | `metric` | motivation | `01_motivation/metrics/` | §7.27 (no dedicated spec) |
 | `RISK` | standalone | `risk` | motivation | `01_motivation/risks/` | §7.26 (no dedicated spec) |
-| `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](views/05-capability-map.md) §13 |
-| `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](views/06-process-map.md) |
+| `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](./views/diagrams/05-capability-map.md) §13 |
+| `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](./views/diagrams/06-process-map.md) |
 | `STEP` | contained (in `PROCESS.flow`) → standalone (promotable) | `step` | business | `02_business/steps/` | §7.20 (inline shape: §7.5) |
-| `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](views/09-products.md) |
+| `PRODUCT` | standalone | `product` | business | `02_business/products/` | §7.6 + [views/09-products.md](./views/diagrams/09-products.md) |
 | `ROLE` | standalone | `role` | business | `02_business/roles/` | §7.9 |
 | `ACTOR` | standalone | `actor` | business | `02_business/actors/` | §7.10 + [elements/19-actors.md](elements/19-actors.md) |
 | `LOCATION` | standalone | `location` | business | `02_business/locations/` | §7.22 + [elements/21-locations.md](elements/21-locations.md) |
 | `BUSINESS_SERVICE` | standalone | `business-service` | business | `02_business/business-services/` | §7.23 + [elements/25-business-services.md](elements/25-business-services.md) |
 | `RULE` | standalone | `rule` | business | `02_business/rules/` | §7.12 (worked-example precedent) |
 | `REGISTRY` | standalone (rows inline, canonical-by-containment, promotable) | `registry` | business | `02_business/registries/` | §7.19 (no dedicated spec) |
-| `APPLICATION` | standalone | `application` | application | `03_application/applications/` | §7.7 + [views/10-applications.md](views/10-applications.md) |
-| `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](views/10-applications.md) |
-| `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-dgca.md](views/02-dgca.md) |
+| `APPLICATION` | standalone | `application` | application | `03_application/applications/` | §7.7 + [views/10-applications.md](./views/diagrams/10-applications.md) |
+| `INTEGRATION` | view-defined → standalone (promotable) | `integration` | application | `03_application/integrations/` | §7.8 + [views/10-applications.md](./views/diagrams/10-applications.md) |
+| `CHANGE` | standalone | `change` | implementation | `05_implementation/changes/` | §7.3 + [views/02-dgca.md](./views/diagrams/02-dgca.md) |
 | `ACTION` | standalone | `action` | implementation | `05_implementation/actions/` | §7.4 + [elements/24-action.md](elements/24-action.md) |
 | `TARGET_STATE` | standalone | `target-state` | implementation | `05_implementation/target-states/` | §7.17 (no dedicated spec) |
 | `SCENARIO` | standalone | `scenario` | implementation | `05_implementation/scenarios/` | §7.18 (no dedicated spec) |
 | `NODE` | standalone | `node` | technology | `04_technology/nodes/` | §7.24 + [elements/25-nodes.md](elements/25-nodes.md) |
 | `TECHNOLOGY_SERVICE` | standalone | `technology-service` | technology | `04_technology/services/` | §7.25 + [elements/26-technology-services.md](elements/26-technology-services.md) |
-| `EQUIPMENT` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3 |
-| `INFORMATION_ENTITY` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3 |
+| `EQUIPMENT` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §5.3 |
+| `INFORMATION_ENTITY` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §5.3 |
 
 ### 4.1 Why these assignments
 
 - **The strategy chain (`DRIVER` / `GOAL` / `CHANGE` / `ACTION`) is `standalone`.** All four are referenced across documents (a `GOAL` appears in the Goals tree, DGCA, FGA, Action schedule, Scenarios, and Issues; a `DRIVER` in DGCA, FGA, and Scenarios), and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 mandates their catalogue uniqueness when cross-referenced. All five strategy-chain view notations — `02-dgca.md` ("No element data is authored inline"), `23-actions-tree.md` ("projection configuration, not an authoring surface"), `18-action-card.md` (explicit "View-purity" section), `04-goals.md` (pure projection, v2.0), and `07-action.md` (pure projection, v2.0) — are **pure projections over the standalone element catalogue**. Element data (name, description, goals, duration, predecessors, etc.) is authored exclusively in the standalone element files; the view documents carry only `view_config` (scope, display, schedule settings). Defining their element-file shape (§7.1–§7.4) is what enabled this complete view-purity migration.
-- **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](views/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
+- **The stock business/application elements (`CAPABILITY` / `PROCESS` / `PRODUCT` / `APPLICATION` / `ROLE` / `ACTOR` / `RULE`) are `standalone`.** This matches the grain already in canon: the capability-map spec states it is "a view over Capability elements stored in `elements/02_business/`" ([views/05](./views/diagrams/05-capability-map.md) §1); the products and applications catalogues say their entries "reference a `PRODUCT-…` / `APPLICATION-…` element"; `RULE` already has a worked element file. `ROLE` (position) and `ACTOR` (identity — `person` / `business_unit` / `system`) are the active-structure pair settled by the 2026-05-29 Actors decision; `ACTOR` subsumes the former `UNIT` / `EMPLOYEE` TYPEs (§7.10–§7.11).
 - **`REGISTRY` is `standalone`, justified by ownership + lifecycle.** A registry is a curated, **org-authored** operating-configuration artefact — the list the organisation maintains to drive an operating activity (the worked example, §7.19: which regulatory sources to watch, where, how, how often). It is a maintained record with its own admission and lifecycle, referenced and re-versioned as a unit, so it is a first-class catalogue element, not an inline fragment. Its placement is settled by elimination: **not motivation** (it is operating config, not intent or a driver); **not codex** (codex is *given to* the organisation from outside — `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; a registry is *authored by* the org to decide how it operates); **not Field** (Field is contradiction-tolerant evidence, a registry is curated and authoritative); **not a `RULE`** (a rule is decision logic, a registry is a maintained list); and **not the team `operations/` folder** (that holds the team's working artefacts, not model content). Its **rows are inline and canonical-by-containment** — each row carries a canonical-grammar ID and is promoted to its own registered standalone TYPE only when a second document references it (§1 promotion rule), exactly as a `PROCESS` flow step is (§7.5, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3). Its time-varying operating *state* is held out of the element entirely (§7.19, [CONTRACT.md](CONTRACT.md) §9.6).
 - **The motivation obligations (`CONSTRAINT` / `REQUIREMENT`) are `standalone`** — already shipped as element files (`CONSTRAINT-GDPR-RESIDENCY-1`, [elements/15](elements/15-requirement.md)).
 - **`ASSESSMENT` is `standalone`, justified by temporality.** An assessment is a *found fact* about a driver's state at a point in time (ArchiMate Assessment over a Driver). One `DRIVER` accrues **many** assessments as the situation is re-observed, each with its own observation date and lifecycle — so an assessment cannot be an inline field on the driver without losing that history. It is therefore its own catalogue element that references its `DRIVER` via `assesses` (§7.16). It carries **no polarity / SWOT field**: whether a finding is a strength, weakness, opportunity, or threat is a property of the `INFLUENCE` relation between elements, not of the finding itself (motivation-layer split, separate sub-task).
 - **`NEED` is `standalone`, upstream of `REQUIREMENT`.** A need is *what a stakeholder requires*, independent of how it is met — the ArchiMate-unmapped motivation-layer primitive a `REQUIREMENT` traces to via its own `serves` field (§7.28). Referenced from any `REQUIREMENT` that serves it and from the `VALIDATION` claims that check whether the delivered thing actually meets it, so it needs its own admission record and lifecycle, not an inline fragment of the requirement it motivates — the same "referenced from two directions" justification as `RISK`. Motivation layer (`01_motivation/`) matches its grain: a need is an intent-layer concern (what the stakeholder wants), not a business, application, or technology fact.
-- **`METRIC` is `standalone`, as the managed indicator, distinct from a rendered coverage figure.** A metric is what the organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing — it needs its own admission record and lifecycle because it is authored once and re-read continuously, not a fact re-derived per view render. That is also what separates it from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a report-config document with no canonical content of its own, computing a regulatory dark-cell count from `ASSERTION`/`REQUIREMENT`/codex data at render time; `METRIC` is the opposite — a first-class catalogue element naming what is measured, never a rendering. Motivation layer (`01_motivation/`) matches its grain: like `ASSESSMENT`, it is a measurement primitive over the organisation's intent, not a business/application/technology fact — even though what it measures (`GOAL` / `CAPABILITY` / `PROCESS`) may sit in a different layer. ArchiMate 3.x has no indicator/KPI element — vocabulary rule, 2026-07-30 decision — so `METRIC` carries no ArchiMate mapping (§7.27).
+- **`METRIC` is `standalone`, as the managed indicator, distinct from a rendered coverage figure.** A metric is what the organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing — it needs its own admission record and lifecycle because it is authored once and re-read continuously, not a fact re-derived per view render. That is also what separates it from `COVERAGE_METRIC` ([views/22-coverage-metric.md](./views/reports/22-coverage-metric.md)): a coverage metric is a report-config document with no canonical content of its own, computing a regulatory dark-cell count from `ASSERTION`/`REQUIREMENT`/codex data at render time; `METRIC` is the opposite — a first-class catalogue element naming what is measured, never a rendering. Motivation layer (`01_motivation/`) matches its grain: like `ASSESSMENT`, it is a measurement primitive over the organisation's intent, not a business/application/technology fact — even though what it measures (`GOAL` / `CAPABILITY` / `PROCESS`) may sit in a different layer. ArchiMate 3.x has no indicator/KPI element — vocabulary rule, 2026-07-30 decision — so `METRIC` carries no ArchiMate mapping (§7.27).
 - **`RISK` is `standalone`, as a projected event distinct from a dated finding.** A risk is *forward-looking* — the projected event, its likelihood, its impact, and who owns treating it — not a finding about the present state of something (that is `ASSESSMENT`, §7.16). It is referenced from wherever it threatens (typically a `DRIVER`, but any core element) and from the `REQUIREMENT` / `CONSTRAINT` that treats it, so it needs its own admission record and lifecycle rather than living as an inline fragment of either side. Motivation layer (`01_motivation/`) matches its grain: a risk is an intent-layer concern (what the organisation must reckon with), not a business, application, or technology fact. ArchiMate 3.x has no risk element — vocabulary rule, 2026-07-30 decision — so `RISK` carries no ArchiMate mapping (§7.26). The prior guidance for expressing risk purely through existing motivation primitives ([CONTRACT.md](CONTRACT.md) §8.1) stays valid for repositories that prefer it; `RISK` is an additional, not exclusive, way to model risk.
 - **`TARGET_STATE` is `standalone`, as the object the architect varies.** A target state is a structural snapshot — the selection of `CAPABILITY` / `PROCESS` / `APPLICATION` that exists when one or more `GOAL`s are met (ArchiMate **Plateau**). It is what an architect *varies* when offering solution options to the customer, so it must be a first-class addressable element, not an inline fragment of a scenario or a goal. Composition lists (`capabilities`, `processes`, `applications`) are inline; satisfaction of `GOAL`s is an M:N relation that lands as a `REL` kind in a separate sub-task — never inline on this element.
 - **`LOCATION` is `standalone`, justified by shared reference.** A location (an office, a country, a virtual zone) is referenced by many actors — multiple business units at the same site, many persons at the same office. Making it a first-class catalogue element lets each actor reference the same `LOCATION-…` ID without repeating the address, timezone, and country code. It is **not** a property of the actor (actors can move; the location persists), and it is not a motivation-layer element (no normative force — regulatory implications of location live in `CONSTRAINT` / `REQUIREMENT`). Business layer (`02_business/`) matches its grain: it describes where the organisation operates, not what it intends or how it executes.
 - **`BUSINESS_SERVICE` is `standalone`, as the named behaviour the organisation offers.** A Business Service (ArchiMate §8.3.4) is the externally visible behaviour a unit or role makes available to its consumers — internal teams, external customers, or partners. It is a first-class catalogue element because it is shared: multiple processes, actors, and products may reference the same service, and its ownership (which unit offers it) and capability realisation (what it exposes) are time-aware events tracked as `offers` and `realizes` REL kinds ([elements/17-relations.md](elements/17-relations.md) §3). It is not a `PROCESS` (internal execution flow), a `CAPABILITY` (the ability to perform), or a `PRODUCT` (a packaged, versioned offering). Business layer (`02_business/`) is the correct placement — it describes what the organisation does for its environment, not what the organisation intends (`01_motivation`) or how it executes internally.
 - **`STEP` is contained-then-promotable (a third shape, distinct from `view-defined`).** A process-flow step lives inline in its `PROCESS` element's `flow.steps[]` (§7.5), not in a view — so it is neither `standalone` (no element file until promoted) nor `view-defined` (its definition home is a *standalone element*, not a view document). It is **canonical-by-containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). It is **promoted** to a standalone `02_business/steps/STEP-….yaml` only when a *second* document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). This promotion trigger fired in the regulatory-intelligence build (compliance impact expressed via `ASSERTION` → flow-step ids), which is what moved this TYPE from reserved to registered. The promotion is **mechanical** (§7.20): the step's attributes move to the standalone file, its `flow.steps[]` entry reduces to a reference, and `flow.sequence` (the process-owned graph edges) is untouched — the id never changes. The BPMN node-label forms (`TASK-…` / `SE-…` / `EE-…`) are projection-local labels ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3), **not** a step's catalogue identity; `STEP` is.
-- **`INTEGRATION` is promotable.** The applications spec ([views/10](views/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
+- **`INTEGRATION` is promotable.** The applications spec ([views/10](./views/diagrams/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` is `standalone`, as the path the architect plans.** A scenario is *the path*, not the destination — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate **Course of Action** realised by Work Packages + Gaps). It is what an architect *varies* alongside the `TARGET_STATE` when offering customer solution options — multiple paths may reach the same end-state. That makes it a first-class addressable element, not an inline fragment of a view. The earlier `view-defined` placement (a "scenario document" that scoped its own goals/capabilities/activities/etc.) conflated the path with the things it sequences and the things its end-state contains; the reclassification splits them: `TARGET_STATE` owns structural composition (§7.17), `SCENARIO` owns the ordered steps (§7.18). Scenario references — `pursues` goal list, `arrives_at` target-state ref, ordered `steps` — are **inline (B2)**; the only first-class REL in the planning model is `target_state_satisfies_goal` (declared on `TARGET_STATE`, §7.17).
 - **`NODE` and `TECHNOLOGY_SERVICE` are `standalone`, as first-class infrastructure elements.** Infrastructure nodes and the platform services they expose are shared references: many applications may consume the same `TECHNOLOGY_SERVICE`, and many nodes may co-host it. Making them standalone catalogue elements lets the application layer reference `TECHNOLOGY_SERVICE-…` IDs without repeating connectivity details, and lets the infrastructure team manage node lifecycle independently of the applications built on top. They belong in `04_technology/` (ArchiMate Technology layer) — distinct from `03_application/` (software) and `02_business/` (organisational behaviour). The `hosts` and `uses` relation kinds ([elements/17-relations.md](elements/17-relations.md) §3) are the cross-layer links.
-- **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](views/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
+- **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](./views/diagrams/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
 
 ### 4.2 `view-defined` is inline-content convenience, never a content home of last resort
 
@@ -268,7 +268,7 @@ Both `ACTION` and `CHANGE` are **recursive / multi-scale**: a strategic initiati
 
 ### 6.2 `MILESTONE` placement note
 
-`MILESTONE` (= Implementation Event) belongs to this layer conceptually and the `05_implementation/milestones/` folder is reserved for it here. Its registration in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.1 currently scopes it to an Action Card document ([views/18-action-card.md](views/18-action-card.md)); whether and how it is also materialised as a standalone element file is **owned by the MILESTONE TYPE task**, not decided by this document. This appendix reserves the folder and the layer assignment; it does not register a standalone MILESTONE schema (no MILESTONE row in §4 or §7).
+`MILESTONE` (= Implementation Event) belongs to this layer conceptually and the `05_implementation/milestones/` folder is reserved for it here. Its registration in [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §3.1 currently scopes it to an Action Card document ([views/18-action-card.md](./views/diagrams/18-action-card.md)); whether and how it is also materialised as a standalone element file is **owned by the MILESTONE TYPE task**, not decided by this document. This appendix reserves the folder and the layer assignment; it does not register a standalone MILESTONE schema (no MILESTONE row in §4 or §7).
 
 ---
 
@@ -287,20 +287,20 @@ ArchiMate **Driver** — a neutral, standing force the organisation acts on (an 
 | `description` | recommended | string | One-paragraph elaboration of the driver — what the standing force is, not a finding about it. Keep findings (numbers, trends, observations) out of the DRIVER; put them on an `ASSESSMENT` that `assesses` this driver. |
 | `references_constraint` | no | list | `CONSTRAINT-…` IDs the driver reflects. |
 
-Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.2.
+Inline shape: [views/02-dgca.md](./views/diagrams/02-dgca.md) §5.2.
 
 ### 7.2 `GOAL` — `01_motivation/goals/`
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `type` | no | string | A goal-type label (e.g. `Strategy`, `Strategic Goal`, `Project Goal`) — matches a `name` in the rendering view's `view_config.goal_types[]` vocabulary ([views/04-goals.md](views/04-goals.md) §5.2). |
+| `type` | no | string | A goal-type label (e.g. `Strategy`, `Strategic Goal`, `Project Goal`) — matches a `name` in the rendering view's `view_config.goal_types[]` vocabulary ([views/04-goals.md](./views/diagrams/04-goals.md) §5.2). |
 | `level` | no | integer | Hierarchical level (Goals tree); ≥ 0. |
 | `parent` | no | string | `GOAL-…` ID of the parent goal in the hierarchy. Inline `parent` is v0.x transitional — see time-aware note below. |
 | `factors` | no | list | `DRIVER-…` IDs driving this goal. Legacy `FACTOR-…` IDs from before the rename remain valid. |
 | `description` | recommended | string | One-paragraph elaboration. |
 | `link` | no | string | URL to supplementary documentation. |
 
-**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — its canonical home is a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3). Inline `parent` is v0.x transitional; renderers prefer REL files when both are present. View spec: [views/04-goals.md](views/04-goals.md) (pure projection, v2.0).
+**Time-aware:** the goal `parent` (`GOAL → GOAL`) is declared first-class time-aware — its canonical home is a `REL-…` file with `type: goal_parent` ([elements/17-relations.md](elements/17-relations.md) §3). Inline `parent` is v0.x transitional; renderers prefer REL files when both are present. View spec: [views/04-goals.md](./views/diagrams/04-goals.md) (pure projection, v2.0).
 
 ### 7.3 `CHANGE` — `05_implementation/changes/`
 
@@ -313,7 +313,7 @@ A `CHANGE` is an ArchiMate **Gap**: a required delta to reach the target state, 
 | `parent` | no | string | `CHANGE-…` — the higher-scale change this one decomposes from (capability → process → step). |
 | `description` | recommended | string | One-paragraph elaboration of the transformation. |
 
-Inline shape: [views/02-dgca.md](views/02-dgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
+Inline shape: [views/02-dgca.md](./views/diagrams/02-dgca.md) §5.4. (No subtype vocabulary — `type` omitted.)
 
 #### 7.3.1 Origin-agnostic subject and impact via `ASSERTION`
 
@@ -382,11 +382,11 @@ Both surface as impacted, without any per-CHANGE bookkeeping: the derivation fol
 
 ### 7.4 `ACTION` — `05_implementation/actions/`
 
-Full spec — field set, `type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, validation rules: **[elements/24-action.md](elements/24-action.md)**. View spec (pure projection, v2.0): [views/07-action.md](views/07-action.md).
+Full spec — field set, `type` vocabulary (Initiative / Programme / Project / Task), time-aware relations, validation rules: **[elements/24-action.md](elements/24-action.md)**. View spec (pure projection, v2.0): [views/07-action.md](./views/diagrams/07-action.md).
 
 ### 7.5 `PROCESS` — `02_business/processes/`
 
-The `PROCESS` element is the **complete, self-sufficient definition** of a business process. It carries not only the catalogue metadata but the process *behaviour* — the participants and the flow — so the process can be reconstructed without any view. A BPMN diagram is a **projection** of this element, not its definition home (the reconstruction invariant, §1.1; render contract in [views/01-bpmn.md](views/01-bpmn.md)).
+The `PROCESS` element is the **complete, self-sufficient definition** of a business process. It carries not only the catalogue metadata but the process *behaviour* — the participants and the flow — so the process can be reconstructed without any view. A BPMN diagram is a **projection** of this element, not its definition home (the reconstruction invariant, §1.1; render contract in [views/01-bpmn.md](./views/diagrams/01-bpmn.md)).
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
@@ -397,16 +397,16 @@ The `PROCESS` element is the **complete, self-sufficient definition** of a busin
 | `flow` | no | object | The canonical process graph — steps, gateways, and sequence flows (see below). Sufficient to regenerate a BPMN diagram; the view adds only layout, which is computed deterministically. |
 | `description` | recommended | string | One-paragraph elaboration. |
 
-The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **removed as a source field**. The flow is no longer authored in a separate `.bpmn` file the element points at; any `.bpmn.transitrix.yaml` is a *derived projection* of `flow` (generated output), never the source — see [views/01-bpmn.md](views/01-bpmn.md).
+The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **removed as a source field**. The flow is no longer authored in a separate `.bpmn` file the element points at; any `.bpmn.transitrix.yaml` is a *derived projection* of `flow` (generated output), never the source — see [views/01-bpmn.md](./views/diagrams/01-bpmn.md).
 
-**`flow` shape.** `flow` reuses the structural vocabulary defined once in [views/01-bpmn.md](views/01-bpmn.md) — the seven element types (`startEvent` / `endEvent` / `task` / `userTask` / `serviceTask` / `exclusiveGateway` / `parallelGateway`) and named sequence flows — but homed here as canon, not in a view. It follows the canon-wide flat-array-with-references form rule ([README](README.md) "Form rule"): a flat `steps` list, with lane membership expressed by reference rather than by nesting.
+**`flow` shape.** `flow` reuses the structural vocabulary defined once in [views/01-bpmn.md](./views/diagrams/01-bpmn.md) — the seven element types (`startEvent` / `endEvent` / `task` / `userTask` / `serviceTask` / `exclusiveGateway` / `parallelGateway`) and named sequence flows — but homed here as canon, not in a view. It follows the canon-wide flat-array-with-references form rule ([README](README.md) "Form rule"): a flat `steps` list, with lane membership expressed by reference rather than by nesting.
 
-- `flow.steps` — list of nodes. Each step: `id`, `type` (one of the seven), `name` (required for tasks / gateways; optional for events), `performed_by` (a member of `participants` — `ROLE-…` or `ACTOR-…`), and optional `supported_by_application` (`APPLICATION-…`). Precedence and the "swimlane is a participant" default follow [views/01-bpmn.md](views/01-bpmn.md) §7.2; the BPMN projection derives lane grouping from `performed_by`.
+- `flow.steps` — list of nodes. Each step: `id`, `type` (one of the seven), `name` (required for tasks / gateways; optional for events), `performed_by` (a member of `participants` — `ROLE-…` or `ACTOR-…`), and optional `supported_by_application` (`APPLICATION-…`). Precedence and the "swimlane is a participant" default follow [views/01-bpmn.md](./views/diagrams/01-bpmn.md) §7.2; the BPMN projection derives lane grouping from `performed_by`.
 - `flow.sequence` — list of `{ from, to, condition?, default? }` sequence flows between step IDs (projects to the BPMN `flows` array).
 
 Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, an `ACTIVITY` realising a step, or an `ASSERTION` (`subject` / `realised_via`) can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record (the registered `STEP` TYPE, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; element-file shape and promotion mechanic in §7.20) only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
 
-Inline shape (as referenced from the map): [views/06-process-map.md](views/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
+Inline shape (as referenced from the map): [views/06-process-map.md](./views/diagrams/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
 
 ### 7.6 `PRODUCT` — `02_business/products/`
 
@@ -421,7 +421,7 @@ Inline shape (as referenced from the map): [views/06-process-map.md](views/06-pr
 | `supporting_apps` | no | list | `APPLICATION-…` IDs. |
 | `description` | recommended | string | Short product description. |
 
-Inline shape (catalogue entry): [views/09-products.md](views/09-products.md) §5.
+Inline shape (catalogue entry): [views/09-products.md](./views/diagrams/09-products.md) §5.
 
 ### 7.7 `APPLICATION` — `03_application/applications/`
 
@@ -437,11 +437,11 @@ Inline shape (catalogue entry): [views/09-products.md](views/09-products.md) §5
 | `lifecycle_stage` | no | string | `planned` / `active` / `sunset`. **Time-varying** — sidecar. |
 | `maturity` | no | integer | CMM level 1–5. **Time-varying** — sidecar. |
 
-Inline shape (catalogue entry): [views/10-applications.md](views/10-applications.md) §5. The catalogue's operational `status` and the time-varying fields above follow [CONTRACT.md](CONTRACT.md) §9.
+Inline shape (catalogue entry): [views/10-applications.md](./views/diagrams/10-applications.md) §5. The catalogue's operational `status` and the time-varying fields above follow [CONTRACT.md](CONTRACT.md) §9.
 
 ### 7.8 `INTEGRATION` — `03_application/integrations/` (promotable; nested-in-view in v1)
 
-In v1 an integration is a nested entry under its source application's `integrations[]` ([views/10-applications.md](views/10-applications.md) §5), sharing the application's lifecycle. The standalone form, for promotion:
+In v1 an integration is a nested entry under its source application's `integrations[]` ([views/10-applications.md](./views/diagrams/10-applications.md) §5), sharing the application's lifecycle. The standalone form, for promotion:
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
@@ -590,7 +590,7 @@ Physical instrument, device, or facility a process stage depends on (ArchiMate P
 | `description` | recommended | string | What the equipment is and how it is used. |
 | `owner_role` | no | string | `ROLE-…` responsible for the equipment. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9), not inline. |
 
-An `equipment[]` entry in a Process Blueprint that carries an `id` resolves to the matching `EQUIPMENT` catalogue record ([views/13-process-blueprint.md](views/13-process-blueprint.md) §5.3); a free-form entry without an `id` stays document-local (backward-compatible). EQUIPMENT IDs must conform to the canonical grammar with no leading zeros (`EQUIPMENT-…-<INTEGER>`).
+An `equipment[]` entry in a Process Blueprint that carries an `id` resolves to the matching `EQUIPMENT` catalogue record ([views/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §5.3); a free-form entry without an `id` stays document-local (backward-compatible). EQUIPMENT IDs must conform to the canonical grammar with no leading zeros (`EQUIPMENT-…-<INTEGER>`).
 
 ### 7.15 `BUSINESS_OBJECT` — `02_business/business-objects/`
 
@@ -679,7 +679,7 @@ Implementation-layer **path** primitive — the ordered set of steps (`ACTION` /
 - **No driver / capability / process / application / product composition lives here.** Those were the v0.x view-defined scenario's content. Composition belongs to `TARGET_STATE` (the structural snapshot, §7.17); cross-layer impact analysis belongs to the DGCA / FGA chain and to the structural views. The reclassification splits those concerns out cleanly.
 - **No `vision` / `factors_view` / status vocabulary.** Narrative vision and per-scenario driver relevance were v0.x conveniences mixed into the same document. With the reclassification, narrative is `description`; driver analysis lives in the motivation layer (`ASSESSMENT`, §7.16, and the `assessment_influences_goal` REL kind), not as a per-scenario projection.
 
-No subtype vocabulary on `type`. There is no dedicated view spec in v1 — a scenario is a *content element*. The scenarios view ([views/11-scenarios.md](views/11-scenarios.md)) renders the catalogue (ordering, filtering, comparison side-by-side); it is a report-configuration surface over the `SCENARIO` elements, not a content home.
+No subtype vocabulary on `type`. There is no dedicated view spec in v1 — a scenario is a *content element*. The scenarios view ([views/11-scenarios.md](./views/reports/11-scenarios.md)) renders the catalogue (ordering, filtering, comparison side-by-side); it is a report-configuration surface over the `SCENARIO` elements, not a content home.
 
 ### 7.20 `REGISTRY` — `02_business/registries/`
 
@@ -750,7 +750,7 @@ A process-flow **step** — a single node (task / event / gateway) in a `PROCESS
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `type` | **yes** | string | The node kind — one of the seven flow node types `startEvent` \| `endEvent` \| `task` \| `userTask` \| `serviceTask` \| `exclusiveGateway` \| `parallelGateway` (§7.5, [views/01-bpmn.md](views/01-bpmn.md)). Carries the subtype; the element TYPE is `STEP`. |
+| `type` | **yes** | string | The node kind — one of the seven flow node types `startEvent` \| `endEvent` \| `task` \| `userTask` \| `serviceTask` \| `exclusiveGateway` \| `parallelGateway` (§7.5, [views/01-bpmn.md](./views/diagrams/01-bpmn.md)). Carries the subtype; the element TYPE is `STEP`. |
 | `process` | **yes** | string | `PROCESS-…` this step belongs to — the container it was promoted out of. Singular ref ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §5); a promoted step must name its home process. |
 | `name` | task / gateway: **yes**; event: optional | string | The step label, per §7.5. |
 | `performed_by` | recommended | string | `ROLE-…` / `ACTOR-…` — the lane the step runs in (a `participant` of the process), per §7.5. |
@@ -926,7 +926,7 @@ No view inline shape: `RISK` is standalone-only, like `ASSESSMENT` — it is not
 
 ### 7.27 `METRIC` — `01_motivation/metrics/`
 
-Motivation-layer **managed indicator** — the measure an organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing as intended. Distinct from `COVERAGE_METRIC` ([views/22-coverage-metric.md](views/22-coverage-metric.md)): a coverage metric is a **report-config document** that carries no canonical content of its own and computes a regulatory dark-cell count from `ASSERTION` / `REQUIREMENT` / codex data at render time ([views/22-coverage-metric.md](views/22-coverage-metric.md) §1); `METRIC` is the opposite — a first-class, admitted catalogue element naming what the organisation measures, with its own lifecycle, never a rendering of derived data.
+Motivation-layer **managed indicator** — the measure an organisation tracks on an ongoing basis to know whether a `GOAL` is moving, or whether a `CAPABILITY` / `PROCESS` is performing as intended. Distinct from `COVERAGE_METRIC` ([views/22-coverage-metric.md](./views/reports/22-coverage-metric.md)): a coverage metric is a **report-config document** that carries no canonical content of its own and computes a regulatory dark-cell count from `ASSERTION` / `REQUIREMENT` / codex data at render time ([views/22-coverage-metric.md](./views/reports/22-coverage-metric.md) §1); `METRIC` is the opposite — a first-class, admitted catalogue element naming what the organisation measures, with its own lifecycle, never a rendering of derived data.
 
 There is no ArchiMate counterpart for `METRIC`: ArchiMate 3.x has no dedicated indicator/KPI element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit).
 
@@ -1102,5 +1102,5 @@ Backfill for existing canon files and downstream tasks. Each is a **separate PR*
 - ID grammar, TYPE registry, uniqueness scope, cross-references: [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md).
 - Shared header, zone model, admission record, primitive lifecycle, versioned-attribute sidecar: [`CONTRACT.md`](CONTRACT.md) §1–2, §5–7, §9.
 - Element notations (specialised instances of this envelope): [`elements/14-codex.md`](elements/14-codex.md), [`elements/15-requirement.md`](elements/15-requirement.md), [`elements/16-assertion.md`](elements/16-assertion.md), [`elements/17-relations.md`](elements/17-relations.md).
-- Capability element fields: [`views/05-capability-map.md`](views/05-capability-map.md) §13. Strategy-chain inline shapes: [`views/02-dgca.md`](views/02-dgca.md), [`views/04-goals.md`](views/04-goals.md), [`views/07-action.md`](views/07-action.md).
+- Capability element fields: [`views/05-capability-map.md`](./views/diagrams/05-capability-map.md) §13. Strategy-chain inline shapes: [`views/02-dgca.md`](./views/diagrams/02-dgca.md), [`views/04-goals.md`](./views/diagrams/04-goals.md), [`views/07-action.md`](./views/diagrams/07-action.md).
 - Notation catalogue and the views/elements split: [`README.md`](README.md).

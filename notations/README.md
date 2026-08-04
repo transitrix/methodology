@@ -4,26 +4,40 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 ## Views
 
-The view notations live under [`views/`](views/) in two groups: **11 diagram views** that each render a visual diagram, and **4 report views** that produce a derived report or table. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
+The view notations live under [`views/`](views/), split by class into a folder per class — [`diagrams/`](views/diagrams/), [`reports/`](views/reports/), and [`documents/`](views/documents/) — so a spec's class is a filesystem fact, not a table position. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
+
+### Diagram views (A = 11)
+
+Each renders a visual diagram.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
-| [01-bpmn.md](views/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
-| [02-dgca.md](views/02-dgca.md) | `dgca` | Strategy-to-execution chain: Driver → Goal → Change → Activity. Layer toggle via `view_config.layers` (DGA mode when `changes: off`). | `*.dgca.transitrix.yaml` | documented |
-| [04-goals.md](views/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
-| [05-capability-map.md](views/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
-| [06-process-map.md](views/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
-| [07-action.md](views/07-action.md) | `action` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — actions and dependencies. | `*.action.transitrix.yaml` | documented |
-| [08-blocks.md](views/08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews (recursive `block` tree), or a single-layer rectangular matrix (RACI, coverage grids) — see §4 / §4a. | `*.blocks.transitrix.yaml` | documented |
-| [09-products.md](views/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
-| [10-applications.md](views/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
-| [13-process-blueprint.md](views/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
-| [18-action-card.md](views/18-action-card.md) | `action-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.action-card.transitrix.yaml` | draft |
-| — | **Report views (C = 4)** | | | |
-| [11-scenarios.md](views/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
-| [21-compliance-impact.md](views/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
-| [22-coverage-metric.md](views/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
-| [23-actions-tree.md](views/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
+| [01-bpmn.md](./views/diagrams/01-bpmn.md) | `bpmn` | BPMN 2.0 process flow — lanes, gateways, sequence flows. | `*.bpmn.transitrix.yaml` | documented |
+| [02-dgca.md](./views/diagrams/02-dgca.md) | `dgca` | Strategy-to-execution chain: Driver → Goal → Change → Activity. Layer toggle via `view_config.layers` (DGA mode when `changes: off`). | `*.dgca.transitrix.yaml` | documented |
+| [04-goals.md](./views/diagrams/04-goals.md) | `goals` | Hierarchy of strategic and tactical goals as a tree. | `*.goals.transitrix.yaml` | documented |
+| [05-capability-map.md](./views/diagrams/05-capability-map.md) | `capability-map` | Capability hierarchy with CMMI V2.0 maturity, addressing, vertical/horizontal orientation. | `*.capability-map.transitrix.yaml` | documented |
+| [06-process-map.md](./views/diagrams/06-process-map.md) | `process-map` | Top-level catalogue of processes grouped into Operating, Supporting, and Management. | `*.process-map.transitrix.yaml` | draft |
+| [07-action.md](./views/diagrams/07-action.md) | `action` | Project Schedule Network Diagram in Activity-on-Node (AoN) form — actions and dependencies. | `*.action.transitrix.yaml` | documented |
+| [08-blocks.md](./views/diagrams/08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews (recursive `block` tree), or a single-layer rectangular matrix (RACI, coverage grids) — see §4 / §4a. | `*.blocks.transitrix.yaml` | documented |
+| [09-products.md](./views/diagrams/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
+| [10-applications.md](./views/diagrams/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
+| [13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
+| [18-action-card.md](./views/diagrams/18-action-card.md) | `action-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.action-card.transitrix.yaml` | draft |
+
+### Report views (C = 4)
+
+Each produces a derived report or table from a declarative view-config, per [`REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md).
+
+| Spec | Short name | Purpose | File extension | Status |
+|---|---|---|---|---|
+| [11-scenarios.md](./views/reports/11-scenarios.md) | `scenarios` | Report-config view over the `SCENARIO` element catalogue — rendering / ordering / filtering of alternative paths, each pointing at a `TARGET_STATE` and serving one or more `GOAL`s. | `*.scenarios.transitrix.yaml` | draft |
+| [21-compliance-impact.md](./views/reports/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
+| [22-coverage-metric.md](./views/reports/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
+| [23-actions-tree.md](./views/reports/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
+
+### Document views
+
+Renders a standard document (MRD, SRS, SDD, …) from canon. [`views/documents/`](views/documents/) is reserved — no spec lives there yet.
 
 Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 
@@ -57,7 +71,7 @@ The cross-cutting **Coverage Profile** — the mechanism an adopter uses to decl
 
 The cross-cutting **Domain Packages** mechanism — the orthogonal `packages:` field an adopter uses to opt into a bounded, removable domain extension (e.g. a requirements-interchange layer) on top of the core vocabulary — is defined in [`PACKAGES.md`](PACKAGES.md). Absent ⇒ no package active, silently. The first shipped package — a ReqIF-shaped requirements-interchange layer — is [`packages/reqif.md`](packages/reqif.md).
 
-The cross-cutting **Named view-config convention** — where saved view-configs live in an adopter repo, how they're named, listed, and re-run — is defined in [`views/REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md). The convention applies uniformly across every view notation, and is the registry the report-config view specs ([`11-scenarios.md`](views/11-scenarios.md), [`21-compliance-impact.md`](views/21-compliance-impact.md), [`22-coverage-metric.md`](views/22-coverage-metric.md)) and the future report skill (per the *reports rendered from declarative view-configs* architecture decision) lean on.
+The cross-cutting **Named view-config convention** — where saved view-configs live in an adopter repo, how they're named, listed, and re-run — is defined in [`views/REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md). The convention applies uniformly across every view notation, and is the registry the report-config view specs ([`11-scenarios.md`](./views/reports/11-scenarios.md), [`21-compliance-impact.md`](./views/reports/21-compliance-impact.md), [`22-coverage-metric.md`](./views/reports/22-coverage-metric.md)) and the future report skill (per the *reports rendered from declarative view-configs* architecture decision) lean on.
 
 ## Status vocabulary
 
@@ -112,10 +126,10 @@ DGCA supports toggling individual layers off via `view_config.layers`. The table
 
 | Mode | Driver | Goal | Change | Activity | How |
 |---|:---:|:---:|:---:|:---:|---|
-| **DGCA** full ([02-dgca.md](views/02-dgca.md)) | ✓ | ✓ | ✓ | ✓ | default |
+| **DGCA** full ([02-dgca.md](./views/diagrams/02-dgca.md)) | ✓ | ✓ | ✓ | ✓ | default |
 | **DGA** (DGCA, Changes off) | ✓ | ✓ | — | ✓ | `view_config.layers.changes: off` |
-| **Goals tree** ([04-goals.md](views/04-goals.md)) | — | ✓ | — | — | separate notation |
-| **Action schedule** ([07-action.md](views/07-action.md)) | — | — | — | ✓ | separate notation |
+| **Goals tree** ([04-goals.md](./views/diagrams/04-goals.md)) | — | ✓ | — | — | separate notation |
+| **Action schedule** ([07-action.md](./views/diagrams/07-action.md)) | — | — | — | ✓ | separate notation |
 
 ### Selection matrix
 

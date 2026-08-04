@@ -12,7 +12,7 @@ dsm_status: "implemented — D, G, C, A layers active; column selection via loca
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -28,19 +28,19 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 A DGCA document has two valid authoring forms — both use the same YAML field schema:
 
 - **Inline form (default):** `factors[]`, `goals[]`, `changes[]`, and `actions[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any DGCA chain where elements are not yet shared across documents.
-- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects elements already admitted to `canon/elements/**`. No element data is in this file; the renderer traverses inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on the standalone element files to derive the rendered set. See [`elements/17-relations.md`](../elements/17-relations.md) §6.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects elements already admitted to `canon/elements/**`. No element data is in this file; the renderer traverses inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on the standalone element files to derive the rendered set. See [`elements/17-relations.md`](../../elements/17-relations.md) §6.
 
-The **promotion trigger** is cross-document sharing: an element stays inline until a second document references it; at that point it is promoted to a standalone file in `canon/elements/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
+The **promotion trigger** is cross-document sharing: an element stays inline until a second document references it; at that point it is promoted to a standalone file in `canon/elements/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
-> **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is `ACTION` — element IDs use the `ACTION-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an `ACTION` element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package). The former element type name `ACTIVITY` is a deprecated alias accepted with `ACTION-005` warnings; see [CONTRACT.md](../CONTRACT.md) §15.
+> **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is `ACTION` — element IDs use the `ACTION-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an `ACTION` element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package). The former element type name `ACTIVITY` is a deprecated alias accepted with `ACTION-005` warnings; see [CONTRACT.md](../../CONTRACT.md) §15.
 
-The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
 ---
 
 ## Element lifecycle
 
-Every DRIVER, GOAL, CHANGE, and ACTION element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. In inline-element DGCA files (where element data is authored directly in the view document) each `actions[]` entry carries lifecycle fields in the same way. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
+Every DRIVER, GOAL, CHANGE, and ACTION element carries the canonical primitive lifecycle (`valid_from`, `valid_to`) in its standalone element file frontmatter. In inline-element DGCA files (where element data is authored directly in the view document) each `actions[]` entry carries lifecycle fields in the same way. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../../CONTRACT.md) §7. The DGCA view document itself does not carry a lifecycle field.
 
 ---
 
@@ -211,7 +211,7 @@ view_config:
 
 The DGCA semantic graph — one Change can deliver many Goals, one Action deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on either the inline element entries (inline form) or standalone element files (projection form). The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
 
-A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.yaml`](../examples/dgca/startup.dgca.transitrix.yaml). A Full-tier projection example (elements in `elements/` subfolder): [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../examples/dgca/strategy-2026.dgca.transitrix.yaml).
+A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.yaml`](../../examples/dgca/startup.dgca.transitrix.yaml). A Full-tier projection example (elements in `elements/` subfolder): [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../../examples/dgca/strategy-2026.dgca.transitrix.yaml).
 
 ---
 
@@ -221,11 +221,11 @@ A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `dgca` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | MUST equal `dgca` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
 | `id` | yes | document ID — `DGCA-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
-| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the chain covers (e.g. `"2026"`, `"2026-Q3"`) |
 | `version` | no | document version |
@@ -238,14 +238,14 @@ A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.
 
 ### `factors[]`
 
-A DRIVER is a neutral, standing force the organisation acts on, not a finding about it. Findings about a driver's current state (numbers, trends, observations) live on `ASSESSMENT` records that reference the DRIVER; they are not inline on a driver entry. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1 (DRIVER as ArchiMate Driver) and §7.16 (ASSESSMENT).
+A DRIVER is a neutral, standing force the organisation acts on, not a finding about it. Findings about a driver's current state (numbers, trends, observations) live on `ASSESSMENT` records that reference the DRIVER; they are not inline on a driver entry. See [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.1 (DRIVER as ArchiMate Driver) and §7.16 (ASSESSMENT).
 
 | Field | Required | Description |
 |---|---|---|
 | `id` | yes | `DRIVER-[<middle>-]<INTEGER>`. Legacy `FACTOR-…` IDs remain valid. |
 | `name` | yes | what the driver is — the neutral standing force, not a finding about it |
 | `type` | no | `external` or `internal` |
-| `category` | no | PESTLE sub-classification for external drivers — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal drivers. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1. |
+| `category` | no | PESTLE sub-classification for external drivers — `political` \| `economic` \| `social` \| `technological` \| `legal` \| `environmental`. Omit on internal drivers. See [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.1. |
 | `references_constraint` | no | array of `CONSTRAINT-…` IDs the driver reflects. Cross-document reference into the organisation's constraints catalogue (`elements/01_motivation/constraints/`). Rationale: the existence of a constraint is itself a strategic driver for the organisation — the DRIVER is the DGCA strategic driver, the constraint is the binding rule. (Decision recorded 2026-05-26.) |
 | `description` | no | one-paragraph elaboration of the driver — keep findings out; emit them as `ASSESSMENT` records |
 
@@ -265,7 +265,7 @@ A DRIVER is a neutral, standing force the organisation acts on, not a finding ab
 | `id` | yes | `CHANGE-[<middle>-]<INTEGER>` |
 | `name` | yes | what the change is |
 | `goals` | no | array of `GOAL-…` IDs this change delivers |
-| `addresses` | no | array of `REQUIREMENT-…` / `CONSTRAINT-…` IDs this change responds to — the motivation-layer obligations whose gap the change closes. Origin-agnostic; see [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3.1. |
+| `addresses` | no | array of `REQUIREMENT-…` / `CONSTRAINT-…` IDs this change responds to — the motivation-layer obligations whose gap the change closes. Origin-agnostic; see [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.3.1. |
 | `description` | no | one-paragraph elaboration |
 
 ### `actions[]`
@@ -284,7 +284,7 @@ Each entry in `actions[]` is an **Action** — a project-domain work item at wha
 | `due_date` | no | target completion date (YYYY-MM-DD) |
 | `description` | no | one-paragraph elaboration |
 
-ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTION-` is the canonical element-type prefix; `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md).
+ID grammar follows the canonical rule `<TYPE>-[<middle segment(s)>-]<INTEGER>`. Middle segments are optional and notation-specific. The terminal integer is positive (≥ 1) with no leading zeros. `ACTION-` is the canonical element-type prefix; `CHANGE-` is the DGCA change-layer prefix. The full grammar and TYPE registry live in [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md).
 
 ---
 
@@ -316,7 +316,7 @@ When `type:` is omitted, the validator treats the action as `Initiative` for bac
 
 ## view_config for DGCA
 
-The `view_config` block (see [`CONTRACT.md`](../CONTRACT.md) §14) defines which elements to include and how to display them. All fields are optional; omitted fields fall back to the defaults below.
+The `view_config` block (see [`CONTRACT.md`](../../CONTRACT.md) §14) defines which elements to include and how to display them. All fields are optional; omitted fields fall back to the defaults below.
 
 ### view_config defaults
 
@@ -393,12 +393,12 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 
 ## References
 
-- View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../CONTRACT.md) §14 (VP-2)
-- Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1
-- DRIVER, GOAL, CHANGE, ACTION element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.1–§7.4
-- Timeless inline relations (`goal.factors`, `change.goals`, `action.changes`): [`elements/17-relations.md`](../elements/17-relations.md) §6
-- Goals tree notation: [`04-goals.md`](04-goals.md)
-- Action schedule notation: [`07-action.md`](07-action.md) — uses `delivers_changes:` to link into the DGCA chain
-- Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
+- View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../../CONTRACT.md) §14 (VP-2)
+- Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1.1
+- DRIVER, GOAL, CHANGE, ACTION element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.1–§7.4
+- Timeless inline relations (`goal.factors`, `change.goals`, `action.changes`): [`elements/17-relations.md`](../../elements/17-relations.md) §6
+- Goals tree notation: [`04-goals.md`](./04-goals.md)
+- Action schedule notation: [`07-action.md`](./07-action.md) — uses `delivers_changes:` to link into the DGCA chain
+- Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)
 - Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection
 - Methodology section 6.2: `method/01-methodology.md`
