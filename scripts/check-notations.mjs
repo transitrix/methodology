@@ -336,7 +336,7 @@ async function checkNotationCounts(failures) {
 
 // --- DOC1: no standard identifiers in a document-view spec -----------------
 //
-// Every document-view layout (MRD today; SRS / SDD planned) is required to
+// Every document-view layout (MRD, SRS today; SDD planned) is required to
 // never document, default to, or emit a "standard identifier" — a named
 // specification number or numbering convention (e.g. a value that looks like
 // `iso-29148` or `ieee-830`) — as a supported or default field value. This

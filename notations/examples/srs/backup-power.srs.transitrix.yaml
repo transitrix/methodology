@@ -1,0 +1,24 @@
+notation: srs
+spec_version: "0.1"
+name: "Backup-power controller — SRS"
+generated_at: "2026-08-04"
+methodology_version: "3.1.0"
+
+view:
+  id: SRS-BACKUP-POWER-1
+  name: "Backup-power controller — SRS"
+  description: |
+    Software-tier functional and quality requirements for the backup-power
+    controller and its standby-node failover behaviour.
+
+  scope:
+    requirements:
+      filter:
+        level: [software]
+
+  include_unclassified_kind: true
+  include_empty_sections: true
+  empty_section_label: "No admitted software-tier requirement of this kind (current model)"
+
+  grouping:
+    order_requirements_by: "id"

@@ -120,6 +120,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `COMPLIANCE_IMPACT` | `*.compliance-impact.transitrix.yaml` |
 | `COVERAGE_METRIC` | `*.coverage-metric.transitrix.yaml` |
 | `MRD` | `*.mrd.transitrix.yaml` |
+| `SRS` | `*.srs.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
