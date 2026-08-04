@@ -19,7 +19,7 @@ dsm_status: "partially implemented — Actions page; multi-value fields (predece
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -35,13 +35,13 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 An Action Schedule document has two valid authoring forms — both use the same YAML field schema:
 
 - **Inline form (default):** `project:` (schedule anchor + calendar) and `actions[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any schedule where elements are not yet shared across documents.
-- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block (scope, schedule anchor, display settings) that selects `ACTION` elements already admitted to `canon/elements/05_implementation/actions/`. No element data is in this file; the renderer reads scheduling fields (`duration`, `predecessors`, `start_date`, `end_date`) from the element files when computing CPM or rendering the Gantt. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4 and [elements/24-action.md](../elements/24-action.md) §2.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block (scope, schedule anchor, display settings) that selects `ACTION` elements already admitted to `canon/elements/05_implementation/actions/`. No element data is in this file; the renderer reads scheduling fields (`duration`, `predecessors`, `start_date`, `end_date`) from the element files when computing CPM or rendering the Gantt. See [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §4 and [elements/24-action.md](../../elements/24-action.md) §2.
 
-The **promotion trigger** is cross-document sharing: an action stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/05_implementation/actions/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
+The **promotion trigger** is cross-document sharing: an action stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/05_implementation/actions/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
-The reconstruction invariant applies: `render(Elements, view_config)` → schedule diagram. Deleting `canon/views/action/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements, view_config)` → schedule diagram. Deleting `canon/views/action/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
-**Where actions are authored.** In the inline form, actions are authored directly in the view file under `actions[]`. In the projection form, new actions are authored as standalone element files in `canon/elements/05_implementation/actions/<ACTION-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.4) and the ACTION schema ([elements/24-action.md](../elements/24-action.md)). The Action Schedule view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
+**Where actions are authored.** In the inline form, actions are authored directly in the view file under `actions[]`. In the projection form, new actions are authored as standalone element files in `canon/elements/05_implementation/actions/<ACTION-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §3 and §7.4) and the ACTION schema ([elements/24-action.md](../../elements/24-action.md)). The Action Schedule view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](./02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](../reports/23-actions-tree.md)), and the Action Card ([`18-action-card.md`](./18-action-card.md)).
 
 ---
 
@@ -119,7 +119,7 @@ actions:
     owner: ACTOR-ENGINEERING-1
 ```
 
-Complete examples: [`examples/action/platform-launch.action.transitrix.yaml`](../examples/action/platform-launch.action.transitrix.yaml) and [`examples/action/office-relocation.action.transitrix.yaml`](../examples/action/office-relocation.action.transitrix.yaml).
+Complete examples: [`examples/action/platform-launch.action.transitrix.yaml`](../../examples/action/platform-launch.action.transitrix.yaml) and [`examples/action/office-relocation.action.transitrix.yaml`](../../examples/action/office-relocation.action.transitrix.yaml).
 
 ### Projection form (Full tier — post-promotion)
 
@@ -169,8 +169,8 @@ view_config:
 | `spec_version` | no | string | reserved, see file header |
 | `methodology_version` | yes (from v2.0) | string | methodology release this document conforms to |
 | `id` | yes | string | document ID — `ACTION_SCHED-[<middle>-]<INTEGER>` per the canonical grammar |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `description` | no | string | optional document-level description |
 | `project` | no | object | **Inline form only.** Schedule anchor and calendar settings at document root. Same semantics as `view_config.schedule` (see §5.2). Contains `start_date` (ISO 8601), and optionally `calendar` with `working_days`, `hours_per_day`, and `holidays`. Mutually exclusive with `view_config`. |
 | `actions` | no | array | **Inline form only.** Array of action entries authored directly in the view file. Each entry carries `id`, `name`, and optionally `duration`, `predecessors`, `start_date`, `end_date`, `goals`, `delivers_changes`, `owner`, `tags`, `type`, `parent`, `sort`, `description`, `valid_from`, `valid_to`. Mutually exclusive with `view_config`. Deprecated alias: `activities`. |
@@ -224,7 +224,7 @@ The `schedule` block anchors the view on a calendar for Gantt rendering. Absent 
 | `ACT-009` | warn | `view_config.schedule.start_date` absent and no selected action has pinned dates → Gantt view will not render; the network view still does |
 | `ACT-020` | warn | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `type`. |
 
-Element-level validation (predecessor cycles, duration non-negativity, date consistency, ID grammar) lives in the ACTION element rules applied when the canonical element files are validated; see [elements/24-action.md](../elements/24-action.md) §6.
+Element-level validation (predecessor cycles, duration non-negativity, date consistency, ID grammar) lives in the ACTION element rules applied when the canonical element files are validated; see [elements/24-action.md](../../elements/24-action.md) §6.
 
 ---
 
@@ -362,7 +362,7 @@ The matching ACTION elements live in `canon/elements/05_implementation/actions/`
 
 ## 11. References
 
-- ACTION element schema: [elements/24-action.md](../elements/24-action.md)
+- ACTION element schema: [elements/24-action.md](../../elements/24-action.md)
 - PMBoK Guide — Project Schedule Network Diagram, Activity-on-Node representation
 - Critical Path Method (CPM) — forward / backward pass standard reference
 - Henry L. Gantt — Gantt chart conventions (summary bars, milestones, calendar projection) as carried forward by MS Project and Primavera P6

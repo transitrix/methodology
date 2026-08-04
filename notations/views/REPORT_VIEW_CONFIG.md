@@ -8,7 +8,7 @@ status: "draft"
 
 # Named view-config convention
 
-**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the three report-config view specs ([`11-scenarios.md`](11-scenarios.md), [`21-compliance-impact.md`](21-compliance-impact.md), [`22-coverage-metric.md`](22-coverage-metric.md)) — it does not introduce a new notation. Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
+**Scope:** Where saved, named view-configs live in an adopter repository, how they're named, how a reader lists them, and how a reader (or a tool, or the future report skill) re-runs one by name. This document **extends and codifies the existing report-config shape** declared by the three report-config view specs ([`11-scenarios.md`](./reports/11-scenarios.md), [`21-compliance-impact.md`](./reports/21-compliance-impact.md), [`22-coverage-metric.md`](./reports/22-coverage-metric.md)) — it does not introduce a new notation. Companion to the *reports rendered from declarative view-configs* architecture decision, Decision §1, §5, §7 (Step 1).
 
 The convention is also the natural home for **any view document**, not only report-configs: every view notation in the catalogue ([README.md](../README.md) §Views) follows the same location and naming rule.
 
@@ -51,7 +51,7 @@ A named view-config carries **two names**:
 
 | Name | Where it lives | Purpose |
 |---|---|---|
-| **`view.id`** | inside the file | The canonical identifier. Grammar `<DOCUMENT_TYPE>-[<middle>-]<INTEGER>` per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1; `<DOCUMENT_TYPE>` is the spec's registered document-level TYPE (e.g. `SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC` per §3.2). Used in cross-references, validation messages, and renderer output. |
+| **`view.id`** | inside the file | The canonical identifier. Grammar `<VIEW_TYPE>-[<middle>-]<INTEGER>` per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1; `<VIEW_TYPE>` is the spec's registered view-level TYPE (e.g. `SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC` per §3.2). Used in cross-references, validation messages, and renderer output. |
 | **File basename** | filesystem | The handle a human (or a tool) types when listing or re-running. Convention: kebab-case slug derived from `view.id`'s middle segment, or a domain-context slug. No grammar enforced beyond filesystem rules + the extension contract in [§2](#2-location). |
 
 The two names are loosely coupled by convention, not by validation. The renderer reads the file by path and trusts `view.id` for cross-reference resolution; a basename mismatch is a readability nit, not a validation error.
@@ -106,7 +106,7 @@ The CLI surface above is the convention this document fixes. The CLI implementat
 
 ## 6. Zero-configuration default
 
-Every report-producing view spec ([`11-scenarios.md`](11-scenarios.md) §4, [`21-compliance-impact.md`](21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](22-coverage-metric.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
+Every report-producing view spec ([`11-scenarios.md`](./reports/11-scenarios.md) §4, [`21-compliance-impact.md`](./reports/21-compliance-impact.md) §4 + §4.1, [`22-coverage-metric.md`](./reports/22-coverage-metric.md) §4 + §4.1) declares **explicit defaults** for every non-required field. A view-config that carries only the required envelope (`notation:`, `spec_version:`, `methodology_version:`, `view.id`, `view.name`) renders deterministically — each omitted field falls back to its spec default.
 
 This is the surface the report skill leans on for its "what I assumed" message (per the *reports rendered from declarative view-configs* architecture decision, §4): given a free-text request without enough parameters, the skill materialises a minimal view-config under [§2](#2-location), renders it, and **states back** which defaults the spec applied ("full matrix, no jurisdiction filter — showing all"). The skill never invents defaults of its own; it never carries render logic.
 
@@ -118,7 +118,7 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
 
 - **No new notation.** This convention extends the three report-config view specs and the wider view-notation catalogue ([README.md](../README.md) §Views); no new `notation:` header, no new file extension, no new validation rule.
 - **No new validator gate.** The doc-lint [`scripts/check-notations.mjs`](../../scripts/check-notations.mjs) (E1, E2) already covers the extension + header + parent-folder rules this document leans on. The location convention in [§2](#2-location) is a **deployment** convention — the existing extension rule already lets the lint catch most filesystem drift.
-- **No render-logic homing.** The render contract for each view stays in its spec (e.g. [`21-compliance-impact.md`](21-compliance-impact.md) §5). This document is about the registry — where the parameter artefact lives and how it's named, listed, and re-run.
+- **No render-logic homing.** The render contract for each view stays in its spec (e.g. [`21-compliance-impact.md`](./reports/21-compliance-impact.md) §5). This document is about the registry — where the parameter artefact lives and how it's named, listed, and re-run.
 
 ---
 
@@ -127,10 +127,10 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
 - Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.
 - Reconstruction invariant — why a view document carries no canonical fact: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1.
 - View-notation catalogue (short names + extensions): [`README.md`](../README.md) §Views.
-- Document-level TYPE registry (`SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC`, …): [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2.
+- View-level TYPE registry (`SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC`, …): [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2.
 - File extension + header rules: [`CONTRACT.md`](../CONTRACT.md) §1, §3.
 - Worked example registry: [`canon/views/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/) in the acme-corp reference repo.
 - Report-config view specs:
-  - [`11-scenarios.md`](11-scenarios.md) — Scenarios.
-  - [`21-compliance-impact.md`](21-compliance-impact.md) — Compliance Impact.
-  - [`22-coverage-metric.md`](22-coverage-metric.md) — Coverage Metric.
+  - [`11-scenarios.md`](./reports/11-scenarios.md) — Scenarios.
+  - [`21-compliance-impact.md`](./reports/21-compliance-impact.md) — Compliance Impact.
+  - [`22-coverage-metric.md`](./reports/22-coverage-metric.md) — Coverage Metric.

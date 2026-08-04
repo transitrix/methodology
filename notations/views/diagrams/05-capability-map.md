@@ -21,7 +21,7 @@ dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -32,10 +32,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `capability-map` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `capability-map` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `capability_map` | yes | object | the capability map root — see §12 and §13 |
 
 Example header:
@@ -53,7 +53,7 @@ capability_map:
 
 ## Element lifecycle
 
-Every inline element this notation defines — entries in `capabilities[]`, recursively including nested `children[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../CONTRACT.md) §7.1, the lifecycle sits on each capability entry; the capability-map document itself does not carry a lifecycle field.
+Every inline element this notation defines — entries in `capabilities[]`, recursively including nested `children[]` — carries the canonical primitive lifecycle in its frontmatter: `valid_from` and `valid_to`. The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../../CONTRACT.md) §7 and apply uniformly to inline elements in this notation. Per [CONTRACT.md](../../CONTRACT.md) §7.1, the lifecycle sits on each capability entry; the capability-map document itself does not carry a lifecycle field.
 
 The capability-specific state vocabulary (`Planned` / `Active` / `Retired`) in §7 below is a **derived view** computed by comparing `valid_from` / `valid_to` against today's date — not a separate stored mechanism. The legacy "Start Date" / "End Date" framing in §7 refers to the same canonical `valid_from` / `valid_to` fields; subsequent revisions will unify the field naming.
 
@@ -88,17 +88,17 @@ Capabilities are more stable than processes (which change with optimisation), te
 
 ## 3. CMMI V2.0 maturity levels
 
-Transitrix applies the **CMMI V2.0** standard (levels 1–5) to measure capability maturity — the scale is defined once, in [CONTRACT.md](../CONTRACT.md) §9.4, and referenced here rather than restated.
+Transitrix applies the **CMMI V2.0** standard (levels 1–5) to measure capability maturity — the scale is defined once, in [CONTRACT.md](../../CONTRACT.md) §9.4, and referenced here rather than restated.
 
 **Maturity assessment rules in DSM:**
-- Maturity is a **step function**, not a period ([CONTRACT.md](../CONTRACT.md) §9.2): each assessment is `{ valid_from, value }`, and the value holds until the next entry's `valid_from`. What reads as an "open-left" assessment is simply the array's first entry — effective from the past without restriction; an "open-right" assessment is simply the last entry — effective indefinitely into the future. A future-dated entry takes effect from that date, not before.
+- Maturity is a **step function**, not a period ([CONTRACT.md](../../CONTRACT.md) §9.2): each assessment is `{ valid_from, value }`, and the value holds until the next entry's `valid_from`. What reads as an "open-left" assessment is simply the array's first entry — effective from the past without restriction; an "open-right" assessment is simply the last entry — effective indefinitely into the future. A future-dated entry takes effect from that date, not before.
 - Each node in Editor (C) (except the root) shows a **round maturity indicator** in the top-left corner; colours are configured in Settings → Dictionaries → Capability Maturity Levels.
 
 ---
 
 ## 4. Capability ID conventions (Transitrix Studio — YAML files)
 
-Capability IDs follow the canonical `CAPABILITY-<V/H sub-grammar>` form defined in [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §2.
+Capability IDs follow the canonical `CAPABILITY-<V/H sub-grammar>` form defined in [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md) §2.
 
 | Axis | Format | Examples |
 |------|--------|---------|
@@ -255,11 +255,11 @@ capability_map:
 | `capability_map.id` | Yes | Unique ID for this map view, canonical TYPE `CAPABILITY_MAP` (`CAPABILITY_MAP-<DOMAIN>-<SEQ>`) |
 | `capability_map.name` | Yes | Human-readable name |
 | `capability_map.assessment_date` | Yes | Date of the maturity assessment (YYYY-MM-DD) |
-| `id` | Yes | Capability ID — canonical form `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-H1` (see [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §2) |
+| `id` | Yes | Capability ID — canonical form `CAPABILITY-V1`, `CAPABILITY-V1.1`, `CAPABILITY-H1` (see [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md) §2) |
 | `name` | Yes | Capability name |
 | `type` | Yes | `domain` or `supporting` |
-| `current_maturity` | Yes | Current CMM level ([CONTRACT.md](../CONTRACT.md) §9.4 scale). **Time-varying** — lives in the sidecar `<capability_id>.history.yaml` ([CONTRACT.md](../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
-| `target_maturity` | No | Target CMM level ([CONTRACT.md](../CONTRACT.md) §9.4 scale). **Time-varying** — a target is a statement made on a date and may be revised on a later date; lives in the sidecar, not inline. Inline placement triggers `VERSIONED-004`. |
+| `current_maturity` | Yes | Current CMM level ([CONTRACT.md](../../CONTRACT.md) §9.4 scale). **Time-varying** — lives in the sidecar `<capability_id>.history.yaml` ([CONTRACT.md](../../CONTRACT.md) §9), not inline. Inline placement triggers `VERSIONED-004`. |
+| `target_maturity` | No | Target CMM level ([CONTRACT.md](../../CONTRACT.md) §9.4 scale). **Time-varying** — a target is a statement made on a date and may be revised on a later date; lives in the sidecar, not inline. Inline placement triggers `VERSIONED-004`. |
 | `target_date` | No | When the target should be reached (YYYY-MM-DD). **Time-varying** — sidecar, not inline. |
 | `owner_role` | No | Reference to BusinessRole element ID. **Time-varying** — sidecar, not inline. |
 | `business_process` | No | Reference to BusinessProcess element ID. Stays inline in v1 (relations are Wave 3 territory). |
@@ -270,7 +270,7 @@ capability_map:
 
 ## 13a. Time-aware relations
 
-A capability's **`parent`** relationship — its position under another capability in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a parent link is a `REL-…` file under `canon/relations/` with `type: parent`; see [17-relations.md](../elements/17-relations.md) §3 for the enum and §2 for the file shape.
+A capability's **`parent`** relationship — its position under another capability in the hierarchy — is declared **time-aware** per the temporal model. The canonical home for a parent link is a `REL-…` file under `canon/relations/` with `type: parent`; see [17-relations.md](../../elements/17-relations.md) §3 for the enum and §2 for the file shape.
 
 ```
 canon/relations/REL-CAP-V11-PARENT-1.yaml   # links CAPABILITY-V1.1 → CAPABILITY-V1
@@ -302,7 +302,7 @@ A `relates_to` field on capabilities — if any adopter has added one — stays 
 
 ## 14. Time-varying attributes — sidecar history
 
-A capability's `current_maturity`, `target_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](../CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
+A capability's `current_maturity`, `target_maturity`, `owner_role`, and `target_date` evolve within the capability's overall lifetime. Per [CONTRACT.md](../../CONTRACT.md) §9, these fields are stored in a sidecar file co-located with the capability's element file, **not inline** on the capability-map view or on the element file:
 
 ```
 canon/elements/02_business/capabilities/CAPABILITY-V1.yaml          # stable fields
@@ -329,9 +329,9 @@ attribute_versions:
     - { valid_from: "2026-04-01", value: "2026-12-31" }
 ```
 
-Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../CONTRACT.md) §9.2.
+Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../../CONTRACT.md) §9.2.
 
-Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = capability.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../CONTRACT.md) §9.3).
+Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = capability.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../../CONTRACT.md) §9.3).
 
 `target_maturity` is time-varying, alongside `current_maturity` and `target_date` — a target is a statement made on a date and may be revised on a later date, so both the level and its date live in the sidecar. `current_maturity` (what was observed) and `target_maturity` (what was undertaken) remain **two separate attribute series**, never merged into one: a future-dated entry never appears in `current_maturity`, since that would assert as fact something nobody has assessed.
 

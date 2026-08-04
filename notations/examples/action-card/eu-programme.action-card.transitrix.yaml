@@ -3,7 +3,7 @@ spec_version: "0.1"
 name: "EU MDR Conformity Programme"
 
 # Worked example — EU regulatory-conformity programme.
-# Single-project narrative view per notations/views/18-action-card.md.
+# Single-project narrative view per notations/views/diagrams/18-action-card.md.
 # The card binds to an existing project Action (ACTION-EU-PROGRAMME-1)
 # and adds two narrative milestones for the certification gate and the
 # market-launch follow-on. The motivation chain, child actions, and

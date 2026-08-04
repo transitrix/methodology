@@ -23,7 +23,7 @@ Read [`notations/README.md`](notations/README.md) for the notation index and fam
 
 ## Step 2 — Author your first view (a Goals tree)
 
-The Goals tree is the simplest starting point. The onboarding Skill copies a starter template (`templates/goals.dgca.transitrix.yaml` from its bundle) into `canon/views/goals/<domain>.dgca.transitrix.yaml`; the `transitrix/acme-corp` worked example already has one under [`canon/views/goals/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/goals). Keep the `notation: goals` / `spec_version:` header — it's required ([`CONTRACT.md`](notations/CONTRACT.md) §1). Fill the `FILL-ME` placeholders. A Goals tree is flat top-level arrays — `goal_types[]` + `goals[]`, hierarchy via `parent: GOAL-…` ([`notations/views/04-goals.md`](notations/views/04-goals.md)).
+The Goals tree is the simplest starting point. The onboarding Skill copies a starter template (`templates/goals.dgca.transitrix.yaml` from its bundle) into `canon/views/goals/<domain>.dgca.transitrix.yaml`; the `transitrix/acme-corp` worked example already has one under [`canon/views/goals/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/goals). Keep the `notation: goals` / `spec_version:` header — it's required ([`CONTRACT.md`](notations/CONTRACT.md) §1). Fill the `FILL-ME` placeholders. A Goals tree is flat top-level arrays — `goal_types[]` + `goals[]`, hierarchy via `parent: GOAL-…` ([`notations/views/04-goals.md`](./notations/views/diagrams/04-goals.md)).
 
 ## Step 3 — Create an element primitive
 

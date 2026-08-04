@@ -351,7 +351,7 @@ Used in three views:
 
 The Driver → Goal → Activity (DGA) variant — where the transformation step is implicit or trivial — is expressed as a DGCA document with `view_config.layers.changes: off`. Both full and DGA mode render as visual chains in Transitrix Studio.
 
-See `notations/views/02-dgca.md` for the full DGCA notation reference (file format, fields, layer toggle, examples, DSM implementation status).
+See `notations/views/diagrams/02-dgca.md` for the full DGCA notation reference (file format, fields, layer toggle, examples, DSM implementation status).
 
 ### 6.3 Capabilities and maturity
 

@@ -21,7 +21,7 @@ dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) pl
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -32,10 +32,10 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
-| `notation` | yes | string | MUST equal `scenarios` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | string | MUST equal `scenarios` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | string | reserved field per the shared contract |
-| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../CONTRACT.md) §1.1. |
-| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `name` | yes | string | Human-readable document name — displayed in Studio diagram previews and listings. Per [CONTRACT.md](../../CONTRACT.md) §1.1. |
+| `generated_at` | no | string | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `view` | yes | object | the scenario view config — see §3 and §4 |
 
 Example header:
@@ -54,13 +54,13 @@ view:
 
 ## 1. Reclassification (2026-06-03)
 
-The v0.2 spec made the `scenarios` document the **content home** for a scenario: a single document carried the scenario's vision, its goals, its capabilities, its activities, its products, its processes, its applications, and its per-scenario driver view. That conflated three things — the *path* (the ordered sequence of steps to move the enterprise), the *destination* (the structural end-state the path reaches), and the *intent* (the goals the path serves) — into one container, and put substantial canonical content inside a view document in violation of the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1).
+The v0.2 spec made the `scenarios` document the **content home** for a scenario: a single document carried the scenario's vision, its goals, its capabilities, its activities, its products, its processes, its applications, and its per-scenario driver view. That conflated three things — the *path* (the ordered sequence of steps to move the enterprise), the *destination* (the structural end-state the path reaches), and the *intent* (the goals the path serves) — into one container, and put substantial canonical content inside a view document in violation of the reconstruction invariant ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1).
 
 The SCENARIO reclassification split those three concerns into separate primitives:
 
 - **`GOAL`** — the intent. (Pre-existing motivation-layer element.)
-- **`TARGET_STATE`** — the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met (ArchiMate **Plateau**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17.
-- **`SCENARIO`** — the **path**: the ordered set of steps (`ACTION` / `CHANGE` — Work Packages + Gaps) that moves the enterprise to one target state in service of one or more goals (ArchiMate **Course of Action**). Schema: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.18.
+- **`TARGET_STATE`** — the structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met (ArchiMate **Plateau**). Schema: [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.17.
+- **`SCENARIO`** — the **path**: the ordered set of steps (`ACTION` / `CHANGE` — Work Packages + Gaps) that moves the enterprise to one target state in service of one or more goals (ArchiMate **Course of Action**). Schema: [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.18.
 
 The `scenarios` view document is **demoted to report-config**: rendering, ordering, and filtering knobs over the `SCENARIO` catalogue. It carries no canonical facts; the path/destination/intent live on the three element primitives above.
 
@@ -78,9 +78,9 @@ For the canonical authoring of a path / destination / intent, use the element pr
 
 | Concern | Authored as |
 |---|---|
-| The ordered steps that *get you there* (the path). | `SCENARIO` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.18) at `canon/elements/05_implementation/scenarios/SCENARIO-<…>.yaml`. |
-| The structural end-state the path reaches (the destination). | `TARGET_STATE` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17) at `canon/elements/05_implementation/target-states/TARGET_STATE-<…>.yaml`. |
-| The intent (which goals the path serves; which goals the end-state satisfies). | `GOAL` elements; plus `SCENARIO.pursues` (inline, the path's intent) and the `target_state_satisfies_goal` REL kind ([elements/17-relations.md](../elements/17-relations.md) §3). |
+| The ordered steps that *get you there* (the path). | `SCENARIO` element ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.18) at `canon/elements/05_implementation/scenarios/SCENARIO-<…>.yaml`. |
+| The structural end-state the path reaches (the destination). | `TARGET_STATE` element ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.17) at `canon/elements/05_implementation/target-states/TARGET_STATE-<…>.yaml`. |
+| The intent (which goals the path serves; which goals the end-state satisfies). | `GOAL` elements; plus `SCENARIO.pursues` (inline, the path's intent) and the `target_state_satisfies_goal` REL kind ([elements/17-relations.md](../../elements/17-relations.md) §3). |
 | Per-driver findings that motivate a scenario. | `ASSESSMENT` elements + the `assessment_influences_goal` REL kind. |
 | Per-driver "drivers view" (relevance / impact). | Not modelled in v1 as a per-scenario projection — express via `ASSESSMENT` and the influence REL kind, which are goal-relative rather than scenario-relative. |
 
@@ -118,7 +118,7 @@ view:
   show_pursues: true          # render the goal list each path pursues
 ```
 
-The document carries the canonical envelope (`notation:` header, `spec_version:`, `methodology_version:` pin per [CONTRACT.md](../CONTRACT.md) §10), a `view` object, and presentation fields under it. Nothing under `view` is canonical content — it is all rendering configuration.
+The document carries the canonical envelope (`notation:` header, `spec_version:`, `methodology_version:` pin per [CONTRACT.md](../../CONTRACT.md) §10), a `view` object, and presentation fields under it. Nothing under `view` is canonical content — it is all rendering configuration.
 
 ---
 
@@ -128,7 +128,7 @@ Every field carries an explicit default, so a view with only the required envelo
 
 | Field | Required | Type | Default | Semantics |
 |---|---|---|---|---|
-| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`SCENARIOS-…`) per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.2 (`SCENARIOS` document-level TYPE). |
+| `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`SCENARIOS-…`) per [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.2 (`SCENARIOS` view-level TYPE). |
 | `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
 | `view.description` | no | string | empty | Short description of the purpose of this view (which scenarios it groups, why). |
 | `view.scenarios.include` | no ¹ | list | unset (use `filter`, or the full set) | Explicit list of `SCENARIO-…` IDs to render, in display order. |
@@ -139,9 +139,9 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.show_target_state` | no | bool | `true` | Whether to render each scenario's `arrives_at` target-state composition inline. |
 | `view.show_pursues` | no | bool | `true` | Whether to render each scenario's `pursues` goal list inline. |
 
-¹ **`scenarios`** — both keys are optional and only ever *narrow* the rendered set. Omitting them is the zero-config default: the renderer renders **every admitted `SCENARIO`** in canon (sorted by the default `order_by: name`). Name `include` or `filter` to narrow to a specific cut. If both `include` and `filter` are present, `include` wins and `filter` is silently ignored — same precedence as the obligation axis in [`21-compliance-impact.md`](21-compliance-impact.md) §4.
+¹ **`scenarios`** — both keys are optional and only ever *narrow* the rendered set. Omitting them is the zero-config default: the renderer renders **every admitted `SCENARIO`** in canon (sorted by the default `order_by: name`). Name `include` or `filter` to narrow to a specific cut. If both `include` and `filter` are present, `include` wins and `filter` is silently ignored — same precedence as the obligation axis in [`21-compliance-impact.md`](./21-compliance-impact.md) §4.
 
-All references in `view.scenarios.include`, `view.scenarios.filter.arrives_at`, and `view.scenarios.filter.pursues_*` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §5).
+All references in `view.scenarios.include`, `view.scenarios.filter.arrives_at`, and `view.scenarios.filter.pursues_*` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §5).
 
 ### 4.1 Zero-configuration default
 
@@ -160,7 +160,7 @@ view:
 
 — renders **deterministically**: every admitted `SCENARIO` in canon, side-by-side, with each scenario's `steps`, `arrives_at`, and `pursues` rendered inline, ordered by `name`. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user as "all scenarios, no filter". Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
-Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [`REPORT_VIEW_CONFIG.md`](REPORT_VIEW_CONFIG.md).
+Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [`REPORT_VIEW_CONFIG.md`](../REPORT_VIEW_CONFIG.md).
 
 ---
 
@@ -182,16 +182,16 @@ Scenarios view (this notation — report-config)
 
 ## 6. Existing examples (pending migration)
 
-The example files under [`../examples/scenarios/`](../examples/scenarios/) (`optimistic-2027.scenarios.transitrix.yaml`, `omnichannel-2028.scenarios.transitrix.yaml`) reflect the **v0.2 content-document shape** — they carry the now-reclassified `scenario.vision` / `scenario.goals` / `scenario.capabilities` / `scenario.activities` / `scenario.products` / `scenario.processes` / `scenario.applications` / `scenario.factors_view` fields inline. They predate the reclassification and are scheduled for migration in a follow-up sub-task. They remain valid YAML and continue to carry the `notation: scenarios` header.
+The example files under [`../examples/scenarios/`](../../examples/scenarios) (`optimistic-2027.scenarios.transitrix.yaml`, `omnichannel-2028.scenarios.transitrix.yaml`) reflect the **v0.2 content-document shape** — they carry the now-reclassified `scenario.vision` / `scenario.goals` / `scenario.capabilities` / `scenario.activities` / `scenario.products` / `scenario.processes` / `scenario.applications` / `scenario.factors_view` fields inline. They predate the reclassification and are scheduled for migration in a follow-up sub-task. They remain valid YAML and continue to carry the `notation: scenarios` header.
 
 ---
 
 ## 7. References
 
-- SCENARIO element schema (the path): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.18.
-- TARGET_STATE element schema (the destination): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.17.
-- `target_state_satisfies_goal` REL kind (which goals an end-state satisfies): [elements/17-relations.md](../elements/17-relations.md) §3.
-- ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md).
-- Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §1.1.
-- Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](REPORT_VIEW_CONFIG.md).
+- SCENARIO element schema (the path): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.18.
+- TARGET_STATE element schema (the destination): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.17.
+- `target_state_satisfies_goal` REL kind (which goals an end-state satisfies): [elements/17-relations.md](../../elements/17-relations.md) §3.
+- ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md).
+- Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1.
+- Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md).
 - Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.

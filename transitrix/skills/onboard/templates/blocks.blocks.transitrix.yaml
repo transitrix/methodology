@@ -1,7 +1,7 @@
 notation: blocks
 spec_version: "0.1"
 
-# Nested block diagram. Spec: notations/views/08-blocks.md
+# Nested block diagram. Spec: notations/views/diagrams/08-blocks.md
 # Recursive `block` tree under `nested_blocks:`. Containment in the
 # YAML maps to spatial containment in the rendered diagram. A block's
 # id may match the canonical grammar (cross-ref into a catalogue, e.g.

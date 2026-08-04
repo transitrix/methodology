@@ -294,7 +294,7 @@ coverage_profile:
         remove: [employment]
 ```
 
-The team uses `ACTOR` for identity but does not track employment as a first-class temporal relation. Action owners reference `ACTOR-…` directly (the `owner` inline field per [`views/07-action.md`](views/07-action.md) §5.6 is unchanged). Closure passes — no other in-scope TYPE requires `employment`.
+The team uses `ACTOR` for identity but does not track employment as a first-class temporal relation. Action owners reference `ACTOR-…` directly (the `owner` inline field per [`views/07-action.md`](./views/diagrams/07-action.md) §5.6 is unchanged). Closure passes — no other in-scope TYPE requires `employment`.
 
 ### 9.5 A profile that fails closure
 

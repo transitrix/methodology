@@ -1,7 +1,7 @@
 notation: compliance-impact
 spec_version: "0.1"
 
-# Compliance Impact. Spec: notations/views/21-compliance-impact.md
+# Compliance Impact. Spec: notations/views/reports/21-compliance-impact.md
 # Report-config over the compliance overlay (sibling of Scenarios).
 # Carries no canonical content — every cell is DERIVED from ASSERTION +
 # process flow + REQUIREMENT status. This file only declares which slice

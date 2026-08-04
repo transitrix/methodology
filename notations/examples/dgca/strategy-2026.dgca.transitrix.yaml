@@ -12,7 +12,7 @@ author: Transitrix
 # Full-tier projection form example. Element data lives in elements/ alongside
 # this file (post-promotion). The renderer derives the chain by traversing
 # inline cross-reference fields (goal.factors, change.goals, action.changes)
-# on those element files — see notations/views/02-dgca.md §"Source of truth".
+# on those element files — see notations/views/diagrams/02-dgca.md §"Source of truth".
 # For a self-contained inline example, see startup.dgca.transitrix.yaml.
 
 view_config:

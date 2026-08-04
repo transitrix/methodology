@@ -2,7 +2,7 @@
 
 File extension: **`.scenarios.transitrix.yaml`**
 
-The scenarios view is a **report-configuration surface** over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). Each `SCENARIO` element is a *path* — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s. See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) for the view spec and [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.18 for the SCENARIO element schema.
+The scenarios view is a **report-configuration surface** over the `SCENARIO` content-element catalogue (`canon/elements/05_implementation/scenarios/`). Each `SCENARIO` element is a *path* — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s. See [`../../views/11-scenarios.md`](../../views/reports/11-scenarios.md) for the view spec and [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.18 for the SCENARIO element schema.
 
 ## Files in this folder
 
@@ -39,7 +39,7 @@ view:
   show_pursues: true
 ```
 
-Each referenced `SCENARIO-…` is a standalone element file under `canon/elements/05_implementation/scenarios/` with inline `pursues` (goal list — intent), `arrives_at` (single `TARGET_STATE-…` ref — destination), and ordered `steps` (`ACTION-…` / `CHANGE-…`). See [`../../views/11-scenarios.md`](../../views/11-scenarios.md) §3 for the full field set.
+Each referenced `SCENARIO-…` is a standalone element file under `canon/elements/05_implementation/scenarios/` with inline `pursues` (goal list — intent), `arrives_at` (single `TARGET_STATE-…` ref — destination), and ordered `steps` (`ACTION-…` / `CHANGE-…`). See [`../../views/11-scenarios.md`](../../views/reports/11-scenarios.md) §3 for the full field set.
 
 ## Preview
 

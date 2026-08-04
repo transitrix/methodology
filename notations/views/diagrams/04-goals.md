@@ -17,7 +17,7 @@ dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
 
 ## File header
 
-Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../CONTRACT.md). This notation's per-notation values:
+Header rules — required `notation:` field, `spec_version:` semantics, validator behaviour, extension/content match — are shared across all Transitrix notations and defined in [CONTRACT.md](../../CONTRACT.md). This notation's per-notation values:
 
 | Field | Value |
 |---|---|
@@ -31,13 +31,13 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 A Goals Tree document has two valid authoring forms — both use the same YAML field schema:
 
 - **Inline form (default):** `goal_types[]` and `goals[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any goals hierarchy where elements are not yet shared across documents.
-- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects `GOAL` elements already admitted to `canon/elements/01_motivation/goals/`. No element data is in this file; the renderer loads the elements at view time. See [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §4.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects `GOAL` elements already admitted to `canon/elements/01_motivation/goals/`. No element data is in this file; the renderer loads the elements at view time. See [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §4.
 
-The **promotion trigger** is cross-document sharing: a goal stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/01_motivation/goals/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
+The **promotion trigger** is cross-document sharing: a goal stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/01_motivation/goals/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
-The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `canon/views/goals/` loses no model knowledge. See [`CONTRACT.md`](../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `canon/views/goals/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
-**Where goals are authored.** In the inline form, goals are authored directly in the view file under `goals[]`. In the projection form, new goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](23-actions-tree.md)), and the Action Card ([`18-action-card.md`](18-action-card.md)).
+**Where goals are authored.** In the inline form, goals are authored directly in the view file under `goals[]`. In the projection form, new goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](./02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](../reports/23-actions-tree.md)), and the Action Card ([`18-action-card.md`](./18-action-card.md)).
 
 ---
 
@@ -108,7 +108,7 @@ goals:
     parent: GOAL-REVENUE-1
 ```
 
-A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../examples/goals/strategy-2026.goals.transitrix.yaml).
+A complete example: [`examples/goals/strategy-2026.goals.transitrix.yaml`](../../examples/goals/strategy-2026.goals.transitrix.yaml).
 
 ### Projection form (Full tier — post-promotion)
 
@@ -149,12 +149,12 @@ view_config:
 
 | Field | Required | Description |
 |---|---|---|
-| `notation` | yes | MUST equal `goals` (per [CONTRACT.md](../CONTRACT.md)) |
+| `notation` | yes | MUST equal `goals` (per [CONTRACT.md](../../CONTRACT.md)) |
 | `spec_version` | no | reserved field per the shared contract |
 | `methodology_version` | yes (from v2.0) | methodology release this document conforms to |
 | `id` | yes | document ID — `GOALS-[<middle>-]<INTEGER>` per the canonical grammar |
 | `name` | yes | human-readable name |
-| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../CONTRACT.md) §4. |
+| `generated_at` | no | Date the document was generated or last substantively revised — quoted ISO 8601 date per [CONTRACT.md](../../CONTRACT.md) §4. |
 | `description` | no | one-paragraph context |
 | `period` | no | time period the tree covers |
 | `author` | no | document author |
@@ -252,15 +252,15 @@ Goals without a valid parent (orphans) live in the **backlog**. They are visible
 
 ### 7.5 Relationship to DGCA
 
-In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Actions via `action_goal` REL records ([elements/17-relations.md](../elements/17-relations.md) §3), or transitionally via the inline `goals: [GOAL-…]` field on ACTION elements. The DGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-dgca.md`](02-dgca.md).
+In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Actions via `action_goal` REL records ([elements/17-relations.md](../../elements/17-relations.md) §3), or transitionally via the inline `goals: [GOAL-…]` field on ACTION elements. The DGCA diagram (Strategy-to-Action) visualises this cross-layer chain. See [`02-dgca.md`](./02-dgca.md).
 
 ---
 
 ## 8. References
 
 - Goal elements: `canon/elements/01_motivation/goals/*.yaml` (notation: goal)
-- DGCA notation: [`02-dgca.md`](02-dgca.md)
-- GOAL element field schema: [`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.2
-- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md)
-- Family selection across DGCA / FGA / Goals / Actions: [`README.md`](../README.md) § Family selection
+- DGCA notation: [`02-dgca.md`](./02-dgca.md)
+- GOAL element field schema: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.2
+- ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)
+- Family selection across DGCA / FGA / Goals / Actions: [`README.md`](../../README.md) § Family selection
 - Methodology section 6.1: `method/01-methodology.md`

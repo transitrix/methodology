@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 # Transitrix Report Skill
 
-The **conversational front-end for compliance reporting.** A user asks for a report in plain language; this skill resolves the parameters, writes them into a **declarative view-config artefact**, and shells out to the deterministic renderer CLI. It is the operator UX over the `compliance-impact` ([notations/views/21-compliance-impact.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/21-compliance-impact.md)) and `coverage-metric` ([notations/views/22-coverage-metric.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/22-coverage-metric.md)) views.
+The **conversational front-end for compliance reporting.** A user asks for a report in plain language; this skill resolves the parameters, writes them into a **declarative view-config artefact**, and shells out to the deterministic renderer CLI. It is the operator UX over the `compliance-impact` ([notations/views/reports/21-compliance-impact.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/reports/21-compliance-impact.md)) and `coverage-metric` ([notations/views/reports/22-coverage-metric.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/views/reports/22-coverage-metric.md)) views.
 
 This directory is the **`report` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, one `skills/<name>/` directory per skill). Invoked as `/transitrix:report`.
 

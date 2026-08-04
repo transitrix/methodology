@@ -54,7 +54,7 @@ CAPABILITY-H<L1[.L2[.L3]]>
 - `CAPABILITY-V1.2.3`
 - `CAPABILITY-H1.2`
 
-The diagram address derives from the V/H positional addressing system documented in [`05-capability-map.md`](views/05-capability-map.md) §4–5. Capability IDs are the only place the trailing integer is replaced by a multi-component path; every other TYPE follows §1 unchanged.
+The diagram address derives from the V/H positional addressing system documented in [`05-capability-map.md`](./views/diagrams/05-capability-map.md) §4–5. Capability IDs are the only place the trailing integer is replaced by a multi-component path; every other TYPE follows §1 unchanged.
 
 ---
 
@@ -82,7 +82,7 @@ Elements that get referenced across documents.
 | `ACTOR` | active-structure identity — `person`, `business_unit`, or `system` (ArchiMate Business Actor). Replaces the former `UNIT` / `EMPLOYEE` TYPEs (removed 2026-05-29). Engagement (employment, candidacy, …) and org hierarchy are first-class `REL` records, not inline fields. | Actors catalogue (`canon/elements/02_business/actors/`); referenced as activity `owner`. Schema: [19-actors.md](elements/19-actors.md). |
 | `LOCATION` | physical or virtual place (ArchiMate Location) — `country`, `region`, `city`, `site`, `office`, or `virtual`. A shared, addressable place element referenced by `ACTOR` nodes via `located_at` relations. | Locations catalogue (`canon/elements/02_business/locations/`); attached to actors via `located_at` REL. Schema: [elements/21-locations.md](elements/21-locations.md). |
 | `BUSINESS_SERVICE` | externally visible behaviour the organisation offers to its consumers — internal, external, or shared (ArchiMate Business Service §8.3.4). Linked to its offering unit via the `offers` REL kind and to the capability it realizes via the `realizes` REL kind. Distinct from `PROCESS` (internal execution), `CAPABILITY` (the ability), and `PRODUCT` (a packaged offering). | Business-services catalogue (`canon/elements/02_business/business-services/`); `offers` and `realizes` REL kinds link to `ACTOR` / `ROLE` and `CAPABILITY`. Schema: [elements/25-business-services.md](elements/25-business-services.md). |
-| `SCENARIO` | implementation-layer **path** primitive — the ordered set of steps (`ACTION` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate Course of Action realised by Work Packages + Gaps). The destination is a separate primitive (`TARGET_STATE`); the scenario references it via `arrives_at` and owns its `steps`. | Scenarios catalogue (`canon/elements/05_implementation/scenarios/`); rendered by [11-scenarios.md](views/11-scenarios.md) as a report-config view. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19. |
+| `SCENARIO` | implementation-layer **path** primitive — the ordered set of steps (`ACTION` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate Course of Action realised by Work Packages + Gaps). The destination is a separate primitive (`TARGET_STATE`); the scenario references it via `arrives_at` and owns its `steps`. | Scenarios catalogue (`canon/elements/05_implementation/scenarios/`); rendered by [11-scenarios.md](./views/reports/11-scenarios.md) as a report-config view. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19. |
 | `EQUIPMENT` | ArchiMate Physical element — physical instrument, device, or facility a process stage depends on. Catalogued at `canon/elements/04_technology/equipment/` (ADR 2026-06-08; first catalogued TYPE for this layer). | Process Blueprint; Technology layer catalogue. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.14. |
 | `NODE` | ArchiMate Technology Node — the physical or virtual compute, network, or storage substrate that hosts technology services. Catalogue: `canon/elements/04_technology/nodes/`. Hosts `TECHNOLOGY_SERVICE` via the `hosts` REL kind. | Technology layer catalogue; infrastructure integration modelling. Schema: [elements/25-nodes.md](elements/25-nodes.md). |
 | `TECHNOLOGY_SERVICE` | ArchiMate Technology Service — a platform-level service (messaging, storage, API gateway, database, compute) exposed by a `NODE` to the application layer. Consumed by `APPLICATION` via the `uses` REL kind. Catalogue: `canon/elements/04_technology/services/`. | Technology layer catalogue; application-layer dependency modelling. Schema: [elements/26-technology-services.md](elements/26-technology-services.md). |
@@ -98,11 +98,11 @@ Elements that get referenced across documents.
 | `NEED` | motivation-layer **stakeholder/user need** — what must be true for whoever depends on it, independent of how it will be met. Upstream of `REQUIREMENT`, which traces back to it via `serves:`. No ArchiMate counterpart (ArchiMate 3.x has no need element). | Needs catalogue (`canon/elements/01_motivation/needs/`). Schema: [`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §7.28. |
 | `TARGET_STATE` | implementation-layer **end-state** primitive (ArchiMate Plateau) — a structural snapshot of the `CAPABILITY` / `PROCESS` / `APPLICATION` selection that exists when one or more goals are met. The object an architect varies when presenting solution options; satisfies one or more `GOAL`s and is reached by one or more `SCENARIO` paths. | Target-states catalogue (`canon/elements/05_implementation/target-states/`); composition is inline (`capabilities[]`, `processes[]`, `applications[]`). Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.18. |
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `action_goal`, `goal_parent`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed) are first-class temporal events. Deprecated alias: `activity_goal` → `action_goal`. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
-| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Action Card's narrative. Distinct from a "schedule milestone" (a zero-duration action inside an Action schedule document, see [07-action.md](views/07-action.md) §5.9), which exists for critical-path computation. | Defined inside an Action Card document (`*.action-card.transitrix.yaml`); scope is the parent card document. Schema: [18-action-card.md](views/18-action-card.md). |
+| `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Action Card's narrative. Distinct from a "schedule milestone" (a zero-duration action inside an Action schedule document, see [07-action.md](./views/diagrams/07-action.md) §5.9), which exists for critical-path computation. | Defined inside an Action Card document (`*.action-card.transitrix.yaml`); scope is the parent card document. Schema: [18-action-card.md](./views/diagrams/18-action-card.md). |
 
-### 3.2 Document-level types
+### 3.2 View-level types
 
-Each notation file carries its own ID using the same grammar; the TYPE names the notation.
+Each notation file carries its own ID using the same grammar; the TYPE names the notation. Called **`VIEW_TYPE`** (not "document-level type") because `notations/views/` now splits into `diagrams/`, `reports/`, and `documents/` classes — reusing "document" as the generic term for every view identifier would collide with the `documents/` class.
 
 | TYPE | Notation file |
 |---|---|
@@ -185,11 +185,11 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | TYPE | Uniqueness scope |
 |---|---|
 | `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the DGCA / FGA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |
-| `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](views/05-capability-map.md) §5). |
+| `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](./views/diagrams/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`canon/elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`canon/elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
 | `PRODUCT`, `APPLICATION` | within the organisation's element catalogue (`canon/elements/02_business/` for `PRODUCT`, `canon/elements/03_application/` for `APPLICATION`), one file per element. Both are `standalone` ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §4), so their IDs are org-wide-unique from creation (not document-scoped) — the §1 promotion rule does not apply (they are first-class catalogue elements, never inline). |
-| `INTEGRATION` | within the catalogue document while `view-defined` (nested in an application's `integrations[]`, [`10-applications.md`](views/10-applications.md)); once promoted (§1 promotion rule), within the organisation's element catalogue (`canon/elements/03_application/integrations/`), one file per promoted INTEGRATION. The id is unchanged by promotion (no rename). |
+| `INTEGRATION` | within the catalogue document while `view-defined` (nested in an application's `integrations[]`, [`10-applications.md`](./views/diagrams/10-applications.md)); once promoted (§1 promotion rule), within the organisation's element catalogue (`canon/elements/03_application/integrations/`), one file per promoted INTEGRATION. The id is unchanged by promotion (no rename). |
 | `ROLE`, `ACTOR`, `LOCATION`, `BUSINESS_SERVICE` | within the organisation's element catalogue (`canon/elements/02_business/`). |
 | `SCENARIO` | within the organisation's element catalogue (`canon/elements/05_implementation/scenarios/`), one file per SCENARIO. |
 | `EQUIPMENT` | within the organisation's element catalogue (`canon/elements/04_technology/equipment/`), one file per EQUIPMENT (ADR 2026-06-08). |
@@ -259,5 +259,5 @@ The TYPE registry above was confirmed 2026-05-20. Several notations and example 
 ## 7. References
 
 - Notation catalogue and the index of all notations: [`README.md`](README.md).
-- Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](views/05-capability-map.md) §4–5.
+- Capability addressing (the V/H system that the `CAPABILITY` exception relies on): [`05-capability-map.md`](./views/diagrams/05-capability-map.md) §4–5.
 - Methodology: `method/01-methodology.md`.

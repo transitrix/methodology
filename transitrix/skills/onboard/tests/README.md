@@ -28,7 +28,7 @@ The acceptance criterion asks that authored files "parse cleanly under
 `@transitrix/diagrams/<notation>/validateXxx`". That package ships separately and is
 **not vendored into this repo**, so `test_skill_integrity.py` implements `validate_goals()`
 — a structural check of the invariants the canonical `validateGoals` enforces for the
-v2.0 pure-projection shape (`notations/views/04-goals.md` §6): the `notation`/`id`/`name`
+v2.0 pure-projection shape (`notations/views/diagrams/04-goals.md` §6): the `notation`/`id`/`name`
 header (`GOALS-001..003`), the `methodology_version` pin required from v2.0, the
 absence of inline `goals[]` at document root (`GOALS-008` hard error), and the
 `view_config.goal_types[]` shape + contiguous levels + `scope.type_filter` closure

@@ -2,7 +2,7 @@ notation: coverage-metric
 spec_version: "0.1"
 methodology_version: "3.1.0"
 
-# Coverage Metric. Spec: notations/views/22-coverage-metric.md
+# Coverage Metric. Spec: notations/views/reports/22-coverage-metric.md
 # Report-config over the coverage read of canon (sibling of Compliance Impact).
 # Carries no canonical content — every cell is DERIVED from ASSERTION +
 # process flow + REQUIREMENT.derived_from + codex. This file only declares which

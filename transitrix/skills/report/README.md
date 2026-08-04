@@ -4,8 +4,8 @@ The conversational front-end for **compliance reporting** over a Transitrix repo
 
 It is the operator UX for two derived views:
 
-- **`compliance-impact`** ([notations/views/21-compliance-impact.md](../../../notations/views/21-compliance-impact.md)) — the obligation × subject matrix, each cell's compliance status.
-- **`coverage-metric`** ([notations/views/22-coverage-metric.md](../../../notations/views/22-coverage-metric.md)) — per-regime assertion coverage and modelling-gap counts.
+- **`compliance-impact`** ([notations/views/21-compliance-impact.md](../../../notations/views/reports/21-compliance-impact.md)) — the obligation × subject matrix, each cell's compliance status.
+- **`coverage-metric`** ([notations/views/22-coverage-metric.md](../../../notations/views/reports/22-coverage-metric.md)) — per-regime assertion coverage and modelling-gap counts.
 
 ## Design
 

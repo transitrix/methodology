@@ -2,7 +2,7 @@
 
 File extension: **`.compliance-impact.transitrix.yaml`**
 
-The compliance-impact view is a **report-configuration surface** over the compliance overlay derived from `ASSERTION` ([`../../elements/16-assertion.md`](../../elements/16-assertion.md)), process flow ([`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.5 / §7.20), and `REQUIREMENT` status ([`../../elements/15-requirement.md`](../../elements/15-requirement.md)). The view document declares which slice of the (obligation × subject) matrix to render — it carries no canonical content of its own. See [`../../views/21-compliance-impact.md`](../../views/21-compliance-impact.md) for the view spec and the render contract.
+The compliance-impact view is a **report-configuration surface** over the compliance overlay derived from `ASSERTION` ([`../../elements/16-assertion.md`](../../elements/16-assertion.md)), process flow ([`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.5 / §7.20), and `REQUIREMENT` status ([`../../elements/15-requirement.md`](../../elements/15-requirement.md)). The view document declares which slice of the (obligation × subject) matrix to render — it carries no canonical content of its own. See [`../../views/21-compliance-impact.md`](../../views/reports/21-compliance-impact.md) for the view spec and the render contract.
 
 ## Files in this folder
 
@@ -42,7 +42,7 @@ view:
     no_obligation_label: "No mapped obligation (current model)"
 ```
 
-The full field set, the render contract, and the validation rules are in [`../../views/21-compliance-impact.md`](../../views/21-compliance-impact.md).
+The full field set, the render contract, and the validation rules are in [`../../views/21-compliance-impact.md`](../../views/reports/21-compliance-impact.md).
 
 ## Preview
 

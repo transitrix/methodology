@@ -1,7 +1,7 @@
 notation: dgca
 spec_version: "0.1"
 
-# DGCA chain. Spec: notations/views/02-dgca.md
+# DGCA chain. Spec: notations/views/diagrams/02-dgca.md
 # Replace FILL-ME placeholders. IDs use the canonical grammar:
 # DRIVER-N / GOAL-N / CHANGE-N / ACTION-N (optional middle segments).
 # Fourth column: "actions:" (canonical). Deprecated alias "activities:" still accepted with warning.
