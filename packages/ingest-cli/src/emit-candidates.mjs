@@ -38,6 +38,18 @@ function safeName(s) {
 export function shapeCandidates(derivedFrom, result) {
   const candidates = [];
   const suggestions = [];
+  // Review-only person->role assignment proposals (e.g. an approver sign-off chain) —
+  // never shaped into a relation candidate (no closed REL kind covers the assignment
+  // itself; it rides as `roles:` on `employment` today) and never admitted. `decision`
+  // is never taken from the extraction result — the CLI is authoritative for it, same
+  // as `admitted_to` on a candidate.
+  const roleAssignmentProposals = (result.role_assignment_proposals || []).map((p) => ({
+    person: p.person,
+    proposed_role: p.proposed_role,
+    evidence: p.evidence,
+    confidence: p.confidence,
+    decision: 'pending',
+  }));
 
   for (const el of result.elements || []) {
     const c = {
@@ -103,7 +115,7 @@ export function shapeCandidates(derivedFrom, result) {
     candidates.push(c);
   }
 
-  return { candidates, suggestions };
+  return { candidates, suggestions, roleAssignmentProposals };
 }
 
 // Surface ID-grammar violations at emit time (F14): an element/assertion id or a
@@ -166,7 +178,7 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   try { result = JSON.parse(await readFile(resultPath, 'utf8')); }
   catch (err) { throw new Error(`could not read extraction result ${resultPath}: ${err.message}`); }
 
-  const { candidates, suggestions } = shapeCandidates(derivedFrom, result);
+  const { candidates, suggestions, roleAssignmentProposals } = shapeCandidates(derivedFrom, result);
   const warnings = collectIdWarnings(candidates);
 
   // Entity-match proposals (F8): for each element candidate whose name matches an
@@ -203,6 +215,11 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   const suggPath = join(resolve(orgRoot), '_intake', 'processing', 'relation-suggestions.json');
   await writeFile(suggPath, JSON.stringify(suggestions, null, 2) + '\n', 'utf8');
 
+  // Role assignment proposals feed the review queue the same way — review-only, never
+  // shaped into a relation candidate, never admitted.
+  const roleAssignmentProposalsPath = join(resolve(orgRoot), '_intake', 'processing', 'role-assignment-proposals.json');
+  await writeFile(roleAssignmentProposalsPath, JSON.stringify(roleAssignmentProposals, null, 2) + '\n', 'utf8');
+
   // Mechanism 2 (CONTRACT §13): standalone objects ingestion could not TYPE are parked,
   // non-admitted, in the shared canon/unresolved/ holding area — never dropped, never
   // guessed. The CLI emits `proposed`-untyped records (no admission record); a human
@@ -214,7 +231,8 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   });
   const unresolved = await writeUnresolved(orgRoot, records);
 
-  return { derivedFrom, dir, candidates, suggestions, suggPath, warnings,
+  return { derivedFrom, dir, candidates, suggestions, suggPath,
+           roleAssignmentProposals, roleAssignmentProposalsPath, warnings,
            unresolved: { ...unresolved, skipped: skipped.length } };
 }
 

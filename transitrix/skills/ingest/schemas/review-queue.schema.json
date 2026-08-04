@@ -125,6 +125,22 @@
         "additionalProperties": true
       }
     },
+    "role_assignment_proposals": {
+      "type": "array",
+      "description": "Optional. Review-only person->role assignment proposals (e.g. from an approver sign-off chain, CFB-0028) — a role assignment has no closed REL kind of its own (17-relations.md §3; it rides as the `roles:` attribute on `employment` today, which this extraction has no basis to assert). Never shaped into a relation candidate and never admitted to canon. `decision` is set by the CLI (`pending`) and updated only by a human reviewer as part of an admission workflow. Present only when at least one proposal exists.",
+      "items": {
+        "type": "object",
+        "required": ["person", "proposed_role", "evidence", "confidence", "decision"],
+        "properties": {
+          "person": { "type": "string", "description": "Candidate ref or canonical id of the ACTOR(person)." },
+          "proposed_role": { "type": "string", "description": "Candidate ref or canonical id of the ROLE." },
+          "evidence": { "type": "string", "description": "Literal textual basis for the proposal (e.g. the sign-off block text) — the reviewer's basis for confirming or discarding it." },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "decision": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Human reviewer's decision. Always emitted as `pending` by the CLI; never set by the extraction prompt." }
+        },
+        "additionalProperties": true
+      }
+    },
     "gate": {
       "type": "object",
       "description": "Invariant statement for auditors and tooling: this skill admits nothing.",

@@ -301,7 +301,12 @@ async function cmdReviewQueue(args) {
   const suggPath = join(stageDir(r.orgRoot, 'processing'), 'relation-suggestions.json');
   try { suggestions = JSON.parse(await readFile(suggPath, 'utf8')); } catch { /* none */ }
 
-  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions });
+  // Pick up role assignment proposals emitted by `emit-candidates`, if present.
+  let roleAssignmentProposals = [];
+  const roleAssignmentProposalsPath = join(stageDir(r.orgRoot, 'processing'), 'role-assignment-proposals.json');
+  try { roleAssignmentProposals = JSON.parse(await readFile(roleAssignmentProposalsPath, 'utf8')); } catch { /* none */ }
+
+  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, roleAssignmentProposals });
   const out = flags.out
     ? resolve(flags.out)
     : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope, content: dump(queue) });
@@ -311,6 +316,7 @@ async function cmdReviewQueue(args) {
   console.log(`review queue  ->  ${out}`);
   console.log(`  coverage_profile: ${queue.coverage_profile}`);
   console.log(`  ${queue.field_artefacts.length} field artefact(s), ${queue.candidates.length} candidate(s) (${flagged} flagged), ${queue.relation_suggestions.length} relation suggestion(s).`);
+  if (queue.role_assignment_proposals) console.log(`  ${queue.role_assignment_proposals.length} role assignment proposal(s) — pending human decision.`);
   if (queue.excluded_admitted.length) {
     console.log(`  ${queue.excluded_admitted.length} candidate(s) excluded — already admitted to canon (idempotent re-run).`);
   }
@@ -338,6 +344,9 @@ async function cmdEmitCandidates(args) {
     console.log(`emit-candidates  derived_from ${res.derivedFrom}`);
     console.log(`  ${res.candidates.length} candidate(s) -> ${res.dir}`);
     console.log(`  ${res.suggestions.length} relation suggestion(s) held back (relation-conservative) -> ${res.suggPath}`);
+    if (res.roleAssignmentProposals && res.roleAssignmentProposals.length) {
+      console.log(`  ${res.roleAssignmentProposals.length} role assignment proposal(s) (person->role, decision pending) -> ${res.roleAssignmentProposalsPath}`);
+    }
     if (res.unresolved && res.unresolved.written.length) {
       console.log(`  ${res.unresolved.written.length} untyped object(s) parked (non-admitted) -> ${res.unresolved.dir}`);
     }
