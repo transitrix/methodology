@@ -1,0 +1,18 @@
+notation: technology-service
+id: TECHNOLOGY_SERVICE-EXPORT-QUEUE-1
+name: "Export Job Queue"
+type: messaging
+description: "Managed message queue that schedules and throttles data-export jobs submitted by the Data Export Service, helping the organisation meet the 30-day export window even under load."
+node: NODE-EXPORT-QUEUE-HOST-1
+endpoint: "export-queue.internal:5671"
+
+zone: canon
+admitted_at: "2026-08-04"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-04"
+valid_to: null

@@ -1,0 +1,20 @@
+notation: requirement
+id: REQUIREMENT-DATA-EXPORT-SLA-1
+name: "Provide a mechanism for a user to export their personal data within 30 days of a verified request"
+description: "On a verified request from a data subject, the organisation must make that subject's personal data available for export, in a commonly used machine-readable format, within 30 days of verification."
+
+origin: legislative
+severity: high
+level: system
+kind: functional
+
+zone: canon
+admitted_at: "2026-08-04"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-04"
+valid_to: null

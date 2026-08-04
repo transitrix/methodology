@@ -1,0 +1,18 @@
+notation: node
+id: NODE-EXPORT-QUEUE-HOST-1
+name: "Export Queue Host"
+type: cloud_instance
+description: "Managed compute instance hosting the message queue used to schedule and throttle data-export jobs. Not yet connected to any recorded requirement trace — see the worked example's README for why it renders with an empty section."
+provider: "AWS"
+region: "eu-central-1"
+
+zone: canon
+admitted_at: "2026-08-04"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-04"
+valid_to: null
