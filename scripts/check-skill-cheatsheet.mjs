@@ -41,51 +41,57 @@ const SKILL_PATH = join(REPO_ROOT, 'transitrix', 'skills', 'onboard', 'SKILL.md'
 
 // --- Parsers ---------------------------------------------------------------
 
-// Pull the catalogue table from notations/README.md.
+// Pull the catalogue tables from notations/README.md.
 // Returns: Map<short_name, { extension, status }>.
 async function parseCatalogue() {
   const text = await readFile(CATALOGUE_PATH, 'utf8');
   const lines = text.split('\n');
 
-  // Locate the section heading then the first markdown table after it.
+  // Locate the section heading.
   const headingIdx = lines.findIndex(l => /^##\s+Views\s*$/.test(l));
   if (headingIdx < 0) {
     throw new Error(`notations/README.md: "## Views" section not found`);
   }
 
-  // Find the table header row after the heading.
-  let headerIdx = -1;
+  // The section is split by class into subsections (diagrams/reports/
+  // documents), each with its own table — collect every table found before
+  // the next "## " heading, not just the first.
+  let sectionEnd = lines.length;
   for (let i = headingIdx + 1; i < lines.length; i++) {
-    if (lines[i].startsWith('| Spec ')) {
-      headerIdx = i;
+    if (/^##\s/.test(lines[i])) {
+      sectionEnd = i;
       break;
     }
-    if (/^##\s/.test(lines[i])) break; // hit the next section
-  }
-  if (headerIdx < 0) {
-    throw new Error(`notations/README.md: catalogue table header not found`);
   }
 
-  // Data rows start two lines after the header (skip header + separator).
   const out = new Map();
-  for (let i = headerIdx + 2; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line.startsWith('|')) break;
-    // Structural separator row marking the report-config block (e.g.
-    // "| — | **Report views (C = 4)** | | | |") — not a notation entry.
-    if (/^\|\s+—\s+\|/.test(line)) continue;
-    const cells = line.split('|').map(c => c.trim());
-    // cells: ['', Spec, ShortName, Purpose, FileExtension, Status, '']
-    if (cells.length < 7) continue;
-    const shortNameCell = cells[2];
-    const extCell = cells[4];
-    const statusCell = cells[5];
-    const shortMatch = shortNameCell.match(/`([^`]+)`/);
-    const extMatch = extCell.match(/`([^`]+)`/);
-    if (!shortMatch || !extMatch) {
-      throw new Error(`notations/README.md: cannot parse catalogue row: ${line}`);
+  let sawTable = false;
+  for (let i = headingIdx + 1; i < sectionEnd; i++) {
+    if (!lines[i].startsWith('| Spec ')) continue;
+    sawTable = true;
+    // Data rows start two lines after the header (skip header + separator).
+    for (let j = i + 2; j < sectionEnd; j++) {
+      const line = lines[j];
+      if (!line.startsWith('|')) break;
+      // Structural separator row marking a sub-block (e.g.
+      // "| — | **Report views (C = 4)** | | | |") — not a notation entry.
+      if (/^\|\s+—\s+\|/.test(line)) continue;
+      const cells = line.split('|').map(c => c.trim());
+      // cells: ['', Spec, ShortName, Purpose, FileExtension, Status, '']
+      if (cells.length < 7) continue;
+      const shortNameCell = cells[2];
+      const extCell = cells[4];
+      const statusCell = cells[5];
+      const shortMatch = shortNameCell.match(/`([^`]+)`/);
+      const extMatch = extCell.match(/`([^`]+)`/);
+      if (!shortMatch || !extMatch) {
+        throw new Error(`notations/README.md: cannot parse catalogue row: ${line}`);
+      }
+      out.set(shortMatch[1], { extension: extMatch[1], status: statusCell });
     }
-    out.set(shortMatch[1], { extension: extMatch[1], status: statusCell });
+  }
+  if (!sawTable) {
+    throw new Error(`notations/README.md: catalogue table header not found`);
   }
 
   if (out.size === 0) {
