@@ -25,6 +25,10 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
     { "rel_kind": "stakeholding", "from": "STAKEHOLDER-CFO-1", "to": "GOAL-RET-1",
       "extraction_confidence": "high", "extraction_notes": "..." }
   ],
+  "semantic_links": [
+    { "link_type": "requirement_dependency", "from": "REQUIREMENT-A-1", "to": "REQUIREMENT-B-1",
+      "confidence": "medium", "rationale": "source states A cannot be met until B is satisfied, but no closed REL kind exists for this edge" }
+  ],
   "unresolved": [
     { "ingest_field": "materials", "related_to": ["PRODUCT-WIDGET-1"],
       "data": ["Steel 316L", "Rubber gasket B12"] }
@@ -37,6 +41,7 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
 - **Two axes, never merged.** `extraction_confidence` (`high|medium|low`) answers *"did I read the document correctly"* — it is a review flag on the candidate, **separate** from the field artefact's `source_quality` (trust in the *source*). A prompt **never** outputs `source_quality`; that lives on the field artefact and is the CLI's / human's concern.
 - **Entity-strong, relation-conservative.** Extract entities readily. For relations, only mark `extraction_confidence: high` when the source states the relation plainly; otherwise mark `medium`/`low` and let the pipeline hold it back as a *suggestion* (the CLI only promotes `high` relations to candidates).
 - **Canonical IDs.** Every element carries an ID per `<TYPE>-[<middle>-]<INTEGER>` ([IDS §1](https://raw.githubusercontent.com/transitrix/methodology/main/notations/IDS_AND_REFERENCES.md)); relations reference element IDs in `from`/`to`. Never invent a TYPE or a relation kind — use the registries.
+- **Semantic links, not invented relation kinds.** When the source plainly states a typed edge between two candidates but no closed REL kind covers it ([17-relations.md §3](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md)), emit it as a `semantic_links[]` entry (`link_type`, `from`, `to`, `confidence`, `rationale`) instead of forcing it into `relations[]` with a made-up `rel_kind`. Semantic links are review-only — the CLI never shapes them into relation candidates and they are never admitted to canon.
 - **Propose, never admit.** The agent reads the field artefact body only (not its admission record), extracts, and stops. Admission to canon is a separate human gate; the CLI writes candidates as `admitted_to: pending`.
 - **Zero information loss — never drop, never guess (CONTRACT §12 / §13).** A source field that maps to no schema field of a *known* entity goes in that element's optional **`extensions:`** map (an open key-value bag, carried verbatim to the admitted entity). A *standalone object whose TYPE you cannot determine* — not merely an extra field on a known entity — goes in the top-level **`unresolved[]`** array, each item `{ ingest_field, data, related_to? }`; the CLI parks it in `canon/unresolved/` for a human to resolve. Never invent a TYPE to make an object fit, and never silently discard data — when in doubt between an `extensions:` key and an `unresolved[]` object, prefer `unresolved[]`.
 

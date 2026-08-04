@@ -9,7 +9,8 @@ Deterministic, no-API-key guard. Nine parts:
      (scaffold-intake -> convert -> privacy-scan -> field-artefact -> emit-candidates
      -> validate -> review-queue) and asserts the outputs: a conformant field artefact with a
      proposed source_quality, candidate files, a review queue with the gate closed,
-     the two-axes rule (a candidate carrying source_quality is flagged), and THE ONE
+     the two-axes rule (a candidate carrying source_quality is flagged), a semantic
+     link (no closed REL kind) carried through review-only, and THE ONE
      RULE — canon/ is never written.
   C. IG-5 regressions — capability V/H ID is accepted, a non-closed rel_kind is
      flagged, derived_from merges across sources.
@@ -205,6 +206,13 @@ def part_b_pipeline():
             s = json.load(open(sugg, encoding="utf-8"))
             check(any(x.get("rel_kind") == "contributes_to" for x in s), "medium relation was not held back as a suggestion")
 
+        # semantic links: a typed edge with no closed REL kind passes through untouched.
+        sem = os.path.join(org, "_intake", "processing", "semantic-links.json")
+        if check(os.path.isfile(sem), "semantic-links.json missing"):
+            sl = json.load(open(sem, encoding="utf-8"))
+            check(any(x.get("link_type") == "requirement_dependency" for x in sl),
+                  "semantic link from the fixture was not carried through to semantic-links.json")
+
         r = run_cli("validate", cand_dir)
         check(r.returncode == 0, f"validate flagged the clean fixture candidates (exit {r.returncode}): {r.stdout}")
 
@@ -216,6 +224,7 @@ def part_b_pipeline():
             check(q.get("gate", {}).get("admits_to_canon") is False, "review queue gate.admits_to_canon must be False")
             check(isinstance(q.get("candidates"), list) and len(q["candidates"]) >= 1, "review queue lists no candidates")
             check(len(q.get("relation_suggestions", [])) >= 1, "review queue did not carry the held-back suggestion")
+            check(len(q.get("semantic_links", [])) >= 1, "review queue did not carry the semantic link")
             fas = q.get("field_artefacts") or []
             check(any(fa.get("source_hash") == expected_hash for fa in fas),
                   "review queue did not carry the field artefact's source_hash through")
