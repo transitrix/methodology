@@ -35,6 +35,7 @@ const REPO_ROOT = join(dirname(__filename), '..');
 const CATALOGUE_PATH = join(REPO_ROOT, 'notations', 'README.md');
 const EXAMPLES_DIR = join(REPO_ROOT, 'notations', 'examples');
 const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
+const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
@@ -383,6 +384,45 @@ async function checkNoStandardIdentifiers(failures) {
   }
 }
 
+// --- PKGDOC1: every package spec states its core-envelope answer -----------
+//
+// PACKAGES.md §6 requires each shipped package's own spec to state, plainly,
+// whether its objects carry the core envelope — "required, not implied";
+// silence is not a valid value. This is a doc-lint invariant, not a runtime
+// one: an adopter repo never carries a package's spec, only its data, so
+// there is nothing for @transitrix/ingest-cli to check here — this is
+// checked once, at the source, over notations/packages/*.md.
+
+// Pure — no I/O. Returns null when `text` states a plain Yes/No core-envelope
+// answer (citing CONTRACT.md when the answer is "No"), or a reason string
+// when it doesn't.
+export function checkPackageEnvelopeStatement(text) {
+  const headingRe = /^##\s+\d+\.\s+Core envelope statement\s*$/m;
+  const m = text.match(headingRe);
+  if (!m) return 'missing a "## N. Core envelope statement" section (PACKAGES.md §6\'s required envelope row).';
+  const rest = text.slice(text.indexOf(m[0]) + m[0].length);
+  const nextHeadingIdx = rest.search(/^##\s/m);
+  const section = nextHeadingIdx >= 0 ? rest.slice(0, nextHeadingIdx) : rest;
+  const answerM = section.match(/\*\*(Yes|No)\.\*\*/);
+  if (!answerM) return 'Core envelope statement section does not open with a plain **Yes.**/**No.** answer.';
+  if (answerM[1] === 'No' && !/CONTRACT\.md/.test(section)) {
+    return 'Core envelope statement answers "No" but does not cite CONTRACT.md for why not.';
+  }
+  return null;
+}
+
+async function checkPackageEnvelopeStatements(failures) {
+  let entries;
+  try { entries = await readdir(PACKAGES_SPEC_DIR, { withFileTypes: true }); } catch { return; }
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.endsWith('.md')) continue;
+    const abs = join(PACKAGES_SPEC_DIR, e.name);
+    const text = await readFile(abs, 'utf8');
+    const reason = checkPackageEnvelopeStatement(text);
+    if (reason) failures.push({ check: 'PKGDOC1', message: `${relPosix(abs)}: ${reason}` });
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -395,6 +435,7 @@ async function main() {
     await checkVersion(failures);
     await checkNotationCounts(failures);
     await checkNoStandardIdentifiers(failures);
+    await checkPackageEnvelopeStatements(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

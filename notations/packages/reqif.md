@@ -1,8 +1,8 @@
 ---
 title: "ReqIF-shaped requirements interchange — domain package"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-29"
+last_updated: "2026-08-04"
 status: "draft"
 ---
 
@@ -227,7 +227,7 @@ One artefact per file, named by its canonical package id (§2.2).
 
 ## 5. Validation rules — the package's own validator
 
-Run by `@transitrix/reqif-cli validate <reqif-folder>` ([`packages/reqif-cli`](../../packages/reqif-cli) in this repo — the reference implementation shipped alongside this spec). Never wired into `packages/ingest-cli`, `scripts/check-notations.mjs`, or Studio's validator registry ([`PACKAGES.md`](../PACKAGES.md) §4.2) — this tooling runs only when explicitly invoked against a `reqif/` folder.
+Run by `@transitrix/reqif-cli validate <reqif-folder>` ([`packages/reqif-cli`](../../packages/reqif-cli) in this repo — the reference implementation shipped alongside this spec). No REQIF-specific rule is ever wired into `packages/ingest-cli`, `scripts/check-notations.mjs`, or Studio's validator registry ([`PACKAGES.md`](../PACKAGES.md) §4.2) — the checks in the table below live only here and in `reqif-cli`. `@transitrix/ingest-cli`'s `check-packages` command ([`PACKAGES.md`](../PACKAGES.md) §4.2, §7.1) may invoke this validator generically (a name → path lookup, run as a subprocess) when `@transitrix/reqif-cli` is installed in the adopter repo; it never learns what the table below checks.
 
 | Rule | Severity | Description |
 |---|---|---|
@@ -286,7 +286,15 @@ Per [`PACKAGES.md`](../PACKAGES.md) §6, core specs are never refactored to acco
 
 ---
 
-## 9. Evolution
+## 9. Core envelope statement
+
+**No.** This package does not carry [`CONTRACT.md`](../CONTRACT.md)'s core envelope — the required header (§2), admission record (§6), or lifecycle (§7) — on any of its four object kinds (§2.1). None of `spec-object-type`, `spec-object`, `spec-relation`, or `spec-hierarchy` is ever admitted; `package: reqif` + `kind: <…>` (§2.3) is the only pair the package's own tooling reads, and no core validator reads it at all ([`PACKAGES.md`](../PACKAGES.md) §4.2).
+
+This package is a requirements-*interchange* layer (§Scope): its objects are the YAML-shaped equivalent of ReqIF XML on the wire, arriving and round-tripping through `export`/`import` (§6) before any admission decision is made about them. Admission is what the core envelope marks — a human-gated decision that an object belongs in `canon/`, `field/`, or `codex/` ([`CONTRACT.md`](../CONTRACT.md) §6). A `spec-object` sitting in `reqif/spec-objects/` has made no such claim about itself; the one place it touches core is the one-way `Transitrix.CanonRef` citation (§3), which points *at* an already-admitted `REQUIREMENT`/`CONSTRAINT` — it never asserts that the citing `spec-object` itself is, or needs to become, an admitted core object.
+
+---
+
+## 10. Evolution
 
 **Landed (v0.1, 2026-07-28):** object model (§2), the one-way canon citation (§3), the package validator (§5), and the YAML↔ReqIF-XML converter (§6) — the base ReqIF-shaped layer.
 
@@ -294,11 +302,14 @@ Per [`PACKAGES.md`](../PACKAGES.md) §6, core specs are never refactored to acco
 
 **Landed (2026-07-29):** removal procedure (§7) and experimental-status declaration (§8) — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated against the worked example that landed with the base layer above.
 
+**Landed (2026-08-04):** core envelope statement (§9) — required by [`PACKAGES.md`](../PACKAGES.md) §6's envelope row ("required, not implied"). No object-model or validator change; a declaration this package already satisfied by construction.
+
 ---
 
-## 10. References
+## 11. References
 
 - [`PACKAGES.md`](../PACKAGES.md) — the mechanism this package is shipped under: where a package is declared, the reversibility contract, absence-is-silence, what a package's spec must state.
+- [`CONTRACT.md`](../CONTRACT.md) §2, §6, §7 — the core envelope (header, admission record, lifecycle) this package's objects do not carry (§9).
 - [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1 — the core id grammar this package's grammar (§2.2) is disjoint from.
 - [`MANIFEST.md`](../MANIFEST.md) §2 — the `packages:` field on `transitrix.yaml`.
 - [`elements/15-requirement.md`](../elements/15-requirement.md) — the core `REQUIREMENT` type a `spec-object` may cite via `Transitrix.CanonRef` (§3).

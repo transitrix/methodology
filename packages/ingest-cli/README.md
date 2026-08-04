@@ -45,6 +45,7 @@ transitrix-ingest <command> [args]
 | `resolve-placement <TYPE>` | ✅ | Print a TYPE's `ELEMENT_PRIMITIVES.md` §4 materialisation mode + layer + folder. |
 | `workflow-status [org-root]` | ✅ | Report every human gate's phase + count — ADR/WI status, canon element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches awaiting review, reg-intel digests awaiting review. Read-only; phases and counts only, no age/time. `[--out <path>] [--format md\|yaml] [--data-free]`. |
 | `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
+| `check-packages [org-root]` | ✅ | Validate `packages:` declarations (`PKG-001`/`PKG-002`, `PACKAGES.md` §8) and run each declared package's own validator entry point, if present — package-agnostic discovery, never package-specific logic (`PACKAGES.md` §4.2, §7). |
 
 ## Multi-batch naming
 
@@ -68,6 +69,7 @@ packages/ingest-cli/
     field-artefact.mjs # emit a field artefact + proposed source_quality
     coverage.mjs       # resolve coverage_profile (preset/custom) + classify in/out
     coverage-presets.mjs # shipped preset membership (COVERAGE_PROFILES §3/§3.1)
+    packages.mjs       # parse `packages:` declarations, PKG-001/PKG-002, validator-entry-point discovery (PACKAGES.md)
     placement.mjs      # TYPE -> materialisation mode/layer/folder (ELEMENT_PRIMITIVES §4)
     validate.mjs       # candidate contract checks (in code) + candidate loader
     review-queue.mjs   # assemble + emit the human review queue

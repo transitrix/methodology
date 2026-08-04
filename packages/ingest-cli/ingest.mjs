@@ -26,12 +26,13 @@ import { validateCandidate, loadCandidates } from './src/validate.mjs';
 import { readCoverageProfile, parseProfileDecl } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 import { resolveBatchPath } from './src/batch-path.mjs';
-import { dump } from './src/yaml.mjs';
+import { dump, readTopScalar } from './src/yaml.mjs';
 import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
+import { parsePackagesDecl, validatePackagesDecl, runPackageValidators } from './src/packages.mjs';
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
@@ -89,6 +90,8 @@ function usage() {
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
+    '  check-packages [org-root]      Validate `packages:` declarations (PKG-001/PKG-002) and run each',
+    '                                 declared package\'s own validator entry point, if present (PACKAGES.md §4.2, §7)',
     '  check-stale [org-root]         List REQUIREMENT/CONSTRAINT elements whose next_review_at has passed (REQ-STALE-001)',
     '  workflow-status [org-root]     Report every human gate\'s phase + count (ADR/WI/canon/overdue/ingest batch); read-only',
     '                 [--out <path>] [--format md|yaml] [--data-free]',
@@ -390,6 +393,44 @@ async function cmdResolvePlacement(args) {
   return 0;
 }
 
+// Validate `packages:` declarations and run each declared package's own
+// validator entry point, if present. Package-agnostic (PACKAGES.md §4.2):
+// this command never contains logic specific to any one package — it parses
+// the declaration, checks shape/typo/compat (PKG-001/PKG-002), resolves each
+// entry's declared entry point, and runs it if it exists. A repo declaring no
+// packages reports that and exits 0 — every other command's output is
+// unaffected by this one (§5 absence is silence).
+async function cmdCheckPackages(args) {
+  const { _ } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('check-packages: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const text = await readManifestText(orgRoot);
+  const entries = parsePackagesDecl(text || '');
+  if (entries.length === 0) {
+    console.log('check-packages  no packages declared — nothing to check (PACKAGES.md §5, absence is silence).');
+    return 0;
+  }
+
+  const methodologyVersion = text ? readTopScalar(text, 'methodology_version') : null;
+  const findings = validatePackagesDecl(entries, { methodologyVersion });
+  for (const f of findings) console.error(`  ${f.rule}  ${f.name ? `"${f.name}": ` : ''}${f.message}`);
+
+  const validEntries = entries.filter((e) => e.kind !== 'malformed');
+  const results = await runPackageValidators(orgRoot, validEntries);
+  for (const r of results) {
+    if (!r.ran) console.log(`  ${r.name}  validator entry point not present — skipped (absence is silence)`);
+    else console.log(`  ${r.name}  validator ${r.ok ? 'passed' : 'FAILED'}${r.output ? `\n    ${r.output.split('\n').join('\n    ')}` : ''}`);
+  }
+
+  const ranCount = results.filter((r) => r.ran).length;
+  const failedCount = results.filter((r) => r.ran && !r.ok).length;
+  console.log(`\ncheck-packages  ${entries.length} package(s) declared; ${findings.length} declaration finding(s); ${ranCount} validator(s) ran, ${failedCount} failed.`);
+  return (findings.length > 0 || failedCount > 0) ? 1 : 0;
+}
+
 // List REQUIREMENT / CONSTRAINT files whose next_review_at is in the past
 // (REQ-STALE-001; 15-requirement.md §2.3, §4). Read-only over canon/.
 async function cmdCheckStale(args) {
@@ -483,6 +524,7 @@ async function main(argv) {
     case 'suggest-profile': return cmdSuggestProfile(args);
     case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
+    case 'check-packages':  return cmdCheckPackages(args);
     case 'check-stale':     return cmdCheckStale(args);
     case 'workflow-status': return cmdWorkflowStatus(args);
     case 'resolve-placement': return cmdResolvePlacement(args);
