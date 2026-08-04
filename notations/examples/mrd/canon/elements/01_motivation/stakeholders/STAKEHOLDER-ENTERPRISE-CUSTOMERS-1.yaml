@@ -1,0 +1,20 @@
+notation: stakeholder
+id: STAKEHOLDER-ENTERPRISE-CUSTOMERS-1
+name: "Enterprise customers"
+type: external
+actor: ACTOR-ENTERPRISE-CUSTOMERS-1
+concern: "Knowing promptly when the service they depend on is degraded or unavailable, and that it is being worked on."
+interest: high
+influence: medium
+description: "Enterprise-tier customers whose own operations depend on this service staying up, or on being told quickly when it is not."
+
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2024-01-01"
+valid_to: null
