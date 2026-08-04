@@ -13,7 +13,9 @@ type: parent                            # closed enum (§3): parent | goal_paren
 from: CAPABILITY-V1.1                   # source / child primitive — must resolve in canon (REL-002)
 to: CAPABILITY-V1                       # target / parent primitive — must resolve in canon (REL-002)
 
-# Admission record (CONTRACT.md §6)
+# Admission record (CONTRACT.md §6) — computed by the assistant driving the
+# onboarding skill, not hand-typed (SKILL.md "Admission record and lifecycle").
+# Values below are illustrative only.
 zone: canon
 admitted_at: "2026-01-01"               # quoted ISO 8601 (CONTRACT.md §4)
 admitted_by: "firstname.lastname"
@@ -22,6 +24,7 @@ gate_checks:
   consistency: pass
   completeness: pass
 
-# Primitive lifecycle (CONTRACT.md §7) — the relation's own window
+# Primitive lifecycle (CONTRACT.md §7) — the relation's own window.
+# valid_from/valid_to default to today/null; also computed by the assistant.
 valid_from: "2026-01-01"
 valid_to: null

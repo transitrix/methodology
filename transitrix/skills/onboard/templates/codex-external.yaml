@@ -10,10 +10,13 @@ name: "FILL-ME law or regulation name"
 type: LAW                           # LAW | REGULATION
 description: "FILL-ME — what the artefact governs"
 
-# Admission record (CONTRACT.md §6)
+# Admission record (CONTRACT.md §6) — admitted_at/admitted_by are computed by
+# the assistant driving the onboarding skill, not hand-typed (SKILL.md
+# "Admission record and lifecycle"). gate_checks.source_authority is the one
+# field that IS real content the user supplies — name the actual issuing body.
 zone: codex
-admitted_at: "2026-01-01"           # quoted ISO 8601 date
-admitted_by: "FILL-ME-handle"
+admitted_at: "2026-01-01"           # quoted ISO 8601 date — assistant-computed
+admitted_by: "FILL-ME-handle"       # assistant-computed — never left for the user to type
 gate_checks:
   source_authority: "FILL-ME — name of the issuing legislative body / official source"
 

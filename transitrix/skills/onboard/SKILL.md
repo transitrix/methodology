@@ -159,7 +159,24 @@ The adopter manifest's `zones:` field selects which of `canon` / `field` / `code
 - **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point. **Not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, not a migration.
 - **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/elements/14-codex.md` and Step 3 below for how to seed a first codex artefact.
 
-Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. The codex and field templates ship with this record pre-filled with placeholders.
+Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. These are envelope fields a tool produces, not content the author supplies — see "Admission record and lifecycle" below for how you fill them.
+
+### Admission record and lifecycle — you compute these, the user doesn't hand-type them
+
+Every element, relation, and codex artefact you author also carries a primitive lifecycle (`valid_from` / `valid_to`, `notations/CONTRACT.md` §7) alongside its admission record. Both are envelope fields that carry no meaning of their own — the author supplies only the artefact's own content (`id`, `name`, `description`, the per-TYPE fields); you compute the rest, the same way the CLI's `transitrix new` command does:
+
+- **`zone`** — the destination folder (`canon`, `field`, or `codex`).
+- **`admitted_by`** — the person's handle. Ask once, at the start of the session (or infer it from `git config user.name` and confirm with the user), then reuse it for every file you author in the session. Never leave a placeholder for the user to type their own handle into.
+- **`admitted_at`** — today's date, quoted ISO 8601.
+- **`gate_checks`** — run the standard checks for the destination zone (`CONTRACT.md` §6 "Standard `gate_checks` per zone") and record what actually happened, never a constant `pass`:
+  - `uniqueness` — search the existing canon for the ID you're about to use; if it collides, choose a different one instead of writing the collision.
+  - `consistency` — confirm every cross-reference field you filled in (e.g. `factors:`, `capability:`, `owner_role:`) resolves to an ID that already exists in canon.
+  - `completeness` — confirm every field required for the TYPE (`ELEMENT_PRIMITIVES.md` §7) is filled before you write the file.
+  - A failing check is a violation, not a `gate_checks` entry — surface it and offer a fix (see Step 4's violation-handling convention) rather than write the file with a check recorded as `pass` that didn't run.
+- **`valid_from` / `valid_to`** (elements and relations, not codex) — default `valid_from` to today and `valid_to` to `null`; only ask the user if the real-world thing this element represents took effect on a different date, or has already ended.
+- **`gate_checks.source_authority`** (codex only) is the one admission field that is **not** mechanical — it names the actual issuing legislative body or internal authority, so it's genuine content only the user can supply (see the codex section below).
+
+State back to the user exactly which values you filled — the same transparency `notations/CONTRACT.md` §14.3 already establishes for view_config defaults ("full goals set, depth unlimited, no filters"): e.g. "admitted by v.korobeinikov today; uniqueness, consistency and completeness all pass."
 
 ### .gitignore — and the private `_intake/` workspace
 
@@ -217,7 +234,7 @@ After the copy:
 - Open the file and read it to the user (or summarise its structure).
 - Point at the placeholder values they need to fill in — they all carry `FILL-ME` markers.
 - The template carries the canonical `notation:` and `spec_version:` headers plus the canonical root shape for the notation (a `view_config` block for pure-projection view notations — Goals tree, Action schedule, Actions tree, Action Card, Compliance Impact, Coverage Metric — and a canonical root key + one minimal placeholder entry per layer for the inline-shape notations — DGCA, BPMN, Capability map, Process map, Nested blocks, Scenarios, Applications, Products, Process Blueprint). **Do not strip the headers** — the canonical header is required by `notations/CONTRACT.md`.
-- For a pure-projection view (Goals tree, Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree, following the element envelope in `notations/ELEMENT_PRIMITIVES.md` §3 + §7 and the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION). The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `canon/views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `canon/views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
+- For a pure-projection view (Goals tree, Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree. Ask the user only for the element's own content — the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION) — then compute the admission record and lifecycle yourself per "Admission record and lifecycle" above; don't hand the user a blank `admitted_by` or `valid_from` to fill in. The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `canon/views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `canon/views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
 
 ### Codex artefacts (codex zone)
 
@@ -228,7 +245,7 @@ If the user wants to seed a first codex artefact:
 - **External** (law / regulation given to the org by outside authority) — copy `templates/codex-external.yaml` to `codex/external/<jurisdiction>/<ID>.yaml`. Rename the file to the artefact's canonical ID (e.g. `LAW-PERSONAL-DATA-2017-1.yaml`, `REGULATION-GDPR-2016-1.yaml`). The `<jurisdiction>` folder MUST match the `jurisdiction:` field inside the file (rule `CODEX-001`) — use ISO 3166-1 alpha-2 (`ge`, `de`, …), `eu` for EU-wide, or `intl` (reserved).
 - **Internal** (policy / standard the org issues to itself) — copy `templates/codex-internal.yaml` to `codex/internal/<ID>.yaml`. Internal artefacts are not foldered by jurisdiction. Rename the file to the artefact's canonical ID (e.g. `POLICY-DATA-RETENTION-1.yaml`, `INTERNAL_STANDARD-coding-conventions-1.yaml`).
 
-Update the `id:`, `name:`, `description:`, the admission record (`admitted_at`, `admitted_by`, `gate_checks.source_authority`), and the codex-specific fields (`jurisdiction` + `effective_date` for external; `issuing_authority` + `effective_date` for internal). A codex artefact stores the **source document only** — do not add bindings to canonical entities or processes on the artefact itself. Those bindings live downstream on `REQUIREMENT.derived_from` (which cites the codex source) and on `ASSERTION` (which links each requirement to its subject). See `notations/elements/14-codex.md` §8 Migration for the rationale; `notations/elements/15-requirement.md` and `notations/elements/16-assertion.md` for the downstream shapes.
+Ask the user for the artefact's own content — `id:`, `name:`, `description:`, the codex-specific fields (`jurisdiction` + `effective_date` for external; `issuing_authority` + `effective_date` for internal), and `gate_checks.source_authority` (the issuing legislative body or internal authority — real content, not a default). Compute `admitted_at` / `admitted_by` yourself per "Admission record and lifecycle" above rather than asking the user to fill them in. A codex artefact stores the **source document only** — do not add bindings to canonical entities or processes on the artefact itself. Those bindings live downstream on `REQUIREMENT.derived_from` (which cites the codex source) and on `ASSERTION` (which links each requirement to its subject). See `notations/elements/14-codex.md` §8 Migration for the rationale; `notations/elements/15-requirement.md` and `notations/elements/16-assertion.md` for the downstream shapes.
 
 ---
 
@@ -414,7 +431,7 @@ Codex artefacts carry no `notation:` header (they are zone primitives, not view 
 
 ### Element primitive templates (reference — not yet wired into Step 2/3)
 
-One copy-and-fill template per ArchiMate layer, at `canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml` once filled. These are reference copies for manual use; the automated flow in Step 3 still authors element files inline per-TYPE (see § there) rather than copying these.
+One copy-and-fill template per ArchiMate layer, at `canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml` once filled. These are reference copies for manual use; the automated flow in Step 3 still authors element files inline per-TYPE (see § there) rather than copying these. If you do drive one of these templates for the user, the admission record and lifecycle fields are still yours to compute per "Admission record and lifecycle" above — the illustrative values in the template are not something to hand the user to fill in.
 
 | Layer | Template file |
 |---|---|
