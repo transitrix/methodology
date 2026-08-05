@@ -996,3 +996,81 @@ Two terms in the methodology carry closely related names and must not be conflat
 **Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
 
 **Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name was deprecated in favour of `ACTION` to enforce this distinction, and as of the 1.0 release (2026-07-05) is fully removed: the `ACTIVITY` TYPE prefix, `activity_type` field, `activities:` array name, and `*.activities.transitrix.yaml` extension are no longer accepted — validators emit `ACTION-005` as an **error**, not a warning. See [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.
+
+---
+
+## 16. Link suspicion, content identity, and the mechanical-procedure hatch
+
+A record that points at another primitive — a `REL`, an `ASSERTION`, a `VERIFICATION`, a `VALIDATION`, or an element that has committed to something (§6.3, when present) — carries a claim that was true of its target *at the time the claim was made*. Nothing here re-checks that claim; the far end can be rewritten afterward without anyone touching the record that pointed at it. This section defines a **derived** signal — never stored, never authored — that answers "has the thing I pointed at changed since I last looked at it?" from git history alone.
+
+Three pieces, in order: what "changed" means (§16.1), how the signal is computed (§16.2), and how a bulk, non-editorial edit is told apart from one that should raise the signal (§16.3).
+
+### 16.1 Content identity
+
+**Content identity is the whole endpoint, parsed and normalised — not a curated per-spec list of "material" fields.** Reformatting a file, reordering its keys, or editing a comment changes nothing about content identity; changing a statement always does. Concretely: every non-blank, non-comment line of the file is kept **except** the lines belonging to the administrative envelope this CONTRACT already defines by name —
+
+```
+zone, admitted_at, admitted_by, gate_checks, derived_from,                 (§6)
+admission_state, proposed_at, proposed_by, owner_to_confirm,
+rejected_at, rejected_by, rejection_reason,                                (§6.1)
+reviewer_authority,                                                        (§6.2)
+agreement, agreed_by, agreed_at,                                           (§6.3, when present)
+valid_from, valid_to                                                       (§7)
+```
+
+— the fields that record *who filed this and when*, never *what it says*. This is one generic exclusion list, defined once here, not a per-notation judgement call — a spec adding a new envelope field to §6 or §7 in a future revision extends this list in the same revision, not by inventing a second mechanism. The kept lines are whitespace-normalised, sorted, and hashed (`sha256:<hex>`, the same format `packages/ingest-cli/src/source-hash.mjs` uses for source fingerprints). Two files have the same content identity if and only if their non-envelope lines are the same multiset — order-independent, formatting-independent, comment-independent.
+
+This is deliberately **not** a general YAML parser: a reference implementation only needs to tell "this line is part of the statement" from "this line is bookkeeping," and a flat, line-oriented pass over the already-well-known envelope field names does that without adding a parsing dependency to the toolchain (the same posture `scripts/baseline-manifest.mjs` and `scripts/check-agreement.mjs` already take).
+
+### 16.2 Link suspicion — derived, never stored
+
+**Link suspicion is computed fresh from git on every check; no file ever carries a `suspicious: true` flag.** The alternative — writing the result back onto the record — is exactly the failure mode `packages/reqif-cli`'s stored-revision suspect-link mechanism (`notations/packages/reqif.md` §2.9) already rejects for its own domain: a mutable flag goes stale the moment it stops being recomputed. This section generalises the same posture — derived, not stored — to every addressable link record core already has, using git as the append-only ledger instead of a stored revision counter.
+
+The computation is one function of three inputs — an **anchor commit**, the **target's path**, and the **target's content identity (§16.1) at that commit versus now** — applied identically everywhere:
+
+> *Suspicious* ⟺ the target's content identity at the anchor commit differs from its content identity now, **and** §16.3's hatch does not explain the difference.
+
+The anchor is *when this record last looked at its target*, and it is resolved differently per application because "last looked at" means something different in each:
+
+| Application | Record | Target | Anchor commit |
+|---|---|---|---|
+| **Suspicion on a relation** | `REL` (`from`/`to`, [17-relations.md](elements/17-relations.md) §2) or `ASSERTION` (`about`, [16-assertion.md](elements/16-assertion.md) §2) | the endpoint(s) the record resolves to | the record file's own most recent commit — the last time anyone touched the link |
+| **Staleness on a comparison** | `VERIFICATION` (`verifies`, [27-verification.md](elements/27-verification.md) §2) or `VALIDATION` (`validates`, [28-validation.md](elements/28-validation.md) §2) | the `REQUIREMENT` / `NEED` it was run against | the record file's own most recent commit — the last time the protocol's target was current |
+| **Agreement lapse on an element** | a `REQUIREMENT` / `CONSTRAINT` / `NEED` carrying `agreement: agreed` (§6.3, when present) | itself | the most recent commit that touched the `agreement` / `agreed_by` / `agreed_at` lines specifically — the last time the accountable party actually committed, not the last time the file was edited for any reason |
+
+The third row is the one case where record and target are the same file: an element can be edited after it was agreed without anyone re-confirming, and that is exactly the condition worth surfacing. Anchoring on "last commit that touched the agreement fields" rather than "last commit that touched the file" is what makes an unrelated edit (fixing a typo in an unrelated field, admitting a sibling element) invisible while a rewritten statement after agreement is not.
+
+**Unresolvable and out-of-scope endpoints are silent, not suspicious.** A `REL-002` / `ASSERT-002` / `VERIF-002` / `VALID-002` endpoint-resolution failure is a validator error already; link suspicion only ever evaluates endpoints that resolve. A resolvable link that has never changed produces no finding — the same "suspect only ever appears with an explicit true/false, never a silent absence" distinction `reqif.md` §2.9 draws is not needed here because there is no stored flag to be silently missing; the report simply lists what it found suspicious and nothing else.
+
+**Reports, never filters — same guardrail as §6.3.** Suspicion is a presentation concern: a badge a reviewer sees, a line in a report. No validator, coverage rule, or view generator may use it to exclude a relation, an assertion, a verification, a validation, or an element from anything. A suspicious link is still a link.
+
+A reference implementation of §16.1 and §16.2 lives in [`scripts/check-link-suspicion.mjs`](../scripts/check-link-suspicion.mjs).
+
+### 16.3 The mechanical-procedure hatch
+
+A bulk, non-editorial edit — a scripted rename, a reformat that a naive diff can't tell from a rewrite, a declared migration — can legitimately touch a target's content identity without any accountable party having reconsidered the statement. Suspicion firing on every such edit would make the signal useless within one bulk pass. The hatch lets a process declare its edit mechanical — but **the declaration alone is never sufficient**; the checker independently verifies it before suppressing suspicion.
+
+A migration declares itself by writing a manifest alongside its recipe, under `migrations/<slug>/TRANSFORM.yaml`:
+
+```yaml
+mechanical: true
+applies_to:
+  - canon/elements/01_motivation/requirements/REQUIREMENT-DATA-ERASURE-1.yaml
+line_edits:
+  - from: "owner_role: ROLE-OLD-1"
+    to: "owner_role: ROLE-NEW-1"
+```
+
+`applies_to` names the exact files the migration touches — not a glob, not a pattern; a bulk edit already knows precisely which files it wrote. `line_edits` names, line for line, exactly what changed. The checker's verification is a replay, not a trust exercise: it takes the target's content identity lines *before* the edit, applies the declared `line_edits` to them, and checks the result matches the target's content identity lines *after* the edit exactly. A match suppresses suspicion. Anything left over — a line the manifest didn't declare, a declared edit that doesn't appear in the actual diff — means the manifest didn't fully explain the change, and suspicion stands **regardless of the `mechanical: true` flag**.
+
+This is the property that makes the hatch a checker-verified exemption rather than a mute button: **the editing tool cannot self-grant it.** Writing `mechanical: true` and walking away does nothing on its own; only a `line_edits` list the checker can independently replay and match does. A tool that declares itself mechanical but under- or over-states what it changed gets exactly the same suspicion result as a tool that made no declaration at all.
+
+**Validation rules.**
+
+| Rule | Severity | Description |
+|---|---|---|
+| `MECH-001` | info | A migration manifest under `migrations/<slug>/TRANSFORM.yaml` declares `mechanical: true` for a changed target, but replaying its `line_edits` against the target's before-state does not reproduce the after-state exactly — the hatch is refused and the change is reported exactly as if no manifest existed. |
+
+`MECH-001` is informational, not a build-breaking error: refusal does not fail validation, it only means §16.2's suspicion computation proceeds without the exemption. A reference implementation lives in [`scripts/check-link-suspicion.mjs`](../scripts/check-link-suspicion.mjs), alongside §16.1 and §16.2.
+
+**Additive.** Nothing in this section changes an existing schema, adds a required field to any TYPE, or alters an existing validation rule. A repository that declares no `migrations/*/TRANSFORM.yaml` manifest and never inspects link suspicion validates exactly as it did before this section existed.
