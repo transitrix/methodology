@@ -11,8 +11,9 @@ Deterministic, no-API-key guard. Nine parts:
      -> validate -> review-queue) and asserts the outputs: a conformant field artefact with a
      proposed source_quality, candidate files, a review queue with the gate closed,
      the two-axes rule (a candidate carrying source_quality is flagged), a role
-     assignment proposal (person->role, decision initialised to pending) carried
-     through review-only, and THE ONE RULE — canon/ is never written.
+     assignment proposal (person->role, decision initialised to pending) and a
+     semantic link (no closed REL kind) carried through review-only, and THE ONE
+     RULE — canon/ is never written.
   C. IG-5 regressions — capability V/H ID is accepted, a non-closed rel_kind is
      flagged, derived_from merges across sources.
   D. IG-1 assertion candidate — emit shapes an assertion; a valid one passes,
@@ -55,6 +56,11 @@ Deterministic, no-API-key guard. Nine parts:
      a dated `review-queue-<scope>-YYYYMMDD-<seq>/` directory (`--scope` defaults to
      `batch`); workflow-status discovers the flat path plus every dated directory as one
      combined count, using the directory name as the batch's display id.
+  U. CFB-0029 source-level idempotency after the raw source has already moved — a
+     retry of admit-source on the same converted markdown, with nothing re-dropped into
+     inbox/ (field: raw already in processed/; codex: raw already snapshotted into
+     sources/), is still recognised as the same source and skipped, not re-minted as a
+     second DRAFT-*/artefact; --force still mints a genuine duplicate either way.
 
 This is the PR-CI guard. The LLM-driven walk-through lives in drive_ingest_e2e.py,
 gated to the weekly cron. See tests/README.md.
@@ -217,6 +223,13 @@ def part_b_pipeline():
             if entry is not None:
                 check(entry.get("decision") == "pending", "role assignment proposal decision was not initialised to pending")
 
+        # semantic links: a typed edge with no closed REL kind passes through untouched.
+        sem = os.path.join(org, "_intake", "processing", "semantic-links.json")
+        if check(os.path.isfile(sem), "semantic-links.json missing"):
+            sl = json.load(open(sem, encoding="utf-8"))
+            check(any(x.get("link_type") == "requirement_dependency" for x in sl),
+                  "semantic link from the fixture was not carried through to semantic-links.json")
+
         r = run_cli("validate", cand_dir)
         check(r.returncode == 0, f"validate flagged the clean fixture candidates (exit {r.returncode}): {r.stdout}")
 
@@ -229,6 +242,7 @@ def part_b_pipeline():
             check(isinstance(q.get("candidates"), list) and len(q["candidates"]) >= 1, "review queue lists no candidates")
             check(len(q.get("relation_suggestions", [])) >= 1, "review queue did not carry the held-back suggestion")
             check(len(q.get("role_assignment_proposals", [])) >= 1, "review queue did not carry the role assignment proposal")
+            check(len(q.get("semantic_links", [])) >= 1, "review queue did not carry the semantic link")
             fas = q.get("field_artefacts") or []
             check(any(fa.get("source_hash") == expected_hash for fa in fas),
                   "review queue did not carry the field artefact's source_hash through")
@@ -1637,6 +1651,96 @@ def part_t_batch_naming():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── Part U — CFB-0029 idempotency after the raw already moved ────
+
+def part_u_source_idempotency_after_move():
+    """admit-source stays idempotent on a retry that does NOT re-drop the raw file —
+    the realistic re-run case, once the first admit already moved/snapshotted it
+    (field: processed/; codex: sources/). --force still mints a genuine duplicate."""
+    if not shutil.which("node"):
+        print("SKIP Part U: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="ingest-u-")
+    try:
+        org = os.path.join(work, "org")
+        os.makedirs(org)
+        run_cli("scaffold-intake", org)
+        with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
+            fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
+
+        inbox = os.path.join(org, "_intake", "inbox")
+        fdir = os.path.join(org, "field", "drafts")
+
+        def yamls(d):
+            return sorted(f for f in os.listdir(d) if f.endswith(".yaml")) if os.path.isdir(d) else []
+
+        # --- field zone: DRAFT (the bug's reported symptom) ---
+        with open(os.path.join(inbox, "note.md"), "w", encoding="utf-8") as fh:
+            fh.write("BBB\n")
+        run_cli("convert", os.path.join(inbox, "note.md"))
+        md = os.path.join(org, "_intake", "processing", "note.md")
+        run_cli("privacy-scan", md)
+
+        def admit_field(*extra):
+            return run_cli("admit-source", md, "--zone", "field", "--type", "DRAFT",
+                           "--role", "system", "--date", "2026-01-01", "--slug", "note",
+                           "--admitted-at", "2026-01-02", *extra)
+
+        r = admit_field()
+        check(r.returncode == 0, "U: first field admit failed: %s" % (r.stderr or r.stdout))
+        check(len(yamls(fdir)) == 1, "U: first field admit should mint exactly one artefact, got %r" % yamls(fdir))
+
+        # Re-run WITHOUT re-dropping the raw — it already moved to processed/ on the
+        # first admit. This is the actual reported bug (CFB-0029): a naive re-run of the
+        # same workflow, with nothing left in inbox/, must still be recognised.
+        r = admit_field()
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "U: a retry after the raw moved to processed/ must not error (exit %d): %s" % (r.returncode, out))
+        check("skip" in out.lower() and "force" in out.lower(),
+              "U: retry after processed/-move was not reported as skipped: %r" % out)
+        check(len(yamls(fdir)) == 1,
+              "U: retry after processed/-move must not mint a second DRAFT-*, got %r" % yamls(fdir))
+
+        # --force still mints a genuine second artefact even though the raw is gone
+        # from inbox/ — reused from processed/, not re-required to sit in inbox/.
+        r = admit_field("--force")
+        check(r.returncode == 0, "U: --force field admit after processed/-move failed: %s" % (r.stderr or r.stdout))
+        check(len(yamls(fdir)) == 2, "U: --force must mint a second artefact, got %r" % yamls(fdir))
+
+        # --- codex zone: LAW (raw is renamed into sources/ on admit — a harder case) ---
+        with open(os.path.join(inbox, "reg.md"), "w", encoding="utf-8") as fh:
+            fh.write("Article 1 - CCC\n")
+        run_cli("convert", os.path.join(inbox, "reg.md"))
+        cmd_md = os.path.join(org, "_intake", "processing", "reg.md")
+        codex_dir = os.path.join(org, "codex", "external", "eu")
+        sources_dir = os.path.join(codex_dir, "sources")
+
+        def admit_codex(*extra):
+            return run_cli("admit-source", cmd_md, "--zone", "codex", "--type", "LAW",
+                           "--jurisdiction", "eu", "--effective-date", "2026-01-01",
+                           "--slug", "reg", "--admitted-at", "2026-01-02", *extra)
+
+        r = admit_codex()
+        check(r.returncode == 0, "U: first codex admit failed: %s" % (r.stderr or r.stdout))
+        check(len(yamls(codex_dir)) == 1, "U: first codex admit should mint exactly one artefact, got %r" % yamls(codex_dir))
+
+        r = admit_codex()
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "U: a codex retry after the raw was snapshotted must not error (exit %d): %s" % (r.returncode, out))
+        check("skip" in out.lower() and "force" in out.lower(),
+              "U: codex retry after snapshot was not reported as skipped: %r" % out)
+        check(len(yamls(codex_dir)) == 1,
+              "U: codex retry after snapshot must not mint a second artefact, got %r" % yamls(codex_dir))
+
+        r = admit_codex("--force")
+        check(r.returncode == 0, "U: --force codex admit after snapshot failed: %s" % (r.stderr or r.stdout))
+        check(len(yamls(codex_dir)) == 2, "U: --force must mint a second codex artefact, got %r" % yamls(codex_dir))
+        check(len([f for f in os.listdir(sources_dir) if f.endswith(".md")]) == 2,
+              "U: --force codex admit must retain both snapshot files, got %r" % os.listdir(sources_dir))
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 part_a_bundle()
 part_b_pipeline()
 part_c_ig5()
@@ -1657,6 +1761,7 @@ part_q_origin_classification()
 part_r_privacy_gate()
 part_s_workflow_status()
 part_t_batch_naming()
+part_u_source_idempotency_after_move()
 
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")

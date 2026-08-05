@@ -1,0 +1,39 @@
+notation: sdd
+spec_version: "0.1"
+
+# SDD — Software Design Description. Spec: notations/views/documents/31-sdd.md
+# Document-config over APPLICATION / NODE / TECHNOLOGY_SERVICE (sibling of MRD).
+# Carries no canonical content — every section is DERIVED from the design-element
+# catalogues and the REQUIREMENTs each one realises, traced via ASSERTION
+# (realised_via -> the design element; about -> the requirement). This file only
+# declares which slice to render and how.
+
+name: "FILL-ME — e.g. Data export capability — SDD"   # required per CONTRACT.md §1.1
+
+view:
+  id: SDD-FILL-ME-1
+  name: "FILL-ME — same as document name, or a shorter view label"
+  description: "FILL-ME — which design elements, which requirement slice, why"
+
+  # Reserved — inert in this version of the spec. Do not set a standard identifier.
+  standard: null
+
+  # What the document covers. Use `include` OR `filter` per scope block (include wins).
+  scope:
+    design_elements:
+      # include: [APPLICATION-FILL-ME-1]
+      filter:
+        type: [APPLICATION, NODE, TECHNOLOGY_SERVICE]
+    requirements:
+      # include: [REQUIREMENT-FILL-ME-1]
+      filter:
+        origin: [legislative]   # legislative | process-product | project-product
+
+  # Whether a design element with zero traced requirements still gets an (empty) section.
+  include_untraced_elements: true
+  empty_section_label: "No requirement traces to this design element (current model)"
+
+  # Ordering knobs.
+  grouping:
+    order_design_elements_by: "id"     # id | name | type
+    order_requirements_by: "id"        # id | name | severity

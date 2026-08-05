@@ -50,6 +50,10 @@ export function shapeCandidates(derivedFrom, result) {
     confidence: p.confidence,
     decision: 'pending',
   }));
+  // Review-only edges the source states but for which no closed REL kind exists
+  // (17-relations.md §3) — never shaped into a relation candidate, never admitted.
+  // Passed through as-is; the extraction prompt is the one place `link_type` is chosen.
+  const semanticLinks = [...(result.semantic_links || [])];
 
   for (const el of result.elements || []) {
     const c = {
@@ -115,7 +119,7 @@ export function shapeCandidates(derivedFrom, result) {
     candidates.push(c);
   }
 
-  return { candidates, suggestions, roleAssignmentProposals };
+  return { candidates, suggestions, semanticLinks, roleAssignmentProposals };
 }
 
 // Surface ID-grammar violations at emit time (F14): an element/assertion id or a
@@ -178,7 +182,7 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   try { result = JSON.parse(await readFile(resultPath, 'utf8')); }
   catch (err) { throw new Error(`could not read extraction result ${resultPath}: ${err.message}`); }
 
-  const { candidates, suggestions, roleAssignmentProposals } = shapeCandidates(derivedFrom, result);
+  const { candidates, suggestions, semanticLinks, roleAssignmentProposals } = shapeCandidates(derivedFrom, result);
   const warnings = collectIdWarnings(candidates);
 
   // Entity-match proposals (F8): for each element candidate whose name matches an
@@ -220,6 +224,10 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   const roleAssignmentProposalsPath = join(resolve(orgRoot), '_intake', 'processing', 'role-assignment-proposals.json');
   await writeFile(roleAssignmentProposalsPath, JSON.stringify(roleAssignmentProposals, null, 2) + '\n', 'utf8');
 
+  // Semantic links feed the review queue the same way — review-only, never candidates.
+  const semanticLinksPath = join(resolve(orgRoot), '_intake', 'processing', 'semantic-links.json');
+  await writeFile(semanticLinksPath, JSON.stringify(semanticLinks, null, 2) + '\n', 'utf8');
+
   // Mechanism 2 (CONTRACT §13): standalone objects ingestion could not TYPE are parked,
   // non-admitted, in the shared canon/unresolved/ holding area — never dropped, never
   // guessed. The CLI emits `proposed`-untyped records (no admission record); a human
@@ -232,6 +240,7 @@ export async function emitCandidates({ orgRoot, fieldArtefactPath, resultPath, c
   const unresolved = await writeUnresolved(orgRoot, records);
 
   return { derivedFrom, dir, candidates, suggestions, suggPath,
+           semanticLinks, semanticLinksPath,
            roleAssignmentProposals, roleAssignmentProposalsPath, warnings,
            unresolved: { ...unresolved, skipped: skipped.length } };
 }

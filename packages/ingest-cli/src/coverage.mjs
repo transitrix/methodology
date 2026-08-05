@@ -22,7 +22,7 @@ import { PRESETS, PRESET_NAMES, LAYERS } from './coverage-presets.mjs';
 // ── Value cleaning ───────────────────────────────────────────────
 
 // Trim, strip a trailing ` # comment`, and unquote a scalar value.
-function clean(v) {
+export function clean(v) {
   if (v === null || v === undefined) return null;
   let s = String(v).trim();
   const h = s.indexOf(' #');
@@ -33,7 +33,7 @@ function clean(v) {
 
 // Parse a YAML inline list `[A, B]` / `[]` into an array. Returns null if `v` is not
 // a bracketed list (so the caller can treat the value as block-style).
-function parseInlineList(v) {
+export function parseInlineList(v) {
   let s = String(v).trim();
   if (!s.startsWith('[')) return null;
   s = s.replace(/^\[/, '').replace(/\][ \t]*(#.*)?$/, '').trim();

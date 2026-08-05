@@ -231,6 +231,40 @@ The routing that decides which drafts a tool may auto-admit to `ai_reviewed` (hi
 
 **Recording the decision.** A human reviewing a `proposed` draft may record accept/reject/defer against the pipeline's review artifact (`review-queue.yaml` or `review-digest.yaml`) in a shared, machine-readable form — `decisions.reviewed.yaml`, applied by [`@transitrix/decisions-cli`](https://github.com/transitrix/methodology/tree/main/packages/decisions-cli). This is a recommended recording convention, not a new admission state or lifecycle: `apply` performs exactly the `proposed → active | rejected` transitions above (`defer` leaves the artefact `proposed`, same as not touching it at all), and never writes `reviewer_authority: expert_confirmed` on a tool's behalf (`ADMIT-007`). Recording by hand, without the CLI, remains equally valid.
 
+### 6.3 Agreement axis — has the accountable party committed?
+
+Admission (§6.1) asks whether a **record** has passed its zone gate; agreement asks whether the **statement** is owed. The two are independent — an admitted, regulation-derived requirement the organisation has not yet committed to, and a requirement agreed in a workshop before it passed the canon gate, both occur in practice, so a single ladder cannot express them: agreement can *precede* admission. (Per the 2026-07-31 requirements-management cut-line decision.)
+
+`agreement` is a closed three-value axis carried by `REQUIREMENT`, `CONSTRAINT`, and `NEED` **only** — the elements whose statement is something an accountable party can *own*. It does **not** apply to `VERIFICATION` / `VALIDATION`: those record a comparison between an expected and an obtained result (an anchor, a `method`, an `outcome`, `evidence` — a shape both specs already have), and a machine may perform that comparison because the evidence carries the authority, not a signer. Widening the axis to cover them would collapse commitment and attestation back together — the named signature they need is already expressible as the admission record (`admitted_by` + `admitted_at` + `reviewer_authority: expert_confirmed`, a human guaranteed by `ADMIT-007`).
+
+```yaml
+agreement: agreed            # draft | agreed | disputed — absent ⇒ agreed (back-compat)
+agreed_by: "v.korobeinikov"  # required whenever `agreement` is written explicitly
+agreed_at: "2026-08-04"      # optional; quoted ISO 8601 date (§4) — when this value was last set
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `agreement` | no | string | `draft` \| `agreed` \| `disputed`. **Absent ⇒ `agreed`** — matches `admission_state` (§6.1) and `reviewer_authority` (§6.2): a human-authored element that predates this axis needs no change. |
+| `agreed_by` | when `agreement` is present | string | Person handle or tool identifier that set the current `agreement` value. Required whenever `agreement` is written, so the write-authority rule below has something to check. |
+| `agreed_at` | no | string | Date `agreement` was last set — quoted ISO 8601 per §4. |
+
+- **`draft`** — the statement is recorded but the accountable party has not yet committed to it. Either a human or a tool may write this value.
+- **`agreed`** — the accountable party has committed. **Written only by a human** (`AGREE-002`) — the mirror of `ADMIT-007`'s human-only `expert_confirmed` tier, and the reason the axis is worth having: it is the one place the model records that a *person* took on an obligation.
+- **`disputed`** — the accountable party has raised a substantive objection. `disputed` is not `rejected` (§6.1): the record stays in the model — an external obligation may be non-negotiable, and the dispute concerns the organisation's response to it, not the record's continued existence in canon. Either a human or a tool may write this value.
+
+**Reports, never filters.** Like `reviewer_authority` (§6.2), `agreement` adds **no** new exclusion from derived views or from any coverage / cross-cutting rule (`REQ-COVERAGE-001`, `NEED-COVERAGE-001`, …). A `draft` or `disputed` REQUIREMENT is still admitted canon if `admission_state` says so, still counts toward coverage, and still appears in every rendered view exactly as an `agreed` one does. Displaying the value — a badge, a column a reader filters by hand in a spreadsheet export — is a presentation concern; no validator, view generator, or cross-cutting rule may use `agreement` to decide whether an element is included.
+
+#### 6.3.1 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `AGREE-001` | error | `agreement` is present and not one of `draft` / `agreed` / `disputed`. |
+| `AGREE-002` | error | `agreement: agreed` but `agreed_by` identifies a tool rather than a human (§6.2's tool-identifier convention) — a tool must never write `agreed`. |
+| `AGREE-003` | error | `agreement` is present (any of the three values) but `agreed_by` is missing. |
+
+`AGREE-002` and `AGREE-003` can both describe an `agreement: agreed` record with no `agreed_by`; a validator MAY report either or both. A reference implementation of this check lives in [`scripts/check-agreement.mjs`](../scripts/check-agreement.mjs).
+
 ---
 
 ## 7. Primitive lifecycle
@@ -559,6 +593,17 @@ Worked examples: [`migrations/0.5-to-0.6/`](../migrations/0.5-to-0.6/) and [`mig
 - **The 1.0 cut decision.** Phase 4 — gated on the in-flight schema epics landing.
 - **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
 - **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
+
+### 10.6 Deprecation policy
+
+A spec file marked `status: "deprecated"` in its own front matter (§1 — the spec-authoring header, distinct from an adopter's notation-file header) names its removal release in the same change that deprecates it. Decided 2026-08-03.
+
+- **A deprecation names its removal release.** The front matter carries `removed_in: "X.0.0"` alongside `status: "deprecated"`, and the spec body states it in prose. A deprecation with no stated end is not a deprecation — it is an unmaintained file. Checked by the `DEP1` doc-lint rule in [`check-notations.mjs`](../scripts/check-notations.mjs).
+- **The window is at least one MAJOR.** Deprecated during a `2.x` release → removable in `3.0.0` at the earliest. Ordinary SemVer (§10.2); no local invention of a shorter or longer window.
+- **Removal is always a `BREAKING` CHANGELOG entry** — folded into the `MAJOR` bump that performs it, never a silent tidy-up inside a `MINOR` or `PATCH` release.
+- **The migration recipe outlives the file it replaces.** When a deprecated spec is deleted, its migration instructions move into `migrations/<from>-to-<to>/` (§10.4 shape) rather than disappearing with it. The recipe MAY land ahead of the actual removal, once the deprecation's replacement is settled — waiting until the major-release cut is not required and risks authoring it under time pressure.
+
+**Historical note.** The `3.0.0` release (`CHANGELOG.md`) removed `HAZARD`, `RISK_CONTROL`, and the Design-Controls Trace Matrix view one minor after they shipped (`2.1.0` → `3.0.0`), with no deprecation window. That CHANGELOG entry is a record of what happened and is not rewritten to imply the window above was honoured — this section states the rule going forward, not retroactively.
 
 ---
 

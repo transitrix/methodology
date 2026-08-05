@@ -26,12 +26,13 @@ import { validateCandidate, loadCandidates } from './src/validate.mjs';
 import { readCoverageProfile, parseProfileDecl } from './src/coverage.mjs';
 import { buildReviewQueue, writeReviewQueue } from './src/review-queue.mjs';
 import { resolveBatchPath } from './src/batch-path.mjs';
-import { dump } from './src/yaml.mjs';
+import { dump, readTopScalar } from './src/yaml.mjs';
 import { buildProfileSuggestion } from './src/suggest-profile.mjs';
 import { emitCandidates } from './src/emit-candidates.mjs';
 import { emitCodexArtefact } from './src/codex-artefact.mjs';
 import { resolvePlacement, checkCanonPlacement } from './src/placement.mjs';
 import { repoCheck } from './src/repo-check.mjs';
+import { parsePackagesDecl, validatePackagesDecl, runPackageValidators } from './src/packages.mjs';
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
@@ -89,6 +90,8 @@ function usage() {
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
+    '  check-packages [org-root]      Validate `packages:` declarations (PKG-001/PKG-002) and run each',
+    '                                 declared package\'s own validator entry point, if present (PACKAGES.md §4.2, §7)',
     '  check-stale [org-root]         List REQUIREMENT/CONSTRAINT elements whose next_review_at has passed (REQ-STALE-001)',
     '  workflow-status [org-root]     Report every human gate\'s phase + count (ADR/WI/canon/overdue/ingest batch); read-only',
     '                 [--out <path>] [--format md|yaml] [--data-free]',
@@ -301,12 +304,17 @@ async function cmdReviewQueue(args) {
   const suggPath = join(stageDir(r.orgRoot, 'processing'), 'relation-suggestions.json');
   try { suggestions = JSON.parse(await readFile(suggPath, 'utf8')); } catch { /* none */ }
 
+  // Pick up semantic links emitted by `emit-candidates`, if present.
+  let semanticLinks = [];
+  const semanticLinksPath = join(stageDir(r.orgRoot, 'processing'), 'semantic-links.json');
+  try { semanticLinks = JSON.parse(await readFile(semanticLinksPath, 'utf8')); } catch { /* none */ }
+
   // Pick up role assignment proposals emitted by `emit-candidates`, if present.
   let roleAssignmentProposals = [];
   const roleAssignmentProposalsPath = join(stageDir(r.orgRoot, 'processing'), 'role-assignment-proposals.json');
   try { roleAssignmentProposals = JSON.parse(await readFile(roleAssignmentProposalsPath, 'utf8')); } catch { /* none */ }
 
-  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, roleAssignmentProposals });
+  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, semanticLinks, roleAssignmentProposals });
   const out = flags.out
     ? resolve(flags.out)
     : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope, content: dump(queue) });
@@ -316,6 +324,7 @@ async function cmdReviewQueue(args) {
   console.log(`review queue  ->  ${out}`);
   console.log(`  coverage_profile: ${queue.coverage_profile}`);
   console.log(`  ${queue.field_artefacts.length} field artefact(s), ${queue.candidates.length} candidate(s) (${flagged} flagged), ${queue.relation_suggestions.length} relation suggestion(s).`);
+  if (queue.semantic_links) console.log(`  ${queue.semantic_links.length} semantic link(s) — review-only, no closed REL kind yet.`);
   if (queue.role_assignment_proposals) console.log(`  ${queue.role_assignment_proposals.length} role assignment proposal(s) — pending human decision.`);
   if (queue.excluded_admitted.length) {
     console.log(`  ${queue.excluded_admitted.length} candidate(s) excluded — already admitted to canon (idempotent re-run).`);
@@ -344,6 +353,9 @@ async function cmdEmitCandidates(args) {
     console.log(`emit-candidates  derived_from ${res.derivedFrom}`);
     console.log(`  ${res.candidates.length} candidate(s) -> ${res.dir}`);
     console.log(`  ${res.suggestions.length} relation suggestion(s) held back (relation-conservative) -> ${res.suggPath}`);
+    if (res.semanticLinks && res.semanticLinks.length) {
+      console.log(`  ${res.semanticLinks.length} semantic link(s) (no closed REL kind yet) -> ${res.semanticLinksPath}`);
+    }
     if (res.roleAssignmentProposals && res.roleAssignmentProposals.length) {
       console.log(`  ${res.roleAssignmentProposals.length} role assignment proposal(s) (person->role, decision pending) -> ${res.roleAssignmentProposalsPath}`);
     }
@@ -397,6 +409,44 @@ async function cmdResolvePlacement(args) {
   if (!p) { console.error(`resolve-placement: ${type} has no ELEMENT_PRIMITIVES §4 placement (not a catalogue element TYPE).`); return 1; }
   console.log(`${type}  mode: ${p.mode}  layer: ${p.layer ?? '—'}  folder: ${p.folder ?? '(inline — no catalogue folder)'}${p.promotable ? '  (promotable, §1 rule)' : ''}`);
   return 0;
+}
+
+// Validate `packages:` declarations and run each declared package's own
+// validator entry point, if present. Package-agnostic (PACKAGES.md §4.2):
+// this command never contains logic specific to any one package — it parses
+// the declaration, checks shape/typo/compat (PKG-001/PKG-002), resolves each
+// entry's declared entry point, and runs it if it exists. A repo declaring no
+// packages reports that and exits 0 — every other command's output is
+// unaffected by this one (§5 absence is silence).
+async function cmdCheckPackages(args) {
+  const { _ } = parseArgs(args);
+  const orgRoot = _[0]
+    ? (await findOrgRoot(resolve(_[0])) || resolve(_[0]))
+    : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('check-packages: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  const text = await readManifestText(orgRoot);
+  const entries = parsePackagesDecl(text || '');
+  if (entries.length === 0) {
+    console.log('check-packages  no packages declared — nothing to check (PACKAGES.md §5, absence is silence).');
+    return 0;
+  }
+
+  const methodologyVersion = text ? readTopScalar(text, 'methodology_version') : null;
+  const findings = validatePackagesDecl(entries, { methodologyVersion });
+  for (const f of findings) console.error(`  ${f.rule}  ${f.name ? `"${f.name}": ` : ''}${f.message}`);
+
+  const validEntries = entries.filter((e) => e.kind !== 'malformed');
+  const results = await runPackageValidators(orgRoot, validEntries);
+  for (const r of results) {
+    if (!r.ran) console.log(`  ${r.name}  validator entry point not present — skipped (absence is silence)`);
+    else console.log(`  ${r.name}  validator ${r.ok ? 'passed' : 'FAILED'}${r.output ? `\n    ${r.output.split('\n').join('\n    ')}` : ''}`);
+  }
+
+  const ranCount = results.filter((r) => r.ran).length;
+  const failedCount = results.filter((r) => r.ran && !r.ok).length;
+  console.log(`\ncheck-packages  ${entries.length} package(s) declared; ${findings.length} declaration finding(s); ${ranCount} validator(s) ran, ${failedCount} failed.`);
+  return (findings.length > 0 || failedCount > 0) ? 1 : 0;
 }
 
 // List REQUIREMENT / CONSTRAINT files whose next_review_at is in the past
@@ -492,6 +542,7 @@ async function main(argv) {
     case 'suggest-profile': return cmdSuggestProfile(args);
     case 'repo-check':      return cmdRepoCheck(args);
     case 'check-placement': return cmdCheckPlacement(args);
+    case 'check-packages':  return cmdCheckPackages(args);
     case 'check-stale':     return cmdCheckStale(args);
     case 'workflow-status': return cmdWorkflowStatus(args);
     case 'resolve-placement': return cmdResolvePlacement(args);

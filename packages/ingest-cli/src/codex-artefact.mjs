@@ -12,7 +12,7 @@
 // codex/ is a zone admission (gate_checks.source_authority), parallel to the field
 // flow's admission to field/. This command NEVER writes canon/.
 
-import { readFile, writeFile, mkdir, readdir, rename, access } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, rename, copyFile, access } from 'node:fs/promises';
 import { join, resolve, basename, extname } from 'node:path';
 import { isValidId, makeId, slugSegment, parseId } from './ids.mjs';
 import { dump } from './yaml.mjs';
@@ -43,13 +43,25 @@ async function nextOrdinal(dir, type, middle) {
   return max + 1;
 }
 
-// Find the raw source in inbox/ matching a converted md by basename stem.
-async function findRaw(orgRoot, mdPath) {
-  const inbox = stageDir(orgRoot, 'inbox');
-  if (!(await exists(inbox))) return null;
+// Find the raw source matching a converted md by basename stem — in inbox/ (the
+// pre-admission location), then in `sourcesDir` (where the first successful admit of
+// this same source already snapshotted it, named `snapshot_<id>_<date>_<stem><ext>`).
+// Without the sourcesDir fallback, re-running admit-source on an already-admitted
+// source finds no raw file at all (it was renamed into sources/ on the first run), so
+// no source_hash can be computed and the duplicate check below is silently skipped —
+// minting a second artefact for the same source on every retry.
+async function findRaw(orgRoot, mdPath, sourcesDir) {
   const stem = basename(mdPath, extname(mdPath));
-  for (const name of await readdir(inbox)) {
-    if (basename(name, extname(name)) === stem) return join(inbox, name);
+  const inbox = stageDir(orgRoot, 'inbox');
+  if (await exists(inbox)) {
+    for (const name of await readdir(inbox)) {
+      if (basename(name, extname(name)) === stem) return join(inbox, name);
+    }
+  }
+  if (sourcesDir && (await exists(sourcesDir))) {
+    for (const name of await readdir(sourcesDir)) {
+      if (name.endsWith(`_${stem}${extname(name)}`)) return join(sourcesDir, name);
+    }
   }
   return null;
 }
@@ -77,7 +89,8 @@ export async function emitCodexArtefact(opts) {
 
   // Fingerprint the raw bytes up front and refuse a duplicate re-ingest (same content
   // already admitted to codex/) unless --force — before minting an id or snapshotting.
-  const raw = await findRaw(orgRoot, mdPath);
+  const sourcesDir = join(codexDir, 'sources');
+  const raw = await findRaw(orgRoot, mdPath, sourcesDir);
   let sourceHash = null;
   if (raw) {
     sourceHash = await hashFile(raw);
@@ -95,15 +108,22 @@ export async function emitCodexArtefact(opts) {
   if (!isValidId(id)) throw new Error(`generated an invalid ID: ${id}`);
 
   // Snapshot the raw bytes into the codex sources/ subfolder (audit trail). The snapshot
-  // name is keyed by the unique id, so it never collides across distinct sources.
+  // name is keyed by the unique id plus the original stem (the stem is what lets a later
+  // retry of admit-source on the same converted md find this snapshot via findRaw's
+  // fallback, once the raw is no longer sitting in inbox/). When `raw` was already found
+  // inside sourcesDir (a --force re-admit of an already-snapshotted source), the original
+  // bytes are copied under this id's own name rather than moved, so the earlier snapshot
+  // is left in place for the artefact that already cites it.
   let snapshotFile = null;
   let snapshotDate = null;
   if (raw) {
     snapshotDate = admittedAt;
-    const sourcesDir = join(codexDir, 'sources');
     await mkdir(sourcesDir, { recursive: true });
-    const snapName = `snapshot_${id}_${snapshotDate}${extname(raw)}`;
-    await rename(raw, join(sourcesDir, snapName));
+    const stem = basename(mdPath, extname(mdPath));
+    const snapName = `snapshot_${id}_${snapshotDate}_${stem}${extname(raw)}`;
+    const dest = join(sourcesDir, snapName);
+    if (resolve(raw).startsWith(resolve(sourcesDir))) await copyFile(raw, dest);
+    else await rename(raw, dest);
     snapshotFile = `sources/${snapName}`;
   }
 

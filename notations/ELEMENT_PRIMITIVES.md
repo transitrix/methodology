@@ -580,6 +580,8 @@ Already shipped (worked example `CONSTRAINT-GDPR-RESIDENCY-1`). Same field set a
 
 **Hierarchy — `parent`.** CONSTRAINT MAY carry the same optional `parent` field defined for REQUIREMENT in [elements/15-requirement.md](elements/15-requirement.md) §2.4 — same-TYPE (`parent: CONSTRAINT-…`), inline, not time-aware. A broad restriction ("no personal data outside the EEA without safeguards") decomposes into narrower ones ("no PII in analytics logs sent outside the EEA", "no PII in raw log storage outside the EEA"). Same origin-agnostic semantics: any two CONSTRAINTs may be linked regardless of `origin`. Cross-TYPE hierarchies (CONSTRAINT → REQUIREMENT, or vice versa) are not supported — CONSTRAINT and REQUIREMENT are peer motivation-layer elements ([elements/15-requirement.md](elements/15-requirement.md) §1), not decompositions of one another. Structure only, no traversal semantics: an assertion mechanism against CONSTRAINT is still out of scope for v1 ([elements/16-assertion.md](elements/16-assertion.md) §1, §7), so aggregation across the hierarchy is a downstream tooling concern.
 
+**Agreement — has the accountable party committed?** CONSTRAINT MAY carry the same optional agreement axis defined for REQUIREMENT in [CONTRACT.md](CONTRACT.md) §6.3 (`agreement: draft | agreed | disputed`, independent of admission). Absent ⇒ `agreed`; only a human may write `agreed` (`AGREE-002`); the axis reports and never filters a view.
+
 ### 7.14 `EQUIPMENT` — `04_technology/equipment/`
 
 Physical instrument, device, or facility a process stage depends on (ArchiMate Physical element). Promoted from Process Blueprint view-defined to first-class standalone in the `04_technology` layer (ADR 2026-06-08; first catalogued TYPE for this layer).
@@ -990,6 +992,8 @@ There is no ArchiMate counterpart for `NEED`: ArchiMate 3.x has no need element 
 
 **`stakeholder` is inline, not a first-class time-aware `REL`** — consistent with `ASSESSMENT.assesses` (§7.16) and `STAKEHOLDER.actor` (§7.15). A need re-attributed to a different stakeholder is captured by versioning the `NEED` element itself (`valid_to` the old, admit a new), not by relation re-binding.
 
+**Agreement — has the accountable party committed?** NEED MAY carry the same optional agreement axis defined for REQUIREMENT in [CONTRACT.md](CONTRACT.md) §6.3 (`agreement: draft | agreed | disputed`, independent of admission) — here, whether the stakeholder has confirmed the need is accurately captured, distinct from whether the need has been admitted to canon. Absent ⇒ `agreed`; only a human may write `agreed` (`AGREE-002`); the axis reports and never filters a view.
+
 ```yaml
 # canon/elements/01_motivation/needs/NEED-TIMELY-OUTAGE-STATUS-1.yaml
 notation: need
@@ -1037,7 +1041,7 @@ Before `NEED` existed, there was no anchor for the claim that a delivered thing 
 
 ## 9. Validation rules
 
-Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3), and sidecar (`VERSIONED-001..005`, [CONTRACT.md](CONTRACT.md) §9.3) rules apply to element files in addition to these.
+Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3), and sidecar (`VERSIONED-001..005`, [CONTRACT.md](CONTRACT.md) §9.3) rules apply to element files in addition to these. `CONSTRAINT` and `NEED` additionally carry the agreement-axis rules (`AGREE-001..003`, [CONTRACT.md](CONTRACT.md) §6.3.1) — the REQUIREMENT-side counterpart is in [elements/15-requirement.md](elements/15-requirement.md) §4.
 
 | Rule | Severity | Description |
 |---|---|---|

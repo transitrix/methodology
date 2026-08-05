@@ -35,13 +35,15 @@ Each produces a derived report or table from a declarative view-config, per [`RE
 | [22-coverage-metric.md](./views/reports/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 | [23-actions-tree.md](./views/reports/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
 
-### Document views (D = 1)
+### Document views (D = 3)
 
 Each renders a standard document (MRD, SRS, SDD, …) from canon.
 
 | Spec | Short name | Purpose | File extension | Status |
 |---|---|---|---|---|
 | [29-mrd.md](./views/documents/29-mrd.md) | `mrd` | Marketing Requirements Document — groups admitted `REQUIREMENT`s under the `NEED` each one serves. | `*.mrd.transitrix.yaml` | draft |
+| [30-srs.md](./views/documents/30-srs.md) | `srs` | Software Requirements Specification — sections admitted software-tier `REQUIREMENT`s by `kind` (functional / quality). | `*.srs.transitrix.yaml` | draft |
+| [31-sdd.md](./views/documents/31-sdd.md) | `sdd` | Software Design Description — groups admitted `APPLICATION` / `NODE` / `TECHNOLOGY_SERVICE` design elements under themselves, listing the `REQUIREMENT`s each realises via the `ASSERTION` trace. | `*.sdd.transitrix.yaml` | draft |
 
 Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Every file begins with a `notation: <short-name>` header — see each spec's "File header" section and [CONTRACT.md](CONTRACT.md) §3 for the rule.
 

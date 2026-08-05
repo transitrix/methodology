@@ -11,6 +11,8 @@ import {
   deriveClassCounts,
   parseStatedViewCounts,
   findStandardIdentifierEmissions,
+  checkPackageEnvelopeStatement,
+  deriveDeprecationFailures,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -96,4 +98,77 @@ test('findStandardIdentifierEmissions — negative: a documented ieee-… defaul
     '| `view.standard` | no | string | `ieee-830` | default document-structure profile |',
   ].join('\n');
   assert.deepEqual(findStandardIdentifierEmissions(text), ['ieee-830']);
+});
+
+test('checkPackageEnvelopeStatement — positive: a "No." answer citing CONTRACT.md passes', () => {
+  const text = [
+    '## 9. Core envelope statement',
+    '',
+    '**No.** This package does not carry CONTRACT.md\'s envelope on any object kind.',
+    '',
+    '## 10. Evolution',
+  ].join('\n');
+  assert.equal(checkPackageEnvelopeStatement(text), null);
+});
+
+test('checkPackageEnvelopeStatement — positive: a "Yes." answer passes without needing a CONTRACT.md citation', () => {
+  const text = [
+    '## 6. Core envelope statement',
+    '',
+    '**Yes.** Every object carries the core envelope, per CONTRACT.md §2/§6/§7.',
+  ].join('\n');
+  assert.equal(checkPackageEnvelopeStatement(text), null);
+});
+
+test('checkPackageEnvelopeStatement — negative: no section at all fails', () => {
+  const text = '## 5. Validation rules\n\nsome rules\n';
+  assert.match(checkPackageEnvelopeStatement(text), /missing a "## N\. Core envelope statement" section/);
+});
+
+test('checkPackageEnvelopeStatement — negative: a section present but silent on yes/no fails', () => {
+  const text = [
+    '## 9. Core envelope statement',
+    '',
+    'This package interacts with the core envelope in some ways.',
+    '',
+    '## 10. Evolution',
+  ].join('\n');
+  assert.match(checkPackageEnvelopeStatement(text), /does not open with a plain/);
+});
+
+test('checkPackageEnvelopeStatement — negative: a "No." answer that never cites CONTRACT.md fails', () => {
+  const text = [
+    '## 9. Core envelope statement',
+    '',
+    '**No.** This package just does not.',
+    '',
+    '## 10. Evolution',
+  ].join('\n');
+  assert.match(checkPackageEnvelopeStatement(text), /does not cite CONTRACT\.md/);
+});
+
+test('deriveDeprecationFailures — positive: deprecated spec with removed_in passes clean', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: '4.0.0' }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
+});
+
+test('deriveDeprecationFailures — negative: deprecated spec with no removed_in reports DEP1', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'DEP1');
+  assert.match(failures[0].message, /03-fga\.md/);
+});
+
+test('deriveDeprecationFailures — negative: a non-deprecated spec without removed_in is not flagged', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '02-dgca.md', deprecated: false, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
 });
