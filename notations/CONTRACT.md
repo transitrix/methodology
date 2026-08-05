@@ -560,6 +560,17 @@ Worked examples: [`migrations/0.5-to-0.6/`](../migrations/0.5-to-0.6/) and [`mig
 - **Per-notation versioning.** `spec_version` on individual files is informational; only `methodology_version` in `transitrix.yaml` drives compatibility decisions.
 - **Migration for adopter repositories of non-methodology versions** (DSM, Studio, CLI). Those have their own SemVer policies.
 
+### 10.6 Deprecation policy
+
+A spec file marked `status: "deprecated"` in its own front matter (§1 — the spec-authoring header, distinct from an adopter's notation-file header) names its removal release in the same change that deprecates it. Decided 2026-08-03.
+
+- **A deprecation names its removal release.** The front matter carries `removed_in: "X.0.0"` alongside `status: "deprecated"`, and the spec body states it in prose. A deprecation with no stated end is not a deprecation — it is an unmaintained file. Checked by the `DEP1` doc-lint rule in [`check-notations.mjs`](../scripts/check-notations.mjs).
+- **The window is at least one MAJOR.** Deprecated during a `2.x` release → removable in `3.0.0` at the earliest. Ordinary SemVer (§10.2); no local invention of a shorter or longer window.
+- **Removal is always a `BREAKING` CHANGELOG entry** — folded into the `MAJOR` bump that performs it, never a silent tidy-up inside a `MINOR` or `PATCH` release.
+- **The migration recipe outlives the file it replaces.** When a deprecated spec is deleted, its migration instructions move into `migrations/<from>-to-<to>/` (§10.4 shape) rather than disappearing with it. The recipe MAY land ahead of the actual removal, once the deprecation's replacement is settled — waiting until the major-release cut is not required and risks authoring it under time pressure.
+
+**Historical note.** The `3.0.0` release (`CHANGELOG.md`) removed `HAZARD`, `RISK_CONTROL`, and the Design-Controls Trace Matrix view one minor after they shipped (`2.1.0` → `3.0.0`), with no deprecation window. That CHANGELOG entry is a record of what happened and is not rewritten to imply the window above was honoured — this section states the rule going forward, not retroactively.
+
 ---
 
 ## 11. Confidence and freshness

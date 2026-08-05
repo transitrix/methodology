@@ -11,6 +11,7 @@ import {
   deriveClassCounts,
   parseStatedViewCounts,
   findStandardIdentifierEmissions,
+  deriveDeprecationFailures,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -96,4 +97,30 @@ test('findStandardIdentifierEmissions — negative: a documented ieee-… defaul
     '| `view.standard` | no | string | `ieee-830` | default document-structure profile |',
   ].join('\n');
   assert.deepEqual(findStandardIdentifierEmissions(text), ['ieee-830']);
+});
+
+test('deriveDeprecationFailures — positive: deprecated spec with removed_in passes clean', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: '4.0.0' }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
+});
+
+test('deriveDeprecationFailures — negative: deprecated spec with no removed_in reports DEP1', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'DEP1');
+  assert.match(failures[0].message, /03-fga\.md/);
+});
+
+test('deriveDeprecationFailures — negative: a non-deprecated spec without removed_in is not flagged', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '02-dgca.md', deprecated: false, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
 });

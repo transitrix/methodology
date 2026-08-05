@@ -45,6 +45,7 @@ const VERSION_PIN_ALLOWLIST = new Set([
   'migrations/0.7-to-1.0/fixtures/before/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',  // pre-migration fixture
   'migrations/0.7-to-1.0/fixtures/after/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',   // post-migration fixture
   'migrations/1.0-to-2.0/README.md',                    // documents the target version, not the current pin
+  'migrations/3.1-to-4.0/README.md',                    // documents the target version, not the current pin
   'migrations/1.0-to-2.0/fixtures/after/canon/views/goals/strategy-2026.goals.transitrix.yaml',   // post-migration fixture
   'migrations/1.0-to-2.0/fixtures/after/canon/views/action/platform-launch.action.transitrix.yaml', // post-migration fixture
   'migrations/2.1-to-3.0/fixtures/before/canon/views/design-controls-trace-matrix/example.design-controls-trace-matrix.transitrix.yaml', // pre-migration fixture
@@ -287,9 +288,31 @@ async function readClassDir(dir) {
     const text = await readFile(join(dir, e.name), 'utf8');
     if (!/^notation:\s*/m.test(text)) continue;
     const statusM = text.match(/^status:\s*"?(\w+)"?/m);
-    out.push({ name: e.name, deprecated: statusM ? statusM[1] === 'deprecated' : false });
+    const removedInM = text.match(/^removed_in:\s*"?([^"\s]*)"?/m);
+    out.push({
+      name: e.name,
+      deprecated: statusM ? statusM[1] === 'deprecated' : false,
+      removedIn: removedInM ? removedInM[1] : null,
+    });
   }
   return out;
+}
+
+// Pure — no I/O. specs: [{ name, deprecated, removedIn }] as read from a spec
+// directory's front matter. CONTRACT.md §10.6: a spec marked
+// status: "deprecated" must also carry removed_in: — a deprecation with no
+// stated end is not a deprecation.
+export function deriveDeprecationFailures(specs, dirLabel) {
+  const failures = [];
+  for (const s of specs) {
+    if (s.deprecated && !s.removedIn) {
+      failures.push({
+        check: 'DEP1',
+        message: `${dirLabel}/${s.name}: status: "deprecated" with no removed_in: — a deprecation names its removal release (CONTRACT.md §10.6).`,
+      });
+    }
+  }
+  return failures;
 }
 
 async function checkNotationCounts(failures) {
@@ -299,6 +322,10 @@ async function checkNotationCounts(failures) {
     documents: await readClassDir(join(VIEWS_DIR, 'documents')),
   };
   const counts = deriveClassCounts(filesByClass);
+
+  for (const [cls, files] of Object.entries(filesByClass)) {
+    failures.push(...deriveDeprecationFailures(files, `notations/views/${cls}`));
+  }
 
   const elemCount = (await readdir(ELEMENTS_DIR, { withFileTypes: true }))
     .filter(e => e.isFile() && e.name.endsWith('.md')).length;

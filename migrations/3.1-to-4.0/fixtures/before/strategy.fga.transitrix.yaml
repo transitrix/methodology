@@ -1,0 +1,25 @@
+notation: fga
+spec_version: "0.3"
+methodology_version: "3.1.0"
+
+id: FGA-STARTUP-1
+name: "Product launch — strategy chain"
+period: "2026"
+generated_at: "2026-07-14"
+
+factors:
+  - id: DRIVER-MARKET-1
+    name: "Growing demand for automated reporting"
+    type: external
+    category: technological
+
+goals:
+  - id: GOAL-1
+    name: "Launch our analytics product to market"
+    factors: [DRIVER-MARKET-1]
+
+actions:
+  - id: ACTION-1
+    name: "Analytics MVP"
+    type: Project
+    goals: [GOAL-1]
