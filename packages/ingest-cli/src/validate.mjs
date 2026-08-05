@@ -17,7 +17,7 @@ const EXTRACTION_CONFIDENCE = new Set(['high', 'medium', 'low']);
 const ORIGIN_VALUES = new Set(['legislative', 'process-product', 'project-product']);
 
 // Closed REL `type` enum — notations/elements/17-relations.md §3. The enum is closed
-// in v1; adding a kind is a non-backwards-compatible methodology revision. The CLI
+// for a given methodology release; new kinds land as additive MINOR revisions. The CLI
 // tracks it (like ID_RE) so a rel_kind outside the enum is FLAGGED for review — never
 // silently emitted, never dropped. This completes the candidate contract: the bundle's
 // candidate.schema.json names "closed REL kinds" among what validation_flags covers.
@@ -26,6 +26,7 @@ const CLOSED_REL_KINDS = new Set([
   'action_goal', 'activity_goal', // action_goal is canonical; activity_goal is deprecated alias (ACTION-005)
   'unit_parent', 'employment', 'candidacy', 'alumni_membership',
   'community_membership', 'contracting', 'stakeholding',
+  'depends_on',
 ]);
 
 // ASSERTION contract — notations/elements/16-assertion.md §2/§3. `about` must reference

@@ -225,6 +225,8 @@ A REQUIREMENT is a single obligation, but obligations naturally decompose: a bro
 - **Structure only, no traversal semantics.** `parent` records structure; it does **not** imply that satisfying the parent's obligation is realised by satisfying all children, or that a claim about the parent aggregates its children. Compliance claims remain per-REQUIREMENT via `ASSERTION` ([elements/16-assertion.md](16-assertion.md)); a hierarchy view over `parent` is a downstream tooling concern, not a validator concern. In particular, `REQ-COVERAGE-001` (§4) evaluates per-REQUIREMENT and is unaffected by parent linkage — a parent REQUIREMENT is not "covered" by an ASSERTION targeting its child.
 - **Optional.** Requirements without `parent` are top-level. Cycles in the `parent` chain are ill-formed (a REQUIREMENT is not its own transitive parent) but not currently a validator concern — same posture as `CHANGE.parent` and `LOCATION.parent`. Backfilling `parent` on existing admitted requirements is optional.
 
+**Distinct from `depends_on`.** Structural decomposition (`parent` / the stated `requirement_parent` promotion path) is not the same as a conditional dependency between peer obligations. When obligation A is only meaningful or satisfiable if obligation B holds — without A being a narrower restatement of B — author a first-class `depends_on` REL (`from: A`, `to: B`) under [17-relations.md](17-relations.md) §3. Do **not** use `parent` for that reading, and do **not** use `depends_on` to encode implementation order (that stays with `ACTION` / `CHANGE`).
+
 The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13): authors MAY set `parent: CONSTRAINT-…` to decompose a broad restriction ("no personal data outside the EEA without safeguards") into narrower ones ("no PII in analytics logs sent outside the EEA"). Same-TYPE, same origin-agnostic semantics, same structure-only interpretation.
 
 **Precedent — one convention across `parent` fields.** Same-TYPE inline `parent` is the settled v0.x shape across multi-scale primitives: `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3, capability → process → step decomposition) and `LOCATION.parent` (§7.22, enclosing location). Reusing that shape here keeps the authoring surface uniform; no new pattern is introduced.
@@ -309,6 +311,9 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-05, requirement dependency):**
+- First-class `depends_on` REL kind ([17-relations.md](17-relations.md) §3) — `REQUIREMENT → REQUIREMENT`, conditional dependency between obligations (not decomposition, not work order). §2.4 above distinguishes it from inline `parent`. Validator codes `REL-005` (self-reference error) and `REL-006` (cycle warning). Additive MINOR; no migration.
 
 **Landed (2026-08-04, agreement axis):**
 - [CONTRACT.md](../CONTRACT.md) §6.3 — the `agreement: draft | agreed | disputed` axis, independent of admission, applying symmetrically to REQUIREMENT / CONSTRAINT / NEED. Absent ⇒ `agreed` (back-compat, no migration). `AGREE-001..003` (§6.3.1) validate the closed vocabulary, the required `agreed_by` writer attribution, and the human-only write authority on `agreed` (mirrors `ADMIT-007`). Per the 2026-07-31 requirements-management cut-line decision, which also moves the `reqif` package's `draft` / `approved` workflow states down into this axis (`approved` renamed `agreed`, since "approval" is spoken for by tiered approval, §6.2).

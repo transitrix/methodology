@@ -1,0 +1,23 @@
+notation: requirement
+id: REQUIREMENT-COMPLIANCE-REPORTING-1
+name: File a quarterly compliance report
+origin: legislative
+level: system
+kind: functional
+
+zone: canon
+admitted_at: "2026-08-05"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  The organisation MUST file a quarterly compliance report covering the
+  jurisdictions where it processes customer data. The report is only
+  meaningful while the residency obligation it rests on holds — see the
+  depends_on relation to REQUIREMENT-DATA-RESIDENCY-1.
