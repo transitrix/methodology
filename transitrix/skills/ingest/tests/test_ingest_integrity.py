@@ -4,13 +4,15 @@
 Deterministic, no-API-key guard. Nine parts:
 
   A. Bundle integrity — SKILL.md frontmatter, the four JSON schemas parse, the
-     four layer prompts + READMEs exist, the _intake template is present.
+     four layer prompts + the cross-cutting approvers prompt + READMEs exist, the
+     _intake template is present.
   B. CLI pipeline drive — runs the real CLI end-to-end on a fixture
      (scaffold-intake -> convert -> privacy-scan -> field-artefact -> emit-candidates
      -> validate -> review-queue) and asserts the outputs: a conformant field artefact with a
      proposed source_quality, candidate files, a review queue with the gate closed,
-     the two-axes rule (a candidate carrying source_quality is flagged), a semantic
-     link (no closed REL kind) carried through review-only, and THE ONE
+     the two-axes rule (a candidate carrying source_quality is flagged), a role
+     assignment proposal (person->role, decision initialised to pending) and a
+     semantic link (no closed REL kind) carried through review-only, and THE ONE
      RULE — canon/ is never written.
   C. IG-5 regressions — capability V/H ID is accepted, a non-closed rel_kind is
      flagged, derived_from merges across sources.
@@ -137,7 +139,7 @@ def part_a_bundle():
             except Exception as e:  # noqa: BLE001
                 check(False, f"schema does not parse: schemas/{short}.schema.json: {e}")
 
-    for prompt in ("01_motivation", "02_business", "03_application", "04_implementation"):
+    for prompt in ("01_motivation", "02_business", "03_application", "04_implementation", "05_approvers"):
         p = os.path.join(SKILL_DIR, "prompts", f"{prompt}.md")
         if check(os.path.isfile(p), f"prompt missing: prompts/{prompt}.md"):
             check(isinstance(frontmatter(p), dict), f"prompt frontmatter does not parse: prompts/{prompt}.md")
@@ -211,6 +213,16 @@ def part_b_pipeline():
             s = json.load(open(sugg, encoding="utf-8"))
             check(any(x.get("rel_kind") == "contributes_to" for x in s), "medium relation was not held back as a suggestion")
 
+        # role assignment proposals: person->role from the fixture's approver entry
+        # passes through review-only, with decision initialised to pending.
+        rap = os.path.join(org, "_intake", "processing", "role-assignment-proposals.json")
+        if check(os.path.isfile(rap), "role-assignment-proposals.json missing"):
+            ra = json.load(open(rap, encoding="utf-8"))
+            entry = next((x for x in ra if x.get("person") == "ACTOR-OPS-HEAD-1"), None)
+            check(entry is not None, "role assignment proposal from the fixture was not carried through to role-assignment-proposals.json")
+            if entry is not None:
+                check(entry.get("decision") == "pending", "role assignment proposal decision was not initialised to pending")
+
         # semantic links: a typed edge with no closed REL kind passes through untouched.
         sem = os.path.join(org, "_intake", "processing", "semantic-links.json")
         if check(os.path.isfile(sem), "semantic-links.json missing"):
@@ -229,6 +241,7 @@ def part_b_pipeline():
             check(q.get("gate", {}).get("admits_to_canon") is False, "review queue gate.admits_to_canon must be False")
             check(isinstance(q.get("candidates"), list) and len(q["candidates"]) >= 1, "review queue lists no candidates")
             check(len(q.get("relation_suggestions", [])) >= 1, "review queue did not carry the held-back suggestion")
+            check(len(q.get("role_assignment_proposals", [])) >= 1, "review queue did not carry the role assignment proposal")
             check(len(q.get("semantic_links", [])) >= 1, "review queue did not carry the semantic link")
             fas = q.get("field_artefacts") or []
             check(any(fa.get("source_hash") == expected_hash for fa in fas),

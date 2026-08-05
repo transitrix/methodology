@@ -1,9 +1,10 @@
 // `review-queue` — assemble the human gate for a batch. Lists the field artefacts
 // referenced by the candidates (with their PROPOSED source_quality, for the human to
 // confirm), every candidate with its derived_from / extraction_confidence / coverage
-// + validation flags, any below-threshold relation suggestions, and any semantic links
-// (typed edges with no closed REL kind yet). Emitted as YAML (write-only via the
-// dumper). NOTHING here is admitted to canon.
+// + validation flags, any below-threshold relation suggestions, any semantic links
+// (typed edges with no closed REL kind yet), and any role assignment proposals
+// (person->role, e.g. from an approver sign-off chain). Emitted as YAML
+// (write-only via the dumper). NOTHING here is admitted to canon.
 
 import { readFile, writeFile, access, readdir, mkdir } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
@@ -75,7 +76,7 @@ async function readSourceArtefact(orgRoot, id) {
   };
 }
 
-export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [], semanticLinks = [] }) {
+export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [], semanticLinks = [], roleAssignmentProposals = [] }) {
   const loaded = await loadCandidates(candidatesDir);
   // Read (never write) canon so the queue is idempotent against it: a candidate that
   // already passed the human gate is excluded, not re-listed for re-approval.
@@ -150,6 +151,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     excluded_admitted,
     relation_suggestions: suggestions,
     ...(semanticLinks.length ? { semantic_links: semanticLinks } : {}),
+    ...(roleAssignmentProposals.length ? { role_assignment_proposals: roleAssignmentProposals } : {}),
     gate: { admits_to_canon: false },
   };
 }

@@ -8,6 +8,7 @@ Per-layer **system prompts** the ingest agent runs over a `field` artefact to pr
 | [`02_business.md`](02_business.md) | Business | `ACTOR`, `ROLE`, `PROCESS`, `RULE`, `PRODUCT`, `CAPABILITY` |
 | [`03_application.md`](03_application.md) | Application | `APPLICATION`, `INTEGRATION`, `INFORMATION_ENTITY` |
 | [`04_implementation.md`](04_implementation.md) | Implementation & Migration | `ACTIVITY`, `CHANGE`, `TARGET_STATE` (+ milestone candidates routed through these two TYPEs until `MILESTONE` lands) |
+| [`05_approvers.md`](05_approvers.md) | Cross-cutting | `ACTOR`, `ROLE` from a document's approval / sign-off chain, plus `role_assignment_proposals[]` |
 
 Each prompt is self-contained (it can be fed to an agent independently) and emits the same **result contract**:
 
@@ -32,6 +33,11 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
   "unresolved": [
     { "ingest_field": "materials", "related_to": ["PRODUCT-WIDGET-1"],
       "data": ["Steel 316L", "Rubber gasket B12"] }
+  ],
+  "role_assignment_proposals": [
+    { "person": "ACTOR-JANE-DOE-1", "proposed_role": "ROLE-CTO-1",
+      "evidence": "signature block: 'Approved by: Jane Doe, CTO'",
+      "confidence": "high" }
   ]
 }
 ```
@@ -44,6 +50,7 @@ Each prompt is self-contained (it can be fed to an agent independently) and emit
 - **Semantic links, not invented relation kinds.** When the source plainly states a typed edge between two candidates but no closed REL kind covers it ([17-relations.md §3](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md)), emit it as a `semantic_links[]` entry (`link_type`, `from`, `to`, `confidence`, `rationale`) instead of forcing it into `relations[]` with a made-up `rel_kind`. Semantic links are review-only — the CLI never shapes them into relation candidates and they are never admitted to canon.
 - **Propose, never admit.** The agent reads the field artefact body only (not its admission record), extracts, and stops. Admission to canon is a separate human gate; the CLI writes candidates as `admitted_to: pending`.
 - **Zero information loss — never drop, never guess (CONTRACT §12 / §13).** A source field that maps to no schema field of a *known* entity goes in that element's optional **`extensions:`** map (an open key-value bag, carried verbatim to the admitted entity). A *standalone object whose TYPE you cannot determine* — not merely an extra field on a known entity — goes in the top-level **`unresolved[]`** array, each item `{ ingest_field, data, related_to? }`; the CLI parks it in `canon/unresolved/` for a human to resolve. Never invent a TYPE to make an object fit, and never silently discard data — when in doubt between an `extensions:` key and an `unresolved[]` object, prefer `unresolved[]`.
+- **Person→role assignment is a proposal, not an invented relation.** [`05_approvers.md`](05_approvers.md) emits `role_assignment_proposals[]` (`person`, `proposed_role`, `evidence`, `confidence`) for a document's approval / sign-off chain — a role assignment has no closed `REL` kind of its own ([17-relations.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md) §3; today it rides as the `roles:` attribute on an `employment` relation, which a sign-off block gives no basis to assert). A prompt never sets `decision` on a proposal — the CLI initialises it to `pending` and a human reviewer resolves it.
 
 ## See also
 
