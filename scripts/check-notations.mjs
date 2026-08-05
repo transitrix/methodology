@@ -264,14 +264,16 @@ export function deriveClassCounts(filesByClass) {
 }
 
 // Pure — no I/O. Extracts the stated "Diagram views (A = N)" / "Report views
-// (C = N)" counts from the README prose. Returns null for a count whose
-// pattern isn't found.
+// (C = N)" / "Document views (D = N)" counts from the README prose. Returns
+// null for a count whose pattern isn't found.
 export function parseStatedViewCounts(readmeText) {
   const dm = readmeText.match(/Diagram views\s*\(A\s*=\s*(\d+)\)/);
   const rm = readmeText.match(/Report views\s*\(C\s*=\s*(\d+)\)/);
+  const cm = readmeText.match(/Document views\s*\(D\s*=\s*(\d+)\)/);
   return {
     diagrams: dm ? parseInt(dm[1], 10) : null,
     reports: rm ? parseInt(rm[1], 10) : null,
+    documents: cm ? parseInt(cm[1], 10) : null,
   };
 }
 
@@ -341,6 +343,7 @@ async function checkNotationCounts(failures) {
   const stated = parseStatedViewCounts(readmeText);
   check(stated.diagrams, counts.diagrams, 'notations/README.md', '"Diagram views (A = N)"');
   check(stated.reports, counts.reports, 'notations/README.md', '"Report views (C = N)"');
+  check(stated.documents, counts.documents, 'notations/README.md', '"Document views (D = N)"');
   const em = readmeText.match(/The\s+\*\*(\d+)\*\*\s+element\s+notations/);
   check(em ? parseInt(em[1], 10) : null, elemCount, 'notations/README.md', '"The **N** element notations"');
 
@@ -358,6 +361,55 @@ async function checkNotationCounts(failures) {
   }
 }
 
+// --- DOC1: no standard identifiers in a document-view spec -----------------
+//
+// Every document-view layout (MRD today; SRS / SDD planned) is required to
+// never document, default to, or emit a "standard identifier" — a named
+// specification number or numbering convention (e.g. a value that looks like
+// `iso-29148` or `ieee-830`) — as a supported or default field value. This
+// check scans notations/views/documents/*.md for a documented *value* that
+// looks like one, inside a fields-table row. A narrative mention of a
+// standard's full name in prose (not a table row, not a code-span value) is
+// not what this guards against and is deliberately not flagged.
+
+const STANDARD_ID_VALUE_RE = /^(iso|ieee)[-_][a-z0-9._-]*$/i;
+
+// Pure — no I/O. Returns the list of offending code-span values (e.g.
+// ["iso-29148"]) found inside Markdown table rows in `text`. A code-span
+// appearing outside a table row (prose) is not inspected.
+export function findStandardIdentifierEmissions(text) {
+  const found = [];
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('|')) continue; // only table-row lines
+    for (const m of line.matchAll(/`([^`]+)`/g)) {
+      const value = m[1].trim();
+      if (STANDARD_ID_VALUE_RE.test(value)) found.push(value);
+    }
+  }
+  return found;
+}
+
+async function checkNoStandardIdentifiers(failures) {
+  const dir = join(VIEWS_DIR, 'documents');
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.endsWith('.md')) continue;
+    const abs = join(dir, e.name);
+    const text = await readFile(abs, 'utf8');
+    for (const value of findStandardIdentifierEmissions(text)) {
+      failures.push({
+        check: 'DOC1',
+        message: `${relPosix(abs)}: documents \`${value}\` as a field-table value — no document-view layout may document, default to, or emit a standard identifier.`,
+      });
+    }
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -369,6 +421,7 @@ async function main() {
     await checkLinks(failures);
     await checkVersion(failures);
     await checkNotationCounts(failures);
+    await checkNoStandardIdentifiers(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

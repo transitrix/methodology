@@ -1,0 +1,19 @@
+notation: requirement
+id: REQUIREMENT-OUTAGE-STATUS-EMAIL-1
+name: "Email affected enterprise customers within 15 minutes of a confirmed outage"
+description: "Once a service-affecting outage impacting enterprise-tier customers is confirmed, the organisation must send a direct email notification to each affected account's registered contacts within 15 minutes of confirmation, summarising the impact and the time of the next update."
+
+origin: project-product
+severity: medium
+serves: NEED-TIMELY-OUTAGE-STATUS-1
+
+zone: canon
+admitted_at: "2026-08-04"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-04"
+valid_to: null

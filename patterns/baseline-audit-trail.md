@@ -26,15 +26,15 @@ None of these need a new mechanism. CONTRACT.md §6/§6.2/§7 already carries ev
 git tag design-review-2026-Q3 <commit>
 ```
 
-`scripts/baseline-manifest.mjs` turns that tag into a **manifest** — the frozen `REQUIREMENT` / `ASSERTION` set exactly as it stood at that ref:
+`scripts/baseline-manifest.mjs` turns that tag into a **manifest** — the whole admitted `canon/` set exactly as it stood at that ref, not a fixed `REQUIREMENT` / `ASSERTION` subset:
 
 ```
 node scripts/baseline-manifest.mjs <ref> [--root <adopter-repo>] [--out <file.md>]
 ```
 
 - **Read-only.** It reads every file via `git show <ref>:<path>` — it never runs `git checkout`, so it never disturbs the working tree and is safe to run against a tag from years ago while the working tree sits on a different branch.
-- **Split by `reviewer_authority`** ([CONTRACT.md](../notations/CONTRACT.md) §6.2) — the manifest separates `expert_confirmed` requirements from `ai_reviewed` ones, so an auditor can see at a glance how much of the baseline rests on the top authority tier versus the AI-reviewed tier.
-- **Carries `REQ-COVERAGE-001` as it existed at that ref** — each requirement's compliance-coverage gap status ([CONTRACT.md](../notations/CONTRACT.md) §8) is computed from the `ASSERTION` set *at that same ref*, not from today's canon. A baseline answers "what did the model say then", not "what does it say now".
+- **Scope is every admitted TYPE, derived from the ID on each file under `canon/`** (excluding `canon/views/`, which holds view/report/document configs, not individually admitted elements) — not a hardcoded directory list. A TYPE registered after the script was last touched appears in the manifest without any change to it.
+- **`REQUIREMENT` carries additional detail** — split by `reviewer_authority` ([CONTRACT.md](../notations/CONTRACT.md) §6.2), so an auditor can see at a glance how much of the baseline rests on the top authority tier versus the AI-reviewed tier, plus `REQ-COVERAGE-001` as it existed at that ref — each requirement's compliance-coverage gap status ([CONTRACT.md](../notations/CONTRACT.md) §8) is computed from the `ASSERTION` set *at that same ref*, not from today's canon. A baseline answers "what did the model say then", not "what does it say now".
 
 Run it against any ref git can resolve — a tag, a branch, a SHA. There is nothing tag-specific in the mechanism; tags are simply the natural, human-legible way to mark a baseline commit.
 
@@ -68,7 +68,7 @@ No new field, no separate sign-off document: **PR approver + `reviewer_authority
 ## Guardrails — what this pattern does not claim
 
 - **Git ≠ Part 11 e-signatures.** A git commit authenticated by an SSH key or a GitHub account is not a 21 CFR Part 11 electronic signature. This pattern documents an audit trail and a review/approval mapping; it makes no claim of Part 11 compliance, and an adopter operating under Part 11 needs a signature mechanism this pattern does not provide.
-- **Pattern, not adopter instance.** Nothing here names or implies any specific adopter, product, or regulatory submission. `scripts/baseline-manifest.mjs` and the mapping above are generic over any repository that carries `REQUIREMENT` / `ASSERTION` / `VERIFICATION`.
+- **Pattern, not adopter instance.** Nothing here names or implies any specific adopter, product, or regulatory submission. `scripts/baseline-manifest.mjs` and the mapping above are generic over any repository's admitted `canon/` content, whatever TYPEs it carries.
 - **No new claim about coverage reporting.** Compliance and V&V coverage over the baselined content is specified and shipped independently ([21-compliance-impact.md](../notations/views/reports/21-compliance-impact.md), [22-coverage-metric.md](../notations/views/reports/22-coverage-metric.md)). This pattern adds nothing to that surface — it only names the baseline/audit-trail/review-approval story that sits alongside it.
 
 ## When to use

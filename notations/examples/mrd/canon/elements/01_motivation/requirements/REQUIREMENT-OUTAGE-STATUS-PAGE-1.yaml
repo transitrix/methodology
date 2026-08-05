@@ -1,0 +1,19 @@
+notation: requirement
+id: REQUIREMENT-OUTAGE-STATUS-PAGE-1
+name: "Publish an outage status update within 5 minutes of detection"
+description: "On automated detection of a service-affecting outage, the organisation must publish a status-page update describing the impact and that it is being investigated, within 5 minutes of detection."
+
+origin: project-product
+severity: high
+serves: NEED-TIMELY-OUTAGE-STATUS-1
+
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-30"
+valid_to: null

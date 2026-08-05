@@ -1,0 +1,16 @@
+notation: actor
+id: ACTOR-ENTERPRISE-CUSTOMERS-1
+name: "Enterprise customer segment"
+type: business_unit
+description: "External organisations on an enterprise support tier; not part of the modelled org, represented here as a business_unit-typed actor for identity purposes."
+
+zone: canon
+admitted_at: "2026-07-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2024-01-01"
+valid_to: null
