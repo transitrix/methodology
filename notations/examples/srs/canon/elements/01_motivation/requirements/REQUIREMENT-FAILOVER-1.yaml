@@ -1,0 +1,20 @@
+notation: requirement
+id: REQUIREMENT-FAILOVER-1
+name: "Failover to the standby node without data loss"
+description: "On failure of the primary node the standby must take over within 30 seconds, with no committed transaction lost."
+
+origin: process-product
+severity: high
+level: software
+kind: functional
+
+zone: canon
+admitted_at: "2026-07-17"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-17"
+valid_to: null

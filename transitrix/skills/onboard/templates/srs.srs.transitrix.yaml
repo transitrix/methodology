@@ -1,0 +1,33 @@
+notation: srs
+spec_version: "0.1"
+
+# SRS — Software Requirements Specification. Spec: notations/views/documents/30-srs.md
+# Document-config over REQUIREMENT (sibling of MRD). Carries no canonical content —
+# every section is DERIVED from the REQUIREMENT catalogue, sectioned by `kind`. This
+# file only declares which slice to render and how.
+
+name: "FILL-ME — e.g. Backup-power controller — SRS"   # required per CONTRACT.md §1.1
+
+view:
+  id: SRS-FILL-ME-1
+  name: "FILL-ME — same as document name, or a shorter view label"
+  description: "FILL-ME — which requirement slice, why"
+
+  # Reserved — inert in this version of the spec. Do not set a standard identifier.
+  standard: null
+
+  # What the document covers. Use `include` OR `filter` (include wins).
+  scope:
+    requirements:
+      # include: [REQUIREMENT-FILL-ME-1]
+      filter:
+        level: [software]   # stakeholder | system | software
+
+  # Whether a requirement with no `kind`, or a section with zero matches, still renders.
+  include_unclassified_kind: true
+  include_empty_sections: true
+  empty_section_label: "No admitted software-tier requirement of this kind (current model)"
+
+  # Ordering knob.
+  grouping:
+    order_requirements_by: "id"    # id | name | severity

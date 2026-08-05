@@ -12,7 +12,7 @@ dsm_status: "not implemented — Studio document-view engine planned (consumer-s
 
 **Version:** 0.1
 **Date:** 2026-08-04
-**Status:** Draft — second concrete spec of the document-view class ([`views/documents/`](../documents/), per [`README.md`](../../README.md) §Views), following the layout pattern the MRD layout ([29-mrd.md](29-mrd.md)) established.
+**Status:** Draft — third concrete spec of the document-view class ([`views/documents/`](../documents/), per [`README.md`](../../README.md) §Views), following the layout pattern the MRD layout ([29-mrd.md](29-mrd.md)) and SRS layout ([30-srs.md](30-srs.md)) established.
 **File extension:** `*.sdd.transitrix.yaml`
 **Scope:** A **document-rendering configuration** for the Software Design Description (SDD) layout — a design-oriented document body that groups admitted application/technology elements (`APPLICATION` ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.7), `NODE` ([25-nodes.md](../../elements/25-nodes.md)), `TECHNOLOGY_SERVICE` ([26-technology-services.md](../../elements/26-technology-services.md))) as the document's section structure, and lists under each the `REQUIREMENT`s it realises, traced via the `ASSERTION` catalogue ([16-assertion.md](../../elements/16-assertion.md)). The document is a presentation surface — it carries no canonical content of its own. Everything it displays is **derived** from the `APPLICATION` / `NODE` / `TECHNOLOGY_SERVICE`, `ASSERTION`, and `REQUIREMENT` catalogues.
 **Renderer:** Transitrix Studio — document-view engine (planned); Transitrix DSM (planned).

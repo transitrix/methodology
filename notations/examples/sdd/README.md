@@ -2,7 +2,7 @@
 
 File extension: **`.sdd.transitrix.yaml`**
 
-The SDD (Software Design Description) view is a **document-rendering configuration** over `APPLICATION` ([`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.7), `NODE` ([`../../elements/25-nodes.md`](../../elements/25-nodes.md)), and `TECHNOLOGY_SERVICE` ([`../../elements/26-technology-services.md`](../../elements/26-technology-services.md)) — it groups admitted design elements under themselves, and lists under each the `REQUIREMENT`s it realises, traced one hop through `ASSERTION.realised_via` → `ASSERTION.about` ([`../../elements/16-assertion.md`](../../elements/16-assertion.md)). The view document declares which slice to render — it carries no canonical content of its own. See [`../../views/documents/30-sdd.md`](../../views/documents/30-sdd.md) for the view spec and the render contract.
+The SDD (Software Design Description) view is a **document-rendering configuration** over `APPLICATION` ([`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.7), `NODE` ([`../../elements/25-nodes.md`](../../elements/25-nodes.md)), and `TECHNOLOGY_SERVICE` ([`../../elements/26-technology-services.md`](../../elements/26-technology-services.md)) — it groups admitted design elements under themselves, and lists under each the `REQUIREMENT`s it realises, traced one hop through `ASSERTION.realised_via` → `ASSERTION.about` ([`../../elements/16-assertion.md`](../../elements/16-assertion.md)). The view document declares which slice to render — it carries no canonical content of its own. See [`../../views/documents/31-sdd.md`](../../views/documents/31-sdd.md) for the view spec and the render contract.
 
 **Pattern, not adopter instance.** The scenario (a customer self-service portal's data-export capability) is a generic, invented example — it names no real product, organisation, or adopter, and is deliberately distinct from the outage-notification scenario the MRD worked example uses.
 
@@ -50,7 +50,7 @@ view:
   include_untraced_elements: true
 ```
 
-The full field set, the render contract, and the validation rules are in [`../../views/documents/30-sdd.md`](../../views/documents/30-sdd.md).
+The full field set, the render contract, and the validation rules are in [`../../views/documents/31-sdd.md`](../../views/documents/31-sdd.md).
 
 ## Preview
 
