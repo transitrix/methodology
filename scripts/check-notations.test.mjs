@@ -12,6 +12,7 @@ import {
   parseStatedViewCounts,
   findStandardIdentifierEmissions,
   checkPackageEnvelopeStatement,
+  deriveDeprecationFailures,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -144,4 +145,30 @@ test('checkPackageEnvelopeStatement — negative: a "No." answer that never cite
     '## 10. Evolution',
   ].join('\n');
   assert.match(checkPackageEnvelopeStatement(text), /does not cite CONTRACT\.md/);
+});
+
+test('deriveDeprecationFailures — positive: deprecated spec with removed_in passes clean', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: '4.0.0' }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
+});
+
+test('deriveDeprecationFailures — negative: deprecated spec with no removed_in reports DEP1', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '03-fga.md', deprecated: true, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'DEP1');
+  assert.match(failures[0].message, /03-fga\.md/);
+});
+
+test('deriveDeprecationFailures — negative: a non-deprecated spec without removed_in is not flagged', () => {
+  const failures = deriveDeprecationFailures(
+    [{ name: '02-dgca.md', deprecated: false, removedIn: null }],
+    'notations/views/diagrams'
+  );
+  assert.deepEqual(failures, []);
 });

@@ -1,0 +1,20 @@
+notation: requirement
+id: REQUIREMENT-BACKUP-POWER-COVERAGE-1
+name: "Facilities must provide backup power to critical systems"
+description: "The organisation must ensure every site hosting a critical system has a backup power supply capable of sustaining operation until mains power is restored or an orderly shutdown completes."
+
+origin: process-product
+severity: high
+level: system
+kind: functional
+
+zone: canon
+admitted_at: "2026-07-17"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-17"
+valid_to: null

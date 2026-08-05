@@ -1,0 +1,20 @@
+notation: requirement
+id: REQUIREMENT-SESSION-TIMEOUT-1
+name: "Idle operator sessions expire"
+description: "An operator session must expire automatically after 15 minutes without input, and must require re-authentication before any further action is accepted."
+
+origin: process-product
+severity: medium
+level: software
+kind: quality
+
+zone: canon
+admitted_at: "2026-07-17"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-17"
+valid_to: null
