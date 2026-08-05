@@ -1,0 +1,17 @@
+notation: product
+id: PRODUCT-CUSTOMER-PORTAL-1
+name: "Customer Self-Service Portal"
+type: digital_product
+domain: "Customer experience"
+description: "Web and mobile portal through which a registered customer manages their account, including requesting an export of their own personal data."
+
+zone: canon
+admitted_at: "2026-08-04"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-04"
+valid_to: null
