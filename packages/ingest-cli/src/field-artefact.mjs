@@ -48,13 +48,20 @@ async function nextOrdinal(dir, type, middle) {
   return max + 1;
 }
 
-// Find the raw source file in inbox/ matching a converted md by basename stem.
+// Find the raw source file matching a converted md by basename stem — in inbox/ (the
+// pre-admission location), then processed/ (where the first successful admit of this
+// same source already moved it). Without the processed/ fallback, re-running admit-source
+// on an already-admitted source finds no raw file at all (it moved on the first run), so
+// no source_hash can be computed and the duplicate check below is silently skipped —
+// minting a second artefact for the same source on every retry.
 async function findRaw(orgRoot, mdPath) {
-  const inbox = stageDir(orgRoot, 'inbox');
-  if (!(await exists(inbox))) return null;
   const stem = basename(mdPath, extname(mdPath));
-  for (const name of await readdir(inbox)) {
-    if (basename(name, extname(name)) === stem) return join(inbox, name);
+  for (const stage of ['inbox', 'processed']) {
+    const dir = stageDir(orgRoot, stage);
+    if (!(await exists(dir))) continue;
+    for (const name of await readdir(dir)) {
+      if (basename(name, extname(name)) === stem) return join(dir, name);
+    }
   }
   return null;
 }
@@ -106,17 +113,23 @@ export async function emitFieldArtefact(opts) {
   // Move the raw source into processed/ and record a traceable pointer. If a file of the
   // same basename is already there (a different source that happens to share a name —
   // a re-ingest of identical content is caught above), disambiguate with the content
-  // hash instead of overwriting, so no prior source is silently clobbered.
+  // hash instead of overwriting, so no prior source is silently clobbered. When `raw`
+  // was already found sitting in processed/ (findRaw's fallback above — a retry after an
+  // earlier successful admit already moved it), it is already in place; nothing to move.
   let rawSource = null;
   if (raw) {
     const processedDir = stageDir(orgRoot, 'processed');
-    await mkdir(processedDir, { recursive: true });
-    let dest = join(processedDir, basename(raw));
-    if (await exists(dest)) {
-      dest = join(processedDir, `${basename(raw, extname(raw))}__${shortHash(sourceHash)}${extname(raw)}`);
+    if (resolve(raw).startsWith(resolve(processedDir))) {
+      rawSource = join(INTAKE, 'processed', basename(raw)).replace(/\\/g, '/');
+    } else {
+      await mkdir(processedDir, { recursive: true });
+      let dest = join(processedDir, basename(raw));
+      if (await exists(dest)) {
+        dest = join(processedDir, `${basename(raw, extname(raw))}__${shortHash(sourceHash)}${extname(raw)}`);
+      }
+      await rename(raw, dest);
+      rawSource = join(INTAKE, 'processed', basename(dest)).replace(/\\/g, '/');
     }
-    await rename(raw, dest);
-    rawSource = join(INTAKE, 'processed', basename(dest)).replace(/\\/g, '/');
   }
 
   const artefact = {
