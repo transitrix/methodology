@@ -1,5 +1,5 @@
 {
-  "_comment": "Fixture extraction result — a canned stand-in for what the agent produces by running prompts/ over the sample interview. Used by the deterministic integrity test so emit-candidates has an input without an LLM. Mixes a high relation (-> candidate) and a medium relation (-> held-back suggestion).",
+  "_comment": "Fixture extraction result — a canned stand-in for what the agent produces by running prompts/ over the sample interview. Used by the deterministic integrity test so emit-candidates has an input without an LLM. Mixes a high relation (-> candidate), a medium relation (-> held-back suggestion), and a semantic_links entry (-> review-only edge, no closed REL kind).",
   "elements": [
     { "id": "GOAL-RETENTION-1", "name": "Improve customer retention above 90%", "element_type": "GOAL", "extraction_confidence": "high" },
     { "id": "DRIVER-CHURN-1", "name": "Rising customer churn", "element_type": "DRIVER", "extraction_confidence": "medium", "extraction_notes": "driver behind the retention goal" },
@@ -10,5 +10,9 @@
   "relations": [
     { "rel_kind": "stakeholding", "from": "STAKEHOLDER-OPS-1", "to": "GOAL-RETENTION-1", "extraction_confidence": "high", "extraction_notes": "accountable owner stated the goal directly" },
     { "rel_kind": "contributes_to", "from": "DRIVER-CHURN-1", "to": "GOAL-RETENTION-1", "extraction_confidence": "medium", "extraction_notes": "inferred causal link — held back as a suggestion" }
+  ],
+  "semantic_links": [
+    { "link_type": "requirement_dependency", "from": "REQUIREMENT-COMPLIANCE-1", "to": "CONSTRAINT-DATA-RESIDENCY-1",
+      "confidence": "medium", "rationale": "source implies the reporting duty presumes the residency rule holds, but no closed REL kind covers a REQUIREMENT-to-CONSTRAINT edge — surfaced for review, not invented as a rel_kind" }
   ]
 }

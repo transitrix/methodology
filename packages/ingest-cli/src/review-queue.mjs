@@ -1,8 +1,9 @@
 // `review-queue` — assemble the human gate for a batch. Lists the field artefacts
 // referenced by the candidates (with their PROPOSED source_quality, for the human to
 // confirm), every candidate with its derived_from / extraction_confidence / coverage
-// + validation flags, and any below-threshold relation suggestions. Emitted as YAML
-// (write-only via the dumper). NOTHING here is admitted to canon.
+// + validation flags, any below-threshold relation suggestions, and any semantic links
+// (typed edges with no closed REL kind yet). Emitted as YAML (write-only via the
+// dumper). NOTHING here is admitted to canon.
 
 import { readFile, writeFile, access, readdir, mkdir } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
@@ -74,7 +75,7 @@ async function readSourceArtefact(orgRoot, id) {
   };
 }
 
-export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [] }) {
+export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [], semanticLinks = [] }) {
   const loaded = await loadCandidates(candidatesDir);
   // Read (never write) canon so the queue is idempotent against it: a candidate that
   // already passed the human gate is excluded, not re-listed for re-approval.
@@ -148,6 +149,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
     candidates,
     excluded_admitted,
     relation_suggestions: suggestions,
+    ...(semanticLinks.length ? { semantic_links: semanticLinks } : {}),
     gate: { admits_to_canon: false },
   };
 }

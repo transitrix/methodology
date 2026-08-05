@@ -125,6 +125,22 @@
         "additionalProperties": true
       }
     },
+    "semantic_links": {
+      "type": "array",
+      "description": "Optional. Review-only typed edges between candidates (or between a candidate and an admitted element) for which no closed REL kind exists (17-relations.md §3) — distinct from relation_suggestions, which holds back a real rel_kind on low confidence. A semantic link is never shaped into a relation candidate and never admitted to canon; once a canonical relation kind covers the edge, re-extract it as a relation candidate instead. Present only when at least one link exists.",
+      "items": {
+        "type": "object",
+        "required": ["link_type", "from", "to", "confidence", "rationale"],
+        "properties": {
+          "link_type": { "type": "string", "description": "Free-form label for the suspected edge (e.g. 'requirement_dependency'). Not a closed REL kind — never validated against 17-relations.md, never written to a rel_kind field." },
+          "from": { "type": "string", "description": "Source endpoint — a candidate ref or canonical element ID." },
+          "to": { "type": "string", "description": "Target endpoint — a candidate ref or canonical element ID." },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "rationale": { "type": "string", "description": "Why the extractor suspects this edge — the reviewer's basis for confirming or discarding it." }
+        },
+        "additionalProperties": true
+      }
+    },
     "gate": {
       "type": "object",
       "description": "Invariant statement for auditors and tooling: this skill admits nothing.",
