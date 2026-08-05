@@ -2,7 +2,7 @@
 title: "Relations — first-class time-aware links"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-28"
+last_updated: "2026-08-05"
 status: "draft"
 ---
 
@@ -51,7 +51,7 @@ valid_to: null
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `relation`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REL-[<middle>-]<INTEGER>`. |
-| `type` | yes | string | One of the closed enum values in §3. The enum is fixed in this spec; adding a new relation kind requires a methodology revision. |
+| `type` | yes | string | One of the closed enum values in §3. The enum is closed for a given methodology release; new kinds land as additive MINOR revisions (see §3). |
 | `from` | yes | string | Typed canonical ID of the relation's source / dependent / child primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
 | `to` | yes | string | Typed canonical ID of the relation's target / parent / destination primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
 | `zone` | yes | string | Always `canon` for REL — see [CONTRACT.md](../CONTRACT.md) §6. |
@@ -86,12 +86,13 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `realizes` | service → capability | `BUSINESS_SERVICE` → `CAPABILITY` | A business service realizes a capability — the service is the externally visible behaviour of the capability. Time-aware — use a REL file when the capability a service realizes changes (e.g. service scope expands after a technology uplift). For a stable realization, the inline `capability` field on the `BUSINESS_SERVICE` element is sufficient. |
 | `hosts` | node → service | `NODE` → `TECHNOLOGY_SERVICE` | A node (or cluster of nodes) hosts a technology service. Time-aware — a service migrated to a new node produces a new REL file with `valid_to` on the old one. For a stable, single-host configuration, the inline `node` field on `TECHNOLOGY_SERVICE` is sufficient; the `hosts` REL kind records the change event. |
 | `uses` | application → service | `APPLICATION` → `TECHNOLOGY_SERVICE` | An application consumes a technology service (e.g. publishes to a Kafka topic, reads from an object store). Time-aware — use a REL file when an application starts or stops consuming a given service (a dependency change). For stable long-running dependencies a future inline `technology_services[]` field on `APPLICATION` may be specified. |
+| `depends_on` | dependent → presupposed | `REQUIREMENT` → `REQUIREMENT` | A conditional dependency between obligations: `from` presupposes `to` — the dependent obligation is not meaningful, or not satisfiable, unless the target holds. **Not** an order of work (implementation sequence stays with `ACTION` / `CHANGE`) and **not** decomposition (`parent` / the stated `requirement_parent` promotion path on [15-requirement.md](15-requirement.md) §2.4 stay separate). First-class rather than inline so the link carries `admitted_at` and content identity for the suspicion mechanism ([CONTRACT.md](../CONTRACT.md)). Endpoints stay narrow in v1 (`REQUIREMENT` only); the name is generic on purpose so a later widening (e.g. to `CONSTRAINT` / `NEED`) amends one kind instead of introducing a second. **M:N**: one requirement may depend on several others, and one may be depended on by several — each pair is its own REL file. |
 
-Adding a new `type` value is a non-backwards-compatible methodology revision — adopters' validators built against an older enum will reject newer relations.
+Adding a new `type` value is an **additive** methodology revision (MINOR). A repository that uses none of the new kind validates unchanged. The incompatibility an adopter can hit is a *pinned* older validator meeting a kind it has never heard of — answered by the vendored tagged release, not by treating every enum extension as a breaking change.
 
 **Engagement relations (`employment` / `candidacy` / `alumni_membership` / `community_membership` / `contracting`).** Decided 2026-05-29 (Actors): a `person` actor records *identity only*; every kind of engagement with the organisation is its own first-class, time-aware relation, so the same person can be a candidate, then an employee, then an alumnus over time without losing history, and can hold several engagements at once. Each engagement kind carries only the attributes that kind needs; the relation's own `valid_from`/`valid_to` is the engagement window.
 
-**M:N relations are unified on the REL machinery.** Four kinds in v1 are intrinsically many-to-many — `goal_parent` (in its multi-parent DAG form), `target_state_satisfies_goal`, `assessment_influences_goal`, and `stakeholding`. None of them get a special storage mechanism: each (from, to) pair is its own REL file, the validator distinguishes them only by the `type` value, and per-relation attributes (`degree`, `sign`, `magnitude`, `concern`, `influence`, `contract_type`, …) ride on the REL file itself. The §7 limit "one `from` and one `to` per REL file" applies uniformly; M:N is expressed by writing multiple REL files, not by allowing list-valued endpoints. This is a deliberate constraint: the validator, the catalogue loader, the lifecycle window check, and any temporal renderer all work the same way for every M:N kind. A future M:N kind (e.g. capability ↔ application "supports") fits the same machinery without a new mechanism.
+**M:N relations are unified on the REL machinery.** Several kinds in v1 are intrinsically many-to-many — `goal_parent` (in its multi-parent DAG form), `target_state_satisfies_goal`, `assessment_influences_goal`, `stakeholding`, and `depends_on`. None of them get a special storage mechanism: each (from, to) pair is its own REL file, the validator distinguishes them only by the `type` value, and per-relation attributes (`degree`, `sign`, `magnitude`, `concern`, `influence`, `contract_type`, …) ride on the REL file itself. The §7 limit "one `from` and one `to` per REL file" applies uniformly; M:N is expressed by writing multiple REL files, not by allowing list-valued endpoints. This is a deliberate constraint: the validator, the catalogue loader, the lifecycle window check, and any temporal renderer all work the same way for every M:N kind. A future M:N kind (e.g. capability ↔ application "supports") fits the same machinery without a new mechanism.
 
 **Interface-semantics INTEGRATION endpoint constraint (confirmation).** An `INTEGRATION` with `interface_semantics: true` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.8.1) is an application-layer contract: both `source` and `target` MUST resolve to admitted `APPLICATION-…` elements. A `NODE`, `TECHNOLOGY_SERVICE`, or any non-application element as an endpoint is invalid (INT-002 in §9). The infrastructure carrying the interface — e.g. a Kafka cluster (`TECHNOLOGY_SERVICE`) — is linked to the source application via the `uses` relation, not by placing the TECHNOLOGY_SERVICE directly as the integration's `source` or `target`. This constraint is not a new relation kind; it is an endpoint-type restriction on an existing element variant.
 
@@ -114,6 +115,7 @@ One artefact per file, named by its canonical ID. The folder is flat — relatio
 - `canon/relations/REL-CAP-V1-PARENT-1.yaml`
 - `canon/relations/REL-ACT-Q3-GOAL-EU-1.yaml`
 - `canon/relations/REL-GOAL-EU-PARENT-1.yaml`
+- `canon/relations/REL-COMPLIANCE-REPORTING-DEPENDS-ON-RESIDENCY-1.yaml` (worked example: [`examples/relations/depends-on/`](../examples/relations/depends-on/))
 
 A typical naming convention encodes the endpoints and kind in the middle segments (`REL-<FROM-HINT>-<KIND>-<N>` or `REL-<FROM-HINT>-<TO-HINT>-<N>`); the canonical grammar imposes only `REL-[<middle>-]<INTEGER>`.
 
@@ -127,6 +129,8 @@ A typical naming convention encodes the endpoints and kind in the middle segment
 | `REL-002` | error | `from` or `to` is missing, malformed, or does not resolve to an admitted primitive in canon. If the validator has the catalogue loaded, the endpoint's resolved TYPE must also match the `type`-specific endpoint constraints in §3. |
 | `REL-003` | error | The relation's `[valid_from, valid_to]` window falls outside the lifecycle of either endpoint — i.e. `valid_from` predates the endpoint's `valid_from`, or `valid_to` postdates the endpoint's `valid_to`. A relation cannot be in effect before either of its endpoints existed or after either retired. |
 | `REL-004` | error | A relation kind declared time-aware in its host notation spec is used inline (as an inline cross-reference field) instead of as a first-class REL file. The host notation's spec is the source of truth for which kinds are time-aware. |
+| `REL-005` | error | A `depends_on` relation has `from` equal to `to` (self-reference). Single-file — no catalogue load required. |
+| `REL-006` | warning | A cycle exists in the `depends_on` graph among admitted REL files (A depends on B … depends on A). Cross-cutting — fires when the catalogue is loaded. Warning rather than error because genuine mutual conditionality between obligations is unusual but not always wrong. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to REL files in addition to the REL-* rules above. The sidecar rules (`VERSIONED-001..005`, [CONTRACT.md](../CONTRACT.md) §9.3) do not apply to relations — a relation's own state is its endpoints + lifecycle window; if the relation's attributes need versioning, the relation is its own primitive and gets its own sidecar.
 

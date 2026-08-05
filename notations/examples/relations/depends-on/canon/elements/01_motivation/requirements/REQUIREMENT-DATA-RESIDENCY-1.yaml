@@ -1,0 +1,21 @@
+notation: requirement
+id: REQUIREMENT-DATA-RESIDENCY-1
+name: Customer data stays in the home jurisdiction
+origin: legislative
+level: system
+kind: quality
+
+zone: canon
+admitted_at: "2026-08-05"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  Customer personal data MUST remain in the organisation's home jurisdiction
+  unless a documented transfer safeguard applies.

@@ -9,7 +9,7 @@
 
 notation: relation
 id: REL-EXAMPLE-1                       # canonical ID — IDS_AND_REFERENCES.md §1: REL-[<middle>-]<INTEGER>
-type: parent                            # closed enum (§3): parent | goal_parent | action_goal | unit_parent
+type: parent                            # closed enum (§3): parent | goal_parent | action_goal | depends_on | …
 from: CAPABILITY-V1.1                   # source / child primitive — must resolve in canon (REL-002)
 to: CAPABILITY-V1                       # target / parent primitive — must resolve in canon (REL-002)
 

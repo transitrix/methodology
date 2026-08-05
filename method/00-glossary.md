@@ -14,7 +14,7 @@
 | **Architecture-as-Code (AaC)** | Approach to defining and managing architecture through version-controlled text files rather than a GUI-only modelling tool. |
 | **ArchiMate** | The Open Group's open standard for enterprise architecture modelling (current version: 3.2). Transitrix's element and relation vocabulary is grounded in it — see [ArchiMate alignment](#archimate-32-alignment) below. |
 | **Element** | An architectural primitive — the atomic unit of modelling (a goal, a role, a process, an application component). One element = one file. |
-| **Relation (`REL`)** | A first-class, time-aware, typed link between two canonical primitives (`valid_from` / `valid_to`), stored as its own file under `canon/relations/`. See [`elements/17-relations.md`](notations/elements/17-relations.md) for the closed enum of relation kinds (e.g. `parent`, `action_goal`, `offers`, `realizes`, `hosts`, `uses`). |
+| **Relation (`REL`)** | A first-class, time-aware, typed link between two canonical primitives (`valid_from` / `valid_to`), stored as its own file under `canon/relations/`. See [`elements/17-relations.md`](notations/elements/17-relations.md) for the closed enum of relation kinds (e.g. `parent`, `action_goal`, `depends_on`, `offers`, `realizes`, `hosts`, `uses`). |
 | **Atomicity** | Principle by which an element's description and its relations are stored in separate files — an element file never inlines a first-class relation. |
 | **Canon** | The validated, authoritative model — the zone everything else is admitted into. |
 | **Field** | The zone for raw, unprocessed source material (interviews, surveys, observations, drafts) — not authoritative; its value is provenance. |
