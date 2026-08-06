@@ -6,10 +6,11 @@ transclusion tags; the engine resolves them and emits a document. No document la
 ships with this package — a layout is authored by whoever needs that document, in
 their own repository.
 
-**Scope of this package today: syntax only.** `parseSkeleton()` turns a skeleton
-file's text into a header object and a body AST. It does not resolve references
-against canon, does not compute reference-resolution state, and does not render.
-Those are later layers built on top of this AST.
+**Scope of this package today: syntax (§2) and reference resolution (§3).**
+`parseSkeleton()` turns a skeleton file's text into a header object and a body AST.
+`resolveReference()` / `createResolver()` classify an id against canon into one of
+the four states below. Neither renders — render profiles (§4), derivation share
+(§5), telemetry (§6), and PDF output (§7) are later layers built on top of these.
 
 ## Skeleton file shape
 
@@ -57,8 +58,36 @@ if (errors.length > 0) {
 }
 ```
 
+## Reference resolution (§3)
+
+Given the `canon:` path from a skeleton's header, `createResolver()` walks canon once
+and returns a bound `resolveReference(id, { renderDate })` — every reference in one
+render pass shares the same canon index and migration-manifest load.
+
+```js
+import { createResolver } from '@transitrix/document-view-engine/src/resolve-references.mjs';
+
+const { resolveReference } = await createResolver('/path/to/canon');
+const { state, flag } = await resolveReference('REQ-014', { renderDate: '2026-08-06' });
+```
+
+`state` / `flag` is one of:
+
+| `state` | `flag` | Meaning |
+|---|---|---|
+| `'ok'` | `null` | Resolves, admitted, in effect. |
+| `'unresolved'` | `⚑U` | The id does not exist anywhere in canon. |
+| `'not-admitted'` | `⚑A` | The object exists but `admission_state` isn't `active`. |
+| `'out-of-validity'` | `⚑V` | `[valid_from, valid_to]` does not cover `renderDate`. |
+| `'suspect'` | `⚑S` | Only for a `REL`/`ASSERTION`/`VERIFICATION`/`VALIDATION` record: one of its own endpoints changed since the record last looked at it (CONTRACT.md §16.2's link-suspicion computation, anchored on the record's own last commit — not a per-field anchor). A plain element's own reference fields (e.g. `REQUIREMENT.parent`) never carry `⚑S` directly (CONTRACT.md §16.2). |
+
+An unresolvable endpoint on a `REL`/claim record is silent, not suspicious — the
+same posture `scripts/check-link-suspicion.mjs` takes (a validator's concern, e.g.
+`REL-002`, not this module's).
+
 ## Tests
 
 ```
 node packages/document-view-engine/tests/test_parse_skeleton.mjs
+node packages/document-view-engine/tests/test_resolve_references.mjs
 ```
