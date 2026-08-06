@@ -35,3 +35,6 @@ jobs:
 
       - name: Run notations doc-lint
         run: node scripts/check-notations.mjs
+
+      - name: Run check-notations unit tests
+        run: node --test scripts/check-notations.test.mjs
