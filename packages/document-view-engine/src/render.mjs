@@ -14,12 +14,14 @@
 //
 // Scope of this module: `inline` and `field-ref` (bound to an `each` row) —
 // the two derived-content forms evaluate.mjs resolves — `figure` / `figref`
-// (§2's "Illustrations", §4's manual/missing border classes), and `trace`
-// (§2's "Trace matrix", built from evaluate.mjs's evaluateTrace()). `view`
-// still renders as a neutral pass-through placeholder so a full-syntax
-// skeleton still renders end-to-end without throwing; an embedded,
-// at-build-time-rendered model view is a later layer — see this package's
-// README for what's still open on the epic.
+// (§2's "Illustrations", §4's manual/missing border classes), `trace`
+// (§2's "Trace matrix", built from evaluate.mjs's evaluateTrace()), and
+// `view` for the `blocks` notation (§2's "view renders a model view at
+// build time from its source", blocks-view.mjs). A `view` node for any
+// other notation, or the `blocks` notation's `grid:` (matrix-subset) root,
+// still renders as a missing/failed illustration rather than throwing — the
+// remaining notations are later slices on the same epic, same posture as
+// figure/figref and trace shipping ahead of `view` itself.
 //
 // A trace matrix's uncovered cells are not one of §3's four reference
 // states — they mark a coverage gap in the model, not a broken reference —
@@ -28,16 +30,15 @@
 // cross-cutting check for "does this build fail on a coverage gap"; this
 // matrix only renders what the model shows.
 //
-// `figure` participates in its own numbering sequence today. §2 treats
-// `view` and `figure` as one shared "illustration" sequence numbered
-// together in document order — since `view` isn't evaluated yet, it takes
-// no number and no slot. Wiring `view` in later will need to fold it into
-// the same counter this module already builds for `figure`, which will
-// shift every figure number after the first `view` in a mixed-syntax
-// document; flagging now so it isn't a surprise then.
+// `figure` and `view` share one "illustration" numbering sequence, in
+// document order (§2: "Numbers are assigned at render time in document
+// order" — the two forms are not distinguished). `collectFigureNumbers()`
+// below counts both node types in its single ahead-of-render walk.
 
-import { access } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
+import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
+import { isValidId } from './ids.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
 
@@ -107,7 +108,7 @@ function renderTraceTable({ rows, cols, covered }, profile) {
 
 async function collectFigureNumbers(nodes, evaluator, ctx, state) {
   for (const node of nodes) {
-    if (node.type === 'figure') {
+    if (node.type === 'figure' || node.type === 'view') {
       state.count += 1;
       if (node.as) state.numbers.set(node.as, state.count);
     } else if (node.type === 'each') {
@@ -178,11 +179,43 @@ async function renderNode(node, evaluator, ctx, out) {
       return;
     }
 
-    // Not evaluated yet (see module header) — pass through as an inert
-    // marker so a full-syntax skeleton still renders instead of throwing.
-    case 'view':
-      out.html.push(`<!-- dv-view: not yet rendered (${escapeHtml(node.path)}) -->`);
+    case 'view': {
+      out.figureCounter += 1;
+      const number = out.figureCounter;
+      const label = `Figure ${number}`;
+      const fitClass = `dv-fit-${node.fit ?? 'width'}`;
+      const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
+      // eslint-disable-next-line no-await-in-loop -- order matters; this node's own illustration number must be assigned before the next one
+      const exists = await fileExists(absPath);
+      let svg = null;
+      let suspect = false;
+      if (exists) {
+        // eslint-disable-next-line no-await-in-loop -- must read this view before the next node, same as figure's existence check
+        const text = await readFile(absPath, 'utf8').catch(() => null);
+        const parsed = text === null ? { ok: false } : parseBlocksYaml(text);
+        if (parsed.ok) {
+          svg = renderBlocksSvg(parsed.blocks);
+          for (const id of collectBlockIds(parsed.blocks)) {
+            if (!isValidId(id)) continue;
+            // eslint-disable-next-line no-await-in-loop -- one small tree per view; suspicion must be known before this node renders
+            const state = await evaluator.resolveReference(id, ctx);
+            if (state.state === 'suspect') { suspect = true; break; }
+          }
+        }
+      }
+      const failedToRender = !exists || svg === null;
+      if (failedToRender) out.failedStates.push('unresolved');
+      else if (suspect) out.failedStates.push('suspect');
+      if (ctx.profile === 'clean') {
+        const body = svg ?? '';
+        out.html.push(`<figure class="dv-clean ${fitClass}">${body}<figcaption>${label}</figcaption></figure>`);
+        return;
+      }
+      const borderClass = failedToRender ? 'dv-illus-missing' : suspect ? 'dv-illus-suspect' : 'dv-illus-view';
+      const flagHtml = failedToRender ? '<sup class="dv-flag">⚑U</sup>' : suspect ? '<sup class="dv-flag">⚑S</sup>' : '';
+      out.html.push(`<figure class="${borderClass} ${fitClass}">${flagHtml}${svg ?? ''}<figcaption>${label}</figcaption></figure>`);
       return;
+    }
 
     case 'figure': {
       out.figureCounter += 1;

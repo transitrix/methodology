@@ -8,17 +8,19 @@ their own repository.
 
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
-rendering, and the `trace` coverage matrix.** `parseSkeleton()` turns a skeleton
-file's text into a header object and a body AST. `resolveReference()` /
-`createResolver()` classify an id against canon into one of the four states below.
-`createEvaluator()` resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection,
-and `{{ trace ... }}` coverage matrices against canon. `renderDocument()` walks the
-AST through an evaluator and emits HTML in the `review` or `clean` profile, including
-numbered, bordered `figure` illustrations, the `figref` references that point at
-them, and the `trace` matrix as an HTML table. Not yet built: `view` (a model view
-rendered at build time — it still renders as an inert pass-through marker today),
-derivation share (§5), telemetry (§6), and PDF output (§7) — later layers on top of
-these.
+rendering, the `trace` coverage matrix, and `view` rendering for the `blocks`
+notation.** `parseSkeleton()` turns a skeleton file's text into a header object and a
+body AST. `resolveReference()` / `createResolver()` classify an id against canon into
+one of the four states below. `createEvaluator()` resolves `{{ ID.field }}`
+traversal, `{{# each ... }}` selection, and `{{ trace ... }}` coverage matrices
+against canon. `renderDocument()` walks the AST through an evaluator and emits HTML
+in the `review` or `clean` profile, including numbered, bordered `figure` and `view`
+illustrations, the `figref` references that point at them, and the `trace` matrix as
+an HTML table. `view` renders a `blocks` notation (nested-form) source file as inline
+SVG at render time (`src/blocks-view.mjs`); any other notation, or the `blocks`
+notation's `grid:` (matrix-subset) root, renders as a missing/failed illustration —
+those are later slices on this epic. Not yet built: derivation share (§5), telemetry
+(§6), and PDF output (§7) — later layers on top of these.
 
 ## Skeleton file shape
 
@@ -139,10 +141,6 @@ const { html, failed, counts } = await renderDocument(ast, evaluator, { profile:
 | `review` | Every span is coloured by its §3 state (`dv-ok` / `dv-suspect` / `dv-unresolved`); a non-default class also carries a flag glyph (`⚑S`/`⚑A`/`⚑V`/`⚑U`) as a second channel, never colour alone. |
 | `clean` | Everything renders as `dv-clean`, no flags, no counters. `failed` is `true` when a state in `failOn` occurred anywhere in the render (default: `unresolved`, `not-admitted`, `out-of-validity` — `suspect` warns only, per §4). |
 
-`view` nodes still render as an HTML comment (`<!-- dv-view: not yet rendered (...)
--->`) rather than throwing — a full-syntax skeleton still renders end to end, but
-this form carries no content or classification yet.
-
 `trace` renders as `<table class="dv-trace">` — one `<th>` row/column header per id,
 one `<td>` per cell. In `review`, a covered cell is `dv-trace-cell dv-ok` with a
 checkmark, an uncovered cell is `dv-trace-cell dv-unresolved` with the `⚑U` flag (the
@@ -154,17 +152,32 @@ the model, not a broken reference, so it never feeds `failOn`; that check is
 §4), a separate cross-cutting rule.
 
 `figure` / `figref` render for real. Pass `skeletonDir` — the directory containing
-the skeleton file — so a `figure`'s relative image path resolves; an absolute path
-is used as-is. Numbers are assigned once, in document order, across every `figure`
-in the AST (a `figref` may point at a `figure` later in the document — a forward
-reference still resolves to the right number), and shift correctly when a `figure`
-is inserted earlier in the skeleton. A `figure` whose file doesn't exist on disk
-renders with the `dv-illus-missing` border class instead of `dv-illus-manual`, and
-counts as a failing state for `clean`'s `failOn` the same way an unresolved
-reference does. `view` doesn't participate in this numbering sequence yet — §2
-treats `view` and `figure` as one shared illustration sequence, so wiring `view` in
-later will renumber every `figure` after the first `view` in a mixed-syntax
-document.
+the skeleton file — so a `figure`'s (or `view`'s) relative path resolves; an absolute
+path is used as-is. Numbers are assigned once, in document order, across every
+`figure` **and** `view` node in the AST together (§2 treats them as one shared
+"illustration" sequence) — a `figref` may point at either form, later in the
+document, and a forward reference still resolves to the right number; inserting a
+`figure` or `view` earlier in the skeleton shifts every later number correctly. A
+`figure` whose file doesn't exist on disk renders with the `dv-illus-missing` border
+class instead of `dv-illus-manual`, and counts as a failing state for `clean`'s
+`failOn` the same way an unresolved reference does.
+
+`view` renders the target file as inline SVG when it parses as a `blocks` notation
+document in the nested-form (`nested_blocks:` root — not the `grid:` matrix-subset
+form, not yet rendered). Each `block.id` in the tree that matches the canonical ID
+grammar ([`ids.mjs`](src/ids.mjs)) is checked against canon via
+`evaluator.resolveReference()`; a document-local layout label (not canonical-shaped)
+is never resolved. Border classes, per §4's illustration provenance rule:
+
+| Class | When |
+|---|---|
+| `dv-illus-view` (green) | Parses as a `blocks` document; no cross-linked block id is suspect. |
+| `dv-illus-suspect` (amber) | Parses; at least one cross-linked block id resolves `suspect` (⚑S flag). |
+| `dv-illus-missing` (red) | The file doesn't exist, isn't the `blocks` notation, uses the `grid:` root, or otherwise fails to parse (⚑U flag) — same class `figure` uses for a missing file, and the same failing-state treatment for `clean`'s `failOn`. |
+
+`fit` (`width` / `page` / `none`, §2) is carried through as a `dv-fit-<value>` class
+on the wrapping `<figure>` — a hook for the print layout (§7, not built yet), not yet
+acted on by this module.
 
 ## Tests
 
@@ -172,5 +185,6 @@ document.
 node packages/document-view-engine/tests/test_parse_skeleton.mjs
 node packages/document-view-engine/tests/test_resolve_references.mjs
 node packages/document-view-engine/tests/test_evaluate.mjs
+node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
 ```
