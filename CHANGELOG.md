@@ -6,6 +6,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.2.0] — 2026-08-07
+
+Bump category: **MINOR** — additive notation, tooling, and CI-hygiene changes only; no migration recipe required.
+
+### Added
+
+- **Document-view engine** (`packages/document-view-engine/`) — skeleton-file parser (`parseSkeleton()`) covering bare/field/traversal inline references, `{{# each TYPE where ... order by ... }}` selection blocks, `.field` references, `trace`, `view`, `figure`/`figref`, `view`'s `as=`/`fit=` parameters, and the `\{{` escape; plus `resolveReference()`/`createResolver()` classifying an id against canon into the four §3 states (`ok`, `⚑U` unresolved, `⚑A` not admitted, `⚑V` out of validity, `⚑S` suspect via CONTRACT §16). Zero runtime dependencies; syntax/resolution scope only — render profiles, derivation share, telemetry, and PDF output remain open. (#439, #440, #443)
+- **Document-view class + MRD/SRS/SDD layouts** (`notations/views/documents/`) — new view class alongside diagrams/reports; three deterministic, render-contract-defined layouts derived from admitted canon with no hand-authored prose surface: MRD (grouped `NEED`+`REQUIREMENT` via `REQUIREMENT.serves`), SRS (software-tier `REQUIREMENT` sectioned by `kind`), SDD (`APPLICATION`/`NODE`/`TECHNOLOGY_SERVICE` design elements traced to the `REQUIREMENT`s they realise). Reserved inert `view.standard` field; new `DOC1` doc-lint rule forbidding a shipped layout from emitting a standard identifier. (#426, #427, #430, #431)
+- **`RELEASE` element TYPE** (`ELEMENT_PRIMITIVES.md` §7.29, `canon/elements/05_implementation/releases/`) — dated/versioned state of a `PRODUCT`/`APPLICATION` (`of`, `version`, optional `predecessor`, `released_at`). Rules `RELEASE-001..005`. (#446)
+- **`required_for` relation** (`REQUIREMENT` → `RELEASE`, `17-relations.md` §3) — scopes an obligation to one release rather than the whole subject; derived "what must hold in release R" query via a `predecessor`-chain walk (`scripts/release-obligations.mjs`). No new rule code (reuses `REL-002`/`REL-003`). (#447)
+- **`ASSERTION.subject_release` and `VERIFICATION.verified_on`** — optional `RELEASE` qualifiers narrowing a claim/protocol run to a specific release; derived "superseded" read via the `predecessor` chain. Rules `ASSERT-010`, `VERIF-007` (both error, reachable only when the new optional field is set). (#448)
+- **`depends_on` relation kind** (`REQUIREMENT` → `REQUIREMENT`, `17-relations.md` §3) — conditional obligation dependency, distinct from `parent`/work-order relations. Rules `REL-005` (self-reference, error), `REL-006` (cycle, warning). (#438)
+- **Agreement axis** (`CONTRACT.md` §6.3) — `agreement: draft | agreed | disputed` on `REQUIREMENT`/`CONSTRAINT`/`NEED`, independent of admission; only a human may write `agreed` (`AGREE-001..003`). Reference implementation `scripts/check-agreement.mjs`. (#433)
+- **Link suspicion / content identity** (`CONTRACT.md` §16) — git-derived (never stored) suspicion flag over `REL`/`ASSERTION`/`VERIFICATION`/`VALIDATION` endpoints and agreement-carrying elements, with a mechanical-procedure hatch for declared bulk migrations. Reference implementation `scripts/check-link-suspicion.mjs`. (#437)
+- **Deprecation policy** (`CONTRACT.md` §10.6) — a `status: deprecated` spec must name its `removed_in:` release; window is at least one MAJOR; removal is always a BREAKING entry. New `DEP1` doc-lint rule. FGA scheduled for removal in `4.0.0`, migration recipe pre-staged under `migrations/3.1-to-4.0/`. (#429)
+- **Externally-distributed packages** (`PACKAGES.md` §1, §7.2) — package class with its own version and `compatible_with` range (`PKG-002`); package-agnostic validator discovery (`ingest-cli check-packages`); required §6 envelope-statement row on every package spec (`PKGDOC1`). (#434)
+- **Ingest review-queue `semantic_links`** — optional typed edges between candidates for relations with no closed REL kind yet; passed through, never admitted to canon. (#435)
+- **Ingest approver extraction + `role_assignment_proposals`** — new cross-cutting extraction prompt for a document's approval/sign-off chain; review-only person→role proposals, never shaped into a relation candidate or admitted. (#436)
+- **`.github/pull_request_template.md`** — two-section PR template (What changed / How it is verified). (#444)
+
+### Changed
+
+- **ADL per-repo decision layer** (`method/03-architecture-decision-log.md` §1, §6, §10) — canonical only where the repo's readership is the reasoning's intended audience; a public repo keeps at most an unmotivated pointer, record lives centrally. Matching agent-authorship boundary added to §6. (#423)
+- **Onboarding skill computes the admission record and lifecycle** — `admitted_at`/`admitted_by`/`gate_checks`/`valid_from` are no longer hand-typed placeholders; `SKILL.md` gains an "Admission record and lifecycle" procedure mirroring the CLI's own `transitrix new` behaviour. (#424)
+- **Capability/application maturity converges on the versioned-attribute sidecar** (`CONTRACT.md` §9.4, `05-capability-map.md`, `10-applications.md`) — `target_maturity` joins `current_maturity`/`target_date` as time-varying (sidecar `{valid_from, value}` step function); single shared CMMI V2.0 scale definition. (#425)
+- **View catalogue split into `diagrams/`/`reports/`/`documents/`** (`notations/views/`) — each spec's class now structural via folder rather than a README table position; `IDS_AND_REFERENCES.md` §3.2's document-level TYPE registry renamed `VIEW_TYPE`; `check-notations.mjs` C1 count check derives counts from the filesystem. (#426)
+
+### Fixed
+
+- **CI work-item reference guard** — widened to catch the unpunctuated "hub"+worktype+number form alongside the existing `#`-punctuated pattern; self-test added against the live extracted pattern. (#422)
+- **`baseline-manifest` scope** — derived from every `id:` under `canon/` instead of a hardcoded two-directory list, so newly registered TYPEs are no longer silently omitted. (#428)
+- **`ingest-cli admit-source` idempotency** — retrying on the same converted markdown after the raw source moved out of `_intake/inbox/` no longer skips the duplicate check and mints a spurious second artefact; `--force` still mints a genuine duplicate. (#432)
+- **`check-notations` unit tests wired into CI** — `scripts/check-notations.test.mjs` now runs in `notations-doc-lint.yml` on every PR (previously local-only, blocked by a token-scope gap). (#442)
+- **Duplicated `RISK` element schema content removed** (`ELEMENT_PRIMITIVES.md` §7.26) — broken nested code-fence and duplicated table/prose cleaned up. (#445)
+
+---
+
 ## [3.1.0] — 2026-07-31
 
 Bump category: **MINOR** — additive core vocabulary and tooling only; no migration recipe required.
