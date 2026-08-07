@@ -12,6 +12,7 @@ import {
   parseStatedViewCounts,
   findStandardIdentifierEmissions,
   checkPackageEnvelopeStatement,
+  findDocumentSourceFailures,
   deriveDeprecationFailures,
   parseVocabularyElementTypes,
   parseElementPrimitivesTable,
@@ -412,4 +413,41 @@ test('parseRuleRowValues — negative: no matching row returns null, not a throw
 test('parseRuleRowValues — negative: a matching row with no "not one of" / "not in" language throws', () => {
   const text = '| `REQ-004` | error | `origin` must be present. |';
   assert.throws(() => parseRuleRowValues(text, 'REQ-004'), /names no "not one of"/);
+});
+
+test('findDocumentSourceFailures — positive: a canonical document source passes clean', () => {
+  const failures = findDocumentSourceFailures(['templates/product.mrd.ttrs']);
+  assert.deepEqual(failures, []);
+});
+
+test('findDocumentSourceFailures — negative: a .trs file is named as the near-miss, in words', () => {
+  const failures = findDocumentSourceFailures(['templates/product.mrd.trs']);
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'T1');
+  // The point of the check: it must say ".ttrs" and say why ".trs" is wrong,
+  // rather than surfacing as an unrecognised-file error.
+  assert.match(failures[0].message, /\.ttrs/);
+  assert.match(failures[0].message, /one keystroke away/);
+});
+
+test('findDocumentSourceFailures — negative: a .ttrs file with no kind segment is flagged', () => {
+  const failures = findDocumentSourceFailures(['templates/product.ttrs']);
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'T1');
+  assert.match(failures[0].message, /<basename>\.<kind>\.ttrs/);
+});
+
+test('findDocumentSourceFailures — negative: an upper-case kind segment is flagged', () => {
+  const failures = findDocumentSourceFailures(['templates/product.MRD.ttrs']);
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].check, 'T1');
+});
+
+test('findDocumentSourceFailures — unrelated files are untouched', () => {
+  const failures = findDocumentSourceFailures([
+    'notations/CONTRACT.md',
+    'notations/examples/bpmn/order.bpmn.transitrix.yaml',
+    'packages/document-renderer/src/pass1.mjs',
+  ]);
+  assert.deepEqual(failures, []);
 });

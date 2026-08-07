@@ -1,0 +1,5 @@
+notation: capability
+id: CAP-1
+name: Batch release
+title: Batch release capability
+text: Releasing a manufactured batch to distribution.
