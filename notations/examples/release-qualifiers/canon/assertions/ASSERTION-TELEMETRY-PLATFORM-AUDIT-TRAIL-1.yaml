@@ -1,0 +1,24 @@
+notation: assertion
+id: ASSERTION-TELEMETRY-PLATFORM-AUDIT-TRAIL-1
+about: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+subject: PRODUCT-TELEMETRY-PLATFORM-1
+subject_release: RELEASE-TELEMETRY-PLATFORM-2
+status: compliant
+evidence:
+  - kind: canonical_ref
+    ref: VERIFICATION-INGEST-AUDIT-TRAIL-TEST-2
+
+assessed_at: "2026-06-25"
+assessed_by: "ROLE-COMPLIANCE-LEAD-1"
+next_review_at: "2027-06-25"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

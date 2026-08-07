@@ -1,0 +1,29 @@
+# DELIBERATELY INVALID — trips VERIF-007 (wrong TYPE).
+# `verified_on` resolves to an admitted element, but that element is a PRODUCT,
+# not a RELEASE. Resolution alone is not enough; the target must be a RELEASE.
+notation: verification
+id: VERIFICATION-OPERATOR-DATA-SEGREGATION-TEST-1
+verifies: REQUIREMENT-OPERATOR-DATA-SEGREGATION-1
+verified_on: PRODUCT-TELEMETRY-PLATFORM-1
+method: test
+protocol: "Authenticate as operator A and enumerate every telemetry record reachable through the public and internal read paths; confirm no record belonging to operator B is returned."
+result: "No cross-operator record was reachable on any of the 12 read paths exercised."
+outcome: pass
+evidence:
+  - kind: external_doc
+    title: "Operator segregation verification protocol VP-030, run log"
+    url: "https://internal.example/reports/vp-030-run-log.pdf"
+
+performed_at: "2026-06-24"
+performed_by: "ROLE-VERIFICATION-ENG-1"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

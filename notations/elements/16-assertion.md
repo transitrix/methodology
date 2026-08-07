@@ -1,8 +1,8 @@
 ---
 title: "Assertion — REQUIREMENT realisation claim"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-15"
+last_updated: "2026-08-07"
 status: "draft"
 ---
 
@@ -45,6 +45,7 @@ notation: assertion
 id: ASSERTION-PRODUCT-MOBILE-DATA-ERASURE-1
 about: REQUIREMENT-DATA-ERASURE-1        # required; must resolve to a REQUIREMENT
 subject: PRODUCT-MOBILE-1                 # required; exactly one typed ID; TYPE ∈ {PRODUCT, PROCESS, CAPABILITY}
+subject_release: RELEASE-MOBILE-4         # optional; a RELEASE of `subject` — narrows the claim to one release (§2.4)
 realised_via:                             # optional; any number of typed IDs of elements that realise the requirement
   - CAPABILITY-V1.2
   - PROCESS-USER-DATA-PURGE-1
@@ -83,6 +84,7 @@ valid_to: null
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `ASSERTION-[<middle>-]<INTEGER>`. |
 | `about` | yes | string | Typed ID of the REQUIREMENT this assertion is about. The validator resolves it (`ASSERT-002`). |
 | `subject` | yes | string | Exactly one typed ID of the element that owns the claim. TYPE MUST be one of `PRODUCT`, `PROCESS`, `CAPABILITY` (`ASSERT-003`). |
+| `subject_release` | no | string | A `RELEASE-…` typed ID ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) narrowing the claim to **one release of `subject`** rather than the subject as a whole. The named release's `of` MUST equal `subject` (`ASSERT-010`). Absent ⇒ the claim is about the subject as such, exactly as before this field existed. See §2.4. |
 | `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. MAY name a process-flow `STEP-…` to localise the claim to a specific task / stage (§2.1); referencing a step is a cross-document reference that promotes it (`ASSERT-009`; [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20). |
 | `status` | yes | string | One of: `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. See §3 below. |
 | `evidence` | no | list | Hybrid array of evidence entries; each carries a `kind` and kind-specific fields. See §4. |
@@ -166,6 +168,27 @@ status: compliant
 
 ---
 
+## 2.4 Release-scoped compliance claims — `subject_release`
+
+A compliance claim can be true of one shipped state of a subject and false of the next: the release that adds an audit trail satisfies the obligation, its predecessor did not. Binding every claim to the subject as a whole forces the model to overwrite the old judgement with the new one and lose the distinction. The optional **`subject_release`** field lets an assertion say *which release* it is about:
+
+```yaml
+about: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+subject: PRODUCT-TELEMETRY-PLATFORM-1      # the compliance unit — unchanged grain
+subject_release: RELEASE-TELEMETRY-PLATFORM-2   # the release the claim is about
+status: compliant
+```
+
+**The subject grain is unchanged.** `subject` keeps its `{PRODUCT, PROCESS, CAPABILITY}` enum and `ASSERT-003` is untouched — `subject_release` is a *qualifier on* the subject, never a replacement for it. The compliance unit is still the subject; the release says which state of that subject the judgement covers.
+
+**Absent means what it always meant.** An assertion with no `subject_release` is a claim about the subject as such, exactly as every assertion authored before this field existed. **No coverage warning fires on a claim that names no release** — there is no rule anywhere that a claim *ought* to be release-scoped, and adding one would retroactively make every existing assertion incomplete. Whether the distinction is worth drawing is the author's judgement, matching the "catalogued only when referenced" restraint on `RELEASE` itself ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29).
+
+**Only a `PRODUCT` subject can carry one.** `RELEASE.of` resolves to a `PRODUCT` or an `APPLICATION` (`RELEASE-002`), and `ASSERT-010` requires the named release's `of` to equal `subject`. The two enums intersect at `PRODUCT` alone, so an assertion whose `subject` is a `PROCESS` or a `CAPABILITY` can never carry a valid `subject_release`. This is a consequence of the two existing rules, not a third restriction — a process or a capability is not a thing that ships in versions, and the obligation on one is not release-scoped. Where an obligation on a process genuinely varies with the version of a system the process runs on, the release-bearing element is that system: name it in `realised_via` and put the release-scoped claim on the product, the same division of labour as §2.1 and §2.3.
+
+**Derived query — "is release R compliant".** The compliance state of a release is read by collecting the admitted assertions carrying `subject_release: R`, exactly as the subject-wide read collects those carrying `subject: <the subject>`. Nothing is stored on the `RELEASE` element, which enumerates none of its own contents by design ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29). A release-scoped and a subject-wide assertion about the same `(subject, requirement)` pair are **different claims about different things** and do not collide under the one-assertion-per-pair rule (§1); the pair for a release-scoped claim is `(subject_release, requirement)`.
+
+---
+
 ## 3. Status vocabulary
 
 | Value | Meaning |
@@ -213,10 +236,13 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-007` | warning | `evidence` is empty AND `status` is `compliant` or `partial`. A positive status without evidence is undefended. |
 | `ASSERT-008` | warning | `next_review_at` is set and is in the past relative to today. The assertion is stale and due for re-review. |
 | `ASSERT-009` | warning | A `realised_via` entry references a process-flow step (`STEP-…`) that is **not promoted** to a standalone `STEP` element (it remains inline in its `PROCESS`). The assertion is a cross-document reference and triggers promotion ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20); promote the step so the reference resolves as a first-class element. Distinct from `ASSERT-004`, which fires only when the id resolves to nothing at all. Cross-cutting — requires the full canon catalogue (the `PROCESS` flows and the `STEP` files) to evaluate. |
+| `ASSERT-010` | error | `subject_release` is present but does not resolve to an admitted `RELEASE`, or resolves to a `RELEASE` whose `of` differs from this assertion's `subject` — the claim names a release of something other than the thing it is a claim about (§2.4). Single-reference resolution, like `ASSERT-002`/`ASSERT-003`; not cross-cutting. Never fires on an assertion that omits the field. |
 | `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](../CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
 | `PROCESS-COVERAGE-001` | warning | A `PROCESS` element has no admitted `ASSERTION` with it as `subject` — the process's regulatory obligations are entirely unmodelled. An admitted assertion with `status: n_a` counts as coverage (the model has considered the regime against the process and recorded an explicit exclusion); only the total absence of any assertion triggers this warning. Cross-cutting — requires the full assertions catalogue to evaluate. Indexed in [CONTRACT.md](../CONTRACT.md) §8; relates to the coverage read in [22-coverage-metric.md](../views/reports/22-coverage-metric.md). |
 
-**`ASSERT-003` is deliberately unchanged.** Stage/task-level impact (§2.1) is expressed through `realised_via`, not by widening the `subject` enum — the subject grain stays `{PRODUCT, PROCESS, CAPABILITY}`, and every assertion authored before this addition remains valid. The only addition is `ASSERT-009`, a warning that never fires on assertions without step references.
+**`ASSERT-003` is deliberately unchanged.** Stage/task-level impact (§2.1) is expressed through `realised_via`, not by widening the `subject` enum — the subject grain stays `{PRODUCT, PROCESS, CAPABILITY}`, and every assertion authored before this addition remains valid. The only addition is `ASSERT-009`, a warning that never fires on assertions without step references. Release scoping (§2.4) leaves it unchanged for the same reason: `subject_release` qualifies the subject rather than widening what may be one.
+
+**`ASSERT-010` reads two conditions, not one.** The rule as scoped named only the mismatched-`of` case; an unresolvable `subject_release` is folded into the same code rather than left unchecked, because a mistyped release id would otherwise pass validation silently and every other cross-reference field in core carries a resolution check (`ASSERT-002`, `RELEASE-002`, `BSV-003`, `TSVC-003`, `REQ-SERVES-001`). One code covers both because the mismatch check cannot run at all until the reference resolves.
 
 The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) and header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) rules apply to ASSERTION files in addition to the ASSERT-* rules above. The aggregated compliance-domain rules table (covering both REQUIREMENT and ASSERTION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 
@@ -239,6 +265,8 @@ A typical naming convention encodes the subject + requirement in the middle segm
 
 ## 7. Evolution
 
+**Landed (v0.2, 2026-08-07):** the optional `subject_release` qualifier (§2.4) and `ASSERT-010`. Purely additive — `subject` and `ASSERT-003` are unchanged, no field became required, and a repository that never writes the qualifier validates exactly as it did before. A worked fixture pair lives at [`../examples/release-qualifiers/`](../examples/release-qualifiers/).
+
 Out of scope for this initial schema:
 
 - **CONSTRAINT-side assertions.** A CONSTRAINT is honoured or violated; that is currently modelled inline on the CONSTRAINT artefact or via downstream tooling. A parallel ASSERTION-against-CONSTRAINT mechanism MAY be added later if the use case proves out.
@@ -255,3 +283,5 @@ Out of scope for this initial schema:
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - The REQUIREMENT element type assertions are about: [15-requirement.md](15-requirement.md).
 - Codex source documents requirements derive from: [14-codex.md](14-codex.md).
+- The RELEASE element type `subject_release` names: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29.
+- The verification-side counterpart qualifier (`verified_on`): [27-verification.md](27-verification.md) §2.1.

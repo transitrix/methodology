@@ -1,0 +1,22 @@
+notation: release
+id: RELEASE-EDGE-COLLECTOR-1
+name: "Edge Collector Appliance 4.1.0"
+description: >
+  A structurally valid release of the collector appliance. Valid in itself —
+  it is the assertion that points at it from the wrong subject that is wrong,
+  not this file.
+
+of: PRODUCT-EDGE-COLLECTOR-1
+version: "4.1.0"
+released_at: "2026-05-11"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

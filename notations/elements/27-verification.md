@@ -1,8 +1,8 @@
 ---
 title: "Verification — REQUIREMENT verification claim"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-30"
+last_updated: "2026-08-07"
 status: "draft"
 ---
 
@@ -41,6 +41,7 @@ A `VERIFICATION` is distinct from an `ASSERTION`: an `ASSERTION` claims a *subje
 notation: verification
 id: VERIFICATION-DEVICE-ALARM-TEST-1
 verifies: REQUIREMENT-DEVICE-ALARM-1     # required; must resolve to a REQUIREMENT
+verified_on: RELEASE-DEVICE-FIRMWARE-3   # optional; the RELEASE the protocol was run against (§2.1)
 method: test                              # required; test | analysis | inspection | demonstration
 protocol: "Discharge battery under controlled load to 10% state of charge; confirm the audible and visual low-battery alert triggers within 2 seconds of crossing the threshold."
 result: "Alert triggered at 9.7% state of charge, 1.4 seconds after threshold crossing, across 10/10 runs."   # optional
@@ -72,6 +73,7 @@ valid_to: null
 | `notation` | yes | string | Fixed value `verification`. Machine-readable type tag (redundant with the ID prefix, useful for tooling that reads files without parsing IDs). |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `VERIFICATION-[<middle>-]<INTEGER>`. |
 | `verifies` | yes | string | Typed ID of the `REQUIREMENT` this verification targets. The validator resolves it (`VERIF-002`). |
+| `verified_on` | no | string | A `RELEASE-…` typed ID ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) — **the state the protocol was run against**. The validator resolves it (`VERIF-007`). Absent ⇒ the record says nothing about which state was under test, exactly as before this field existed. See §2.1. |
 | `method` | yes | string | One of `test`, `analysis`, `inspection`, `demonstration` — the classic V&V method vocabulary (IEEE/IEC/ISO 15288, and the same four methods FDA design-controls guidance names for 21 CFR 820.30(f)). See §3. |
 | `protocol` | yes | string | The verification procedure — what was done, under what conditions, against what acceptance criteria. |
 | `result` | no | string | Narrative of what was observed when the protocol ran. Distinct from `outcome` — `result` is the finding, `outcome` is the judgement. |
@@ -85,6 +87,34 @@ valid_to: null
 | `gate_checks` | yes | map | Standard canon checks (`uniqueness`, `consistency`, `completeness`). |
 | `valid_from` | yes | string | Date the verification record took effect — see [CONTRACT.md](../CONTRACT.md) §7. |
 | `valid_to` | yes | string \| null | Date the verification record ceased to be in effect, or `null` if still in effect. |
+
+---
+
+## 2.1 Release-scoped verification — `verified_on`
+
+A protocol is run against *something that exists at a moment* — a build, a shipped version, a state of the subject. `outcome: pass` on one release says nothing about the next: the code path the protocol exercised may have been rewritten since. The optional **`verified_on`** field records which state was under test:
+
+```yaml
+verifies: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+verified_on: RELEASE-TELEMETRY-PLATFORM-2     # the state the protocol was run against
+method: test
+outcome: pass
+```
+
+**No `of` constraint, unlike the assertion side.** `ASSERTION.subject_release` must name a release *of its own subject* (`ASSERT-010`, [16-assertion.md](16-assertion.md) §2.4) because an assertion has a subject for the release to belong to. A `VERIFICATION` has none (§4) — its target is the requirement's acceptance criteria, not a claim about a particular product or process. `verified_on` therefore only has to resolve to an admitted `RELEASE` (`VERIF-007`); a release of a `PRODUCT` and a release of an `APPLICATION` are both valid, since the thing a protocol runs against is frequently the deployed application rather than the commercial product.
+
+**Absent means what it always meant.** A verification with no `verified_on` records that the protocol was run, without saying against which state — exactly as every verification authored before this field existed. Nothing requires the field, no coverage or completeness rule counts its absence as a gap, and `REQ-VERIF-COVERAGE-001`/`-002` ([15-requirement.md](15-requirement.md) §4) are unchanged: an unqualified verification still closes the trace.
+
+### 2.1.1 The superseded-state read — derived, never stored
+
+**A `VERIFICATION` whose `verified_on` release has a successor was run against a state the subject has since moved past.** That is worth surfacing to a reviewer and worth surfacing *nowhere else*: it is not a validation rule, it has no rule code, and no file ever carries a flag recording it.
+
+It adds no new machinery. Two existing mechanisms cover it between them:
+
+- **Successor detection** is the `predecessor` walk the release catalogue already supports — a release R has a successor when some admitted `RELEASE` of the same `of` names R as its `predecessor`. `RELEASE-004`'s cycle half and `RELEASE-005`'s duplicate-version check already require the validator to walk exactly this chain ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §9); the read reuses it and stores nothing, the same "derive, don't duplicate" discipline that keeps a `RELEASE` from enumerating its own contents ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29).
+- **The reporting discipline** is [CONTRACT.md](../CONTRACT.md) §16.2's, unchanged and inherited whole: computed fresh on every check, never written back onto the record, and **reports, never filters** — no validator, coverage rule, or view generator may use the signal to exclude a verification from anything. A verification of a superseded release is still a verification, and its `outcome` still stands for the state it was run against.
+
+`verified_on` also becomes a second **resolvable endpoint** of the record, so §16.2's content-identity suspicion evaluates it alongside `verifies` with no change to that computation: if the `RELEASE` file is itself rewritten after the protocol ran, the record's link to it goes suspicious under the identical anchor rule (the record file's own most recent commit). The two signals are independent and answer different questions — *the state I tested has been superseded* versus *the record of that state has been edited since I looked at it*.
 
 ---
 
@@ -120,6 +150,7 @@ valid_to: null
 | Domain | regulatory / organisational compliance | engineering verification |
 | Required link | `about` (REQUIREMENT) + `subject` (PRODUCT/PROCESS/CAPABILITY) | `verifies` (REQUIREMENT) only — no separate subject field |
 | Judgement field | `status` (`compliant` / `partial` / `non_compliant` / `under_review` / `n_a`) | `outcome` (`pass` / `fail` / `inconclusive` / `not_yet_run`) |
+| Optional release qualifier | `subject_release` — a RELEASE **of `subject`** (`ASSERT-010`); reachable only for a `PRODUCT` subject | `verified_on` — any admitted RELEASE (`VERIF-007`); no `of` constraint, there being no subject to constrain against |
 
 A `VERIFICATION` carries no `subject` field: the thing verified is the requirement's acceptance criteria directly, not a claim about a particular product/process/capability satisfying it. Where a verification protocol is itself evidence for a compliance claim, cite it from the `ASSERTION.evidence[]` array (`kind: canonical_ref`, `ref: VERIFICATION-…`) — the two catalogues cross-reference; neither is nested inside the other.
 
@@ -135,6 +166,7 @@ A `VERIFICATION` carries no `subject` field: the thing verified is the requireme
 | `VERIF-004` | error | `outcome` is not one of `pass`, `fail`, `inconclusive`, `not_yet_run` (§3). |
 | `VERIF-005` | error | An `evidence[]` entry with `kind: canonical_ref` has a `ref` that does not resolve. |
 | `VERIF-006` | warning | `evidence` is empty AND `outcome` is `pass` — an undefended positive claim, mirroring `ASSERT-007` ([16-assertion.md](16-assertion.md) §5). |
+| `VERIF-007` | error | `verified_on` is present but does not resolve to an admitted `RELEASE` — either the id resolves to nothing, or it resolves to an artefact of some other TYPE (§2.1). Never fires on a verification that omits the field. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to VERIFICATION files in addition to the `VERIF-*` rules above.
 
@@ -159,6 +191,8 @@ A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives
 
 ## 7. Evolution
 
+**Landed (v0.5, 2026-08-07):** the optional `verified_on` release qualifier (§2.1), `VERIF-007`, and the superseded-state read (§2.1.1). Purely additive — no field became required, no existing rule changed, and a repository that never writes the qualifier validates exactly as it did before. The superseded-state read introduces no rule code, no stored flag, and no new computation: successor detection is the existing `predecessor` walk and the reporting discipline is [CONTRACT.md](../CONTRACT.md) §16.2's, inherited unchanged. A worked fixture pair lives at [`../examples/release-qualifiers/`](../examples/release-qualifiers/).
+
 **Corrected (v0.4, 2026-07-30):** Wording fix — this spec, the TYPE registry entry, and related docs previously described `VERIFICATION` as a "verification-and-validation (V&V)" claim. `verifies` has only ever resolved to `REQUIREMENT`; there was no anchor for validating against a stakeholder/user need, so the "V&V" framing overstated the type's scope. Reworded to "verification" throughout (§1, §4, title, scope). No schema or behavioural change. If a future change (the `NEED` element + validation-anchor task) widens `verifies` to admit a second anchor kind, or adds a dedicated `VALIDATION` type, this wording is revisited then — not before.
 
 **Landed (v0.2, 2026-07-26):**
@@ -178,4 +212,6 @@ Out of scope for this schema:
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.7 (entry), §1 (grammar), §4 (uniqueness scope).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - The REQUIREMENT element type verifications are about: [15-requirement.md](15-requirement.md).
-- The compliance-domain peer primitive: [16-assertion.md](16-assertion.md).
+- The compliance-domain peer primitive: [16-assertion.md](16-assertion.md), whose `subject_release` qualifier (§2.4) is the assertion-side counterpart to `verified_on`.
+- The RELEASE element type `verified_on` names: [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29.
+- Derived-suspicion discipline the superseded-state read inherits: [CONTRACT.md](../CONTRACT.md) §16.2.
