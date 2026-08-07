@@ -23,13 +23,14 @@ If a single release combines multiple kinds of change, the bump is the **highest
 For every release, in order:
 
 1. **Confirm the bump category.** Read every PR landed since the previous tag; categorise each change per the table above; pick the bump.
-2. **Update `methodology_version` in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo's `transitrix.yaml`** to the new version, via a companion PR in that repo. acme-corp is the fixture adopter and tracks the latest released version.
-3. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
-4. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
-5. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
-6. **Tag** the release commit with `vX.Y.Z`.
-7. **Publish** the release notes as a GitHub Release on the tag.
-8. **Announce** the release (channel TBD with the maintainer).
+2. **Bump `notations/CURRENT_VERSION.yaml`** to the new version, in the same PR as the release notes. This is the manifest pin `scripts/check-notations.mjs`'s V1 check enforces every other concrete `methodology_version:` pin in this repo against — run `node scripts/check-notations.mjs` after bumping it and fix every pin the check flags (or add it to the script's allowlist if it is an intentional placeholder, e.g. a migration fixture pinned to a fixed source version). The tag is cut from a commit where this check is already clean — do not tag first and bump after.
+3. **Update `methodology_version` in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo's `transitrix.yaml`** to the new version, via a companion PR in that repo. acme-corp is the fixture adopter and tracks the latest released version.
+4. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
+5. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
+6. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
+7. **Tag** the release commit with `vX.Y.Z`.
+8. **Publish** the release notes as a GitHub Release on the tag.
+9. **Announce** the release (channel TBD with the maintainer).
 
 ---
 

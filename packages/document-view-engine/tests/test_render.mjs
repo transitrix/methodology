@@ -121,6 +121,53 @@ async function run() {
     check(clean.failed, 'a field-ref with no current row renders unresolved rather than throwing');
   }
 
+  // figure / figref — numbering, manual/missing borders, forward references
+  {
+    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-figs-'));
+    writeFileSync(join(skeletonDir, 'device.png'), 'not a real png, existence is all that matters', 'utf8');
+
+    // a figref before its target (forward reference) still resolves, and
+    // numbering is shared across the whole document, not just the ref's own scope
+    const ast = [
+      { type: 'figref', name: 'fig-device' },
+      { type: 'text', value: ' ' },
+      { type: 'figure', path: 'device.png', caption: 'Device, front', as: 'fig-device' },
+      { type: 'text', value: ' ' },
+      { type: 'figure', path: 'missing.png', caption: null, as: 'fig-missing' },
+      { type: 'text', value: ' ' },
+      { type: 'figref', name: 'fig-missing' },
+      { type: 'text', value: ' ' },
+      { type: 'figref', name: 'no-such-anchor' },
+    ];
+    const evaluator = stubEvaluator({});
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    check(review.html.includes('<span class="dv-figref">Figure 1</span>'), 'figref: forward reference resolves to the correct number');
+    check(review.html.includes('Figure 1 — Device, front'), 'figure: caption includes its assigned number and text');
+    check(review.html.includes('dv-illus-manual'), 'figure: an existing file gets the manual border class');
+    check(review.html.includes('dv-illus-missing'), 'figure: a missing file gets the missing border class');
+    check(review.html.includes('Figure 2'), 'figure: numbering is sequential across the whole document, not per-caption');
+    check(!review.failed, 'review profile carries no failed flag (only clean fails the build)');
+    check(review.html.includes('<span class="dv-unresolved"><sup class="dv-flag">⚑U</sup></span>'), 'figref: an unresolved anchor name renders unresolved, like any other unresolvable reference');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    check(clean.html.includes('<figure class="dv-clean">'), 'clean profile: figures render without border-class or flag information');
+    check(!clean.html.includes('dv-illus'), 'clean profile: no illustration border classes leak through');
+    check(clean.failed, 'clean profile: a missing figure file fails the build');
+
+    rmSync(skeletonDir, { recursive: true, force: true });
+  }
+
+  // figure: a relative path with no skeletonDir resolves against "."; an
+  // absolute path is used as-is regardless of skeletonDir
+  {
+    const ast = [{ type: 'figure', path: '/definitely/not/here.png', caption: null, as: null }];
+    const evaluator = stubEvaluator({});
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    check(review.html.includes('src="/definitely/not/here.png"'), 'figure: an absolute path is used as-is, ignoring skeletonDir');
+    check(review.html.includes('dv-illus-missing'), 'figure: a nonexistent absolute path still renders as missing');
+  }
+
   // unknown profile value rejected
   {
     let threw = false;

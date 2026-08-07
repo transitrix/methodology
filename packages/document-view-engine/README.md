@@ -7,15 +7,17 @@ ships with this package — a layout is authored by whoever needs that document,
 their own repository.
 
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
-evaluation, and render profiles (§4) for `inline`/`each` content.** `parseSkeleton()`
-turns a skeleton file's text into a header object and a body AST. `resolveReference()`
-/ `createResolver()` classify an id against canon into one of the four states below.
-`createEvaluator()` resolves `{{ ID.field }}` traversal and `{{# each ... }}`
-selection against canon. `renderDocument()` walks the AST through an evaluator and
-emits HTML in the `review` or `clean` profile. Not yet built: evaluation/rendering
-for `trace` / `view` / `figure` / `figref` (they render as inert pass-through
-markers today), derivation share (§5), telemetry (§6), and PDF output (§7) — later
-layers on top of these.
+evaluation, render profiles (§4) for `inline`/`each` content, and `figure`/`figref`
+rendering.** `parseSkeleton()` turns a skeleton file's text into a header object and
+a body AST. `resolveReference()` / `createResolver()` classify an id against canon
+into one of the four states below. `createEvaluator()` resolves `{{ ID.field }}`
+traversal and `{{# each ... }}` selection against canon. `renderDocument()` walks
+the AST through an evaluator and emits HTML in the `review` or `clean` profile,
+including numbered, bordered `figure` illustrations and the `figref` references that
+point at them. Not yet built: `trace` (a coverage matrix) and `view` (a model view
+rendered at build time — they still render as inert pass-through markers today),
+derivation share (§5), telemetry (§6), and PDF output (§7) — later layers on top of
+these.
 
 ## What this package admits, and what it defers
 
@@ -152,9 +154,22 @@ const { html, failed, counts } = await renderDocument(ast, evaluator, { profile:
 | `review` | Every span is coloured by its §3 state (`dv-ok` / `dv-suspect` / `dv-unresolved`); a non-default class also carries a flag glyph (`⚑S`/`⚑A`/`⚑V`/`⚑U`) as a second channel, never colour alone. |
 | `clean` | Everything renders as `dv-clean`, no flags, no counters. `failed` is `true` when a state in `failOn` occurred anywhere in the render (default: `unresolved`, `not-admitted`, `out-of-validity` — `suspect` warns only, per §4). |
 
-`trace` / `view` / `figure` / `figref` nodes render as HTML comments (`<!-- dv-view:
-not yet rendered (...) -->`) rather than throwing — a full-syntax skeleton still
-renders end to end, but those forms carry no content or classification yet.
+`trace` / `view` nodes still render as HTML comments (`<!-- dv-view: not yet
+rendered (...) -->`) rather than throwing — a full-syntax skeleton still renders end
+to end, but those two forms carry no content or classification yet.
+
+`figure` / `figref` render for real. Pass `skeletonDir` — the directory containing
+the skeleton file — so a `figure`'s relative image path resolves; an absolute path
+is used as-is. Numbers are assigned once, in document order, across every `figure`
+in the AST (a `figref` may point at a `figure` later in the document — a forward
+reference still resolves to the right number), and shift correctly when a `figure`
+is inserted earlier in the skeleton. A `figure` whose file doesn't exist on disk
+renders with the `dv-illus-missing` border class instead of `dv-illus-manual`, and
+counts as a failing state for `clean`'s `failOn` the same way an unresolved
+reference does. `view` doesn't participate in this numbering sequence yet — §2
+treats `view` and `figure` as one shared illustration sequence, so wiring `view` in
+later will renumber every `figure` after the first `view` in a mixed-syntax
+document.
 
 ## Tests
 

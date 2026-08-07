@@ -1,15 +1,15 @@
 ---
-version: "0.1"
+version: "1.0"
 author: "Valerii Korobeinikov"
 last_updated: "2026-08-07"
-status: "draft"
+status: "stable"
 ---
 
-# Directive language — normative reference
+# Directive language — normative conformance document
 
-**Version:** 0.1
+**Version:** 1.0
 **Date:** 2026-08-07
-**Status:** Draft — the single normative definition of the `{{ … }}` directive
+**Status:** Stable — the single normative definition of the `{{ … }}` directive
 language shared by every document source in this class.
 **Applies to:** `.ttrs` document templates and document-view skeleton files.
 
@@ -26,14 +26,45 @@ check `C1`). That absence is the point being made, not an omission.
 What it defines is the **directive language**: the `{{ … }}` constructs that
 appear inside a document source. One language, defined once, here.
 
-Two implementations of that one language ship today —
-[`@transitrix/document-renderer`](../../../packages/document-renderer/README.md)
-(`.ttrs` templates, pass 1) and
+### 0.1 It states requirements on an implementation, not on ours
+
+**This document is a conformance contract.** It is written to be built against
+by someone who has never read this repository's code. Where it says *must*, it
+constrains **any** implementation of this language; nothing here describes what
+one particular parser happens to do today, and a reader should never need
+`pass1.mjs` open to know what conformance requires.
+
+That framing is the whole point, and it is recent. While the rendering engine
+was ours, a great deal could be settled in code and never written down. The
+moment someone else writes the engine, each of those settled-in-code details
+becomes a conformance contract. **A format with an unspecified failure
+discipline is a format every adopter implements differently** — and in a year
+`.ttrs` means different things to different people. So the failure discipline
+(§7), the reference states (§5) and the profile split (§6) are stated here as
+requirements, not left to be inferred.
+
+**A conformant implementation** is one that admits some subset of the constructs
+in §§2–4 and, for everything it admits, obeys §§5–7 in full. Admitting a subset
+is expected and legitimate (§8); getting §§5–7 wrong for what you do admit is
+not.
+
+### 0.2 The reference implementation
+
+[`@transitrix/document-renderer`](../../../packages/document-renderer/README.md)'s
+pass 1 is the **reference implementation** of this document — it exists to make
+the spec checkable, not as a product feature. Its committed conformance fixture
+(`tests/fixtures/product.mrd.ttrs` and the frozen
+`tests/fixtures/product.mrd.expected.md` beside it) is the output an independent
+implementation diffs against. Where this document and that implementation
+disagree, **this document wins** and the implementation has a bug.
+
+Two implementations of the language ship in this repository today — the
+reference one above, and
 [`@transitrix/document-view-engine`](../../../packages/document-view-engine/README.md)
 (skeleton files, render profiles). **Two implementations of one notation is
 deliberate policy. Two specifications of one notation is drift** — the same
 drift the closed-vocabulary work was written against. Hence one spec, and a
-standing obligation on each implementation, §7.
+standing obligation on each implementation, §8.
 
 ---
 
@@ -211,8 +242,16 @@ within a document** — it names that section wherever slots are recorded.
 
 ## 5. Reference states
 
-Resolving a reference yields exactly one state. Three concern canon; the fourth
-concerns configuration.
+Resolving a reference yields exactly one state. **The language names five non-ok
+states** — three concern canon, one concerns provenance, one concerns
+configuration.
+
+A conformant implementation **must keep every state it reports distinct from
+every other**; it may never merge two into one. Exactly two carve-outs exist,
+both narrow and both stated below: `⚑S` may be declined so long as the decline
+is reported (§5.1), and `no repository configured` cannot arise for a source
+whose repository is mandatory. Neither is licence to fold a state into its
+neighbour.
 
 | State | Flag | Meaning |
 |---|---|---|
@@ -220,38 +259,99 @@ concerns configuration.
 | unresolved | `⚑U` | no object with that id exists |
 | not admitted | `⚑A` | the object exists, but its admission state is not active |
 | out of validity | `⚑V` | its `[valid_from, valid_to]` interval does not cover the render date |
+| suspect | `⚑S` | the object resolves, but the link to it is under suspicion (§5.1) |
 | no repository configured | — | the document cites canon, and none is configured |
 
-They are classified in that order: existence, then admission, then validity.
+The canon-side three are classified in that order: existence, then admission,
+then validity. `⚑S` is orthogonal — it qualifies a reference that has already
+resolved, and is defined not here but by
+[`CONTRACT.md`](../../CONTRACT.md) §16, which this document **cites rather than
+restates**. There is one definition of suspicion, and it is not this one.
 
-**The states are kept distinct on purpose.** "You have no repository" and "your
-repository lacks this id" are different problems with different fixes, and
-folding the first into the second hides it.
+**Collapsing any two of these is non-conformance, not a simplification.** "You
+have no repository" and "your repository lacks this id" are different problems
+with different fixes, and folding the first into the second hides it. The same
+holds for every other pair: each state names a different thing for its reader to
+go and do.
+
+**The no-repository state is reachable only where the repository is optional.**
+In `.ttrs` it is: the header's `canon:` may be absent, and a template naming no
+model object and no derived figure renders standalone — a legitimate input, not
+a degraded one. The document-view engine's skeleton format requires its
+repository, so the state cannot arise there and an implementation of that format
+alone need not produce it. It is listed here because the language is one, and an
+implementation reading a source whose repository is optional **must** produce
+it.
 
 **The worst defect is not a missing reference.** It is a reference that resolves
 and renders as plainly correct text when the object behind it was never admitted
-or has stopped being valid — a reader has no way to see it. A non-ok state
-therefore never renders as its bare value.
+or has stopped being valid — a reader has no way to see it. **A non-ok state
+never renders as its bare value.**
 
-### 5.1 Suspicion (`⚑S`) — reported as not computed
+### 5.1 `⚑S` and the three-way requirement
 
-Link suspicion is **not** part of this language's MVP. Three standing reasons,
-none of them a schedule:
+`⚑S` is the one state an implementation may decline to compute, because it is a
+different class of input from everything else here: it is **derived from commit
+history**, not read from a file. Declining is permitted. **Being silent about
+declining is not.**
 
-1. It is out of scope by the rendered-documents decision.
-2. It is **computed from commit history**, not read from a file — a different
-   class of input from everything else here.
-3. [`CONTRACT.md`](../../CONTRACT.md) §16.2 scopes it to `REL` and claim
-   records, not to the element references a document cites.
+A conformant implementation must therefore be able to report **three distinct
+outcomes**, never two:
 
-**It must nonetheless be reported as "not computed", never simply omitted.** A
-clean render and a render that never checked must not look alike. An
-implementation that silently leaves suspicion out of its output is
-non-conforming even when every other state is right.
+| Outcome | Meaning |
+|---|---|
+| suspect | checked, and the link is under suspicion — `⚑S` |
+| not suspect | **checked, and clean** |
+| not computed | **never checked** — suspicion was not evaluated at all |
+
+The second and third are the pair that must not be allowed to look alike. A
+document that renders with no `⚑S` anywhere is making a claim; an implementation
+that never ran the check has made no claim at all, and must say so rather than
+produce output indistinguishable from a clean one. **An implementation that
+omits suspicion silently is non-conforming even when every other state is
+right** — it is the one failure mode that reads as success.
+
+Where an implementation reports "not computed" it should also say why, so a
+reader is not left to guess whether the omission is policy or a defect.
 
 ---
 
-## 6. Failure discipline
+## 6. Render profiles — the strict/lenient split
+
+**A conformant implementation must offer at least two render profiles**, and
+must name which one a given run used. This is a requirement on the
+implementation's interface, not an option:
+
+| Profile | Requirement |
+|---|---|
+| **strict** | **Fails the run** on every non-ok state of §5 the implementation computes. The output is not usable as a deliverable, and the implementation says so by exit status, not only in prose. |
+| **lenient** | **Does not fail.** Renders every reference it can, each non-ok one carrying its flag, and reports every state it found. |
+
+The names above are the roles, not required spelling — this repository's two
+implementations call the lenient profile `review`, and the strict one `strict`
+and `clean` respectively. What is normative is that **both roles exist and are
+selectable**, and that a rendered document can be traced to which was used.
+
+Two rules bind the pair together, and they are where a naive implementation goes
+wrong:
+
+1. **Lenient reports exactly what strict fails on.** Not a subset. The profiles
+   differ in consequence, never in what they detect — otherwise "it passed in
+   review" stops predicting anything about the strict run, and the lenient
+   profile becomes a way of not knowing.
+2. **Neither profile renders a non-ok reference as its bare value.** Lenient may
+   render the value *with* its flag, so a reader sees both what the template
+   meant and that it is not usable; strict renders a marker in its place. What
+   neither may do is emit text that reads as correct.
+
+The split exists because the two audiences are different. An author mid-draft
+needs to see the whole document with its gaps marked; a release pipeline needs a
+build that stops. Serving only the first ships wrong documents, and serving only
+the second makes the format unusable while a document is being written.
+
+---
+
+## 7. Failure discipline
 
 | Requirement | Rule |
 |---|---|
@@ -259,15 +359,34 @@ non-conforming even when every other state is right.
 | Never blank | A reference that does not render its value leaves a visible marker, not an empty string. |
 | Named by kind | Unknown or malformed syntax and **recognised-but-not-implemented** are different failures and must carry different codes. |
 
-The third row is the one that is easy to get wrong. A construct defined in this
-document but not implemented by the package reading it **fails by name —
-"recognised, not implemented in this pass"** — and never in the same bucket as a
-typo. Reporting a valid template as malformed syntax sends its author looking
-for a mistake they did not make.
+### 7.1 Not-implemented is a named failure, never an unknown one
+
+The third row is the one that is easy to get wrong, and it is normative.
+
+**A conformant implementation may leave any construct of this document
+unimplemented** — `each`, `trace`, `{{ .field }}`, or anything added to the
+language later. Admitting a subset is expected (§8). What it may not do is fail
+in either of the two ways that lose the distinction:
+
+- **Never silently.** A template using an unimplemented construct does not
+  render with that construct dropped or passed through as fixed text. It fails.
+- **Never as unknown syntax.** It fails **by its own name — "recognised, not
+  implemented"** — under a code distinct from the one used for a typo or a
+  malformed directive.
+
+The reason is the author on the other end. Reporting a valid template as
+malformed syntax sends someone looking for a mistake they did not make, in a
+file that is correct, against a specification that says the construct exists.
+The two messages are "this is not in the language" and "this is in the language
+and not in this tool" — and they lead to entirely different next actions.
+
+The reference implementation (§0.2) uses `TTRS-004` for this class and
+`TTRS-002` for unknown syntax; the codes themselves are that implementation's,
+but **having two distinct codes is the requirement**.
 
 ---
 
-## 7. What each implementation must state
+## 8. What each implementation must state
 
 This language is defined once, here. **An implementation admits a subset of it.**
 
@@ -284,12 +403,37 @@ ambiguity is where a second, accidental specification starts.
 
 ---
 
-## 8. References
+## 9. Conformance checklist
+
+An implementation claiming to read this language must satisfy all of the
+following. It is a summary of the requirements above, not a separate set of
+them; each row cites the section that binds.
+
+| # | Requirement | § |
+|---|---|---|
+| 1 | Splits the `CAPABILITY` V/H prefix off before reading a field path | §2.1 |
+| 2 | Caps field-path traversal at depth 3, and fails beyond it | §3.2 |
+| 3 | Treats an `instruct` body as opaque — no directive inside one is resolved | §4.2 |
+| 4 | Keeps every reference state it reports distinct — never merges two | §5 |
+| 5 | Never renders a non-ok reference as its bare value, in any profile | §5, §6 |
+| 6 | Reports suspicion three ways — suspect, not suspect, **not computed** | §5.1 |
+| 7 | Offers both a strict and a lenient profile, and names which a run used | §6 |
+| 8 | Detects the same states in both profiles; they differ only in consequence | §6 |
+| 9 | Fails a recognised-but-unimplemented construct **by name**, under a code distinct from unknown syntax | §7.1 |
+| 10 | States in its own README what it admits and what it defers | §8 |
+
+Rows 4, 6, 7 and 9 are the ones an implementation built from the reference
+code's behaviour alone would be most likely to miss, which is why each is
+written as a requirement above rather than left to be inferred.
+
+---
+
+## 10. References
 
 - Extension / content match, and the date format: [`CONTRACT.md`](../../CONTRACT.md) §3, §4.
 - Link suspicion, content identity, and the mechanical-procedure hatch: [`CONTRACT.md`](../../CONTRACT.md) §16.
 - ID grammar and the `CAPABILITY` V/H exception: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md) §1-2.
 - Document kinds shipped today: [`29-mrd.md`](29-mrd.md), [`30-srs.md`](30-srs.md), [`31-sdd.md`](31-sdd.md).
-- `.ttrs` templates and pass 1: [`@transitrix/document-renderer`](../../../packages/document-renderer/README.md).
+- The reference implementation and its conformance fixture: [`@transitrix/document-renderer`](../../../packages/document-renderer/README.md).
 - Skeleton files, evaluation and render profiles: [`@transitrix/document-view-engine`](../../../packages/document-view-engine/README.md).
 - This class's index: [`README.md`](README.md).

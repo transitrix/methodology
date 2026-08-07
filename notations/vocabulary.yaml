@@ -4,10 +4,10 @@
 # examples; this artefact fixes the closed sets. Nothing here is recovered by
 # parsing Markdown — the artefact is authored, and `scripts/check-notations.mjs`
 # cross-checks it against a spec table so the two cannot drift apart unnoticed.
-# VOC1 (element_types vs ELEMENT_PRIMITIVES.md §4) is implemented; VOC2
-# (relation_types vs elements/17-relations.md §3), VOC3 (value_vocabularies vs
-# their owning specs), and VOC4 (rule_codes vs the codes specs actually use)
-# are follow-on additions to the same check script — tracked on the epic, not
+# VOC1 (element_types vs ELEMENT_PRIMITIVES.md §4), VOC2 (relation_types vs
+# elements/17-relations.md §3), and VOC3 (value_vocabularies vs their owning
+# specs) are implemented. VOC4 (rule_codes vs the codes specs actually use)
+# is a follow-on addition to the same check script — tracked on the epic, not
 # yet wired up. Until a VOCn check exists for a block, that block is authored
 # and consumed correctly but not yet cross-verified against its spec's prose.
 #
@@ -29,7 +29,7 @@
 # the ingest CLI needs to place and validate it.
 
 # Must equal notations/CURRENT_VERSION.yaml (enforced by check V1).
-methodology_version: "3.1.0"
+methodology_version: "3.2.0"
 
 # ---------------------------------------------------------------------------
 # Element TYPE registry — ELEMENT_PRIMITIVES.md §4 (mode table) and §6 (layer
@@ -306,6 +306,7 @@ relation_types:
     to: [GOAL, ACTION, CAPABILITY]
   offers:
     from: [ACTOR, ROLE]
+    from_subtype: [business_unit]
     to: [BUSINESS_SERVICE]
   realizes:
     from: [BUSINESS_SERVICE]
@@ -337,12 +338,12 @@ deprecated_relation_types:
 #
 #   values  the closed set
 #   spec    the spec that prints it, or `null` when no spec does (a pipeline-
-#           internal set). A future VOC3 check (not yet implemented — see the
-#           file header) would verify every value appears there as a code span.
+#           internal set, not cross-checked). VOC3 verifies every value
+#           appears there as (part of) a code span.
 #   rule    the code whose row states the enum, or `null`. When that row says
-#           "one of …", VOC3 would additionally require the row's values to
-#           match `values` exactly — catching a value dropped from or added to
-#           the spec without the artefact moving.
+#           "one of …" / "not in …", VOC3 additionally requires the row's own
+#           values to match `values` exactly — catching a value dropped from
+#           or added to the spec without the artefact moving.
 # ---------------------------------------------------------------------------
 value_vocabularies:
 
