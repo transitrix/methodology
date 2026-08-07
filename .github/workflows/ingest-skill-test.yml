@@ -41,6 +41,9 @@ jobs:
       - name: Install PyYAML
         run: pip install pyyaml
 
+      - name: Run vocabulary loader unit tests
+        run: node --test packages/ingest-cli/src/vocabulary.test.mjs
+
       - name: Run Ingest pipeline test (deterministic)
         run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
 

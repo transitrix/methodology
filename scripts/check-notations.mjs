@@ -19,6 +19,12 @@
 //   V1  version — every concrete `methodology_version:` pin in the repo equals
 //       the single source of truth (notations/CURRENT_VERSION.yaml,
 //       per CONTRACT.md §10), except explicitly allowlisted placeholders.
+//   VOC1 vocabulary — every live element TYPE in notations/vocabulary.yaml's
+//       `element_types` has exactly one matching row in ELEMENT_PRIMITIVES.md
+//       §4 (same mode/layer/folder), and vice versa. A deprecated alias
+//       carries no row of its own in §4 (matching FACTOR/ACTIVITY precedent)
+//       and is excluded from the comparison. Fails closed: a missing or
+//       unparseable artefact is a failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -37,6 +43,8 @@ const EXAMPLES_DIR = join(REPO_ROOT, 'notations', 'examples');
 const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
 const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
+const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
+const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES.md');
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
@@ -450,6 +458,143 @@ async function checkPackageEnvelopeStatements(failures) {
   }
 }
 
+// --- VOC1: vocabulary.yaml element_types vs ELEMENT_PRIMITIVES.md §4 -------
+//
+// notations/vocabulary.yaml is the source of truth (packages/ingest-cli/src/
+// placement.mjs derives its PLACEMENT table from it); ELEMENT_PRIMITIVES.md §4
+// is the prose description of the same registry. This check keeps the two
+// from drifting apart unnoticed — it does not regenerate either side.
+//
+// Deliberately narrow parsers (not a general YAML/Markdown reader), matching
+// exactly the shapes these two files use — the same trade-off documented in
+// packages/ingest-cli/src/vocabulary.mjs.
+
+const LAYER_WORD_TO_FOLDER = {
+  motivation: '01_motivation',
+  business: '02_business',
+  application: '03_application',
+  technology: '04_technology',
+  implementation: '05_implementation',
+};
+
+// Pure — no I/O. Parses the `element_types:` block of vocabulary.yaml into
+// Map<TYPE, {mode, layer, folder}>, live entries only (deprecated aliases live
+// in a separate `deprecated_element_types:` block and are not returned here).
+// Throws on a block that isn't found or doesn't parse — a corrupted or
+// missing artefact must fail this check, never pass silently.
+export function parseVocabularyElementTypes(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^element_types:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "element_types:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const typeM = line.match(/^  ([A-Z][A-Z0-9_]*):\s*$/);
+    if (typeM) {
+      current = { mode: null, layer: null, folder: null };
+      out.set(typeM[1], current);
+      continue;
+    }
+    if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
+    const fieldM = line.match(/^    (mode|layer|folder|promotable):\s*(.+?)\s*$/);
+    if (fieldM && current) {
+      const [, key, rawVal] = fieldM;
+      if (key === 'mode' || key === 'layer' || key === 'folder') current[key] = rawVal;
+      continue;
+    }
+    // Any other shape inside the block (a nested comment mid-entry aside) is
+    // tolerated only if blank/comment; anything else is a parse failure.
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in element_types block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: element_types block parsed empty');
+  return out;
+}
+
+// Pure — no I/O. Parses ELEMENT_PRIMITIVES.md §4's mode table into
+// Map<TYPE, {mode, layer, folder}> — `layer` normalised to its NN_layer form
+// so it compares directly against vocabulary.yaml's `layer` field.
+export function parseElementPrimitivesTable(text) {
+  const headingIdx = text.indexOf('\n## 4. Materialisation decision per TYPE');
+  if (headingIdx < 0) throw new Error('ELEMENT_PRIMITIVES.md: "## 4. Materialisation decision per TYPE" not found');
+  const nextHeadingIdx = text.indexOf('\n## 5.', headingIdx);
+  const section = nextHeadingIdx > 0 ? text.slice(headingIdx, nextHeadingIdx) : text.slice(headingIdx);
+
+  const out = new Map();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| `')) continue; // only TYPE data rows (header/separator rows don't start with a backtick)
+    const cells = line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+    if (cells.length < 5) continue;
+    const typeM = cells[0].match(/^`([A-Z][A-Z0-9_]*)`$/);
+    if (!typeM) continue;
+    const modeM = cells[1].match(/^(standalone|view-defined|contained)/);
+    if (!modeM) throw new Error(`ELEMENT_PRIMITIVES.md §4: row for ${typeM[1]} has no recognisable mode in "${cells[1]}"`);
+    const layerWord = cells[3].trim();
+    const layer = LAYER_WORD_TO_FOLDER[layerWord] || layerWord;
+    const folderM = cells[4].match(/`([^`]+)`/);
+    const folder = folderM ? folderM[1] : cells[4];
+    out.set(typeM[1], { mode: modeM[1], layer, folder });
+  }
+  if (out.size === 0) throw new Error('ELEMENT_PRIMITIVES.md §4: table parsed empty');
+  return out;
+}
+
+async function checkVocabularyElementTypes(failures) {
+  let vocText, primitivesText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC1', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+  try {
+    primitivesText = await readFile(ELEMENT_PRIMITIVES_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC1', message: `${relPosix(ELEMENT_PRIMITIVES_PATH)}: not found.` });
+    return;
+  }
+
+  let voc, table;
+  try {
+    voc = parseVocabularyElementTypes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC1', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+  try {
+    table = parseElementPrimitivesTable(primitivesText);
+  } catch (e) {
+    failures.push({ check: 'VOC1', message: `${relPosix(ELEMENT_PRIMITIVES_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const allTypes = new Set([...voc.keys(), ...table.keys()]);
+  for (const type of allTypes) {
+    const v = voc.get(type);
+    const t = table.get(type);
+    if (!v) {
+      failures.push({ check: 'VOC1', message: `${type} has a row in ELEMENT_PRIMITIVES.md §4 but no entry in notations/vocabulary.yaml element_types.` });
+      continue;
+    }
+    if (!t) {
+      failures.push({ check: 'VOC1', message: `${type} is in notations/vocabulary.yaml element_types but has no row in ELEMENT_PRIMITIVES.md §4.` });
+      continue;
+    }
+    for (const field of ['mode', 'layer', 'folder']) {
+      if (v[field] !== t[field]) {
+        failures.push({
+          check: 'VOC1',
+          message: `${type}.${field}: vocabulary.yaml says "${v[field]}", ELEMENT_PRIMITIVES.md §4 says "${t[field]}".`,
+        });
+      }
+    }
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -463,6 +608,7 @@ async function main() {
     await checkNotationCounts(failures);
     await checkNoStandardIdentifiers(failures);
     await checkPackageEnvelopeStatements(failures);
+    await checkVocabularyElementTypes(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

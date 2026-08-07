@@ -13,6 +13,8 @@ import {
   findStandardIdentifierEmissions,
   checkPackageEnvelopeStatement,
   deriveDeprecationFailures,
+  parseVocabularyElementTypes,
+  parseElementPrimitivesTable,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -171,4 +173,76 @@ test('deriveDeprecationFailures — negative: a non-deprecated spec without remo
     'notations/views/diagrams'
   );
   assert.deepEqual(failures, []);
+});
+
+// --- VOC1: vocabulary.yaml element_types vs ELEMENT_PRIMITIVES.md §4 -------
+
+test('parseVocabularyElementTypes — positive: reads mode/layer/folder, tolerating a comment and blank line', () => {
+  const text = `
+element_types:
+
+  # 01_motivation
+  DRIVER:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/factors/
+    promotable: false
+  GOAL:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/goals/
+    promotable: false
+
+deprecated_element_types:
+  FACTOR:
+    replaced_by: DRIVER
+`;
+  const out = parseVocabularyElementTypes(text);
+  assert.deepEqual([...out.keys()], ['DRIVER', 'GOAL']);
+  assert.deepEqual(out.get('DRIVER'), { mode: 'standalone', layer: '01_motivation', folder: '01_motivation/factors/' });
+});
+
+test('parseVocabularyElementTypes — negative: a missing "element_types:" block throws', () => {
+  assert.throws(() => parseVocabularyElementTypes('methodology_version: "3.1.0"\n'), /element_types/);
+});
+
+test('parseVocabularyElementTypes — negative: an unrecognised line inside the block throws', () => {
+  const text = `
+element_types:
+  DRIVER:
+    mode: standalone
+    - not a recognised field line
+`;
+  assert.throws(() => parseVocabularyElementTypes(text), /unrecognised line/);
+});
+
+test('parseElementPrimitivesTable — positive: reads mode/layer/folder, normalising the layer word and the `contained` mode prefix', () => {
+  const text = `
+## 4. Materialisation decision per TYPE
+
+| TYPE | Mode | \`notation\` | Layer | Folder | Per-element fields owned by |
+|---|---|---|---|---|---|
+| \`DRIVER\` | standalone | \`driver\` | motivation | \`01_motivation/factors/\` | §7.1 |
+| \`STEP\` | contained (in \`PROCESS.flow\`) → standalone (promotable) | \`step\` | business | \`02_business/steps/\` | §7.20 |
+
+## 5. Reconciliation with the legacy shape
+`;
+  const out = parseElementPrimitivesTable(text);
+  assert.deepEqual(out.get('DRIVER'), { mode: 'standalone', layer: '01_motivation', folder: '01_motivation/factors/' });
+  assert.deepEqual(out.get('STEP'), { mode: 'contained', layer: '02_business', folder: '02_business/steps/' });
+});
+
+test('parseElementPrimitivesTable — negative: a missing "## 4." heading throws', () => {
+  assert.throws(() => parseElementPrimitivesTable('## 3. Something else\n'), /## 4\. Materialisation/);
+});
+
+test('parseElementPrimitivesTable — negative: a row with no recognisable mode throws', () => {
+  const text = `
+## 4. Materialisation decision per TYPE
+
+| TYPE | Mode | \`notation\` | Layer | Folder | Per-element fields owned by |
+|---|---|---|---|---|---|
+| \`DRIVER\` | sideways | \`driver\` | motivation | \`01_motivation/factors/\` | §7.1 |
+`;
+  assert.throws(() => parseElementPrimitivesTable(text), /no recognisable mode/);
 });
