@@ -1,0 +1,24 @@
+# DELIBERATELY INVALID — trips ASSERT-010 (unresolvable reference).
+# `subject_release` names a RELEASE id that exists nowhere in this catalogue.
+notation: assertion
+id: ASSERTION-TELEMETRY-PLATFORM-DATA-SEGREGATION-1
+about: REQUIREMENT-OPERATOR-DATA-SEGREGATION-1
+subject: PRODUCT-TELEMETRY-PLATFORM-1
+subject_release: RELEASE-TELEMETRY-PLATFORM-9
+status: compliant
+evidence:
+  - kind: note
+    text: "Placeholder evidence so that ASSERT-007 stays quiet and ASSERT-010 is the only rule this file trips."
+
+assessed_at: "2026-06-25"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

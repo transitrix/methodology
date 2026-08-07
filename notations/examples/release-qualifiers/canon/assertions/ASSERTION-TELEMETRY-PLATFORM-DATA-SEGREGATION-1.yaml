@@ -1,0 +1,22 @@
+notation: assertion
+id: ASSERTION-TELEMETRY-PLATFORM-DATA-SEGREGATION-1
+about: REQUIREMENT-OPERATOR-DATA-SEGREGATION-1
+subject: PRODUCT-TELEMETRY-PLATFORM-1
+status: compliant
+evidence:
+  - kind: note
+    text: "Per-operator isolation is enforced at the storage tenancy boundary and has not varied across releases; the claim is about the product as such."
+
+assessed_at: "2026-06-25"
+assessed_by: "ROLE-COMPLIANCE-LEAD-1"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

@@ -1,0 +1,25 @@
+# DELIBERATELY INVALID — trips ASSERT-010 (mismatched `of`).
+# `subject_release` resolves to an admitted RELEASE, but that release is a
+# release of PRODUCT-EDGE-COLLECTOR-1, not of this assertion's `subject`.
+notation: assertion
+id: ASSERTION-TELEMETRY-PLATFORM-AUDIT-TRAIL-1
+about: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+subject: PRODUCT-TELEMETRY-PLATFORM-1
+subject_release: RELEASE-EDGE-COLLECTOR-1
+status: compliant
+evidence:
+  - kind: note
+    text: "Placeholder evidence so that ASSERT-007 stays quiet and ASSERT-010 is the only rule this file trips."
+
+assessed_at: "2026-06-25"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

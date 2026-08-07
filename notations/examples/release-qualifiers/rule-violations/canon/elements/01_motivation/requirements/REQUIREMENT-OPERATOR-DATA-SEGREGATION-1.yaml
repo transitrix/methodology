@@ -1,0 +1,18 @@
+notation: requirement
+id: REQUIREMENT-OPERATOR-DATA-SEGREGATION-1
+name: "Telemetry is segregated per equipment operator"
+description: "Telemetry belonging to one equipment operator must never be readable by another. The obligation binds the product as such and has held identically in every release, so the claim about it names no release."
+
+origin: process-product
+severity: high
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

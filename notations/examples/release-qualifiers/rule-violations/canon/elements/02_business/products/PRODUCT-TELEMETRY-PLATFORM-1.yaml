@@ -1,0 +1,17 @@
+notation: product
+id: PRODUCT-TELEMETRY-PLATFORM-1
+name: "Fleet Telemetry Platform"
+type: digital_product
+domain: "Connected equipment monitoring"
+description: "Platform that collects, stores, and reports operating telemetry from deployed field equipment on behalf of the equipment's operators."
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

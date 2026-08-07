@@ -1,0 +1,28 @@
+# DELIBERATELY INVALID — trips VERIF-007 (unresolvable reference).
+# `verified_on` names a RELEASE id that exists nowhere in this catalogue.
+notation: verification
+id: VERIFICATION-INGEST-AUDIT-TRAIL-TEST-1
+verifies: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+verified_on: RELEASE-TELEMETRY-PLATFORM-9
+method: test
+protocol: "Ingest telemetry records, then attempt to alter and to delete accepted records directly at the storage layer; confirm each tampering attempt is detected."
+result: "Both deletion and in-place alteration were detected in 10/10 attempts."
+outcome: pass
+evidence:
+  - kind: external_doc
+    title: "Ingest audit-trail verification protocol VP-021, run log"
+    url: "https://internal.example/reports/vp-021-run-log.pdf"
+
+performed_at: "2026-06-24"
+performed_by: "ROLE-VERIFICATION-ENG-1"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

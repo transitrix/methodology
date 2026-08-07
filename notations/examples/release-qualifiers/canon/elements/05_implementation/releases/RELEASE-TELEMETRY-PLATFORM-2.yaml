@@ -1,0 +1,22 @@
+notation: release
+id: RELEASE-TELEMETRY-PLATFORM-2
+name: "Fleet Telemetry Platform 1.4.0"
+description: >
+  Adds the append-only ingest audit trail. The first release able to satisfy
+  the audit-trail obligation; its predecessor could not.
+
+of: PRODUCT-TELEMETRY-PLATFORM-1
+version: "1.4.0"
+predecessor: RELEASE-TELEMETRY-PLATFORM-1
+released_at: "2026-06-18"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null

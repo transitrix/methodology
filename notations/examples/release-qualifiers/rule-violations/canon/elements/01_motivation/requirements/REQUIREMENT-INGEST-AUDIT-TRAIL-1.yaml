@@ -1,0 +1,18 @@
+notation: requirement
+id: REQUIREMENT-INGEST-AUDIT-TRAIL-1
+name: "Append-only audit trail over telemetry ingest"
+description: "Every telemetry record accepted by the platform must be written to an append-only audit trail recording the origin device, the receipt timestamp, and the accepting node, such that no accepted record can later be altered or removed without detection."
+
+origin: process-product
+severity: high
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-07"
+valid_to: null
