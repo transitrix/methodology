@@ -179,7 +179,7 @@ element"* — which passes.
    ---
    ### FB-0003
    type: notation-gap
-   methodology_version: "3.1.0"
+   methodology_version: "3.2.0"
    raised_by: Modeler
    date: "2026-07-28"
    status: open
