@@ -39,7 +39,9 @@ Delimiters `{{ … }}`; `\{{` escapes a literal.
 | `{{# each TYPE where f = v and f2 != v2 order by f }} … {{/ each }}` | `{ type: 'each', entityType, where, orderBy, children }` |
 | `{{ .field }}` (inside an `each` body only) | `{ type: 'field-ref', fields }` |
 | `{{ trace from = A to = B via = rel }}` | `{ type: 'trace', from, to, via }` |
-| `{{ view <path> }}` | `{ type: 'view', path }` |
+| `{{ view <path> as = name fit = width\|page\|none }}` | `{ type: 'view', path, as, fit }` — `as`/`fit` optional, `fit` defaults to `width` |
+| `{{ figure <path> caption = "..." as = name }}` | `{ type: 'figure', path, caption, as }` — `caption`/`as` optional |
+| `{{ figref <name> }}` | `{ type: 'figref', name }` |
 
 `id` is validated against the canonical ID grammar
 ([`IDS_AND_REFERENCES.md`](../../notations/IDS_AND_REFERENCES.md) §1-2), including the

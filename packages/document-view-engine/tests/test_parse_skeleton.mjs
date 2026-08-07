@@ -156,12 +156,62 @@ function skeleton(body, headerExtra = '') {
 {
   const { ast, errors } = parseSkeleton(skeleton('{{ view path/to/view-file }}'));
   check(errors.length === 0, `view should parse clean: ${JSON.stringify(errors)}`);
-  checkEqual(ast, [{ type: 'view', path: 'path/to/view-file' }], 'view directive');
+  checkEqual(ast, [{ type: 'view', path: 'path/to/view-file', as: null, fit: 'width' }], 'view directive, fit defaults to width');
+}
+
+{
+  const { ast, errors } = parseSkeleton(skeleton('{{ view path/to/view-file as = fig-arch fit = page }}'));
+  check(errors.length === 0, `view with as/fit should parse clean: ${JSON.stringify(errors)}`);
+  checkEqual(ast, [{ type: 'view', path: 'path/to/view-file', as: 'fig-arch', fit: 'page' }], 'view directive with as/fit');
+}
+
+{
+  const { errors } = parseSkeleton(skeleton('{{ view path/to/view-file fit = tall }}'));
+  check(errors.some((e) => /fit must be one of width\/page\/none/.test(e.message)), 'invalid fit value is flagged');
 }
 
 {
   const { errors } = parseSkeleton(skeleton('{{ view }}'));
   check(errors.some((e) => /requires a path/.test(e.message)), 'view with no path is flagged');
+}
+
+// ── Figure / figref (§2) ──────────────────────────────────────────────────
+
+{
+  const { ast, errors } = parseSkeleton(skeleton('{{ figure path/to/image.png caption = "Device, front" as = fig-device }}'));
+  check(errors.length === 0, `figure should parse clean: ${JSON.stringify(errors)}`);
+  checkEqual(
+    ast,
+    [{ type: 'figure', path: 'path/to/image.png', caption: 'Device, front', as: 'fig-device' }],
+    'figure directive with quoted caption',
+  );
+}
+
+{
+  const { ast, errors } = parseSkeleton(skeleton('{{ figure path/to/image.png }}'));
+  check(errors.length === 0, `bare figure should parse clean: ${JSON.stringify(errors)}`);
+  checkEqual(ast, [{ type: 'figure', path: 'path/to/image.png', caption: null, as: null }], 'figure with no caption/as');
+}
+
+{
+  const { errors } = parseSkeleton(skeleton('{{ figure }}'));
+  check(errors.some((e) => /requires a path/.test(e.message)), 'figure with no path is flagged');
+}
+
+{
+  const { ast, errors } = parseSkeleton(skeleton('{{ figref fig-arch }}'));
+  check(errors.length === 0, `figref should parse clean: ${JSON.stringify(errors)}`);
+  checkEqual(ast, [{ type: 'figref', name: 'fig-arch' }], 'figref directive');
+}
+
+{
+  const { errors } = parseSkeleton(skeleton('{{ figref }}'));
+  check(errors.some((e) => /requires a name/.test(e.message)), 'figref with no name is flagged');
+}
+
+{
+  const { errors } = parseSkeleton(skeleton('{{ figref fig-arch fig-other }}'));
+  check(errors.some((e) => /takes a single name/.test(e.message)), 'figref with more than one name is flagged');
 }
 
 // ── Mixed text + directive ────────────────────────────────────────────────
