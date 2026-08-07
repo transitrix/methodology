@@ -361,7 +361,36 @@ async function run() {
     const clean = await renderDocument(ast, evaluator, { profile: 'clean', renderDate: '2026-08-06' });
     check(clean.failed, 'integration: clean profile fails the build on the unresolved reference');
 
+    checkEqual(
+      JSON.stringify(review.telemetry.types),
+      JSON.stringify({ REQUIREMENT: 5 }),
+      'telemetry: REQUIREMENT counted for the each node itself, once per row for the field-ref, and once per row for the (unresolved) inline reference',
+    );
+    checkEqual(JSON.stringify(review.telemetry.fields), JSON.stringify({ 'REQUIREMENT.name': 4 }), 'telemetry: the .name field path counted per row, from both the field-ref and the inline reference');
+    checkEqual(JSON.stringify(review.telemetry.relations), JSON.stringify({}), 'telemetry: no trace node in this skeleton, no relation kind referenced');
+    checkEqual(JSON.stringify(review.telemetry.matrixPairs), JSON.stringify({}), 'telemetry: no trace node in this skeleton, no matrix pair referenced');
+    checkEqual(JSON.stringify(review.telemetry.failureStates), JSON.stringify({ unresolved: 2 }), 'telemetry: the ghost reference is unresolved once per row, tallied across the whole render');
+    checkEqual(JSON.stringify(clean.telemetry), JSON.stringify(review.telemetry), 'telemetry: identical counters regardless of render profile — profile only changes what gets printed');
+
     rmSync(orgRoot, { recursive: true, force: true });
+  }
+
+  // telemetry (§6) — trace relation kind and matrix pair, and a failure
+  // state from a source outside inline/field-ref (a missing figure)
+  {
+    const ast = [
+      { type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' },
+      { type: 'figure', path: '/definitely/not/here.png', caption: null, as: null },
+    ];
+    const evaluator = {
+      ...stubEvaluator({}),
+      async evaluateTrace() { return { rows: [], cols: [], covered: new Set() }; },
+    };
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(JSON.stringify(review.telemetry.types), JSON.stringify({ REQUIREMENT: 1, VERIFICATION: 1 }), 'telemetry: a trace node records both its from and to types');
+    checkEqual(JSON.stringify(review.telemetry.relations), JSON.stringify({ verifies: 1 }), 'telemetry: a trace node records its via relation kind');
+    checkEqual(JSON.stringify(review.telemetry.matrixPairs), JSON.stringify({ 'REQUIREMENT|VERIFICATION|verifies': 1 }), 'telemetry: a trace node records its from|to|via matrix pair');
+    checkEqual(JSON.stringify(review.telemetry.failureStates), JSON.stringify({ unresolved: 1 }), 'telemetry: a missing figure counts as an unresolved failure state, not just inline/field-ref failures');
   }
 }
 

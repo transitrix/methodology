@@ -9,7 +9,7 @@ their own repository.
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
 rendering, the `trace` coverage matrix, `view` rendering for the `blocks`
-notation, and derivation share (§5).** `parseSkeleton()` turns a skeleton file's text
+notation, derivation share (§5), and telemetry (§6).** `parseSkeleton()` turns a skeleton file's text
 into a header object and a body AST. `resolveReference()` / `createResolver()`
 classify an id against canon into one of the four states below. `createEvaluator()`
 resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
@@ -20,8 +20,9 @@ point at them, the `trace` matrix as an HTML table, and — in `review` only —
 derivation-share and illustrations lines. `view` renders a `blocks` notation
 (nested-form) source file as inline SVG at render time (`src/blocks-view.mjs`); any
 other notation, or the `blocks` notation's `grid:` (matrix-subset) root, renders as a
-missing/failed illustration — those are later slices on this epic. Not yet built:
-telemetry (§6) and PDF output (§7) — later layers on top of these.
+missing/failed illustration — those are later slices on this epic. `renderDocument()`
+also returns a §6 telemetry snapshot alongside the derivation-share numbers, in the
+same single pass. Not yet built: PDF output (§7) — a later layer on top of these.
 
 ## Skeleton file shape
 
@@ -208,6 +209,32 @@ without the printed line. The printed lines themselves — `<div class="dv-deriv
 counters (§4). An empty document (no counted content at all) prints `n/a` rather
 than a `0%` that would misleadingly claim a share.
 
+## Telemetry (§6)
+
+`renderDocument()` also returns a `telemetry` snapshot (`src/telemetry.mjs`), built in
+the same single pass, of exactly what §6 asks for and nothing else: "which types,
+fields, relation kinds and matrix pairs were referenced and how often; counts of each
+failure state" — never section titles, heading text, prose, file names, or skeleton
+ordering, since any of those could be replayed back into a document's shape.
+
+```js
+const { telemetry } = await renderDocument(ast, evaluator, { profile: 'review' });
+// telemetry → {
+//   types:         { [TYPE]: count },              -- every inline/field-ref/each/trace type reference
+//   fields:        { ['TYPE.field(.field...)']: count },  -- every inline/field-ref field path, under its type
+//   relations:     { [via]: count },                -- every trace node's relation kind
+//   matrixPairs:   { ['from|to|via']: count },       -- every trace node's from/to/via triple
+//   failureStates: { [state]: count },              -- every §3 state other than 'ok', across the whole render
+// }
+```
+
+An `inline`/`field-ref`'s type comes from `evaluate.mjs`'s `typeOfId()` on the id it
+resolved against, not from the skeleton text itself. A failure state is recorded at
+every point this module already tracks one for the `clean` profile's `failOn` —
+inline, field-ref, `figure`, `view`, and `figref` alike — so the tally covers the
+whole render, not only spans. `telemetry` is always returned, identically, regardless
+of `profile`; only the printed HTML differs between `review` and `clean`.
+
 ## Tests
 
 ```
@@ -217,4 +244,5 @@ node packages/document-view-engine/tests/test_evaluate.mjs
 node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
 node packages/document-view-engine/tests/test_derivation_share.mjs
+node packages/document-view-engine/tests/test_telemetry.mjs
 ```
