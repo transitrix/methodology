@@ -25,6 +25,13 @@
 //       carries no row of its own in §4 (matching FACTOR/ACTIVITY precedent)
 //       and is excluded from the comparison. Fails closed: a missing or
 //       unparseable artefact is a failure, not a skip.
+//   VOC2 vocabulary — every live relation kind in notations/vocabulary.yaml's
+//       `relation_types` has exactly one matching row in elements/17-relations.md
+//       §3 (same endpoint TYPE sets, same ACTOR subtype narrowing where either
+//       side names one), and vice versa. A deprecated alias carries no row of
+//       its own (matching activity_goal precedent) and is excluded from the
+//       comparison. Fails closed: a missing or unparseable artefact is a
+//       failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -45,6 +52,7 @@ const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
 const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
 const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES.md');
+const RELATIONS_SPEC_PATH = join(REPO_ROOT, 'notations', 'elements', '17-relations.md');
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
@@ -595,6 +603,174 @@ async function checkVocabularyElementTypes(failures) {
   }
 }
 
+// --- VOC2: vocabulary.yaml relation_types vs elements/17-relations.md §3 ---
+//
+// Same shape as VOC1, one layer over: notations/vocabulary.yaml is the source
+// of truth; elements/17-relations.md §3 is the prose enum table. This check
+// keeps the two from drifting apart unnoticed — it does not regenerate either
+// side. Deliberately narrow parsers matching exactly the shapes these two
+// files use, same trade-off as VOC1 and packages/ingest-cli/src/vocabulary.mjs.
+
+// Pure — no I/O. Parses the `relation_types:` block of vocabulary.yaml into
+// Map<kind, {from, fromSubtype, to, toSubtype}> — `from`/`to` are TYPE-name
+// arrays, `fromSubtype`/`toSubtype` are ACTOR `type` value arrays or `null`
+// when unrestricted. Live entries only (`deprecated_relation_types:` is a
+// separate block, not returned). Throws on a block that isn't found or
+// doesn't parse.
+export function parseVocabularyRelationTypes(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^relation_types:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "relation_types:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const kindM = line.match(/^  ([a-z][a-z0-9_]*):\s*$/);
+    if (kindM) {
+      current = { from: null, fromSubtype: null, to: null, toSubtype: null };
+      out.set(kindM[1], current);
+      continue;
+    }
+    if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
+    const fieldM = line.match(/^    (from|to|from_subtype|to_subtype):\s*\[([^\]]*)\]\s*$/);
+    if (fieldM && current) {
+      const [, key, rawList] = fieldM;
+      const values = rawList.split(',').map(v => v.trim()).filter(Boolean);
+      const camelKey = key === 'from' ? 'from' : key === 'to' ? 'to' : key === 'from_subtype' ? 'fromSubtype' : 'toSubtype';
+      current[camelKey] = values;
+      continue;
+    }
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in relation_types block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: relation_types block parsed empty');
+  return out;
+}
+
+// Pure — no I/O. Parses one "Endpoint TYPEs" table cell — e.g.
+// "`ACTOR(business_unit)` or `ROLE` → `BUSINESS_SERVICE`" — into
+// {from: {types, actorSubtype}, to: {types, actorSubtype}}. Only the code
+// spans matter; the divider word ("or" / "\|") and any trailing plain-text
+// note (e.g. "(V/H sub-grammar applies)") are outside a code span and never
+// examined, so they are ignored rather than mis-parsed.
+function parseEndpointTypesCell(cell) {
+  const sides = cell.split('→');
+  if (sides.length !== 2) throw new Error(`unrecognised Endpoint TYPEs cell (no single "→"): "${cell}"`);
+  return { from: parseEndpointSide(sides[0]), to: parseEndpointSide(sides[1]) };
+}
+
+function parseEndpointSide(raw) {
+  const spans = [...raw.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  if (spans.length === 0) throw new Error(`unrecognised endpoint side (no code span): "${raw}"`);
+  const types = [];
+  let actorSubtype = null;
+  for (const span of spans) {
+    const m = span.match(/^([A-Z][A-Z0-9_]*)(?:\(([a-z_]+(?:\|[a-z_]+)*)\))?$/);
+    if (!m) throw new Error(`unrecognised endpoint type expression: "${span}"`);
+    const [, typeName, subtypeList] = m;
+    types.push(typeName);
+    if (subtypeList) {
+      if (typeName !== 'ACTOR') throw new Error(`unexpected subtype qualifier on non-ACTOR type: "${span}"`);
+      actorSubtype = subtypeList.split('|');
+    }
+  }
+  return { types, actorSubtype };
+}
+
+// Pure — no I/O. Parses elements/17-relations.md §3's relation `type` enum
+// table into Map<kind, {from: {types, actorSubtype}, to: {types, actorSubtype}}>.
+export function parseRelationsEnumTable(text) {
+  const headingIdx = text.indexOf('\n## 3. Relation `type` enum');
+  if (headingIdx < 0) throw new Error('17-relations.md: "## 3. Relation `type` enum" not found');
+  let nextHeadingIdx = text.indexOf('\n### 3.1', headingIdx);
+  if (nextHeadingIdx < 0) nextHeadingIdx = text.indexOf('\n## 4.', headingIdx);
+  const section = nextHeadingIdx > 0 ? text.slice(headingIdx, nextHeadingIdx) : text.slice(headingIdx);
+
+  const out = new Map();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| `')) continue; // only kind data rows (header/separator rows don't start with a backtick)
+    // A GFM table escapes a literal "|" inside a cell as "\|" — split only on
+    // unescaped pipes, then unescape within each cell (this table's Endpoint
+    // TYPEs column carries both a subtype alternation and a multi-TYPE list
+    // this way, e.g. "ACTOR(person\|business_unit)" and "`GOAL` \| `ACTION`").
+    const cells = line.split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|')).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+    if (cells.length < 3) continue;
+    const kindM = cells[0].match(/^`([a-z][a-z0-9_]*)`$/);
+    if (!kindM || kindM[1] === 'type') continue; // 'type' is the header row's code-styled label, not a kind
+    out.set(kindM[1], parseEndpointTypesCell(cells[2]));
+  }
+  if (out.size === 0) throw new Error('17-relations.md §3: table parsed empty');
+  return out;
+}
+
+function sameSet(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  return sa.every((v, i) => v === sb[i]);
+}
+
+async function checkVocabularyRelationTypes(failures) {
+  let vocText, relationsText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC2', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+  try {
+    relationsText = await readFile(RELATIONS_SPEC_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC2', message: `${relPosix(RELATIONS_SPEC_PATH)}: not found.` });
+    return;
+  }
+
+  let voc, table;
+  try {
+    voc = parseVocabularyRelationTypes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC2', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+  try {
+    table = parseRelationsEnumTable(relationsText);
+  } catch (e) {
+    failures.push({ check: 'VOC2', message: `${relPosix(RELATIONS_SPEC_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const allKinds = new Set([...voc.keys(), ...table.keys()]);
+  for (const kind of allKinds) {
+    const v = voc.get(kind);
+    const t = table.get(kind);
+    if (!v) {
+      failures.push({ check: 'VOC2', message: `${kind} has a row in 17-relations.md §3 but no entry in notations/vocabulary.yaml relation_types.` });
+      continue;
+    }
+    if (!t) {
+      failures.push({ check: 'VOC2', message: `${kind} is in notations/vocabulary.yaml relation_types but has no row in 17-relations.md §3.` });
+      continue;
+    }
+    if (!sameSet(v.from, t.from.types)) {
+      failures.push({ check: 'VOC2', message: `${kind}.from: vocabulary.yaml says [${(v.from || []).join(', ')}], 17-relations.md §3 says [${t.from.types.join(', ')}].` });
+    }
+    if (!sameSet(v.to, t.to.types)) {
+      failures.push({ check: 'VOC2', message: `${kind}.to: vocabulary.yaml says [${(v.to || []).join(', ')}], 17-relations.md §3 says [${t.to.types.join(', ')}].` });
+    }
+    if (!sameSet(v.fromSubtype, t.from.actorSubtype)) {
+      failures.push({ check: 'VOC2', message: `${kind}.from_subtype: vocabulary.yaml says ${v.fromSubtype ? `[${v.fromSubtype.join(', ')}]` : 'unrestricted'}, 17-relations.md §3 says ${t.from.actorSubtype ? `[${t.from.actorSubtype.join(', ')}]` : 'unrestricted'}.` });
+    }
+    if (!sameSet(v.toSubtype, t.to.actorSubtype)) {
+      failures.push({ check: 'VOC2', message: `${kind}.to_subtype: vocabulary.yaml says ${v.toSubtype ? `[${v.toSubtype.join(', ')}]` : 'unrestricted'}, 17-relations.md §3 says ${t.to.actorSubtype ? `[${t.to.actorSubtype.join(', ')}]` : 'unrestricted'}.` });
+    }
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -609,6 +785,7 @@ async function main() {
     await checkNoStandardIdentifiers(failures);
     await checkPackageEnvelopeStatements(failures);
     await checkVocabularyElementTypes(failures);
+    await checkVocabularyRelationTypes(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);
