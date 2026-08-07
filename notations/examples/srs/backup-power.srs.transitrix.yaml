@@ -2,7 +2,7 @@ notation: srs
 spec_version: "0.1"
 name: "Backup-power controller — SRS"
 generated_at: "2026-08-04"
-methodology_version: "3.1.0"
+methodology_version: "3.2.0"
 
 view:
   id: SRS-BACKUP-POWER-1
