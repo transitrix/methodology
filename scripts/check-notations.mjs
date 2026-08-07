@@ -16,6 +16,9 @@
 //       value matches its file extension.
 //   L1  links — every relative Markdown link in notations/**/*.md resolves to
 //       an existing file (anchors and external URLs are skipped).
+//   T1  document sources — every `.ttrs` file is named <basename>.<kind>.ttrs,
+//       and no file ends `.trs` (the near-miss: one keystroke away, a different
+//       widely used format). Reported in words, not as an unknown-file error.
 //   V1  version — every concrete `methodology_version:` pin in the repo equals
 //       the single source of truth (notations/CURRENT_VERSION.yaml,
 //       per CONTRACT.md §10), except explicitly allowlisted placeholders.
@@ -595,6 +598,46 @@ async function checkVocabularyElementTypes(failures) {
   }
 }
 
+// T1: document-source file naming.
+//
+// `.trs` is one keystroke away from `.ttrs` and is a different, widely used
+// format. A file ending `.trs` where a document source is expected must be
+// reported as that near-miss in words — a bare "unknown file" would send the
+// author looking for the wrong problem (CONTRACT.md §3).
+//
+// Pure: takes the repo-relative paths, returns the findings. Exported for the
+// unit tests; the walk that feeds it lives in checkDocumentSources below.
+export function findDocumentSourceFailures(relPaths) {
+  const failures = [];
+  for (const rel of relPaths) {
+    const base = posix.basename(rel);
+
+    if (base.endsWith('.trs')) {
+      failures.push({
+        check: 'T1',
+        message: `${rel}: ends ".trs" — the document-source extension is ".ttrs" (".trs" is a different, widely used format, one keystroke away). Rename it, or move it out of the tree if it really is a .trs file.`,
+      });
+      continue;
+    }
+
+    if (!base.endsWith('.ttrs')) continue;
+
+    // `<basename>.<kind>.ttrs` — the middle segment is the document kind.
+    if (!/^[^.]+\.[a-z0-9-]+\.ttrs$/.test(base)) {
+      failures.push({
+        check: 'T1',
+        message: `${rel}: not named <basename>.<kind>.ttrs — the middle segment is the document kind (e.g. product.mrd.ttrs).`,
+      });
+    }
+  }
+  return failures;
+}
+
+async function checkDocumentSources(failures) {
+  const all = await walk(REPO_ROOT, null);
+  failures.push(...findDocumentSourceFailures(all.map(relPosix)));
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -609,6 +652,7 @@ async function main() {
     await checkNoStandardIdentifiers(failures);
     await checkPackageEnvelopeStatements(failures);
     await checkVocabularyElementTypes(failures);
+    await checkDocumentSources(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

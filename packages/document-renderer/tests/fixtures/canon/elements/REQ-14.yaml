@@ -1,0 +1,10 @@
+notation: requirement
+id: REQ-14
+name: Operator confirms a batch before release
+title: Batch release confirmation
+parent: CAP-1
+text: |
+  The system shall require an authorised operator to confirm a batch
+  before it is released to distribution.
+level: system
+kind: functional
