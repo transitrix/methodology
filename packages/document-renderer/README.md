@@ -1,8 +1,29 @@
 # @transitrix/document-renderer
 
-Parser for the **`.ttrs` document-template format**, and its **pass 1
-deterministic resolver** — the half of the document renderer that runs and is
-testable with no agent present.
+**The reference implementation of the `{{ … }}` directive language** — parser for
+the `.ttrs` document-template format and its pass 1 deterministic resolver,
+which runs and is testable with no agent present.
+
+## This is a reference implementation, not a product
+
+Its job is to make
+[`DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md)
+**checkable** — a specification with nothing executable behind it drifts from
+what anyone actually builds. What this repository ships as a deliverable is the
+**format**; the rendering engine an adopter runs is delivery work, built against
+that spec rather than shipped from here.
+
+Two things follow, and both are deliberate:
+
+- **The spec outranks this code.** Where the two disagree, the specification is
+  right and this package has a bug. Nothing here is normative by virtue of
+  working; a behaviour not written down in `DIRECTIVE_LANGUAGE.md` is not a
+  behaviour anyone else is obliged to reproduce.
+- **The conformance fixture is the contract's test surface.**
+  [`tests/fixtures/product.mrd.expected.md`](tests/fixtures/product.mrd.expected.md)
+  is the frozen output of [`tests/fixtures/product.mrd.ttrs`](tests/fixtures/product.mrd.ttrs)
+  — the thing an independent implementation diffs its own output against. See
+  [Conformance fixture](#conformance-fixture).
 
 Pass 1 ships as a unit callable on its own, so pass 2 (instruction slots) and
 Studio's preview can both depend on it as a library rather than on the whole
@@ -137,7 +158,7 @@ import { runPass1 } from '@transitrix/document-renderer/src/pass1.mjs';
 
 const {
   ok, markdown, instructionSlots, figures, errors,
-  findings, states, suspicion,        // the four states, and why ⚑S is absent
+  findings, states, suspicion,        // the four computed states, and why ⚑S is not
 } = await runPass1({
   text,                       // template source
   templatePath,               // enables the filename/`kind:` check; bases figure paths
@@ -192,19 +213,26 @@ with different fixes, and folding the first into the second would hide it.
 
 Deleting an element the document cites produces `TTRS-010`, not a silent gap.
 
-## The four reference states
+## The five reference states
 
-Every reference lands in exactly one state. The three canon-side ones are
-`@transitrix/document-view-engine`'s own (`⚑U` / `⚑A` / `⚑V`), reused rather
-than re-invented — one language must not grow two classifications of the same
-failure. The fourth is about configuration, not canon.
+The language names **five** non-ok states
+([`DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md) §5).
+This package computes four of them and reports the fifth as *not computed* —
+the one carve-out the language permits, and only because it reports the decline
+rather than staying silent about it. No two states are ever merged.
 
-| State | Flag | Code |
-|---|---|---|
-| `unresolved` | `⚑U` | `TTRS-010` |
-| `not-admitted` | `⚑A` | `TTRS-014` |
-| `out-of-validity` | `⚑V` | `TTRS-015` |
-| `no-repository` | — | `TTRS-011` |
+The three canon-side ones are `@transitrix/document-view-engine`'s own
+(`⚑U` / `⚑A` / `⚑V`), reused rather than re-invented — one language must not
+grow two classifications of the same failure. The fourth is about configuration,
+not canon.
+
+| State | Flag | Code | This package |
+|---|---|---|---|
+| `unresolved` | `⚑U` | `TTRS-010` | computed |
+| `not-admitted` | `⚑A` | `TTRS-014` | computed |
+| `out-of-validity` | `⚑V` | `TTRS-015` | computed |
+| `no-repository` | — | `TTRS-011` | computed |
+| `suspect` | `⚑S` | — | **not computed** — reported as such |
 
 **The worst defect is not a missing reference** — it is one that resolves and
 renders as plainly correct text when the object behind it was never admitted or
@@ -212,43 +240,91 @@ has stopped being valid. So a non-ok state never renders as its bare value.
 
 ### Profiles
 
-| Profile | Behaviour |
-|---|---|
-| `strict` *(default)* | **fails on all four states**, naming the file, the id and the state |
-| `review` | renders each flagged value and reports every state in `findings`, without failing |
+The language requires a strict and a lenient profile, both selectable, with the
+lenient one detecting exactly what the strict one fails on
+([`DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md) §6).
+This package's pair:
+
+| Profile | Role | Behaviour |
+|---|---|---|
+| `strict` *(default)* | strict | **fails on all four computed states**, naming the file, the id and the state |
+| `review` | lenient | renders each flagged value and reports every state in `findings`, without failing |
 
 These correspond to `@transitrix/document-view-engine`'s `clean` / `review`
-pair. `review` reports exactly what `strict` fails on.
+pair. `review` reports exactly what `strict` fails on — the profiles differ in
+consequence, never in what they detect. Every result carries the `profile` it
+ran under, so a rendered document can be traced to which was used.
 
 ### Suspicion is reported as *not computed*
 
-`⚑S` link suspicion is not part of pass 1 — out of scope by the
+`⚑S` link suspicion is not computed by pass 1 — out of scope by the
 rendered-documents decision, derived from commit history rather than read from a
 file, and scoped by [`CONTRACT.md`](../../notations/CONTRACT.md) §16.2 to `REL`
 and claim records rather than the element references a template cites.
 
-Every result nonetheless carries a `suspicion` field saying so:
+Declining to compute it is permitted; **being silent about declining is not.**
+The language requires three distinguishable outcomes, not two — *suspect*,
+*checked and clean*, and *never checked*
+([`DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md) §5.1).
+Every result therefore carries a `suspicion` field stating which, with its
+reason:
 
 ```js
 { computed: false, state: 'not-computed', reason: '…' }
 ```
 
 **It is never simply omitted.** A clean render must be distinguishable from one
-that never checked.
+that never checked — that is the one failure mode which reads as success.
 
 ## Tests
 
 ```
 node packages/document-renderer/tests/test_parse_template.mjs
 node packages/document-renderer/tests/test_pass1.mjs
+node packages/document-renderer/tests/test_conformance.mjs
 ```
 
 `tests/fixtures/product.mrd.ttrs` is a complete worked template — every slot kind,
 one instruction slot — rendered end-to-end against `tests/fixtures/canon/` by the
 pass-1 suite.
 
+## Conformance fixture
+
+`tests/fixtures/product.mrd.expected.md` is that template's rendered output,
+**generated once and committed as a frozen target**. It is the artefact an
+independent implementation of the language diffs its own output against, which
+is what makes the specification checkable rather than merely written down.
+
+`tests/test_conformance.mjs` asserts the current render matches it **byte for
+byte**, and additionally checks the requirements a second implementation is most
+likely to miss — the suspicion report, the profile naming, and that the lenient
+profile detects exactly what the strict one fails on.
+
+**It never regenerates the fixture, and must not be made to.** A golden file
+that rewrites itself records whatever the code does today and can therefore
+never catch a regression — the auto-update convenience is precisely the thing
+this fixture exists to refuse. A failure is one of two things:
+
+| | What it means | What to do |
+|---|---|---|
+| **Regression** | pass 1 stopped producing the specified output | fix the code; leave the fixture alone |
+| **Deliberate change** | the specified output changed on purpose in `DIRECTIVE_LANGUAGE.md` | re-freeze the fixture in its **own** commit, naming the spec change it follows, so a reviewer sees the output diff |
+
+If you cannot say which you are in, you are in the first.
+
+Determinism is pinned on both sides: the test passes an explicit `renderDate`
+(the render date is an input to validity resolution), and
+`tests/fixtures/.gitattributes` pins line endings to LF — pass 1 copies fixed
+text through verbatim, so a CRLF checkout would render CRLF and the byte
+comparison would hold on one platform only.
+
 ## Scope
 
 Pass 1 only. Filling instruction slots, emitting the run record, and PDF output
-are the next layer and are not in this package. Nothing here calls a model, and
-nothing here may — rendering happens in the CLI, never the agent.
+are not in this package. Nothing here calls a model, and nothing here may —
+rendering happens in the CLI, never the agent.
+
+`{{# instruct … }}` stays in the grammar and in the specification — a notation
+expresses the slot; who fills it is an implementation's property — but nothing
+here executes one. Pass 1 copies each slot through byte-for-byte so the unfilled
+section is visible in the output rather than silently blank.

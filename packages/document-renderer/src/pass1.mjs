@@ -20,8 +20,9 @@
 // tell "you have no repository configured" (TTRS-011) apart from "your
 // repository does not contain this id" (TTRS-010).
 //
-// A reference lands in exactly one of FOUR distinguishable states. The three
-// canon-side ones are @transitrix/document-view-engine's own
+// The language names FIVE non-ok reference states (DIRECTIVE_LANGUAGE.md §5).
+// This pass computes four of them and reports the fifth (⚑S) as not computed.
+// The three canon-side ones are @transitrix/document-view-engine's own
 // (resolveReference()'s ⚑U / ⚑A / ⚑V), deliberately reused rather than
 // re-invented — one notation must not grow two classifications of the same
 // failure. The fourth is this pass's, and is about configuration, not canon:
@@ -36,10 +37,12 @@
 // behind it was never admitted, or stopped being valid. So a non-ok state is
 // never rendered as its bare value.
 //
-// ⚑S (suspect) is NOT in this pass, and is reported as "not computed" rather
-// than omitted: a clean render has to be distinguishable from one that never
-// checked. Three standing reasons, none of them a time-box — see the
-// `suspicion` field of the result and DIRECTIVE_LANGUAGE.md.
+// ⚑S (suspect) is NOT computed in this pass, and is reported as "not computed"
+// rather than omitted. DIRECTIVE_LANGUAGE.md §5.1 requires three distinguishable
+// outcomes and not two — suspect, checked-and-clean, and never-checked — because
+// a render that never checked must not look like one that came back clean. That
+// is the one failure mode which reads as success. Three standing reasons for
+// declining, none of them a time-box — see the `suspicion` field of the result.
 
 import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
