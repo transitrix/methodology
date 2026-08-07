@@ -109,7 +109,10 @@ async function run() {
       },
     };
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
-    checkEqual(review.html, '<span class="dv-ok">ROW-1-name</span>;<span class="dv-ok">ROW-2-name</span>;', 'each renders its children once per selected row, in order');
+    check(
+      review.html.startsWith('<span class="dv-ok">ROW-1-name</span>;<span class="dv-ok">ROW-2-name</span>;'),
+      'each renders its children once per selected row, in order',
+    );
   }
 
   // a field-ref outside any each is unreachable via parseSkeleton (rejected
@@ -204,6 +207,118 @@ async function run() {
     check(!clean.failed, 'trace clean: coverage gaps never fail the clean-profile build');
   }
 
+  // view (blocks notation) — rendered SVG, missing file, unparseable file,
+  // suspect border, and shared numbering with figure
+  {
+    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-views-'));
+    const blocksYaml = [
+      'notation: blocks',
+      'name: "Test architecture"',
+      '',
+      'nested_blocks:',
+      '  id: BLOCKS-TEST-1',
+      '  name: "Test architecture"',
+      '  blocks:',
+      '    - id: APPLICATION-1',
+      '      name: "Application"',
+      '      children:',
+      '        - id: FRONTEND',
+      '          name: "Frontend"',
+    ].join('\n');
+    writeFileSync(join(skeletonDir, 'arch.blocks.transitrix.yaml'), blocksYaml, 'utf8');
+    writeFileSync(join(skeletonDir, 'not-blocks.yaml'), 'notation: capability-map\nname: "Not blocks"\n', 'utf8');
+    writeFileSync(join(skeletonDir, 'ignored.png'), 'not a real png, existence is all that matters', 'utf8');
+
+    const evaluator = {
+      ...stubEvaluator({}),
+      async resolveReference(id) {
+        return id === 'APPLICATION-1' ? { id, state: 'suspect', flag: '⚑S' } : { id, state: 'ok', flag: null };
+      },
+    };
+
+    const ast = [
+      { type: 'figure', path: 'ignored.png', caption: null, as: null },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'arch.blocks.transitrix.yaml', as: 'fig-arch', fit: 'width' },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'missing.blocks.transitrix.yaml', as: null, fit: 'width' },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'not-blocks.yaml', as: null, fit: 'width' },
+    ];
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    check(review.html.includes('<svg'), 'view: a valid blocks document renders inline SVG');
+    check(review.html.includes('dv-illus-suspect'), 'view: a block id resolving suspect gets the suspect border class');
+    check(review.html.includes('⚑S'), 'view: the suspect border carries the ⚑S flag as a second channel');
+    check(review.html.includes('Figure 2'), 'view: numbering continues the sequence figure started (figure was Figure 1)');
+    check((review.html.match(/dv-illus-missing/g) ?? []).length === 2, 'view: a missing file and an unparseable (wrong-notation) file both get the missing border class');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    check(clean.html.includes('<figure class="dv-clean'), 'view clean: renders without border-class or flag information');
+    check(!clean.html.includes('dv-illus'), 'view clean: no illustration border classes leak through');
+    check(clean.failed, 'view clean: a missing/unparseable view file fails the build');
+
+    rmSync(skeletonDir, { recursive: true, force: true });
+  }
+
+  // derivation share (§5) — a fixture with a known derived/manual split,
+  // plus a figure (manual, never counts toward illustrations-from-model)
+  // and a view (counts toward illustrations-from-model when it parses)
+  {
+    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-derivshare-'));
+    writeFileSync(join(skeletonDir, 'photo.png'), 'not a real png, existence is all that matters', 'utf8');
+    const blocksYaml = [
+      'notation: blocks',
+      'name: "Test architecture"',
+      '',
+      'nested_blocks:',
+      '  id: BLOCKS-TEST-1',
+      '  name: "Test architecture"',
+      '  blocks:',
+      '    - id: APPLICATION-1',
+      '      name: "Application"',
+    ].join('\n');
+    writeFileSync(join(skeletonDir, 'arch.blocks.transitrix.yaml'), blocksYaml, 'utf8');
+
+    // derived: "alpha beta gamma" = 3 words. manual: "# Title" is a heading
+    // (excluded) + " plain body text here" = 4 words. 3 of (3 + 4) = 3/7.
+    const ast = [
+      { type: 'text', value: '# Title\n' },
+      { type: 'inline', id: 'A-1', fields: ['x'] },
+      { type: 'text', value: ' plain body text here' },
+      { type: 'figure', path: 'photo.png', caption: null, as: null },
+      { type: 'view', path: 'arch.blocks.transitrix.yaml', as: null, fit: 'width' },
+    ];
+    const evaluator = {
+      ...stubEvaluator({ 'A-1::x': { id: 'A-1', state: 'ok', flag: null, content: 'alpha beta gamma' } }),
+      async resolveReference(id) { return { id, state: 'ok', flag: null }; },
+    };
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    checkEqual(review.derivationShare.derivedWords, 3, 'derivation share: derived word count');
+    checkEqual(review.derivationShare.manualWords, 4, 'derivation share: manual word count, heading line excluded');
+    check(review.html.includes('<div class="dv-derivation-share">Derivation share: 43% (3 of 7 words)</div>'), 'derivation share: printed line matches the known split, rounded');
+    checkEqual(review.illustrations.fromModel, 1, 'derivation share: illustrations from-model count — figure is manual and never counts, the parsing view does');
+    checkEqual(review.illustrations.total, 2, 'derivation share: illustrations total counts every figure/view');
+    check(review.html.includes('<div class="dv-illustrations">Illustrations — 1 of 2 rendered from the model</div>'), 'derivation share: illustrations line printed alongside the word ratio');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    check(!clean.html.includes('dv-derivation-share') && !clean.html.includes('dv-illustrations'), 'derivation share: clean profile prints no counters (§4)');
+    checkEqual(clean.derivationShare.derivedWords, 3, 'derivation share: numbers still returned to the caller even when clean prints nothing (derived)');
+    checkEqual(clean.derivationShare.manualWords, 4, 'derivation share: numbers still returned to the caller even when clean prints nothing (manual)');
+    checkEqual(clean.illustrations.fromModel, 1, 'derivation share: illustrations counts likewise returned under clean (fromModel)');
+    checkEqual(clean.illustrations.total, 2, 'derivation share: illustrations counts likewise returned under clean (total)');
+
+    rmSync(skeletonDir, { recursive: true, force: true });
+  }
+
+  // derivation share — an empty document prints "n/a", never a divide-by-zero
+  {
+    const review = await renderDocument([], stubEvaluator({}), { profile: 'review' });
+    check(review.html.includes('Derivation share: n/a (0 of 0 words)'), 'derivation share: an empty document reports n/a rather than 0%');
+    check(review.html.includes('Illustrations — 0 of 0 rendered from the model'), 'derivation share: an empty document still prints a well-formed illustrations line');
+  }
+
   // ── Integration — real parseSkeleton + createEvaluator end to end ──
   {
     function writeYaml(dir, name, lines) {
@@ -246,7 +361,36 @@ async function run() {
     const clean = await renderDocument(ast, evaluator, { profile: 'clean', renderDate: '2026-08-06' });
     check(clean.failed, 'integration: clean profile fails the build on the unresolved reference');
 
+    checkEqual(
+      JSON.stringify(review.telemetry.types),
+      JSON.stringify({ REQUIREMENT: 5 }),
+      'telemetry: REQUIREMENT counted for the each node itself, once per row for the field-ref, and once per row for the (unresolved) inline reference',
+    );
+    checkEqual(JSON.stringify(review.telemetry.fields), JSON.stringify({ 'REQUIREMENT.name': 4 }), 'telemetry: the .name field path counted per row, from both the field-ref and the inline reference');
+    checkEqual(JSON.stringify(review.telemetry.relations), JSON.stringify({}), 'telemetry: no trace node in this skeleton, no relation kind referenced');
+    checkEqual(JSON.stringify(review.telemetry.matrixPairs), JSON.stringify({}), 'telemetry: no trace node in this skeleton, no matrix pair referenced');
+    checkEqual(JSON.stringify(review.telemetry.failureStates), JSON.stringify({ unresolved: 2 }), 'telemetry: the ghost reference is unresolved once per row, tallied across the whole render');
+    checkEqual(JSON.stringify(clean.telemetry), JSON.stringify(review.telemetry), 'telemetry: identical counters regardless of render profile — profile only changes what gets printed');
+
     rmSync(orgRoot, { recursive: true, force: true });
+  }
+
+  // telemetry (§6) — trace relation kind and matrix pair, and a failure
+  // state from a source outside inline/field-ref (a missing figure)
+  {
+    const ast = [
+      { type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' },
+      { type: 'figure', path: '/definitely/not/here.png', caption: null, as: null },
+    ];
+    const evaluator = {
+      ...stubEvaluator({}),
+      async evaluateTrace() { return { rows: [], cols: [], covered: new Set() }; },
+    };
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(JSON.stringify(review.telemetry.types), JSON.stringify({ REQUIREMENT: 1, VERIFICATION: 1 }), 'telemetry: a trace node records both its from and to types');
+    checkEqual(JSON.stringify(review.telemetry.relations), JSON.stringify({ verifies: 1 }), 'telemetry: a trace node records its via relation kind');
+    checkEqual(JSON.stringify(review.telemetry.matrixPairs), JSON.stringify({ 'REQUIREMENT|VERIFICATION|verifies': 1 }), 'telemetry: a trace node records its from|to|via matrix pair');
+    checkEqual(JSON.stringify(review.telemetry.failureStates), JSON.stringify({ unresolved: 1 }), 'telemetry: a missing figure counts as an unresolved failure state, not just inline/field-ref failures');
   }
 }
 
