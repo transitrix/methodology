@@ -1,0 +1,30 @@
+---
+document: Market Requirements Document
+kind: mrd
+template_id: product.mrd
+template_version: "1.0"
+canon: canon
+---
+# {{ CAP-1.title }}
+
+## Scope
+
+This document covers {{ CAP-1.text }}
+
+## Requirements
+
+**{{ REQ-14 }}** — {{ REQ-14.text }}
+
+Its parent capability is {{ REQ-14.parent.name }}.
+
+{{ view diagrams/context.blocks.transitrix.yaml as = context fit = width }}
+
+{{ figref context }} shows where the capability sits.
+
+## Market
+
+{{# instruct market-size }}
+question: How large is the addressable market for this capability, and how fast is it growing?
+inputs: CAP-1, REQ-14
+sufficient: A market size with a currency and a year, a growth rate, and the method used to derive both.
+{{/ instruct }}
