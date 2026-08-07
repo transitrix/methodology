@@ -69,6 +69,10 @@ Each notation has exactly one canonical file extension: `*.<short-name>.transitr
 
 No aliases are accepted: one notation has exactly one extension. The full per-notation mapping lives in [README.md](README.md).
 
+The canonical extension is `*.<short-name>.transitrix.yaml` **or** `*.<short-name>.ttrs`; which one a given notation takes is a property of that notation. A `.ttrs` document is prose with directives rather than a mapping, and its middle segment is the document kind (`product.mrd.ttrs`), so the extension/parent-folder rule applies to it unchanged. `.ttrs` replaces `*.<short-name>.transitrix.yaml` in full for the notation that takes it — it is never appended to it, and no notation carries both. "One notation, exactly one extension" is unchanged, and `HDR-003` continues to enforce it.
+
+The near-miss `.trs` is one keystroke away and is a different, widely used format. A file ending `.trs` where a document source is expected is reported as that near-miss by name, not as an unknown-file error.
+
 ---
 
 ## 4. Date format
