@@ -145,6 +145,8 @@ function classify(rawContent, errors) {
 
   if (/^trace(\s|$)/.test(trimmed)) return parseTrace(trimmed, errors);
   if (/^view(\s|$)/.test(trimmed)) return parseView(trimmed, errors);
+  if (/^figure(\s|$)/.test(trimmed)) return parseFigure(trimmed, errors);
+  if (/^figref(\s|$)/.test(trimmed)) return parseFigref(trimmed, errors);
 
   if (/\s/.test(trimmed)) {
     errors.push({ message: `unrecognised directive "{{ ${trimmed} }}"` });
@@ -233,6 +235,30 @@ function parseKeyValuePairs(tokens, startIdx, errors, label) {
   return kv;
 }
 
+// `caption = "Device, front"` needs quote-aware tokenizing (a bare `.split(/\s+/)`
+// would split the caption itself) — figure is the one directive whose values carry
+// spaces, so only its key/value parsing goes through this path.
+function tokenizeRespectingQuotes(s) {
+  const tokens = [];
+  const re = /"([^"]*)"|(\S+)/g;
+  let m;
+  while ((m = re.exec(s)) !== null) tokens.push(m[1] !== undefined ? m[1] : m[2]);
+  return tokens;
+}
+
+function parseQuotedKeyValuePairs(rest, errors, label) {
+  return parseKeyValuePairs(tokenizeRespectingQuotes(rest), 0, errors, label);
+}
+
+// Splits "<path> key = value key2 = value2" into the leading bare path token (view/figure
+// share this shape: a whitespace-free path followed by key/value pairs) and the remainder.
+function splitPathAndRest(afterKeyword) {
+  const trimmed = afterKeyword.trim();
+  const m = /^(\S*)(?:\s+([\s\S]*))?$/.exec(trimmed);
+  if (!m) return { path: '', rest: '' };
+  return { path: m[1], rest: m[2] ?? '' };
+}
+
 function parseTrace(trimmed, errors) {
   const tokens = trimmed.split(/\s+/).filter(Boolean);
   const kv = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
@@ -242,15 +268,41 @@ function parseTrace(trimmed, errors) {
   return { kind: 'trace', from: kv.from, to: kv.to, via: kv.via };
 }
 
+const VIEW_FIT_VALUES = ['width', 'page', 'none'];
+
 function parseView(trimmed, errors) {
-  const path = trimmed.slice(4).trim();
+  const { path, rest } = splitPathAndRest(trimmed.slice(4));
   if (!path) {
     errors.push({ message: `"{{ ${trimmed} }}": "view" requires a path` });
   }
-  if (/\s/.test(path)) {
-    errors.push({ message: `"{{ ${trimmed} }}": view path must not contain whitespace` });
+  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`);
+  const fit = kv.fit ?? 'width';
+  if (!VIEW_FIT_VALUES.includes(fit)) {
+    errors.push({ message: `"{{ ${trimmed} }}": fit must be one of ${VIEW_FIT_VALUES.join('/')}, got "${fit}"` });
   }
-  return { kind: 'view', path };
+  return { kind: 'view', path, as: kv.as ?? null, fit };
+}
+
+function parseFigure(trimmed, errors) {
+  const { path, rest } = splitPathAndRest(trimmed.slice(6));
+  if (!path) {
+    errors.push({ message: `"{{ ${trimmed} }}": "figure" requires a path` });
+  }
+  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`);
+  return { kind: 'figure', path, caption: kv.caption ?? null, as: kv.as ?? null };
+}
+
+function parseFigref(trimmed, errors) {
+  const rest = trimmed.slice(6).trim();
+  if (!rest) {
+    errors.push({ message: `"{{ ${trimmed} }}": "figref" requires a name` });
+    return { kind: 'figref', name: undefined };
+  }
+  const [name, ...extra] = rest.split(/\s+/);
+  if (extra.length > 0) {
+    errors.push({ message: `"{{ ${trimmed} }}": "figref" takes a single name, got "${rest}"` });
+  }
+  return { kind: 'figref', name };
 }
 
 // ── AST construction ────────────────────────────────────────────────────
@@ -282,7 +334,13 @@ function buildAst(tokens) {
         top.children.push({ type: 'trace', from: token.from, to: token.to, via: token.via });
         break;
       case 'view':
-        top.children.push({ type: 'view', path: token.path });
+        top.children.push({ type: 'view', path: token.path, as: token.as, fit: token.fit });
+        break;
+      case 'figure':
+        top.children.push({ type: 'figure', path: token.path, caption: token.caption, as: token.as });
+        break;
+      case 'figref':
+        top.children.push({ type: 'figref', name: token.name });
         break;
       case 'each-open': {
         const node = {
