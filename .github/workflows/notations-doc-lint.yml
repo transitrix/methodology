@@ -38,3 +38,6 @@ jobs:
 
       - name: Run check-notations unit tests
         run: node --test scripts/check-notations.test.mjs
+
+      - name: Run release-obligations query tests
+        run: node --test scripts/release-obligations.test.mjs

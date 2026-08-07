@@ -1,0 +1,23 @@
+notation: release
+id: RELEASE-PAYMENTS-GATEWAY-1
+name: "Payments Gateway 2.3.0"
+
+of: APPLICATION-PAYMENTS-GATEWAY-1
+version: "2.3.0"
+released_at: "2026-03-02"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-03-02"
+valid_to: null
+
+description: >
+  The earlier of the two releases in the chain — no `predecessor`, so the
+  chain walk from it stops at depth 0. Two obligations were in scope here;
+  one of them has since been withdrawn (its relation carries `valid_to`).

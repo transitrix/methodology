@@ -1,0 +1,18 @@
+notation: application
+id: APPLICATION-PAYMENTS-GATEWAY-1
+name: Payments Gateway
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2024-01-01"
+valid_to: null
+
+description: >
+  The subject the releases below are releases of. Present so `RELEASE.of`
+  resolves (RELEASE-002); nothing in the release-obligation query reads it.

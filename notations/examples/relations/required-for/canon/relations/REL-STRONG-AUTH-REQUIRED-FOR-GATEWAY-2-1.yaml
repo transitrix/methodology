@@ -1,0 +1,18 @@
+notation: relation
+id: REL-STRONG-AUTH-REQUIRED-FOR-GATEWAY-2-1
+type: required_for
+from: REQUIREMENT-STRONG-AUTH-1
+to: RELEASE-PAYMENTS-GATEWAY-2
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Attached at 2.4.0, not at the gateway as a whole — depth 0 for a query
+# about 2.4.0, and absent entirely from a query about 2.3.0.
+valid_from: "2026-07-15"
+valid_to: null

@@ -1,0 +1,20 @@
+notation: relation
+id: REL-LEGACY-CIPHER-REQUIRED-FOR-GATEWAY-1-1
+type: required_for
+from: REQUIREMENT-LEGACY-CIPHER-SUITE-1
+to: RELEASE-PAYMENTS-GATEWAY-1
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Closed window — the obligation left scope on 2026-06-30. The file stays:
+# it records that the obligation *was* in scope for 2.3.0, which is what an
+# audit of that shipped release needs. A query as at 2026-04-01 returns it;
+# a query as at any date after valid_to does not, and 2.4.0 never inherits it.
+valid_from: "2026-03-02"
+valid_to: "2026-06-30"

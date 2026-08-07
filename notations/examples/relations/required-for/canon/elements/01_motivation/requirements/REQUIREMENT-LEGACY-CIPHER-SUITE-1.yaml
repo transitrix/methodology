@@ -1,0 +1,22 @@
+notation: requirement
+id: REQUIREMENT-LEGACY-CIPHER-SUITE-1
+name: The legacy acquirer cipher suite remains negotiable
+origin: process-product
+level: system
+kind: quality
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2024-01-01"
+valid_to: null
+
+description: >
+  Still a live requirement elsewhere in the model — it is the *scope
+  statement* that was withdrawn, not the obligation itself. The relation
+  binding it to 2.3.0 carries a `valid_to`; this element does not.

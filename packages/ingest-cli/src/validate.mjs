@@ -26,7 +26,7 @@ const CLOSED_REL_KINDS = new Set([
   'action_goal', 'activity_goal', // action_goal is canonical; activity_goal is deprecated alias (ACTION-005)
   'unit_parent', 'employment', 'candidacy', 'alumni_membership',
   'community_membership', 'contracting', 'stakeholding',
-  'depends_on',
+  'depends_on', 'required_for',
 ]);
 
 // ASSERTION contract — notations/elements/16-assertion.md §2/§3. `about` must reference
