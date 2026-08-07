@@ -75,6 +75,7 @@ canon/
       changes/        CHANGE-*.yaml            # Gap (multi-scale)
       milestones/     MILESTONE-*.yaml         # Implementation Event — registration owned by the MILESTONE TYPE task; folder reserved here
       target-states/  TARGET_STATE-*.yaml      # Plateau (§7.17 — structural snapshot satisfying GOALs)
+      releases/       RELEASE-*.yaml           # §7.29 — a dated/versioned state of a PRODUCT/APPLICATION; predecessor chain, no ArchiMate counterpart
       # room reserved for DELIVERABLE if it ever becomes a first-class TYPE
   relations/          REL-*.yaml              # elements/17-relations.md (flat, not under elements/)
   assertions/         ASSERTION-*.yaml        # elements/16-assertion.md (flat, not under elements/)
@@ -182,6 +183,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `ACTION` | standalone | `action` | implementation | `05_implementation/actions/` | §7.4 + [elements/24-action.md](elements/24-action.md) |
 | `TARGET_STATE` | standalone | `target-state` | implementation | `05_implementation/target-states/` | §7.17 (no dedicated spec) |
 | `SCENARIO` | standalone | `scenario` | implementation | `05_implementation/scenarios/` | §7.18 (no dedicated spec) |
+| `RELEASE` | standalone (catalogued only when referenced — §7.29) | `release` | implementation | `05_implementation/releases/` | §7.29 (no dedicated spec) |
 | `NODE` | standalone | `node` | technology | `04_technology/nodes/` | §7.24 + [elements/25-nodes.md](elements/25-nodes.md) |
 | `TECHNOLOGY_SERVICE` | standalone | `technology-service` | technology | `04_technology/services/` | §7.25 + [elements/26-technology-services.md](elements/26-technology-services.md) |
 | `EQUIPMENT` | view-defined | `process-blueprint` | — | (none — document-local; promotable) | [views/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §5.3 |
@@ -203,6 +205,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`STEP` is contained-then-promotable (a third shape, distinct from `view-defined`).** A process-flow step lives inline in its `PROCESS` element's `flow.steps[]` (§7.5), not in a view — so it is neither `standalone` (no element file until promoted) nor `view-defined` (its definition home is a *standalone element*, not a view document). It is **canonical-by-containment**: the PROCESS carries the single admission record and lifecycle, and the step is addressable by its `STEP-…` id (the worked example `PROCESS-ORD-FULFILL-1` already authors `STEP-ORD-FULFILL-1…7`). It is **promoted** to a standalone `02_business/steps/STEP-….yaml` only when a *second* document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTIVITY` realising it, or an `ASSERTION` (`subject` / `realised_via`). This promotion trigger fired in the regulatory-intelligence build (compliance impact expressed via `ASSERTION` → flow-step ids), which is what moved this TYPE from reserved to registered. The promotion is **mechanical** (§7.20): the step's attributes move to the standalone file, its `flow.steps[]` entry reduces to a reference, and `flow.sequence` (the process-owned graph edges) is untouched — the id never changes. The BPMN node-label forms (`TASK-…` / `SE-…` / `EE-…`) are projection-local labels ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3), **not** a step's catalogue identity; `STEP` is.
 - **`INTEGRATION` is promotable.** The applications spec ([views/10](./views/diagrams/10-applications.md)) currently nests integrations inside an application's `integrations[]`. v1 keeps that nested-in-view form as the definition home; the standalone `03_application/integrations/` schema (§7.8) is defined so an integration that needs its own lifecycle/cross-references can be promoted without renaming.
 - **`SCENARIO` is `standalone`, as the path the architect plans.** A scenario is *the path*, not the destination — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate **Course of Action** realised by Work Packages + Gaps). It is what an architect *varies* alongside the `TARGET_STATE` when offering customer solution options — multiple paths may reach the same end-state. That makes it a first-class addressable element, not an inline fragment of a view. The earlier `view-defined` placement (a "scenario document" that scoped its own goals/capabilities/activities/etc.) conflated the path with the things it sequences and the things its end-state contains; the reclassification splits them: `TARGET_STATE` owns structural composition (§7.17), `SCENARIO` owns the ordered steps (§7.18). Scenario references — `pursues` goal list, `arrives_at` target-state ref, ordered `steps` — are **inline (B2)**; the only first-class REL in the planning model is `target_state_satisfies_goal` (declared on `TARGET_STATE`, §7.17).
+- **`RELEASE` is `standalone`, as the anchor a claim attaches to instead of a whole subject.** A `RELEASE` is a dated/versioned state of a `PRODUCT` or `APPLICATION` — not an ArchiMate concept (no counterpart in ArchiMate 3.x; vocabulary rule, 2026-07-30 decision, same basis as `RISK`/`METRIC`). It exists so a `REQUIREMENT` obligation (`required_for`) and an `ASSERTION`/`VERIFICATION` compliance claim can name *which shipped state* they concern, rather than the subject as a whole — a claim that was true of v2.3 and false of v2.4 needs a place to record that distinction. Referenced from at least two directions (the obligation side and the claim side), so it needs its own admission record and lifecycle like `RISK`/`NEED`, not an inline fragment of either. **Authoring is deliberately conservative**: a `RELEASE` is catalogued only when something references it — the same restraint as the `STEP` promotion rule (§7.20; §1) — so importing a vendor's entire version history is never required or implied; only the releases a claim or obligation actually needs to distinguish are ever materialised. Implementation layer (`05_implementation/`) matches its grain: it is a state of the thing being changed, not the change itself (`CHANGE`) or the work that produces it (`ACTION`).
 - **`NODE` and `TECHNOLOGY_SERVICE` are `standalone`, as first-class infrastructure elements.** Infrastructure nodes and the platform services they expose are shared references: many applications may consume the same `TECHNOLOGY_SERVICE`, and many nodes may co-host it. Making them standalone catalogue elements lets the application layer reference `TECHNOLOGY_SERVICE-…` IDs without repeating connectivity details, and lets the infrastructure team manage node lifecycle independently of the applications built on top. They belong in `04_technology/` (ArchiMate Technology layer) — distinct from `03_application/` (software) and `02_business/` (organisational behaviour). The `hosts` and `uses` relation kinds ([elements/17-relations.md](elements/17-relations.md) §3) are the cross-layer links.
 - **`EQUIPMENT` / `INFORMATION_ENTITY` are `view-defined` (document-local).** [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §4 and [views/13](./views/diagrams/13-process-blueprint.md) §5.3 already state these are blueprint-scoped with no organisation-wide catalogue mandated in v1 — "the IDs already conform to the canonical grammar and can be promoted … without renaming." This document leaves that decision unchanged.
 
@@ -253,7 +256,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
-| `05_implementation/` | Implementation & Migration | `ACTION` (`actions/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2) |
+| `05_implementation/` | Implementation & Migration | `ACTION` (`actions/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2), `RELEASE` (`releases/` — §7.29) |
 
 ### 6.1 New layer — `05_implementation`
 
@@ -1027,6 +1030,52 @@ No view inline shape: `NEED` is standalone-only, like `ASSESSMENT` and `RISK` �
 
 Before `NEED` existed, there was no anchor for the claim that a delivered thing satisfies a stakeholder/user need — `VERIFICATION.verifies` has only ever resolved to `REQUIREMENT` ([elements/27-verification.md](elements/27-verification.md) §1), which checks a design-input obligation, not the upstream need that motivated it. `NEED` closes that gap together with a dedicated **`VALIDATION`** claim type ([elements/28-validation.md](elements/28-validation.md)) — the validation-domain counterpart to `VERIFICATION`, structured the same way but anchored on `NEED` instead of `REQUIREMENT`, and using a validation-appropriate method vocabulary (user acceptance / field trial / stakeholder review / usability study) instead of `VERIFICATION`'s engineering methods (test / analysis / inspection / demonstration). See [CONTRACT.md](CONTRACT.md) §8 for the trade-off argued against widening `VERIFICATION.verifies` instead.
 
+### 7.29 `RELEASE` — `05_implementation/releases/`
+
+A `RELEASE` is a dated/versioned **state of a modelled subject** — one shipped version of a `PRODUCT` or `APPLICATION`. It exists as the foundation for an obligation or a compliance claim to name *which release* it concerns, instead of binding to the subject as a whole — obligations and claims attach to a release, not to a whole subject, because a claim can be true of one release and false of the next. This element TYPE is the foundation only; the obligation side (a `required_for` relation, `REQUIREMENT` → `RELEASE`) and the claim side (`ASSERTION`/`VERIFICATION` release qualifiers) are separate, dependent tasks that reference `RELEASE` as a valid endpoint once it exists — neither is defined by this section. **Not to be confused with a release of the methodology itself** — [CONTRACT.md](CONTRACT.md) §10 covers that, entirely unrelated schema and policy. There is no ArchiMate counterpart for `RELEASE` (vocabulary rule, 2026-07-30 decision, same basis as `RISK`/`METRIC` — §7.26/§7.27).
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `notation` | yes | string | Fixed value `release`. |
+| `of` | **yes** | string | `PRODUCT-…` or `APPLICATION-…` — the subject this is a release of. No other TYPE is a valid entry. |
+| `version` | **yes** | string | An opaque label (`"2.4.0"`, `"2026.07-hotfix1"`, whatever the subject's own versioning scheme uses). **Never parsed, compared, or sorted anywhere in shipped code** — order between releases of the same subject is expressed exclusively by `predecessor`, never inferred from this string. |
+| `predecessor` | no | string | `RELEASE-…` — the prior release of the *same* subject this one succeeds. Same-TYPE, inline, timeless — the same shape as `CHANGE.parent` (§7.3) and `LOCATION.parent` (§7.22). The only expression of version order; a subject's release history is a chain (or, where a vendor branches maintenance lines, more than one chain) reconstructed by following `predecessor` links, never by comparing `version` strings. |
+| `released_at` | no | string | Date this release shipped — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Distinct from `valid_from`/`valid_to` (§3), which record the *element record's* canon lifecycle, not the shipped subject's own release date. |
+| `description` | recommended | string | One-paragraph elaboration — what changed in this release, if worth recording beyond what `predecessor` and the attached claims already say. |
+
+**No list of its own contents.** A `RELEASE` does not enumerate what it contains — no `requirements[]`, no `changes[]`. Composition (which obligations apply to it, which claims target it) is derived by querying `REQUIREMENT.required_for` and the `ASSERTION`/`VERIFICATION` release qualifiers for this release's id, never stored on the `RELEASE` element itself — the same "derive, don't duplicate" discipline as `CHANGE`'s impact set (§7.3.1).
+
+**Authoring rule — catalogued only when referenced.** A `RELEASE` is not created preemptively for every version a vendor or a team has ever shipped. It is admitted to canon only once something needs to distinguish it — a `required_for` obligation that applies from a specific release onward, or an `ASSERTION`/`VERIFICATION` whose outcome differs by release. This mirrors the `STEP` promotion rule's restraint (§7.20, [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §1) without being the same mechanic: `STEP` is inline-then-promoted (it has a containing `PROCESS` to live in before promotion); `RELEASE` has no such containing document — it is always authored directly as a standalone file, just sparingly, so a subject's full vendor version history is never implied to belong in the catalogue as inert entries.
+
+```yaml
+# canon/elements/05_implementation/releases/RELEASE-PAYMENTS-GATEWAY-2.yaml
+notation: release
+id: RELEASE-PAYMENTS-GATEWAY-2
+name: "Payments Gateway 2.4.0"
+description: >
+  Adds the failover routing path required by the tightened payment
+  availability obligation; the first release able to satisfy it.
+
+of: APPLICATION-PAYMENTS-GATEWAY-1
+version: "2.4.0"
+predecessor: RELEASE-PAYMENTS-GATEWAY-1
+released_at: "2026-07-15"
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-07-15"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-07-15"
+valid_to: null
+```
+
+No view inline shape: `RELEASE` is standalone-only, like `RISK` and `NEED` — it is not authored inline inside any view document.
 
 ---
 
@@ -1086,6 +1135,11 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `RISK-003` | error | `threatens` is empty, or an entry does not resolve to an admitted element in canon. |
 | `RISK-004` | error | A `treated_by` entry does not resolve, or does not resolve to a `REQUIREMENT` or `CONSTRAINT` in canon. |
 | `RISK-COVERAGE-001` | warning | A `RISK` has an empty or absent `treated_by` — an untreated risk, the RISK-side analogue of `REQ-COVERAGE-001` ([CONTRACT.md](CONTRACT.md) §8). Unlike that cross-cutting rule, this check reads only the `RISK` element's own field — no catalogue scan required. |
+| `RELEASE-001` | error | A `RELEASE` element is missing `id`, `name`, `of`, or `version`, or any required envelope field; or `id` does not match `RELEASE-[<middle>-]<INTEGER>`. |
+| `RELEASE-002` | error | `of` does not resolve to an admitted `PRODUCT` or `APPLICATION` in canon. |
+| `RELEASE-003` | error | `predecessor` is present but resolves to a `RELEASE` whose `of` differs from this element's own `of` — a predecessor chain must stay within one subject's release history. |
+| `RELEASE-004` | error / warning | `predecessor` names this same element's own `id` — a self-reference (`error`; single-file, no catalogue scan needed). Otherwise, following `predecessor` links from this `RELEASE` (or from any `RELEASE` of the same `of`) revisits an id already seen — a cycle in the chain (`warning`; cross-cutting, requires walking the full release history for the subject). |
+| `RELEASE-005` | error | Two admitted `RELEASE` elements share the same `of` and the same `version` string (exact match — `version` is never parsed or normalised before comparison). |
 
 ---
 
