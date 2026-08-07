@@ -34,11 +34,26 @@
 // document order (§2: "Numbers are assigned at render time in document
 // order" — the two forms are not distinguished). `collectFigureNumbers()`
 // below counts both node types in its single ahead-of-render walk.
-
+//
+// Derivation share (§5) is accumulated in the same single render pass as
+// everything above — no extra AST walk. `text` nodes contribute to
+// `manualWords` (minus headings/table rows, derivation-share.mjs's own
+// concern), `inline`/`field-ref` contribute to `derivedWords`, and
+// `figure`/`view` contribute to the separate illustrations count (`view`
+// only adds to `illustrationsFromModel` when it actually renders SVG from
+// its source — a `figure` never does, by definition). Printed as two lines
+// appended to the `review` profile's own HTML only — `clean` prints no
+// counters, per §4.
 import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
 import { isValidId } from './ids.mjs';
+import {
+  manualWordCount,
+  derivedWordCount,
+  formatDerivationShare,
+  formatIllustrationsLine,
+} from './derivation-share.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
 
@@ -140,11 +155,13 @@ async function renderNodes(nodes, evaluator, ctx, out) {
 async function renderNode(node, evaluator, ctx, out) {
   switch (node.type) {
     case 'text':
+      out.manualWords += manualWordCount(node.value);
       out.html.push(escapeHtml(node.value));
       return;
 
     case 'inline': {
       const result = await evaluator.evaluateFieldPath(node.id, node.fields, ctx);
+      out.derivedWords += derivedWordCount(result.content);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
       if (result.state !== 'ok') out.failedStates.push(result.state);
       return;
@@ -159,6 +176,7 @@ async function renderNode(node, evaluator, ctx, out) {
         return;
       }
       const result = await evaluator.evaluateFieldPath(ctx.currentRowId, node.fields, ctx);
+      out.derivedWords += derivedWordCount(result.content);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
       if (result.state !== 'ok') out.failedStates.push(result.state);
       return;
@@ -180,6 +198,7 @@ async function renderNode(node, evaluator, ctx, out) {
     }
 
     case 'view': {
+      out.illustrationsTotal += 1;
       out.figureCounter += 1;
       const number = out.figureCounter;
       const label = `Figure ${number}`;
@@ -204,6 +223,7 @@ async function renderNode(node, evaluator, ctx, out) {
         }
       }
       const failedToRender = !exists || svg === null;
+      if (!failedToRender) out.illustrationsFromModel += 1;
       if (failedToRender) out.failedStates.push('unresolved');
       else if (suspect) out.failedStates.push('suspect');
       if (ctx.profile === 'clean') {
@@ -218,6 +238,7 @@ async function renderNode(node, evaluator, ctx, out) {
     }
 
     case 'figure': {
+      out.illustrationsTotal += 1;
       out.figureCounter += 1;
       const number = out.figureCounter;
       const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
@@ -261,12 +282,18 @@ async function renderNode(node, evaluator, ctx, out) {
 // containing the skeleton file — resolves a `figure`'s relative image path;
 // omit it only when every `figure` path in the AST is already absolute (as
 // unit-test fixtures typically are). Returns:
-//   html         — the rendered document body (no page chrome — §7's layout
-//                  is a later layer)
-//   failed       — true iff `profile === 'clean'` and a state in `failOn`
-//                  occurred anywhere in the render
-//   counts       — { [state]: number } — how many spans landed in each §3
-//                  state, across the whole render
+//   html            — the rendered document body (no page chrome — §7's
+//                     layout is a later layer); in `review` profile, ends
+//                     with the §5 derivation-share and illustrations lines
+//   failed          — true iff `profile === 'clean'` and a state in `failOn`
+//                     occurred anywhere in the render
+//   counts          — { [state]: number } — how many spans landed in each
+//                     §3 state, across the whole render
+//   derivationShare — { derivedWords, manualWords } — §5's word counts,
+//                     always returned (even in `clean`) for a caller that
+//                     wants the numbers without the printed line
+//   illustrations   — { fromModel, total } — §5's illustrations line, same
+//                     always-returned posture
 export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, skeletonDir } = {}) {
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
@@ -274,9 +301,28 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   const figureState = { count: 0, numbers: new Map() };
   await collectFigureNumbers(ast, evaluator, { profile, renderDate, skeletonDir }, figureState);
 
-  const out = { html: [], counts: {}, failedStates: [], figureCounter: 0 };
+  const out = {
+    html: [],
+    counts: {},
+    failedStates: [],
+    figureCounter: 0,
+    derivedWords: 0,
+    manualWords: 0,
+    illustrationsTotal: 0,
+    illustrationsFromModel: 0,
+  };
   await renderNodes(ast, evaluator, { profile, renderDate, skeletonDir, figureNumbers: figureState.numbers }, out);
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
-  return { html: out.html.join(''), failed, counts: out.counts };
+
+  const derivationShare = { derivedWords: out.derivedWords, manualWords: out.manualWords };
+  const illustrations = { fromModel: out.illustrationsFromModel, total: out.illustrationsTotal };
+
+  // §5: printed in `review` only — `clean` carries no counters (§4).
+  if (profile === 'review') {
+    out.html.push(`<div class="dv-derivation-share">${escapeHtml(formatDerivationShare(out.derivedWords, out.manualWords))}</div>`);
+    out.html.push(`<div class="dv-illustrations">${escapeHtml(formatIllustrationsLine(out.illustrationsFromModel, out.illustrationsTotal))}</div>`);
+  }
+
+  return { html: out.html.join(''), failed, counts: out.counts, derivationShare, illustrations };
 }

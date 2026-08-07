@@ -8,19 +8,20 @@ their own repository.
 
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
-rendering, the `trace` coverage matrix, and `view` rendering for the `blocks`
-notation.** `parseSkeleton()` turns a skeleton file's text into a header object and a
-body AST. `resolveReference()` / `createResolver()` classify an id against canon into
-one of the four states below. `createEvaluator()` resolves `{{ ID.field }}`
-traversal, `{{# each ... }}` selection, and `{{ trace ... }}` coverage matrices
-against canon. `renderDocument()` walks the AST through an evaluator and emits HTML
-in the `review` or `clean` profile, including numbered, bordered `figure` and `view`
-illustrations, the `figref` references that point at them, and the `trace` matrix as
-an HTML table. `view` renders a `blocks` notation (nested-form) source file as inline
-SVG at render time (`src/blocks-view.mjs`); any other notation, or the `blocks`
-notation's `grid:` (matrix-subset) root, renders as a missing/failed illustration —
-those are later slices on this epic. Not yet built: derivation share (§5), telemetry
-(§6), and PDF output (§7) — later layers on top of these.
+rendering, the `trace` coverage matrix, `view` rendering for the `blocks`
+notation, and derivation share (§5).** `parseSkeleton()` turns a skeleton file's text
+into a header object and a body AST. `resolveReference()` / `createResolver()`
+classify an id against canon into one of the four states below. `createEvaluator()`
+resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
+`{{ trace ... }}` coverage matrices against canon. `renderDocument()` walks the AST
+through an evaluator and emits HTML in the `review` or `clean` profile, including
+numbered, bordered `figure` and `view` illustrations, the `figref` references that
+point at them, the `trace` matrix as an HTML table, and — in `review` only — the §5
+derivation-share and illustrations lines. `view` renders a `blocks` notation
+(nested-form) source file as inline SVG at render time (`src/blocks-view.mjs`); any
+other notation, or the `blocks` notation's `grid:` (matrix-subset) root, renders as a
+missing/failed illustration — those are later slices on this epic. Not yet built:
+telemetry (§6) and PDF output (§7) — later layers on top of these.
 
 ## Skeleton file shape
 
@@ -179,6 +180,34 @@ is never resolved. Border classes, per §4's illustration provenance rule:
 on the wrapping `<figure>` — a hook for the print layout (§7, not built yet), not yet
 acted on by this module.
 
+## Derivation share (§5)
+
+`renderDocument()` accumulates §5's word counts in the same render pass as
+everything above — no extra AST walk. A `text` node's content counts toward
+`manualWords`, minus its own structural lines (an ATX heading, a markdown table
+row — `src/derivation-share.mjs`'s own concern; a `figure`/`view` caption is never
+part of a `text` node's content in the first place, so it's excluded by
+construction). An `inline`/`field-ref` node's resolved content counts toward
+`derivedWords`, regardless of its §3 state — an unresolved reference's `null`
+content simply counts zero words. Illustrations are **never folded into the word
+ratio** (§5: "a diagram is not worth some number of words") — counted on their own
+line instead: `total` is every `figure`/`view` node in the document, `fromModel` is
+only the `view`s that actually rendered SVG from their source (a `figure` is manual
+by definition and never counts toward it).
+
+```js
+const { html, derivationShare, illustrations } = await renderDocument(ast, evaluator, { profile: 'review' });
+// derivationShare → { derivedWords, manualWords }
+// illustrations   → { fromModel, total }
+```
+
+Both are always returned, in either profile, for a caller that wants the numbers
+without the printed line. The printed lines themselves — `<div class="dv-derivation-share">Derivation share: NN% (X of Y words)</div>` and
+`<div class="dv-illustrations">Illustrations — N of M rendered from the model</div>`
+— are appended to the rendered HTML **in `review` only**; `clean` prints no
+counters (§4). An empty document (no counted content at all) prints `n/a` rather
+than a `0%` that would misleadingly claim a share.
+
 ## Tests
 
 ```
@@ -187,4 +216,5 @@ node packages/document-view-engine/tests/test_resolve_references.mjs
 node packages/document-view-engine/tests/test_evaluate.mjs
 node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
+node packages/document-view-engine/tests/test_derivation_share.mjs
 ```
