@@ -1,0 +1,50 @@
+name: document-renderer test
+
+# Unit tests for @transitrix/document-renderer — the `.ttrs` document-template
+# parser and its pass 1 deterministic resolver. Deterministic, no API key and no
+# model: pass 1 runs with no agent present by design, so the whole suite is a
+# plain Node run.
+#
+# The pass-1 suite renders the committed worked template
+# (packages/document-renderer/tests/fixtures/product.mrd.ttrs) end-to-end against
+# its fixture repository, and covers the no-repository cases, the named failures,
+# and re-run byte-stability.
+#
+# The conformance suite diffs that render against the frozen
+# fixtures/product.mrd.expected.md — this package is the reference
+# implementation of notations/views/documents/DIRECTIVE_LANGUAGE.md, and the
+# frozen output is what an independent implementation checks itself against. It
+# never regenerates the fixture; a failure is a regression or a deliberate,
+# separately reviewed re-freeze.
+
+on:
+  pull_request:
+    paths:
+      - 'packages/document-renderer/**'
+      - 'notations/CONTRACT.md'
+      - '.github/workflows/document-renderer-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 10:30 UTC — weekly safety net, offset from the other Monday crons.
+    - cron: '30 10 * * 1'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run template-parser tests
+        run: node packages/document-renderer/tests/test_parse_template.mjs
+
+      - name: Run pass-1 resolver tests
+        run: node packages/document-renderer/tests/test_pass1.mjs
+
+      - name: Run conformance tests (frozen fixture)
+        run: node packages/document-renderer/tests/test_conformance.mjs

@@ -16,9 +16,33 @@
 //       value matches its file extension.
 //   L1  links — every relative Markdown link in notations/**/*.md resolves to
 //       an existing file (anchors and external URLs are skipped).
+//   T1  document sources — every `.ttrs` file is named <basename>.<kind>.ttrs,
+//       and no file ends `.trs` (the near-miss: one keystroke away, a different
+//       widely used format). Reported in words, not as an unknown-file error.
 //   V1  version — every concrete `methodology_version:` pin in the repo equals
 //       the single source of truth (notations/CURRENT_VERSION.yaml,
 //       per CONTRACT.md §10), except explicitly allowlisted placeholders.
+//   VOC1 vocabulary — every live element TYPE in notations/vocabulary.yaml's
+//       `element_types` has exactly one matching row in ELEMENT_PRIMITIVES.md
+//       §4 (same mode/layer/folder), and vice versa. A deprecated alias
+//       carries no row of its own in §4 (matching FACTOR/ACTIVITY precedent)
+//       and is excluded from the comparison. Fails closed: a missing or
+//       unparseable artefact is a failure, not a skip.
+//   VOC2 vocabulary — every live relation kind in notations/vocabulary.yaml's
+//       `relation_types` has exactly one matching row in elements/17-relations.md
+//       §3 (same endpoint TYPE sets, same ACTOR subtype narrowing where either
+//       side names one), and vice versa. A deprecated alias carries no row of
+//       its own (matching activity_goal precedent) and is excluded from the
+//       comparison. Fails closed: a missing or unparseable artefact is a
+//       failure, not a skip.
+//   VOC3 vocabulary — every value_vocabularies entry in notations/vocabulary.yaml
+//       with a non-null `spec` has every one of its values appear somewhere in
+//       that spec as (part of) a code span; an entry that also names a `rule`
+//       has that rule's row in the same spec cross-checked so the row's own
+//       enumerated values match `values` exactly. An entry with `spec: null`
+//       (a pipeline-internal set with no owning spec) is not checked. Fails
+//       closed: a missing or unparseable artefact, or a named rule with no
+//       matching row, is a failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -37,6 +61,9 @@ const EXAMPLES_DIR = join(REPO_ROOT, 'notations', 'examples');
 const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
 const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
+const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
+const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES.md');
+const RELATIONS_SPEC_PATH = join(REPO_ROOT, 'notations', 'elements', '17-relations.md');
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
@@ -450,6 +477,520 @@ async function checkPackageEnvelopeStatements(failures) {
   }
 }
 
+// --- VOC1: vocabulary.yaml element_types vs ELEMENT_PRIMITIVES.md §4 -------
+//
+// notations/vocabulary.yaml is the source of truth (packages/ingest-cli/src/
+// placement.mjs derives its PLACEMENT table from it); ELEMENT_PRIMITIVES.md §4
+// is the prose description of the same registry. This check keeps the two
+// from drifting apart unnoticed — it does not regenerate either side.
+//
+// Deliberately narrow parsers (not a general YAML/Markdown reader), matching
+// exactly the shapes these two files use — the same trade-off documented in
+// packages/ingest-cli/src/vocabulary.mjs.
+
+const LAYER_WORD_TO_FOLDER = {
+  motivation: '01_motivation',
+  business: '02_business',
+  application: '03_application',
+  technology: '04_technology',
+  implementation: '05_implementation',
+};
+
+// Pure — no I/O. Parses the `element_types:` block of vocabulary.yaml into
+// Map<TYPE, {mode, layer, folder}>, live entries only (deprecated aliases live
+// in a separate `deprecated_element_types:` block and are not returned here).
+// Throws on a block that isn't found or doesn't parse — a corrupted or
+// missing artefact must fail this check, never pass silently.
+export function parseVocabularyElementTypes(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^element_types:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "element_types:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const typeM = line.match(/^  ([A-Z][A-Z0-9_]*):\s*$/);
+    if (typeM) {
+      current = { mode: null, layer: null, folder: null };
+      out.set(typeM[1], current);
+      continue;
+    }
+    if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
+    const fieldM = line.match(/^    (mode|layer|folder|promotable):\s*(.+?)\s*$/);
+    if (fieldM && current) {
+      const [, key, rawVal] = fieldM;
+      if (key === 'mode' || key === 'layer' || key === 'folder') current[key] = rawVal;
+      continue;
+    }
+    // Any other shape inside the block (a nested comment mid-entry aside) is
+    // tolerated only if blank/comment; anything else is a parse failure.
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in element_types block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: element_types block parsed empty');
+  return out;
+}
+
+// Pure — no I/O. Parses ELEMENT_PRIMITIVES.md §4's mode table into
+// Map<TYPE, {mode, layer, folder}> — `layer` normalised to its NN_layer form
+// so it compares directly against vocabulary.yaml's `layer` field.
+export function parseElementPrimitivesTable(text) {
+  const headingIdx = text.indexOf('\n## 4. Materialisation decision per TYPE');
+  if (headingIdx < 0) throw new Error('ELEMENT_PRIMITIVES.md: "## 4. Materialisation decision per TYPE" not found');
+  const nextHeadingIdx = text.indexOf('\n## 5.', headingIdx);
+  const section = nextHeadingIdx > 0 ? text.slice(headingIdx, nextHeadingIdx) : text.slice(headingIdx);
+
+  const out = new Map();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| `')) continue; // only TYPE data rows (header/separator rows don't start with a backtick)
+    const cells = line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+    if (cells.length < 5) continue;
+    const typeM = cells[0].match(/^`([A-Z][A-Z0-9_]*)`$/);
+    if (!typeM) continue;
+    const modeM = cells[1].match(/^(standalone|view-defined|contained)/);
+    if (!modeM) throw new Error(`ELEMENT_PRIMITIVES.md §4: row for ${typeM[1]} has no recognisable mode in "${cells[1]}"`);
+    const layerWord = cells[3].trim();
+    const layer = LAYER_WORD_TO_FOLDER[layerWord] || layerWord;
+    const folderM = cells[4].match(/`([^`]+)`/);
+    const folder = folderM ? folderM[1] : cells[4];
+    out.set(typeM[1], { mode: modeM[1], layer, folder });
+  }
+  if (out.size === 0) throw new Error('ELEMENT_PRIMITIVES.md §4: table parsed empty');
+  return out;
+}
+
+async function checkVocabularyElementTypes(failures) {
+  let vocText, primitivesText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC1', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+  try {
+    primitivesText = await readFile(ELEMENT_PRIMITIVES_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC1', message: `${relPosix(ELEMENT_PRIMITIVES_PATH)}: not found.` });
+    return;
+  }
+
+  let voc, table;
+  try {
+    voc = parseVocabularyElementTypes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC1', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+  try {
+    table = parseElementPrimitivesTable(primitivesText);
+  } catch (e) {
+    failures.push({ check: 'VOC1', message: `${relPosix(ELEMENT_PRIMITIVES_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const allTypes = new Set([...voc.keys(), ...table.keys()]);
+  for (const type of allTypes) {
+    const v = voc.get(type);
+    const t = table.get(type);
+    if (!v) {
+      failures.push({ check: 'VOC1', message: `${type} has a row in ELEMENT_PRIMITIVES.md §4 but no entry in notations/vocabulary.yaml element_types.` });
+      continue;
+    }
+    if (!t) {
+      failures.push({ check: 'VOC1', message: `${type} is in notations/vocabulary.yaml element_types but has no row in ELEMENT_PRIMITIVES.md §4.` });
+      continue;
+    }
+    for (const field of ['mode', 'layer', 'folder']) {
+      if (v[field] !== t[field]) {
+        failures.push({
+          check: 'VOC1',
+          message: `${type}.${field}: vocabulary.yaml says "${v[field]}", ELEMENT_PRIMITIVES.md §4 says "${t[field]}".`,
+        });
+      }
+    }
+  }
+}
+
+// --- VOC2: vocabulary.yaml relation_types vs elements/17-relations.md §3 ---
+//
+// Same shape as VOC1, one layer over: notations/vocabulary.yaml is the source
+// of truth; elements/17-relations.md §3 is the prose enum table. This check
+// keeps the two from drifting apart unnoticed — it does not regenerate either
+// side. Deliberately narrow parsers matching exactly the shapes these two
+// files use, same trade-off as VOC1 and packages/ingest-cli/src/vocabulary.mjs.
+
+// Pure — no I/O. Parses the `relation_types:` block of vocabulary.yaml into
+// Map<kind, {from, fromSubtype, to, toSubtype}> — `from`/`to` are TYPE-name
+// arrays, `fromSubtype`/`toSubtype` are ACTOR `type` value arrays or `null`
+// when unrestricted. Live entries only (`deprecated_relation_types:` is a
+// separate block, not returned). Throws on a block that isn't found or
+// doesn't parse.
+export function parseVocabularyRelationTypes(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^relation_types:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "relation_types:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const kindM = line.match(/^  ([a-z][a-z0-9_]*):\s*$/);
+    if (kindM) {
+      current = { from: null, fromSubtype: null, to: null, toSubtype: null };
+      out.set(kindM[1], current);
+      continue;
+    }
+    if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
+    const fieldM = line.match(/^    (from|to|from_subtype|to_subtype):\s*\[([^\]]*)\]\s*$/);
+    if (fieldM && current) {
+      const [, key, rawList] = fieldM;
+      const values = rawList.split(',').map(v => v.trim()).filter(Boolean);
+      const camelKey = key === 'from' ? 'from' : key === 'to' ? 'to' : key === 'from_subtype' ? 'fromSubtype' : 'toSubtype';
+      current[camelKey] = values;
+      continue;
+    }
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in relation_types block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: relation_types block parsed empty');
+  return out;
+}
+
+// Pure — no I/O. Parses one "Endpoint TYPEs" table cell — e.g.
+// "`ACTOR(business_unit)` or `ROLE` → `BUSINESS_SERVICE`" — into
+// {from: {types, actorSubtype}, to: {types, actorSubtype}}. Only the code
+// spans matter; the divider word ("or" / "\|") and any trailing plain-text
+// note (e.g. "(V/H sub-grammar applies)") are outside a code span and never
+// examined, so they are ignored rather than mis-parsed.
+function parseEndpointTypesCell(cell) {
+  const sides = cell.split('→');
+  if (sides.length !== 2) throw new Error(`unrecognised Endpoint TYPEs cell (no single "→"): "${cell}"`);
+  return { from: parseEndpointSide(sides[0]), to: parseEndpointSide(sides[1]) };
+}
+
+function parseEndpointSide(raw) {
+  const spans = [...raw.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  if (spans.length === 0) throw new Error(`unrecognised endpoint side (no code span): "${raw}"`);
+  const types = [];
+  let actorSubtype = null;
+  for (const span of spans) {
+    const m = span.match(/^([A-Z][A-Z0-9_]*)(?:\(([a-z_]+(?:\|[a-z_]+)*)\))?$/);
+    if (!m) throw new Error(`unrecognised endpoint type expression: "${span}"`);
+    const [, typeName, subtypeList] = m;
+    types.push(typeName);
+    if (subtypeList) {
+      if (typeName !== 'ACTOR') throw new Error(`unexpected subtype qualifier on non-ACTOR type: "${span}"`);
+      actorSubtype = subtypeList.split('|');
+    }
+  }
+  return { types, actorSubtype };
+}
+
+// Pure — no I/O. Parses elements/17-relations.md §3's relation `type` enum
+// table into Map<kind, {from: {types, actorSubtype}, to: {types, actorSubtype}}>.
+export function parseRelationsEnumTable(text) {
+  const headingIdx = text.indexOf('\n## 3. Relation `type` enum');
+  if (headingIdx < 0) throw new Error('17-relations.md: "## 3. Relation `type` enum" not found');
+  let nextHeadingIdx = text.indexOf('\n### 3.1', headingIdx);
+  if (nextHeadingIdx < 0) nextHeadingIdx = text.indexOf('\n## 4.', headingIdx);
+  const section = nextHeadingIdx > 0 ? text.slice(headingIdx, nextHeadingIdx) : text.slice(headingIdx);
+
+  const out = new Map();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| `')) continue; // only kind data rows (header/separator rows don't start with a backtick)
+    // A GFM table escapes a literal "|" inside a cell as "\|" — split only on
+    // unescaped pipes, then unescape within each cell (this table's Endpoint
+    // TYPEs column carries both a subtype alternation and a multi-TYPE list
+    // this way, e.g. "ACTOR(person\|business_unit)" and "`GOAL` \| `ACTION`").
+    const cells = line.split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|')).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+    if (cells.length < 3) continue;
+    const kindM = cells[0].match(/^`([a-z][a-z0-9_]*)`$/);
+    if (!kindM || kindM[1] === 'type') continue; // 'type' is the header row's code-styled label, not a kind
+    out.set(kindM[1], parseEndpointTypesCell(cells[2]));
+  }
+  if (out.size === 0) throw new Error('17-relations.md §3: table parsed empty');
+  return out;
+}
+
+function sameSet(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  return sa.every((v, i) => v === sb[i]);
+}
+
+async function checkVocabularyRelationTypes(failures) {
+  let vocText, relationsText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC2', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+  try {
+    relationsText = await readFile(RELATIONS_SPEC_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC2', message: `${relPosix(RELATIONS_SPEC_PATH)}: not found.` });
+    return;
+  }
+
+  let voc, table;
+  try {
+    voc = parseVocabularyRelationTypes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC2', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+  try {
+    table = parseRelationsEnumTable(relationsText);
+  } catch (e) {
+    failures.push({ check: 'VOC2', message: `${relPosix(RELATIONS_SPEC_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const allKinds = new Set([...voc.keys(), ...table.keys()]);
+  for (const kind of allKinds) {
+    const v = voc.get(kind);
+    const t = table.get(kind);
+    if (!v) {
+      failures.push({ check: 'VOC2', message: `${kind} has a row in 17-relations.md §3 but no entry in notations/vocabulary.yaml relation_types.` });
+      continue;
+    }
+    if (!t) {
+      failures.push({ check: 'VOC2', message: `${kind} is in notations/vocabulary.yaml relation_types but has no row in 17-relations.md §3.` });
+      continue;
+    }
+    if (!sameSet(v.from, t.from.types)) {
+      failures.push({ check: 'VOC2', message: `${kind}.from: vocabulary.yaml says [${(v.from || []).join(', ')}], 17-relations.md §3 says [${t.from.types.join(', ')}].` });
+    }
+    if (!sameSet(v.to, t.to.types)) {
+      failures.push({ check: 'VOC2', message: `${kind}.to: vocabulary.yaml says [${(v.to || []).join(', ')}], 17-relations.md §3 says [${t.to.types.join(', ')}].` });
+    }
+    if (!sameSet(v.fromSubtype, t.from.actorSubtype)) {
+      failures.push({ check: 'VOC2', message: `${kind}.from_subtype: vocabulary.yaml says ${v.fromSubtype ? `[${v.fromSubtype.join(', ')}]` : 'unrestricted'}, 17-relations.md §3 says ${t.from.actorSubtype ? `[${t.from.actorSubtype.join(', ')}]` : 'unrestricted'}.` });
+    }
+    if (!sameSet(v.toSubtype, t.to.actorSubtype)) {
+      failures.push({ check: 'VOC2', message: `${kind}.to_subtype: vocabulary.yaml says ${v.toSubtype ? `[${v.toSubtype.join(', ')}]` : 'unrestricted'}, 17-relations.md §3 says ${t.to.actorSubtype ? `[${t.to.actorSubtype.join(', ')}]` : 'unrestricted'}.` });
+    }
+  }
+}
+
+// --- VOC3: vocabulary.yaml value_vocabularies vs their owning specs --------
+//
+// Same source-of-truth direction as VOC1/VOC2: notations/vocabulary.yaml is
+// authored correctly, and this check keeps a spec's prose from drifting away
+// from it unnoticed — it does not regenerate either side. Deliberately narrow
+// parsers matching exactly the shapes these files use, same trade-off as
+// VOC1/VOC2.
+//
+// A spec states a closed enum in one of a few code-span shapes this repo
+// actually uses: a single span with pipe-separated values
+// ("`a \| b \| c`" in a table cell, "`a | b | c`" in prose), a single span
+// with a brace-set ("`{A, B, C}`"), or several single-value spans divided by
+// plain text ("`a`, `b`, `c`" or "`a` / `b` / `c`"). decomposeSpan()
+// normalises all of them to a flat value list.
+
+// Pure. Splits one backtick span's inner text into its member values —
+// a brace-set ("{A, B, C}") or a pipe list ("a \| b" / "a | b") decompose to
+// several values; anything else is already exactly one value.
+export function decomposeSpan(raw) {
+  const s = raw.trim();
+  if (s.startsWith('{') && s.endsWith('}')) {
+    return s.slice(1, -1).split(',').map(v => v.trim()).filter(Boolean);
+  }
+  if (s.includes('|')) {
+    return s.replace(/\\\|/g, '|').split('|').map(v => v.trim()).filter(Boolean);
+  }
+  return [s];
+}
+
+// Pure. Every backtick code span in `text`, decomposed and flattened — used
+// to build the "does this value appear anywhere in the spec" candidate set.
+// Fenced code blocks are stripped first so a ``` ... ``` region (whose odd
+// number of backticks would otherwise pair unpredictably with prose backticks
+// around it) can never be misread as spanning into surrounding text.
+function allSpanValues(text) {
+  const stripped = text.replace(/```[\s\S]*?```/g, '');
+  const spans = [...stripped.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  return new Set(spans.flatMap(decomposeSpan));
+}
+
+// Pure — no I/O. Parses the `value_vocabularies:` block of vocabulary.yaml
+// into Map<key, {values, spec, rule}> — `spec` and `rule` are `null` when the
+// artefact says so. Throws on a block that isn't found or doesn't parse.
+export function parseVocabularyValueVocabularies(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^value_vocabularies:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "value_vocabularies:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const keyM = line.match(/^  ([A-Za-z][A-Za-z0-9_.]*):\s*$/);
+    if (keyM) {
+      current = { values: null, spec: null, rule: null };
+      out.set(keyM[1], current);
+      continue;
+    }
+    if (/^\s*$/.test(line)) continue; // blank
+    const valuesM = line.match(/^    values:\s*\[([^\]]*)\]\s*$/);
+    if (valuesM && current) {
+      current.values = valuesM[1].split(',').map(v => v.trim()).filter(Boolean);
+      continue;
+    }
+    const specM = line.match(/^    spec:\s*(\S+)\s*$/);
+    if (specM && current) {
+      current.spec = specM[1] === 'null' ? null : specM[1];
+      continue;
+    }
+    const ruleM = line.match(/^    rule:\s*(\S+)\s*$/);
+    if (ruleM && current) {
+      current.rule = ruleM[1] === 'null' ? null : ruleM[1];
+      continue;
+    }
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in value_vocabularies block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: value_vocabularies block parsed empty');
+  return out;
+}
+
+// Pure. Finds `code`'s row in a rule_codes-style table (`| \`CODE\` | severity
+// | message |`) and returns the decomposed value set the message's own
+// "not one of …" / "not in …" enumeration states — the same shape VOC1/VOC2
+// use for a spec's data rows, applied to whichever single row names this
+// rule. Returns null when the row isn't found; throws when the row is found
+// but names no recognisable enumeration (fails closed rather than silently
+// treating an unparseable row as agreement).
+export function parseRuleRowValues(specText, code) {
+  const re = new RegExp('^\\|\\s*`' + code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '`\\s*\\|.*\\|\\s*$', 'm');
+  const rowM = specText.match(re);
+  if (!rowM) return null;
+  const row = rowM[0];
+  const markerM = row.match(/not one of|not in/);
+  if (!markerM) {
+    throw new Error(`${code}: row found but names no "not one of" / "not in" enumeration to cross-check: "${row}"`);
+  }
+  const remainder = row.slice(markerM.index + markerM[0].length);
+  const spans = [...remainder.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  if (spans.length === 0) {
+    throw new Error(`${code}: row's enumeration has no code span to read values from: "${row}"`);
+  }
+  return new Set(spans.flatMap(decomposeSpan));
+}
+
+async function checkVocabularyValueVocabularies(failures) {
+  let vocText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC3', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+
+  let voc;
+  try {
+    voc = parseVocabularyValueVocabularies(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC3', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const specTextCache = new Map();
+  for (const [key, entry] of voc) {
+    if (entry.spec === null) continue; // pipeline-internal set — no owning spec to check
+
+    const specPath = join(REPO_ROOT, ...entry.spec.split('/'));
+    let specText = specTextCache.get(entry.spec);
+    if (specText === undefined) {
+      try {
+        specText = await readFile(specPath, 'utf8');
+      } catch {
+        specText = null;
+      }
+      specTextCache.set(entry.spec, specText);
+    }
+    if (specText === null) {
+      failures.push({ check: 'VOC3', message: `${key}: spec "${entry.spec}" not found.` });
+      continue;
+    }
+
+    const found = allSpanValues(specText);
+    for (const v of entry.values || []) {
+      if (!found.has(v)) {
+        failures.push({ check: 'VOC3', message: `${key}: value "${v}" does not appear anywhere in ${entry.spec} as a code span.` });
+      }
+    }
+
+    if (entry.rule) {
+      let ruleValues;
+      try {
+        ruleValues = parseRuleRowValues(specText, entry.rule);
+      } catch (e) {
+        failures.push({ check: 'VOC3', message: `${key}: ${e.message}` });
+        continue;
+      }
+      if (ruleValues === null) {
+        failures.push({ check: 'VOC3', message: `${key}: rule "${entry.rule}" has no matching row in ${entry.spec} to cross-check.` });
+        continue;
+      }
+      if (!sameSet([...ruleValues], entry.values)) {
+        failures.push({ check: 'VOC3', message: `${key}: vocabulary.yaml values [${(entry.values || []).join(', ')}] do not match ${entry.rule}'s row in ${entry.spec}, which states [${[...ruleValues].join(', ')}].` });
+      }
+    }
+  }
+}
+
+// T1: document-source file naming.
+//
+// `.trs` is one keystroke away from `.ttrs` and is a different, widely used
+// format. A file ending `.trs` where a document source is expected must be
+// reported as that near-miss in words — a bare "unknown file" would send the
+// author looking for the wrong problem (CONTRACT.md §3).
+//
+// Pure: takes the repo-relative paths, returns the findings. Exported for the
+// unit tests; the walk that feeds it lives in checkDocumentSources below.
+export function findDocumentSourceFailures(relPaths) {
+  const failures = [];
+  for (const rel of relPaths) {
+    const base = posix.basename(rel);
+
+    if (base.endsWith('.trs')) {
+      failures.push({
+        check: 'T1',
+        message: `${rel}: ends ".trs" — the document-source extension is ".ttrs" (".trs" is a different, widely used format, one keystroke away). Rename it, or move it out of the tree if it really is a .trs file.`,
+      });
+      continue;
+    }
+
+    if (!base.endsWith('.ttrs')) continue;
+
+    // `<basename>.<kind>.ttrs` — the middle segment is the document kind.
+    if (!/^[^.]+\.[a-z0-9-]+\.ttrs$/.test(base)) {
+      failures.push({
+        check: 'T1',
+        message: `${rel}: not named <basename>.<kind>.ttrs — the middle segment is the document kind (e.g. product.mrd.ttrs).`,
+      });
+    }
+  }
+  return failures;
+}
+
+async function checkDocumentSources(failures) {
+  const all = await walk(REPO_ROOT, null);
+  failures.push(...findDocumentSourceFailures(all.map(relPosix)));
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -463,6 +1004,10 @@ async function main() {
     await checkNotationCounts(failures);
     await checkNoStandardIdentifiers(failures);
     await checkPackageEnvelopeStatements(failures);
+    await checkVocabularyElementTypes(failures);
+    await checkVocabularyRelationTypes(failures);
+    await checkVocabularyValueVocabularies(failures);
+    await checkDocumentSources(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

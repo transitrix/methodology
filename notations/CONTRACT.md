@@ -69,6 +69,10 @@ Each notation has exactly one canonical file extension: `*.<short-name>.transitr
 
 No aliases are accepted: one notation has exactly one extension. The full per-notation mapping lives in [README.md](README.md).
 
+The canonical extension is `*.<short-name>.transitrix.yaml` **or** `*.<short-name>.ttrs`; which one a given notation takes is a property of that notation. A `.ttrs` document is prose with directives rather than a mapping, and its middle segment is the document kind (`product.mrd.ttrs`), so the extension/parent-folder rule applies to it unchanged. `.ttrs` replaces `*.<short-name>.transitrix.yaml` in full for the notation that takes it — it is never appended to it, and no notation carries both. "One notation, exactly one extension" is unchanged, and `HDR-003` continues to enforce it.
+
+The near-miss `.trs` is one keystroke away and is a different, widely used format. A file ending `.trs` where a document source is expected is reported as that near-miss by name, not as an unknown-file error.
+
 ---
 
 ## 4. Date format
@@ -876,7 +880,7 @@ Structural layout of a view document:
 ```yaml
 notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
-methodology_version: "3.1.0"  # manifest-pinned methodology version
+methodology_version: "3.2.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
@@ -957,7 +961,7 @@ views/
 ```yaml
 view_id: DGCA-RETAIL-1               # canonical ID of the view being captured
 generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
-methodology_version: "3.1.0"          # methodology version in use at generation time
+methodology_version: "3.2.0"          # methodology version in use at generation time
 # …notation-specific element list follows (format defined per notation spec)…
 ```
 

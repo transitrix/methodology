@@ -1,0 +1,7 @@
+notation: blocks
+name: Batch release context
+nested_blocks:
+  - id: BLOCK-1
+    name: Manufacturing
+  - id: BLOCK-2
+    name: Distribution

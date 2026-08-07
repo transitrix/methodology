@@ -12,34 +12,45 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isValidId, isValidType } from './ids.mjs';
 import { classifyCoverage } from './coverage.mjs';
+import { loadVocabulary, relationKinds, valueSet } from './vocabulary.mjs';
 
-const EXTRACTION_CONFIDENCE = new Set(['high', 'medium', 'low']);
-const ORIGIN_VALUES = new Set(['legislative', 'process-product', 'project-product']);
+// Every closed set below is DERIVED from notations/vocabulary.yaml — this file holds
+// no literal enum. Derived at module init, so a missing or corrupt artefact throws
+// here rather than leaving an empty set that would accept (or reject) everything.
 
-// Closed REL `type` enum — notations/elements/17-relations.md §3. The enum is closed
-// for a given methodology release; new kinds land as additive MINOR revisions. The CLI
-// tracks it (like ID_RE) so a rel_kind outside the enum is FLAGGED for review — never
-// silently emitted, never dropped. This completes the candidate contract: the bundle's
-// candidate.schema.json names "closed REL kinds" among what validation_flags covers.
-const CLOSED_REL_KINDS = new Set([
-  'parent', 'goal_parent', 'target_state_satisfies_goal', 'assessment_influences_goal',
-  'action_goal', 'activity_goal', // action_goal is canonical; activity_goal is deprecated alias (ACTION-005)
-  'unit_parent', 'employment', 'candidacy', 'alumni_membership',
-  'community_membership', 'contracting', 'stakeholding',
-  'depends_on', 'required_for',
-]);
+const EXTRACTION_CONFIDENCE = valueSet('candidate.extraction_confidence');
+const ORIGIN_VALUES = valueSet('REQUIREMENT.origin');
+const CANDIDATE_KINDS = valueSet('candidate.kind');
+
+// Closed REL `type` enum — vocabulary.yaml `relation_types` plus the deprecated
+// aliases under `deprecated_relation_types` (e.g. `activity_goal`, ACTION-005). The
+// enum is closed for a given methodology release; new kinds land as additive MINOR
+// revisions. The CLI tracks it (like ID_RE) so a rel_kind outside the enum is FLAGGED
+// for review — never silently emitted, never dropped. This completes the candidate
+// contract: the bundle's candidate.schema.json names "closed REL kinds" among what
+// validation_flags covers.
+const CLOSED_REL_KINDS = relationKinds();
 
 // ASSERTION contract — notations/elements/16-assertion.md §2/§3. `about` must reference
 // a REQUIREMENT (ASSERT-002 resolution is canon-side; the candidate stage checks the
 // grammar + TYPE prefix); `subject` TYPE is restricted (ASSERT-003); `status` is a
 // closed enum. Cross-document resolution (does `about` resolve to an admitted
 // REQUIREMENT) happens at the human admission gate, not here.
-const ASSERTION_STATUS = new Set(['compliant', 'partial', 'non_compliant', 'under_review', 'n_a']);
-const ASSERTION_SUBJECT_TYPES = new Set(['PRODUCT', 'PROCESS', 'CAPABILITY']);
+const ASSERTION_STATUS = valueSet('ASSERTION.status');
+const ASSERTION_SUBJECT_TYPES = valueSet('ASSERTION.subject_type');
 
-// Fields the candidate / entity shape already defines — a key under `extensions:` that
-// collides with one of these is probably a defined field relocated into the open bag to
-// dodge a rule (EXT-002, CONTRACT §12.1). `extensions:` is for SCHEMA-UNDEFINED fields.
+// Retired element TYPE names → { replaced_by, rule }. Accepted, warned on.
+const DEPRECATED_ELEMENT_TYPES = loadVocabulary().deprecated_element_types;
+
+// Rendered "a|b|c" for a message, so the wording cannot drift from the set either.
+const alt = set => [...set].join('|');
+
+// Fields the candidate / entity shape already defines. NOT a closed value vocabulary:
+// its source of truth is the bundle's candidate.schema.json (already machine-readable),
+// not a spec's enum table — so it stays here rather than in vocabulary.yaml. A key
+// under `extensions:` that collides with one of these is probably a defined field
+// relocated into the open bag to dodge a rule (EXT-002, CONTRACT §12.1). `extensions:`
+// is for SCHEMA-UNDEFINED fields.
 const DEFINED_FIELDS = new Set([
   'kind', 'id', 'name', 'element_type', 'type', 'aliases',
   'rel_kind', 'from', 'to', 'about', 'subject', 'status', 'realised_via', 'evidence',
@@ -57,8 +68,8 @@ export function validateCandidate(cand, profile) {
     return { validation_flags: ['candidate is not a JSON object'], coverage_flag: 'out_of_profile' };
   }
 
-  if (cand.kind !== 'element' && cand.kind !== 'relation' && cand.kind !== 'assertion') {
-    flags.push(`kind must be "element", "relation" or "assertion" (got ${JSON.stringify(cand.kind)})`);
+  if (!CANDIDATE_KINDS.has(cand.kind)) {
+    flags.push(`kind must be ${alt(CANDIDATE_KINDS)} (got ${JSON.stringify(cand.kind)})`);
   }
   if (!Array.isArray(cand.derived_from) || cand.derived_from.length < 1) {
     flags.push('derived_from must cite at least one field artefact ID');
@@ -69,7 +80,7 @@ export function validateCandidate(cand, profile) {
     flags.push('admitted_to must be "pending" — the CLI proposes, it never admits to canon');
   }
   if (!EXTRACTION_CONFIDENCE.has(cand.extraction_confidence)) {
-    flags.push(`extraction_confidence must be high|medium|low (got ${JSON.stringify(cand.extraction_confidence)})`);
+    flags.push(`extraction_confidence must be ${alt(EXTRACTION_CONFIDENCE)} (got ${JSON.stringify(cand.extraction_confidence)})`);
   }
   // Two-axes separation: source trust lives on the FIELD artefact, never on a candidate.
   if ('source_quality' in cand) {
@@ -97,14 +108,20 @@ export function validateCandidate(cand, profile) {
     if (!cand.name) flags.push('element is missing name');
     if (!isValidType(cand.element_type)) flags.push(`element_type is not a valid TYPE: ${cand.element_type}`);
     type = cand.element_type;
-    // BOBJ-D001 — INFORMATION_ENTITY is a deprecated alias for BUSINESS_OBJECT (ADR 2026-06-08).
-    // Warn (not error) so existing pipelines keep working during the one-release alias window.
-    if (type === 'INFORMATION_ENTITY') {
-      flags.push('BOBJ-D001 [deprecation]: INFORMATION_ENTITY is a deprecated alias; rename element_type to BUSINESS_OBJECT and update the id prefix (INFORMATION_ENTITY- → BUSINESS_OBJECT-)');
+    // A retired TYPE name is accepted and warned on for its alias window — never
+    // silently rewritten. Both the alias set and its rule code come from the artefact,
+    // so retiring the next TYPE name needs no edit here.
+    const retired = DEPRECATED_ELEMENT_TYPES[type];
+    if (retired) {
+      const code = retired.rule ? `${retired.rule} ` : '';
+      flags.push(
+        `${code}[deprecation]: ${type} is a deprecated alias; rename element_type to ` +
+        `${retired.replaced_by} and update the id prefix (${type}- → ${retired.replaced_by}-)`
+      );
     }
     // REQ-004 — origin closed vocabulary (15-requirement.md §4).
     if (type === 'REQUIREMENT' && 'origin' in cand && !ORIGIN_VALUES.has(cand.origin)) {
-      flags.push(`REQ-004: origin must be legislative|process-product|project-product (got ${JSON.stringify(cand.origin)})`);
+      flags.push(`REQ-004: origin must be ${alt(ORIGIN_VALUES)} (got ${JSON.stringify(cand.origin)})`);
     }
   } else if (cand.kind === 'relation') {
     if (!cand.rel_kind) flags.push('relation is missing rel_kind');
@@ -117,8 +134,8 @@ export function validateCandidate(cand, profile) {
     if (!isValidId(cand.about)) flags.push(`assertion "about" violates the ID grammar: ${cand.about}`);
     else if (typeOf(cand.about) !== 'REQUIREMENT') flags.push(`assertion "about" must reference a REQUIREMENT (ASSERT-002): ${cand.about}`);
     if (!isValidId(cand.subject)) flags.push(`assertion "subject" violates the ID grammar: ${cand.subject}`);
-    else if (!ASSERTION_SUBJECT_TYPES.has(typeOf(cand.subject))) flags.push(`assertion "subject" TYPE must be PRODUCT|PROCESS|CAPABILITY (ASSERT-003): ${cand.subject}`);
-    if (!ASSERTION_STATUS.has(cand.status)) flags.push(`assertion status must be compliant|partial|non_compliant|under_review|n_a (got ${JSON.stringify(cand.status)})`);
+    else if (!ASSERTION_SUBJECT_TYPES.has(typeOf(cand.subject))) flags.push(`assertion "subject" TYPE must be ${alt(ASSERTION_SUBJECT_TYPES)} (ASSERT-003): ${cand.subject}`);
+    if (!ASSERTION_STATUS.has(cand.status)) flags.push(`assertion status must be ${alt(ASSERTION_STATUS)} (got ${JSON.stringify(cand.status)})`);
     if (cand.realised_via !== undefined) {
       if (!Array.isArray(cand.realised_via)) flags.push('assertion realised_via must be an array of typed IDs');
       else for (const rv of cand.realised_via) if (!isValidId(rv)) flags.push(`assertion realised_via has an invalid ID: ${rv}`);
