@@ -32,6 +32,14 @@
 //       its own (matching activity_goal precedent) and is excluded from the
 //       comparison. Fails closed: a missing or unparseable artefact is a
 //       failure, not a skip.
+//   VOC3 vocabulary — every value_vocabularies entry in notations/vocabulary.yaml
+//       with a non-null `spec` has every one of its values appear somewhere in
+//       that spec as (part of) a code span; an entry that also names a `rule`
+//       has that rule's row in the same spec cross-checked so the row's own
+//       enumerated values match `values` exactly. An entry with `spec: null`
+//       (a pipeline-internal set with no owning spec) is not checked. Fails
+//       closed: a missing or unparseable artefact, or a named rule with no
+//       matching row, is a failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -771,6 +779,175 @@ async function checkVocabularyRelationTypes(failures) {
   }
 }
 
+// --- VOC3: vocabulary.yaml value_vocabularies vs their owning specs --------
+//
+// Same source-of-truth direction as VOC1/VOC2: notations/vocabulary.yaml is
+// authored correctly, and this check keeps a spec's prose from drifting away
+// from it unnoticed — it does not regenerate either side. Deliberately narrow
+// parsers matching exactly the shapes these files use, same trade-off as
+// VOC1/VOC2.
+//
+// A spec states a closed enum in one of a few code-span shapes this repo
+// actually uses: a single span with pipe-separated values
+// ("`a \| b \| c`" in a table cell, "`a | b | c`" in prose), a single span
+// with a brace-set ("`{A, B, C}`"), or several single-value spans divided by
+// plain text ("`a`, `b`, `c`" or "`a` / `b` / `c`"). decomposeSpan()
+// normalises all of them to a flat value list.
+
+// Pure. Splits one backtick span's inner text into its member values —
+// a brace-set ("{A, B, C}") or a pipe list ("a \| b" / "a | b") decompose to
+// several values; anything else is already exactly one value.
+export function decomposeSpan(raw) {
+  const s = raw.trim();
+  if (s.startsWith('{') && s.endsWith('}')) {
+    return s.slice(1, -1).split(',').map(v => v.trim()).filter(Boolean);
+  }
+  if (s.includes('|')) {
+    return s.replace(/\\\|/g, '|').split('|').map(v => v.trim()).filter(Boolean);
+  }
+  return [s];
+}
+
+// Pure. Every backtick code span in `text`, decomposed and flattened — used
+// to build the "does this value appear anywhere in the spec" candidate set.
+// Fenced code blocks are stripped first so a ``` ... ``` region (whose odd
+// number of backticks would otherwise pair unpredictably with prose backticks
+// around it) can never be misread as spanning into surrounding text.
+function allSpanValues(text) {
+  const stripped = text.replace(/```[\s\S]*?```/g, '');
+  const spans = [...stripped.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  return new Set(spans.flatMap(decomposeSpan));
+}
+
+// Pure — no I/O. Parses the `value_vocabularies:` block of vocabulary.yaml
+// into Map<key, {values, spec, rule}> — `spec` and `rule` are `null` when the
+// artefact says so. Throws on a block that isn't found or doesn't parse.
+export function parseVocabularyValueVocabularies(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^value_vocabularies:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "value_vocabularies:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const keyM = line.match(/^  ([A-Za-z][A-Za-z0-9_.]*):\s*$/);
+    if (keyM) {
+      current = { values: null, spec: null, rule: null };
+      out.set(keyM[1], current);
+      continue;
+    }
+    if (/^\s*$/.test(line)) continue; // blank
+    const valuesM = line.match(/^    values:\s*\[([^\]]*)\]\s*$/);
+    if (valuesM && current) {
+      current.values = valuesM[1].split(',').map(v => v.trim()).filter(Boolean);
+      continue;
+    }
+    const specM = line.match(/^    spec:\s*(\S+)\s*$/);
+    if (specM && current) {
+      current.spec = specM[1] === 'null' ? null : specM[1];
+      continue;
+    }
+    const ruleM = line.match(/^    rule:\s*(\S+)\s*$/);
+    if (ruleM && current) {
+      current.rule = ruleM[1] === 'null' ? null : ruleM[1];
+      continue;
+    }
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in value_vocabularies block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: value_vocabularies block parsed empty');
+  return out;
+}
+
+// Pure. Finds `code`'s row in a rule_codes-style table (`| \`CODE\` | severity
+// | message |`) and returns the decomposed value set the message's own
+// "not one of …" / "not in …" enumeration states — the same shape VOC1/VOC2
+// use for a spec's data rows, applied to whichever single row names this
+// rule. Returns null when the row isn't found; throws when the row is found
+// but names no recognisable enumeration (fails closed rather than silently
+// treating an unparseable row as agreement).
+export function parseRuleRowValues(specText, code) {
+  const re = new RegExp('^\\|\\s*`' + code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '`\\s*\\|.*\\|\\s*$', 'm');
+  const rowM = specText.match(re);
+  if (!rowM) return null;
+  const row = rowM[0];
+  const markerM = row.match(/not one of|not in/);
+  if (!markerM) {
+    throw new Error(`${code}: row found but names no "not one of" / "not in" enumeration to cross-check: "${row}"`);
+  }
+  const remainder = row.slice(markerM.index + markerM[0].length);
+  const spans = [...remainder.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+  if (spans.length === 0) {
+    throw new Error(`${code}: row's enumeration has no code span to read values from: "${row}"`);
+  }
+  return new Set(spans.flatMap(decomposeSpan));
+}
+
+async function checkVocabularyValueVocabularies(failures) {
+  let vocText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC3', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+
+  let voc;
+  try {
+    voc = parseVocabularyValueVocabularies(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC3', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const specTextCache = new Map();
+  for (const [key, entry] of voc) {
+    if (entry.spec === null) continue; // pipeline-internal set — no owning spec to check
+
+    const specPath = join(REPO_ROOT, ...entry.spec.split('/'));
+    let specText = specTextCache.get(entry.spec);
+    if (specText === undefined) {
+      try {
+        specText = await readFile(specPath, 'utf8');
+      } catch {
+        specText = null;
+      }
+      specTextCache.set(entry.spec, specText);
+    }
+    if (specText === null) {
+      failures.push({ check: 'VOC3', message: `${key}: spec "${entry.spec}" not found.` });
+      continue;
+    }
+
+    const found = allSpanValues(specText);
+    for (const v of entry.values || []) {
+      if (!found.has(v)) {
+        failures.push({ check: 'VOC3', message: `${key}: value "${v}" does not appear anywhere in ${entry.spec} as a code span.` });
+      }
+    }
+
+    if (entry.rule) {
+      let ruleValues;
+      try {
+        ruleValues = parseRuleRowValues(specText, entry.rule);
+      } catch (e) {
+        failures.push({ check: 'VOC3', message: `${key}: ${e.message}` });
+        continue;
+      }
+      if (ruleValues === null) {
+        failures.push({ check: 'VOC3', message: `${key}: rule "${entry.rule}" has no matching row in ${entry.spec} to cross-check.` });
+        continue;
+      }
+      if (!sameSet([...ruleValues], entry.values)) {
+        failures.push({ check: 'VOC3', message: `${key}: vocabulary.yaml values [${(entry.values || []).join(', ')}] do not match ${entry.rule}'s row in ${entry.spec}, which states [${[...ruleValues].join(', ')}].` });
+      }
+    }
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -786,6 +963,7 @@ async function main() {
     await checkPackageEnvelopeStatements(failures);
     await checkVocabularyElementTypes(failures);
     await checkVocabularyRelationTypes(failures);
+    await checkVocabularyValueVocabularies(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);

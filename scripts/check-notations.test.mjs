@@ -17,6 +17,9 @@ import {
   parseElementPrimitivesTable,
   parseVocabularyRelationTypes,
   parseRelationsEnumTable,
+  decomposeSpan,
+  parseVocabularyValueVocabularies,
+  parseRuleRowValues,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -325,4 +328,88 @@ test('parseRelationsEnumTable — negative: a row with no "→" in its Endpoint 
 | \`parent\` | child → parent | \`CAPABILITY\` only | ... |
 `;
   assert.throws(() => parseRelationsEnumTable(text), /no single "→"/);
+});
+
+// --- VOC3: vocabulary.yaml value_vocabularies vs their owning specs --------
+
+test('decomposeSpan — positive: a brace-set decomposes to its members', () => {
+  assert.deepEqual(decomposeSpan('{PRODUCT, PROCESS, CAPABILITY}'), ['PRODUCT', 'PROCESS', 'CAPABILITY']);
+});
+
+test('decomposeSpan — positive: an escaped-pipe list (table cell shape) decomposes to its members', () => {
+  assert.deepEqual(decomposeSpan('legislative \\| process-product \\| project-product'), ['legislative', 'process-product', 'project-product']);
+});
+
+test('decomposeSpan — positive: a plain-pipe list (prose shape) decomposes to its members', () => {
+  assert.deepEqual(decomposeSpan('legislative | process-product | project-product'), ['legislative', 'process-product', 'project-product']);
+});
+
+test('decomposeSpan — positive: a span with no delimiter is exactly one value', () => {
+  assert.deepEqual(decomposeSpan('draft'), ['draft']);
+});
+
+test('parseVocabularyValueVocabularies — positive: reads values/spec/rule, tolerating a comment and blank line, and null spec/rule', () => {
+  const text = `
+value_vocabularies:
+
+  # REQUIREMENT — elements/15-requirement.md
+  REQUIREMENT.origin:
+    values: [legislative, process-product, project-product]
+    spec: notations/elements/15-requirement.md
+    rule: REQ-004
+
+  candidate.kind:
+    values: [element, relation, assertion]
+    spec: null
+    rule: null
+
+deferred:
+  rule_codes: {}
+`;
+  const out = parseVocabularyValueVocabularies(text);
+  assert.deepEqual([...out.keys()], ['REQUIREMENT.origin', 'candidate.kind']);
+  assert.deepEqual(out.get('REQUIREMENT.origin'), {
+    values: ['legislative', 'process-product', 'project-product'],
+    spec: 'notations/elements/15-requirement.md',
+    rule: 'REQ-004',
+  });
+  assert.deepEqual(out.get('candidate.kind'), { values: ['element', 'relation', 'assertion'], spec: null, rule: null });
+});
+
+test('parseVocabularyValueVocabularies — negative: a missing "value_vocabularies:" block throws', () => {
+  assert.throws(() => parseVocabularyValueVocabularies('methodology_version: "3.1.0"\n'), /value_vocabularies/);
+});
+
+test('parseVocabularyValueVocabularies — negative: an unrecognised line inside the block throws', () => {
+  const text = `
+value_vocabularies:
+  agreement:
+    values: [draft, agreed, disputed]
+    - not a recognised field line
+`;
+  assert.throws(() => parseVocabularyValueVocabularies(text), /unrecognised line/);
+});
+
+test('parseRuleRowValues — positive: a single escaped-pipe span (table shape) reads all values', () => {
+  const text = '| `REQ-004` | error | `origin` is present but its value is not one of `legislative \\| process-product \\| project-product`. |';
+  assert.deepEqual([...parseRuleRowValues(text, 'REQ-004')], ['legislative', 'process-product', 'project-product']);
+});
+
+test('parseRuleRowValues — positive: several single-value spans (comma-divided shape) read all values', () => {
+  const text = '| `ASSERT-006` | error | `status` is not one of `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. |';
+  assert.deepEqual([...parseRuleRowValues(text, 'ASSERT-006')], ['compliant', 'partial', 'non_compliant', 'under_review', 'n_a']);
+});
+
+test('parseRuleRowValues — positive: a brace-set span ("not in") reads all values', () => {
+  const text = '| `ASSERT-003` | error | TYPE is not in `{PRODUCT, PROCESS, CAPABILITY}`. |';
+  assert.deepEqual([...parseRuleRowValues(text, 'ASSERT-003')], ['PRODUCT', 'PROCESS', 'CAPABILITY']);
+});
+
+test('parseRuleRowValues — negative: no matching row returns null, not a throw', () => {
+  assert.equal(parseRuleRowValues('| `OTHER-001` | error | something. |', 'REQ-004'), null);
+});
+
+test('parseRuleRowValues — negative: a matching row with no "not one of" / "not in" language throws', () => {
+  const text = '| `REQ-004` | error | `origin` must be present. |';
+  assert.throws(() => parseRuleRowValues(text, 'REQ-004'), /names no "not one of"/);
 });
