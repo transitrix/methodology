@@ -6,11 +6,16 @@ transclusion tags; the engine resolves them and emits a document. No document la
 ships with this package — a layout is authored by whoever needs that document, in
 their own repository.
 
-**Scope of this package today: syntax (§2) and reference resolution (§3).**
-`parseSkeleton()` turns a skeleton file's text into a header object and a body AST.
-`resolveReference()` / `createResolver()` classify an id against canon into one of
-the four states below. Neither renders — render profiles (§4), derivation share
-(§5), telemetry (§6), and PDF output (§7) are later layers built on top of these.
+**Scope of this package today: syntax (§2), reference resolution (§3), derived-content
+evaluation, and render profiles (§4) for `inline`/`each` content.** `parseSkeleton()`
+turns a skeleton file's text into a header object and a body AST. `resolveReference()`
+/ `createResolver()` classify an id against canon into one of the four states below.
+`createEvaluator()` resolves `{{ ID.field }}` traversal and `{{# each ... }}`
+selection against canon. `renderDocument()` walks the AST through an evaluator and
+emits HTML in the `review` or `clean` profile. Not yet built: evaluation/rendering
+for `trace` / `view` / `figure` / `figref` (they render as inert pass-through
+markers today), derivation share (§5), telemetry (§6), and PDF output (§7) — later
+layers on top of these.
 
 ## Skeleton file shape
 
@@ -87,9 +92,47 @@ An unresolvable endpoint on a `REL`/claim record is silent, not suspicious — t
 same posture `scripts/check-link-suspicion.mjs` takes (a validator's concern, e.g.
 `REL-002`, not this module's).
 
+## Evaluation and render profiles (§4)
+
+`createEvaluator(canonRoot)` builds on `createResolver()` to resolve the two
+derived-content forms `renderDocument()` needs:
+
+```js
+import { createEvaluator } from '@transitrix/document-view-engine/src/evaluate.mjs';
+
+const evaluator = await createEvaluator('/path/to/canon');
+const { state, flag, content } = await evaluator.evaluateFieldPath('REQ-014', ['parent', 'title'], { renderDate: '2026-08-06' });
+```
+
+`evaluateFieldPath(id, fields, opts)` re-runs §3's four-state classification at
+every traversal hop — a `parent` that is itself out of validity flags the whole
+expression, not just the id nearest the reader. `evaluateEach(node, opts)` selects
+every object of `node.entityType` whose §3 state resolves `ok`, applies `where`
+(AND-only) and `order by`, and returns the matching ids in order.
+
+`renderDocument(ast, evaluator, { profile, renderDate, failOn })` walks the AST and
+emits HTML:
+
+```js
+import { renderDocument } from '@transitrix/document-view-engine/src/render.mjs';
+
+const { html, failed, counts } = await renderDocument(ast, evaluator, { profile: 'review', renderDate: '2026-08-06' });
+```
+
+| Profile | Behaviour |
+|---|---|
+| `review` | Every span is coloured by its §3 state (`dv-ok` / `dv-suspect` / `dv-unresolved`); a non-default class also carries a flag glyph (`⚑S`/`⚑A`/`⚑V`/`⚑U`) as a second channel, never colour alone. |
+| `clean` | Everything renders as `dv-clean`, no flags, no counters. `failed` is `true` when a state in `failOn` occurred anywhere in the render (default: `unresolved`, `not-admitted`, `out-of-validity` — `suspect` warns only, per §4). |
+
+`trace` / `view` / `figure` / `figref` nodes render as HTML comments (`<!-- dv-view:
+not yet rendered (...) -->`) rather than throwing — a full-syntax skeleton still
+renders end to end, but those forms carry no content or classification yet.
+
 ## Tests
 
 ```
 node packages/document-view-engine/tests/test_parse_skeleton.mjs
 node packages/document-view-engine/tests/test_resolve_references.mjs
+node packages/document-view-engine/tests/test_evaluate.mjs
+node packages/document-view-engine/tests/test_render.mjs
 ```
