@@ -1,0 +1,25 @@
+notation: release
+id: RELEASE-PAYMENTS-GATEWAY-2
+name: "Payments Gateway 2.4.0"
+
+of: APPLICATION-PAYMENTS-GATEWAY-1
+version: "2.4.0"
+predecessor: RELEASE-PAYMENTS-GATEWAY-1
+released_at: "2026-07-15"
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-07-15"
+valid_to: null
+
+description: >
+  Succeeds 2.3.0 via `predecessor` — the only expression of release order.
+  The `"2.4.0"` string is never parsed or compared to `"2.3.0"` to establish
+  that order; remove the `predecessor` line and the chain is gone, however
+  the version strings read.

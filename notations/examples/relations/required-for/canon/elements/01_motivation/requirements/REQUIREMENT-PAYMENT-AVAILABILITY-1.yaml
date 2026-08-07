@@ -1,0 +1,21 @@
+notation: requirement
+id: REQUIREMENT-PAYMENT-AVAILABILITY-1
+name: Payment authorisation stays available during a regional outage
+origin: legislative
+level: system
+kind: quality
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  Entered scope at 2.3.0 and was never withdrawn, so it is **inherited** by
+  2.4.0 along the predecessor chain — no second REL file is written to say so.

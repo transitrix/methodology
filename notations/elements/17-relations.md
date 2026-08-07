@@ -2,7 +2,7 @@
 title: "Relations — first-class time-aware links"
 version: "0.1"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-05"
+last_updated: "2026-08-07"
 status: "draft"
 ---
 
@@ -87,12 +87,13 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `hosts` | node → service | `NODE` → `TECHNOLOGY_SERVICE` | A node (or cluster of nodes) hosts a technology service. Time-aware — a service migrated to a new node produces a new REL file with `valid_to` on the old one. For a stable, single-host configuration, the inline `node` field on `TECHNOLOGY_SERVICE` is sufficient; the `hosts` REL kind records the change event. |
 | `uses` | application → service | `APPLICATION` → `TECHNOLOGY_SERVICE` | An application consumes a technology service (e.g. publishes to a Kafka topic, reads from an object store). Time-aware — use a REL file when an application starts or stops consuming a given service (a dependency change). For stable long-running dependencies a future inline `technology_services[]` field on `APPLICATION` may be specified. |
 | `depends_on` | dependent → presupposed | `REQUIREMENT` → `REQUIREMENT` | A conditional dependency between obligations: `from` presupposes `to` — the dependent obligation is not meaningful, or not satisfiable, unless the target holds. **Not** an order of work (implementation sequence stays with `ACTION` / `CHANGE`) and **not** decomposition (`parent` / the stated `requirement_parent` promotion path on [15-requirement.md](15-requirement.md) §2.4 stay separate). First-class rather than inline so the link carries `admitted_at` and content identity for the suspicion mechanism ([CONTRACT.md](../CONTRACT.md)). Endpoints stay narrow in v1 (`REQUIREMENT` only); the name is generic on purpose so a later widening (e.g. to `CONSTRAINT` / `NEED`) amends one kind instead of introducing a second. **M:N**: one requirement may depend on several others, and one may be depended on by several — each pair is its own REL file. |
+| `required_for` | obligation → state | `REQUIREMENT` → `RELEASE` | The obligation `from` must hold in the release `to` — a **scope statement**, naming *in which state of the subject* the obligation applies, and nothing else. Binds an obligation to one shipped state of a `PRODUCT`/`APPLICATION` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) instead of to the subject as a whole, so an obligation introduced at one release does not read as retroactively binding on every earlier one. **The boundary is load-bearing — it says nothing about who does the work, in what order, or by when; see §3.1.** Time-aware because scope moves: an obligation withdrawn from a release ends with `valid_to` set rather than having its REL file deleted. **M:N**: one requirement may be required for several releases, and one release carries many obligations — each pair is its own REL file. Endpoints stay narrow in v1 (`REQUIREMENT` → `RELEASE` only); a `CONSTRAINT` or `NEED` source is a later widening of this kind, not a second kind. |
 
 Adding a new `type` value is an **additive** methodology revision (MINOR). A repository that uses none of the new kind validates unchanged. The incompatibility an adopter can hit is a *pinned* older validator meeting a kind it has never heard of — answered by the vendored tagged release, not by treating every enum extension as a breaking change.
 
 **Engagement relations (`employment` / `candidacy` / `alumni_membership` / `community_membership` / `contracting`).** Decided 2026-05-29 (Actors): a `person` actor records *identity only*; every kind of engagement with the organisation is its own first-class, time-aware relation, so the same person can be a candidate, then an employee, then an alumnus over time without losing history, and can hold several engagements at once. Each engagement kind carries only the attributes that kind needs; the relation's own `valid_from`/`valid_to` is the engagement window.
 
-**M:N relations are unified on the REL machinery.** Several kinds in v1 are intrinsically many-to-many — `goal_parent` (in its multi-parent DAG form), `target_state_satisfies_goal`, `assessment_influences_goal`, `stakeholding`, and `depends_on`. None of them get a special storage mechanism: each (from, to) pair is its own REL file, the validator distinguishes them only by the `type` value, and per-relation attributes (`degree`, `sign`, `magnitude`, `concern`, `influence`, `contract_type`, …) ride on the REL file itself. The §7 limit "one `from` and one `to` per REL file" applies uniformly; M:N is expressed by writing multiple REL files, not by allowing list-valued endpoints. This is a deliberate constraint: the validator, the catalogue loader, the lifecycle window check, and any temporal renderer all work the same way for every M:N kind. A future M:N kind (e.g. capability ↔ application "supports") fits the same machinery without a new mechanism.
+**M:N relations are unified on the REL machinery.** Several kinds in v1 are intrinsically many-to-many — `goal_parent` (in its multi-parent DAG form), `target_state_satisfies_goal`, `assessment_influences_goal`, `stakeholding`, `depends_on`, and `required_for`. None of them get a special storage mechanism: each (from, to) pair is its own REL file, the validator distinguishes them only by the `type` value, and per-relation attributes (`degree`, `sign`, `magnitude`, `concern`, `influence`, `contract_type`, …) ride on the REL file itself. The §7 limit "one `from` and one `to` per REL file" applies uniformly; M:N is expressed by writing multiple REL files, not by allowing list-valued endpoints. This is a deliberate constraint: the validator, the catalogue loader, the lifecycle window check, and any temporal renderer all work the same way for every M:N kind. A future M:N kind (e.g. capability ↔ application "supports") fits the same machinery without a new mechanism.
 
 **Interface-semantics INTEGRATION endpoint constraint (confirmation).** An `INTEGRATION` with `interface_semantics: true` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.8.1) is an application-layer contract: both `source` and `target` MUST resolve to admitted `APPLICATION-…` elements. A `NODE`, `TECHNOLOGY_SERVICE`, or any non-application element as an endpoint is invalid (INT-002 in §9). The infrastructure carrying the interface — e.g. a Kafka cluster (`TECHNOLOGY_SERVICE`) — is linked to the source application via the `uses` relation, not by placing the TECHNOLOGY_SERVICE directly as the integration's `source` or `target`. This constraint is not a new relation kind; it is an endpoint-type restriction on an existing element variant.
 
@@ -101,6 +102,42 @@ Adding a new `type` value is an **additive** methodology revision (MINOR). A rep
 - **`applies_to` (Codex → Canon).** Retired entirely in the compliance epic ([14-codex.md](14-codex.md) §8) — bindings now live as REQUIREMENT.`derived_from` plus ASSERTION; no `applies_to` relation kind is needed.
 - **Inline relations.** Each notation spec declares which of its relation kinds stay inline (timeless within their host file) versus which become first-class REL files. The per-notation declarations are added in subsequent Wave 3 PRs.
 - **View-document inline cross-references.** A view document may include inline cross-references to canon primitives via documented fields (e.g. capability-map `business_process`, process-map `capability`, BPMN `performed_by_role` / `supported_by_application`), distinct from `REL` element files. Such references are subject to canon-existence validation (per the view's own validator codes) but are **not** subject to `REL-002`, because the referring endpoint (a view-local node or label) is not itself a canon primitive — the link is one-way, and canon never points back at a view-local label.
+
+### 3.1 `required_for` — a scope statement, not a plan
+
+`required_for` says **in which state of the subject an obligation must hold**. That is the whole of its meaning, and the readings it excludes are as much a part of the definition as the reading it carries:
+
+- **It does not say who does the work.** No assignee, no owning unit, no team. Ownership of the work that makes an obligation hold is an `ACTION` concern.
+- **It does not say in what order.** A release having three obligations implies nothing about which is addressed first. Sequence lives in `ACTION` / `CHANGE`, and in the schedule documents built on them.
+- **It does not say by when.** The relation's `valid_from` / `valid_to` is the window during which *the scope statement itself* holds — the period over which this obligation is in scope for this release — never a due date, a target date, or a commitment. A release's own ship date is `RELEASE.released_at` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29), which this relation neither sets nor constrains.
+- **It is not a plan, and a set of them is not a plan either.** "Everything required for release R" answers *what must be true of R*, not *what we intend to do about R*. A reader who wants the second question answered is asking about `ACTION` / `CHANGE`, and the model should send them there rather than let a scope statement stand in for a commitment it never made.
+
+The distinction matters because a scope statement and a plan degrade differently. A scope statement that turns out wrong is a modelling correction — retire the relation, write a new one. A plan that turns out wrong is a delivery problem. Conflating them makes a compliance model look like a project plan, and makes a missed date look like a compliance failure.
+
+This is the same boundary `depends_on` draws (a conditional dependency between statements, not an order of work); the two kinds sit either side of the obligation — `depends_on` says what an obligation rests on, `required_for` says where it applies.
+
+### 3.2 Derived query — what must hold in release R
+
+The obligations in scope for a release are **derived**, never stored: nothing accumulates on the `RELEASE` element (it carries no list of its own contents, §7.29) and nothing accumulates on the `REQUIREMENT`. The answer is recomputed from the relation files each time it is asked.
+
+**Inputs.** A release id `R`, the canon catalogue, and an *as-at* date (the date of the query; §7.5 of [CONTRACT.md](../CONTRACT.md) — "Today is the date of the query or render").
+
+**Computation.**
+
+1. **Walk the chain.** Starting at `R`, follow `predecessor` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) to build the ancestor list `R`, `R.predecessor`, `R.predecessor.predecessor`, … — `R` at depth 0. The walk is cycle-safe: an id already seen ends that branch (`RELEASE-004` reports the cycle; the query does not hang on one).
+2. **Collect.** Take every admitted `required_for` REL whose `to` is any release in that list. An obligation attached to an ancestor is **inherited** by `R` — a requirement that entered scope at v1 is still in scope at v2 unless something ended it. This is the only sense in which release order is used anywhere, and it comes from `predecessor` links, never from comparing `version` strings.
+3. **Filter by window,** evaluated at the as-at date, dropping a candidate if either:
+   - the **relation** is not in effect — `valid_from` is later than the as-at date, or `valid_to` is set and earlier than it; or
+   - the **`REQUIREMENT`** has retired — its own `valid_to` is set and earlier than the as-at date.
+4. **Deduplicate by requirement.** One requirement required for both `R` and an ancestor appears once, attributed to the **nearest** attachment (lowest depth). The release the surviving relation actually points at is the attachment point; `depth > 0` means the obligation was inherited rather than introduced at `R`.
+
+A window is **inclusive at both ends**: in effect at date `d` iff `valid_from ≤ d` and (`valid_to` is null or `d ≤ valid_to`). This follows `LIFECYCLE-004`'s reading ([CONTRACT.md](../CONTRACT.md) §7.3), which treats a reference as dangling only when the referenced `valid_to` is *earlier than* the referrer's `valid_from` — so a `valid_to` equal to the date in question is still in effect on that date.
+
+**The release and the as-at date are independent axes.** The release picks which chain is read; the as-at date picks which scope statements were current. The query filters on the two windows named in step 3 and no others — it does not additionally require the release itself to be in effect at the as-at date. Asking what must hold in a release as at a date before it shipped is therefore a coherent question ("what was in scope for this line as things stood in April"), and it is answered from the statements current at that date, not from today's.
+
+**Removing an obligation from scope** is done by closing the relation's window (`valid_to`), not by deleting the REL file: the file records that the obligation *was* in scope for that release, which is exactly what an audit of a shipped release needs. A closed relation is excluded from the query at any as-at date after its `valid_to`, and still returned by a query as at a date inside its window.
+
+Two obligations are deliberately **not** answered here: whether the obligation is *met* in that release (an `ASSERTION` / `VERIFICATION` question) and what work would make it hold (`ACTION` / `CHANGE`). A reference implementation of this query is [`scripts/release-obligations.mjs`](../../scripts/release-obligations.mjs); the worked example is [`examples/relations/required-for/`](../examples/relations/required-for/).
 
 ---
 
@@ -116,6 +153,7 @@ One artefact per file, named by its canonical ID. The folder is flat — relatio
 - `canon/relations/REL-ACT-Q3-GOAL-EU-1.yaml`
 - `canon/relations/REL-GOAL-EU-PARENT-1.yaml`
 - `canon/relations/REL-COMPLIANCE-REPORTING-DEPENDS-ON-RESIDENCY-1.yaml` (worked example: [`examples/relations/depends-on/`](../examples/relations/depends-on/))
+- `canon/relations/REL-AVAILABILITY-REQUIRED-FOR-GATEWAY-1-1.yaml` (worked example: [`examples/relations/required-for/`](../examples/relations/required-for/))
 
 A typical naming convention encodes the endpoints and kind in the middle segments (`REL-<FROM-HINT>-<KIND>-<N>` or `REL-<FROM-HINT>-<TO-HINT>-<N>`); the canonical grammar imposes only `REL-[<middle>-]<INTEGER>`.
 
@@ -131,6 +169,8 @@ A typical naming convention encodes the endpoints and kind in the middle segment
 | `REL-004` | error | A relation kind declared time-aware in its host notation spec is used inline (as an inline cross-reference field) instead of as a first-class REL file. The host notation's spec is the source of truth for which kinds are time-aware. |
 | `REL-005` | error | A `depends_on` relation has `from` equal to `to` (self-reference). Single-file — no catalogue load required. |
 | `REL-006` | warning | A cycle exists in the `depends_on` graph among admitted REL files (A depends on B … depends on A). Cross-cutting — fires when the catalogue is loaded. Warning rather than error because genuine mutual conditionality between obligations is unusual but not always wrong. |
+
+**`required_for` adds no rule code of its own.** Its endpoint constraint (`REQUIREMENT` → `RELEASE`, §3) is exactly what `REL-002` already checks once the catalogue is loaded — a `required_for` whose `from` is not a `REQUIREMENT`, or whose `to` is not an admitted `RELEASE`, is a `REL-002` error like any other endpoint-type mismatch. Its lifecycle containment is `REL-003`, and the `RELEASE` side's own structural rules (`RELEASE-001`…`-005`, [CONTRACT.md](../CONTRACT.md) §8) already cover the predecessor chain the §3.2 query walks. Adding a code here would duplicate a check that exists, and give two names to one failure.
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to REL files in addition to the REL-* rules above. The sidecar rules (`VERSIONED-001..005`, [CONTRACT.md](../CONTRACT.md) §9.3) do not apply to relations — a relation's own state is its endpoints + lifecycle window; if the relation's attributes need versioning, the relation is its own primitive and gets its own sidecar.
 

@@ -1,0 +1,22 @@
+notation: requirement
+id: REQUIREMENT-STRONG-AUTH-1
+name: Payer authentication uses a second factor
+origin: legislative
+level: system
+kind: functional
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-06-01"
+valid_to: null
+
+description: >
+  Introduced at 2.4.0. Because the obligation is scoped to a release rather
+  than to the gateway as a whole, it does not read as retroactively binding
+  on 2.3.0 — a query about 2.3.0 does not return it.

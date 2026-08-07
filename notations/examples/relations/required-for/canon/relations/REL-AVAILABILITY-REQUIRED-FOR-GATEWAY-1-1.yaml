@@ -1,0 +1,18 @@
+notation: relation
+id: REL-AVAILABILITY-REQUIRED-FOR-GATEWAY-1-1
+type: required_for
+from: REQUIREMENT-PAYMENT-AVAILABILITY-1
+to: RELEASE-PAYMENTS-GATEWAY-1
+
+zone: canon
+admitted_at: "2026-08-07"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Open window — the scope statement still holds, so the obligation is
+# inherited by every later release in the chain until something closes it.
+valid_from: "2026-03-02"
+valid_to: null
