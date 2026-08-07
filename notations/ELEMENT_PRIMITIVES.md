@@ -869,47 +869,6 @@ threatens:
 treated_by:
   - REQUIREMENT-PAYMENT-FAILOVER-1
 
-```yaml
-6 `RISK` — `01_motivation/risks/`
-
-Motivation-layer **projected event** — something that has not happened yet and might. Distinct from `ASSESSMENT` (§7.16), which is a *dated finding about the observed state of a `DRIVER`* — a fact about the present. `RISK` is a claim about the future: its likelihood, its impact if it occurs, and the residual exposure once treatment is in place.
-
-There is no ArchiMate counterpart for `RISK`: ArchiMate 3.x has no risk element (vocabulary rule, 2026-07-30 decision — where ArchiMate has no counterpart, the element spec says so explicitly rather than leaving the gap implicit). `ASSESSMENT` keeps its present meaning and is not overloaded by this addition. The **Risk and Security Overlay** mapping that expresses generic risk entirely through `ASSESSMENT` / `DRIVER` / `GOAL` / `REQUIREMENT` / `CONSTRAINT` ([CONTRACT.md](CONTRACT.md) §8.1) remains valid guidance for a repository that prefers to model risk that way; `RISK` is an additional, not exclusive, primitive — the two approaches are not in conflict and may be mixed in the same repository (e.g. a `RISK.threatens` reference and an `ASSESSMENT.assesses` reference may name the same `DRIVER`).
-
-| Field | Required | Type | Semantics |
-|---|---|---|---|
-| `notation` | yes | string | Fixed value `risk`. |
-| `likelihood` | **yes** | string | `low` \| `medium` \| `high` — the projected probability of the event occurring. |
-| `impact` | **yes** | string | `low` \| `medium` \| `high` — the severity if the event occurs, before treatment. |
-| `residual` | **yes** | string | `low` \| `medium` \| `high` — the exposure judged to remain once the `treated_by` obligations (if any) are in effect. Distinct from `impact`: `impact` is the untreated severity; `residual` is the post-treatment judgement. A `residual` lower than `impact` with an empty `treated_by` is an unfounded claim, flagged by `RISK-COVERAGE-001` (§9). |
-| `owner_role` | **yes** | string | `ROLE-…` accountable for tracking and treating this risk. |
-| `threatens` | **yes** | list | Typed IDs of the elements this risk threatens — commonly `DRIVER-…`, but any core element the risk bears on. Non-empty. |
-| `treated_by` | no | list | `REQUIREMENT-…` / `CONSTRAINT-…` IDs — the treatment obligations that address this risk. Absent ⇒ untreated (`RISK-COVERAGE-001`). |
-| `description` | recommended | string | One-paragraph elaboration of the projected event itself — what would happen, not a finding about what already has. |
-
-**`threatens` and `treated_by` are inline, not first-class time-aware `REL`s** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A risk re-scoped to threaten a different element, or re-treated by a different obligation, is captured by versioning the `RISK` element itself (`valid_to` the old, admit a new), not by relation re-binding.
-
-```yaml
-# canon/elements/01_motivation/risks/RISK-VENDOR-OUTAGE-1.yaml
-notation: risk
-id: RISK-VENDOR-OUTAGE-1
-name: "Primary payment-gateway vendor suffers an extended outage"
-description: >
-  The organisation's sole payment-gateway integration has no failover
-  provider; an extended vendor-side outage would stop order checkout
-  entirely for the duration of the incident.
-
-likelihood: medium
-impact: high
-residual: medium
-owner_role: ROLE-PAYMENTS-LEAD-1
-
-threatens:
-  - DRIVER-CHECKOUT-AVAILABILITY-1
-
-treated_by:
-  - REQUIREMENT-PAYMENT-FAILOVER-1
-
 # Admission record (CONTRACT.md §6)
 zone: canon
 admitted_at: "2026-07-30"
