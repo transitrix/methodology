@@ -1,0 +1,1288 @@
+# Transitrix closed-vocabulary source of truth.
+#
+# THIS FILE IS THE SOURCE. The Markdown specs describe, motivate, and give
+# examples; this artefact fixes the closed sets. Nothing here is recovered by
+# parsing Markdown — the artefact is authored, and `scripts/check-notations.mjs`
+# cross-checks it against a spec table so the two cannot drift apart unnoticed.
+# VOC1 (element_types vs ELEMENT_PRIMITIVES.md §4), VOC2 (relation_types vs
+# elements/17-relations.md §3), and VOC3 (value_vocabularies vs their owning
+# specs) are implemented. VOC4 (rule_codes vs the codes specs actually use)
+# is a follow-on addition to the same check script — tracked on the epic, not
+# yet wired up. Until a VOCn check exists for a block, that block is authored
+# and consumed correctly but not yet cross-verified against its spec's prose.
+#
+# Inclusion test (mechanical): if code anywhere holds a literal list of it, it
+# belongs here. Semantics, rationale, and worked examples stay in the specs.
+#
+# Consumers
+#   - packages/ingest-cli — `src/vocabulary.mjs` loads this file; `placement.mjs`
+#     and `validate.mjs` derive their sets from it and hold no literal lists.
+#   - Out-of-repo consumers vendor the tagged release and read this path
+#     (`notations/vocabulary.yaml`). No cross-repo package dependency, no
+#     sibling-checkout read, no runtime fetch.
+#
+# Fails closed. A consumer that cannot find, parse, or version-match this file
+# must fail — never fall back to a built-in default and never pass silently.
+#
+# Changing a closed set: edit this file, then update the spec table that prints
+# it in the same commit. Adding an element TYPE or a relation kind here is all
+# the ingest CLI needs to place and validate it.
+
+# Must equal notations/CURRENT_VERSION.yaml (enforced by check V1).
+methodology_version: "3.1.0"
+
+# ---------------------------------------------------------------------------
+# Element TYPE registry — ELEMENT_PRIMITIVES.md §4 (mode table) and §6 (layer
+# and folder placement); TYPE registration in IDS_AND_REFERENCES.md §3.1.
+#
+#   mode        standalone   — own element file in its per-TYPE folder
+#               contained    — inline in a host element (e.g. STEP in PROCESS.flow)
+#               view-defined — authored inline in a view/catalogue document
+#   layer       the numbered layer folder; `null` for a TYPE with no catalogue home
+#   folder      relative to the elements root, no `elements/`/`canon/` prefix;
+#               `null` means no own catalogue folder (document-local)
+#   promotable  the TYPE starts inline and gains a standalone file only when a
+#               SECOND document references it (§1 promotion rule); id never changes
+#
+# 30 live TYPEs. Retired names are under `deprecated_element_types` below and are
+# NOT part of that count.
+# ---------------------------------------------------------------------------
+element_types:
+
+  # --- 01_motivation -------------------------------------------------------
+  DRIVER:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/factors/
+    promotable: false
+  GOAL:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/goals/
+    promotable: false
+  CONSTRAINT:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/constraints/
+    promotable: false
+  REQUIREMENT:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/requirements/
+    promotable: false
+  STAKEHOLDER:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/stakeholders/
+    promotable: false
+  ASSESSMENT:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/assessments/
+    promotable: false
+  NEED:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/needs/
+    promotable: false
+  METRIC:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/metrics/
+    promotable: false
+  RISK:
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/risks/
+    promotable: false
+
+  # --- 02_business ---------------------------------------------------------
+  CAPABILITY:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/capabilities/
+    promotable: false
+  PROCESS:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/processes/
+    promotable: false
+  STEP:
+    mode: contained
+    layer: 02_business
+    folder: 02_business/steps/
+    promotable: true
+  PRODUCT:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/products/
+    promotable: false
+  ROLE:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/roles/
+    promotable: false
+  ACTOR:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/actors/
+    promotable: false
+  LOCATION:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/locations/
+    promotable: false
+  BUSINESS_SERVICE:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/business-services/
+    promotable: false
+  RULE:
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/rules/
+    promotable: false
+  REGISTRY:
+    # Rows are inline and canonical-by-containment; a row is promoted to its own
+    # standalone TYPE when a second document references it (§7.19).
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/registries/
+    promotable: true
+  BUSINESS_OBJECT:
+    # Catalogued 2026-06-08 (EQUIPMENT/BUSINESS_OBJECT ADR); replaces the
+    # view-defined INFORMATION_ENTITY. Schema: ELEMENT_PRIMITIVES.md §7.15.
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/business-objects/
+    promotable: false
+
+  # --- 03_application ------------------------------------------------------
+  APPLICATION:
+    mode: standalone
+    layer: 03_application
+    folder: 03_application/applications/
+    promotable: false
+  INTEGRATION:
+    mode: view-defined
+    layer: 03_application
+    folder: 03_application/integrations/
+    promotable: true
+
+  # --- 04_technology -------------------------------------------------------
+  EQUIPMENT:
+    # Catalogued 2026-06-08 (EQUIPMENT/BUSINESS_OBJECT ADR) — first catalogued
+    # TYPE in this layer. Schema: ELEMENT_PRIMITIVES.md §7.14.
+    mode: standalone
+    layer: 04_technology
+    folder: 04_technology/equipment/
+    promotable: false
+  NODE:
+    mode: standalone
+    layer: 04_technology
+    folder: 04_technology/nodes/
+    promotable: false
+  TECHNOLOGY_SERVICE:
+    mode: standalone
+    layer: 04_technology
+    folder: 04_technology/services/
+    promotable: false
+
+  # --- 05_implementation ---------------------------------------------------
+  ACTION:
+    mode: standalone
+    layer: 05_implementation
+    folder: 05_implementation/actions/
+    promotable: false
+  CHANGE:
+    mode: standalone
+    layer: 05_implementation
+    folder: 05_implementation/changes/
+    promotable: false
+  TARGET_STATE:
+    mode: standalone
+    layer: 05_implementation
+    folder: 05_implementation/target-states/
+    promotable: false
+  SCENARIO:
+    mode: standalone
+    layer: 05_implementation
+    folder: 05_implementation/scenarios/
+    promotable: false
+  RELEASE:
+    # Catalogued only when something references it (§7.29) — the same restraint
+    # as the STEP promotion rule.
+    mode: standalone
+    layer: 05_implementation
+    folder: 05_implementation/releases/
+    promotable: false
+
+# ---------------------------------------------------------------------------
+# Retired element TYPE names. Each resolves to the placement of its replacement
+# so existing files keep resolving through the alias window. Not counted among
+# the 30 live TYPEs; a consumer SHOULD warn (never silently rewrite) on one.
+# ---------------------------------------------------------------------------
+deprecated_element_types:
+  FACTOR:
+    replaced_by: DRIVER
+    # Grandfathered: existing FACTOR-… ids stay valid, no forced migration
+    # (IDS_AND_REFERENCES.md §6).
+    rule: null
+  ACTIVITY:
+    replaced_by: ACTION
+    # Deprecated 2026-06-25; accepted until the 1.0 cut (24-action.md §1).
+    rule: ACTION-005
+  INFORMATION_ENTITY:
+    replaced_by: BUSINESS_OBJECT
+    # One-release alias window; hard error in the following release
+    # (ADR 2026-06-08, ELEMENT_PRIMITIVES.md §7.15).
+    rule: BOBJ-D001
+
+# ---------------------------------------------------------------------------
+# Relation `type` enum — elements/17-relations.md §3. Closed for a given
+# methodology release; new kinds land as additive MINOR revisions.
+#
+#   from / to        allowed endpoint element TYPEs
+#   from_subtype /
+#   to_subtype       ACTOR `type` values the endpoint is narrowed to, when the
+#                    spec narrows it; `null` when unrestricted
+#
+# 19 live kinds. Endpoint TYPE constraints are enforced once the catalogue is
+# loaded (REL-002); the candidate stage checks enum membership and ID grammar.
+# ---------------------------------------------------------------------------
+relation_types:
+
+  parent:
+    from: [CAPABILITY]
+    to: [CAPABILITY]
+  goal_parent:
+    from: [GOAL]
+    to: [GOAL]
+  target_state_satisfies_goal:
+    from: [TARGET_STATE]
+    to: [GOAL]
+  assessment_influences_goal:
+    from: [ASSESSMENT]
+    to: [GOAL]
+  action_goal:
+    from: [ACTION]
+    to: [GOAL]
+  unit_parent:
+    from: [ACTOR]
+    from_subtype: [business_unit]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  employment:
+    from: [ACTOR]
+    from_subtype: [person]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  candidacy:
+    from: [ACTOR]
+    from_subtype: [person]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  alumni_membership:
+    from: [ACTOR]
+    from_subtype: [person]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  community_membership:
+    from: [ACTOR]
+    from_subtype: [person]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  contracting:
+    from: [ACTOR]
+    from_subtype: [person, business_unit]
+    to: [ACTOR]
+    to_subtype: [business_unit]
+  located_at:
+    from: [ACTOR]
+    from_subtype: [person, business_unit]
+    to: [LOCATION]
+  stakeholding:
+    from: [STAKEHOLDER]
+    to: [GOAL, ACTION, CAPABILITY]
+  offers:
+    from: [ACTOR, ROLE]
+    from_subtype: [business_unit]
+    to: [BUSINESS_SERVICE]
+  realizes:
+    from: [BUSINESS_SERVICE]
+    to: [CAPABILITY]
+  hosts:
+    from: [NODE]
+    to: [TECHNOLOGY_SERVICE]
+  uses:
+    from: [APPLICATION]
+    to: [TECHNOLOGY_SERVICE]
+  depends_on:
+    from: [REQUIREMENT]
+    to: [REQUIREMENT]
+  required_for:
+    from: [REQUIREMENT]
+    to: [RELEASE]
+
+# Retired relation kind names — accepted, warned on, never silently rewritten.
+deprecated_relation_types:
+  activity_goal:
+    replaced_by: action_goal
+    rule: ACTION-005
+
+# ---------------------------------------------------------------------------
+# Closed value vocabularies. Keyed `<owner>.<field>` where `<owner>` is the
+# element TYPE, relation kind, or artefact that carries the field. A field whose
+# enum is explicitly open (e.g. BUSINESS_OBJECT.type, §7.15) is NOT listed here —
+# absence from this block means the field is not closed.
+#
+#   values  the closed set
+#   spec    the spec that prints it, or `null` when no spec does (a pipeline-
+#           internal set, not cross-checked). VOC3 verifies every value
+#           appears there as (part of) a code span.
+#   rule    the code whose row states the enum, or `null`. When that row says
+#           "one of …" / "not in …", VOC3 additionally requires the row's own
+#           values to match `values` exactly — catching a value dropped from
+#           or added to the spec without the artefact moving.
+# ---------------------------------------------------------------------------
+value_vocabularies:
+
+  # REQUIREMENT — elements/15-requirement.md
+  REQUIREMENT.origin:
+    values: [legislative, process-product, project-product]
+    spec: notations/elements/15-requirement.md
+    rule: REQ-004
+  REQUIREMENT.level:
+    values: [stakeholder, system, software]
+    spec: notations/elements/15-requirement.md
+    rule: REQ-005
+  REQUIREMENT.kind:
+    values: [functional, quality]
+    spec: notations/elements/15-requirement.md
+    rule: REQ-006
+  REQUIREMENT.severity:
+    # Organisation-defined planning priority; distinct from obligation_level.
+    values: [high, medium, low]
+    spec: notations/elements/15-requirement.md
+    rule: null
+
+  # ASSERTION — elements/16-assertion.md §2/§3
+  ASSERTION.status:
+    values: [compliant, partial, non_compliant, under_review, n_a]
+    spec: notations/elements/16-assertion.md
+    rule: ASSERT-006
+  ASSERTION.subject_type:
+    values: [PRODUCT, PROCESS, CAPABILITY]
+    spec: notations/elements/16-assertion.md
+    rule: ASSERT-003
+
+  # VERIFICATION — elements/27-verification.md §3
+  VERIFICATION.method:
+    values: [test, analysis, inspection, demonstration]
+    spec: notations/elements/27-verification.md
+    rule: VERIF-003
+  VERIFICATION.outcome:
+    values: [pass, fail, inconclusive, not_yet_run]
+    spec: notations/elements/27-verification.md
+    rule: VERIF-004
+
+  # VALIDATION — elements/28-validation.md §3
+  VALIDATION.method:
+    values: [user_acceptance, field_trial, stakeholder_review, usability_study]
+    spec: notations/elements/28-validation.md
+    rule: VALID-003
+  VALIDATION.outcome:
+    values: [pass, fail, inconclusive, not_yet_run]
+    spec: notations/elements/28-validation.md
+    rule: VALID-004
+
+  # Agreement axis — CONTRACT.md §6.3 (REQUIREMENT / CONSTRAINT / NEED)
+  agreement:
+    values: [draft, agreed, disputed]
+    spec: notations/CONTRACT.md
+    rule: AGREE-001
+
+  # Per-relation attributes — elements/17-relations.md §3
+  target_state_satisfies_goal.degree:
+    values: [partial, full]
+    spec: notations/elements/17-relations.md
+    rule: null
+  assessment_influences_goal.sign:
+    values: [positive, negative]
+    spec: notations/elements/17-relations.md
+    rule: null
+  assessment_influences_goal.magnitude:
+    values: [low, medium, high]
+    spec: notations/elements/17-relations.md
+    rule: null
+
+  # Ingest candidate contract — the bundle's candidate.schema.json, not a spec.
+  candidate.kind:
+    values: [element, relation, assertion]
+    spec: null
+    rule: null
+  candidate.extraction_confidence:
+    values: [high, medium, low]
+    spec: null
+    rule: null
+
+  # Rule severities — the closed set a `rule_codes` entry may carry.
+  rule.severity:
+    values: [error, warning, info, deprecation]
+    spec: null
+    rule: null
+
+# ---------------------------------------------------------------------------
+# Time-boxed exemptions. Every entry names a date by which it is resolved or
+# renewed. An entry here narrows a check to exactly the named item — never a
+# whole check, never a whole file.
+# ---------------------------------------------------------------------------
+deferred:
+  rule_codes:
+    COMPIMP-010:
+      review_by: "2026-11-07"
+      reason: >-
+        views/reports/21-compliance-impact.md numbers two distinct rules
+        COMPIMP-010 — one `warning` (a legacy empty-cell label) and one `error`
+        (a subject-type column-header mismatch). The artefact cannot carry one
+        code at two severities. Renumbering a code that shipped in 3.2.0 is a
+        versioned canon change with downstream validator consumers, so it is
+        raised rather than decided here; COMPIMP-014 is the next free number in
+        the family. Recorded here for whenever VOC4 (rule_codes vs spec usage
+        — not yet implemented, see the file header) is built.
+
+# ---------------------------------------------------------------------------
+# Validation rule codes and their severities. The code and its severity are the
+# closed part and live here; the rule's description stays in the spec named by
+# `spec` (the element/view spec that owns the family — CONTRACT.md restates many
+# of these, and a restatement is not ownership).
+# ---------------------------------------------------------------------------
+rule_codes:
+  ACT-001:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-002:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-003:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-004:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-005:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-006:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-007:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACT-008:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+  ACTION-001:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-002:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-003:
+    severity: warning
+    spec: notations/elements/24-action.md
+  ACTION-004:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-005:
+    severity: warning
+    spec: notations/elements/24-action.md
+  ACTOR-001:
+    severity: error
+    spec: notations/elements/19-actors.md
+  ACTOR-002:
+    severity: error
+    spec: notations/elements/19-actors.md
+  ACTOR-003:
+    severity: error
+    spec: notations/elements/19-actors.md
+  ADMIT-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-004:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-005:
+    severity: warning
+    spec: notations/CONTRACT.md
+  ADMIT-006:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-007:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-008:
+    severity: warning
+    spec: notations/CONTRACT.md
+  AGREE-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  AGREE-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  AGREE-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  AMENDMENT-001:
+    severity: error
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-002:
+    severity: error
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-003:
+    severity: error
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-004:
+    severity: error
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-005:
+    severity: warning
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-006:
+    severity: warning
+    spec: notations/elements/22-amendment.md
+  AMENDMENT-007:
+    severity: error
+    spec: notations/elements/22-amendment.md
+  ASSERT-001:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-002:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-003:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-004:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-005:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-006:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-007:
+    severity: warning
+    spec: notations/elements/16-assertion.md
+  ASSERT-008:
+    severity: warning
+    spec: notations/elements/16-assertion.md
+  ASSERT-009:
+    severity: warning
+    spec: notations/elements/16-assertion.md
+  ASSERT-010:
+    severity: error
+    spec: notations/elements/16-assertion.md
+  ASSERT-DEAD-LINK-001:
+    severity: warning
+    spec: notations/elements/16-assertion.md
+  ATREE-001:
+    severity: error
+    spec: notations/views/reports/23-actions-tree.md
+  ATREE-002:
+    severity: error
+    spec: notations/views/reports/23-actions-tree.md
+  ATREE-003:
+    severity: error
+    spec: notations/views/reports/23-actions-tree.md
+  ATREE-007:
+    severity: error
+    spec: notations/views/reports/23-actions-tree.md
+  BL-001:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-002:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-003:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-004:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-005:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-006:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-007:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-020:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-021:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-022:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-023:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-024:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BL-025:
+    severity: error
+    spec: notations/views/diagrams/08-blocks.md
+  BOBJ-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  BP-001:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-002:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-003:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-004:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-005:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-006:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-007:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-008:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-009:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-010:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BSV-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  BSV-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  BSV-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  BSV-004:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  CODEX-001:
+    severity: error
+    spec: notations/elements/14-codex.md
+  CODEX-002:
+    severity: error
+    spec: notations/elements/14-codex.md
+  CODEX-004:
+    severity: warning
+    spec: notations/elements/14-codex.md
+  CODEX-005:
+    severity: info
+    spec: notations/elements/14-codex.md
+  COMPIMP-001:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-002:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-003:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-004:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-005:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-006:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-007:
+    severity: warning
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-008:
+    severity: warning
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-009:
+    severity: warning
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-011:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-012:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COMPIMP-013:
+    severity: error
+    spec: notations/views/reports/21-compliance-impact.md
+  COVMET-001:
+    severity: error
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-002:
+    severity: error
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-003:
+    severity: error
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-004:
+    severity: error
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-005:
+    severity: error
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-006:
+    severity: warning
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-007:
+    severity: warning
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-008:
+    severity: warning
+    spec: notations/views/reports/22-coverage-metric.md
+  COVMET-009:
+    severity: warning
+    spec: notations/views/reports/22-coverage-metric.md
+  CP-001:
+    severity: error
+    spec: notations/COVERAGE_PROFILES.md
+  CP-002:
+    severity: error
+    spec: notations/COVERAGE_PROFILES.md
+  CP-003:
+    severity: error
+    spec: notations/COVERAGE_PROFILES.md
+  CP-004:
+    severity: error
+    spec: notations/COVERAGE_PROFILES.md
+  CP-005:
+    severity: warning
+    spec: notations/COVERAGE_PROFILES.md
+  DGCA-001:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-002:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-003:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-004:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-005:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-006:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-007:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-008:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-009:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-010:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-011:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-012:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-013:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-014:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-015:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-016:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-017:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-018:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  ELEM-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-004:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-005:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-ALIAS-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ELEM-FORMER-ID-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  EQUIP-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  EXT-002:
+    severity: warning
+    spec: notations/CONTRACT.md
+  FRESHNESS-001:
+    severity: warning
+    spec: notations/CONTRACT.md
+  GOALS-001:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-002:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-003:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-004:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-005:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-006:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  GOALS-007:
+    severity: error
+    spec: notations/views/diagrams/04-goals.md
+  HDR-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  HDR-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  HDR-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  INT-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  INT-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  INT-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  INT-004:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  JURISDICTION-CONSISTENCY-001:
+    severity: warning
+    spec: notations/views/diagrams/13-process-blueprint.md
+  LIFECYCLE-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  LIFECYCLE-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  LIFECYCLE-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  LIFECYCLE-004:
+    severity: warning
+    spec: notations/CONTRACT.md
+  LOC-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  LOC-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  LOC-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  MECH-001:
+    severity: info
+    spec: notations/CONTRACT.md
+  METRIC-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  METRIC-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  METRIC-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  METRIC-004:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  MRD-001:
+    severity: error
+    spec: notations/views/documents/29-mrd.md
+  MRD-002:
+    severity: error
+    spec: notations/views/documents/29-mrd.md
+  MRD-003:
+    severity: error
+    spec: notations/views/documents/29-mrd.md
+  MRD-004:
+    severity: warning
+    spec: notations/views/documents/29-mrd.md
+  MRD-005:
+    severity: warning
+    spec: notations/views/documents/29-mrd.md
+  MRD-006:
+    severity: error
+    spec: notations/views/documents/29-mrd.md
+  NEED-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NEED-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NEED-COVERAGE-001:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NEED-VALIDATION-COVERAGE-001:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NEED-VALIDATION-COVERAGE-002:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NOD-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  NOD-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  PC-001:
+    severity: error
+    spec: notations/views/diagrams/18-action-card.md
+  PC-002:
+    severity: error
+    spec: notations/views/diagrams/18-action-card.md
+  PC-003:
+    severity: error
+    spec: notations/views/diagrams/18-action-card.md
+  PC-004:
+    severity: warning
+    spec: notations/views/diagrams/18-action-card.md
+  PC-005:
+    severity: warning
+    spec: notations/views/diagrams/18-action-card.md
+  PKG-001:
+    severity: error
+    spec: notations/PACKAGES.md
+  PKG-002:
+    severity: error
+    spec: notations/PACKAGES.md
+  PROCESS-COVERAGE-001:
+    severity: warning
+    spec: notations/elements/16-assertion.md
+  REG-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  REL-001:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-002:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-003:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-004:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-005:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-006:
+    severity: warning
+    spec: notations/elements/17-relations.md
+  RELEASE-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RELEASE-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RELEASE-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RELEASE-005:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  REQ-001:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-002:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-003:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-004:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-005:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-006:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-COVERAGE-001:
+    severity: warning
+    spec: notations/elements/15-requirement.md
+  REQ-SERVES-001:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  REQ-STALE-001:
+    severity: warning
+    spec: notations/elements/15-requirement.md
+  REQ-VERIF-COVERAGE-001:
+    severity: warning
+    spec: notations/elements/15-requirement.md
+  REQ-VERIF-COVERAGE-002:
+    severity: warning
+    spec: notations/elements/15-requirement.md
+  REQIF-001:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-002:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-003:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-004:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-005:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-006:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-007:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-008:
+    severity: error
+    spec: notations/packages/reqif.md
+  REQIF-009:
+    severity: error
+    spec: notations/packages/reqif.md
+  RISK-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RISK-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RISK-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RISK-004:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  RISK-COVERAGE-001:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+  SDD-001:
+    severity: error
+    spec: notations/views/documents/31-sdd.md
+  SDD-002:
+    severity: error
+    spec: notations/views/documents/31-sdd.md
+  SDD-003:
+    severity: error
+    spec: notations/views/documents/31-sdd.md
+  SDD-004:
+    severity: error
+    spec: notations/views/documents/31-sdd.md
+  SDD-005:
+    severity: warning
+    spec: notations/views/documents/31-sdd.md
+  SDD-006:
+    severity: warning
+    spec: notations/views/documents/31-sdd.md
+  SDD-007:
+    severity: error
+    spec: notations/views/documents/31-sdd.md
+  SEGMENT-001:
+    severity: error
+    spec: notations/elements/23-segment.md
+  SEGMENT-002:
+    severity: error
+    spec: notations/elements/23-segment.md
+  SEGMENT-003:
+    severity: error
+    spec: notations/elements/23-segment.md
+  SEGMENT-004:
+    severity: error
+    spec: notations/elements/23-segment.md
+  SEGMENT-005:
+    severity: error
+    spec: notations/elements/23-segment.md
+  SEGMENT-006:
+    severity: warning
+    spec: notations/elements/23-segment.md
+  SEGMENT-007:
+    severity: warning
+    spec: notations/elements/23-segment.md
+  SEGMENT-008:
+    severity: warning
+    spec: notations/elements/23-segment.md
+  SNAP-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  SNAP-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  SNAP-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  SNAP-004:
+    severity: warning
+    spec: notations/CONTRACT.md
+  SNAP-005:
+    severity: warning
+    spec: notations/CONTRACT.md
+  SRS-001:
+    severity: error
+    spec: notations/views/documents/30-srs.md
+  SRS-002:
+    severity: error
+    spec: notations/views/documents/30-srs.md
+  SRS-003:
+    severity: error
+    spec: notations/views/documents/30-srs.md
+  SRS-004:
+    severity: warning
+    spec: notations/views/documents/30-srs.md
+  SRS-005:
+    severity: warning
+    spec: notations/views/documents/30-srs.md
+  SRS-006:
+    severity: error
+    spec: notations/views/documents/30-srs.md
+  STAKE-001:
+    severity: error
+    spec: notations/elements/20-stakeholders.md
+  STAKE-002:
+    severity: error
+    spec: notations/elements/20-stakeholders.md
+  STAKE-003:
+    severity: error
+    spec: notations/elements/20-stakeholders.md
+  TSVC-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  TSVC-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  TSVC-003:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  UNRES-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  UNRES-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  UNRES-003:
+    severity: warning
+    spec: notations/CONTRACT.md
+  UNRES-004:
+    severity: error
+    spec: notations/CONTRACT.md
+  VALID-001:
+    severity: error
+    spec: notations/elements/28-validation.md
+  VALID-002:
+    severity: error
+    spec: notations/elements/28-validation.md
+  VALID-003:
+    severity: error
+    spec: notations/elements/28-validation.md
+  VALID-004:
+    severity: error
+    spec: notations/elements/28-validation.md
+  VALID-005:
+    severity: error
+    spec: notations/elements/28-validation.md
+  VALID-006:
+    severity: warning
+    spec: notations/elements/28-validation.md
+  VC-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  VC-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  VC-003:
+    severity: warning
+    spec: notations/CONTRACT.md
+  VERIF-001:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERIF-002:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERIF-003:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERIF-004:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERIF-005:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERIF-006:
+    severity: warning
+    spec: notations/elements/27-verification.md
+  VERIF-007:
+    severity: error
+    spec: notations/elements/27-verification.md
+  VERSIONED-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  VERSIONED-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  VERSIONED-003:
+    severity: warning
+    spec: notations/CONTRACT.md
+  VERSIONED-004:
+    severity: error
+    spec: notations/CONTRACT.md
+  VERSIONED-005:
+    severity: error
+    spec: notations/CONTRACT.md
