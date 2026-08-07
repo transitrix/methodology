@@ -60,6 +60,7 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 - **[`patterns/implementation-tiers.md`](patterns/implementation-tiers.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
 - **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
+- **[`notations/views/documents/DIRECTIVE_LANGUAGE.md`](notations/views/documents/DIRECTIVE_LANGUAGE.md)** — the `.ttrs` document source format: one directive language shared by every document kind (`mrd`, `srs`, `sdd`, `sds`, …, the middle segment of `<basename>.<kind>.ttrs`). Canonical public explanation: [transitrix.com/ttrs](https://transitrix.com/ttrs/).
 - **[`method/00-glossary.md`](method/00-glossary.md)** — standardised terminology.
 - **[`method/03-architecture-decision-log.md`](method/03-architecture-decision-log.md)** — architecture decision records per repo and the harvested enterprise log across repos; §10 is the setup path, from an empty folder to a scheduled harvest.
 - **[`transitrix/templates`](https://github.com/transitrix/templates)** — forkable starter templates (RACI, …): fork, edit for your own organisation, validate.
