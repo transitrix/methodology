@@ -34,11 +34,37 @@
 // document order (§2: "Numbers are assigned at render time in document
 // order" — the two forms are not distinguished). `collectFigureNumbers()`
 // below counts both node types in its single ahead-of-render walk.
-
+//
+// Derivation share (§5) is accumulated in the same single render pass as
+// everything above — no extra AST walk. `text` nodes contribute to
+// `manualWords` (minus headings/table rows, derivation-share.mjs's own
+// concern), `inline`/`field-ref` contribute to `derivedWords`, and
+// `figure`/`view` contribute to the separate illustrations count (`view`
+// only adds to `illustrationsFromModel` when it actually renders SVG from
+// its source — a `figure` never does, by definition). Printed as two lines
+// appended to the `review` profile's own HTML only — `clean` prints no
+// counters, per §4.
+//
+// Telemetry (§6) rides the same pass: every `inline`/`field-ref` records the
+// type it referenced (via evaluate.mjs's `typeOfId`) and, if present, the
+// field path; every `each` records its `entityType`; every `trace` records
+// its relation kind and `from|to|via` matrix pair; and every state pushed
+// onto `out.failedStates` — inline, field-ref, figure, view, figref alike —
+// is mirrored into the telemetry collector's failure-state tally, so that
+// tally covers the whole render, not just spans. See telemetry.mjs for what
+// is deliberately excluded.
 import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
 import { isValidId } from './ids.mjs';
+import { typeOfId } from './evaluate.mjs';
+import { createTelemetryCollector } from './telemetry.mjs';
+import {
+  manualWordCount,
+  derivedWordCount,
+  formatDerivationShare,
+  formatIllustrationsLine,
+} from './derivation-share.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
 
@@ -65,6 +91,15 @@ function renderSpan(state, content, profile, counts) {
   const info = STATE_INFO[state];
   const flagHtml = info.flag ? `<sup class="dv-flag">${info.flag}</sup>` : '';
   return `<span class="dv-${info.color}">${escapeHtml(content ?? '')}${flagHtml}</span>`;
+}
+
+// Records a §3 failure state on both the clean-profile fail-on list and the
+// §6 telemetry tally — every call site that used to only push to
+// `out.failedStates` now goes through here, so the telemetry count covers
+// the whole render (inline, field-ref, figure, view, figref), not just spans.
+function fail(out, telemetry, state) {
+  out.failedStates.push(state);
+  telemetry.recordFailureState(state);
 }
 
 // ── Trace matrix (§2 "Trace matrix") ────────────────────────────────────
@@ -130,23 +165,28 @@ async function fileExists(absPath) {
   }
 }
 
-async function renderNodes(nodes, evaluator, ctx, out) {
+async function renderNodes(nodes, evaluator, ctx, out, telemetry) {
   for (const node of nodes) {
     // eslint-disable-next-line no-await-in-loop -- each node can depend on canon reads; order matters for figref numbering
-    await renderNode(node, evaluator, ctx, out);
+    await renderNode(node, evaluator, ctx, out, telemetry);
   }
 }
 
-async function renderNode(node, evaluator, ctx, out) {
+async function renderNode(node, evaluator, ctx, out, telemetry) {
   switch (node.type) {
     case 'text':
+      out.manualWords += manualWordCount(node.value);
       out.html.push(escapeHtml(node.value));
       return;
 
     case 'inline': {
+      const type = typeOfId(node.id);
+      telemetry.recordType(type);
+      telemetry.recordField(type, node.fields);
       const result = await evaluator.evaluateFieldPath(node.id, node.fields, ctx);
+      out.derivedWords += derivedWordCount(result.content);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
-      if (result.state !== 'ok') out.failedStates.push(result.state);
+      if (result.state !== 'ok') fail(out, telemetry, result.state);
       return;
     }
 
@@ -155,31 +195,41 @@ async function renderNode(node, evaluator, ctx, out) {
         // buildAst() already rejects a field-ref outside `each` — reachable
         // only if a caller hands render() an AST that skipped that check.
         out.html.push(renderSpan('unresolved', '', ctx.profile, out.counts));
-        out.failedStates.push('unresolved');
+        fail(out, telemetry, 'unresolved');
         return;
       }
+      const type = typeOfId(ctx.currentRowId);
+      telemetry.recordType(type);
+      telemetry.recordField(type, node.fields);
       const result = await evaluator.evaluateFieldPath(ctx.currentRowId, node.fields, ctx);
+      out.derivedWords += derivedWordCount(result.content);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
-      if (result.state !== 'ok') out.failedStates.push(result.state);
+      if (result.state !== 'ok') fail(out, telemetry, result.state);
       return;
     }
 
     case 'each': {
+      telemetry.recordType(node.entityType);
       const rowIds = await evaluator.evaluateEach(node, ctx);
       for (const rowId of rowIds) {
         // eslint-disable-next-line no-await-in-loop -- rows render in selection order
-        await renderNodes(node.children, evaluator, { ...ctx, currentRowId: rowId }, out);
+        await renderNodes(node.children, evaluator, { ...ctx, currentRowId: rowId }, out, telemetry);
       }
       return;
     }
 
     case 'trace': {
+      telemetry.recordType(node.from);
+      telemetry.recordType(node.to);
+      telemetry.recordRelation(node.via);
+      telemetry.recordMatrixPair(node.from, node.to, node.via);
       const matrix = await evaluator.evaluateTrace(node, ctx);
       out.html.push(renderTraceTable(matrix, ctx.profile));
       return;
     }
 
     case 'view': {
+      out.illustrationsTotal += 1;
       out.figureCounter += 1;
       const number = out.figureCounter;
       const label = `Figure ${number}`;
@@ -204,8 +254,9 @@ async function renderNode(node, evaluator, ctx, out) {
         }
       }
       const failedToRender = !exists || svg === null;
-      if (failedToRender) out.failedStates.push('unresolved');
-      else if (suspect) out.failedStates.push('suspect');
+      if (!failedToRender) out.illustrationsFromModel += 1;
+      if (failedToRender) fail(out, telemetry, 'unresolved');
+      else if (suspect) fail(out, telemetry, 'suspect');
       if (ctx.profile === 'clean') {
         const body = svg ?? '';
         out.html.push(`<figure class="dv-clean ${fitClass}">${body}<figcaption>${label}</figcaption></figure>`);
@@ -218,13 +269,14 @@ async function renderNode(node, evaluator, ctx, out) {
     }
 
     case 'figure': {
+      out.illustrationsTotal += 1;
       out.figureCounter += 1;
       const number = out.figureCounter;
       const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
       // eslint-disable-next-line no-await-in-loop -- order matters; this node's own figure number must be assigned before the next one
       const exists = await fileExists(absPath);
       const captionText = node.caption ? `Figure ${number} — ${node.caption}` : `Figure ${number}`;
-      if (!exists) out.failedStates.push('unresolved');
+      if (!exists) fail(out, telemetry, 'unresolved');
       if (ctx.profile === 'clean') {
         out.html.push(`<figure class="dv-clean"><img src="${escapeHtml(absPath)}" alt="${escapeHtml(captionText)}"><figcaption>${escapeHtml(captionText)}</figcaption></figure>`);
         return;
@@ -239,7 +291,7 @@ async function renderNode(node, evaluator, ctx, out) {
       const number = ctx.figureNumbers.get(node.name);
       if (number === undefined) {
         out.html.push(renderSpan('unresolved', '', ctx.profile, out.counts));
-        out.failedStates.push('unresolved');
+        fail(out, telemetry, 'unresolved');
         return;
       }
       const label = `Figure ${number}`;
@@ -261,12 +313,22 @@ async function renderNode(node, evaluator, ctx, out) {
 // containing the skeleton file — resolves a `figure`'s relative image path;
 // omit it only when every `figure` path in the AST is already absolute (as
 // unit-test fixtures typically are). Returns:
-//   html         — the rendered document body (no page chrome — §7's layout
-//                  is a later layer)
-//   failed       — true iff `profile === 'clean'` and a state in `failOn`
-//                  occurred anywhere in the render
-//   counts       — { [state]: number } — how many spans landed in each §3
-//                  state, across the whole render
+//   html            — the rendered document body (no page chrome — §7's
+//                     layout is a later layer); in `review` profile, ends
+//                     with the §5 derivation-share and illustrations lines
+//   failed          — true iff `profile === 'clean'` and a state in `failOn`
+//                     occurred anywhere in the render
+//   counts          — { [state]: number } — how many spans landed in each
+//                     §3 state, across the whole render
+//   derivationShare — { derivedWords, manualWords } — §5's word counts,
+//                     always returned (even in `clean`) for a caller that
+//                     wants the numbers without the printed line
+//   illustrations   — { fromModel, total } — §5's illustrations line, same
+//                     always-returned posture
+//   telemetry       — §6's snapshot (telemetry.mjs): types/fields/relations/
+//                     matrixPairs referenced and how often, plus a tally of
+//                     each §3 failure state across the whole render —
+//                     always returned, in either profile
 export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, skeletonDir } = {}) {
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
@@ -274,9 +336,29 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   const figureState = { count: 0, numbers: new Map() };
   await collectFigureNumbers(ast, evaluator, { profile, renderDate, skeletonDir }, figureState);
 
-  const out = { html: [], counts: {}, failedStates: [], figureCounter: 0 };
-  await renderNodes(ast, evaluator, { profile, renderDate, skeletonDir, figureNumbers: figureState.numbers }, out);
+  const out = {
+    html: [],
+    counts: {},
+    failedStates: [],
+    figureCounter: 0,
+    derivedWords: 0,
+    manualWords: 0,
+    illustrationsTotal: 0,
+    illustrationsFromModel: 0,
+  };
+  const telemetry = createTelemetryCollector();
+  await renderNodes(ast, evaluator, { profile, renderDate, skeletonDir, figureNumbers: figureState.numbers }, out, telemetry);
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
-  return { html: out.html.join(''), failed, counts: out.counts };
+
+  const derivationShare = { derivedWords: out.derivedWords, manualWords: out.manualWords };
+  const illustrations = { fromModel: out.illustrationsFromModel, total: out.illustrationsTotal };
+
+  // §5: printed in `review` only — `clean` carries no counters (§4).
+  if (profile === 'review') {
+    out.html.push(`<div class="dv-derivation-share">${escapeHtml(formatDerivationShare(out.derivedWords, out.manualWords))}</div>`);
+    out.html.push(`<div class="dv-illustrations">${escapeHtml(formatIllustrationsLine(out.illustrationsFromModel, out.illustrationsTotal))}</div>`);
+  }
+
+  return { html: out.html.join(''), failed, counts: out.counts, derivationShare, illustrations, telemetry: telemetry.snapshot() };
 }
