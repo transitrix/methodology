@@ -191,6 +191,141 @@ function tpl(body, headerExtra = '') {
   }
 }
 
+// ── The four distinguishable reference states ───────────────────────────
+//
+// unresolved / not-admitted / out-of-validity are @transitrix/document-view-
+// engine's own three (⚑U / ⚑A / ⚑V); no-repository-configured is the fourth,
+// about configuration rather than canon. The strict profile fails on all four
+// and names the file, the id and the state. The defect being guarded against
+// is not the missing reference — it is the one that renders as correct text
+// when the object behind it was never admitted, or has stopped being valid.
+
+async function withCanon(files, fn) {
+  const tmp = await mkdtemp(join(tmpdir(), 'ttrs-state-'));
+  try {
+    await mkdir(join(tmp, 'elements'), { recursive: true });
+    for (const [name, body] of Object.entries(files)) {
+      await writeFile(join(tmp, 'elements', name), body);
+    }
+    return await fn(tmp);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+}
+
+const PROPOSED = 'id: REQ-20\nname: Draft requirement\nadmission_state: proposed\n';
+const RETIRED = 'id: REQ-21\nname: Retired requirement\nvalid_from: "2020-01-01"\nvalid_to: "2021-01-01"\n';
+const FUTURE = 'id: REQ-22\nname: Future requirement\nvalid_from: "2999-01-01"\n';
+const ACTIVE = 'id: REQ-23\nname: Active requirement\nvalid_from: "2020-01-01"\nvalid_to: null\n';
+
+await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
+  const result = await runPass1({
+    text: tpl('Cites {{ REQ-20 }}.'),
+    templatePath: TEMPLATE_PATH,
+    repositoryRoot: canon,
+    renderDate: '2026-08-07',
+  });
+  check(!result.ok, 'a not-admitted object fails the strict profile');
+  check(codes(result).includes('TTRS-014'), 'with its own code, not the unresolved one');
+  check(!codes(result).includes('TTRS-010'), 'not-admitted is not folded into unresolved');
+  check(result.findings[0].state === 'not-admitted', 'and is reported as that state');
+  check(result.findings[0].flag === '⚑A', "reusing document-view-engine's flag");
+  const msg = result.errors[0].message;
+  check(msg.includes('product.mrd.ttrs') && msg.includes('REQ-20') && msg.includes('not admitted'),
+    `the failure names file, id and state, got: ${msg}`);
+  check(!result.markdown.includes('Draft requirement'),
+    'and it never renders as its plain, plausible-looking value');
+});
+
+await withCanon({ 'REQ-21.yaml': RETIRED }, async (canon) => {
+  const result = await runPass1({
+    text: tpl('Cites {{ REQ-21 }}.'),
+    repositoryRoot: canon,
+    renderDate: '2026-08-07',
+  });
+  check(codes(result).includes('TTRS-015'), 'an object past its valid_to is out of validity');
+  check(result.findings[0].flag === '⚑V', 'flagged ⚑V');
+  check(!result.markdown.includes('Retired requirement'), 'and does not render as correct text');
+});
+
+await withCanon({ 'REQ-22.yaml': FUTURE }, async (canon) => {
+  const result = await runPass1({
+    text: tpl('Cites {{ REQ-22 }}.'),
+    repositoryRoot: canon,
+    renderDate: '2026-08-07',
+  });
+  check(codes(result).includes('TTRS-015'), 'an object not yet valid is out of validity too');
+});
+
+await withCanon({ 'REQ-23.yaml': ACTIVE }, async (canon) => {
+  const result = await runPass1({
+    text: tpl('Cites {{ REQ-23 }}.'),
+    repositoryRoot: canon,
+    renderDate: '2026-08-07',
+  });
+  check(result.ok, `an active object inside its validity resolves: ${JSON.stringify(result.errors)}`);
+  check(result.markdown.includes('Active requirement'), 'and renders its value');
+  check(result.states.ok === 1, 'counted as ok');
+});
+
+await withCanon({ 'REQ-23.yaml': ACTIVE }, async (canon) => {
+  // `valid_to: null` is an open interval, not the string "null".
+  const result = await runPass1({
+    text: tpl('{{ REQ-23 }}'),
+    repositoryRoot: canon,
+    renderDate: '2999-12-31',
+  });
+  check(result.ok, 'an open validity interval has no end');
+});
+
+// The fourth state is reported alongside the other three, not somewhere else.
+{
+  const result = await runPass1({
+    text: tpl('{{ REQ-14 }}'),
+    templatePath: TEMPLATE_PATH,
+    repositoryRoot: null,
+  });
+  check(result.findings.some((f) => f.state === 'no-repository'),
+    'no-repository-configured is one of the four reported states');
+  check(result.errors[0].message.includes('product.mrd.ttrs'),
+    'and names the file like the others');
+}
+
+// ── The review profile reports what strict fails on ─────────────────────
+
+await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
+  const result = await runPass1({
+    text: tpl('Cites {{ REQ-20 }}.'),
+    repositoryRoot: canon,
+    renderDate: '2026-08-07',
+    profile: 'review',
+  });
+  check(result.ok, `review does not fail on a flagged state: ${JSON.stringify(result.errors)}`);
+  check(result.findings.length === 1, 'but it still reports it');
+  check(result.findings[0].state === 'not-admitted', 'as the same state strict fails on');
+  check(result.markdown.includes('⚑A'), 'and the flag is visible in the output');
+});
+
+{
+  let threw = false;
+  try {
+    await runPass1({ text: tpl('x'), repositoryRoot: null, profile: 'nonsense' });
+  } catch { threw = true; }
+  check(threw, 'an unknown profile is rejected rather than silently treated as strict');
+}
+
+// ── Suspicion is "not computed", never simply absent ────────────────────
+// A clean render must be distinguishable from one that never checked.
+
+{
+  const result = await runPass1({ text: tpl('Prose only.'), repositoryRoot: null });
+  check(result.suspicion !== undefined, 'the result always carries a suspicion field');
+  check(result.suspicion.computed === false, 'pass 1 does not compute ⚑S');
+  check(result.suspicion.state === 'not-computed', 'and says so by name');
+  check(typeof result.suspicion.reason === 'string' && result.suspicion.reason.length > 0,
+    'with the standing reason, so absence is never mistaken for cleanliness');
+}
+
 // ── Criterion: re-running on unchanged inputs is byte-identical ──────────
 
 {

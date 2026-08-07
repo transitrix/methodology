@@ -12,7 +12,37 @@ renderer.
 
 - **It writes nothing into the model.** Every filesystem touch here is a read.
 - **It is re-run-stable.** Given unchanged inputs the Markdown is byte-identical —
-  no timestamps, no filesystem-order dependence, no counters that reset.
+  no timestamps, no filesystem-order dependence, no counters that reset. The
+  render date is one of those inputs: pin `renderDate` to keep runs on different
+  days identical.
+
+## What this package admits, and what it defers
+
+The `{{ … }}` directive language is defined **once**, normatively, in
+[`notations/views/documents/DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md).
+This package implements a subset of it. Both halves are stated here because
+stating only the first leaves an author unable to tell "not in the language"
+from "not in this package".
+
+| Construct | This package |
+|---|---|
+| Fixed text, `\{{` escape | **admits** |
+| Inline reference `{{ REQ-14 }}` | **admits** |
+| Field path `{{ REQ-14.parent.title }}` (depth 3) | **admits** |
+| `{{ view … }}` / `{{ figure … }}` / `{{ figref … }}` | **admits** — resolved and numbered; rasterising is the output layer's, via the `rasterise` hook |
+| `{{# instruct … }} … {{/ instruct }}` | **admits** — parsed and copied through; filling one is pass 2's |
+| `{{# each … }} … {{/ each }}` | **defers** — `TTRS-004` |
+| `{{ trace … }}` | **defers** — `TTRS-004` |
+| `{{ .field }}` (row reference) | **defers** — `TTRS-004`, it belongs to `each` |
+| `⚑S` link suspicion | **not computed** — reported as such, never omitted |
+
+A deferred construct is **recognised, not implemented in this pass**. It fails by
+that name under its own code and is never reported as unknown syntax
+(`TTRS-002`) — telling an author their valid template is a typo sends them
+looking for a mistake they did not make.
+
+Document kinds — `mrd`, `srs`, `sdd`, `sds` — are **kinds, not notations**
+(`DIRECTIVE_LANGUAGE.md` §1). The kind is the middle segment of the filename.
 
 ## File naming
 
@@ -105,15 +135,23 @@ one** (`TTRS-003`).
 ```js
 import { runPass1 } from '@transitrix/document-renderer/src/pass1.mjs';
 
-const { ok, markdown, instructionSlots, figures, errors } = await runPass1({
+const {
+  ok, markdown, instructionSlots, figures, errors,
+  findings, states, suspicion,        // the four states, and why ⚑S is absent
+} = await runPass1({
   text,                       // template source
   templatePath,               // enables the filename/`kind:` check; bases figure paths
   // repositoryRoot,          // optional override; omitted, the header's `canon:` is used,
                               // resolved relative to the template. Pass null to force
                               // the no-repository case.
   // rasterise,               // optional hook: ({kind, source, name, number, fit}) => embedPath
+  // profile: 'strict',       // 'strict' (default) | 'review'
+  // renderDate: '2026-08-07',// validity is resolved at this date; defaults to today
 });
 ```
+
+`findings` lists every non-ok reference state in document order — `{ code, state,
+flag, id, file }` — whatever the profile. `states` counts them by state.
 
 `instructionSlots` lists every slot in the template, in document order, each with
 its full instruction — that is what the run record names.
@@ -135,18 +173,68 @@ has already failed by the time anyone reads it.
 | Code | Meaning |
 |---|---|
 | `TTRS-001` | header: missing or malformed required field, or no front matter |
-| `TTRS-002` | syntax: unknown directive, malformed reference, unclosed slot, bad slot id, missing `question:`/`sufficient:` |
+| `TTRS-002` | syntax: **unknown** directive, malformed reference, unclosed slot, bad slot id, missing `question:`/`sufficient:` |
 | `TTRS-003` | two instruction slots share one id |
-| `TTRS-010` | a model-object reference does not resolve — no such id, or no such field path |
+| `TTRS-004` | **recognised, not implemented in this pass** — `each`, `trace`, `{{ .field }}` |
+| `TTRS-010` | a model-object reference does not resolve — no such id, or no such field path (`⚑U`) |
 | `TTRS-011` | the template references a model object or derived figure, but **no repository is configured** |
 | `TTRS-012` | a figure source does not exist, or a `figref` names no declared figure |
 | `TTRS-013` | the filename is not `<basename>.<kind>.ttrs`, or its kind disagrees with the header |
+| `TTRS-014` | the object exists but is **not admitted** (`⚑A`) |
+| `TTRS-015` | the object is **out of validity** at the render date (`⚑V`) |
+
+**`TTRS-004` is deliberately distinct from `TTRS-002`.** A construct this pass
+recognises and declines is not a typo, and must not be reported as one.
 
 **`TTRS-011` is deliberately distinct from `TTRS-010`.** "You have no repository
 configured" and "your repository does not contain this id" are different problems
 with different fixes, and folding the first into the second would hide it.
 
 Deleting an element the document cites produces `TTRS-010`, not a silent gap.
+
+## The four reference states
+
+Every reference lands in exactly one state. The three canon-side ones are
+`@transitrix/document-view-engine`'s own (`⚑U` / `⚑A` / `⚑V`), reused rather
+than re-invented — one language must not grow two classifications of the same
+failure. The fourth is about configuration, not canon.
+
+| State | Flag | Code |
+|---|---|---|
+| `unresolved` | `⚑U` | `TTRS-010` |
+| `not-admitted` | `⚑A` | `TTRS-014` |
+| `out-of-validity` | `⚑V` | `TTRS-015` |
+| `no-repository` | — | `TTRS-011` |
+
+**The worst defect is not a missing reference** — it is one that resolves and
+renders as plainly correct text when the object behind it was never admitted or
+has stopped being valid. So a non-ok state never renders as its bare value.
+
+### Profiles
+
+| Profile | Behaviour |
+|---|---|
+| `strict` *(default)* | **fails on all four states**, naming the file, the id and the state |
+| `review` | renders each flagged value and reports every state in `findings`, without failing |
+
+These correspond to `@transitrix/document-view-engine`'s `clean` / `review`
+pair. `review` reports exactly what `strict` fails on.
+
+### Suspicion is reported as *not computed*
+
+`⚑S` link suspicion is not part of pass 1 — out of scope by the
+rendered-documents decision, derived from commit history rather than read from a
+file, and scoped by [`CONTRACT.md`](../../notations/CONTRACT.md) §16.2 to `REL`
+and claim records rather than the element references a template cites.
+
+Every result nonetheless carries a `suspicion` field saying so:
+
+```js
+{ computed: false, state: 'not-computed', reason: '…' }
+```
+
+**It is never simply omitted.** A clean render must be distinguishable from one
+that never checked.
 
 ## Tests
 

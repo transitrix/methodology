@@ -76,8 +76,24 @@ function stripScalar(value) {
   return s;
 }
 
-// Walks `canonRoot` into an id → { fields } index. A null/undefined root yields an
+// A `valid_to:` of literal `null` means "no end" — an open interval, not the
+// string "null". Read as a scalar it arrives as text, so it is normalised here
+// rather than at every use site.
+function dateOrNull(value) {
+  if (value === undefined || value === '' || value === 'null' || value === '~') return null;
+  return value;
+}
+
+// Walks `canonRoot` into an id → entry index. A null/undefined root yields an
 // empty index — the no-repository-configured case, which is legitimate input.
+//
+// Each entry carries the fields a reference substitutes AND the three envelope
+// values the four-state classification is decided from. An object with no
+// `admission_state:` is `active`, matching @transitrix/document-view-engine's
+// buildCanonIndex(): absence is the ordinary case, not an unknown one.
+//
+// Proposed and rejected drafts are indexed, never skipped — telling "does not
+// exist" apart from "exists, not admitted" is the whole point of the split.
 export async function buildRepositoryIndex(canonRoot) {
   const index = new Map();
   if (!canonRoot) return index;
@@ -87,7 +103,12 @@ export async function buildRepositoryIndex(canonRoot) {
       const text = await readFile(file, 'utf8');
       const fields = topLevelFields(text);
       if (!fields.id) continue;
-      index.set(fields.id, { fields });
+      index.set(fields.id, {
+        fields,
+        admissionState: fields.admission_state ?? 'active',
+        validFrom: dateOrNull(fields.valid_from),
+        validTo: dateOrNull(fields.valid_to),
+      });
     }
   }
   return index;

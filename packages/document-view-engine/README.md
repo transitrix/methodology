@@ -17,6 +17,34 @@ for `trace` / `view` / `figure` / `figref` (they render as inert pass-through
 markers today), derivation share (§5), telemetry (§6), and PDF output (§7) — later
 layers on top of these.
 
+## What this package admits, and what it defers
+
+The `{{ … }}` directive language is defined **once**, normatively, in
+[`notations/views/documents/DIRECTIVE_LANGUAGE.md`](../../notations/views/documents/DIRECTIVE_LANGUAGE.md).
+This package implements a subset of it. Both halves are stated here because
+stating only the first leaves an author unable to tell "not in the language"
+from "not in this package".
+
+| Construct | This package |
+|---|---|
+| Fixed text, `\{{` escape | **admits** |
+| Inline reference `{{ REQ-14 }}` | **admits** — parsed, resolved, rendered |
+| Field path `{{ REQ-14.parent.title }}` (depth 3) | **admits** |
+| `{{ .field }}` (row reference) | **admits** — bound to the enclosing `each` row |
+| `{{# each … }} … {{/ each }}` | **admits** — parsed, selected, rendered |
+| `{{ trace … }}` | **parses; defers** rendering — inert pass-through marker |
+| `{{ view … }}` / `{{ figure … }}` / `{{ figref … }}` | **parses; defers** rendering — inert pass-through markers |
+| `{{# instruct … }} … {{/ instruct }}` | **defers** — an instruction slot is `@transitrix/document-renderer`'s |
+| `⚑S` link suspicion | **admits** — computed for `REL`/claim records (see §3 below) |
+
+A deferred construct is **recognised, not implemented here** — never reported as
+unknown syntax. The two packages' subsets are complementary, not competing:
+this one owns `each` selection and rendering, the other owns `.ttrs` templates
+and instruction slots. They implement one language, not two.
+
+Document kinds — `mrd`, `srs`, `sdd`, `sds` — are **kinds, not notations**
+(`DIRECTIVE_LANGUAGE.md` §1).
+
 ## Skeleton file shape
 
 ```markdown

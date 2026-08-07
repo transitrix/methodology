@@ -19,6 +19,27 @@
 // renders as empty text. The distinct codes matter — a caller must be able to
 // tell "you have no repository configured" (TTRS-011) apart from "your
 // repository does not contain this id" (TTRS-010).
+//
+// A reference lands in exactly one of FOUR distinguishable states. The three
+// canon-side ones are @transitrix/document-view-engine's own
+// (resolveReference()'s ⚑U / ⚑A / ⚑V), deliberately reused rather than
+// re-invented — one notation must not grow two classifications of the same
+// failure. The fourth is this pass's, and is about configuration, not canon:
+//
+//   unresolved         ⚑U  TTRS-010  no object with that id in the repository
+//   not-admitted       ⚑A  TTRS-014  it exists, but admission_state isn't active
+//   out-of-validity    ⚑V  TTRS-015  [valid_from, valid_to] misses the render date
+//   no-repository      —   TTRS-011  the template cites canon; none is configured
+//
+// The worst defect this guards against is not a missing reference — it is a
+// reference that resolves and renders as plainly correct text when the object
+// behind it was never admitted, or stopped being valid. So a non-ok state is
+// never rendered as its bare value.
+//
+// ⚑S (suspect) is NOT in this pass, and is reported as "not computed" rather
+// than omitted: a clean render has to be distinguishable from one that never
+// checked. Three standing reasons, none of them a time-box — see the
+// `suspicion` field of the result and DIRECTIVE_LANGUAGE.md.
 
 import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
@@ -26,12 +47,53 @@ import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { parseTemplate, templateKindFromFilename } from './parse-template.mjs';
 import { buildRepositoryIndex } from './repository.mjs';
 
-// Rendered in place of a reference the run could not resolve. The run has already
-// failed by the time this is visible; it exists so the failure is never a blank.
+// Rendered in place of a reference that did not land in `ok`. The run has already
+// failed by the time this is visible; it exists so the failure is never a blank,
+// and never a value that reads as correct.
 const UNRESOLVED_MARKER = (id) => `«unresolved: ${id}»`;
+const STATE_MARKER = (state, id) => `«${STATES[state].label}: ${id}»`;
+
+// The one place a state's code, flag and wording live together.
+const STATES = {
+  unresolved: { code: 'TTRS-010', flag: '⚑U', label: 'unresolved' },
+  'not-admitted': { code: 'TTRS-014', flag: '⚑A', label: 'not admitted' },
+  'out-of-validity': { code: 'TTRS-015', flag: '⚑V', label: 'out of validity' },
+};
+
+// Why ⚑S is absent, carried in the result so a caller never has to guess
+// whether suspicion was clean or simply never run.
+const SUSPICION_NOT_COMPUTED = {
+  computed: false,
+  state: 'not-computed',
+  reason:
+    'link suspicion (⚑S) is not computed in pass 1: it is out of scope by the '
+    + 'rendered-documents decision, it is derived from commit history rather than '
+    + 'read from a file, and CONTRACT.md §16.2 scopes it to REL/claim records '
+    + 'rather than the element references a template cites.',
+};
 
 // Field consulted, in order, when a reference names no field path of its own.
 const DEFAULT_FIELDS = ['name', 'title', 'id'];
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function coversDate(validFrom, validTo, renderDate) {
+  if (validFrom === null || validFrom === undefined) return true; // nothing to check against
+  if (renderDate < validFrom) return false;
+  if (validTo !== null && validTo !== undefined && renderDate > validTo) return false;
+  return true;
+}
+
+// The §3 classification, in document-view-engine's order: existence, then
+// admission, then validity. Returns 'ok' when the object is usable.
+function classifyReference(entry, renderDate) {
+  if (!entry) return 'unresolved';
+  if (entry.admissionState !== 'active') return 'not-admitted';
+  if (!coversDate(entry.validFrom, entry.validTo, renderDate)) return 'out-of-validity';
+  return 'ok';
+}
 
 function needsRepository(ast) {
   return ast.some((node) => node.type === 'reference' || node.type === 'view');
@@ -54,37 +116,69 @@ function traverse(entry, fields, index) {
   return undefined;
 }
 
-function renderReference(node, index, errors) {
-  const entry = index.get(node.id);
-  if (!entry) {
-    errors.push({
-      code: 'TTRS-010',
-      message: `model-object reference "${node.id}" does not resolve — no object with that id is in the repository`,
+// Records one non-ok reference state: always as a finding, and — in the strict
+// profile — as an error that fails the run. The message names the file, the id
+// and the state, in that order, because that is the order someone fixing it
+// needs them in.
+function recordState(node, state, ctx) {
+  const { code, label, flag } = STATES[state];
+  ctx.findings.push({ code, state, flag, id: node.id, file: ctx.templateLabel });
+  ctx.states[state] = (ctx.states[state] ?? 0) + 1;
+  if (ctx.profile === 'strict') {
+    ctx.errors.push({
+      code,
+      message: `${ctx.templateLabel}: model-object reference "${node.id}" is ${label}`,
     });
-    return UNRESOLVED_MARKER(node.id);
+  }
+}
+
+function renderReference(node, index, ctx) {
+  const entry = index.get(node.id);
+  const state = classifyReference(entry, ctx.renderDate);
+
+  if (state !== 'ok') {
+    recordState(node, state, ctx);
+    // In review the value is shown WITH its flag, so a reader sees both what the
+    // template meant and that it is not usable. In strict it never renders as
+    // its bare value — a wrong-but-plausible render is the defect being guarded
+    // against, and it is worse than a visibly missing one.
+    if (ctx.profile === 'review' && entry) {
+      const value = readValue(node, entry, index);
+      if (value !== undefined) return `${value} ${STATES[state].flag}`;
+    }
+    return STATE_MARKER(state, node.id);
   }
 
+  ctx.states.ok = (ctx.states.ok ?? 0) + 1;
+
+  const value = readValue(node, entry, index);
+  if (value !== undefined) return value;
+
+  // The object is admitted and in validity; it is the field path that is absent.
+  const path = node.fields.length === 0
+    ? node.id
+    : `${node.id}.${node.fields.join('.')}`;
+  const detail = node.fields.length === 0
+    ? `resolves, but the object carries none of: ${DEFAULT_FIELDS.join(', ')}`
+    : 'does not resolve — the field path is not present on that object';
+  ctx.errors.push({
+    code: 'TTRS-010',
+    message: `${ctx.templateLabel}: model-object reference "${path}" ${detail}`,
+  });
+  return UNRESOLVED_MARKER(path);
+}
+
+// The value a reference substitutes: its own field path, or the first of the
+// default fields the object carries. `undefined` when neither is present.
+function readValue(node, entry, index) {
+  if (!entry) return undefined;
   if (node.fields.length === 0) {
     for (const name of DEFAULT_FIELDS) {
       if (entry.fields[name] !== undefined) return entry.fields[name];
     }
-    errors.push({
-      code: 'TTRS-010',
-      message: `model-object reference "${node.id}" resolves, but the object carries none of: ${DEFAULT_FIELDS.join(', ')}`,
-    });
-    return UNRESOLVED_MARKER(node.id);
+    return undefined;
   }
-
-  const value = traverse(entry, node.fields, index);
-  if (value === undefined) {
-    const path = `${node.id}.${node.fields.join('.')}`;
-    errors.push({
-      code: 'TTRS-010',
-      message: `model-object reference "${path}" does not resolve — the field path is not present on that object`,
-    });
-    return UNRESOLVED_MARKER(path);
-  }
-  return value;
+  return traverse(entry, node.fields, index);
 }
 
 function resolveAssetPath(baseDir, path) {
@@ -156,14 +250,40 @@ function renderFigref(node, ctx, errors) {
  * @param {Function} [options.rasterise]   hook turning a resolved figure source into
  *                                         the path to embed; omitted, the source path
  *                                         is embedded as-is
- * @returns {Promise<{ok, markdown, header, instructionSlots, figures, errors}>}
+ * @param {'strict'|'review'} [options.profile] `strict` (default) fails the run on
+ *                                         every non-ok reference state; `review`
+ *                                         renders each one flagged and does not fail.
+ *                                         Corresponds to @transitrix/document-view-engine's
+ *                                         `clean` / `review` pair.
+ * @param {string} [options.renderDate]    ISO date validity is resolved at; defaults to
+ *                                         today. Pin it to keep runs on different days
+ *                                         byte-identical — the date is an input.
+ * @returns {Promise<{ok, markdown, header, instructionSlots, figures, errors, findings, states, suspicion, profile, renderDate}>}
  */
-export async function runPass1({ text, templatePath, repositoryRoot, rasterise } = {}) {
+export async function runPass1({
+  text, templatePath, repositoryRoot, rasterise, profile = 'strict', renderDate,
+} = {}) {
+  if (profile !== 'strict' && profile !== 'review') {
+    throw new Error(`runPass1: profile must be "strict" or "review", got "${profile}"`);
+  }
+  const date = renderDate ?? todayIso();
   const { header, ast, errors } = parseTemplate(text);
 
-  if (header === null) {
-    return { ok: false, markdown: '', header: null, instructionSlots: [], figures: [], errors };
-  }
+  const emptyResult = (hdr) => ({
+    ok: false,
+    markdown: '',
+    header: hdr,
+    instructionSlots: [],
+    figures: [],
+    errors,
+    findings: [],
+    states: {},
+    suspicion: SUSPICION_NOT_COMPUTED,
+    profile,
+    renderDate: date,
+  });
+
+  if (header === null) return emptyResult(null);
 
   if (templatePath) {
     const kindFromName = templateKindFromFilename(basename(templatePath));
@@ -187,10 +307,15 @@ export async function runPass1({ text, templatePath, repositoryRoot, rasterise }
     canonRoot = resolvePath(join(dirname(templatePath), canonRoot));
   }
 
-  if (!canonRoot && needsRepository(ast)) {
+  // The fourth state, and the only one that is about configuration rather than
+  // canon. Named in the same breath as the other three so a caller reading the
+  // findings never has to look in two places for "why did nothing resolve".
+  const templateLabel = templatePath ? basename(templatePath) : '<template>';
+  const noRepository = !canonRoot && needsRepository(ast);
+  if (noRepository) {
     errors.push({
       code: 'TTRS-011',
-      message: 'template references a model object but no repository is configured',
+      message: `${templateLabel}: template references a model object but no repository is configured`,
     });
   }
 
@@ -202,6 +327,14 @@ export async function runPass1({ text, templatePath, repositoryRoot, rasterise }
     rasterise: rasterise ?? null,
     figures: [],
     figureNumbers: new Map(),
+    profile,
+    renderDate: date,
+    templateLabel,
+    errors,
+    findings: noRepository
+      ? [{ code: 'TTRS-011', state: 'no-repository', flag: null, id: null, file: templateLabel }]
+      : [],
+    states: noRepository ? { 'no-repository': 1 } : {},
   };
 
   const instructionSlots = [];
@@ -213,7 +346,9 @@ export async function runPass1({ text, templatePath, repositoryRoot, rasterise }
         out.push(node.value);
         break;
       case 'reference':
-        out.push(canonRoot ? renderReference(node, index, errors) : UNRESOLVED_MARKER(node.id));
+        // With no repository the run has already failed as TTRS-011; the id is
+        // still marked in the output rather than left blank.
+        out.push(canonRoot ? renderReference(node, index, ctx) : UNRESOLVED_MARKER(node.id));
         break;
       case 'view':
       case 'figure':
@@ -247,6 +382,14 @@ export async function runPass1({ text, templatePath, repositoryRoot, rasterise }
     instructionSlots,
     figures: ctx.figures,
     errors,
+    // Every non-ok reference state, in document order, whatever the profile —
+    // `review` reports exactly what `strict` fails on.
+    findings: ctx.findings,
+    states: ctx.states,
+    // Never omitted. "Clean" and "never checked" must not look alike.
+    suspicion: SUSPICION_NOT_COMPUTED,
+    profile,
+    renderDate: date,
   };
 }
 

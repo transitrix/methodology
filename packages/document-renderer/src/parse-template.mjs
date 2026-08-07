@@ -13,6 +13,19 @@
 // and a body AST. It resolves nothing against a repository and renders nothing —
 // that is pass1.mjs, built on top of this AST.
 //
+// The directive language is ONE language with more constructs than this pass
+// implements (DIRECTIVE_LANGUAGE.md, notations/views/documents/). Two failures
+// that look alike from a distance are kept apart on purpose:
+//
+//   TTRS-002  unknown or malformed syntax — not in the language at all
+//   TTRS-004  recognised, not implemented in this pass — `each`, `trace` and
+//             the `.field` row reference are defined constructs this parser
+//             names and declines, never silently drops and never reports as
+//             though the author mistyped something
+//
+// Folding the second into the first would tell an author their valid template
+// is a typo.
+//
 // Zero dependencies, own copy of the minimal bits it needs — same posture as
 // decisions-cli's src/yaml.mjs (no cross-package runtime dependency).
 
@@ -98,6 +111,14 @@ const INSTRUCT_OPEN = /^#\s*instruct(?:\s+([^\s}]+))?\s*$/;
 const INSTRUCT_CLOSE = '{{/ instruct }}';
 const INSTRUCT_CLOSE_RE = /\{\{\/\s*instruct\s*\}\}/;
 
+// `{{# each TYPE where … order by … }} … {{/ each }}` — a construct of the
+// language this pass does not implement. Scanned to its close and reported
+// once, so an author gets one honest "not implemented here" rather than a
+// cascade of syntax errors from the block's own contents.
+const EACH_OPEN = /^#\s*each(\s|$)/;
+const EACH_CLOSE = '{{/ each }}';
+const EACH_CLOSE_RE = /\{\{\/\s*each\s*\}\}/;
+
 function tokenize(body) {
   const tokens = [];
   const errors = [];
@@ -136,6 +157,26 @@ function tokenize(body) {
         const rawSource = body.slice(i, bodyEnd + closeMatch[0].length);
         tokens.push(parseInstruct(openMatch[1], body.slice(bodyStart, bodyEnd), rawSource, errors));
         i = bodyEnd + closeMatch[0].length;
+        continue;
+      }
+      if (EACH_OPEN.test(content.trim())) {
+        flushText();
+        const afterOpen = close + 2;
+        const eachClose = EACH_CLOSE_RE.exec(body.slice(afterOpen));
+        if (!eachClose) {
+          errors.push({
+            code: 'TTRS-004',
+            message: `"{{ ${content.trim()} }}" is recognised, not implemented in this pass — and it is never closed either (expected a matching "${EACH_CLOSE}")`,
+          });
+          i = body.length;
+          break;
+        }
+        errors.push({
+          code: 'TTRS-004',
+          message: `"{{ ${content.trim()} }}": the \`each\` block is a construct of the directive language that pass 1 does not implement — recognised, not implemented in this pass`,
+        });
+        tokens.push({ type: 'unimplemented', construct: 'each' });
+        i = afterOpen + eachClose.index + eachClose[0].length;
         continue;
       }
       flushText();
@@ -290,7 +331,7 @@ function classify(rawContent, errors) {
   if (trimmed.startsWith('#')) {
     errors.push({
       code: 'TTRS-002',
-      message: `unknown block directive "{{${trimmed}}}" — "{{# instruct <slot-id> }}" is the only block form`,
+      message: `unknown block directive "{{${trimmed}}}" — "{{# instruct <slot-id> }}" and "{{# each … }}" are the language's only block forms`,
     });
     return { type: 'error' };
   }
@@ -298,6 +339,26 @@ function classify(rawContent, errors) {
   if (/^view(\s|$)/.test(trimmed)) return parseView(trimmed, errors);
   if (/^figure(\s|$)/.test(trimmed)) return parseFigure(trimmed, errors);
   if (/^figref(\s|$)/.test(trimmed)) return parseFigref(trimmed, errors);
+
+  // Recognised constructs of the language that pass 1 declines by name.
+  if (/^trace(\s|$)/.test(trimmed)) {
+    errors.push({
+      code: 'TTRS-004',
+      message: `"{{ ${trimmed} }}": \`trace\` is a construct of the directive language that pass 1 does not implement — recognised, not implemented in this pass`,
+    });
+    return { type: 'unimplemented', construct: 'trace' };
+  }
+
+  // `{{ .field }}` — the row reference, meaningful only inside an `each` block.
+  // Reported as unimplemented rather than as a malformed id: it is in the
+  // language, and its own block form is what pass 1 does not implement.
+  if (trimmed.startsWith('.')) {
+    errors.push({
+      code: 'TTRS-004',
+      message: `"{{ ${trimmed} }}": a field reference belongs to an \`each\` block — recognised, not implemented in this pass`,
+    });
+    return { type: 'unimplemented', construct: 'field-ref' };
+  }
 
   if (/\s/.test(trimmed)) {
     errors.push({ code: 'TTRS-002', message: `unrecognised directive "{{ ${trimmed} }}"` });

@@ -218,9 +218,50 @@ check(templateKindFromFilename('product.mrd.trs') === undefined, 'the .trs near-
   check(hasCode(errors, 'TTRS-003'), 'two slots may not share one id — the run record names each slot');
 }
 
+// ── Recognised, not implemented in this pass (TTRS-004) ─────────────────
+// `each` and `trace` are constructs of the one directive language, not typos.
+// They must never be reported in the same bucket as malformed syntax, and must
+// never be dropped silently.
+
 {
   const { errors } = parseTemplate(tpl('{{# each REQUIREMENT }}x{{/ each }}'));
-  check(hasCode(errors, 'TTRS-002'), 'instruct is the only block form');
+  check(hasCode(errors, 'TTRS-004'), 'an `each` block is recognised, not implemented — not TTRS-002');
+  check(!hasCode(errors, 'TTRS-002'), 'an `each` block is never reported as unknown syntax');
+}
+
+{
+  const where = '{{# each REQUIREMENT where level = "system" and kind != "safety" order by id }}'
+    + '{{ .title }}{{/ each }}';
+  const { errors } = parseTemplate(tpl(where));
+  check(hasCode(errors, 'TTRS-004'), 'a full `each` with where/order by is recognised, not implemented');
+  check(!hasCode(errors, 'TTRS-002'),
+    "the block's contents raise no syntax errors of their own — it is consumed whole");
+  checkEqual(errors.filter((e) => e.code === 'TTRS-004').length, 1,
+    'one honest report per unimplemented block, not a cascade');
+}
+
+{
+  const { errors } = parseTemplate(tpl('{{ trace from = REQUIREMENT to = TEST via = verifies }}'));
+  check(hasCode(errors, 'TTRS-004'), '`trace` is recognised, not implemented — not TTRS-002');
+  check(!hasCode(errors, 'TTRS-002'), '`trace` is never reported as unknown syntax');
+}
+
+{
+  const { errors } = parseTemplate(tpl('{{ .title }}'));
+  check(hasCode(errors, 'TTRS-004'),
+    'a bare field reference belongs to `each` — recognised, not a malformed id');
+}
+
+{
+  const { errors } = parseTemplate(tpl('{{# each REQUIREMENT }}x'));
+  check(hasCode(errors, 'TTRS-004'), 'an unclosed `each` still reports as recognised-not-implemented');
+}
+
+{
+  // Still genuinely unknown syntax — the new code must not swallow this one.
+  const { errors } = parseTemplate(tpl('{{# repeat REQUIREMENT }}x{{/ repeat }}'));
+  check(hasCode(errors, 'TTRS-002'), 'an undefined block form is still TTRS-002');
+  check(!hasCode(errors, 'TTRS-004'), 'an undefined block form is not dressed up as unimplemented');
 }
 
 // ── Mixed ────────────────────────────────────────────────────────────────
