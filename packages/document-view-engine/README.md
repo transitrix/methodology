@@ -9,7 +9,8 @@ their own repository.
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
 rendering, the `trace` coverage matrix, `view` rendering for the `blocks`
-notation, derivation share (§5), and telemetry (§6).** `parseSkeleton()` turns a skeleton file's text
+notation, derivation share (§5), telemetry (§6), and §7 output (print stylesheet, the
+print-engine seam, and page-geometry verification).** `parseSkeleton()` turns a skeleton file's text
 into a header object and a body AST. `resolveReference()` / `createResolver()`
 classify an id against canon into one of the four states below. `createEvaluator()`
 resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
@@ -22,7 +23,13 @@ derivation-share and illustrations lines. `view` renders a `blocks` notation
 other notation, or the `blocks` notation's `grid:` (matrix-subset) root, renders as a
 missing/failed illustration — those are later slices on this epic. `renderDocument()`
 also returns a §6 telemetry snapshot alongside the derivation-share numbers, in the
-same single pass. Not yet built: PDF output (§7) — a later layer on top of these.
+same single pass. `wrapDocument()` (`src/pdf-layout.mjs`) wraps a rendered `html`
+body in a standalone document carrying the §7 print stylesheet — page size, every
+`dv-*` class's print colour/border, and the `dv-fit-page` landscape-page rule;
+`convertToPdf()` runs it through a **caller-supplied** print engine and verifies the
+resulting page geometry (`src/pdf-geometry.mjs`). The engine itself is not bundled:
+it is a dependency this repo does not carry today, so it is a parameter — see the
+"PDF output" section below.
 
 ## Skeleton file shape
 
@@ -235,6 +242,61 @@ inline, field-ref, `figure`, `view`, and `figref` alike — so the tally covers 
 whole render, not only spans. `telemetry` is always returned, identically, regardless
 of `profile`; only the printed HTML differs between `review` and `clean`.
 
+## PDF output (§7)
+
+Three pieces, in the order the output actually happens: **declare** the page geometry,
+**convert** through a print engine, **verify** the geometry of what came back.
+
+### Declare — `src/pdf-layout.mjs`
+
+`wrapDocument(bodyHtml, { title })` wraps a `renderDocument()` body in a standalone
+`<html>` document carrying `buildStylesheet()`'s CSS: `@page { size: A4; margin:
+20mm; }` for the default portrait page, a named `@page landscape { size: A4 landscape;
+margin: 15mm; }` for a `dv-fit-page` illustration, and the print colour/border for
+every `dv-*` class `render.mjs` emits (§4's state colours, the four illustration
+border classes, the `dv-trace` table).
+
+### Convert — the engine is a parameter, not a dependency
+
+This package bundles no print engine. Turning HTML into PDF bytes needs a headless
+rendering engine, which is a dependency it does not carry today (`"dependencies": {}`
+— see `package.json`); which engine to adopt is an open architecture question, filed
+separately rather than decided inside this slice. So the engine is supplied by the
+caller:
+
+```js
+import { convertToPdf } from '@transitrix/document-view-engine/src/pdf-layout.mjs';
+
+const { pdf, geometry } = await convertToPdf(html, {
+  title: 'Design Description',
+  convert: (doc) => myPrintEngine.render(doc),   // HTML in, PDF bytes out
+});
+```
+
+Everything around the engine — wrap, convert, verify — is implemented and tested here,
+so adopting an engine later is supplying one function rather than writing this half.
+
+### Verify — `src/pdf-geometry.mjs`
+
+`verifyPageGeometry(pdfBytes)` reads every page's `/MediaBox` (honouring `/Rotate` and
+page-tree inheritance) and checks it is A4 in one of the two declared orientations —
+595 × 842 pt portrait, 842 × 595 pt landscape, ±1 pt. `convertToPdf` runs it by default
+and **throws** on a mismatch.
+
+The check is the point of §7, not decoration: an engine that ignores `@page { size:
+A4 }` falls back to its own default paper — 612 × 792 pt, US Letter — and produces a
+plausible-looking PDF whose last centimetres spill onto a second page every time. That
+case is reported by name ("US Letter — the page-size declaration was ignored"), not as
+a bare size mismatch. A PDF whose page objects cannot be read at all (compressed object
+streams) is also a failure, never a vacuous pass: an unverifiable page size is not a
+verified one.
+
+```js
+import { verifyPageGeometry } from '@transitrix/document-view-engine/src/pdf-geometry.mjs';
+
+const { ok, pages, problems } = verifyPageGeometry(pdfBytes);
+```
+
 ## Tests
 
 ```
@@ -245,4 +307,6 @@ node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
 node packages/document-view-engine/tests/test_derivation_share.mjs
 node packages/document-view-engine/tests/test_telemetry.mjs
+node packages/document-view-engine/tests/test_pdf_layout.mjs
+node packages/document-view-engine/tests/test_pdf_geometry.mjs
 ```
