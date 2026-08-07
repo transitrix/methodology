@@ -10,11 +10,14 @@
 //     that itself is out of validity flags the whole chain, not just the leaf)
 //   - which objects does `{{# each TYPE where ... order by ... }}` select,
 //     and in what order
+//   - for `{{ trace from = A to = B via = kind }}`, the full A×B coverage
+//     matrix — every row and column, covered or not (§2's "an uncovered
+//     item is the point of the matrix")
 //
 // Scope of this module: inline field access (with traversal, §2's "Inline"
-// table) and `each` selection (§2's "Selection"). It does NOT evaluate
-// `trace` / `view` / `figure` / `figref` — those need a matrix builder and an
-// illustration pipeline respectively, left as later layers (see this
+// table), `each` selection (§2's "Selection"), and `trace` matrix building
+// (§2's "Trace matrix"). It does NOT evaluate `view` / `figure` / `figref` —
+// those need an illustration pipeline, left as a later layer (see this
 // package's README for what's still open on the epic).
 //
 // Zero dependencies, own copy of field extraction — same posture as
@@ -151,5 +154,64 @@ export async function createEvaluator(canonRoot) {
     return rows;
   }
 
-  return { index, resolveReference, evaluateFieldPath, evaluateEach };
+  // Builds the full `node.from` × `node.to` coverage matrix for `via` (§2's
+  // "Trace matrix"). Every admitted, in-effect object of each type gets a
+  // row/column regardless of coverage — an uncovered item is the point of
+  // the matrix, so nothing is filtered out the way `evaluateEach`'s `where`
+  // does.
+  //
+  // `via` names either of the two link mechanisms canon already has, and
+  // this resolves both without the caller having to say which:
+  //   - a first-class REL kind (17-relations.md §3, e.g. `parent`,
+  //     `realizes`): a REL record's own `endpoints.{from,to}` pair (built by
+  //     resolve-references.mjs), kept only when the record's own `type`
+  //     field equals `via`, oriented from → to exactly as the record states.
+  //   - a claim record's single named endpoint field (verifications'
+  //     `verifies`, assertions' `about`, validations' `validates` — the
+  //     other three of resolve-references.mjs's LINK_RECORD_KINDS): the
+  //     record's own id is one end, `endpoints[via]` the other, oriented
+  //     endpoints[via] → record id — the one direction the epic's own
+  //     example (`from = REQUIREMENT to = VERIFICATION via = verifies`)
+  //     exercises.
+  // A `via` matching neither produces an all-empty matrix, not an error —
+  // same posture as an unresolved id elsewhere in this module.
+  async function evaluateTrace(node, { renderDate } = {}) {
+    const { from: fromType, to: toType, via } = node;
+    const rowSet = new Set();
+    const colSet = new Set();
+    for (const [id] of index) {
+      const type = typeOfId(id);
+      if (type !== fromType && type !== toType) continue;
+      // eslint-disable-next-line no-await-in-loop -- one canon walk, bounded by index size
+      const state = await resolveReference(id, { renderDate });
+      if (state.state !== 'ok') continue;
+      if (type === fromType) rowSet.add(id);
+      if (type === toType) colSet.add(id);
+    }
+
+    const covered = new Set();
+    for (const [id, entry] of index) {
+      if (!entry.endpoints) continue;
+      const keys = Object.keys(entry.endpoints);
+      let a;
+      let b;
+      if (keys.length === 2 && keys.includes('from') && keys.includes('to')) {
+        // eslint-disable-next-line no-await-in-loop -- one canon walk, bounded by index size
+        const text = await textOf(entry);
+        if (extractField(text, 'type') !== via) continue;
+        a = entry.endpoints.from;
+        b = entry.endpoints.to;
+      } else if (via in entry.endpoints) {
+        a = entry.endpoints[via];
+        b = id;
+      } else {
+        continue;
+      }
+      if (rowSet.has(a) && colSet.has(b)) covered.add(`${a}|${b}`);
+    }
+
+    return { rows: [...rowSet].sort(), cols: [...colSet].sort(), covered };
+  }
+
+  return { index, resolveReference, evaluateFieldPath, evaluateEach, evaluateTrace };
 }

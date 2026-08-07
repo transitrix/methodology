@@ -179,6 +179,31 @@ async function run() {
     check(threw, 'an unknown profile value is rejected rather than silently rendering something');
   }
 
+  // trace matrix — every row/column renders, covered cells get their own class
+  {
+    const matrix = {
+      rows: ['REQUIREMENT-A-1', 'REQUIREMENT-B-1'],
+      cols: ['VERIFICATION-1'],
+      covered: new Set(['REQUIREMENT-A-1|VERIFICATION-1']),
+    };
+    const evaluator = { async evaluateTrace() { return matrix; } };
+    const ast = [{ type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' }];
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    check(review.html.includes('<table class="dv-trace">'), 'trace: renders as a table');
+    check(review.html.includes('<th>REQUIREMENT-A-1</th>'), 'trace: every row id is a header cell');
+    check(review.html.includes('<th>REQUIREMENT-B-1</th>'), 'trace: an uncovered row still renders, not dropped');
+    check(review.html.includes('<th>VERIFICATION-1</th>'), 'trace: every col id is a header cell');
+    check(review.html.includes('<td class="dv-trace-cell dv-ok">✓</td>'), 'trace: a covered cell renders ok-coloured with a checkmark');
+    check(review.html.includes('<td class="dv-trace-cell dv-unresolved"><sup class="dv-flag">⚑U</sup></td>'), 'trace: an uncovered cell renders unresolved-coloured with the ⚑U flag');
+    check(!review.failed, 'trace: an uncovered cell never fails the clean-profile build — it is a coverage gap, not a §3 state');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
+    check(clean.html.includes('<td class="dv-clean">✓</td>'), 'trace clean: a covered cell renders plain with a checkmark, no colour class');
+    check(clean.html.includes('<td class="dv-clean"></td>'), 'trace clean: an uncovered cell renders plain and empty, no flag');
+    check(!clean.failed, 'trace clean: coverage gaps never fail the clean-profile build');
+  }
+
   // ── Integration — real parseSkeleton + createEvaluator end to end ──
   {
     function writeYaml(dir, name, lines) {

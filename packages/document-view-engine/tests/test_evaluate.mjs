@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Unit + fixture tests for src/evaluate.mjs — the document-view engine's
-// derived-content evaluation: inline field access with traversal, and
-// `each` selection (§2's "Inline" and "Selection" forms).
+// derived-content evaluation: inline field access with traversal, `each`
+// selection (§2's "Inline" and "Selection" forms), and the `trace` matrix
+// (§2's "Trace matrix").
 //
 // Run: node packages/document-view-engine/tests/test_evaluate.mjs
 // Exit: 0 = all pass; 1 = a check failed.
@@ -70,6 +71,39 @@ async function run() {
     'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
   ]);
 
+  // ── Trace matrix fixtures ──
+  // Claim-record path: VERIFICATION.verifies → REQUIREMENT, the epic's own
+  // example. REQUIREMENT-PARENT-1 gets a verification; REQUIREMENT-CHILD-1,
+  // -BROKEN-PARENT-1 and -HARDWARE-1 (all still 'ok' at renderDate) stay
+  // uncovered rows on purpose.
+  writeYaml(join(canonRoot, 'verifications'), 'VERIFICATION-PARENT-CHECK-1.yaml', [
+    'notation: verification', 'id: VERIFICATION-PARENT-CHECK-1',
+    'verifies: REQUIREMENT-PARENT-1', 'method: test', 'outcome: pass',
+    'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+
+  // First-class REL path: a `parent` relation between two CAPABILITY
+  // elements — also exercises typeOfId()'s CAPABILITY V/H prefix case.
+  // CAPABILITY-V2 carries no relation, an uncovered row on purpose.
+  const capDir = join(canonRoot, 'elements', '03_capabilities');
+  writeYaml(capDir, 'CAPABILITY-V1.yaml', [
+    'notation: capability', 'id: CAPABILITY-V1', 'name: "Root capability"',
+    'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+  writeYaml(capDir, 'CAPABILITY-V1.1.yaml', [
+    'notation: capability', 'id: CAPABILITY-V1.1', 'name: "Child capability"',
+    'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+  writeYaml(capDir, 'CAPABILITY-V2.yaml', [
+    'notation: capability', 'id: CAPABILITY-V2', 'name: "Unrelated capability"',
+    'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+  writeYaml(join(canonRoot, 'relations'), 'REL-CAP-V1-PARENT-1.yaml', [
+    'notation: relation', 'id: REL-CAP-V1-PARENT-1', 'type: parent',
+    'from: CAPABILITY-V1.1', 'to: CAPABILITY-V1',
+    'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+
   const evaluator = await createEvaluator(canonRoot);
   const renderDate = '2026-08-06';
 
@@ -130,6 +164,31 @@ async function run() {
       { renderDate },
     );
     checkEqual(JSON.stringify(rows), JSON.stringify(['REQUIREMENT-HARDWARE-1']), '"!=" excludes the matching value and selects the rest');
+  }
+
+  // ── Trace matrix ──
+  {
+    const matrix = await evaluator.evaluateTrace({ from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' }, { renderDate });
+    checkEqual(
+      JSON.stringify(matrix.rows),
+      JSON.stringify(['REQUIREMENT-BROKEN-PARENT-1', 'REQUIREMENT-CHILD-1', 'REQUIREMENT-HARDWARE-1', 'REQUIREMENT-PARENT-1']),
+      'trace: rows are every "ok" REQUIREMENT, verified or not — draft/expired excluded like everywhere else in §3',
+    );
+    checkEqual(JSON.stringify(matrix.cols), JSON.stringify(['VERIFICATION-PARENT-CHECK-1']), 'trace: cols are every "ok" VERIFICATION');
+    check(matrix.covered.has('REQUIREMENT-PARENT-1|VERIFICATION-PARENT-CHECK-1'), 'trace: a claim record\'s named endpoint field (verifies) marks its cell covered');
+    check(!matrix.covered.has('REQUIREMENT-CHILD-1|VERIFICATION-PARENT-CHECK-1'), 'trace: an unverified requirement\'s row has no covered cell — the empty row renders, not dropped');
+  }
+  {
+    const matrix = await evaluator.evaluateTrace({ from: 'CAPABILITY', to: 'CAPABILITY', via: 'parent' }, { renderDate });
+    checkEqual(JSON.stringify(matrix.rows), JSON.stringify(['CAPABILITY-V1', 'CAPABILITY-V1.1', 'CAPABILITY-V2']), 'trace: CAPABILITY V/H ids are recognised as rows via typeOfId()');
+    check(matrix.covered.has('CAPABILITY-V1.1|CAPABILITY-V1'), 'trace: a first-class REL kind (type: parent) marks its (from, to) cell covered, oriented as the REL record states');
+    check(!matrix.covered.has('CAPABILITY-V1|CAPABILITY-V1.1'), 'trace: REL orientation is not symmetric — the reverse pair is not covered');
+    check(!matrix.covered.has('CAPABILITY-V2|CAPABILITY-V1'), 'trace: an object with no matching relation contributes only an empty row/column');
+  }
+  {
+    const matrix = await evaluator.evaluateTrace({ from: 'REQUIREMENT', to: 'VERIFICATION', via: 'no-such-kind' }, { renderDate });
+    checkEqual(matrix.covered.size, 0, 'trace: a via matching neither mechanism produces an all-empty matrix, not an error');
+    check(matrix.rows.length > 0 && matrix.cols.length > 0, 'trace: rows/cols still populate even when nothing is covered');
   }
 
   rmSync(orgRoot, { recursive: true, force: true });

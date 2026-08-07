@@ -7,15 +7,16 @@ ships with this package — a layout is authored by whoever needs that document,
 their own repository.
 
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
-evaluation, render profiles (§4) for `inline`/`each` content, and `figure`/`figref`
-rendering.** `parseSkeleton()` turns a skeleton file's text into a header object and
-a body AST. `resolveReference()` / `createResolver()` classify an id against canon
-into one of the four states below. `createEvaluator()` resolves `{{ ID.field }}`
-traversal and `{{# each ... }}` selection against canon. `renderDocument()` walks
-the AST through an evaluator and emits HTML in the `review` or `clean` profile,
-including numbered, bordered `figure` illustrations and the `figref` references that
-point at them. Not yet built: `trace` (a coverage matrix) and `view` (a model view
-rendered at build time — they still render as inert pass-through markers today),
+evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
+rendering, and the `trace` coverage matrix.** `parseSkeleton()` turns a skeleton
+file's text into a header object and a body AST. `resolveReference()` /
+`createResolver()` classify an id against canon into one of the four states below.
+`createEvaluator()` resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection,
+and `{{ trace ... }}` coverage matrices against canon. `renderDocument()` walks the
+AST through an evaluator and emits HTML in the `review` or `clean` profile, including
+numbered, bordered `figure` illustrations, the `figref` references that point at
+them, and the `trace` matrix as an HTML table. Not yet built: `view` (a model view
+rendered at build time — it still renders as an inert pass-through marker today),
 derivation share (§5), telemetry (§6), and PDF output (§7) — later layers on top of
 these.
 
@@ -112,6 +113,18 @@ expression, not just the id nearest the reader. `evaluateEach(node, opts)` selec
 every object of `node.entityType` whose §3 state resolves `ok`, applies `where`
 (AND-only) and `order by`, and returns the matching ids in order.
 
+`evaluateTrace(node, opts)` builds the full `node.from` × `node.to` coverage matrix
+for `{{ trace from = A to = B via = kind }}`, returning `{ rows, cols, covered }` —
+every `ok`-state object of each type gets a row/column regardless of coverage, and
+`covered` is a `Set` of `"${rowId}|${colId}"` pairs. `via` resolves against either
+mechanism canon already has, without the caller saying which: a first-class `REL`
+kind ([17-relations.md](../../notations/elements/17-relations.md) §3, matched
+against the record's own `type` field, oriented `from` → `to` as the record states),
+or a claim record's single named endpoint field (`verifies` / `about` / `validates`,
+oriented `endpoints[via]` → the record's own id — the direction the epic's own
+example, `from = REQUIREMENT to = VERIFICATION via = verifies`, exercises). A `via`
+matching neither produces an all-empty matrix, not an error.
+
 `renderDocument(ast, evaluator, { profile, renderDate, failOn })` walks the AST and
 emits HTML:
 
@@ -126,9 +139,19 @@ const { html, failed, counts } = await renderDocument(ast, evaluator, { profile:
 | `review` | Every span is coloured by its §3 state (`dv-ok` / `dv-suspect` / `dv-unresolved`); a non-default class also carries a flag glyph (`⚑S`/`⚑A`/`⚑V`/`⚑U`) as a second channel, never colour alone. |
 | `clean` | Everything renders as `dv-clean`, no flags, no counters. `failed` is `true` when a state in `failOn` occurred anywhere in the render (default: `unresolved`, `not-admitted`, `out-of-validity` — `suspect` warns only, per §4). |
 
-`trace` / `view` nodes still render as HTML comments (`<!-- dv-view: not yet
-rendered (...) -->`) rather than throwing — a full-syntax skeleton still renders end
-to end, but those two forms carry no content or classification yet.
+`view` nodes still render as an HTML comment (`<!-- dv-view: not yet rendered (...)
+-->`) rather than throwing — a full-syntax skeleton still renders end to end, but
+this form carries no content or classification yet.
+
+`trace` renders as `<table class="dv-trace">` — one `<th>` row/column header per id,
+one `<td>` per cell. In `review`, a covered cell is `dv-trace-cell dv-ok` with a
+checkmark, an uncovered cell is `dv-trace-cell dv-unresolved` with the `⚑U` flag (the
+closest existing §4 class — a coverage gap has no state of its own in §3). In
+`clean`, every cell is `dv-clean`, a checkmark or empty, no colour or flag. An
+uncovered cell never fails the `clean` profile's build — it marks a coverage gap in
+the model, not a broken reference, so it never feeds `failOn`; that check is
+`REQ-VERIF-COVERAGE-001` ([15-requirement.md](../../notations/elements/15-requirement.md)
+§4), a separate cross-cutting rule.
 
 `figure` / `figref` render for real. Pass `skeletonDir` — the directory containing
 the skeleton file — so a `figure`'s relative image path resolves; an absolute path

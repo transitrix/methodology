@@ -13,13 +13,20 @@
 //            `suspect` warns only, per §4's "clean ... warns").
 //
 // Scope of this module: `inline` and `field-ref` (bound to an `each` row) —
-// the two derived-content forms evaluate.mjs resolves — plus `figure` /
-// `figref` (§2's "Illustrations", §4's manual/missing border classes).
-// `trace` and `view` still render as neutral pass-through placeholders so a
-// full-syntax skeleton still renders end-to-end without throwing; a
-// coverage matrix and an embedded, at-build-time-rendered model view are a
-// later layer — see this package's README for what's still open on the
-// epic.
+// the two derived-content forms evaluate.mjs resolves — `figure` / `figref`
+// (§2's "Illustrations", §4's manual/missing border classes), and `trace`
+// (§2's "Trace matrix", built from evaluate.mjs's evaluateTrace()). `view`
+// still renders as a neutral pass-through placeholder so a full-syntax
+// skeleton still renders end-to-end without throwing; an embedded,
+// at-build-time-rendered model view is a later layer — see this package's
+// README for what's still open on the epic.
+//
+// A trace matrix's uncovered cells are not one of §3's four reference
+// states — they mark a coverage gap in the model, not a broken reference —
+// so they never feed `failedStates` / the `clean` profile's `--fail-on`.
+// `REQ-VERIF-COVERAGE-001` (15-requirement.md §4) is the existing
+// cross-cutting check for "does this build fail on a coverage gap"; this
+// matrix only renders what the model shows.
 //
 // `figure` participates in its own numbering sequence today. §2 treats
 // `view` and `figure` as one shared "illustration" sequence numbered
@@ -57,6 +64,33 @@ function renderSpan(state, content, profile, counts) {
   const info = STATE_INFO[state];
   const flagHtml = info.flag ? `<sup class="dv-flag">${info.flag}</sup>` : '';
   return `<span class="dv-${info.color}">${escapeHtml(content ?? '')}${flagHtml}</span>`;
+}
+
+// ── Trace matrix (§2 "Trace matrix") ────────────────────────────────────
+// Renders every row and every column evaluateTrace() returns, covered or
+// not — an empty row/column is the point of the matrix (§2), never
+// dropped. `clean` renders a plain black table (a check mark or nothing,
+// no colour, no flag); `review` colours a covered cell the same `ok` green
+// as any other resolved reference and an uncovered cell the same
+// unresolved red + ⚑U flag `evaluateFieldPath`'s own unresolved state gets
+// — the closest existing §4 class, since a coverage gap has no state of
+// its own in §3.
+
+function renderTraceTable({ rows, cols, covered }, profile) {
+  const cell = (rowId, colId) => {
+    const hit = covered.has(`${rowId}|${colId}`);
+    if (profile === 'clean') {
+      return `<td class="dv-clean">${hit ? '✓' : ''}</td>`;
+    }
+    return hit
+      ? '<td class="dv-trace-cell dv-ok">✓</td>'
+      : '<td class="dv-trace-cell dv-unresolved"><sup class="dv-flag">⚑U</sup></td>';
+  };
+  const headerCells = cols.map((colId) => `<th>${escapeHtml(colId)}</th>`).join('');
+  const bodyRows = rows
+    .map((rowId) => `<tr><th>${escapeHtml(rowId)}</th>${cols.map((colId) => cell(rowId, colId)).join('')}</tr>`)
+    .join('');
+  return `<table class="dv-trace"><thead><tr><th></th>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
 }
 
 // ── Figure numbering (§2 "Illustrations": "Numbers are assigned at render
@@ -138,11 +172,14 @@ async function renderNode(node, evaluator, ctx, out) {
       return;
     }
 
+    case 'trace': {
+      const matrix = await evaluator.evaluateTrace(node, ctx);
+      out.html.push(renderTraceTable(matrix, ctx.profile));
+      return;
+    }
+
     // Not evaluated yet (see module header) — pass through as an inert
     // marker so a full-syntax skeleton still renders instead of throwing.
-    case 'trace':
-      out.html.push(`<!-- dv-trace: not yet rendered (from=${escapeHtml(node.from)} to=${escapeHtml(node.to)} via=${escapeHtml(node.via)}) -->`);
-      return;
     case 'view':
       out.html.push(`<!-- dv-view: not yet rendered (${escapeHtml(node.path)}) -->`);
       return;
