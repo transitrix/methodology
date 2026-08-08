@@ -27,14 +27,15 @@ The Goals tree is the simplest starting point. The onboarding Skill copies a sta
 
 ## Step 3 — Create an element primitive
 
-Elements referenced across documents get a standalone file. Create a `GOAL` under the motivation layer:
+Elements referenced across documents get a standalone file. Scaffold a `GOAL` under the motivation layer with the CLI — it computes the rest of the envelope for you, so you supply only the element's own content:
 
 ```bash
-cp .templates/elements/01_motivation_template.yaml \
-   canon/elements/01_motivation/goals/GOAL-REVENUE-1.yaml
+npx @transitrix/cli new goal --id GOAL-REVENUE-1 --name "Triple EU revenue" --description "Grow EU revenue 3x over three years."
 ```
 
-Set the canonical envelope ([`notations/ELEMENT_PRIMITIVES.md`](notations/ELEMENT_PRIMITIVES.md) §3): `notation: goal`, a canonical `id` (`GOAL-REVENUE-1` — no leading zeros), `name`, the per-TYPE fields (§7.2), the **admission record** (`zone`/`admitted_at`/`admitted_by`/`gate_checks`, §6) and the **primitive lifecycle** (`valid_from`/`valid_to`, §7). See the worked examples in `transitrix/acme-corp`'s [`canon/elements/01_motivation/goals/`](https://github.com/transitrix/acme-corp/tree/main/canon/elements/01_motivation/goals).
+(Windows PowerShell with a restricted execution policy: `npx.cmd` in place of `npx` — see Step 5.) `--dry-run` previews the file without writing it; `--author` overrides the default committer identity; `--valid-from` overrides today's date if the goal has been true since earlier. Run `transitrix new goal --help` for the full option list, and `transitrix new <driver|constraint|requirement> --help` for the other motivation-layer TYPEs. See the worked examples in `transitrix/acme-corp`'s [`canon/elements/01_motivation/goals/`](https://github.com/transitrix/acme-corp/tree/main/canon/elements/01_motivation/goals).
+
+Already have a hand-authored file that's missing fields? `npx @transitrix/cli validate <file> --fix` fills them in place and reports what it filled.
 
 The view then references the element by ID — it doesn't duplicate it.
 
