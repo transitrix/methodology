@@ -1,6 +1,6 @@
 notation: coverage-metric
 spec_version: "0.1"
-methodology_version: "3.2.0"
+methodology_version: "3.3.0"
 
 # Coverage Metric. Spec: notations/views/reports/22-coverage-metric.md
 # Report-config over the coverage read of canon (sibling of Compliance Impact).
