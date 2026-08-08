@@ -13,24 +13,35 @@
 //            `suspect` warns only, per §4's "clean ... warns").
 //
 // Scope of this module: `inline` and `field-ref` (bound to an `each` row) —
-// the two derived-content forms evaluate.mjs resolves — plus `figure` /
-// `figref` (§2's "Illustrations", §4's manual/missing border classes).
-// `trace` and `view` still render as neutral pass-through placeholders so a
-// full-syntax skeleton still renders end-to-end without throwing; a
-// coverage matrix and an embedded, at-build-time-rendered model view are a
-// later layer — see this package's README for what's still open on the
-// epic.
+// the two derived-content forms evaluate.mjs resolves — `figure` / `figref`
+// (§2's "Illustrations", §4's manual/missing border classes), `trace`
+// (§2's "Trace matrix", built from evaluate.mjs's evaluateTrace()), and
+// `view` for the `blocks` notation (§2's "view renders a model view at
+// build time from its source", blocks-view.mjs). A `view` node for any
+// other notation, or the `blocks` notation's `grid:` (matrix-subset) root,
+// still renders as a missing/failed illustration rather than throwing — the
+// remaining notations are later slices on the same epic, same posture as
+// figure/figref and trace shipping ahead of `view` itself.
 //
-// `figure` participates in its own numbering sequence today. §2 treats
-// `view` and `figure` as one shared "illustration" sequence numbered
-// together in document order — since `view` isn't evaluated yet, it takes
-// no number and no slot. Wiring `view` in later will need to fold it into
-// the same counter this module already builds for `figure`, which will
-// shift every figure number after the first `view` in a mixed-syntax
-// document; flagging now so it isn't a surprise then.
-
-import { access } from 'node:fs/promises';
+// A trace matrix's uncovered cells are not one of §3's four reference
+// states — they mark a coverage gap in the model, not a broken reference —
+// so they never feed `failedStates` / the `clean` profile's `--fail-on`.
+// `REQ-VERIF-COVERAGE-001` (15-requirement.md §4) is the existing
+// cross-cutting check for "does this build fail on a coverage gap"; this
+// matrix only renders what the model shows.
+//
+// `figure` and `view` share one "illustration" numbering sequence, in
+// document order (§2: "Numbers are assigned at render time in document
+// order" — the two forms are not distinguished). `collectFigureNumbers()`
+// below counts both node types in its single ahead-of-render walk.
+//
+// Derivation share (§5), telemetry (§6) and PDF output (§7) are parked —
+// see this package's README for what's still open on the epic.
+import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
+import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
+import { isValidId } from './ids.mjs';
+import { typeOfId } from './evaluate.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
 
@@ -59,6 +70,37 @@ function renderSpan(state, content, profile, counts) {
   return `<span class="dv-${info.color}">${escapeHtml(content ?? '')}${flagHtml}</span>`;
 }
 
+function fail(out, state) {
+  out.failedStates.push(state);
+}
+
+// ── Trace matrix (§2 "Trace matrix") ────────────────────────────────────
+// Renders every row and every column evaluateTrace() returns, covered or
+// not — an empty row/column is the point of the matrix (§2), never
+// dropped. `clean` renders a plain black table (a check mark or nothing,
+// no colour, no flag); `review` colours a covered cell the same `ok` green
+// as any other resolved reference and an uncovered cell the same
+// unresolved red + ⚑U flag `evaluateFieldPath`'s own unresolved state gets
+// — the closest existing §4 class, since a coverage gap has no state of
+// its own in §3.
+
+function renderTraceTable({ rows, cols, covered }, profile) {
+  const cell = (rowId, colId) => {
+    const hit = covered.has(`${rowId}|${colId}`);
+    if (profile === 'clean') {
+      return `<td class="dv-clean">${hit ? '✓' : ''}</td>`;
+    }
+    return hit
+      ? '<td class="dv-trace-cell dv-ok">✓</td>'
+      : '<td class="dv-trace-cell dv-unresolved"><sup class="dv-flag">⚑U</sup></td>';
+  };
+  const headerCells = cols.map((colId) => `<th>${escapeHtml(colId)}</th>`).join('');
+  const bodyRows = rows
+    .map((rowId) => `<tr><th>${escapeHtml(rowId)}</th>${cols.map((colId) => cell(rowId, colId)).join('')}</tr>`)
+    .join('');
+  return `<table class="dv-trace"><thead><tr><th></th>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+}
+
 // ── Figure numbering (§2 "Illustrations": "Numbers are assigned at render
 // time in document order") ─────────────────────────────────────────────
 // A `figref` can name a figure that appears later in the skeleton than the
@@ -73,7 +115,7 @@ function renderSpan(state, content, profile, counts) {
 
 async function collectFigureNumbers(nodes, evaluator, ctx, state) {
   for (const node of nodes) {
-    if (node.type === 'figure') {
+    if (node.type === 'figure' || node.type === 'view') {
       state.count += 1;
       if (node.as) state.numbers.set(node.as, state.count);
     } else if (node.type === 'each') {
@@ -111,7 +153,7 @@ async function renderNode(node, evaluator, ctx, out) {
     case 'inline': {
       const result = await evaluator.evaluateFieldPath(node.id, node.fields, ctx);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
-      if (result.state !== 'ok') out.failedStates.push(result.state);
+      if (result.state !== 'ok') fail(out, result.state);
       return;
     }
 
@@ -120,12 +162,12 @@ async function renderNode(node, evaluator, ctx, out) {
         // buildAst() already rejects a field-ref outside `each` — reachable
         // only if a caller hands render() an AST that skipped that check.
         out.html.push(renderSpan('unresolved', '', ctx.profile, out.counts));
-        out.failedStates.push('unresolved');
+        fail(out, 'unresolved');
         return;
       }
       const result = await evaluator.evaluateFieldPath(ctx.currentRowId, node.fields, ctx);
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
-      if (result.state !== 'ok') out.failedStates.push(result.state);
+      if (result.state !== 'ok') fail(out, result.state);
       return;
     }
 
@@ -138,14 +180,49 @@ async function renderNode(node, evaluator, ctx, out) {
       return;
     }
 
-    // Not evaluated yet (see module header) — pass through as an inert
-    // marker so a full-syntax skeleton still renders instead of throwing.
-    case 'trace':
-      out.html.push(`<!-- dv-trace: not yet rendered (from=${escapeHtml(node.from)} to=${escapeHtml(node.to)} via=${escapeHtml(node.via)}) -->`);
+    case 'trace': {
+      const matrix = await evaluator.evaluateTrace(node, ctx);
+      out.html.push(renderTraceTable(matrix, ctx.profile));
       return;
-    case 'view':
-      out.html.push(`<!-- dv-view: not yet rendered (${escapeHtml(node.path)}) -->`);
+    }
+
+    case 'view': {
+      out.figureCounter += 1;
+      const number = out.figureCounter;
+      const label = `Figure ${number}`;
+      const fitClass = `dv-fit-${node.fit ?? 'width'}`;
+      const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
+      // eslint-disable-next-line no-await-in-loop -- order matters; this node's own illustration number must be assigned before the next one
+      const exists = await fileExists(absPath);
+      let svg = null;
+      let suspect = false;
+      if (exists) {
+        // eslint-disable-next-line no-await-in-loop -- must read this view before the next node, same as figure's existence check
+        const text = await readFile(absPath, 'utf8').catch(() => null);
+        const parsed = text === null ? { ok: false } : parseBlocksYaml(text);
+        if (parsed.ok) {
+          svg = renderBlocksSvg(parsed.blocks);
+          for (const id of collectBlockIds(parsed.blocks)) {
+            if (!isValidId(id)) continue;
+            // eslint-disable-next-line no-await-in-loop -- one small tree per view; suspicion must be known before this node renders
+            const state = await evaluator.resolveReference(id, ctx);
+            if (state.state === 'suspect') { suspect = true; break; }
+          }
+        }
+      }
+      const failedToRender = !exists || svg === null;
+      if (failedToRender) fail(out, 'unresolved');
+      else if (suspect) fail(out, 'suspect');
+      if (ctx.profile === 'clean') {
+        const body = svg ?? '';
+        out.html.push(`<figure class="dv-clean ${fitClass}">${body}<figcaption>${label}</figcaption></figure>`);
+        return;
+      }
+      const borderClass = failedToRender ? 'dv-illus-missing' : suspect ? 'dv-illus-suspect' : 'dv-illus-view';
+      const flagHtml = failedToRender ? '<sup class="dv-flag">⚑U</sup>' : suspect ? '<sup class="dv-flag">⚑S</sup>' : '';
+      out.html.push(`<figure class="${borderClass} ${fitClass}">${flagHtml}${svg ?? ''}<figcaption>${label}</figcaption></figure>`);
       return;
+    }
 
     case 'figure': {
       out.figureCounter += 1;
@@ -154,7 +231,7 @@ async function renderNode(node, evaluator, ctx, out) {
       // eslint-disable-next-line no-await-in-loop -- order matters; this node's own figure number must be assigned before the next one
       const exists = await fileExists(absPath);
       const captionText = node.caption ? `Figure ${number} — ${node.caption}` : `Figure ${number}`;
-      if (!exists) out.failedStates.push('unresolved');
+      if (!exists) fail(out, 'unresolved');
       if (ctx.profile === 'clean') {
         out.html.push(`<figure class="dv-clean"><img src="${escapeHtml(absPath)}" alt="${escapeHtml(captionText)}"><figcaption>${escapeHtml(captionText)}</figcaption></figure>`);
         return;
@@ -169,7 +246,7 @@ async function renderNode(node, evaluator, ctx, out) {
       const number = ctx.figureNumbers.get(node.name);
       if (number === undefined) {
         out.html.push(renderSpan('unresolved', '', ctx.profile, out.counts));
-        out.failedStates.push('unresolved');
+        fail(out, 'unresolved');
         return;
       }
       const label = `Figure ${number}`;
@@ -191,12 +268,12 @@ async function renderNode(node, evaluator, ctx, out) {
 // containing the skeleton file — resolves a `figure`'s relative image path;
 // omit it only when every `figure` path in the AST is already absolute (as
 // unit-test fixtures typically are). Returns:
-//   html         — the rendered document body (no page chrome — §7's layout
-//                  is a later layer)
-//   failed       — true iff `profile === 'clean'` and a state in `failOn`
-//                  occurred anywhere in the render
-//   counts       — { [state]: number } — how many spans landed in each §3
-//                  state, across the whole render
+//   html   — the rendered document body (no page chrome — §7's layout is a
+//            later layer, not built yet)
+//   failed — true iff `profile === 'clean'` and a state in `failOn` occurred
+//            anywhere in the render
+//   counts — { [state]: number } — how many spans landed in each §3 state,
+//            across the whole render
 export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, skeletonDir } = {}) {
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
@@ -204,9 +281,15 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   const figureState = { count: 0, numbers: new Map() };
   await collectFigureNumbers(ast, evaluator, { profile, renderDate, skeletonDir }, figureState);
 
-  const out = { html: [], counts: {}, failedStates: [], figureCounter: 0 };
+  const out = {
+    html: [],
+    counts: {},
+    failedStates: [],
+    figureCounter: 0,
+  };
   await renderNodes(ast, evaluator, { profile, renderDate, skeletonDir, figureNumbers: figureState.numbers }, out);
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
+
   return { html: out.html.join(''), failed, counts: out.counts };
 }

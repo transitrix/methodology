@@ -179,6 +179,85 @@ async function run() {
     check(threw, 'an unknown profile value is rejected rather than silently rendering something');
   }
 
+  // trace matrix — every row/column renders, covered cells get their own class
+  {
+    const matrix = {
+      rows: ['REQUIREMENT-A-1', 'REQUIREMENT-B-1'],
+      cols: ['VERIFICATION-1'],
+      covered: new Set(['REQUIREMENT-A-1|VERIFICATION-1']),
+    };
+    const evaluator = { async evaluateTrace() { return matrix; } };
+    const ast = [{ type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' }];
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    check(review.html.includes('<table class="dv-trace">'), 'trace: renders as a table');
+    check(review.html.includes('<th>REQUIREMENT-A-1</th>'), 'trace: every row id is a header cell');
+    check(review.html.includes('<th>REQUIREMENT-B-1</th>'), 'trace: an uncovered row still renders, not dropped');
+    check(review.html.includes('<th>VERIFICATION-1</th>'), 'trace: every col id is a header cell');
+    check(review.html.includes('<td class="dv-trace-cell dv-ok">✓</td>'), 'trace: a covered cell renders ok-coloured with a checkmark');
+    check(review.html.includes('<td class="dv-trace-cell dv-unresolved"><sup class="dv-flag">⚑U</sup></td>'), 'trace: an uncovered cell renders unresolved-coloured with the ⚑U flag');
+    check(!review.failed, 'trace: an uncovered cell never fails the clean-profile build — it is a coverage gap, not a §3 state');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
+    check(clean.html.includes('<td class="dv-clean">✓</td>'), 'trace clean: a covered cell renders plain with a checkmark, no colour class');
+    check(clean.html.includes('<td class="dv-clean"></td>'), 'trace clean: an uncovered cell renders plain and empty, no flag');
+    check(!clean.failed, 'trace clean: coverage gaps never fail the clean-profile build');
+  }
+
+  // view (blocks notation) — rendered SVG, missing file, unparseable file,
+  // suspect border, and shared numbering with figure
+  {
+    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-views-'));
+    const blocksYaml = [
+      'notation: blocks',
+      'name: "Test architecture"',
+      '',
+      'nested_blocks:',
+      '  id: BLOCKS-TEST-1',
+      '  name: "Test architecture"',
+      '  blocks:',
+      '    - id: APPLICATION-1',
+      '      name: "Application"',
+      '      children:',
+      '        - id: FRONTEND',
+      '          name: "Frontend"',
+    ].join('\n');
+    writeFileSync(join(skeletonDir, 'arch.blocks.transitrix.yaml'), blocksYaml, 'utf8');
+    writeFileSync(join(skeletonDir, 'not-blocks.yaml'), 'notation: capability-map\nname: "Not blocks"\n', 'utf8');
+    writeFileSync(join(skeletonDir, 'ignored.png'), 'not a real png, existence is all that matters', 'utf8');
+
+    const evaluator = {
+      ...stubEvaluator({}),
+      async resolveReference(id) {
+        return id === 'APPLICATION-1' ? { id, state: 'suspect', flag: '⚑S' } : { id, state: 'ok', flag: null };
+      },
+    };
+
+    const ast = [
+      { type: 'figure', path: 'ignored.png', caption: null, as: null },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'arch.blocks.transitrix.yaml', as: 'fig-arch', fit: 'width' },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'missing.blocks.transitrix.yaml', as: null, fit: 'width' },
+      { type: 'text', value: ' ' },
+      { type: 'view', path: 'not-blocks.yaml', as: null, fit: 'width' },
+    ];
+
+    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    check(review.html.includes('<svg'), 'view: a valid blocks document renders inline SVG');
+    check(review.html.includes('dv-illus-suspect'), 'view: a block id resolving suspect gets the suspect border class');
+    check(review.html.includes('⚑S'), 'view: the suspect border carries the ⚑S flag as a second channel');
+    check(review.html.includes('Figure 2'), 'view: numbering continues the sequence figure started (figure was Figure 1)');
+    check((review.html.match(/dv-illus-missing/g) ?? []).length === 2, 'view: a missing file and an unparseable (wrong-notation) file both get the missing border class');
+
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    check(clean.html.includes('<figure class="dv-clean'), 'view clean: renders without border-class or flag information');
+    check(!clean.html.includes('dv-illus'), 'view clean: no illustration border classes leak through');
+    check(clean.failed, 'view clean: a missing/unparseable view file fails the build');
+
+    rmSync(skeletonDir, { recursive: true, force: true });
+  }
+
   // ── Integration — real parseSkeleton + createEvaluator end to end ──
   {
     function writeYaml(dir, name, lines) {
