@@ -51,6 +51,28 @@ and instruction slots. They implement one language, not two.
 Document kinds — `mrd`, `srs`, `sdd`, `sds` — are **kinds, not notations**
 (`DIRECTIVE_LANGUAGE.md` §1).
 
+## Relationship to `@transitrix/document-renderer`
+
+**This package layers over [`@transitrix/document-renderer`](../document-renderer/) for
+the notation's grammar.** One notation, one parser: `document-renderer` is the reference
+implementation of `DIRECTIVE_LANGUAGE.md` and owns the shared grammar, which this package
+imports rather than copies —
+
+- the canonical ID grammar and the `CAPABILITY` V/H address exception
+  ([`ids.mjs`](../document-renderer/src/ids.mjs)),
+- front matter, header scalars, header field reading, and the id/field-path split
+  ([`syntax.mjs`](../document-renderer/src/syntax.mjs)).
+
+**What this package still owns independently:** the construct set the view engine
+implements and the other does not (`each` selection, `trace` coverage matrices, the
+`.field` row reference), its own error shape (bare `{ message }`, no `TTRS-` codes),
+its AST node names, and everything downstream of the parse — reference resolution
+(`resolve-references.mjs`), evaluation (`evaluate.mjs`), rendering and render profiles
+(`render.mjs`), and `blocks` view rendering (`blocks-view.mjs`).
+
+The two packages are consumed in-tree from this repository, so the imports are
+repo-relative paths; there is no install step and no build.
+
 ## Skeleton file shape
 
 ```markdown
@@ -194,7 +216,7 @@ class instead of `dv-illus-manual`, and counts as a failing state for `clean`'s
 `view` renders the target file as inline SVG when it parses as a `blocks` notation
 document in the nested-form (`nested_blocks:` root — not the `grid:` matrix-subset
 form, not yet rendered). Each `block.id` in the tree that matches the canonical ID
-grammar ([`ids.mjs`](src/ids.mjs)) is checked against canon via
+grammar ([`ids.mjs`](../document-renderer/src/ids.mjs)) is checked against canon via
 `evaluator.resolveReference()`; a document-local layout label (not canonical-shaped)
 is never resolved. Border classes, per §4's illustration provenance rule:
 

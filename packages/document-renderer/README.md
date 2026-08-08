@@ -29,6 +29,14 @@ Pass 1 ships as a unit callable on its own, so pass 2 (instruction slots) and
 Studio's preview can both depend on it as a library rather than on the whole
 renderer.
 
+**This package owns the notation's parser and resolver.** One notation, one parser:
+[`@transitrix/document-view-engine`](../document-view-engine/) implements a different
+subset of the same directive language and depends on this package for the shared
+grammar rather than keeping its own copy — the canonical ID grammar
+([`src/ids.mjs`](src/ids.mjs)) and the syntax primitives front matter, header scalars,
+header field reading and the id/field-path split ([`src/syntax.mjs`](src/syntax.mjs)).
+Changing either file changes both packages; both packages' tests are the check.
+
 **Two invariants, stated outright:**
 
 - **It writes nothing into the model.** Every filesystem touch here is a read.

@@ -26,19 +26,24 @@
 // Folding the second into the first would tell an author their valid template
 // is a typo.
 //
-// Zero dependencies, own copy of the minimal bits it needs — same posture as
-// decisions-cli's src/yaml.mjs (no cross-package runtime dependency).
+// Zero runtime dependencies outside this package. The grammar itself — front
+// matter, header scalars, the id/field-path split — lives in syntax.mjs, shared
+// with the view engine's skeleton parser: one notation, one parser. What stays
+// here is what pass 1 alone decides: its construct set and its error codes.
 
-import { isValidId, CAPABILITY_PREFIX } from './ids.mjs';
-
-const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?([\s\S]*)$/;
+import { isValidId } from './ids.mjs';
+import {
+  FRONT_MATTER,
+  IDENTIFIER,
+  parseHeaderFields,
+  splitIdAndFields,
+} from './syntax.mjs';
 
 // `<basename>.<kind>.ttrs` — the middle segment is the document kind, so the
 // existing extension/parent-folder lint applies to it unchanged.
 const TEMPLATE_FILENAME = /^[^.]+\.([a-z0-9-]+)\.ttrs$/;
 
 const SLOT_ID = /^[a-z0-9][a-z0-9-]*$/;
-const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 const REQUIRED_HEADER_FIELDS = ['document', 'kind', 'template_id', 'template_version'];
 
@@ -50,30 +55,13 @@ export function templateKindFromFilename(name) {
   return m ? m[1] : undefined;
 }
 
-function cleanScalar(raw) {
-  let s = String(raw).trim();
-  const hash = s.indexOf(' #');
-  if (hash >= 0) s = s.slice(0, hash).trim();
-  if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
-    try { return JSON.parse(s); } catch { return s.slice(1, -1); }
-  }
-  if (s.startsWith("'") && s.endsWith("'") && s.length >= 2) return s.slice(1, -1).replace(/''/g, "'");
-  return s;
-}
-
 // ── Header ───────────────────────────────────────────────────────────────
 // `canon:` is deliberately optional — the repository is an optional input. A
 // template naming no model object and no derived figure renders standalone.
 
 function parseHeader(headerText) {
   const errors = [];
-  const fields = {};
-  for (const line of headerText.split(/\r?\n/)) {
-    if (line.trim() === '' || line.trim().startsWith('#')) continue;
-    const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/);
-    if (!m) continue;
-    fields[m[1]] = cleanScalar(m[2]);
-  }
+  const fields = parseHeaderFields(headerText);
 
   for (const name of REQUIRED_HEADER_FIELDS) {
     if (!fields[name]) {
@@ -237,14 +225,6 @@ function parseInstruct(slotId, bodyText, rawSource, errors) {
 }
 
 // ── Model-object reference and figures ───────────────────────────────────
-
-function splitIdAndFields(trimmed) {
-  const capMatch = CAPABILITY_PREFIX.exec(trimmed);
-  if (capMatch) return { id: capMatch[1], fieldsRaw: capMatch[2] ?? '' };
-  const dot = trimmed.indexOf('.');
-  if (dot === -1) return { id: trimmed, fieldsRaw: '' };
-  return { id: trimmed.slice(0, dot), fieldsRaw: trimmed.slice(dot + 1) };
-}
 
 function splitFieldPath(raw, errors, context) {
   const segments = raw.split('.').filter((s) => s !== '');
