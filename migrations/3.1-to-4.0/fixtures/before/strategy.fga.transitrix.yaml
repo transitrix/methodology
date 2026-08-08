@@ -1,6 +1,6 @@
 notation: fga
 spec_version: "0.3"
-methodology_version: "3.2.0"
+methodology_version: "3.3.0"
 
 id: FGA-STARTUP-1
 name: "Product launch — strategy chain"

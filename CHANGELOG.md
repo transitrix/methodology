@@ -6,6 +6,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.3.0] — 2026-08-08
+
+Bump category: **MINOR** — new notation spec file, additive document-view-engine rendering, and tooling/hygiene fixes only; no migration recipe required.
+
+### Added
+
+- **`DIRECTIVE_LANGUAGE.md` normative conformance spec** (`notations/views/documents/`, stable, v1.0) — the `{{ ... }}` directive grammar shared by `.ttrs` document-source templates and document-view-engine skeleton files becomes a conformance contract an independent implementation can build against without reading the reference code: five reference states (adds `⚑S`, cited to `CONTRACT.md` §16), a three-way suspicion-distinguishability requirement (§5.1), a normative strict/lenient render-profile split where lenient must detect exactly what strict fails on (§6), a named-failure requirement for any unimplemented construct (§7.1), and a conformance checklist (§9). New canonical extension form `*.<short-name>.ttrs` alongside `*.<short-name>.transitrix.yaml` (`CONTRACT.md` §3). (#461, #462)
+- **`@transitrix/document-renderer` package** — reference implementation of the directive language and the `.ttrs` document-source template format. Pass 1 resolver runs with no agent present, touches nothing in the model (read-only), and is re-run-stable; resolves model-object references (`{{ REQ-14.parent.title }}`, depth 3) and derived/supplied/reference figures, and copies `{{# instruct }}` slots through byte-for-byte. New `T1` doc-lint check names the `.trs` near-miss extension explicitly. Frozen byte-for-byte conformance fixture (`tests/fixtures/product.mrd.expected.md`) that `test_conformance.mjs` diffs against and never regenerates; line endings pinned to LF across the fixture tree. New `document-renderer-test` CI workflow. (#461, #462)
+- **Document-view engine gains derived-content evaluation, render profiles, illustrations, and the trace-coverage matrix** (`packages/document-view-engine/`) — `createEvaluator()` resolves `{{ ID.field }}` traversal (re-classifying the §3 states at every hop) and `{{# each ... }}` selection against canon; `renderDocument()` walks the AST into `review` (coloured, flagged) or `clean` (fails the build on a configured state set) HTML per §4; `figure`/`figref` render with document-order illustration numbering (forward references resolve; manual vs. missing border classes); `evaluateTrace()` builds the full `from`-type × `to`-type `{{ trace }}` coverage matrix, resolving `via` against either a first-class REL kind or a claim record's named endpoint field (e.g. `VERIFICATION.verifies`), with every row/column present even when uncovered. Derivation share, telemetry, and PDF output remain open on the epic. (#450, #451, #452)
+- **`blocks`-notation `view` rendering** — new `blocks-view.mjs` parses a `blocks` notation `nested_blocks` document and lays it out as nested-box SVG; `render.mjs`'s `view` case renders it clean (green), suspect via `⚑S` (amber, cross-linked block id resolves suspect), or missing/unsupported (red, `⚑U`); `figure` and `view` now share one illustration-numbering sequence in document order. (#452)
+- **`notations/vocabulary.yaml`** — new machine-readable source of truth for the element TYPE registry, the relation-type enum (with endpoint TYPE set and ACTOR-subtype narrowing), closed value vocabularies, and rule codes. Four `VOC1`–`VOC4` checks in `scripts/check-notations.mjs` cross-verify it against `ELEMENT_PRIMITIVES.md` §4, `elements/17-relations.md` §3, each vocabulary's owning spec, and rule-code tables respectively, failing closed on a missing or unparseable artefact. `packages/ingest-cli` derives its `placement.mjs`/`validate.mjs` closed sets from this file instead of hand-maintained literal copies. (#457, #466)
+- README names the new `.ttrs` document source format and links the spec. (#464)
+
+### Changed
+
+- **`document-view-engine` and `document-renderer` share one grammar owner.** `document-renderer/src/ids.mjs` absorbs `isValidTypeName` and becomes the single ID grammar for the notation; new `document-renderer/src/syntax.mjs` holds the front-matter, header-scalar, and identifier/field-path primitives both parsers previously carried as byte-identical copies. `document-view-engine`'s own `ids.mjs` is deleted and `parse-skeleton.mjs` imports from `document-renderer` instead. Structural only — each parser keeps its own construct set, error shape, and AST node names; all eight existing test suites across both packages, including the frozen conformance fixture's byte comparison, pass unchanged. `document-view-engine` gains its own CI workflow, path-filtered to also run on grammar changes in `document-renderer`. (#465)
+
+### Fixed
+
+- **`notations/CURRENT_VERSION.yaml` and every dependent `methodology_version` pin** (`CONTRACT.md`, examples, view specs, onboarding templates, migration fixtures) bumped to `3.2.0` — the `v3.2.0` tag shipped without this step. `RELEASING.md`'s per-release checklist gains the missing step so a future release cuts the pin bump in the same PR as the changelog, before tagging. (#455)
+- **`notations/vocabulary.yaml`'s own `methodology_version` pin** bumped to `3.2.0` (missed by #455). (#463)
+- **`ingest-cli` `placement.mjs`/`validate.mjs`** were silently missing several catalogued element TYPEs and relation kinds versus the spec (stale hand-maintained literal lists) — both now derive from `vocabulary.yaml`, closing the gap. (#457)
+- **`offers` relation** was missing its `from_subtype: [business_unit]` narrowing in the new `vocabulary.yaml`, despite `17-relations.md` §3's table and prose already documenting it. (#457)
+- **`BOBJ-D001`** — a live warning row in `ELEMENT_PRIMITIVES.md` — was missing from `vocabulary.yaml`'s `rule_codes`. (#466)
+- **`ELEMENT_PRIMITIVES.md` §4's materialisation-mode table** still listed `EQUIPMENT`/`INFORMATION_ENTITY` as view-defined, predating the 2026-06-08 ADR that promoted both to standalone catalogued elements (`EQUIPMENT`, renamed `BUSINESS_OBJECT`). (#457)
+
+---
+
 ## [3.2.0] — 2026-08-07
 
 Bump category: **MINOR** — additive notation, tooling, and CI-hygiene changes only; no migration recipe required.

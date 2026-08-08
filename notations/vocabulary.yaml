@@ -27,7 +27,7 @@
 # the ingest CLI needs to place and validate it.
 
 # Must equal notations/CURRENT_VERSION.yaml (enforced by check V1).
-methodology_version: "3.2.0"
+methodology_version: "3.3.0"
 
 # ---------------------------------------------------------------------------
 # Element TYPE registry — ELEMENT_PRIMITIVES.md §4 (mode table) and §6 (layer
