@@ -21,6 +21,8 @@ import {
   decomposeSpan,
   parseVocabularyValueVocabularies,
   parseRuleRowValues,
+  parseVocabularyRuleCodes,
+  parseVocabularyDeferredRuleCodes,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -413,6 +415,86 @@ test('parseRuleRowValues — negative: no matching row returns null, not a throw
 test('parseRuleRowValues — negative: a matching row with no "not one of" / "not in" language throws', () => {
   const text = '| `REQ-004` | error | `origin` must be present. |';
   assert.throws(() => parseRuleRowValues(text, 'REQ-004'), /names no "not one of"/);
+});
+
+// --- VOC4: vocabulary.yaml rule_codes vs the codes specs actually use ------
+
+test('parseVocabularyRuleCodes — positive: reads severity/spec, tolerating a comment and blank line', () => {
+  const text = `
+rule_codes:
+
+  # ACT — views/diagrams/07-action.md
+  ACT-001:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+
+  BOBJ-D001:
+    severity: warning
+    spec: notations/ELEMENT_PRIMITIVES.md
+`;
+  const out = parseVocabularyRuleCodes(text);
+  assert.deepEqual([...out.keys()], ['ACT-001', 'BOBJ-D001']);
+  assert.deepEqual(out.get('ACT-001'), { severity: 'error', spec: 'notations/views/diagrams/07-action.md' });
+  assert.deepEqual(out.get('BOBJ-D001'), { severity: 'warning', spec: 'notations/ELEMENT_PRIMITIVES.md' });
+});
+
+test('parseVocabularyRuleCodes — negative: a missing "rule_codes:" block throws', () => {
+  assert.throws(() => parseVocabularyRuleCodes('methodology_version: "3.2.0"\n'), /rule_codes/);
+});
+
+test('parseVocabularyRuleCodes — negative: an unrecognised line inside the block throws', () => {
+  const text = `
+rule_codes:
+  ACT-001:
+    severity: error
+    - not a recognised field line
+`;
+  assert.throws(() => parseVocabularyRuleCodes(text), /unrecognised line/);
+});
+
+test('parseVocabularyDeferredRuleCodes — positive: reads review_by, tolerating the folded "reason:" prose', () => {
+  const text = `
+deferred:
+  rule_codes:
+    COMPIMP-010:
+      review_by: "2026-11-07"
+      reason: >-
+        views/reports/21-compliance-impact.md numbers two distinct rules
+        COMPIMP-010 at two severities.
+
+rule_codes:
+  ACT-001:
+    severity: error
+    spec: notations/views/diagrams/07-action.md
+`;
+  const out = parseVocabularyDeferredRuleCodes(text);
+  assert.deepEqual([...out.keys()], ['COMPIMP-010']);
+  assert.deepEqual(out.get('COMPIMP-010'), { reviewBy: '2026-11-07' });
+});
+
+test('parseVocabularyDeferredRuleCodes — positive: no "deferred:" block returns an empty Map', () => {
+  const out = parseVocabularyDeferredRuleCodes('rule_codes:\n  ACT-001:\n    severity: error\n    spec: x\n');
+  assert.equal(out.size, 0);
+});
+
+test('parseVocabularyDeferredRuleCodes — negative: an unrecognised line inside the block throws', () => {
+  const text = `
+deferred:
+  rule_codes:
+    - not a recognised entry line
+`;
+  assert.throws(() => parseVocabularyDeferredRuleCodes(text), /unrecognised line/);
+});
+
+test('parseVocabularyDeferredRuleCodes — negative: an entry with no review_by throws', () => {
+  const text = `
+deferred:
+  rule_codes:
+    COMPIMP-010:
+      reason: >-
+        no review_by given.
+`;
+  assert.throws(() => parseVocabularyDeferredRuleCodes(text), /no review_by date/);
 });
 
 test('findDocumentSourceFailures — positive: a canonical document source passes clean', () => {

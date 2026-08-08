@@ -43,6 +43,16 @@
 //       (a pipeline-internal set with no owning spec) is not checked. Fails
 //       closed: a missing or unparseable artefact, or a named rule with no
 //       matching row, is a failure, not a skip.
+//   VOC4 vocabulary — every rule_codes entry in notations/vocabulary.yaml has
+//       exactly one matching row (same severity) in its own named `spec`, and
+//       every rule-code-shaped row found anywhere under notations/**/*.md
+//       (`| \`CODE\` | severity | ... |`) names a code present in rule_codes —
+//       except a code named in `deferred.rule_codes`, which narrows the check
+//       to exactly that code, and whose own `review_by` is itself checked for
+//       expiry. A code owned by one spec but restated in another (CONTRACT.md
+//       restates many) is not required to be the only row, but a restated
+//       severity must still agree. Fails closed: a missing or unparseable
+//       artefact is a failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -951,6 +961,191 @@ async function checkVocabularyValueVocabularies(failures) {
   }
 }
 
+// --- VOC4: vocabulary.yaml rule_codes vs the codes specs actually use ------
+//
+// Same source-of-truth direction as VOC1/VOC2/VOC3: notations/vocabulary.yaml
+// rule_codes is authored correctly, and this check keeps a spec's rule-code
+// rows from drifting away from it unnoticed — it does not regenerate either
+// side. A rule-code row is any GFM table row of the shape
+// "| `CODE` | severity | ... |" (severity one of rule.severity's closed
+// set) — the same row shape parseRuleRowValues (VOC3) already reads a single
+// named row from, generalised here to every row in every spec.
+//
+// Two directions:
+//   - every rule_codes entry's code has a row in its own `spec`, at the same
+//     severity.
+//   - every rule-code-shaped row found anywhere under notations/**/*.md names
+//     a code present in rule_codes. A code owned by one spec but restated in
+//     another (CONTRACT.md restates many it does not own, per its own file
+//     comment) is not required to be the only row for that code — but the
+//     restated severity must still agree with the owning entry.
+//
+// `deferred.rule_codes` narrows this check to exactly the named code — e.g.
+// COMPIMP-010, which genuinely carries two rows at two severities in its
+// spec and cannot be represented as one rule_codes entry until renumbered.
+// An expired `review_by` is itself a VOC4 failure, so a deferred item cannot
+// sit forever unnoticed.
+
+const RULE_ROW_RE = /^\|\s*`([A-Z][A-Z0-9-]*)`\s*\|\s*(error|warning|info|deprecation)\s*\|/;
+
+// Pure — no I/O. Parses the `rule_codes:` block of vocabulary.yaml into
+// Map<code, {severity, spec}>. Throws on a block that isn't found or doesn't
+// parse.
+export function parseVocabularyRuleCodes(text) {
+  const lines = text.split(/\r?\n/);
+  const startIdx = lines.findIndex(l => /^rule_codes:\s*$/.test(l));
+  if (startIdx < 0) throw new Error('vocabulary.yaml: "rule_codes:" block not found');
+
+  const out = new Map();
+  let current = null;
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\S/.test(line)) break; // dedent to column 0 — block ended
+    const codeM = line.match(/^  ([A-Z][A-Z0-9-]*):\s*$/);
+    if (codeM) {
+      current = { severity: null, spec: null };
+      out.set(codeM[1], current);
+      continue;
+    }
+    if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
+    const fieldM = line.match(/^    (severity|spec):\s*(\S+)\s*$/);
+    if (fieldM && current) {
+      current[fieldM[1]] = fieldM[2];
+      continue;
+    }
+    if (!/^\s*#/.test(line)) {
+      throw new Error(`vocabulary.yaml: unrecognised line in rule_codes block: "${line}"`);
+    }
+  }
+  if (out.size === 0) throw new Error('vocabulary.yaml: rule_codes block parsed empty');
+  return out;
+}
+
+// Pure — no I/O. Parses `deferred.rule_codes` into Map<code, {reviewBy}> —
+// `reason` is prose for the human reading the file and is not read back.
+// Returns an empty Map when `deferred:` or `deferred.rule_codes:` is absent —
+// unlike the blocks above, a deferred list is optional.
+export function parseVocabularyDeferredRuleCodes(text) {
+  const lines = text.split(/\r?\n/);
+  const topIdx = lines.findIndex(l => /^deferred:\s*$/.test(l));
+  if (topIdx < 0) return new Map();
+  const subIdx = lines.findIndex((l, i) => i > topIdx && /^  rule_codes:\s*$/.test(l));
+  if (subIdx < 0) return new Map();
+
+  const out = new Map();
+  let current = null;
+  for (let i = subIdx + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.length > 0 && !/^\s/.test(line)) break; // dedent to column 0 — block ended
+    if (/^  \S/.test(line)) break; // dedent to "deferred:"'s own key level — rule_codes sub-block ended
+    const codeM = line.match(/^    ([A-Z][A-Z0-9-]*):\s*$/);
+    if (codeM) {
+      current = { reviewBy: null };
+      out.set(codeM[1], current);
+      continue;
+    }
+    const reviewM = line.match(/^      review_by:\s*"([^"]+)"\s*$/);
+    if (reviewM && current) {
+      current.reviewBy = reviewM[1];
+      continue;
+    }
+    // `reason:` and its folded (">-") continuation lines are prose, not a
+    // field this check reads — tolerated at the entry's field indent and
+    // deeper; only an unrecognised line at a shallower indent is a failure.
+    if (/^\s*$/.test(line) || /^\s{6,}/.test(line)) continue;
+    throw new Error(`vocabulary.yaml: unrecognised line in deferred.rule_codes block: "${line}"`);
+  }
+  for (const [code, entry] of out) {
+    if (!entry.reviewBy) throw new Error(`vocabulary.yaml: deferred.rule_codes.${code} has no review_by date`);
+  }
+  return out;
+}
+
+async function checkVocabularyRuleCodes(failures) {
+  let vocText;
+  try {
+    vocText = await readFile(VOCABULARY_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'VOC4', message: `${relPosix(VOCABULARY_PATH)}: not found — the vocabulary artefact must ship, never fall back silently.` });
+    return;
+  }
+
+  let rules, deferred;
+  try {
+    rules = parseVocabularyRuleCodes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC4', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+  try {
+    deferred = parseVocabularyDeferredRuleCodes(vocText);
+  } catch (e) {
+    failures.push({ check: 'VOC4', message: `${relPosix(VOCABULARY_PATH)}: ${e.message}` });
+    return;
+  }
+
+  // A time-boxed exemption past its own date is a VOC4 failure — deferred
+  // never means indefinite.
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [code, entry] of deferred) {
+    if (entry.reviewBy < today) {
+      failures.push({ check: 'VOC4', message: `deferred.rule_codes.${code}: review_by ${entry.reviewBy} has passed — resolve or renew the exemption.` });
+    }
+  }
+
+  // One pass over every notations/**/*.md, collecting every rule-code-shaped
+  // row, grouped by file. Map<relSpecPath, Map<code, severity[]>>.
+  const mdFiles = await walk(NOTATIONS_DIR, '.md');
+  const rowsByFile = new Map();
+  for (const abs of mdFiles) {
+    const rel = relPosix(abs);
+    const text = await readFile(abs, 'utf8');
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(RULE_ROW_RE);
+      if (!m) continue;
+      const [, code, severity] = m;
+      if (!rowsByFile.has(rel)) rowsByFile.set(rel, new Map());
+      const fileRows = rowsByFile.get(rel);
+      if (!fileRows.has(code)) fileRows.set(code, []);
+      fileRows.get(code).push(severity);
+    }
+  }
+
+  // Direction 1: every rule_codes entry has a matching row in its own spec.
+  for (const [code, entry] of rules) {
+    if (!existsSync(join(REPO_ROOT, ...entry.spec.split('/')))) {
+      failures.push({ check: 'VOC4', message: `${code}: spec "${entry.spec}" not found.` });
+      continue;
+    }
+    const severities = rowsByFile.get(entry.spec)?.get(code);
+    if (!severities) {
+      failures.push({ check: 'VOC4', message: `${code} is in notations/vocabulary.yaml rule_codes naming ${entry.spec} but has no matching row there.` });
+      continue;
+    }
+    if (!severities.every(s => s === entry.severity)) {
+      failures.push({ check: 'VOC4', message: `${code}: vocabulary.yaml says severity "${entry.severity}", ${entry.spec} says [${severities.join(', ')}].` });
+    }
+  }
+
+  // Direction 2: every rule-code-shaped row anywhere under notations/ names a
+  // code present in rule_codes (or deferred); a restatement's severity must
+  // still agree with the owning entry.
+  for (const [rel, fileRows] of rowsByFile) {
+    for (const [code, severities] of fileRows) {
+      const entry = rules.get(code);
+      if (!entry) {
+        if (deferred.has(code)) continue; // time-boxed exemption; expiry already checked above
+        failures.push({ check: 'VOC4', message: `${rel} has a row for ${code}, not present in notations/vocabulary.yaml rule_codes (and not in deferred.rule_codes).` });
+        continue;
+      }
+      if (entry.spec === rel) continue; // owning file — already checked in direction 1
+      if (!severities.every(s => s === entry.severity)) {
+        failures.push({ check: 'VOC4', message: `${code}: ${rel} restates it at severity [${severities.join(', ')}], vocabulary.yaml says "${entry.severity}".` });
+      }
+    }
+  }
+}
+
 // T1: document-source file naming.
 //
 // `.trs` is one keystroke away from `.ttrs` and is a different, widely used
@@ -1007,6 +1202,7 @@ async function main() {
     await checkVocabularyElementTypes(failures);
     await checkVocabularyRelationTypes(failures);
     await checkVocabularyValueVocabularies(failures);
+    await checkVocabularyRuleCodes(failures);
     await checkDocumentSources(failures);
   } catch (e) {
     console.error(`error: ${e.message}`);
