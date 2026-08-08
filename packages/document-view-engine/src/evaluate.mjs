@@ -20,13 +20,14 @@
 // those need an illustration pipeline, left as a later layer (see this
 // package's README for what's still open on the epic).
 //
-// Zero dependencies, own copy of field extraction — same posture as
-// parse-skeleton.mjs / resolve-references.mjs / ids.mjs in this package.
+// Own copy of field extraction — same posture as resolve-references.mjs here.
+// The ID grammar is not copied: it comes from @transitrix/document-renderer,
+// which owns the notation's parser and resolver.
 
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createResolver } from './resolve-references.mjs';
-import { isValidId } from './ids.mjs';
+import { isValidId } from '../../document-renderer/src/ids.mjs';
 
 // ── Generic scalar field extraction ─────────────────────────────────────
 // A canon element's own content fields (name/description/level/kind/...)

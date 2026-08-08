@@ -6,35 +6,25 @@
 // the four reference-resolution states (§3), and does not render — those are the
 // engine's next layers, built on top of this AST.
 //
-// Zero dependencies, own copy of the minimal bits it needs — same posture as
-// decisions-cli's src/yaml.mjs (no cross-package runtime dependency).
+// The skeleton format and `.ttrs` are one notation, and @transitrix/document-renderer
+// owns its parser and resolver. The grammar below — the ID rules, front matter, header
+// scalars, the id/field-path split — is imported from there rather than copied. What
+// this module still owns is the construct set the view engine implements (`each`,
+// `trace`, the `.field` row reference) and its own error shape.
 
-import { isValidId, isValidTypeName } from './ids.mjs';
-
-const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?([\s\S]*)$/;
-
-function cleanScalar(raw) {
-  let s = String(raw).trim();
-  const hash = s.indexOf(' #');
-  if (hash >= 0) s = s.slice(0, hash).trim();
-  if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
-    try { return JSON.parse(s); } catch { return s.slice(1, -1); }
-  }
-  if (s.startsWith("'") && s.endsWith("'") && s.length >= 2) return s.slice(1, -1).replace(/''/g, "'");
-  return s;
-}
+import { isValidId, isValidTypeName } from '../../document-renderer/src/ids.mjs';
+import {
+  FRONT_MATTER,
+  IDENTIFIER,
+  parseHeaderFields,
+  splitIdAndFields,
+} from '../../document-renderer/src/syntax.mjs';
 
 // ── Header (§1) ──────────────────────────────────────────────────────────
 
 function parseHeader(headerText) {
   const errors = [];
-  const fields = {};
-  for (const line of headerText.split(/\r?\n/)) {
-    if (line.trim() === '' || line.trim().startsWith('#')) continue;
-    const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*):[ \t]*(.*)$/);
-    if (!m) continue;
-    fields[m[1]] = cleanScalar(m[2]);
-  }
+  const fields = parseHeaderFields(headerText);
 
   const document = fields.document;
   const canon = fields.canon;
@@ -85,20 +75,6 @@ function tokenize(body) {
   }
   flushText();
   return { tokens, errors };
-}
-
-const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
-
-// A CAPABILITY id embeds its own dots (the V/H diagram address, IDS_AND_REFERENCES.md
-// §2) — split it off first so those dots aren't mistaken for a field path separator.
-const CAPABILITY_PREFIX = /^(CAPABILITY-[VH][1-9][0-9]*(?:\.[1-9][0-9]*){0,2})(?:\.(.*))?$/;
-
-function splitIdAndFields(trimmed) {
-  const capMatch = CAPABILITY_PREFIX.exec(trimmed);
-  if (capMatch) return { id: capMatch[1], fieldsRaw: capMatch[2] ?? '' };
-  const dot = trimmed.indexOf('.');
-  if (dot === -1) return { id: trimmed, fieldsRaw: '' };
-  return { id: trimmed.slice(0, dot), fieldsRaw: trimmed.slice(dot + 1) };
 }
 
 function splitFieldPath(raw, errors, context) {

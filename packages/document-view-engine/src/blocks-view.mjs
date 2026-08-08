@@ -7,8 +7,9 @@
 // figure/figref and trace shipping ahead of `view` itself.
 //
 // Own copy, hand-rolled YAML subset reader tailored to exactly the `nested_blocks`
-// tree shape — same zero-cross-package-dependency discipline as parse-skeleton.mjs /
-// resolve-references.mjs / ids.mjs in this package and decisions-cli's src/yaml.mjs.
+// tree shape — same posture as resolve-references.mjs here and decisions-cli's
+// src/yaml.mjs. (The notation's *grammar* is not copied: that comes from
+// @transitrix/document-renderer, which owns it. This is a file-format reader.)
 // Not a general YAML parser: it reads `notation:`, the `nested_blocks:` vs `grid:`
 // root-key choice, and a `blocks:` tree of `{ id, name, children }` — nothing else in
 // the document shape is needed to lay the boxes out.

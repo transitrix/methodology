@@ -40,7 +40,7 @@
 import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
-import { isValidId } from './ids.mjs';
+import { isValidId } from '../../document-renderer/src/ids.mjs';
 import { typeOfId } from './evaluate.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
