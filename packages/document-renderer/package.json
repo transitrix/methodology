@@ -4,7 +4,7 @@
   "description": "Parser for the .ttrs document-template format and its pass 1 deterministic resolver — resolves model-object references and derived figures with no agent present, leaving instruction slots for pass 2.",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "files": [
     "src/"

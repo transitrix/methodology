@@ -7,7 +7,7 @@
     "transitrix-decisions": "./decisions.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "files": [
     "decisions.mjs",
