@@ -1,8 +1,8 @@
 ---
 title: "Notation Selection Guide — Mermaid, PlantUML, Transitrix"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-10"
+last_updated: "2026-08-09"
 status: "draft"
 ---
 

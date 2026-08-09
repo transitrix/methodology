@@ -33,7 +33,7 @@ An SRS view file carries the shared envelope (`notation:`, `spec_version:`, `met
 ```yaml
 notation: srs
 spec_version: "0.1"
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 
 view:
   id: SRS-<NAME>-1

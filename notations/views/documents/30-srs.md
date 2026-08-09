@@ -45,7 +45,7 @@ notation: srs
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 view:
   # ... see §3
 ```
@@ -97,7 +97,7 @@ notation: srs
 spec_version: "0.1"
 name: "Backup-power controller — SRS"          # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"                     # optional per CONTRACT.md §4
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 
 view:
   id: SRS-BACKUP-POWER-1
@@ -158,7 +158,7 @@ notation: srs
 spec_version: "0.1"
 name: "Full SRS — all software-tier requirements"    # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"                           # optional per CONTRACT.md §4
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 view:
   id: SRS-ALL-1
   name: "Full SRS — all software-tier requirements"

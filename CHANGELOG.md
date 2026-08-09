@@ -6,6 +6,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.4.0] — 2026-08-09
+
+Bump category: **MINOR** — new notation spec file (diagram view), additive `ingest-cli` checks, and tooling/doc fixes only; no migration recipe required.
+
+### Added
+
+- **`integration-map` diagram view** (`notations/views/diagrams/12-integration-map.md`) — projects admitted `INTEGRATION` elements (and, optionally, `uses` edges to `TECHNOLOGY_SERVICE`) as a labelled directed graph. No field on the view document accepts an inline `source`/`target` pair — an edge with nothing admitted behind it is structurally unrepresentable, enforced by `INTMAP-004` and demonstrated by a rule-violations fixture. Registered in the view-level TYPE table, the notation index, and `vocabulary.yaml`'s rule codes. (#474)
+- **`ingest-cli repo-check` profile-completeness check** — flags every `canon/elements/` TYPE the active coverage profile does not cover, independent of whether any candidate for that TYPE ever loaded (previously invisible to `suggest-profile.mjs`, which only sees the loaded-candidate stream). Fails loudly (`resolvable: false`) when the profile itself cannot be resolved, instead of reporting a false-clean empty list. (#473)
+- **CI: shared simple docs/chore PR auto-merge check** — schedules the reusable workflow hosted at `transitrix/templates` against this repository's own open PRs, plus `workflow_dispatch` for a manual run. `DRY_RUN` defaults `true`. (#469)
+
+### Changed
+
+- **`NOTATION_SELECTION_GUIDE.md`** — authored-or-derived now comes before the general-purpose-tool ranking (content derived from admitted canon has no PlantUML/Mermaid candidate at all), and the guide states plainly that Transitrix is not mandatory for diagrams — a one-off sketch is a drawing, and PlantUML/Mermaid are the right tools for it. (#474)
+- **Declared `engines.node` floor raised `>=18` → `>=20`** across all six packages (`document-renderer`, `document-view-engine`, `decisions-cli`, `ingest-cli`, `reg-intel-cli`, `reqif-cli`) — CI already tests against Node 20 everywhere; the floor each manifest declared was a promise CI never tested. (#471)
+- **Getting Started Step 3** now scaffolds a `GOAL` element with `transitrix new goal` and completes hand-authored files with `validate --fix`, instead of walking the reader through admission-record/lifecycle fields by hand; no longer cites the envelope spec sections directly. (#468)
+
+### Fixed
+
+- **A per-file read failure in `ingest-cli`'s zone walkers** (`canon.mjs`, `placement.mjs`, `check-stale.mjs`, `unresolved.mjs`, `repo-check.mjs`) was silently swallowed, making an unreadable file indistinguishable from a missing object. Each walker now names the file and reason; `check-stale`/`check-placement` print them, `repo-check` keeps its data-free contract and reports an aggregate count only. (#473)
+- **`ELEMENT_PRIMITIVES.md` §3** now recommends a block scalar (`>-`/`|-`) as the default for free-text fields (`description`, provenance notes, `statement` on RULE/CONSTRAINT) — a plain scalar containing `": "` is ambiguous YAML and fails the whole document to parse, silently. (#473)
+- **`IDS_AND_REFERENCES.md` §3.1`** now states, at the TYPE registry itself, that `type:` is a per-TYPE subtype value, never the catalogue TYPE (the catalogue TYPE is carried by `notation:` + the ID prefix) — `ELEMENT_PRIMITIVES.md` §3 already said this; the registry a reader lands on first did not. (#472)
+- **`elements/25-nodes.md` §1** no longer claims `hosts` covers an `APPLICATION` deployed on a `NODE` — it doesn't. (#472)
+
+---
+
 ## [3.3.0] — 2026-08-08
 
 Bump category: **MINOR** — new notation spec file, additive document-view-engine rendering, and tooling/hygiene fixes only; no migration recipe required.
