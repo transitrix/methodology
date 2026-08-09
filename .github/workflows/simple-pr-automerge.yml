@@ -1,0 +1,28 @@
+name: Simple PR auto-merge
+
+# Runs the shared simple docs/chore PR auto-merge checklist (see the linked
+# workflow) against this repository's own open PRs. Roughly hourly, staggered
+# against the other repositories using the same workflow so they don't all
+# fire in the same minute. DRY_RUN defaults to true - flip it only via a
+# manual run with the input explicitly set to false.
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log only - no merge, no branch delete, no label change"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  simple-pr-automerge:
+    uses: transitrix/templates/.github/workflows/simple-pr-automerge.yml@main
+    with:
+      dry_run: ${{ inputs.dry_run != false }}
