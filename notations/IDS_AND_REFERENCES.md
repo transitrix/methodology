@@ -66,6 +66,8 @@ The complete set of canonical TYPE prefixes. Use exactly the listed form — abb
 
 Elements that get referenced across documents.
 
+**The catalogue TYPE is never carried by the `type:` field.** A TYPE in this registry is read from `notation:` plus the ID prefix ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §3). The `type:` field on an element file is a per-TYPE **subtype** value (`DRIVER`'s `external` / `internal`, `NODE`'s `cloud_instance` / `server` / …) — required where a TYPE defines a subtype vocabulary, meaningless as a TYPE lookup otherwise.
+
 | TYPE | What it is | Used by |
 |---|---|---|
 | `DRIVER` | strategic driver — external or internal | DGCA, FGA |
