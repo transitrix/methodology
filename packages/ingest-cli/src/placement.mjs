@@ -64,22 +64,26 @@ async function walkYaml(root, dir = root, out = []) {
 }
 
 // Scan canon/ (read-only) and flag any admitted element file sitting in the wrong §4
-// place. Returns { scanned, findings: [{ id, type, file, expected, reason }] }.
-// A finding is raised when a `standalone` TYPE's file is NOT under its §4 folder, or a
-// `view-defined` TYPE that has no catalogue folder appears as its own canon file.
-// Folder match is by SUFFIX so it is agnostic to the canon-root prefix (open item).
+// place. Returns { scanned, findings: [{ id, type, file, expected, reason }],
+// unreadable: [{ file, reason }] }. A finding is raised when a `standalone` TYPE's
+// file is NOT under its §4 folder, or a `view-defined` TYPE that has no catalogue
+// folder appears as its own canon file. Folder match is by SUFFIX so it is agnostic
+// to the canon-root prefix (open item). A file that cannot be read at all is named in
+// `unreadable` rather than silently dropped from `scanned` with no trace (methodology
+// review, transitrix-hq#104 item 5 — a swallowed per-file error must name the file).
 export async function checkCanonPlacement(orgRoot) {
   const canonDir = join(resolve(orgRoot), 'canon');
   const findings = [];
+  const unreadable = [];
   let scanned = 0;
-  if (!(await exists(canonDir))) return { scanned, findings };
+  if (!(await exists(canonDir))) return { scanned, findings, unreadable };
 
   for (const file of await walkYaml(canonDir)) {
     // §13: the canon/unresolved/ holding area is NOT typed canon — skip it (UNRES-004).
     // Inlined (not imported from unresolved.mjs) to avoid a placement <-> unresolved cycle.
     if (file.replace(/\\/g, '/').includes('/canon/unresolved/')) continue;
     let text;
-    try { text = await readFile(file, 'utf8'); } catch { continue; }
+    try { text = await readFile(file, 'utf8'); } catch (err) { unreadable.push({ file, reason: err.message }); continue; }
     // id is the basename without extension, or the top-level `id:` scalar.
     const idLine = text.match(/^id:[ \t]*["']?([A-Za-z0-9_.\-]+)/m);
     const id = idLine ? idLine[1] : file.split(/[\\/]/).pop().replace(/\.yaml$/, '');
@@ -107,5 +111,5 @@ export async function checkCanonPlacement(orgRoot) {
       });
     }
   }
-  return { scanned, findings };
+  return { scanned, findings, unreadable };
 }

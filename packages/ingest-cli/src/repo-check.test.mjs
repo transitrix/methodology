@@ -1,0 +1,166 @@
+// Unit + integration tests for repo-check.mjs's profile-completeness check
+// (methodology review finding, 2026-08-09, transitrix-hq#104 item 2).
+//
+// The check covers a gap suggest-profile.mjs and checkCanonPlacement both miss: a
+// TYPE placed straight into canon/elements/ by hand, never going through the loaded
+// candidate stream. Run: node --test packages/ingest-cli/src/repo-check.test.mjs
+
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { profileCompleteness, elementTypesOnDisk, repoCheck } from './repo-check.mjs';
+
+// ── profileCompleteness — pure-function unit tests ──────────────────────
+
+test('profileCompleteness: unresolved profile is not resolvable, regardless of disk', () => {
+  const result = profileCompleteness(new Set(['NODE']), { unresolved: true, isFull: true, elements: null, removedElements: null });
+  assert.equal(result.resolvable, false);
+  assert.deepEqual(result.out_of_profile_types, []);
+});
+
+test('profileCompleteness: preset profile flags a TYPE the preset does not cover', () => {
+  // `core` (coverage-presets.mjs) excludes NODE — mirrors the issue's own example.
+  const profile = { unresolved: false, isFull: false, elements: new Set(['GOAL', 'CAPABILITY']), removedElements: null };
+  const result = profileCompleteness(new Set(['GOAL', 'NODE']), profile);
+  assert.equal(result.resolvable, true);
+  assert.deepEqual(result.out_of_profile_types, ['NODE']);
+});
+
+test('profileCompleteness: full profile only flags explicitly removed TYPEs', () => {
+  const profile = { unresolved: false, isFull: true, elements: null, removedElements: new Set(['NODE']) };
+  const result = profileCompleteness(new Set(['NODE', 'GOAL']), profile);
+  assert.deepEqual(result.out_of_profile_types, ['NODE']);
+});
+
+test('profileCompleteness: full profile with nothing removed reports nothing', () => {
+  const profile = { unresolved: false, isFull: true, elements: null, removedElements: null };
+  const result = profileCompleteness(new Set(['NODE', 'GOAL']), profile);
+  assert.deepEqual(result.out_of_profile_types, []);
+});
+
+test('profileCompleteness: sorted output, no duplicates from the input set', () => {
+  const profile = { unresolved: false, isFull: false, elements: new Set(), removedElements: null };
+  const result = profileCompleteness(new Set(['NODE', 'CAPABILITY', 'ACTION']), profile);
+  assert.deepEqual(result.out_of_profile_types, ['ACTION', 'CAPABILITY', 'NODE']);
+});
+
+// ── elementTypesOnDisk — scoped to canon/elements/ only ─────────────────
+
+function tmpOrgRoot() {
+  return mkdtempSync(join(tmpdir(), 'repo-check-test-'));
+}
+
+test('elementTypesOnDisk: reads TYPE from id: across nested canon/elements/ folders', () => {
+  const root = tmpOrgRoot();
+  const nodesDir = join(root, 'canon', 'elements', '04_technology', 'nodes');
+  mkdirSync(nodesDir, { recursive: true });
+  writeFileSync(join(nodesDir, 'NODE-1.yaml'), 'id: NODE-1\nname: Test Node\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
+  return elementTypesOnDisk(root).then(({ types, unreadable }) => {
+    assert.deepEqual([...types].sort(), ['GOAL', 'NODE']);
+    assert.deepEqual(unreadable, []);
+  });
+});
+
+test('elementTypesOnDisk: REL/ASSERTION outside canon/elements/ never appear', () => {
+  const root = tmpOrgRoot();
+  const relDir = join(root, 'canon', 'relations');
+  mkdirSync(relDir, { recursive: true });
+  writeFileSync(join(relDir, 'REL-1.yaml'), 'id: REL-1\ntype: hosts\n', 'utf8');
+  return elementTypesOnDisk(root).then(({ types }) => {
+    assert.equal(types.size, 0);
+  });
+});
+
+test('elementTypesOnDisk: absent canon/elements/ yields an empty set, not a throw', () => {
+  const root = tmpOrgRoot();
+  return elementTypesOnDisk(root).then(({ types, unreadable }) => {
+    assert.equal(types.size, 0);
+    assert.deepEqual(unreadable, []);
+  });
+});
+
+// Note: forcing a genuine OS-level read failure (permission denial, mid-walk
+// deletion) is not reliably reproducible cross-platform in a fast unit test —
+// chmod 0o000 is a no-op for the file owner's own read on NTFS, and a directory or
+// symlink standing in for a `.yaml` file is filtered out by walkYaml's own
+// Dirent.isFile() check before readFile is ever called on it, so neither exercises
+// the catch branch. The unreadable-tracking code itself is a small, directly
+// reviewable try/catch; the aggregation and data-free stripping around it are
+// covered below.
+
+// ── repoCheck() end-to-end — the red flag actually surfaces ─────────────
+
+test('repoCheck: a hand-placed out-of-profile TYPE is flagged even though nothing loaded it as a candidate', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const nodesDir = join(root, 'canon', 'elements', '04_technology', 'nodes');
+  mkdirSync(nodesDir, { recursive: true });
+  // `core` (coverage-presets.mjs) excludes NODE — the issue's own example.
+  writeFileSync(join(nodesDir, 'NODE-1.yaml'), 'id: NODE-1\nname: Test Node\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.profile_completeness.resolvable, true);
+  assert.deepEqual(report.profile_completeness.out_of_profile_types, ['NODE']);
+  assert.ok(report.integrity.red_flags.some((f) => f.includes('NODE') && f.includes('outside the active coverage profile')));
+});
+
+test('repoCheck: an unresolved profile is reported as not-resolvable, never a false-clean empty list', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: not-a-real-preset\n', 'utf8');
+  const nodesDir = join(root, 'canon', 'elements', '04_technology', 'nodes');
+  mkdirSync(nodesDir, { recursive: true });
+  writeFileSync(join(nodesDir, 'NODE-1.yaml'), 'id: NODE-1\nname: Test Node\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.profile_completeness.resolvable, false);
+  assert.deepEqual(report.profile_completeness.out_of_profile_types, []);
+});
+
+test('repoCheck: a TYPE covered by the profile raises no flag', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.profile_completeness.resolvable, true);
+  assert.deepEqual(report.profile_completeness.out_of_profile_types, []);
+});
+
+// ── unreadable-file diagnostics (transitrix-hq#104 item 5) ──────────────
+//
+// Forcing a genuine OS-level read failure is not reliably reproducible
+// cross-platform in a fast unit test (see the note above elementTypesOnDisk's
+// tests), so these cover the two things that ARE deterministic: the clean-repo
+// baseline stays zero, and `zones` — spread into the data-free report as-is — never
+// carries the per-file `unreadable` detail (file paths), regardless of count.
+
+test('repoCheck: a clean repo reports zero unreadable files and no red flag for it', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.integrity.unreadable_files, 0);
+  assert.ok(!report.integrity.red_flags.some((f) => f.includes('could not be read')));
+});
+
+test('repoCheck: the data-free report never carries the per-file unreadable detail', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+
+  const report = await repoCheck(root);
+  const serialized = JSON.stringify(report);
+  assert.ok(!serialized.includes(root.replace(/\\/g, '\\\\')) && !serialized.includes(root));
+  for (const z of ['canon', 'field', 'codex']) {
+    assert.equal(Object.prototype.hasOwnProperty.call(report.zones[z], 'unreadable'), false);
+  }
+});

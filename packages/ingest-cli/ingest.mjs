@@ -458,10 +458,14 @@ async function cmdCheckStale(args) {
     : (await findOrgRoot(process.cwd()));
   if (!orgRoot) { console.error('check-stale: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
 
-  const { scanned, stale, malformed, today } = await checkStale(orgRoot);
+  const { scanned, stale, malformed, unreadable, today } = await checkStale(orgRoot);
+  if (unreadable.length > 0) {
+    console.error(`check-stale  ${unreadable.length} file(s) could not be read at all — excluded from the ${scanned} scanned above, not silently absorbed into "none stale":`);
+    for (const u of unreadable) console.error(`  UNREADABLE  ${u.file}  (${u.reason})`);
+  }
   if (stale.length === 0 && malformed.length === 0) {
     console.log(`check-stale  ${scanned} REQUIREMENT/CONSTRAINT file(s) scanned as of ${today} — none stale (REQ-STALE-001).`);
-    return 0;
+    return unreadable.length > 0 ? 1 : 0;
   }
   if (stale.length > 0) {
     console.error(`check-stale  ${stale.length} of ${scanned} REQUIREMENT/CONSTRAINT element(s) stale as of ${today} (REQ-STALE-001):`);
@@ -471,7 +475,7 @@ async function cmdCheckStale(args) {
     console.error(`check-stale  ${malformed.length} file(s) with an unparseable next_review_at (skipped — evaluation elided per 15-requirement.md §4):`);
     for (const m of malformed) console.error(`  UNPARSED  ${m.id}  next_review_at: ${JSON.stringify(m.next_review_at)}`);
   }
-  return stale.length > 0 ? 1 : 0;
+  return (stale.length > 0 || unreadable.length > 0) ? 1 : 0;
 }
 
 // Report every human gate's phase + count in one table — ADR/WI status, canon
@@ -513,10 +517,14 @@ async function cmdCheckPlacement(args) {
     : (await findOrgRoot(process.cwd()));
   if (!orgRoot) { console.error('check-placement: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
 
-  const { scanned, findings } = await checkCanonPlacement(orgRoot);
+  const { scanned, findings, unreadable } = await checkCanonPlacement(orgRoot);
+  if (unreadable.length > 0) {
+    console.error(`check-placement  ${unreadable.length} file(s) could not be read at all — excluded from the ${scanned} scanned above, not silently absorbed into "all sit in their folder":`);
+    for (const u of unreadable) console.error(`  UNREADABLE  ${u.file}  (${u.reason})`);
+  }
   if (findings.length === 0) {
     console.log(`check-placement  ${scanned} catalogue element(s) scanned — all sit in their ELEMENT_PRIMITIVES §4 folder.`);
-    return 0;
+    return unreadable.length > 0 ? 1 : 0;
   }
   console.error(`check-placement  ${findings.length} of ${scanned} element(s) misplaced (ELEMENT_PRIMITIVES §4):`);
   for (const f of findings) console.error(`  FLAG  ${f.id}\n          - ${f.reason}`);
