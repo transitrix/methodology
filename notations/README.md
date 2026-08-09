@@ -6,7 +6,7 @@ Transitrix is a text-native methodology: every architecture artefact lives in a 
 
 The view notations live under [`views/`](views/), split by class into a folder per class — [`diagrams/`](views/diagrams/), [`reports/`](views/reports/), and [`documents/`](views/documents/) — so a spec's class is a filesystem fact, not a table position. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
 
-### Diagram views (A = 11)
+### Diagram views (A = 12)
 
 Each renders a visual diagram.
 
@@ -21,6 +21,7 @@ Each renders a visual diagram.
 | [08-blocks.md](./views/diagrams/08-blocks.md) | `blocks` | Multi-level container layouts for deep architectural overviews (recursive `block` tree), or a single-layer rectangular matrix (RACI, coverage grids) — see §4 / §4a. | `*.blocks.transitrix.yaml` | documented |
 | [09-products.md](./views/diagrams/09-products.md) | `products` | Inventory of products and services — text-and-table catalogue, no diagram. | `*.products.transitrix.yaml` | draft |
 | [10-applications.md](./views/diagrams/10-applications.md) | `applications` | Inventory of applications and integrations — text-and-table catalogue, no diagram. | `*.applications.transitrix.yaml` | draft |
+| [12-integration-map.md](./views/diagrams/12-integration-map.md) | `integration-map` | Application-cooperation / data-flow graph, projected from admitted `INTEGRATION` (and, optionally, `uses` edges to `TECHNOLOGY_SERVICE`) — no edge can be authored that canon doesn't carry. | `*.integration-map.transitrix.yaml` | draft |
 | [13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 | [18-action-card.md](./views/diagrams/18-action-card.md) | `action-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.action-card.transitrix.yaml` | draft |
 

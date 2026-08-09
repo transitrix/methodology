@@ -114,6 +114,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `ACTION_NET` | `*.action.transitrix.yaml` (deprecated alias: `*.activities.transitrix.yaml`) |
 | `PRODUCTS_CAT` | `*.products.transitrix.yaml` |
 | `APPLICATIONS_CAT` | `*.applications.transitrix.yaml` |
+| `INTEGRATION_MAP` | `*.integration-map.transitrix.yaml` |
 | `SCENARIOS` | `*.scenarios.transitrix.yaml` |
 | `BLOCKS` | `*.blocks.transitrix.yaml` |
 | `PROCESS_BLUEPRINT` | `*.process-blueprint.transitrix.yaml` |
