@@ -14,7 +14,35 @@ status: "draft"
 
 ## 1. How to choose a family — read this first
 
-The three families are not interchangeable, and the difference matters more than which specific diagram type looks closest:
+### 1.0 First, the question that precedes the family choice — authored or derived?
+
+**Is the artefact's content *authored*, or *derived from admitted canon*?**
+
+- **Derived** — the content is a projection of elements that already exist in `canon/`
+  (an integration landscape read off `INTEGRATION`, an action tree read off `ACTION`).
+  **No general-purpose tool is a candidate at all**: PlantUML and Mermaid have nothing
+  to derive from. The answer is a Transitrix *view*, and the rest of this section does
+  not apply — it ranks tools for producing a drawing, and this is not a drawing problem.
+- **Authored** — someone is composing the content themselves. The rest of this section
+  applies.
+
+Asking this first is what stops the family choice being read as a preference order. The
+options below answer different questions; they are not a quality ranking with Transitrix
+at the top.
+
+**Transitrix is not mandatory for diagrams.** If PlantUML or Mermaid has a notation that
+fits what someone needs to show, use it — that is a sanctioned answer, not a concession
+and not a fallback. For most diagrams a person draws in a week those tools are simply
+right: mature, portable, renderable anywhere, no admission step, nothing to maintain.
+What Transitrix asks for is narrow: **the things that are true about the organisation and
+must stay true** — the process actually followed, the obligation that actually binds, the
+integration that actually exists. Those earn admission, versioning, and a projection that
+breaks when the fact changes. A component sketch explaining a design in a pull request
+earns none of that and should not pay for it. (The 2026-08-09 decision that a flow view
+projects canon rather than adding a drawing notation.)
+
+The three families are not interchangeable, and — once the artefact is authored, not
+derived — the difference matters more than which specific diagram type looks closest:
 
 - **Mermaid / PlantUML** are generic diagram-as-code renderers. A diagram is a single fenced text block, throwaway or living inside a doc/README/PR/wiki page, with no persistent data model behind it. Nothing about the diagram is validated against, or reused by, anything else.
 - **Transitrix** notations are not diagrams-for-illustration — they are projections of the adopter's canonical enterprise-architecture data (`canon/`, `field/`, `codex/` zones per [CONTRACT.md](CONTRACT.md)). The same element (a Goal, a Capability, an Actor) can be referenced from many views; the view renders a projection, the element is the governed record. Content is validated, versioned, and cross-referenced with the rest of the adopter's model.
