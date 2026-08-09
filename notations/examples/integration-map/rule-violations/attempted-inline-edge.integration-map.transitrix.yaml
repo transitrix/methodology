@@ -1,0 +1,26 @@
+notation: integration-map
+spec_version: "0.1"
+methodology_version: "3.3.0"
+name: "Attempted inline edge — invalid on purpose"
+
+view:
+  id: INTEGRATION_MAP-INVALID-EDGE-1
+  name: "Attempted inline edge — invalid on purpose"
+  description: >
+    Seeded violation. The author has no admitted INTEGRATION between
+    APPLICATION-OMS-1 and APPLICATION-SHADOW-1 — SHADOW was never onboarded
+    or catalogued anywhere. This entry tries to draw the edge anyway by
+    placing a source/target object directly into `integrations.include`
+    instead of naming an admitted INTEGRATION id. INTMAP-004 rejects this:
+    the field only accepts a bare string id (§5.3 of the spec — there is no
+    field shape on this notation that can carry an edge canon doesn't admit).
+
+  applications:
+    include:
+      - APPLICATION-OMS-1
+
+  integrations:
+    include:
+      - source: APPLICATION-OMS-1
+        target: APPLICATION-SHADOW-1
+        protocol: "REST"
