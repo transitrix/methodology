@@ -50,13 +50,16 @@ async function walkYaml(dir) {
 function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
 
 // Build a read-only index of canon/ for one org root.
-// Returns { ids: Set, rels: Set, nameMap: Map, collisions: [] }.
+// Returns { ids: Set, rels: Set, nameMap: Map, collisions: [], unreadable: [] }.
 //   ids        -- admitted element/assertion IDs (for review-queue idempotency).
 //   rels       -- admitted relation triple keys (for review-queue idempotency).
 //   nameMap    -- normalised(name|alias) -> { id, matched_on: 'name'|'alias' }.
 //                 Used by emit-candidates for cross-source entity-match proposals (F8).
 //   collisions -- [{ value, a, b }] for the ELEM-ALIAS-001 uniqueness gate (§9):
 //                 a normalised name/alias claimed by two DIFFERENT ids.
+//   unreadable -- [{ file, reason }] -- a file that could not be read at all, named
+//                 rather than silently missing from the index (methodology review,
+//                 transitrix-hq#104 item 5).
 //              An absent canon/ yields an empty index (no exclusions, no proposals) --
 //              the common case on a fresh adopter, unaffecting existing tests.
 export async function buildCanonIndex(orgRoot) {
@@ -64,8 +67,9 @@ export async function buildCanonIndex(orgRoot) {
   const rels = new Set();
   const nameMap = new Map();
   const collisions = [];
+  const unreadable = [];
   const canonDir = join(resolve(orgRoot), 'canon');
-  if (!(await exists(canonDir))) return { ids, rels, nameMap, collisions };
+  if (!(await exists(canonDir))) return { ids, rels, nameMap, collisions, unreadable };
 
   // Record one surface form for `id`. First writer wins the nameMap slot (F8 match
   // target). ELEM-ALIAS-001 fires when a DIFFERENT id claims the same value AND an
@@ -86,7 +90,7 @@ export async function buildCanonIndex(orgRoot) {
   for (const file of await walkYaml(canonDir)) {
     if (isUnresolvedPath(file)) continue; // §13: holding area is NOT typed canon (UNRES-004)
     let text;
-    try { text = await readFile(file, 'utf8'); } catch { continue; }
+    try { text = await readFile(file, 'utf8'); } catch (err) { unreadable.push({ file, reason: err.message }); continue; }
 
     const id = readTopScalar(text, 'id');
     if (id) {
@@ -104,7 +108,7 @@ export async function buildCanonIndex(orgRoot) {
     const kind = readTopScalar(text, 'type');
     if (from && to && kind) rels.add(relKey(kind, from, to));
   }
-  return { ids, rels, nameMap, collisions };
+  return { ids, rels, nameMap, collisions, unreadable };
 }
 
 // Is this candidate already admitted to canon, per the index? Returns the matched

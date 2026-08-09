@@ -48,15 +48,19 @@ async function walkYaml(dir) {
 function isoToday() { return new Date().toISOString().slice(0, 10); }
 
 // Scan canon/ for obligation files carrying `next_review_at`. Returns
-// { scanned, stale: [{ id, file, next_review_at }], malformed: [{ id, file, next_review_at }] }.
-// A file with no `next_review_at` is scanned but contributes to neither list.
-// `today` defaults to the current UTC date; pass a string to override in tests.
+// { scanned, stale: [{ id, file, next_review_at }], malformed: [{ id, file, next_review_at }],
+// unreadable: [{ file, reason }] }. A file with no `next_review_at` is scanned but
+// contributes to neither list. `today` defaults to the current UTC date; pass a
+// string to override in tests. A file that cannot be read at all is named in
+// `unreadable` rather than silently excluded from `scanned` with no trace
+// (methodology review, transitrix-hq#104 item 5).
 export async function checkStale(orgRoot, today = isoToday()) {
   const canonDir = join(resolve(orgRoot), 'canon');
   const stale = [];
   const malformed = [];
+  const unreadable = [];
   let scanned = 0;
-  if (!(await exists(canonDir))) return { scanned, stale, malformed, today };
+  if (!(await exists(canonDir))) return { scanned, stale, malformed, unreadable, today };
 
   for (const folder of OBLIGATION_FOLDERS) {
     const dir = join(canonDir, 'elements', folder);
@@ -64,7 +68,7 @@ export async function checkStale(orgRoot, today = isoToday()) {
     for (const file of await walkYaml(dir)) {
       scanned++;
       let text;
-      try { text = await readFile(file, 'utf8'); } catch { continue; }
+      try { text = await readFile(file, 'utf8'); } catch (err) { unreadable.push({ file, reason: err.message }); continue; }
       const nra = readTopScalar(text, 'next_review_at');
       if (!nra || nra === 'null') continue;
       const id = readTopScalar(text, 'id') || file.split(/[\\/]/).pop().replace(/\.yaml$/, '');
@@ -76,5 +80,5 @@ export async function checkStale(orgRoot, today = isoToday()) {
 
   stale.sort((a, b) => a.next_review_at.localeCompare(b.next_review_at) || a.id.localeCompare(b.id));
   malformed.sort((a, b) => a.id.localeCompare(b.id));
-  return { scanned, stale, malformed, today };
+  return { scanned, stale, malformed, unreadable, today };
 }

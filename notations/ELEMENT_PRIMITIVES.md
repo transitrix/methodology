@@ -150,6 +150,8 @@ valid_to: null
 
 **Time-aware relations go to `canon/relations/`, not inline.** Where a relation kind is declared first-class time-aware ([elements/17-relations.md](elements/17-relations.md)), it lives in a `REL-…` file, not as an inline cross-reference on the element. In v1 most cross-references remain inline and timeless; §7 notes the declared first-class kinds (capability `parent`, goal `goal_parent`, action `action_goal`).
 
+**Free text defaults to a block scalar, not a plain one.** `description` and every other hand- or agent-authored free-text field (provenance notes, `statement` on RULE/CONSTRAINT, …) should use `>-` or `|-` for anything longer than a short phrase, as the worked example at §3 already does. A plain scalar containing `": "` is a YAML mapping key by specification — the whole document fails to parse, not just the field — and the failure is silent to anyone not reading raw YAML errors. A block scalar is immune to it.
+
 ---
 
 ## 4. Materialisation decision per TYPE

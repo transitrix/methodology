@@ -100,7 +100,7 @@ const REQUIRED = ['ingest_status', 'ingest_source', 'ingest_field', 'ingest_date
 // resolve to an admitted canon id — needs the canon id set, passed in).
 export async function checkUnresolved(orgRoot, canonIds) {
   const dir = join(resolve(orgRoot), 'canon', 'unresolved');
-  const out = { count: 0, 'UNRES-001': 0, 'UNRES-002': 0, 'UNRES-003': 0 };
+  const out = { count: 0, 'UNRES-001': 0, 'UNRES-002': 0, 'UNRES-003': 0, unreadable: 0 };
   if (!(await exists(dir))) return out;
   let names = [];
   try { names = await readdir(dir); } catch { return out; }
@@ -108,7 +108,10 @@ export async function checkUnresolved(orgRoot, canonIds) {
     if (!name.endsWith('.yaml')) continue;
     out.count++;
     let text;
-    try { text = await readFile(join(dir, name), 'utf8'); } catch { continue; }
+    // A file that cannot be read at all is counted, never silently absorbed into
+    // "clean" (methodology review, transitrix-hq#104 item 5) — data-free per this
+    // scan's own contract, so a count, not the filename.
+    try { text = await readFile(join(dir, name), 'utf8'); } catch { out.unreadable++; continue; }
     for (const f of REQUIRED) {
       // `data` may be a block/map (no top-level scalar) — accept the key's presence.
       const present = readTopScalar(text, f) !== null || new RegExp(`^${f}:`, 'm').test(text);
