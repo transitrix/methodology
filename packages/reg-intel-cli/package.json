@@ -7,7 +7,7 @@
     "transitrix-reg-intel": "./reg-intel.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "files": [
     "reg-intel.mjs",
