@@ -14,7 +14,35 @@ status: "draft"
 
 ## 1. How to choose a family — read this first
 
-The three families are not interchangeable, and the difference matters more than which specific diagram type looks closest:
+### 1.0 First, the question that precedes the family choice — authored or derived?
+
+**Is the artefact's content *authored*, or *derived from admitted canon*?**
+
+- **Derived** — the content is a projection of elements that already exist in `canon/`
+  (an integration landscape read off `INTEGRATION`, an action tree read off `ACTION`).
+  **No general-purpose tool is a candidate at all**: PlantUML and Mermaid have nothing
+  to derive from. The answer is a Transitrix *view*, and the rest of this section does
+  not apply — it ranks tools for producing a drawing, and this is not a drawing problem.
+- **Authored** — someone is composing the content themselves. The rest of this section
+  applies.
+
+Asking this first is what stops the family choice being read as a preference order. The
+options below answer different questions; they are not a quality ranking with Transitrix
+at the top.
+
+**Transitrix is not mandatory for diagrams.** If PlantUML or Mermaid has a notation that
+fits what someone needs to show, use it — that is a sanctioned answer, not a concession
+and not a fallback. For most diagrams a person draws in a week those tools are simply
+right: mature, portable, renderable anywhere, no admission step, nothing to maintain.
+What Transitrix asks for is narrow: **the things that are true about the organisation and
+must stay true** — the process actually followed, the obligation that actually binds, the
+integration that actually exists. Those earn admission, versioning, and a projection that
+breaks when the fact changes. A component sketch explaining a design in a pull request
+earns none of that and should not pay for it. (The 2026-08-09 decision that a flow view
+projects canon rather than adding a drawing notation.)
+
+The three families are not interchangeable, and — once the artefact is authored, not
+derived — the difference matters more than which specific diagram type looks closest:
 
 - **Mermaid / PlantUML** are generic diagram-as-code renderers. A diagram is a single fenced text block, throwaway or living inside a doc/README/PR/wiki page, with no persistent data model behind it. Nothing about the diagram is validated against, or reused by, anything else.
 - **Transitrix** notations are not diagrams-for-illustration — they are projections of the adopter's canonical enterprise-architecture data (`canon/`, `field/`, `codex/` zones per [CONTRACT.md](CONTRACT.md)). The same element (a Goal, a Capability, an Actor) can be referenced from many views; the view renders a projection, the element is the governed record. Content is validated, versioned, and cross-referenced with the rest of the adopter's model.
@@ -152,7 +180,7 @@ Mermaid's own docs mark all of these beta — syntax may change.
 
 Unlike Mermaid/PlantUML, a Transitrix notation is not a single fenced block — it's a `*.<short-name>.transitrix.yaml` file with a `notation: <short-name>` header (contract in [CONTRACT.md](CONTRACT.md) §3), rendered by Transitrix Studio. The full index with extensions lives in [README.md](README.md); this table adds the "when to recommend it" framing to match §2–§3 above.
 
-### 4.1 Views — render-able artefacts (15 active, 1 deprecated)
+### 4.1 Views — render-able artefacts (16 active, 1 deprecated)
 
 | Notation | Short name | What it models | When to recommend it | Status |
 |---|---|---|---|---|
@@ -165,6 +193,7 @@ Unlike Mermaid/PlantUML, a Transitrix notation is not a single fenced block — 
 | Nested Block Diagrams | `blocks` | Recursive container tree — "what's inside what" | Deep architectural overview, infra zones, bounded-context maps |documented |
 | Products Catalogue | `products` | Inventory of products/services, text + table | Portfolio catalogue of what the org sells/offers | draft |
 | Applications Catalogue | `applications` | Inventory of applications/integrations | IT application landscape inventory | draft |
+| Integration Map | `integration-map` | Application-cooperation graph, projected from admitted `INTEGRATION` (no edge can be authored that canon doesn't carry) | Show what talks to what, derived — never a hand-drawn integration landscape | draft |
 | Scenarios | `scenarios` | Report-config over the `SCENARIO` catalogue — alternative paths to a target state | Compare roadmap/planning alternatives serving one or more goals | draft |
 | Process Blueprint | `process-blueprint` | Wide left-to-right value chain; each stage carries goal/result/systems/actors/equipment/info | A governed, canon-linked value chain (not an ad hoc journey sketch) | draft |
 | Action Card | `action-card` | Single-project narrative — DGCA chain, dates, milestones, gate decisions | One-pager for a single project's status/context | draft |
@@ -215,6 +244,7 @@ The same concept often exists in more than one family. This table exists to stop
 | Gantt / project schedule | `gantt` | Gantt Chart | **action** (AoN, critical path) | the schedule is a real delivery plan referencing canon Goals/Changes |
 | Capability / goal hierarchy | `mindmap`, `treemap-beta` (informal) | WBS, MindMap (informal) | **capability-map**, **goals** | need CMMI maturity, canonical IDs, cross-refs |
 | C4 software architecture | `C4Context`… (experimental) | C4 via stdlib (mature) | element primitives (`ACTOR`/`NODE`/`TECHNOLOGY_SERVICE`) + **blocks** | the infra/app landscape must persist and cross-reference compliance/process |
+| Application cooperation / data-flow landscape | — | — | **integration-map** | always for a governed landscape — the picture is derived from admitted `INTEGRATION`, never authored; a quick illustrative sketch of a proposed (not-yet-admitted) integration is Mermaid `flowchart` or PlantUML Component Diagram instead |
 | Enterprise architecture (ArchiMate) | — | ArchiMate stdlib (illustrative) | element primitives — ArchiMate-inspired, governed canon data | the model must be governed/versioned, not a one-off picture |
 | Strategy → goals → initiatives | — | — | **dgca**, **goals**, **actions-tree** | always — no Mermaid/PlantUML equivalent |
 | Regulatory obligation mapping | — | — | **codex + requirement + assertion + compliance-impact** | always — unique to Transitrix |
@@ -249,6 +279,7 @@ Ready-made mappings from common phrasing to a recommendation. Use these as a fir
 | Comparing roadmap / scenario alternatives | Transitrix **scenarios**; Mermaid `quadrantChart` for a quick 2-axis comparison | canon linkage is the deciding factor |
 | A nested/layered architecture overview | Transitrix **blocks**; Mermaid `treemap-beta` for a quick size-encoded sketch | canon linkage is the deciding factor |
 | C4 context/container/component diagram | PlantUML C4 (mature, via stdlib); Mermaid C4 only if already Mermaid-only and okay with experimental | PlantUML's C4 support is production-grade |
+| What talks to what — the real, governed integration landscape | Transitrix **integration-map** | Derived from admitted `INTEGRATION`, not drawn — see §1.0; a proposed integration that isn't admitted yet has nothing for it to derive from, so sketch it in Mermaid/PlantUML instead |
 | Enterprise architecture in ArchiMate style | PlantUML ArchiMate stdlib if illustrative; Transitrix element primitives if it must persist | canon linkage is the deciding factor |
 | A UI mockup / wireframe | PlantUML Salt (`@startsalt`) | Mermaid has no wireframe type |
 | Network topology | PlantUML Network Diagram (nwdiag) for illustration; Transitrix `NODE`/`TECHNOLOGY_SERVICE` for canonical infra | canon linkage is the deciding factor |

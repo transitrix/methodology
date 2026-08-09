@@ -327,6 +327,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Multi-level container layout — what's inside what | **Nested blocks** | `*.blocks.transitrix.yaml` |
 | Alternative strategic development paths | **Scenarios** | `*.scenarios.transitrix.yaml` |
 | Catalogue of applications + integrations | **Applications** | `*.applications.transitrix.yaml` |
+| Application-cooperation graph — what talks to what, derived from admitted `INTEGRATION` (never hand-drawn) | **Integration Map** | `*.integration-map.transitrix.yaml` |
 | Catalogue of products + services | **Products** | `*.products.transitrix.yaml` |
 | Single-project narrative view — goals served, dates, milestones, gate decisions | **Action Card** | `*.action-card.transitrix.yaml` |
 | Compliance overlay — which obligations hit which product / process stage / task, with each cell's status | **Compliance Impact** | `*.compliance-impact.transitrix.yaml` |
@@ -360,6 +361,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 - **Nested blocks** — `notation: blocks`. Root key `nested_blocks:`. Recursive `block` tree (`id`, `name`, optional `description`, optional `children[]`). Containment is YAML-nested.
 - **Scenarios** — `notation: scenarios`. Alternative strategic development paths, each scoping its own goals / capabilities / activities / products / processes / applications.
 - **Applications catalogue** — `notation: applications`. Inventory of `APPLICATION-…` elements + `INTEGRATION-…` entries with criticality, owner, type.
+- **Integration Map** — `notation: integration-map`. Root key `view:` — a selection/rendering config projecting admitted `INTEGRATION` elements (application-to-application edges, `source`/`target`) as a labelled directed graph, optionally extended with `uses` edges to `TECHNOLOGY_SERVICE`. Carries no canonical content: `view.integrations.include`/`.exclude` accept only bare string references, never an inline `source:`/`target:` pair, so no edge can be authored that canon doesn't already carry.
 - **Products catalogue** — `notation: products`. Inventory of `PRODUCT-…` elements grouped by category.
 - **Action Card** — `notation: action-card`. Root key `action_card:` carrying a single project's narrative — the project Action it summarises, planned dates, and document-scoped `MILESTONE` elements for narrative gates. One project per document.
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
@@ -416,6 +418,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | Nested blocks | `templates/blocks.blocks.transitrix.yaml` |
 | Scenarios | `templates/scenarios.scenarios.transitrix.yaml` |
 | Applications | `templates/applications.applications.transitrix.yaml` |
+| Integration Map | `templates/integration-map.integration-map.transitrix.yaml` |
 | Products | `templates/products.products.transitrix.yaml` |
 | Process Blueprint | `templates/process-blueprint.process-blueprint.transitrix.yaml` |
 | Action Card | `templates/action-card.action-card.transitrix.yaml` |

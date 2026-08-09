@@ -1,0 +1,33 @@
+notation: integration-map
+spec_version: "0.1"
+methodology_version: "3.3.0"
+name: "Enterprise integration landscape"
+
+view:
+  id: INTEGRATION_MAP-ENTERPRISE-1
+  name: "Enterprise integration landscape"
+  description: >
+    Application-cooperation graph across the order-management domain — every
+    admitted integration between the named applications, plus the Kafka
+    platform dependency behind the event-driven ones.
+
+  applications:
+    include:
+      - APPLICATION-OMS-1
+      - APPLICATION-CRM-1
+      - APPLICATION-BILLING-1
+
+  integrations:
+    filter:
+      protocol: [Kafka, REST]
+
+  technology_services:
+    show: true
+    include:
+      - TECHNOLOGY_SERVICE-KAFKA-CLUSTER-1
+
+  isolated_applications: "show"
+  edge_label: "protocol"
+  grouping:
+    by: "domain"
+  order_nodes_by: "id"

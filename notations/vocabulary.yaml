@@ -907,6 +907,27 @@ rule_codes:
   INT-004:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
+  INTMAP-001:
+    severity: error
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-002:
+    severity: warning
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-003:
+    severity: error
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-004:
+    severity: error
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-005:
+    severity: error
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-006:
+    severity: warning
+    spec: notations/views/diagrams/12-integration-map.md
+  INTMAP-007:
+    severity: warning
+    spec: notations/views/diagrams/12-integration-map.md
   JURISDICTION-CONSISTENCY-001:
     severity: warning
     spec: notations/views/diagrams/13-process-blueprint.md

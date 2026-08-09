@@ -1,0 +1,50 @@
+notation: integration-map
+spec_version: "0.1"
+methodology_version: "3.3.0"
+
+# Integration Map. Spec: notations/views/diagrams/12-integration-map.md
+# Application-cooperation / data-flow graph, projected from admitted
+# INTEGRATION elements (optionally extended with `uses` edges to
+# TECHNOLOGY_SERVICE). Carries no canonical content — no field here can
+# express an edge that isn't already an admitted INTEGRATION; register the
+# applications and integrations themselves in the Applications catalogue.
+
+name: "FILL-ME integration landscape"   # required per CONTRACT.md §1.1
+
+view:
+  id: INTEGRATION_MAP-FILL-ME-1
+  name: "FILL-ME — e.g. Enterprise integration landscape"
+  description: "FILL-ME — which applications, which integrations, and why"
+
+  # Which APPLICATION nodes are in scope. At most one of include / filter is
+  # meaningful at a time; omitting both is every admitted APPLICATION.
+  applications:
+    include:
+      - APPLICATION-FILL-ME-1
+      - APPLICATION-FILL-ME-2
+    # filter:
+    #   domain: [Operations]
+
+  # Which admitted INTEGRATION elements to draw as edges — always a bare
+  # string reference, never an inline source/target pair.
+  integrations:
+    # include:
+    #   - INTEGRATION-FILL-ME-1
+    filter:
+      protocol: [REST]
+    # exclude:
+    #   - INTEGRATION-FILL-ME-2
+
+  # Platform dependencies via the `uses` relation. Off by default.
+  technology_services:
+    show: false
+    # include: [TECHNOLOGY_SERVICE-FILL-ME-1]
+    # filter:
+    #   platform: [Streaming]
+
+  isolated_applications: "show"   # show | hide
+  edge_label: "protocol"          # protocol | payload_class | directionality | none
+  grouping:
+    by: "none"                    # none | domain
+
+  order_nodes_by: "id"            # id | name | domain

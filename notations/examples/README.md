@@ -13,6 +13,7 @@ One subfolder per diagram format. Open any example file in VS Code with the Tran
 | [`process-map/`](process-map/) | `*.process-map.transitrix.yaml` | Process landscape map | Top-level catalogue of operating, supporting, and management processes |
 | [`products/`](products/) | `*.products.transitrix.yaml` | Products catalogue | Portfolio of digital products, services, platforms, and bundles |
 | [`applications/`](applications/) | `*.applications.transitrix.yaml` | Applications catalogue | Inventory of applications, integrations, platforms, and data stores |
+| [`integration-map/`](integration-map/) | `*.integration-map.transitrix.yaml` | Integration Map | Application-cooperation graph projected from admitted `INTEGRATION` — includes a rule-violation fixture showing an inline-authored edge is rejected |
 | [`scenarios/`](scenarios/) | `*.scenarios.transitrix.yaml` | Scenarios | Planning and simulation scenarios |
 | [`process-blueprint/`](process-blueprint/) | `*.process-blueprint.transitrix.yaml` | Process Blueprint | Wide blueprint of a value chain — stages with systems, actors, equipment, information entities |
 | [`compliance-impact/`](compliance-impact/) | `*.compliance-impact.transitrix.yaml` | Compliance Impact | Report-config view over the compliance overlay — (obligation × subject) matrix derived from `ASSERTION` + process flow + `REQUIREMENT` status |
