@@ -20,6 +20,7 @@ import { buildCanonIndex } from './canon.mjs';
 import { isUnresolvedPath, checkUnresolved } from './unresolved.mjs';
 import { isValidId } from './ids.mjs';
 import { PRESETS_VERSION } from './coverage-presets.mjs';
+import { catalogueCheck, CatalogueError } from './catalogue.mjs';
 
 const ZONES = ['canon', 'field', 'codex'];
 
@@ -161,6 +162,22 @@ export async function repoCheck(orgRoot) {
   totalUnreadable += diskTypes.unreadable.length;
   const completeness = profileCompleteness(diskTypes.types, profile);
 
+  // L1 vocabulary check (method/05-catalogue-integration.md §4.5, CONTRACT.md §17) —
+  // only present in the report when a `catalogue:` pin exists (MANIFEST.md); an L0
+  // repo with no pin gets no catalogue section at all, not an empty one. The loader
+  // fails closed (missing/unreadable path, unparseable slice, version mismatch) —
+  // repo-check does not let that crash the rest of this data-free report; it
+  // degrades to a red flag instead, the same way an unresolved coverage_profile
+  // degrades to a warning rather than aborting the whole check.
+  let catalogue = null;
+  let catalogueError = null;
+  try {
+    catalogue = await catalogueCheck(root);
+  } catch (err) {
+    if (!(err instanceof CatalogueError)) throw err;
+    catalogueError = err.message;
+  }
+
   const red_flags = [];
   if (totalInvalid > 0) red_flags.push(`${totalInvalid} artefact(s) with an id that violates the canonical grammar (IDS_AND_REFERENCES §1)`);
   if (placement.findings.length > 0) red_flags.push(`${placement.findings.length} canon element(s) outside their ELEMENT_PRIMITIVES §4 folder`);
@@ -170,6 +187,9 @@ export async function repoCheck(orgRoot) {
   if (completeness.out_of_profile_types.length > 0) red_flags.push(`${completeness.out_of_profile_types.length} element TYPE(s) present in canon/elements/ but outside the active coverage profile (${completeness.out_of_profile_types.join(', ')}) — placed by hand, never seen by suggest-profile.mjs, not validated against the profile's per-TYPE fields`);
   if (!manifestText) red_flags.push('no transitrix.yaml manifest at the repo root — not a recognised adopter repo');
   if (!versionMatch) red_flags.push(`methodology_version in transitrix.yaml (${declaredVersion}) does not match the CLI built-in presets version (${PRESETS_VERSION}) — reinstall @transitrix/ingest-cli after a methodology upgrade`);
+  if (catalogueError) red_flags.push(`pinned catalogue (transitrix.yaml \`catalogue:\`) failed to load — ${catalogueError}`);
+  if (catalogue && catalogue.collisions.length > 0) red_flags.push(`${catalogue.collisions.length} local element(s) bound to the pinned catalogue whose name/alias also matches a different central element (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
+  if (catalogue && catalogue.unbound_matches.length > 0) red_flags.push(`${catalogue.unbound_matches.length} local element(s) whose name/alias matches a pinned-catalogue term but carry no \`canon_id\` binding (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
   // Diagnostics (transitrix-hq#104 item 5): a per-file read failure is counted, never
   // silently absorbed into a lower zone/scanned count with no trace. Data-free — a
   // count, not the file path; `check-placement` / `check-stale` name the file for an
@@ -211,6 +231,11 @@ export async function repoCheck(orgRoot) {
       methodology_version_match: versionMatch,
       ok: versionMatch,
     },
-    note: 'Data-free — aggregate counts and statuses only; no object ids, names, or contents. Safe to share externally. Read-only: repo-check never writes a zone.',
+    ...(catalogueError
+      ? { catalogue: { pin_present: true, error: catalogueError } }
+      : catalogue
+        ? { catalogue: { pin_present: true, pin: catalogue.pin, collisions: catalogue.collisions, unbound_matches: catalogue.unbound_matches } }
+        : {}),
+    note: 'Data-free (aggregate counts and statuses only, no names/aliases/free text) except the `catalogue` section, present only when a `catalogue:` pin is declared, which names local and central element ids — the minimum needed to act on an L1 finding (method/05-catalogue-integration.md §4.5). Read-only: repo-check never writes a zone.',
   };
 }
