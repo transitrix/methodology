@@ -20,6 +20,7 @@ import { readManifestText } from './intake.mjs';
 import { readTopScalar, readTopList } from './yaml.mjs';
 import { clean, parseInlineList } from './coverage.mjs';
 import { isUnresolvedPath } from './unresolved.mjs';
+import { parseId } from './ids.mjs';
 
 class CatalogueError extends Error {
   constructor(message) {
@@ -201,10 +202,26 @@ async function walkYaml(dir) {
   return out;
 }
 
-// Read { id, name, aliases, canon_id } off every admitted canon file — the surface
-// forms and the (optional) binding the L1 diff needs. canon/unresolved/ is excluded
-// (CONTRACT.md §13 — a holding area, not admitted typed canon, same exclusion
-// canon.mjs's buildCanonIndex and repo-check.mjs's tallyZone already apply).
+// A block-map key's presence, independent of its value shape (`origin` is a map,
+// never a scalar, so readTopScalar — which requires a same-line value — cannot see
+// it at all: absent and present-as-a-block are otherwise indistinguishable to it).
+function hasTopKey(text, key) {
+  return typeof text === 'string' && new RegExp(`^${key}:`, 'm').test(text);
+}
+
+// Read { id, type, name, aliases, description, canon_id, origin } off every admitted
+// canon file — the surface forms, TYPE, and (optional) binding fields the L1 diff and
+// the BIND-001..005 envelope rules (CONTRACT.md §17.2) need. `type` is the catalogue
+// TYPE (the id's own prefix, IDS_AND_REFERENCES §1 — repo-check.mjs's
+// elementTypesOnDisk derives it the same way), NOT a per-TYPE subtype field some
+// element schemas separately carry under their own `type:` key. `origin` is read as
+// presence-only (BIND-005 only needs to know whether it is there, never its content —
+// a project repository's own element should never carry it at all). `description` is
+// read as a single-line scalar only — a multi-line block-scalar description reads
+// back as null here, same tiny-parser posture as everywhere else in this file.
+// canon/unresolved/ is excluded (CONTRACT.md §13 — a holding area, not admitted typed
+// canon, same exclusion canon.mjs's buildCanonIndex and repo-check.mjs's tallyZone
+// already apply).
 export async function collectLocalElements(orgRoot) {
   const canonDir = join(resolve(orgRoot), 'canon');
   const out = [];
@@ -215,11 +232,15 @@ export async function collectLocalElements(orgRoot) {
     try { text = await readFile(file, 'utf8'); } catch { continue; }
     const id = readTopScalar(text, 'id');
     if (!id) continue;
+    const parsed = parseId(id);
     out.push({
       id,
+      type: parsed ? parsed.type : null,
       name: readTopScalar(text, 'name'),
       aliases: readTopList(text, 'aliases'),
+      description: readTopScalar(text, 'description'),
       canon_id: readTopScalar(text, 'canon_id'),
+      origin: hasTopKey(text, 'origin'),
     });
   }
   return out;
@@ -284,6 +305,71 @@ export function findVocabularyDivergence(localElements, catalogueElements) {
   unbound_matches.sort((a, b) => a.local_id.localeCompare(b.local_id));
 
   return { collisions, unbound_matches };
+}
+
+// ── Binding envelope validation — BIND-001..005 (CONTRACT.md §17.2) ────────
+
+// Check every local element's `canon_id` / `origin` fields against the binding
+// envelope's five rules. Pure function of its inputs (no I/O) — the same
+// (localElements, catalogueSlice) pair always returns the same findings.
+//
+//   unresolved       — BIND-001: `canon_id` does not resolve to any element in the
+//                       pinned catalogue.
+//   type_mismatch     — BIND-002: `canon_id` resolves, but the resolved central
+//                       element's TYPE differs from this element's own TYPE.
+//   duplicate_target — BIND-003: two or more local elements carry the same
+//                       `canon_id` — a cross-catalogue check, reported once per
+//                       central id with every claiming local id attached.
+//   missing_pin       — BIND-004: `canon_id` is present but `catalogueSlice` is
+//                       null — no pin declared (or a declared pin that failed to
+//                       load; a binding cannot be validated without a working
+//                       catalogue either way).
+//   origin_present     — BIND-005: `origin` is present on a local element. Every
+//                       element this function sees is, by construction, a
+//                       *project* repository's own canon — `origin` records
+//                       provenance for a *central* repository's admitted element,
+//                       so its presence here is always a violation, regardless of
+//                       pin state.
+// Data-free posture matches findVocabularyDivergence: findings name ids (the
+// minimum needed to act), never a surface-form string.
+export function checkBindings(localElements, catalogueSlice) {
+  const centralById = new Map();
+  for (const ce of (catalogueSlice && catalogueSlice.elements) || []) centralById.set(ce.id, ce);
+
+  const unresolved = [];
+  const type_mismatch = [];
+  const missing_pin = [];
+  const origin_present = [];
+  const byCanonId = new Map(); // canon_id -> [local_id...] (bound + resolved + type-matched only)
+
+  for (const le of localElements || []) {
+    if (le.origin) origin_present.push({ local_id: le.id });
+    if (!le.canon_id) continue;
+
+    if (!catalogueSlice) { missing_pin.push({ local_id: le.id }); continue; }
+
+    const ce = centralById.get(le.canon_id);
+    if (!ce) { unresolved.push({ local_id: le.id, canon_id: le.canon_id }); continue; }
+    if (ce.type !== le.type) {
+      type_mismatch.push({ local_id: le.id, canon_id: le.canon_id, local_type: le.type, central_type: ce.type });
+      continue;
+    }
+    if (!byCanonId.has(le.canon_id)) byCanonId.set(le.canon_id, []);
+    byCanonId.get(le.canon_id).push(le.id);
+  }
+
+  const duplicate_target = [];
+  for (const [canonId, ids] of byCanonId) {
+    if (ids.length > 1) duplicate_target.push({ canon_id: canonId, local_ids: ids.sort() });
+  }
+
+  unresolved.sort((a, b) => a.local_id.localeCompare(b.local_id));
+  type_mismatch.sort((a, b) => a.local_id.localeCompare(b.local_id));
+  duplicate_target.sort((a, b) => a.canon_id.localeCompare(b.canon_id));
+  missing_pin.sort((a, b) => a.local_id.localeCompare(b.local_id));
+  origin_present.sort((a, b) => a.local_id.localeCompare(b.local_id));
+
+  return { unresolved, type_mismatch, duplicate_target, missing_pin, origin_present };
 }
 
 // ── Orchestrator ─────────────────────────────────────────────────────────

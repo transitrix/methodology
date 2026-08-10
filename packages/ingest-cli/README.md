@@ -46,6 +46,9 @@ transitrix-ingest <command> [args]
 | `workflow-status [org-root]` | ✅ | Report every human gate's phase + count — ADR/WI status, canon element status, REQUIREMENT/CONSTRAINT review-overdue, ingest batches awaiting review, reg-intel digests awaiting review. Read-only; phases and counts only, no age/time. `[--out <path>] [--format md\|yaml] [--data-free]`. |
 | `check-placement [org-root]` | ✅ | Flag admitted elements sitting outside their §4 folder (read-only over `canon/`). |
 | `check-packages [org-root]` | ✅ | Validate `packages:` declarations (`PKG-001`/`PKG-002`, `PACKAGES.md` §8) and run each declared package's own validator entry point, if present — package-agnostic discovery, never package-specific logic (`PACKAGES.md` §4.2, §7). |
+| `catalogue-recognize [org-root]` | ✅ | L2 — match unbound local elements against the pinned catalogue by unambiguous name/alias + TYPE; stage the result as `catalogue-bindings.proposed.yaml` (`gate.admits_to_canon: false`, `method/05-catalogue-integration.md` §2). `[--out <path>] [--scope <word>]`. |
+| `catalogue-bind <local-id> <canon-id> [org-root]` | ✅ | Apply an accepted L2/L3 binding — writes `canon_id` into the local element file, the one place a binding lands in canon. Fails closed against `BIND-001`..`004` (`CONTRACT.md` §17.2); idempotent against re-applying the same binding; refuses to overwrite a different one. |
+| `catalogue-promote <local-id> --repository <org>/<repo> [org-root]` | ✅ | L3 — emit a promotion proposal (candidate central element carrying `origin`) for the central repository's human admission gate; `promotions.proposed.yaml`. No agent writes across the repository boundary. `[--out <path>] [--scope <word>]`. |
 
 ## Multi-batch naming
 
@@ -76,6 +79,8 @@ packages/ingest-cli/
     batch-path.mjs     # non-destructive batch-directory naming
     emit-candidates.mjs# shape the agent extraction result into candidates
     workflow-status.mjs# every human gate's phase + count, read-only
+    catalogue.mjs      # L1 — fails-closed catalogue pin loader + vocabulary-divergence check
+    binding.mjs        # L2/L3 — recognition proposal, the human-gated bind, promotion proposal
 ```
 
 The agent-facing extraction prompts that produce the `--from <result.json>` input live with the skill, at `transitrix/skills/ingest/prompts/`.

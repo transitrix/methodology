@@ -13,6 +13,7 @@ import {
   loadCatalogueSlice,
   collectLocalElements,
   findVocabularyDivergence,
+  checkBindings,
   catalogueCheck,
   CatalogueError,
 } from './catalogue.mjs';
@@ -180,6 +181,28 @@ test('collectLocalElements: an absent canon/ yields an empty list, not a throw',
   assert.deepEqual(elements, []);
 });
 
+test('collectLocalElements: derives `type` from the id\'s own prefix', async () => {
+  const root = tmpOrgRoot();
+  writeCanonElement(root, 'TERM-9.yaml', { id: 'TERM-9', name: 'Capability' });
+  const elements = await collectLocalElements(root);
+  assert.equal(elements[0].type, 'TERM');
+});
+
+test('collectLocalElements: reads `description` and `origin` presence', async () => {
+  const root = tmpOrgRoot();
+  writeCanonElement(root, 'TERM-9.yaml', { id: 'TERM-9', name: 'Capability', description: 'A shared capability term.', origin: 'present' });
+  const elements = await collectLocalElements(root);
+  assert.equal(elements[0].description, 'A shared capability term.');
+  assert.equal(elements[0].origin, true);
+});
+
+test('collectLocalElements: an element carrying no `origin` reads origin: false', async () => {
+  const root = tmpOrgRoot();
+  writeCanonElement(root, 'TERM-9.yaml', { id: 'TERM-9', name: 'Capability' });
+  const elements = await collectLocalElements(root);
+  assert.equal(elements[0].origin, false);
+});
+
 // ── findVocabularyDivergence — pure diff ─────────────────────────────────
 
 test('findVocabularyDivergence: a clean repo (no surface-form overlap) reports nothing', () => {
@@ -236,6 +259,66 @@ test('findVocabularyDivergence: idempotent — running twice on the same input y
   const first = findVocabularyDivergence(local, central);
   const second = findVocabularyDivergence(local, central);
   assert.deepEqual(first, second);
+});
+
+// ── checkBindings — BIND-001..005 (CONTRACT.md §17.2) ────────────────────
+
+test('checkBindings: a clean, correctly-bound element reports nothing', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: 'TERM-001', origin: false }];
+  const slice = { elements: [{ id: 'TERM-001', type: 'TERM' }] };
+  const result = checkBindings(local, slice);
+  assert.deepEqual(result, { unresolved: [], type_mismatch: [], duplicate_target: [], missing_pin: [], origin_present: [] });
+});
+
+test('checkBindings: BIND-001 — a canon_id that does not resolve in the pinned catalogue', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: 'TERM-999', origin: false }];
+  const slice = { elements: [{ id: 'TERM-001', type: 'TERM' }] };
+  const result = checkBindings(local, slice);
+  assert.deepEqual(result.unresolved, [{ local_id: 'TERM-9', canon_id: 'TERM-999' }]);
+});
+
+test('checkBindings: BIND-002 — canon_id resolves, but the central TYPE differs', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: 'CAPABILITY-001', origin: false }];
+  const slice = { elements: [{ id: 'CAPABILITY-001', type: 'CAPABILITY' }] };
+  const result = checkBindings(local, slice);
+  assert.deepEqual(result.type_mismatch, [{ local_id: 'TERM-9', canon_id: 'CAPABILITY-001', local_type: 'TERM', central_type: 'CAPABILITY' }]);
+});
+
+test('checkBindings: BIND-003 — two local elements bound to the same central element', () => {
+  const local = [
+    { id: 'TERM-9', type: 'TERM', canon_id: 'TERM-001', origin: false },
+    { id: 'TERM-10', type: 'TERM', canon_id: 'TERM-001', origin: false },
+  ];
+  const slice = { elements: [{ id: 'TERM-001', type: 'TERM' }] };
+  const result = checkBindings(local, slice);
+  assert.deepEqual(result.duplicate_target, [{ canon_id: 'TERM-001', local_ids: ['TERM-10', 'TERM-9'] }]);
+});
+
+test('checkBindings: BIND-004 — a canon_id present but no catalogue pin configured', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: 'TERM-001', origin: false }];
+  const result = checkBindings(local, null);
+  assert.deepEqual(result.missing_pin, [{ local_id: 'TERM-9' }]);
+});
+
+test('checkBindings: BIND-005 — origin present on a project repository\'s own element', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: null, origin: true }];
+  const result = checkBindings(local, null);
+  assert.deepEqual(result.origin_present, [{ local_id: 'TERM-9' }]);
+});
+
+test('checkBindings: an unbound element (no canon_id) with no origin reports nothing', () => {
+  const local = [{ id: 'TERM-9', type: 'TERM', canon_id: null, origin: false }];
+  const result = checkBindings(local, null);
+  assert.deepEqual(result, { unresolved: [], type_mismatch: [], duplicate_target: [], missing_pin: [], origin_present: [] });
+});
+
+test('checkBindings: idempotent — running twice on the same input yields the same result', () => {
+  const local = [
+    { id: 'TERM-9', type: 'TERM', canon_id: 'TERM-999', origin: false },
+    { id: 'TERM-10', type: 'TERM', canon_id: null, origin: true },
+  ];
+  const slice = { elements: [{ id: 'TERM-001', type: 'TERM' }] };
+  assert.deepEqual(checkBindings(local, slice), checkBindings(local, slice));
 });
 
 // ── catalogueCheck — end-to-end orchestrator ─────────────────────────────

@@ -164,3 +164,40 @@ test('repoCheck: the data-free report never carries the per-file unreadable deta
     assert.equal(Object.prototype.hasOwnProperty.call(report.zones[z], 'unreadable'), false);
   }
 });
+
+// ── binding envelope (BIND-001..005, CONTRACT.md §17.2) surfaces here too ─
+
+test('repoCheck: a clean repo (no canon_id, no origin) carries no `bindings` section at all', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(Object.prototype.hasOwnProperty.call(report, 'bindings'), false);
+});
+
+test('repoCheck: BIND-005 — an `origin` field on a project repository\'s own element is flagged', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\norigin:\n  repository: acme/architecture\n  id: GOAL-1\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.deepEqual(report.bindings.origin_present, [{ local_id: 'GOAL-1' }]);
+  assert.ok(report.integrity.red_flags.some((f) => f.includes('BIND-005')));
+});
+
+test('repoCheck: BIND-004 — a canon_id present with no catalogue pin configured is flagged', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(goalsDir, { recursive: true });
+  writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\ncanon_id: "TERM-001"\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.deepEqual(report.bindings.missing_pin, [{ local_id: 'GOAL-1' }]);
+  assert.ok(report.integrity.red_flags.some((f) => f.includes('BIND-004')));
+});
