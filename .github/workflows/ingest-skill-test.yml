@@ -47,6 +47,9 @@ jobs:
       - name: Run repo-check unit tests
         run: node --test packages/ingest-cli/src/repo-check.test.mjs
 
+      - name: Run canon-index unit tests
+        run: node --test packages/ingest-cli/src/canon.test.mjs
+
       - name: Run Ingest pipeline test (deterministic)
         run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
 

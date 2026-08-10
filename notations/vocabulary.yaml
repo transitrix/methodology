@@ -42,7 +42,7 @@ methodology_version: "3.4.0"
 #   promotable  the TYPE starts inline and gains a standalone file only when a
 #               SECOND document references it (§1 promotion rule); id never changes
 #
-# 30 live TYPEs. Retired names are under `deprecated_element_types` below and are
+# 31 live TYPEs. Retired names are under `deprecated_element_types` below and are
 # NOT part of that count.
 # ---------------------------------------------------------------------------
 element_types:
@@ -153,6 +153,13 @@ element_types:
     mode: standalone
     layer: 02_business
     folder: 02_business/business-objects/
+    promotable: false
+  TERM:
+    # Business-layer vocabulary entry — name + definition only, no modelled
+    # behaviour. Schema: ELEMENT_PRIMITIVES.md §7.30.
+    mode: standalone
+    layer: 02_business
+    folder: 02_business/terms/
     promotable: false
 
   # --- 03_application ------------------------------------------------------
@@ -865,6 +872,18 @@ rule_codes:
   FRESHNESS-001:
     severity: warning
     spec: notations/CONTRACT.md
+  GLOS-001:
+    severity: error
+    spec: notations/views/reports/32-glossary.md
+  GLOS-002:
+    severity: error
+    spec: notations/views/reports/32-glossary.md
+  GLOS-003:
+    severity: error
+    spec: notations/views/reports/32-glossary.md
+  GLOS-004:
+    severity: warning
+    spec: notations/views/reports/32-glossary.md
   GOALS-001:
     severity: error
     spec: notations/views/diagrams/04-goals.md
@@ -1225,6 +1244,12 @@ rule_codes:
   STAKE-003:
     severity: error
     spec: notations/elements/20-stakeholders.md
+  TERM-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  TERM-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
   TSVC-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md

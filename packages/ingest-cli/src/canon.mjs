@@ -20,6 +20,11 @@
 //     one file), so it is collected here as the nameMap is built. A value shared
 //     within a single element's own name/aliases is NOT a collision. repo-check
 //     surfaces the count (data-free) as an integrity red flag.
+//   - TERM extension (ELEMENT_PRIMITIVES §7.30/§9): a TERM's own `name` claim is
+//     ALSO collision-triggering, even when both sides matched on 'name' -- a TERM
+//     restating another element's name is exactly the failure mode the TYPE exists
+//     to prevent, so its name is folded into the alias-collision surface instead of
+//     the ordinary "two plain names may coincide" rule every other TYPE gets.
 
 import { readdir, readFile, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -49,6 +54,10 @@ async function walkYaml(dir) {
 // Normalise a name/alias string for case-insensitive matching (F8).
 function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
 
+// Is this a TERM element id? TERM's own `name` opts into the alias-collision
+// surface (ELEMENT_PRIMITIVES §7.30/§9) -- see the claim() extension below.
+function isTermId(id) { return typeof id === 'string' && id.startsWith('TERM-'); }
+
 // Build a read-only index of canon/ for one org root.
 // Returns { ids: Set, rels: Set, nameMap: Map, collisions: [], unreadable: [] }.
 //   ids        -- admitted element/assertion IDs (for review-queue idempotency).
@@ -77,14 +86,18 @@ export async function buildCanonIndex(orgRoot) {
   // name or alias. Two different elements legitimately sharing a `name` is NOT a
   // collision — names are unique only within a TYPE catalogue (§8), so a Stakeholder
   // and an Actor both named "Operations" is allowed. The same id re-using a value
-  // (an alias equal to its own name) is benign and recorded once.
+  // (an alias equal to its own name) is benign and recorded once. TERM extension:
+  // a TERM id on either side also triggers the collision, even when both sides
+  // matched on 'name' — see the module comment above.
   const claim = (value, id, matched_on) => {
     const key = normName(value);
     if (!key) return;
     const prev = nameMap.get(key);
     if (!prev) { nameMap.set(key, { id, matched_on }); return; }
     if (prev.id === id) return;
-    if (matched_on === 'alias' || prev.matched_on === 'alias') collisions.push({ value, a: prev.id, b: id });
+    if (matched_on === 'alias' || prev.matched_on === 'alias' || isTermId(id) || isTermId(prev.id)) {
+      collisions.push({ value, a: prev.id, b: id });
+    }
   };
 
   for (const file of await walkYaml(canonDir)) {

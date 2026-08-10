@@ -25,7 +25,7 @@ Each renders a visual diagram.
 | [13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) | `process-blueprint` | Wide blueprint of a value chain — stages laid out left-to-right, each carrying its goal, result, and supporting systems / actors / equipment / information entities. | `*.process-blueprint.transitrix.yaml` | draft |
 | [18-action-card.md](./views/diagrams/18-action-card.md) | `action-card` | Single-project narrative view — DGCA chain, dates, milestones, gate decisions. | `*.action-card.transitrix.yaml` | draft |
 
-### Report views (C = 4)
+### Report views (C = 5)
 
 Each produces a derived report or table from a declarative view-config, per [`REPORT_VIEW_CONFIG.md`](views/REPORT_VIEW_CONFIG.md).
 
@@ -35,6 +35,7 @@ Each produces a derived report or table from a declarative view-config, per [`RE
 | [21-compliance-impact.md](./views/reports/21-compliance-impact.md) | `compliance-impact` | Report-config view over the compliance overlay — derives the (obligation × subject) matrix from `ASSERTION` + process flow + `REQUIREMENT` status; distinguishes "No mapped obligation (current model)" from `n_a`. | `*.compliance-impact.transitrix.yaml` | draft |
 | [22-coverage-metric.md](./views/reports/22-coverage-metric.md) | `coverage-metric` | Report-config view over coverage of canon — counts subjects with zero admitted obligations from each regime, broken down per jurisdiction; distinguishes "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)". | `*.coverage-metric.transitrix.yaml` | draft |
 | [23-actions-tree.md](./views/reports/23-actions-tree.md) | `actions-tree` | Report-config view over the `ACTION` element catalogue — renders the strategic portfolio as a top-down tree from Initiative through Programme, Project, to Task. | `*.actions-tree.transitrix.yaml` | draft |
+| [32-glossary.md](./views/reports/32-glossary.md) | `glossary` | Report-config view over the whole catalogue — projects `name` + `aliases[]` + `description` for every admitted element (`TERM` and modelled objects alike) into one flat, alphabetised lookup surface. | `*.glossary.transitrix.yaml` | draft |
 
 ### Document views (D = 3)
 

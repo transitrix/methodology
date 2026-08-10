@@ -102,6 +102,7 @@ Elements that get referenced across documents.
 | `REL` | first-class time-aware relation between two canonical primitives — `parent`, `action_goal`, `goal_parent`, `depends_on`, `required_for`, etc. Carries its own `valid_from` / `valid_to` so changes to a relation (a capability re-parenting, a goal re-aimed, a requirement dependency, an obligation moving into or out of scope for a release) are first-class temporal events. Deprecated alias: `activity_goal` → `action_goal`. | Relations catalogue (`canon/relations/`); one file per relation. Schema: [17-relations.md](elements/17-relations.md). |
 | `MILESTONE` | project-narrative milestone — a decision gate, certification date, or programme-level marker that belongs in an Action Card's narrative. Distinct from a "schedule milestone" (a zero-duration action inside an Action schedule document, see [07-action.md](./views/diagrams/07-action.md) §5.9), which exists for critical-path computation. | Defined inside an Action Card document (`*.action-card.transitrix.yaml`); scope is the parent card document. Schema: [18-action-card.md](./views/diagrams/18-action-card.md). |
 | `RELEASE` | implementation-layer **state of a modelled subject** — one dated/versioned release of a `PRODUCT` or `APPLICATION`. Not to be confused with a release *of the methodology itself* ([CONTRACT.md](CONTRACT.md) §10). Predecessor chains (`predecessor`, same-TYPE, inline) express version order; a `RELEASE` carries no list of its own contents — composition is derived by query. Catalogued only when referenced (STEP-style promotion restraint, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §1), so a vendor's full version history is not imported as inert catalogue noise. | Obligations/claims-per-release model — the `required_for` relation (REQUIREMENT → RELEASE, [elements/17-relations.md](elements/17-relations.md) §3, derived scope query §3.2) and the `ASSERTION` / `VERIFICATION` release qualifiers. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.29. |
+| `TERM` | business-layer **vocabulary entry** (ArchiMate Meaning) — a name and a definition, nothing else: industry vocabulary, an abbreviation, or a word used in a particular sense. Not a modelled object — a concept that already has its own element is defined by that element's `description`, never restated as a `TERM` (enforced by an `ELEM-ALIAS-001` extension, [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.30/§9). Cites the codex artefact it was drawn from via `derived_from` when taken from an external standard, restricted to `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` (`TERM-002`). | Terms catalogue (`canon/elements/02_business/terms/`); one of the two provenances the generated glossary projects over. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.30. |
 
 ### 3.2 View-level types
 
@@ -126,6 +127,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `MRD` | `*.mrd.transitrix.yaml` |
 | `SRS` | `*.srs.transitrix.yaml` |
 | `SDD` | `*.sdd.transitrix.yaml` |
+| `GLOSSARY` | `*.glossary.transitrix.yaml` |
 
 BPMN diagrams use their `process.id` as the document identifier; that field is a free-form string defined by the spec, not by this appendix.
 
@@ -213,6 +215,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `RISK` | within the organisation's element catalogue (`canon/elements/01_motivation/risks/`), one file per RISK. |
 | `NEED` | within the organisation's element catalogue (`canon/elements/01_motivation/needs/`), one file per NEED. |
 | `TARGET_STATE` | within the organisation's element catalogue (`canon/elements/05_implementation/target-states/`), one file per TARGET_STATE. |
+| `TERM` | within the organisation's element catalogue (`canon/elements/02_business/terms/`), one file per TERM. A TERM's `name` additionally participates in the `ELEM-ALIAS-001` cross-catalogue name/alias scan ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §9) — restating an existing element's definition under a new TERM fails admission. |
 | `REL` | within the organisation's `canon/relations/` folder, one file per REL. |
 | `MILESTONE` | within the action-card document that defines it. MILESTONE IDs are not required to be unique across the organisation; they are document-scoped element identifiers (the parent card binds them). |
 | `RELEASE` | within the organisation's element catalogue (`canon/elements/05_implementation/releases/`), one file per RELEASE. `version` is not part of the uniqueness scope of the id — two admitted releases of the same `of` subject sharing the same `version` string is a separate validation error (`RELEASE-005`), not an id collision. |
