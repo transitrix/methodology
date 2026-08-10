@@ -34,6 +34,10 @@ notations: [dgca, goals, action, capability-map, codex]
 zones: [canon, field, codex]
 coverage_profile: full              # optional — see COVERAGE_PROFILES.md
 packages: [reqif]                   # optional — see PACKAGES.md
+catalogue:                          # optional — pins a central catalogue this repo consumes (L1); see method/05-catalogue-integration.md §4
+  source: <org>/<repo>
+  version: "1.0.0"
+  path: vendor/catalogue/architecture-1.0.0.yaml
 confidence_decay:                   # optional — per-TYPE freshness decay; see CONTRACT.md §11.3
   defaults: { fresh_days: 180, stale_days: 730, floor: 0.3 }
 operating_parameters:               # optional — org-wide operating defaults
@@ -48,6 +52,7 @@ operating_parameters:               # optional — org-wide operating defaults
 | `zones` | yes | list | Which zones the repository maintains — any subset of `canon`, `field`, `codex`. A repo MAY start canon-only and add `field` / `codex` later. |
 | `coverage_profile` | no | string \| map | Which slice of the methodology's vocabulary is in scope for this repo. Short form: a shipped preset name (`minimal` / `core` / `full`). Long form: a custom profile that extends a preset. Defaults to `full` when omitted. Full schema, presets, closure rule, and validation in [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md). |
 | `packages` | no | list | Zero or more optional domain packages layered on top of the core vocabulary — orthogonal to `coverage_profile` (depth) and to each other. Absent or empty ⇒ no package active, with no warning. Full mechanism, reversibility contract, and validation in [PACKAGES.md](PACKAGES.md). |
+| `catalogue` | no | map | Pins a central repository's published catalogue slice this repo consumes — the integration ladder's L1 ("vocabulary"). Absent ⇒ L0/pre-L1, unaffected. `source`, `version`, `path` are all required within the map when present; `path` is a local, adopter-vendored file — no tool fetches it over the network. Full mechanism, fails-closed load rule, and the L1 report-only divergence check in [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) §4. |
 | `confidence_decay` | no | map | Per-element-TYPE freshness-decay parameters (`fresh_days`, `stale_days`, `floor`) used by confidence scoring. A `defaults` sub-map applies to any TYPE not listed under `by_type`. Defined in [CONTRACT.md](CONTRACT.md) §11.3. Omitted ⇒ the §11.3 defaults apply. |
 | `operating_parameters` | no | map | Org-wide defaults for automated operating activities. v1 carries `default_scan_frequency` (ISO 8601 duration) — the fallback scan cadence for `REGISTRY` rows that declare no `scan_frequency` and whose registry sets no `default_scan_frequency` ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19). Additive — further operating defaults may be added here as automated activities are modelled. |
 
@@ -62,4 +67,5 @@ No validator enforces the manifest yet; it is declarative. Tooling MAY read it t
 - Codex zone: [14-codex.md](elements/14-codex.md).
 - Coverage Profile (the `coverage_profile:` field): [COVERAGE_PROFILES.md](COVERAGE_PROFILES.md).
 - Domain Packages (the `packages:` field): [PACKAGES.md](PACKAGES.md).
+- Catalogue integration / the `catalogue:` field: [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) §4.
 - Confidence and freshness (the `confidence_decay:` field): [CONTRACT.md](CONTRACT.md) §11.

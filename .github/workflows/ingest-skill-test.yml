@@ -47,6 +47,9 @@ jobs:
       - name: Run repo-check unit tests
         run: node --test packages/ingest-cli/src/repo-check.test.mjs
 
+      - name: Run catalogue (L1 vocabulary check) unit tests
+        run: node --test packages/ingest-cli/src/catalogue.test.mjs
+
       - name: Run Ingest pipeline test (deterministic)
         run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
 
