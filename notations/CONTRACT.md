@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and verification domain (REQUIREMENT + ASSERTION + VERIFICATION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves — and §8.1 covers risk modelling — the dedicated `RISK` element type, and the ArchiMate Risk and Security Overlay mapping onto core motivation primitives as an alternative. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and verification domain (REQUIREMENT + ASSERTION + VERIFICATION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves — and §8.1 covers risk modelling — the dedicated `RISK` element type, and the ArchiMate Risk and Security Overlay mapping onto core motivation primitives as an alternative. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`. §17 defines the **binding envelope** (`canon_id` / `origin`) that relates a project repository's element to a central repository's, additive to every other section here.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -1091,3 +1091,36 @@ This is the property that makes the hatch a checker-verified exemption rather th
 `MECH-001` is informational, not a build-breaking error: refusal does not fail validation, it only means §16.2's suspicion computation proceeds without the exemption. A reference implementation lives in [`scripts/check-link-suspicion.mjs`](../scripts/check-link-suspicion.mjs), alongside §16.1 and §16.2.
 
 **Additive.** Nothing in this section changes an existing schema, adds a required field to any TYPE, or alters an existing validation rule. A repository that declares no `migrations/*/TRANSFORM.yaml` manifest and never inspects link suspicion validates exactly as it did before this section existed.
+
+## 17. Binding envelope — `canon_id` and `origin`
+
+A project repository's element and a central repository's element are related by an optional, additive binding, not by a copy or a rename. The levels this binding is proposed and accepted at, the ownership rule it depends on, and the repository-boundary constraints it obeys are specified in [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md); this section defines the fields themselves and the rules a binding must satisfy.
+
+### 17.1 Fields
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `canon_id` | no | string | On a `standalone` element in a **project** repository: the id of the central element this element is bound to, resolved against the repository's pinned catalogue. Absent by default — present only once a binding has been accepted, never authored ahead of acceptance. |
+| `origin` | no | map | On an element admitted in the **central** repository: `{ repository: <slug>, id: <the local id it was promoted from> }` — where the element came from. Absent for an element the central repository authored itself. |
+
+Both fields are facts recorded *alongside* an element's own envelope (§3) — neither is a required field on any TYPE, and neither substitutes for `id`. **No tool ever rewrites a local `id`** in order to add or remove a binding.
+
+### 17.2 Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `BIND-001` | error | `canon_id` is present but does not resolve to any element in the repository's pinned catalogue. |
+| `BIND-002` | error | `canon_id` resolves, but the resolved central element's TYPE differs from this element's own TYPE. |
+| `BIND-003` | error | Two or more elements in the same catalogue carry the same `canon_id` — a central element cannot be the binding target of more than one local element. A **cross-catalogue** gate, requiring a full catalogue scan. |
+| `BIND-004` | error | `canon_id` is present but the repository has no catalogue pin configured — a binding without a pin. |
+| `BIND-005` | error | `origin` is present on an element that is not itself admitted in the central repository — `origin` records provenance for a central element, it is not a project-repository field. |
+
+### 17.3 Rendering rule
+
+A repository's own views always display its own `id` — a binding is metadata about an element, never a substitute for its identity at home. A rendered view never resolves `canon_id` in place of the id it is displaying.
+
+### 17.4 Out of scope here
+
+- **The catalogue itself** — its publication format, the pin field's shape and location in a consuming repository's manifest, and the version-match rule a pin resolves under — is specified where the catalogue-publishing mechanism lands, not here. `BIND-001` and `BIND-004` above assume that mechanism exists; they do not define it.
+- **How a binding is proposed** — the matching, staging, and review-queue mechanics of recognition and promotion (L2 / L3, [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) §2) — is separate from the envelope shape and rules a binding must satisfy once accepted, which is all this section defines.
+- **`TERM` and other TYPE-specific catalogue content** are out of scope here; this section's fields and rules apply to any `standalone` element regardless of TYPE.

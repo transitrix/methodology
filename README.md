@@ -63,6 +63,7 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 - **[`notations/views/documents/DIRECTIVE_LANGUAGE.md`](notations/views/documents/DIRECTIVE_LANGUAGE.md)** — the `.ttrs` document source format: one directive language shared by every document kind (`mrd`, `srs`, `sdd`, `sds`, …, the middle segment of `<basename>.<kind>.ttrs`). Canonical public explanation: [transitrix.com/ttrs](https://transitrix.com/ttrs/).
 - **[`method/00-glossary.md`](method/00-glossary.md)** — standardised terminology.
 - **[`method/03-architecture-decision-log.md`](method/03-architecture-decision-log.md)** — architecture decision records per repo and the harvested enterprise log across repos; §10 is the setup path, from an empty folder to a scheduled harvest.
+- **[`method/05-catalogue-integration.md`](method/05-catalogue-integration.md)** — the four separately-enabled levels (decisions / vocabulary / recognition / promotion) at which a project repository integrates with a central catalogue repository, and the ownership rule they share.
 - **[`transitrix/templates`](https://github.com/transitrix/templates)** — forkable starter templates (RACI, …): fork, edit for your own organisation, validate.
 
 Process & releases:

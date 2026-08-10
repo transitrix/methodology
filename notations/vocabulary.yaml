@@ -604,6 +604,21 @@ rule_codes:
   ATREE-007:
     severity: error
     spec: notations/views/reports/23-actions-tree.md
+  BIND-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  BIND-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  BIND-003:
+    severity: error
+    spec: notations/CONTRACT.md
+  BIND-004:
+    severity: error
+    spec: notations/CONTRACT.md
+  BIND-005:
+    severity: error
+    spec: notations/CONTRACT.md
   BL-001:
     severity: error
     spec: notations/views/diagrams/08-blocks.md
