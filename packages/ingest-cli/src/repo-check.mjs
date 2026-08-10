@@ -20,7 +20,7 @@ import { buildCanonIndex } from './canon.mjs';
 import { isUnresolvedPath, checkUnresolved } from './unresolved.mjs';
 import { isValidId } from './ids.mjs';
 import { PRESETS_VERSION } from './coverage-presets.mjs';
-import { catalogueCheck, CatalogueError } from './catalogue.mjs';
+import { loadCatalogueSlice, collectLocalElements, findVocabularyDivergence, checkBindings, CatalogueError } from './catalogue.mjs';
 
 const ZONES = ['canon', 'field', 'codex'];
 
@@ -169,14 +169,30 @@ export async function repoCheck(orgRoot) {
   // repo-check does not let that crash the rest of this data-free report; it
   // degrades to a red flag instead, the same way an unresolved coverage_profile
   // degrades to a warning rather than aborting the whole check.
+  // Loaded once and shared with the BIND-001..005 envelope check below (checkBindings)
+  // rather than calling the old catalogueCheck orchestrator twice over — both need the
+  // same (localElements, slice) pair.
+  const catalogueLocalElements = await collectLocalElements(root);
+  let slice = null;
   let catalogue = null;
   let catalogueError = null;
   try {
-    catalogue = await catalogueCheck(root);
+    slice = await loadCatalogueSlice(root);
+    if (slice) {
+      const { collisions, unbound_matches } = findVocabularyDivergence(catalogueLocalElements, slice.elements);
+      catalogue = { pin: { source: slice.source, version: slice.version }, collisions, unbound_matches };
+    }
   } catch (err) {
     if (!(err instanceof CatalogueError)) throw err;
     catalogueError = err.message;
   }
+
+  // Binding envelope check (BIND-001..005, CONTRACT.md §17.2). `missing_pin`
+  // (BIND-004) and `origin_present` (BIND-005) are meaningful even with no working
+  // pin — checkBindings computes those from `slice === null` alone, same fails-closed
+  // posture as the L1 check above (a pin present but broken is treated the same as no
+  // pin for the purpose of resolving a canon_id against it).
+  const bindings = checkBindings(catalogueLocalElements, slice);
 
   const red_flags = [];
   if (totalInvalid > 0) red_flags.push(`${totalInvalid} artefact(s) with an id that violates the canonical grammar (IDS_AND_REFERENCES §1)`);
@@ -190,6 +206,11 @@ export async function repoCheck(orgRoot) {
   if (catalogueError) red_flags.push(`pinned catalogue (transitrix.yaml \`catalogue:\`) failed to load — ${catalogueError}`);
   if (catalogue && catalogue.collisions.length > 0) red_flags.push(`${catalogue.collisions.length} local element(s) bound to the pinned catalogue whose name/alias also matches a different central element (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
   if (catalogue && catalogue.unbound_matches.length > 0) red_flags.push(`${catalogue.unbound_matches.length} local element(s) whose name/alias matches a pinned-catalogue term but carry no \`canon_id\` binding (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
+  if (bindings.unresolved.length > 0) red_flags.push(`${bindings.unresolved.length} local element(s) carry a \`canon_id\` that does not resolve in the pinned catalogue (BIND-001)`);
+  if (bindings.type_mismatch.length > 0) red_flags.push(`${bindings.type_mismatch.length} local element(s) bound to a central element of a different TYPE (BIND-002)`);
+  if (bindings.duplicate_target.length > 0) red_flags.push(`${bindings.duplicate_target.length} central element(s) claimed as \`canon_id\` by more than one local element (BIND-003)`);
+  if (bindings.missing_pin.length > 0) red_flags.push(`${bindings.missing_pin.length} local element(s) carry a \`canon_id\` but no catalogue pin is configured or loadable (BIND-004)`);
+  if (bindings.origin_present.length > 0) red_flags.push(`${bindings.origin_present.length} local element(s) carry an \`origin\` field — origin belongs only to a central repository's admitted elements (BIND-005)`);
   // Diagnostics (transitrix-hq#104 item 5): a per-file read failure is counted, never
   // silently absorbed into a lower zone/scanned count with no trace. Data-free — a
   // count, not the file path; `check-placement` / `check-stale` name the file for an
@@ -236,6 +257,12 @@ export async function repoCheck(orgRoot) {
       : catalogue
         ? { catalogue: { pin_present: true, pin: catalogue.pin, collisions: catalogue.collisions, unbound_matches: catalogue.unbound_matches } }
         : {}),
-    note: 'Data-free (aggregate counts and statuses only, no names/aliases/free text) except the `catalogue` section, present only when a `catalogue:` pin is declared, which names local and central element ids — the minimum needed to act on an L1 finding (method/05-catalogue-integration.md §4.5). Read-only: repo-check never writes a zone.',
+    ...(hasBindingFindings(bindings) ? { bindings } : {}),
+    note: 'Data-free (aggregate counts and statuses only, no names/aliases/free text) except the `catalogue` and `bindings` sections — present only when a `catalogue:` pin is declared, or a binding-envelope finding exists, respectively — which name local and central element ids, the minimum needed to act on an L1 finding (method/05-catalogue-integration.md §4.5) or a BIND-001..005 violation (CONTRACT.md §17.2). Read-only: repo-check never writes a zone.',
   };
+}
+
+function hasBindingFindings(b) {
+  return b.unresolved.length > 0 || b.type_mismatch.length > 0 || b.duplicate_target.length > 0
+    || b.missing_pin.length > 0 || b.origin_present.length > 0;
 }

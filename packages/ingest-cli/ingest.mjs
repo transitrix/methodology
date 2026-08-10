@@ -13,9 +13,10 @@
 //
 // Implemented: --version, scaffold-intake, convert, privacy-scan, admit-source (field
 // + codex; field-artefact / codex-artefact remain as deprecated aliases),
-// emit-candidates, validate, review-queue.
+// emit-candidates, validate, review-queue, catalogue-recognize, catalogue-bind,
+// catalogue-promote.
 
-import { readFile, access } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -36,6 +37,8 @@ import { parsePackagesDecl, validatePackagesDecl, runPackageValidators } from '.
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
+import { CatalogueError } from './src/catalogue.mjs';
+import { buildBindingProposals, applyBinding, buildPromotionProposalDoc, BindingError } from './src/binding.mjs';
 import { randomUUID } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -88,6 +91,14 @@ function usage() {
     '                 path is never overwritten — a concurrent batch lands under its own dated dir',
     '                 review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml (--scope defaults to "batch").',
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
+    '  catalogue-recognize [org-root]  L2 — propose bindings (unambiguous name/alias + TYPE match) against the pinned',
+    '                                 catalogue -> catalogue-bindings.proposed.yaml; nothing admitted, never overwrites an',
+    '                                 unresolved queue [--out <path>] [--scope <word>]',
+    '  catalogue-bind <local-id> <canon-id> [org-root]  Apply an accepted L2/L3 binding — writes canon_id into the',
+    '                                 local element file; idempotent if already bound to the same id, refuses to rebind',
+    '  catalogue-promote <local-id> --repository <org>/<repo> [org-root]  L3 — emit a promotion proposal for the',
+    '                                 central repository\'s human admission gate -> promotions.proposed.yaml',
+    '                                 [--out <path>] [--scope <word>]',
     '  repo-check [org-root]          Data-free health report (version, profile, zone/TYPE counts, integrity flags); read-only',
     '  check-placement [org-root]     Flag admitted elements sitting outside their ELEMENT_PRIMITIVES §4 folder',
     '  check-packages [org-root]      Validate `packages:` declarations (PKG-001/PKG-002) and run each',
@@ -400,6 +411,96 @@ async function cmdRepoCheck(args) {
   return 0;
 }
 
+// L2 — recognition: propose bindings against the pinned catalogue for every unbound
+// local element with an unambiguous, same-TYPE name/alias match. Writes the review
+// artefact, never admits one (method/05-catalogue-integration.md §5) — a human
+// accepts a proposal by running `catalogue-bind` on it.
+async function cmdCatalogueRecognize(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = _[0] ? (await findOrgRoot(resolve(_[0])) || resolve(_[0])) : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('catalogue-recognize: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  let doc;
+  try {
+    doc = await buildBindingProposals(orgRoot);
+  } catch (err) {
+    if (err instanceof CatalogueError) { console.error(`catalogue-recognize: ${err.message}`); return 2; }
+    throw err;
+  }
+
+  const content = dump(doc);
+  const out = flags.out
+    ? resolve(flags.out)
+    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'catalogue-bindings.proposed.yaml', scope: flags.scope, content });
+  await mkdir(dirname(out), { recursive: true });
+  await writeFile(out, content, 'utf8');
+
+  console.log(`catalogue-recognize  ->  ${out}`);
+  if (!doc.pin) { console.log('  no catalogue pin declared (L0/pre-L1) — nothing to recognise against.'); return 0; }
+  console.log(`  pin: ${doc.pin.source}@${doc.pin.version}`);
+  console.log(`  ${doc.proposals.length} proposed binding(s) — nothing admitted; run \`catalogue-bind\` to accept one.`);
+  return 0;
+}
+
+// Apply an accepted binding (L2's proposal, or L3's returned central-admission
+// binding) — the one command that writes canon_id into a local element file.
+// Idempotent against re-applying the same binding; refuses to silently replace a
+// different one already there.
+async function cmdCatalogueBind(args) {
+  const { _ } = parseArgs(args);
+  const [localId, canonId] = _;
+  if (!localId || !canonId) { console.error('catalogue-bind: missing <local-id> <canon-id>'); return 1; }
+  const orgRoot = _[2] ? (await findOrgRoot(resolve(_[2])) || resolve(_[2])) : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('catalogue-bind: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  try {
+    const res = await applyBinding({ orgRoot, localId, canonId });
+    if (res.outcome === 'unchanged') {
+      console.log(`catalogue-bind  ${res.local_id}  already bound to ${res.canon_id} — nothing to do.`);
+    } else {
+      console.log(`catalogue-bind  ${res.local_id}  ->  canon_id: ${res.canon_id}  (${res.path})`);
+    }
+    return 0;
+  } catch (err) {
+    if (err instanceof BindingError) { console.error(err.message); return 1; }
+    throw err;
+  }
+}
+
+// L3 — promotion: emit a promotion proposal for a local element, consumable by the
+// central repository's human admission gate. Writes a file only — no agent writes
+// across a repository boundary (method/05-catalogue-integration.md §6, §7).
+async function cmdCataloguePromote(args) {
+  const { _, flags } = parseArgs(args);
+  const localId = _[0];
+  if (!localId) { console.error('catalogue-promote: missing <local-id>'); return 1; }
+  if (!flags.repository) { console.error('catalogue-promote: --repository <org>/<repo> is required (this repository\'s own coordinate)'); return 1; }
+  const orgRoot = _[1] ? (await findOrgRoot(resolve(_[1])) || resolve(_[1])) : (await findOrgRoot(process.cwd()));
+  if (!orgRoot) { console.error('catalogue-promote: not inside a Transitrix workspace (no _intake/ found); pass <org-root>.'); return 2; }
+
+  let doc;
+  try {
+    doc = await buildPromotionProposalDoc(orgRoot, localId, flags.repository);
+  } catch (err) {
+    if (err instanceof BindingError) { console.error(err.message); return 1; }
+    throw err;
+  }
+
+  const content = dump(doc);
+  const out = flags.out
+    ? resolve(flags.out)
+    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'promotions.proposed.yaml', scope: flags.scope, content });
+  await mkdir(dirname(out), { recursive: true });
+  await writeFile(out, content, 'utf8');
+
+  console.log(`catalogue-promote  ${localId}  ->  ${out}`);
+  if (doc.proposal.description === null) {
+    console.log('  WARNING: description could not be read (likely a multi-line block scalar) — fill it in by hand before handing this to the central repository.');
+  }
+  console.log('  nothing admitted, no repository boundary crossed — carry this file to the central repository\'s own admission gate.');
+  return 0;
+}
+
 // Print the canonical §4 placement (mode + layer + folder) for a TYPE.
 async function cmdResolvePlacement(args) {
   const { _ } = parseArgs(args);
@@ -549,6 +650,9 @@ async function main(argv) {
     case 'review-queue':    return cmdReviewQueue(args);
     case 'suggest-profile': return cmdSuggestProfile(args);
     case 'repo-check':      return cmdRepoCheck(args);
+    case 'catalogue-recognize': return cmdCatalogueRecognize(args);
+    case 'catalogue-bind':       return cmdCatalogueBind(args);
+    case 'catalogue-promote':    return cmdCataloguePromote(args);
     case 'check-placement': return cmdCheckPlacement(args);
     case 'check-packages':  return cmdCheckPackages(args);
     case 'check-stale':     return cmdCheckStale(args);
