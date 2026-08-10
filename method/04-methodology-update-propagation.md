@@ -75,7 +75,7 @@ The worst an unattended agent can do, then, is leave a *proposed* upgrade for hu
 
 ## 6. Reference-catalog distribution — same pattern, separate component
 
-The architecture-decision-log forward-references ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §9) a future *down-flow*: a per-organization architecture repository publishing versioned reference catalogs (the TOGAF *Standards Information Base*) that project repositories pin and consume. That distribution layer is intentionally not designed here — but it will reuse this mechanism unchanged:
+The architecture-decision-log forward-references ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §9) a *down-flow*: a per-organization architecture repository publishing versioned reference catalogs (the TOGAF *Standards Information Base*) that project repositories pin and consume. That distribution layer is specified as **L1 — vocabulary** of the integration ladder in [`05-catalogue-integration.md`](05-catalogue-integration.md) §2, and reuses this mechanism unchanged:
 
 - The catalog source becomes the organization's architecture repository (not this one).
 - The version slot is a catalog-specific field on the consuming project's manifest.

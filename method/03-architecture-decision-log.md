@@ -139,9 +139,9 @@ A dependency-free doc-lint, companion to `check-notations.mjs`, run in CI on eve
 
 Exit codes match the repo convention: `0` clean, `1` findings, `2` script error.
 
-## 9. Out of scope here — reference-catalog distribution (phase 2)
+## 9. Reference-catalog distribution — the down-flow
 
-The *down* flow — the central architecture repo publishing versioned object catalogs (the TOGAF *Standards Information Base*) that project repos pin and consume — is a separate component, deliberately not in this release. It will reuse the same principles (explicit version pins, "supersede with a new version, don't edit in place") and will close the loop with this log: a repo bumping its catalog-version pin is itself an architecturally-significant decision → it emits an `author: agent` ADR here. Until then, the ADL stands on its own as the up-flow.
+The *down* flow — the central architecture repo publishing versioned object catalogs (the TOGAF *Standards Information Base*) that project repos pin and consume — is a separate component from the ADL. It is specified as a ladder of four separately-enabled levels, this ADL mechanism being the first of them, in [`05-catalogue-integration.md`](05-catalogue-integration.md). It reuses this log's own principles (explicit version pins, "supersede with a new version, don't edit in place") and closes the loop with it: a repo bumping its catalog-version pin is itself an architecturally-significant decision → it emits an `author: agent` ADR here. The ADL stands on its own as the up-flow regardless of which, if any, of the later levels a repository adopts.
 
 The *propagation mechanism* the down-flow will reuse — versioned transport, the named upgrade operation, and the agent ratification contract — is specified in [`04-methodology-update-propagation.md`](04-methodology-update-propagation.md). The reference-catalog layer is the next consumer of that mechanism.
 
