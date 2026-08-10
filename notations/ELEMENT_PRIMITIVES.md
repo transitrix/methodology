@@ -1051,7 +1051,7 @@ No view inline shape: `RELEASE` is standalone-only, like `RISK` and `NEED` — i
 
 ## 9. Validation rules
 
-Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3), and sidecar (`VERSIONED-001..005`, [CONTRACT.md](CONTRACT.md) §9.3) rules apply to element files in addition to these. `CONSTRAINT` and `NEED` additionally carry the agreement-axis rules (`AGREE-001..003`, [CONTRACT.md](CONTRACT.md) §6.3.1) — the REQUIREMENT-side counterpart is in [elements/15-requirement.md](elements/15-requirement.md) §4.
+Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.md](CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](CONTRACT.md) §7.3), sidecar (`VERSIONED-001..005`, [CONTRACT.md](CONTRACT.md) §9.3), and binding-envelope (`BIND-001..005`, [CONTRACT.md](CONTRACT.md) §17.2) rules apply to element files in addition to these. `CONSTRAINT` and `NEED` additionally carry the agreement-axis rules (`AGREE-001..003`, [CONTRACT.md](CONTRACT.md) §6.3.1) — the REQUIREMENT-side counterpart is in [elements/15-requirement.md](elements/15-requirement.md) §4.
 
 | Rule | Severity | Description |
 |---|---|---|
