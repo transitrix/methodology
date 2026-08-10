@@ -335,6 +335,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Stakeholder-facing document listing design-input requirements grouped under the need each satisfies | **MRD** | `*.mrd.transitrix.yaml` |
 | Software requirements specification — software-tier requirements sectioned by functional / quality | **SRS** | `*.srs.transitrix.yaml` |
 | Design-facing document listing which application/technology elements realise which requirements | **SDD** | `*.sdd.transitrix.yaml` |
+| One flat, alphabetised name → definition lookup across the whole catalogue (TERM entries and every other TYPE's name/aliases/description alike) | **Glossary** | `*.glossary.transitrix.yaml` |
 
 **Family rule:** the strategy-chain notations split by shape. **DGCA** uses the **flat form** — top-level arrays at the document root (`factors[]` / `goals[]` / `changes[]` / `actions[]`), cross-references upstream inside the flat arrays. **Goals tree** and **Action schedule** (both since v2.0) are **pure projections** — the view document carries only `view_config`, and each `GOAL-…` / `ACTION-…` lives as a standalone element file under `canon/elements/…`; the parent link (Goals) and predecessor / duration / cross-refs (Action) live on the element files, not in the view. In all three, hierarchy uses `parent: <SAME-TYPE>-…` on the child; no nested wrapper keys.
 
@@ -367,6 +368,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 - **Process Blueprint** — `notation: process-blueprint`. Root key `process_blueprint:` with `stages[]` (each carrying `goal` and `result`) and per-aspect arrays `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`. Aspect entries reference the stages they appear in via `stages: [STAGE-…]`.
 - **Compliance Impact** — `notation: compliance-impact`. Report-config over the compliance overlay (sibling of Scenarios). Root key `view:` declaring `subjects` (products / processes), `obligations` (`include` or `filter`), `grouping`, `status_display`, and `empty_cells`. Carries no canonical content — every cell is derived from `ASSERTION` + process flow + `REQUIREMENT` status.
 - **Coverage Metric** — `notation: coverage-metric`. Report-config over the coverage read of canon (sibling of Compliance Impact). Root key `view:` declaring `subjects` (products / processes), `regimes` (`include` or `filter`), `grouping`, `coverage_rule`, and `empty_cells`. Carries no canonical content — counts the subjects with zero admitted obligations per regulatory regime and splits "Not yet modelled" (modelling gap) from "No obligation asserted (modelled fact)" (an admitted `n_a` `ASSERTION`).
+- **Glossary** — `notation: glossary`. Report-config view over the whole catalogue. Root fields `id`, `name`, optional `description`, optional `view_config` (`scope.types[]` to filter by TYPE, `display.group_by` — `first_letter` | `none` — and `display.show_type_badge`). Carries no canonical content — projects `name` / `aliases[]` / `description` from every admitted element, `TERM` (`ELEMENT_PRIMITIVES.md` §7.30) and every other TYPE alike, into one flat, alphabetised lookup surface.
 - **Codex** *(zone primitives, not a view document)* — each artefact is a single `<ID>.yaml` file under `codex/external/<jurisdiction>/` (external: `LAW` / `REGULATION`) or `codex/internal/` (internal: `POLICY` / `INTERNAL_STANDARD`). No `notation:` header; carries the admission record (`CONTRACT.md` §6, `zone: codex`, `gate_checks.source_authority`) plus codex frontmatter (external: `jurisdiction` + `effective_date`; internal: `issuing_authority` + `effective_date`). A codex artefact stores the **source document only** — bindings to entities and processes live on `REQUIREMENT.derived_from` (`notations/elements/15-requirement.md`) and on `ASSERTION` (`notations/elements/16-assertion.md`), not on the codex artefact itself.
 
 ### ID grammar — canon
@@ -428,6 +430,7 @@ The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI
 | MRD | `templates/mrd.mrd.transitrix.yaml` |
 | SRS | `templates/srs.srs.transitrix.yaml` |
 | SDD | `templates/sdd.sdd.transitrix.yaml` |
+| Glossary | `templates/glossary.glossary.transitrix.yaml` |
 
 ### Codex zone primitives (drop into `codex/external/<jurisdiction>/` or `codex/internal/` in Step 3)
 

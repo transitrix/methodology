@@ -106,6 +106,7 @@ Transitrix is grounded in ArchiMate 3.2 but uses deliberately simplified or doma
 | `ACTION` | Work Package | Broader than a single work package — covers initiatives, programmes, projects, and tasks. **Deprecated alias:** `ACTIVITY` (accepted with a warning until the 1.0 cut). |
 | `BUSINESS_OBJECT` | Business Object | Renamed from `INFORMATION_ENTITY` for ArchiMate alignment; `INFORMATION_ENTITY` is a deprecated alias. |
 | `ACTOR` | Business Actor | A single active-structure identity type (`person` \| `business_unit` \| `system`) replacing the former separate `UNIT` / `EMPLOYEE` TYPEs. |
+| `TERM` | Meaning | "Term" is more accessible than ArchiMate's "Meaning" for a business-vocabulary entry (name + definition, no modelled behaviour). |
 
 Everything else in the registry (`GOAL`, `DRIVER`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER`, `ASSESSMENT`, `EQUIPMENT`, `ROLE`, `PROCESS`, `CAPABILITY`, `APPLICATION`, `NODE`, `TECHNOLOGY_SERVICE`, `BUSINESS_SERVICE`, `LOCATION`, …) uses the ArchiMate term directly or a name aligned with it — no divergence to record.
 
