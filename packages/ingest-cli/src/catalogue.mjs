@@ -152,6 +152,53 @@ function finalizeSliceElement(fields) {
   };
 }
 
+// ── Writing the pin (L1 join) ────────────────────────────────────────────────
+
+// Append a `catalogue:` block to manifest text. Refuses — never silently
+// overwrites — when the manifest already declares `catalogue:`, well-formed or
+// malformed alike: a repeat join is either a no-op the caller should notice
+// (already pinned to the same slice) or a deliberate re-pin, and either way a
+// human edits transitrix.yaml directly rather than this command guessing which.
+// Pure function of its inputs — no I/O.
+export function writeCataloguePin(text, { source, version, path }) {
+  const missing = ['source', 'version', 'path'].filter((k) => !{ source, version, path }[k]);
+  if (missing.length > 0) {
+    throw new CatalogueError(`writeCataloguePin: missing required field(s): ${missing.join(', ')}.`);
+  }
+  const existing = parseCatalogueDecl(text || '');
+  if (existing !== null) {
+    throw new CatalogueError(
+      existing.malformed
+        ? `transitrix.yaml already declares a \`catalogue:\` field (${existing.reason}) — fix or remove it by hand before pinning.`
+        : `transitrix.yaml already pins ${existing.source}@${existing.version} — edit or remove the existing \`catalogue:\` block by hand to change it.`
+    );
+  }
+  const block = [
+    'catalogue:                          # optional — pins a central catalogue this repo consumes (L1); see method/05-catalogue-integration.md §4',
+    `  source: ${source}`,
+    `  version: "${version}"`,
+    `  path: ${path}`,
+  ].join('\n');
+  const base = text || '';
+  const sep = base.length === 0 ? '' : base.endsWith('\n') ? '' : '\n';
+  return `${base}${sep}${block}\n`;
+}
+
+// Read transitrix.yaml at orgRoot, append the pin, write it back. Throws
+// CatalogueError (via writeCataloguePin) rather than touching the file when a
+// `catalogue:` field is already present.
+export async function applyCataloguePin(orgRoot, { source, version, path }) {
+  const { writeFile } = await import('node:fs/promises');
+  const manifestPath = join(resolve(orgRoot), 'transitrix.yaml');
+  const text = await readManifestText(orgRoot);
+  if (text === null) {
+    throw new CatalogueError(`no transitrix.yaml found at ${resolve(orgRoot)} — a repository joins at L1 only once its manifest exists.`);
+  }
+  const next = writeCataloguePin(text, { source, version, path });
+  await writeFile(manifestPath, next, 'utf8');
+  return { path: manifestPath, source, version, pinPath: path };
+}
+
 // ── Fails-closed loader ─────────────────────────────────────────────────────
 
 // Load, parse, and version-match the pinned catalogue slice for an org root.

@@ -11,6 +11,8 @@ tags: [transitrix, methodology, operations, catalogue, federation, governance]
 
 > How a project repository relates to a **central repository** holding a shared catalogue — a per-organisation architecture repository, or any repository other project repositories treat as authoritative for a set of elements. One repository modelling on its own needs none of this; it applies once a second repository's canon should be able to recognise the first's.
 
+> **Starting out?** Go to **§7 — Setting it up**: the commands, level by level, with the point at which a reader may stop. Sections 1–6 specify what each level guarantees; §7 is what you run.
+
 This document names the **ownership rule** every level below assumes, and the **four levels** at which a project repository can integrate with a central one. Each level is separately enabled and useful on its own — a repository may stop at any level, and stopping is not a partial or broken state.
 
 ## 1. The ownership rule
@@ -107,11 +109,67 @@ Both findings are **report only** — the check never edits a file and never fai
 - **No agent writes across a repository boundary.** An agent working a project repository may propose a promotion; it may never write into the central repository. This is the authorship limit [`03-architecture-decision-log.md`](03-architecture-decision-log.md) §6 already places on ADRs, generalised to elements.
 - **Levels are separable in the tooling**, not merely in this document — each is built, and useful, independently of the ones after it.
 
-## 6. References
+## 7. Setting it up — from an empty repo to a running L1 pin
+
+The mechanism is specified above; this section is the path through it, level by level, with the point at which a reader may stop (§2 — stopping at any level is a complete, valid state, not a partial one). Step 1 is worth doing today, with no second repository in sight. Step 2 needs a central repository already publishing a slice (§4.1). Steps 3–4 (L2 recognition, L3 promotion) are commands, not a document walkthrough — once L1 is pinned, run them directly.
+
+### Step 1 — L0, today, no central repository needed
+
+L0 **is** [`03-architecture-decision-log.md`](03-architecture-decision-log.md) — nothing in this document adds to it (§2's table). One command does what that document's own §10 Steps 1 and 3 otherwise walk through by hand:
+
+```
+transitrix-ingest adopt-adl <org-root> [--repo <org>/<repo>]
+```
+
+It creates `operations/decisions/`, vendors `scripts/check-adl.mjs` into `<org-root>/scripts/` together with a GitHub Actions workflow that runs it on every pull request touching the folder, and — when `--repo` is given — prints the `sources:` entry a human adds to the central architecture repository's `architecture/decision-log/harvest.config.yaml` (`03-architecture-decision-log.md` §5) to onboard this repository into the harvest. It writes only under `<org-root>`; nothing here writes into the central repository. Idempotent — a file already in place is reported, never overwritten.
+
+Write the first record with the `adr` skill ([`03-architecture-decision-log.md`](03-architecture-decision-log.md) §10 Step 2): `/transitrix:adr`.
+
+**A repository that stops here is done.** No pin, no new field, nothing below required.
+
+### Step 2 — L1, once a central catalogue exists to pin
+
+Two commands, run once each per pin:
+
+1. **Vendor the slice.** Fetch the central repository's published catalogue release (§4.1 — a Git tag, GitHub Release) and place it on disk under this repository — the CLI never fetches it at validation time (§4.3). Where it lands is exactly what `catalogue-pin`'s `<path>` argument names.
+2. **Pin it:**
+
+   ```
+   transitrix-ingest catalogue-pin <org>/<repo> <version> <path> [org-root]
+   ```
+
+   Writes the `catalogue:` block into `transitrix.yaml` (§4.2). Refuses — rather than silently overwriting — when a `catalogue:` field is already declared; edit or remove that block by hand first if the intent is to re-pin at a new version.
+
+From here, `transitrix-ingest repo-check` reports the L1 divergence findings (§4.5) on every run — nothing further to wire; unlike L0 there is no separate CI guard, because the check is report-only and already folds into the existing repo-check surface.
+
+**A repository that stops here** has a pinned vocabulary and a divergence report; no binding is proposed or written until it opts into L2.
+
+### Step 3 — L2, proposing bindings
+
+```
+transitrix-ingest catalogue-recognize [org-root]
+```
+
+Stages proposed bindings for every unbound local element with an unambiguous, same-TYPE match against the pinned catalogue (§2's L2 row) — nothing admitted. A human accepts one with `transitrix-ingest catalogue-bind <local-id> <canon-id>`, which is the one command that writes `canon_id` into a local element file (§3).
+
+### Step 4 — L3, proposing a promotion
+
+```
+transitrix-ingest catalogue-promote <local-id> --repository <org>/<repo> [org-root]
+```
+
+Emits a promotion proposal file — never a write across the repository boundary (§5) — for the central repository's own human admission gate to consume. The binding it returns is applied the same way as L2's, through `catalogue-bind`.
+
+---
+
+## 8. References
 
 - [`03-architecture-decision-log.md`](03-architecture-decision-log.md) — L0, in full; the propose-never-auto-merge and no-two-way-sync disciplines this document generalises.
 - [`04-methodology-update-propagation.md`](04-methodology-update-propagation.md) §3, §5, §6 — the transport (versioned release), the ratification gate, and the reuse pattern §4 above applies unchanged.
 - [`notations/CONTRACT.md`](../notations/CONTRACT.md) §17 — the binding envelope's field shapes and validation rules.
 - [`notations/MANIFEST.md`](../notations/MANIFEST.md) — the `catalogue:` field on `transitrix.yaml` (§4.2 above).
 - [`notations/PACKAGES.md`](../notations/PACKAGES.md) §7.2 — the local-path-field precedent (`validator:`) §4.2's `path` follows.
-- [`packages/ingest-cli/src/catalogue.mjs`](../packages/ingest-cli/src/catalogue.mjs) — the fails-closed loader and the L1 diff (§4.3–§4.5).
+- [`packages/ingest-cli/src/catalogue.mjs`](../packages/ingest-cli/src/catalogue.mjs) — the fails-closed loader, the L1 diff, and the pin writer (§4.3–§4.5, §7 Step 2).
+- [`packages/ingest-cli/src/adl-join.mjs`](../packages/ingest-cli/src/adl-join.mjs) — the L0 one-step join (§7 Step 1).
+- [`packages/ingest-cli/README.md`](../packages/ingest-cli/README.md) — full command reference for `adopt-adl`, `catalogue-pin`, `catalogue-recognize`, `catalogue-bind`, `catalogue-promote`.
+- [`patterns/network-catalogue.md`](../patterns/network-catalogue.md) — the adopter-facing *why and when* this document's *how* implements.

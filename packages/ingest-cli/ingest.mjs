@@ -13,8 +13,8 @@
 //
 // Implemented: --version, scaffold-intake, convert, privacy-scan, admit-source (field
 // + codex; field-artefact / codex-artefact remain as deprecated aliases),
-// emit-candidates, validate, review-queue, catalogue-recognize, catalogue-bind,
-// catalogue-promote.
+// emit-candidates, validate, review-queue, adopt-adl, catalogue-pin,
+// catalogue-recognize, catalogue-bind, catalogue-promote.
 
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -37,8 +37,9 @@ import { parsePackagesDecl, validatePackagesDecl, runPackageValidators } from '.
 import { checkStale } from './src/check-stale.mjs';
 import { computeWorkflowStatus, renderMarkdown, toReportObject } from './src/workflow-status.mjs';
 import { runPrivacyScan, parsePrivacyGateConfig } from './src/privacy-scan.mjs';
-import { CatalogueError } from './src/catalogue.mjs';
+import { CatalogueError, applyCataloguePin } from './src/catalogue.mjs';
 import { buildBindingProposals, applyBinding, buildPromotionProposalDoc, BindingError } from './src/binding.mjs';
+import { adoptAdl } from './src/adl-join.mjs';
 import { randomUUID } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -91,6 +92,11 @@ function usage() {
     '                 path is never overwritten — a concurrent batch lands under its own dated dir',
     '                 review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml (--scope defaults to "batch").',
     '  suggest-profile <candidates-dir>  Propose a coverage-profile delta for out-of-profile TYPEs (read-only; prints to stdout)',
+    '  adopt-adl <org-root> [--repo <org>/<repo>]  L0 — join the decision-log network in one step: create',
+    '                                 operations/decisions/, wire scripts/check-adl.mjs + its CI workflow, and (with',
+    '                                 --repo) print the harvest.config.yaml line to add centrally. Idempotent.',
+    '  catalogue-pin <org>/<repo> <version> <path> [org-root]  L1 — write the catalogue: pin into transitrix.yaml.',
+    '                                 Refuses to touch the manifest if a catalogue: field is already declared.',
     '  catalogue-recognize [org-root]  L2 — propose bindings (unambiguous name/alias + TYPE match) against the pinned',
     '                                 catalogue -> catalogue-bindings.proposed.yaml; nothing admitted, never overwrites an',
     '                                 unresolved queue [--out <path>] [--scope <word>]',
@@ -411,6 +417,48 @@ async function cmdRepoCheck(args) {
   return 0;
 }
 
+// L0 — join the decision-log network in one step (method/03-architecture-decision-log.md
+// §10, method/05-catalogue-integration.md §7): the records folder, the vendored CI
+// guard + its workflow, and (with --repo) the harvest.config.yaml line a human adds to
+// the central repo. Idempotent — a file or folder already in place is left untouched.
+async function cmdAdoptAdl(args) {
+  const { _, flags } = parseArgs(args);
+  const orgRoot = _[0];
+  if (!orgRoot) { console.error('adopt-adl: missing <org-root>'); return 1; }
+
+  const { created, existing, centralLine } = await adoptAdl(orgRoot, { repoCoordinate: flags.repo });
+  for (const d of created) console.log(`created  ${d}`);
+  for (const d of existing) console.log(`exists   ${d}`);
+  if (centralLine) {
+    console.log('\nAdd this to the central architecture repo\'s architecture/decision-log/harvest.config.yaml under `sources:`:\n');
+    console.log(centralLine);
+  } else {
+    console.log('\nPass --repo <org>/<repo> to also print the harvest.config.yaml line for the central repo.');
+  }
+  console.log(`\nL0 ready under ${resolve(orgRoot)} (${created.length} created, ${existing.length} already present). Next: /transitrix:adr to write the first record.`);
+  return 0;
+}
+
+// L1 — write the catalogue: pin into transitrix.yaml (method/05-catalogue-integration.md
+// §4.2, §7). Refuses to touch the manifest if a catalogue: field is already declared —
+// a re-pin is a deliberate edit, not something this command guesses at.
+async function cmdCataloguePin(args) {
+  const { _ } = parseArgs(args);
+  const [source, version, pinPath] = _;
+  if (!source || !version || !pinPath) { console.error('catalogue-pin: missing <org>/<repo> <version> <path>'); return 1; }
+  const orgRoot = _[3] ? (await findOrgRoot(resolve(_[3])) || resolve(_[3])) : (await findOrgRoot(process.cwd()) || process.cwd());
+
+  try {
+    const res = await applyCataloguePin(orgRoot, { source, version, path: pinPath });
+    console.log(`catalogue-pin  ${res.source}@${res.version}  ->  ${res.path}`);
+    console.log(`  vendor the slice at ${res.pinPath} before running catalogue-recognize/repo-check (method/05-catalogue-integration.md §4.3 — fails closed).`);
+    return 0;
+  } catch (err) {
+    if (err instanceof CatalogueError) { console.error(err.message); return 1; }
+    throw err;
+  }
+}
+
 // L2 — recognition: propose bindings against the pinned catalogue for every unbound
 // local element with an unambiguous, same-TYPE name/alias match. Writes the review
 // artefact, never admits one (method/05-catalogue-integration.md §5) — a human
@@ -650,6 +698,8 @@ async function main(argv) {
     case 'review-queue':    return cmdReviewQueue(args);
     case 'suggest-profile': return cmdSuggestProfile(args);
     case 'repo-check':      return cmdRepoCheck(args);
+    case 'adopt-adl':       return cmdAdoptAdl(args);
+    case 'catalogue-pin':   return cmdCataloguePin(args);
     case 'catalogue-recognize': return cmdCatalogueRecognize(args);
     case 'catalogue-bind':       return cmdCatalogueBind(args);
     case 'catalogue-promote':    return cmdCataloguePromote(args);

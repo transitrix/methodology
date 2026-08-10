@@ -50,6 +50,12 @@ jobs:
       - name: Run catalogue (L1 vocabulary check) unit tests
         run: node --test packages/ingest-cli/src/catalogue.test.mjs
 
+      - name: Run catalogue pin writer (L1 join) unit tests
+        run: node --test packages/ingest-cli/src/catalogue-pin.test.mjs
+
+      - name: Run ADL one-step join (L0) unit tests
+        run: node --test packages/ingest-cli/src/adl-join.test.mjs
+
       - name: Run Ingest pipeline test (deterministic)
         run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
 
