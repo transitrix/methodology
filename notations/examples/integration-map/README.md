@@ -26,7 +26,7 @@ An integration-map view file carries the shared envelope (`notation:`, `spec_ver
 ```yaml
 notation: integration-map
 spec_version: "0.1"
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 
 view:
   id: INTEGRATION_MAP-<NAME>-1

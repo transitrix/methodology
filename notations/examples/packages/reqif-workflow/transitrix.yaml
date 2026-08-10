@@ -4,7 +4,7 @@
 # (packages/reqif-cli/tests/test_reqif_integrity.py Part B) stays unaffected
 # by content the XML converter does not carry (see this folder's README).
 transitrix: 1
-methodology_version: "3.3.0"
+methodology_version: "3.4.0"
 notations: [requirement]
 zones: [canon]
 coverage_profile: core
