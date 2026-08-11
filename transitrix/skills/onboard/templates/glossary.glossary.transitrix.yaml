@@ -1,0 +1,18 @@
+notation: glossary
+spec_version: "0.1"
+
+# Glossary. Spec: notations/views/reports/32-glossary.md
+# Report-config view over the whole catalogue.
+# No entry is defined here — it is a projection over every admitted
+# element's name / aliases[] / description, TERM and modelled objects alike.
+
+id: GLOSSARY-FILL-ME-1
+name: "FILL-ME — Full Glossary"
+description: "FILL-ME — what this glossary covers, e.g. every named element across the catalogue, alphabetised"
+
+view_config:
+  scope:
+    types: []                 # ELEMENT TYPEs to include; omit or [] = every TYPE
+  display:
+    group_by: "first_letter"  # "first_letter" | "none"
+    show_type_badge: true     # show the source TYPE next to each entry

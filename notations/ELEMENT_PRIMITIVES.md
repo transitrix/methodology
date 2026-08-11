@@ -63,6 +63,7 @@ canon/
       locations/      LOCATION-*.yaml         # elements/21-locations.md — physical/virtual places
       rules/          RULE-*.yaml             # worked-example precedent
       registries/     REGISTRY-*.yaml         # §7.19 — org-authored operating config; rows inline, promotable
+      terms/          TERM-*.yaml             # §7.30 — business-layer vocabulary entry; name+aliases+description only
     03_application/
       applications/   APPLICATION-*.yaml
       integrations/   INTEGRATION-*.yaml      # promotable; nested-in-view in v1 (§4)
@@ -190,6 +191,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `TECHNOLOGY_SERVICE` | standalone | `technology-service` | technology | `04_technology/services/` | §7.25 + [elements/26-technology-services.md](elements/26-technology-services.md) |
 | `BUSINESS_OBJECT` | standalone | `business-object` | business | `02_business/business-objects/` | §7.15 |
 | `EQUIPMENT` | standalone | `equipment` | technology | `04_technology/equipment/` | §7.14 |
+| `TERM` | standalone | `term` | business | `02_business/terms/` | §7.30 (no dedicated spec) |
 
 ### 4.1 Why these assignments
 
@@ -209,6 +211,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 - **`SCENARIO` is `standalone`, as the path the architect plans.** A scenario is *the path*, not the destination — an ordered set of steps (`ACTIVITY` / `CHANGE`) that moves the enterprise to one `TARGET_STATE` in service of one or more `GOAL`s (ArchiMate **Course of Action** realised by Work Packages + Gaps). It is what an architect *varies* alongside the `TARGET_STATE` when offering customer solution options — multiple paths may reach the same end-state. That makes it a first-class addressable element, not an inline fragment of a view. The earlier `view-defined` placement (a "scenario document" that scoped its own goals/capabilities/activities/etc.) conflated the path with the things it sequences and the things its end-state contains; the reclassification splits them: `TARGET_STATE` owns structural composition (§7.17), `SCENARIO` owns the ordered steps (§7.18). Scenario references — `pursues` goal list, `arrives_at` target-state ref, ordered `steps` — are **inline (B2)**; the only first-class REL in the planning model is `target_state_satisfies_goal` (declared on `TARGET_STATE`, §7.17).
 - **`RELEASE` is `standalone`, as the anchor a claim attaches to instead of a whole subject.** A `RELEASE` is a dated/versioned state of a `PRODUCT` or `APPLICATION` — not an ArchiMate concept (no counterpart in ArchiMate 3.x; vocabulary rule, 2026-07-30 decision, same basis as `RISK`/`METRIC`). It exists so a `REQUIREMENT` obligation (`required_for`) and an `ASSERTION`/`VERIFICATION` compliance claim can name *which shipped state* they concern, rather than the subject as a whole — a claim that was true of v2.3 and false of v2.4 needs a place to record that distinction. Referenced from at least two directions (the obligation side and the claim side), so it needs its own admission record and lifecycle like `RISK`/`NEED`, not an inline fragment of either. **Authoring is deliberately conservative**: a `RELEASE` is catalogued only when something references it — the same restraint as the `STEP` promotion rule (§7.20; §1) — so importing a vendor's entire version history is never required or implied; only the releases a claim or obligation actually needs to distinguish are ever materialised. Implementation layer (`05_implementation/`) matches its grain: it is a state of the thing being changed, not the change itself (`CHANGE`) or the work that produces it (`ACTION`).
 - **`NODE` and `TECHNOLOGY_SERVICE` are `standalone`, as first-class infrastructure elements.** Infrastructure nodes and the platform services they expose are shared references: many applications may consume the same `TECHNOLOGY_SERVICE`, and many nodes may co-host it. Making them standalone catalogue elements lets the application layer reference `TECHNOLOGY_SERVICE-…` IDs without repeating connectivity details, and lets the infrastructure team manage node lifecycle independently of the applications built on top. They belong in `04_technology/` (ArchiMate Technology layer) — distinct from `03_application/` (software) and `02_business/` (organisational behaviour). The `hosts` and `uses` relation kinds ([elements/17-relations.md](elements/17-relations.md) §3) are the cross-layer links.
+- **`TERM` is `standalone`, as the naming-only vocabulary entry.** A `TERM` carries industry vocabulary, an abbreviation, or a word used in a particular sense — a *name and a definition*, and nothing else (no relations, no per-TYPE fields beyond the shared envelope). It is not a modelled object: a concept that already has its own element (a `BUSINESS_OBJECT`, a `CAPABILITY`, …) is defined by that element's own `description`, not restated as a `TERM` — the boundary is enforced at admission by extending the `ELEM-ALIAS-001` cross-catalogue name/alias scan to also treat a `TERM`'s own `name` as a match surface (§9), rather than only its `aliases[]` as every other TYPE does. Business layer (`02_business/`) matches its grain: vocabulary is a fact about how the organisation talks about itself, not its intent (`01_motivation`) or how it executes. Standalone rather than view-defined because the whole point is a shared, addressable catalogue entry — the generated glossary (`views/reports/32-glossary.md`) is a pure projection over it and every other TYPE's `name`/`aliases`/`description`, never an authoring surface.
 - **`EQUIPMENT` and `BUSINESS_OBJECT` are `standalone`, promoted from `view-defined` (ADR 2026-06-08).** Both were originally Process Blueprint document-local TYPEs; the ADR promoted them to first-class catalogued elements — `EQUIPMENT` as the first `04_technology` TYPE (§7.14), `BUSINESS_OBJECT` (renamed from `INFORMATION_ENTITY` for ArchiMate alignment) at `02_business` (§7.15). `INFORMATION_ENTITY` is a deprecated one-release alias for `BUSINESS_OBJECT` (`BOBJ-D001`); it carries no row of its own in §4, matching how other deprecated aliases (`FACTOR`, `ACTIVITY`) are omitted from this table.
 
 ### 4.2 `view-defined` is inline-content convenience, never a content home of last resort
@@ -255,7 +258,7 @@ canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml
 | `NN_layer` folder | ArchiMate layer | Element TYPEs placed here |
 |---|---|---|
 | `01_motivation/` | Motivation | `DRIVER` (`factors/`), `GOAL` (`goals/`), `CONSTRAINT` (`constraints/`), `REQUIREMENT` (`requirements/`), `STAKEHOLDER` (`stakeholders/`), `ASSESSMENT` (`assessments/`), `RISK` (`risks/`), `METRIC` (`metrics/`), `NEED` (`needs/`) |
-| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`) |
+| `02_business/` | Business | `CAPABILITY` (`capabilities/`), `PROCESS` (`processes/`), `STEP` (`steps/`, when promoted), `PRODUCT` (`products/`), `ROLE` (`roles/`), `ACTOR` (`actors/`), `LOCATION` (`locations/`), `BUSINESS_SERVICE` (`business-services/`), `RULE` (`rules/`), `REGISTRY` (`registries/`), `BUSINESS_OBJECT` (`business-objects/`), `TERM` (`terms/`) |
 | `03_application/` | Application | `APPLICATION` (`applications/`), `INTEGRATION` (`integrations/`, when promoted) |
 | `04_technology/` | Technology | `EQUIPMENT` (`equipment/` — ADR 2026-06-08), `NODE` (`nodes/`), `TECHNOLOGY_SERVICE` (`services/`) |
 | `05_implementation/` | Implementation & Migration | `ACTION` (`actions/`), `CHANGE` (`changes/`), `TARGET_STATE` (`target-states/`), `SCENARIO` (`scenarios/`), `MILESTONE` (`milestones/` — see 6.2), `RELEASE` (`releases/` — §7.29) |
@@ -1038,6 +1041,47 @@ valid_to: null
 
 No view inline shape: `RELEASE` is standalone-only, like `RISK` and `NEED` — it is not authored inline inside any view document.
 
+### 7.30 `TERM` — `02_business/terms/`
+
+A `TERM` is business-layer vocabulary — an ArchiMate **Meaning** (the knowledge or expertise present in an interpretation of a concept within a particular context). It carries industry vocabulary, an abbreviation, or a word used in a particular sense: a name and a definition, and nothing else. It is the ordinary standalone envelope (§3) with **no per-TYPE fields of its own** — `aliases[]` for surface forms, `description` as the definition, `derived_from` to cite the standard the definition is drawn from, the admission record, and the lifecycle. No subtype vocabulary (`type` is omitted).
+
+**Boundary, written as sharply as the schema.** A `TERM` is not how an already-modelled concept gets its name recorded twice. A concept that is an enterprise object — a `BUSINESS_OBJECT`, a `CAPABILITY`, a `PRODUCT`, any element with its own catalogue record — is defined by that element's own `description`; a `TERM` restating it is an error. This is enforced at admission, not left to authoring discipline: a `TERM`'s own `name` is folded into the `ELEM-ALIAS-001` cross-catalogue name/alias scan (§9) as if it were an alias, so a `TERM` named identically to any other element's `name` or `aliases[]` entry anywhere in the catalogue fails uniqueness — the same gate every other TYPE's `aliases[]` already goes through, extended to `TERM`'s `name` specifically because naming *is* what a TERM is for.
+
+**Citing an external standard.** A term taken from an external standard (a regulator's defined-terms section, an industry glossary) cites the codex artefact it was drawn from via `derived_from` instead of restating the standard's own text as the definition. Where `derived_from` is present on a `TERM`, every entry MUST resolve to an admitted `LAW`, `REGULATION`, `POLICY`, or `INTERNAL_STANDARD` codex artefact (`TERM-002`) — the same restriction [elements/15-requirement.md](elements/15-requirement.md) §4 applies to `REQUIREMENT.derived_from` (`REQ-003`), for the same reason: a definitional citation names a source of authority, not a piece of Field evidence.
+
+```yaml
+# canon/elements/02_business/terms/TERM-DATA-RESIDENCY-1.yaml
+notation: term
+id: TERM-DATA-RESIDENCY-1
+name: "Data residency"
+aliases:
+  - "Data localisation"
+description: >
+  The requirement that data about a jurisdiction's residents be stored and
+  processed within that jurisdiction's borders, as defined by the cited
+  regulation.
+
+derived_from:
+  - REGULATION-GDPR-2016-1
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-08-10"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-08-10"
+valid_to: null
+```
+
+**The glossary.** `TERM` is one of two provenances a generated glossary draws from — the other being every other TYPE's own `name` / `aliases[]` / `description`. The glossary itself is a report-class view, never an authoring surface: [views/reports/32-glossary.md](./views/reports/32-glossary.md).
+
+No view inline shape: like `RELEASE`, `RISK`, and `NEED`, `TERM` is standalone-only — it is never authored inline inside a view document.
+
 ---
 
 ## 8. Alignment with the ID grammar and TYPE registry
@@ -1063,7 +1107,7 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `BOBJ-001` | error | A `BUSINESS_OBJECT` element file is not located under its mandated `canon/elements/02_business/business-objects/` folder (§4). |
 | `BOBJ-D001` | warning | An element candidate carries `element_type: INFORMATION_ENTITY` or an `INFORMATION_ENTITY-…` id prefix — the deprecated alias for `BUSINESS_OBJECT`. The validator flags it and continues; hard error in the following release. Rename `element_type` to `BUSINESS_OBJECT`, update the id prefix, and rename `information_entities[]` → `business_objects[]` in blueprints. |
 | `ELEM-005` | warning | A `standalone` element carries inline a field declared `time_varying` (§7) or a cross-reference of a kind declared first-class time-aware ([elements/17](elements/17-relations.md)) — it belongs in the sidecar (`VERSIONED-004`) or a `REL-…` file (`REL-004`) respectively. Surfaced here for discoverability; the authoritative codes are `VERSIONED-004` / `REL-004`. |
-| `ELEM-ALIAS-001` | error | An element's `aliases[]` entry collides (case-insensitively, trimmed) with another element's `name` or another element's `aliases[]` entry in the same `canon/` catalogue. A **cross-catalogue** gate — distinct from the per-file `ELEM-*` checks above, it requires scanning the whole catalogue. Ambiguous surface forms make F8 cross-source entity resolution unreliable, so a collision is a hard error at canon admission. A value shared with the element's *own* `name`/aliases is not a collision. (Per the element-aliases architecture decision; §3 `aliases` field.) |
+| `ELEM-ALIAS-001` | error | An element's `aliases[]` entry collides (case-insensitively, trimmed) with another element's `name` or another element's `aliases[]` entry in the same `canon/` catalogue. A **cross-catalogue** gate — distinct from the per-file `ELEM-*` checks above, it requires scanning the whole catalogue. Ambiguous surface forms make F8 cross-source entity resolution unreliable, so a collision is a hard error at canon admission. A value shared with the element's *own* `name`/aliases is not a collision. (Per the element-aliases architecture decision; §3 `aliases` field.) **Extended for `TERM`** (§7.30): a `TERM`'s own `name` also participates in this scan as if it were an alias — two plain `name`s colliding is otherwise allowed (names are unique only within a TYPE catalogue), but a `TERM` restating another element's `name`/`aliases[]` is exactly the failure mode this TYPE exists to prevent, so it is folded into the same gate rather than left uncaught. |
 | `INT-001` | error | An `INTEGRATION` element carries `interface_semantics: true` but is missing one or more of the conditionally required fields: `protocol`, `payload_class`, `sensitivity`, `directionality`. When `interface_semantics: true`, all four must be present in addition to the always-required `source` and `target`. |
 | `INT-002` | error | An `INTEGRATION` element carries `interface_semantics: true` but `source` or `target` does not resolve to an admitted `APPLICATION-…` element. Interface-semantics INTEGRATION endpoints must both be application-layer elements (§7.8.1). |
 | `INT-003` | error | `sensitivity` is not one of `public`, `internal`, `confidential`, `restricted`. |
@@ -1101,6 +1145,8 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `RELEASE-003` | error | `predecessor` is present but resolves to a `RELEASE` whose `of` differs from this element's own `of` — a predecessor chain must stay within one subject's release history. |
 | `RELEASE-004` | error / warning | `predecessor` names this same element's own `id` — a self-reference (`error`; single-file, no catalogue scan needed). Otherwise, following `predecessor` links from this `RELEASE` (or from any `RELEASE` of the same `of`) revisits an id already seen — a cycle in the chain (`warning`; cross-cutting, requires walking the full release history for the subject). |
 | `RELEASE-005` | error | Two admitted `RELEASE` elements share the same `of` and the same `version` string (exact match — `version` is never parsed or normalised before comparison). |
+| `TERM-001` | error | A `TERM` element is missing `id`, `name`, `description`, or any required envelope field; or `id` does not match `TERM-[<middle>-]<INTEGER>`. |
+| `TERM-002` | error | A `TERM.derived_from` entry resolves to an admitted artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` (or does not resolve to any admitted codex artefact at all). A TERM derives only from codex source documents — the same restriction `REQ-003` applies to `REQUIREMENT.derived_from` ([elements/15-requirement.md](elements/15-requirement.md) §4). |
 
 ---
 
