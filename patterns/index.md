@@ -7,6 +7,7 @@ Concrete deployment guides for common enterprise scenarios. Each pattern covers 
 | Transitrix Alone | [transitrix-alone.md](transitrix-alone.md) | Simple or Full | One repo as the enterprise architecture source of truth. Simplest deployment — greenfield, small org, single-domain pilot. |
 | Transitrix + Knowledge Store | [knowledge-store.md](knowledge-store.md) | Full | Three-layer architecture: raw sources feed a curated knowledge repo that feeds Transitrix canon. |
 | Transitrix + Enterprise ADR Registry | [enterprise-adr-registry.md](enterprise-adr-registry.md) | Full | Transitrix repo as the enterprise ADL, aggregating cross-project architecture decisions. |
+| Transitrix + Network Catalogue | [network-catalogue.md](network-catalogue.md) | Full | Two or more repos, each holding its own canon, recognise each other's elements through a four-level, opt-in ladder against a central catalogue. |
 | Enterprise Memory | [enterprise-memory.md](enterprise-memory.md) | Simple or Full | A Transitrix repo as a durable, EA-grounded memory for humans and AI agents — semantic canon + episodic record. Composes with Knowledge Store at enterprise scale. |
 | Personal Memory | [personal-memory.md](personal-memory.md) | Simple | Individual or small-team deployment: one repo as a personal second brain — goals, contacts, and decisions as structured, agent-queryable memory. |
 | Baseline & Audit Trail | [baseline-audit-trail.md](baseline-audit-trail.md) | Full | Overlay for adopters with a review/audit obligation over `REQUIREMENT` / `ASSERTION` / `VERIFICATION` content — a `git tag` baseline, git history as the audit trail, and the admission record as the review/approval record. No new schema. |
@@ -15,7 +16,7 @@ Concrete deployment guides for common enterprise scenarios. Each pattern covers 
 
 ## Choosing a pattern
 
-Start with **Transitrix Alone** unless you already have multiple source repos producing content (use Knowledge Store) or multiple project repos making cross-cutting decisions (use ADR Registry). **Enterprise Memory** and **Personal Memory** describe the role any Transitrix repo plays for humans and AI agents — read the one that matches your scale (personal for an individual or small team; enterprise for a multi-project, EA-governed deployment), alongside whichever deployment pattern you choose.
+Start with **Transitrix Alone** unless you already have multiple source repos producing content (use Knowledge Store), multiple project repos each modelling their own canon that need to recognise each other's elements (use Network Catalogue), or multiple project repos making cross-cutting decisions (use ADR Registry — also the L0 half of Network Catalogue, if you're headed there next). **Enterprise Memory** and **Personal Memory** describe the role any Transitrix repo plays for humans and AI agents — read the one that matches your scale (personal for an individual or small team; enterprise for a multi-project, EA-governed deployment), alongside whichever deployment pattern you choose.
 
 The patterns are additive. Transitrix canon is always the centre; the other patterns wrap it. You can start with Alone and migrate later — the canon layer does not change shape.
 
@@ -27,7 +28,8 @@ An adopter (or an adopter's agent) rarely asks "which pattern tier do I need" �
 |---|---|
 | "How do we keep architecture decisions?" / "How do we stand up an ADL?" / "Where do ADRs live?" | [Enterprise ADR Registry](enterprise-adr-registry.md) — start with its "Start here" section for a single repo |
 | "How do we get started with Transitrix at all?" / "Where does everything go in one repo?" | [Transitrix Alone](transitrix-alone.md) |
-| "We have several repos producing raw material — how does it become canon?" | [Knowledge Store](knowledge-store.md) |
+| "We have several repos producing raw material — how does it become canon?" | [Knowledge Store](knowledge-store.md) — repos that supply raw material to one curated canon |
+| "We have several repos, each already holding its own canon — how do they recognise each other's elements?" | [Network Catalogue](network-catalogue.md) — repos that each model on their own and need to bind to a shared central catalogue |
 | "How do we make this repo a shared memory for humans and agents?" | [Enterprise Memory](enterprise-memory.md) |
 | "Can I use Transitrix as a personal second brain?" | [Personal Memory](personal-memory.md) |
 | "How do we baseline the model for an audit / design review?" | [Baseline & Audit Trail](baseline-audit-trail.md) |
