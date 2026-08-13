@@ -48,9 +48,17 @@ name: Public-surface hygiene
 #   so it is checked by content rather than banned by name. Safe no-op when
 #   the secret is unset. Same never-print discipline as above — file path
 #   only, never the matched term.
+#
+# Runs on push to main as well as on pull requests, so a direct push bypasses
+# nothing the PR path would have caught. On a push event there is no PR
+# title/body (those variables resolve empty and simply match nothing) and the
+# diff range is github.event.before..github.event.after rather than the PR's
+# base/head.
 
 on:
   pull_request:
+  push:
+    branches: [main]
 
 jobs:
   check-hygiene:
@@ -70,8 +78,8 @@ jobs:
           BLOCKLIST_3: ${{ secrets.HYGIENE_BLOCKLIST_3 }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event_name == 'push' && github.event.after || github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
@@ -389,8 +397,8 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event_name == 'push' && github.event.after || github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
