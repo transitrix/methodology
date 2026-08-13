@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Four independently published CLI packages — each is its own manifest.
+  # Independently published npm packages under packages/ — each is its own manifest.
   - package-ecosystem: "npm"
     directory: "/packages/decisions-cli"
     schedule:
@@ -27,6 +27,22 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/packages/reqif-cli"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/packages/document-renderer"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/packages/document-view-engine"
     schedule:
       interval: "weekly"
     ignore:
