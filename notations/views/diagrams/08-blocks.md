@@ -1,8 +1,8 @@
 ---
 notation: "Nested Block Diagrams"
-version: "0.6"
+version: "0.7"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-26"
+last_updated: "2026-08-14"
 status: "documented"
 file_extension: "*.blocks.transitrix.yaml"
 dsm_status: "not implemented — native TS renderer planned in Transitrix Studio (sibling task)"
@@ -299,7 +299,37 @@ What the renderer MUST NOT do:
 - Reach for Svgbob / ASCII rendering. The structured YAML form is canonical; legacy `.blocks.transitrix.txt` files are not part of this spec.
 - Re-order siblings; array order is significant and is preserved in the rendered output.
 
-**Scope note.** This render contract covers the nested (tree) form only. Rendering the matrix subset (§4a) as a laid-out grid/table is not yet specified — out of scope for the §4a addition, which covers schema and validation only.
+**Scope note.** This render contract covers the nested (tree) form only; the matrix subset (§4a) has its own render contract — §7a, immediately below. The **general layered-grid superset** (layers, cell overlap, arbitrary-shape cells, sub-grids) is deliberately not specified anywhere in this document: three weeks into its design, it has no owner, no active work, and no date, while two prior attempts to redefine `blocks` against it were closed as premature — renderer scope cannot be sized before the notation semantics it would depend on (layer meaning, overlap, addressing, cell-set grammar) are settled. §7a covers only the single-layer, rectangular subset that is shipped today; it is forward-compatible with the eventual superset (§4a) but does not wait for it.
+
+---
+
+## 7a. Render contract — matrix subset (§4a)
+
+The matrix subset renders to a **table/grid** via the same shared diagram engine as the nested form (§7) — not a separate renderer, not Svgbob.
+
+A renderer that consumes a `grid:` root document MUST:
+
+- Produce a rectangular table with exactly `grid.columns.length` columns and `grid.rows.length` rows — one cell per `(row, column)` pair, no more, no fewer.
+- Render column headers from `grid.columns[].name`, left to right in `grid.columns[]` array order.
+- Render row headers from `grid.rows[].name`, top to bottom in `grid.rows[]` array order.
+- Expand each row's `assign:` shorthand into explicit cell placements **before layout**: for each declared column, look up that column's `id` in the row's `assign` map and place the matching value in the corresponding cell; a column `id` absent from `assign` (or an omitted `assign` entirely) renders as a blank cell. This expansion is pre-layout precisely so that layout logic never special-cases a sparse `assign` map — by the time layout runs, every cell is either an explicit value or an explicit blank.
+- Surface validation errors and warnings inline (`BL-020`–`BL-025`, §6). A renderer MAY assume `BL-025` (unknown column reference) has already been enforced upstream and need not re-validate it during expansion, but MUST NOT render past an unresolved `BL-020`–`BL-024` violation (missing/duplicate root, malformed columns/rows, non-unique ids).
+
+A renderer SHOULD:
+
+- Use the same brand styling shared with the nested form, the Goals tree, and the Process Blueprint (typography, colour ramp, container chrome) so a matrix diagram reads as the same family.
+- Render the document's `name` field as a caption or header above the table.
+- Leave cell-value presentation (colour, icon, weight) open to template-level styling — a template built on this subset (e.g. RACI, §6a) MAY define how its own vocabulary is presented; the base notation does not fix cell-value styling any more than it fixes cell-value vocabulary.
+
+A renderer MAY:
+
+- Export the table to image or document formats (SVG / PNG / embedded table).
+- Highlight a single row or column on selection, dimming the rest.
+
+What the renderer MUST NOT do:
+
+- Introduce layers, cell overlap, arbitrary (non-rectangular) cell sets, or sub-grids — those belong to the general layered-grid superset (§8), which is out of scope for a §4a-conformant renderer.
+- Re-order columns or rows; array order is significant and is preserved in the rendered output, matching the nested form's rule (§7).
 
 ---
 
