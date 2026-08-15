@@ -20,7 +20,7 @@ A package is declared at the repository root in `transitrix.yaml` under the `pac
 
 ```yaml
 transitrix: 1
-methodology_version: "3.4.0"
+methodology_version: "3.5.0"
 notations: [dgca, goals, activities, capability-map]
 zones: [canon, field]
 coverage_profile: core

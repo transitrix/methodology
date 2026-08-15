@@ -26,7 +26,7 @@ A post-reclassification scenarios view file carries no canonical content. It dec
 ```yaml
 notation: scenarios
 spec_version: "0.3"
-methodology_version: "3.4.0"
+methodology_version: "3.5.0"
 
 view:
   id: SCENARIOS-2027-CUT-1
