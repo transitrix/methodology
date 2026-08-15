@@ -1,8 +1,10 @@
 # @transitrix/document-renderer
 
 **The reference implementation of the `{{ … }}` directive language** — parser for
-the `.ttrs` document-template format and its pass 1 deterministic resolver,
-which runs and is testable with no agent present.
+the `.ttrs` document-template format, its pass 1 deterministic resolver (which
+runs and is testable with no agent present), pass 2 (which fills the
+instruction slots pass 1 left, through a caller-supplied agent hook), the run
+record, and PDF output.
 
 ## This is a reference implementation, not a product
 
@@ -193,6 +195,126 @@ import { parseTemplate } from '@transitrix/document-renderer/src/parse-template.
 const { header, ast, errors } = parseTemplate(text);
 ```
 
+## Pass 2 — filling instruction slots
+
+Pass 2 fills the instruction slots pass 1 left untouched. It is **agent-agnostic
+by construction**: the agent is a caller-supplied `fill` hook, the same shape as
+pass 1's `rasterise` hook for figures. Nothing in `pass2.mjs` calls a model —
+it orchestrates one.
+
+```js
+import { runPass1 } from '@transitrix/document-renderer/src/pass1.mjs';
+import { runPass2 } from '@transitrix/document-renderer/src/pass2.mjs';
+
+const { markdown, instructionSlots } = await runPass1({ text, templatePath });
+
+const { markdown: finalMarkdown, slotResults } = await runPass2({
+  markdown,
+  instructionSlots,
+  fill: async ({ slotId, question, inputs, sufficient }) => {
+    // Call an agent, or anything else that can execute the instruction.
+    // Return exactly one of:
+    return { status: 'sufficient', text: '…', attributions: inputs };
+    // or:
+    // return { status: 'insufficient' };
+  },
+});
+```
+
+The structural rules below are normative (the 2026-08-12 decision "an
+instruction slot specifies the outcome, not the procedure", accepted
+2026-08-15) — pass 2 enforces them; it does not itself judge whether a
+filler's answer is good, only whether the slot was fillable at all and what the
+filler reported:
+
+| Rule | What pass 2 does |
+|---|---|
+| `inputs:` is a closed list | A slot declaring **none** is not fillable by a conforming implementation — `fill` is **never called** for it; the slot resolves `not-attempted`, reason `no declared inputs`. A filler that attributes to an id outside the slot's declared `inputs:` is rejected (`TypeError`) — the one part of the attribution obligation this module can check mechanically. |
+| No `fill` configured | Every slot resolves `not-attempted`, reason `no filler configured` — pass 2 with no agent behaves like pass 1 alone. |
+| Attribution is mostly the filler's obligation | Pass 2 carries whatever `attributions` the filler reports and rejects any outside the closed input list; it does not itself verify that a given *sentence* is actually supported by what it cites — that content-level obligation binds the filler, per the decision's §4. |
+| Insufficient is declared, not padded | `{ status: 'insufficient' }` renders the section as `*Open — not answered.*` — never as text that reads like an answer. |
+| Self-disclosure | A `sufficient` slot's text is followed by a fixed sentence stating the section was machine-produced and not admitted through a review gate. |
+
+`slotResults` is what the run record is built from: every slot, in document
+order, each carrying `{ slotId, question, inputs, sufficient, verdict, reason,
+text }` — `verdict` is `sufficient` · `insufficient` · `not-attempted`.
+
+## The run record
+
+The third of a full run's three artefacts, alongside Markdown and the PDF:
+template id and version, repository commit, model id, run timestamp, and — per slot, including
+every slot that produced nothing — the instruction and its verdict.
+
+`buildRunRecord` is a **pure function over its inputs**. It reads no
+filesystem and no git — `repositoryCommit` (which commit the repository was
+read at) and `modelId` (which model ran pass 2) are facts about the run's
+environment that only the caller has, the same way `renderDate` is pass 1's
+own input rather than something it derives from the clock.
+
+```js
+import { buildRunRecord, serializeRunRecord }
+  from '@transitrix/document-renderer/src/run-record.mjs';
+
+const record = buildRunRecord({
+  header,                    // pass 1's `header`
+  repositoryCommit,          // e.g. `git rev-parse HEAD` in the repository the caller read;
+                              // null when no repository was configured for this run
+  modelId,                   // identifies which model ran pass 2; null when nothing was filled
+  renderDate,                 // pass 1's renderDate
+  runTimestamp,               // ISO 8601 — when this run happened; defaults to now if omitted
+  profile: 'strict',
+  slotResults,                // pass 2's slotResults
+});
+
+await writeFile(`${name}.run.json`, serializeRunRecord(record));
+```
+
+`record.slots` carries every slot pass 2 reported, in document order —
+`slot_id`, `question`, `inputs`, `sufficient`, `verdict`, `reason`,
+`produced_text`, `attributions` — including a slot whose verdict is
+`not-attempted`: a slot absent from the record would be indistinguishable from
+one that was never in the template at all.
+
+## PDF output
+
+The third artefact per run alongside Markdown and the run record — a
+**hand-rolled, dependency-free** Markdown-to-PDF writer. Every package in this
+repository ships zero runtime dependencies (`package.json`); a full HTML/PDF
+pipeline would break that posture for one output format, so this module
+assembles a minimal, valid PDF directly (a Catalog, a Pages tree, one shared
+Type1 Helvetica font, one Page + content stream per page) rather than shelling
+out to an external renderer.
+
+```js
+import { renderMarkdownToPdf } from '@transitrix/document-renderer/src/render-pdf.mjs';
+
+const pdfBytes = renderMarkdownToPdf(finalMarkdown);
+await writeFile(`${name}.pdf`, pdfBytes);
+```
+
+This is **named, not silent, scope** — not a general Markdown renderer: bold
+and italic markers are stripped rather than styled, and a figure (`{{ view
+… }}` / `{{ figure … }}`, already resolved to a Markdown image by pass 1)
+becomes a text placeholder — `[Figure: <caption>]` — never rasterised, since
+embedding an image is a separate, larger feature this module does not take
+on. A reader comparing the PDF to the Markdown will see plainer typography and
+a placeholder where a figure was, not a missing section.
+
+**A4 is non-negotiable** — an explicit constraint on this output. Every page
+this module emits declares `/MediaBox [0 0 595 842]` (A4 at 72dpi) outright,
+because a renderer that omits the declaration defaults to US Letter and
+silently spills the last 18mm onto a second page. Pagination breaks a new page
+whenever the next line would cross the bottom margin — a long document spans
+more than one `/Page` automatically, never truncated.
+
+Base-14 `Helvetica` needs no font embedding, so this module ships no font
+file. Text outside printable ASCII is sanitised: common prose punctuation
+(en/em dashes, curly quotes, an ellipsis) maps to its nearest ASCII
+equivalent, and this package's own failure markers (`«unresolved: …»`, `⚑U`)
+map to a bracketed/plain-letter form that stays legible; anything left maps to
+`?` rather than corrupting the byte stream — the base-14 fonts are not
+expected to carry full Unicode.
+
 ## Failure discipline
 
 An unresolvable reference **fails the run by name**. It never renders as empty
@@ -290,11 +412,17 @@ that never checked — that is the one failure mode which reads as success.
 node packages/document-renderer/tests/test_parse_template.mjs
 node packages/document-renderer/tests/test_pass1.mjs
 node packages/document-renderer/tests/test_conformance.mjs
+node packages/document-renderer/tests/test_pass2.mjs
+node packages/document-renderer/tests/test_run_record.mjs
+node packages/document-renderer/tests/test_render_pdf.mjs
+node packages/document-renderer/tests/test_full_run.mjs
 ```
 
 `tests/fixtures/product.mrd.ttrs` is a complete worked template — every slot kind,
 one instruction slot — rendered end-to-end against `tests/fixtures/canon/` by the
-pass-1 suite.
+pass-1 suite. `test_full_run.mjs` carries that same template all the way through
+pass 2, the run record and the PDF, the way an adopter's CLI would compose the
+four modules — the full loop an adopter's CLI is expected to complete.
 
 ## Conformance fixture
 
@@ -328,11 +456,19 @@ comparison would hold on one platform only.
 
 ## Scope
 
-Pass 1 only. Filling instruction slots, emitting the run record, and PDF output
-are not in this package. Nothing here calls a model, and nothing here may —
-rendering happens in the CLI, never the agent.
+Pass 1, pass 2, the run record and PDF output. **Nothing in this package calls
+a model, and nothing in it may** — pass 1 has no agent-shaped input to call one
+with at all, and pass 2's model is a caller-supplied `fill` hook it only
+orchestrates. Rendering happens in the CLI, never the agent; this package is
+the library a CLI composes, not the agent invocation itself.
 
 `{{# instruct … }}` stays in the grammar and in the specification — a notation
-expresses the slot; who fills it is an implementation's property — but nothing
-here executes one. Pass 1 copies each slot through byte-for-byte so the unfilled
-section is visible in the output rather than silently blank.
+expresses the slot; who fills it is an implementation's property. Pass 1
+copies each slot through byte-for-byte so the unfilled section is visible in
+the output rather than silently blank; pass 2 fills what its caller's `fill`
+hook can fill and leaves the rest exactly as visibly open, per the accepted
+2026-08-12 decision.
+
+Out of scope, still: choosing or running an actual agent (that is the CLI's
+or the adopter's), and rasterising a figure into the PDF (named as a text
+placeholder instead — see [PDF output](#pdf-output)).
