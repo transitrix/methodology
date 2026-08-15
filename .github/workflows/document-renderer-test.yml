@@ -16,6 +16,13 @@ name: document-renderer test
 # frozen output is what an independent implementation checks itself against. It
 # never regenerates the fixture; a failure is a regression or a deliberate,
 # separately reviewed re-freeze.
+#
+# Pass 2, the run record and PDF output are agent-free too: pass 2 takes the
+# agent as a caller-supplied `fill` hook (never calling one itself); the run
+# record is a pure function over its inputs; and PDF output is a hand-rolled,
+# dependency-free Markdown-to-PDF writer (no external tool, no npm dependency)
+# — every check in this workflow runs unconditionally, nothing is skipped for
+# lack of an installed binary.
 
 on:
   pull_request:
@@ -48,3 +55,15 @@ jobs:
 
       - name: Run conformance tests (frozen fixture)
         run: node packages/document-renderer/tests/test_conformance.mjs
+
+      - name: Run pass-2 tests (instruction-slot filling)
+        run: node packages/document-renderer/tests/test_pass2.mjs
+
+      - name: Run run-record tests
+        run: node packages/document-renderer/tests/test_run_record.mjs
+
+      - name: Run PDF-output tests
+        run: node packages/document-renderer/tests/test_render_pdf.mjs
+
+      - name: Run full-run end-to-end test
+        run: node packages/document-renderer/tests/test_full_run.mjs
