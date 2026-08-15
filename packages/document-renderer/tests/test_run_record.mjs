@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Unit tests for src/run-record.mjs, against transitrix-hq#53's "Outputs"
-// requirement: the run record names template id and version, repository
-// commit, model id, run timestamp (ISO 8601), and — per slot, including one
-// that produced nothing — the instruction and the text it produced. The
-// 2026-08-12 ADR adds a verdict per slot.
+// Unit tests for src/run-record.mjs, against the run record's own
+// requirement: it names template id and version, repository commit, model
+// id, run timestamp (ISO 8601), and — per slot, including one that produced
+// nothing — the instruction and the text it produced. The 2026-08-12 decision
+// "an instruction slot specifies the outcome, not the procedure" adds a
+// verdict per slot.
 //
 // Run: node packages/document-renderer/tests/test_run_record.mjs
 // Exit: 0 = all pass; 1 = a check failed.
