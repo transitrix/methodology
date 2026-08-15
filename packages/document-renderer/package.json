@@ -1,7 +1,7 @@
 {
   "name": "@transitrix/document-renderer",
   "version": "0.0.1",
-  "description": "Parser for the .ttrs document-template format and its pass 1 deterministic resolver — resolves model-object references and derived figures with no agent present, leaving instruction slots for pass 2.",
+  "description": "Reference implementation of the .ttrs document-template format: pass 1 (deterministic resolution, no agent present), pass 2 (instruction-slot filling via a caller-supplied agent hook), the run record, and dependency-free PDF output.",
   "type": "module",
   "engines": {
     "node": ">=20"
