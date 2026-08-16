@@ -15,6 +15,8 @@ Transitrix is a text-native methodology for enterprise architecture: every artef
 /plugin install transitrix@transitrix-methodology
 ```
 
+**Other agent hosts:** this directory also carries [`plugin.json`](plugin.json), a manifest conforming to the [Agent Plugins Specification v1.0.0](https://agent-plugins.org/specification) — the open, vendor-neutral packaging format six agent-tool vendors published in August 2026. Any client that implements that specification discovers this plugin's skills directly from `skills/` per the spec's fixed-location discovery rule; consult that client's own documentation for how it loads a plugin directory or repository. `plugin.json` is generated from the Claude Code manifest above (`.claude-plugin/plugin.json`, `scripts/generate-plugin-manifests.mjs`) so the two never disagree on name or version.
+
 ---
 
 ## Skills
