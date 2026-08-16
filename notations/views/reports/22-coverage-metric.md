@@ -76,7 +76,7 @@ The mechanism is regime- and industry-agnostic. No jurisdiction, regime, or sect
 | Identify which products / processes / stages / tasks are dark for each regulatory regime the organisation has named. | Coverage Metric view |
 | Prioritise the regulatory-intelligence collector — which regimes need to be harvested next, by counting the modelling gaps they would close. | Coverage Metric view |
 | Track coverage progress over time — the count of modelling gaps trending towards zero as the model matures. | Coverage Metric view |
-| Compare two slices of canon side-by-side (e.g. coverage of `PROCESS-A` vs `PROCESS-B` against the same regimes) to surface uneven harvesting. | Coverage Metric view |
+| Compare two slices of canon side-by-side (e.g. coverage of one process vs. another against the same regimes) to surface uneven harvesting. | Coverage Metric view |
 | Render the actual obligation × subject overlay, including statuses. | **Compliance Impact view** ([21-compliance-impact.md](./21-compliance-impact.md)). The Coverage Metric view is the *second read* of the same data, not a replacement. |
 
 For the canonical authoring of the inputs the view reads, use the element primitives, not this view:

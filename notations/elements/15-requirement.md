@@ -67,7 +67,7 @@ Some rules genuinely have two sides; many do not. Authoring both a REQUIREMENT a
 
 **Author only the negative form (`CONSTRAINT`) when:**
 
-- The source rule is a pure prohibition with no associated affirmative duty in the same scope. "The controller shall not transfer personal data outside the EEA without an adequacy decision or appropriate safeguards." There is no positive duty to *transfer* — the regulation does not require transfer, it restricts it. Authoring a synthetic `REQUIREMENT-TRANSFER-WITH-SAFEGUARDS` would invent an obligation the source did not impose.
+- The source rule is a pure prohibition with no associated affirmative duty in the same scope. "The controller shall not transfer personal data outside the EEA without an adequacy decision or appropriate safeguards." There is no positive duty to *transfer* — the regulation does not require transfer, it restricts it. Authoring a synthetic "transfer with safeguards" REQUIREMENT would invent an obligation the source did not impose.
 - A pre-existing `REQUIREMENT` already captures the affirmative duty and the prohibition adds nothing the assertion against the `REQUIREMENT` does not already cover. **Do not double-model the same rule.**
 
 **Authoring sequence for a scanner-extracted positive obligation:** classify as `REQUIREMENT` (§1.1 default); admit; only then consider whether §1.2 mirror conditions apply and, if so, author a separate `CONSTRAINT` element. The mirror is a deliberate authoring decision, never an automated emission.

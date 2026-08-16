@@ -108,14 +108,14 @@ process_map:
       processes:
         - process_id: "PROC-ORD-FULFILL-001"
           name: "Order Fulfilment"
-          owner_role: "ROLE-OPS-001"
+          owner_role: "ROLE-OPS-1"
           capability: "CAPABILITY-V1"
           # maturity — time-varying, resolved from PROC-ORD-FULFILL-001.history.yaml (CONTRACT.md §9)
           status: "Active"
 
         - process_id: "PROC-CUST-ONBOARD-001"
           name: "Customer Onboarding"
-          owner_role: "ROLE-SALES-001"
+          owner_role: "ROLE-SALES-1"
           capability: "CAPABILITY-V2"
           # maturity — time-varying, resolved from PROC-CUST-ONBOARD-001.history.yaml (CONTRACT.md §9)
           status: "Draft"
@@ -126,7 +126,7 @@ process_map:
       processes:
         - process_id: "PROC-HR-RECRUIT-001"
           name: "Recruitment"
-          owner_role: "ROLE-HR-001"
+          owner_role: "ROLE-HR-1"
           status: "Active"
 
     - id: "GRP-MANAGEMENT"
@@ -135,7 +135,7 @@ process_map:
       processes:
         - process_id: "PROC-STRAT-PLAN-001"
           name: "Annual Strategy Planning"
-          owner_role: "ROLE-EXEC-001"
+          owner_role: "ROLE-EXEC-1"
           status: "Active"
 ```
 

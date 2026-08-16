@@ -456,6 +456,41 @@ deferred:
         the family. Narrows VOC4 (rule_codes vs the codes specs actually use,
         scripts/check-notations.mjs) to exactly this code until resolved or
         renewed.
+    RELEASE-004:
+      review_by: "2026-11-16"
+      reason: >-
+        Restated across CONTRACT.md §9, elements/17-relations.md,
+        elements/27-verification.md, and ELEMENT_PRIMITIVES.md §9 as a single
+        code carrying two severities — `error` for the self-reference case,
+        `warning` for the cross-chain cycle case — same shape as COMPIMP-010,
+        so it was never registered as one rule_codes entry. Renumbering is a
+        versioned canon change, raised rather than decided here. Narrows VOC4
+        (invisible to it today anyway — its combined "error / warning" cell
+        does not match RULE_ROW_RE's single-severity pattern) and ID1
+        (example-ID grammar, scripts/check-notations.mjs) to exactly this
+        code until resolved or renewed.
+    ACTION-006:
+      review_by: "2026-11-16"
+      reason: >-
+        elements/24-action.md §7 names a proposed `ACTION-006` warning for
+        `type: Strategic Initiative` (use canonical `Initiative`) as future
+        work — "may be added once migration tooling is in place." Not yet
+        registered because the tooling doesn't exist; the code collides with
+        the registered ACTION TYPE prefix, so ID1 reads it as a malformed
+        element id. Narrows ID1 (example-ID grammar, scripts/check-notations.mjs)
+        to exactly this code until the code is built and registered, or the
+        proposal is dropped.
+    REL-COVERAGE-001:
+      review_by: "2026-11-16"
+      reason: >-
+        elements/17-relations.md §7 names a proposed cross-cutting validator
+        rule `REL-COVERAGE-001` (warning) — flags relation kinds declared
+        time-aware with zero first-class instances in the catalogue — "filed
+        as a follow-up." Not yet built or registered. The code collides with
+        the registered REL TYPE prefix, so ID1 reads it as a malformed
+        element id. Narrows ID1 (example-ID grammar, scripts/check-notations.mjs)
+        to exactly this code until the code is built and registered, or the
+        proposal is dropped.
 
 # ---------------------------------------------------------------------------
 # Validation rule codes and their severities. The code and its severity are the

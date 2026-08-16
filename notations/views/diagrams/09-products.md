@@ -99,7 +99,7 @@ products_catalogue:
       name: "E-Commerce Platform"
       type: "digital_product"          # digital_product | service | platform | bundle
       domain: "Digital"
-      owner_role: "ROLE-PROD-001"
+      owner_role: "ROLE-PROD-1"
       status: "Active"                 # Draft | Active | Deprecated
       maturity: 3                      # CMM level 1–5
       description: "Online storefront and order management for end customers"
@@ -116,7 +116,7 @@ products_catalogue:
       name: "Customer Support Service"
       type: "service"
       domain: "Operations"
-      owner_role: "ROLE-CS-001"
+      owner_role: "ROLE-CS-1"
       status: "Active"
       description: "Tier-1 and Tier-2 support for customers via chat, email, and phone"
 ```
