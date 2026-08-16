@@ -1,0 +1,48 @@
+name: Feature or change request
+description: Propose a new notation, validation rule, view template, or Skill — or a change to an existing one.
+title: "[Request] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See [CONTRIBUTING.md § What kinds of contributions are welcome](../../CONTRIBUTING.md#what-kinds-of-contributions-are-welcome).
+        Substantive changes (new notation, schema change, validation rule) need this
+        issue open *before* a pull request — see
+        [CONTRIBUTING.md § Submitting changes](../../CONTRIBUTING.md#submitting-changes).
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - New notation
+        - Change to an existing notation or schema
+        - New or changed validation rule
+        - New or changed Skill (see CONTRIBUTING.md § Adding or changing a Skill)
+        - New or changed view template
+        - Tooling integration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What gap or limitation does this address?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+    validations:
+      required: false

@@ -6,7 +6,8 @@ Thanks for considering a contribution. This document describes how to get involv
 
 - **Methodology refinements** — edits to the files under `method/`, the glossary, or the project rules. Substantive changes (new notation, schema change, validation rule) need an issue first; phrasing and documentation fixes can land directly as a pull request.
 - **Worked examples** — contribute directly to the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo (its own PR flow), or propose a new sibling worked-example repo for a pattern not yet covered.
-- **Validators and templates** — new validation rules in `.validators/lint.py`, new YAML templates in `.templates/`, or new view templates in `views/`.
+- **Validators and templates** — new validation rules in `tools/lint.py` (the canonical whole-repo linter; adopter repos vendor a copy as `.validators/lint.py` at scaffold time), or new view templates under `transitrix/skills/onboard/templates/`.
+- **Skills** — adding or changing a Claude Code Skill under `transitrix/skills/<name>/`. See "Adding or changing a Skill" below.
 - **Tooling integrations** — patches that make Transitrix easier to use with editors, CI systems, or downstream consumers (renderers, exporters, etc.).
 - **Translations** — translations of `methodology.md` into other languages, placed under `translations/<lang>/`. The English version remains canonical; translations are derivative.
 
@@ -28,9 +29,48 @@ For each issue, include the file path or section reference, what you observed, a
 1. **Open or claim an issue** for non-trivial work. This avoids parallel effort and gives you context before you write.
 2. **Branch from `main`.** Use a descriptive branch name (`docs/methodology-bpmn-clarifications`, `feat/validator-rule-policy-archive`).
 3. **Keep pull requests focused.** One concern per PR.
-4. **Run validators locally.** `python3 organizations/<org>/.validators/lint.py` for any organisation you touch.
+4. **Run the relevant validators locally, before opening the PR.** This repo's own gate is not a single command — `.validators/lint.py` is what an *adopter* repo runs against its `canon/`; this repo has no `canon/` of its own to validate. What CI actually runs here, by what you touched:
+   - Any `notations/**` spec or example, or `transitrix/skills/onboard/templates/**` — `node scripts/check-notations.mjs` (mechanical invariants: example extensions, `notation:` headers, internal link resolution, version-pin consistency).
+   - A single view notation file (`*.transitrix.yaml`) — `npx @transitrix/cli validate <file>` (`npx.cmd` on Windows PowerShell with a restricted execution policy).
+   - `tools/lint.py` itself — the encoding regression test in `.github/workflows/lint-encoding-test.yml`.
+   - A Claude Code Skill under `transitrix/skills/<name>/` — see "Adding or changing a Skill" below.
+   - Anything else — check `.github/workflows/` for a job whose `paths:` trigger matches the files you touched; most packages and skills carry their own targeted test workflow.
 5. **Update related docs.** If your change affects naming, layout, or rules, update the relevant file(s) under `method/` (naming: `method/03-modelling.md`; layout: `method/02-repository.md`), `method/00-glossary.md`, and `README.md` as needed.
-6. **Open a pull request.** Describe what changed, why, and link the issue.
+6. **Open a pull request.** Describe what changed and how it works (not why it was wanted), and link the issue. Sign off your commits (see DCO below); the PR template asks for the same "what changed" / "how it is verified" structure.
+
+## Adding or changing a Skill
+
+A Skill is a packaged Claude Code capability under `transitrix/skills/<name>/`, one directory per skill, inside the `transitrix` plugin (plugin root `transitrix/`, shared manifest `transitrix/.claude-plugin/plugin.json`). The existing skills — `adr`, `feedback`, `ingest`, `knowledge-store`, `onboard`, `reg-intel`, `repo-check`, `report`, `status` — are the precedent to follow; `repo-check` is a short, self-contained example worth reading first.
+
+**Every skill pairs two files at its root:**
+
+- `SKILL.md` — the agent-facing protocol. Front matter carries `name`, `description`, `when_to_use`, `min_version`, and `allowed-tools`; the body is the step-by-step procedure the agent follows. `description` and `when_to_use` are what a host uses to decide when to invoke the skill, so write them as trigger phrases and concrete scenarios, not summary prose.
+- `README.md` — the human-facing overview: what the skill does, why it exists, what it deliberately does not do, and how to invoke it (`/transitrix:<name>`).
+
+Add supporting material only as the skill needs it, following existing precedent: `templates/` for scaffolded files (`onboard/templates/`), `prompts/` for multi-step prompt sequences (`ingest/prompts/`, `reg-intel/prompts/`), `schemas/` for JSON Schema the skill validates against, `tests/` for a deterministic integrity test (`onboard/tests/`, `knowledge-store/tests/`).
+
+**Changing an existing skill:**
+
+1. Read the skill's `SKILL.md` and `README.md` in full before editing — the two must stay consistent with each other and with the skill's actual behaviour.
+2. If the skill ships a `tests/` directory, run its test(s) locally before committing (see the validation-gate table below).
+3. If your change touches the `onboard` skill's family-selection matrix or `templates/`, run `node scripts/check-skill-cheatsheet.mjs` — it diffs the cheat sheet against `notations/README.md`'s notation catalogue and fails the build on drift.
+
+**Adding a new skill:**
+
+1. Open an issue first (see "Submitting changes" above) — a new skill is substantive.
+2. Create `transitrix/skills/<name>/SKILL.md` and `README.md` following the pairing above; model the front matter on an existing skill of similar shape.
+3. If the skill needs a deterministic CI check, add `tests/` and a workflow under `.github/workflows/` following the naming of the existing skill-test workflows (`onboarding-skill-test.yml`, `knowledge-store-lint-test.yml`), gated on `pull_request: paths: ['transitrix/skills/<name>/**']` so it runs only when that skill changes.
+4. A new skill does not need to be registered anywhere else — `transitrix/.claude-plugin/plugin.json` declares the plugin as a whole, not each skill individually; a host that loads the plugin discovers every `skills/<name>/SKILL.md` under it.
+
+**Validation gate for Skills:**
+
+| Touching | Run |
+|---|---|
+| Any skill's `SKILL.md`/`README.md` prose | No dedicated linter for this tree — `node scripts/check-notations.mjs`'s link check is scoped to `notations/**/*.md` only, so check relative links by hand. |
+| `onboard`'s family-selection matrix or `templates/` | `node scripts/check-skill-cheatsheet.mjs` |
+| `onboard`'s scaffold logic | `python transitrix/skills/onboard/tests/test_skill_integrity.py` |
+| `knowledge-store`'s linter or pattern doc | the test(s) under `transitrix/skills/knowledge-store/tests/` |
+| Any skill with its own `tests/` | the test(s) in that directory — check `.github/workflows/` for the matching `paths:`-gated job before assuming there isn't one |
 
 ## Review process
 
