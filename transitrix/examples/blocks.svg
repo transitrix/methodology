@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1156" height="456" viewBox="0 0 1156 456">
+<style>:root{--ts-bg:#ffffff;--ts-bg-surface:#f8fafc;--ts-bg-elevated:#f1f5f9;--ts-text:#0f172a;--ts-text-muted:#64748b;--ts-text-inverse:#ffffff;--ts-border:#e2e8f0;--ts-divider:#cbd5e1;--ts-status-success-bg:#d1fae5;--ts-status-success-fg:#065f46;--ts-status-warning-bg:#fef9c3;--ts-status-warning-fg:#854d0e;--ts-status-info-bg:#e0f2fe;--ts-status-info-fg:#0c4a6e;--ts-status-error-bg:#fee2e2;--ts-status-error-fg:#991b1b;--ts-layer-driver:#eaf3f6;--ts-layer-factor:#eaf3f6;--ts-layer-goal:#d9ecf2;--ts-layer-change:#c7e5ef;--ts-layer-activity:#b4e0ee;--ts-node-stroke:#004d67;--ts-edge-stroke:#004d67;--ts-text-primary:#0d2b35;--ts-text-secondary:#516970;--ts-header-text:#0d2b35;--ts-maturity-1:#bf2518;--ts-maturity-2:#b05911;--ts-maturity-3:#8d7011;--ts-maturity-4:#407d21;--ts-maturity-5:#237b48;--ts-brand-amber:#ffaf00;--ts-brand-orange:#ff4d00;--ts-brand-orange-tint:#ffeee5;--ts-level-0:#eef4f7;--ts-level-1:#e6f1f4;--ts-level-2:#dfedf1;--ts-level-3:#d7e9ef;--ts-level-4:#cee6ed;--ts-level-5:#c6e2ec;--ts-level-6:#bfe0eb;--ts-level-7:#b7deeb;--ts-tree-level-0:#e6f1f4;--ts-tree-level-1:#d0e9f1;--ts-tree-level-2:#b5e3f2;--ts-tree-maturity-1:#bf2518;--ts-tree-maturity-2:#b05911;--ts-tree-maturity-3:#8d7011;--ts-tree-maturity-4:#407d21;--ts-tree-maturity-5:#237b48;}.diagram-node{stroke:var(--ts-node-stroke);stroke-width:1;}
+.layer-driver{fill:var(--ts-layer-driver);}
+.layer-factor{fill:var(--ts-layer-factor);}
+.layer-goal{fill:var(--ts-layer-goal);}
+.layer-change{fill:var(--ts-layer-change);}
+.layer-activity{fill:var(--ts-layer-activity);}
+.level-0{fill:var(--ts-level-0);}.level-1{fill:var(--ts-level-1);}.level-2{fill:var(--ts-level-2);}.level-3{fill:var(--ts-level-3);}.level-4{fill:var(--ts-level-4);}.level-5{fill:var(--ts-level-5);}.level-6{fill:var(--ts-level-6);}.level-7{fill:var(--ts-level-7);}
+.diagram-edge{stroke:var(--ts-edge-stroke);stroke-width:1.5;fill:none;}
+.arrow-fill{fill:var(--ts-edge-stroke);}
+.text-header{fill:var(--ts-header-text);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:13px;font-weight:700;dominant-baseline:central;}
+.text-primary{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:600;dominant-baseline:central;}
+.text-secondary{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:400;dominant-baseline:central;}
+.text-id{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:10px;font-weight:600;dominant-baseline:central;}
+.text-pill{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:500;dominant-baseline:central;}
+.maturity-1{fill:var(--ts-maturity-1);}
+.maturity-2{fill:var(--ts-maturity-2);}
+.maturity-3{fill:var(--ts-maturity-3);}
+.maturity-4{fill:var(--ts-maturity-4);}
+.maturity-5{fill:var(--ts-maturity-5);}
+.compliance-gap{fill:var(--ts-status-warning-bg);stroke:var(--ts-status-warning-fg);}
+.compliance-gap text{fill:var(--ts-status-warning-fg);}
+.compliance-deadline{fill:var(--ts-status-error-bg);stroke:var(--ts-status-error-fg);}
+.compliance-deadline text{fill:var(--ts-status-error-fg);}
+.compliance-badge{fill:var(--ts-status-error-fg);}
+.compliance-badge-text{fill:var(--ts-text-inverse);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:8px;font-weight:700;}
+.tree-level-0{fill:var(--ts-tree-level-0);}
+.tree-level-1{fill:var(--ts-tree-level-1);}
+.tree-level-2{fill:var(--ts-tree-level-2);}
+.tree-maturity-1{fill:var(--ts-tree-maturity-1);}
+.tree-maturity-2{fill:var(--ts-tree-maturity-2);}
+.tree-maturity-3{fill:var(--ts-tree-maturity-3);}
+.tree-maturity-4{fill:var(--ts-tree-maturity-4);}
+.tree-maturity-5{fill:var(--ts-tree-maturity-5);}
+.tree-collapse-btn{cursor:pointer;fill:white;stroke:var(--ts-node-stroke);stroke-width:1.5;}
+.tree-collapse-btn:hover{fill:var(--ts-bg-elevated);}
+.tree-collapse-lbl{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:700;dominant-baseline:central;pointer-events:none;}
+.blocks-grid-border{fill:none;stroke:var(--ts-border);}</style>
+<text class="text-header" x="24" y="18">Nested Blocks — Software architecture</text>
+<rect class="diagram-node level-0" x="24" y="24" width="1108" height="192" rx="8"/>
+<text class="text-primary" x="578" y="35" text-anchor="middle" dominant-baseline="central">Application Layer</text>
+<text class="text-id" x="578" y="47" text-anchor="middle" dominant-baseline="central">APPLICATION_LAYER</text>
+<rect class="diagram-node level-1" x="36" y="68" width="536" height="136" rx="8"/>
+<text class="text-primary" x="304" y="79" text-anchor="middle" dominant-baseline="central">Frontend</text>
+<text class="text-id" x="304" y="91" text-anchor="middle" dominant-baseline="central">FRONTEND</text>
+<rect class="diagram-node level-2" x="48" y="112" width="250" height="80" rx="8"/>
+<text class="text-primary" x="173" y="146" text-anchor="middle" dominant-baseline="central">React App</text>
+<text class="text-id" x="173" y="160" text-anchor="middle" dominant-baseline="central">REACT_APP</text>
+<rect class="diagram-node level-2" x="310" y="112" width="250" height="80" rx="8"/>
+<text class="text-primary" x="435" y="146" text-anchor="middle" dominant-baseline="central">Redux Store</text>
+<text class="text-id" x="435" y="160" text-anchor="middle" dominant-baseline="central">REDUX_STORE</text>
+<rect class="diagram-node level-1" x="584" y="68" width="536" height="136" rx="8"/>
+<text class="text-primary" x="852" y="79" text-anchor="middle" dominant-baseline="central">Backend</text>
+<text class="text-id" x="852" y="91" text-anchor="middle" dominant-baseline="central">BACKEND</text>
+<rect class="diagram-node level-2" x="596" y="112" width="250" height="80" rx="8"/>
+<text class="text-primary" x="721" y="146" text-anchor="middle" dominant-baseline="central">REST API</text>
+<text class="text-id" x="721" y="160" text-anchor="middle" dominant-baseline="central">REST_API</text>
+<rect class="diagram-node level-2" x="858" y="112" width="250" height="80" rx="8"/>
+<text class="text-primary" x="983" y="146" text-anchor="middle" dominant-baseline="central">Business Logic</text>
+<text class="text-id" x="983" y="160" text-anchor="middle" dominant-baseline="central">BUSINESS_LOGIC</text>
+<rect class="diagram-node level-0" x="24" y="240" width="1108" height="192" rx="8"/>
+<text class="text-primary" x="578" y="251" text-anchor="middle" dominant-baseline="central">Data Layer</text>
+<text class="text-id" x="578" y="263" text-anchor="middle" dominant-baseline="central">DATA_LAYER</text>
+<rect class="diagram-node level-1" x="36" y="284" width="536" height="136" rx="8"/>
+<text class="text-primary" x="304" y="295" text-anchor="middle" dominant-baseline="central">PostgreSQL</text>
+<text class="text-id" x="304" y="307" text-anchor="middle" dominant-baseline="central">POSTGRESQL</text>
+<rect class="diagram-node level-2" x="48" y="328" width="250" height="80" rx="8"/>
+<text class="text-primary" x="173" y="362" text-anchor="middle" dominant-baseline="central">Users</text>
+<text class="text-id" x="173" y="376" text-anchor="middle" dominant-baseline="central">USERS_TABLE</text>
+<rect class="diagram-node level-2" x="310" y="328" width="250" height="80" rx="8"/>
+<text class="text-primary" x="435" y="362" text-anchor="middle" dominant-baseline="central">Orders</text>
+<text class="text-id" x="435" y="376" text-anchor="middle" dominant-baseline="central">ORDERS_TABLE</text>
+<rect class="diagram-node level-1" x="584" y="284" width="536" height="136" rx="8"/>
+<text class="text-primary" x="852" y="295" text-anchor="middle" dominant-baseline="central">Redis Cache</text>
+<text class="text-id" x="852" y="307" text-anchor="middle" dominant-baseline="central">REDIS_CACHE</text>
+<rect class="diagram-node level-2" x="596" y="328" width="250" height="80" rx="8"/>
+<text class="text-primary" x="721" y="362" text-anchor="middle" dominant-baseline="central">Sessions</text>
+<text class="text-id" x="721" y="376" text-anchor="middle" dominant-baseline="central">SESSIONS_CACHE</text>
+<rect class="diagram-node level-2" x="858" y="328" width="250" height="80" rx="8"/>
+<text class="text-primary" x="983" y="362" text-anchor="middle" dominant-baseline="central">Rate Limits</text>
+<text class="text-id" x="983" y="376" text-anchor="middle" dominant-baseline="central">RATE_LIMITS_CACHE</text>
+</svg>

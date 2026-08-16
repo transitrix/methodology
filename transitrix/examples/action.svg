@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3598" height="256" viewBox="0 0 3598 256">
+<style>:root{--ts-bg:#ffffff;--ts-bg-surface:#f8fafc;--ts-bg-elevated:#f1f5f9;--ts-text:#0f172a;--ts-text-muted:#64748b;--ts-text-inverse:#ffffff;--ts-border:#e2e8f0;--ts-divider:#cbd5e1;--ts-status-success-bg:#d1fae5;--ts-status-success-fg:#065f46;--ts-status-warning-bg:#fef9c3;--ts-status-warning-fg:#854d0e;--ts-status-info-bg:#e0f2fe;--ts-status-info-fg:#0c4a6e;--ts-status-error-bg:#fee2e2;--ts-status-error-fg:#991b1b;--ts-layer-driver:#eaf3f6;--ts-layer-factor:#eaf3f6;--ts-layer-goal:#d9ecf2;--ts-layer-change:#c7e5ef;--ts-layer-activity:#b4e0ee;--ts-node-stroke:#004d67;--ts-edge-stroke:#004d67;--ts-text-primary:#0d2b35;--ts-text-secondary:#516970;--ts-header-text:#0d2b35;--ts-maturity-1:#bf2518;--ts-maturity-2:#b05911;--ts-maturity-3:#8d7011;--ts-maturity-4:#407d21;--ts-maturity-5:#237b48;--ts-brand-amber:#ffaf00;--ts-brand-orange:#ff4d00;--ts-brand-orange-tint:#ffeee5;--ts-level-0:#eef4f7;--ts-level-1:#e6f1f4;--ts-level-2:#dfedf1;--ts-level-3:#d7e9ef;--ts-level-4:#cee6ed;--ts-level-5:#c6e2ec;--ts-level-6:#bfe0eb;--ts-level-7:#b7deeb;--ts-tree-level-0:#e6f1f4;--ts-tree-level-1:#d0e9f1;--ts-tree-level-2:#b5e3f2;--ts-tree-maturity-1:#bf2518;--ts-tree-maturity-2:#b05911;--ts-tree-maturity-3:#8d7011;--ts-tree-maturity-4:#407d21;--ts-tree-maturity-5:#237b48;}.diagram-node{stroke:var(--ts-node-stroke);stroke-width:1;}
+.layer-driver{fill:var(--ts-layer-driver);}
+.layer-factor{fill:var(--ts-layer-factor);}
+.layer-goal{fill:var(--ts-layer-goal);}
+.layer-change{fill:var(--ts-layer-change);}
+.layer-activity{fill:var(--ts-layer-activity);}
+.level-0{fill:var(--ts-level-0);}.level-1{fill:var(--ts-level-1);}.level-2{fill:var(--ts-level-2);}.level-3{fill:var(--ts-level-3);}.level-4{fill:var(--ts-level-4);}.level-5{fill:var(--ts-level-5);}.level-6{fill:var(--ts-level-6);}.level-7{fill:var(--ts-level-7);}
+.diagram-edge{stroke:var(--ts-edge-stroke);stroke-width:1.5;fill:none;}
+.arrow-fill{fill:var(--ts-edge-stroke);}
+.text-header{fill:var(--ts-header-text);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:13px;font-weight:700;dominant-baseline:central;}
+.text-primary{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:600;dominant-baseline:central;}
+.text-secondary{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:400;dominant-baseline:central;}
+.text-id{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:10px;font-weight:600;dominant-baseline:central;}
+.text-pill{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:500;dominant-baseline:central;}
+.maturity-1{fill:var(--ts-maturity-1);}
+.maturity-2{fill:var(--ts-maturity-2);}
+.maturity-3{fill:var(--ts-maturity-3);}
+.maturity-4{fill:var(--ts-maturity-4);}
+.maturity-5{fill:var(--ts-maturity-5);}
+.compliance-gap{fill:var(--ts-status-warning-bg);stroke:var(--ts-status-warning-fg);}
+.compliance-gap text{fill:var(--ts-status-warning-fg);}
+.compliance-deadline{fill:var(--ts-status-error-bg);stroke:var(--ts-status-error-fg);}
+.compliance-deadline text{fill:var(--ts-status-error-fg);}
+.compliance-badge{fill:var(--ts-status-error-fg);}
+.compliance-badge-text{fill:var(--ts-text-inverse);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:8px;font-weight:700;}
+.tree-level-0{fill:var(--ts-tree-level-0);}
+.tree-level-1{fill:var(--ts-tree-level-1);}
+.tree-level-2{fill:var(--ts-tree-level-2);}
+.tree-maturity-1{fill:var(--ts-tree-maturity-1);}
+.tree-maturity-2{fill:var(--ts-tree-maturity-2);}
+.tree-maturity-3{fill:var(--ts-tree-maturity-3);}
+.tree-maturity-4{fill:var(--ts-tree-maturity-4);}
+.tree-maturity-5{fill:var(--ts-tree-maturity-5);}
+.tree-collapse-btn{cursor:pointer;fill:white;stroke:var(--ts-node-stroke);stroke-width:1.5;}
+.tree-collapse-btn:hover{fill:var(--ts-bg-elevated);}
+.tree-collapse-lbl{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:700;dominant-baseline:central;pointer-events:none;}
+.blocks-grid-border{fill:none;stroke:var(--ts-border);}
+  .act-node { fill: var(--ts-layer-activity, #d4edda); stroke: var(--ts-node-stroke, #004d67); stroke-width: 1; }
+  .critical-node { fill: var(--ts-brand-orange-tint, #ffeee5); stroke: var(--ts-brand-orange, #ff4d00); stroke-width: 1; }
+  .milestone-node { fill: #ecfeff; stroke: var(--ts-text-muted, #64748b); stroke-dasharray: 4 2; }
+  .critical-edge { stroke: var(--ts-brand-orange, #ff4d00); stroke-width: 1.5; }
+  .arrow-fill-critical { fill: var(--ts-brand-orange, #ff4d00); }
+</style>
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" class="arrow-fill"/>
+  </marker>
+  <marker id="arrow-crit" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" class="arrow-fill-critical"/>
+  </marker>
+</defs>
+<text class="text-header" x="24" y="18">Office Relocation — HQ Move 2026</text>
+<rect class="diagram-node act-node critical-node" x="24" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="149" y="75" text-anchor="middle" dominant-baseline="central">Requirements gathering</text>
+<text class="text-id" x="149" y="103" text-anchor="middle" dominant-baseline="central">A-101</text>
+<text class="text-secondary" x="266" y="120" text-anchor="end">10d</text>
+<rect class="diagram-node act-node critical-node" x="354" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="479" y="75" text-anchor="middle" dominant-baseline="central">Site selection</text>
+<text class="text-id" x="479" y="103" text-anchor="middle" dominant-baseline="central">A-102</text>
+<text class="text-secondary" x="596" y="120" text-anchor="end">15d</text>
+<rect class="diagram-node act-node critical-node" x="684" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="809" y="75" text-anchor="middle" dominant-baseline="central">Lease negotiation</text>
+<text class="text-id" x="809" y="103" text-anchor="middle" dominant-baseline="central">A-103</text>
+<text class="text-secondary" x="926" y="120" text-anchor="end">10d</text>
+<rect class="diagram-node act-node critical-node milestone-node" x="1014" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="1139" y="75" text-anchor="middle" dominant-baseline="central">Lease signed</text>
+<text class="text-id" x="1139" y="103" text-anchor="middle" dominant-baseline="central">M-LEASE-SIGNED</text>
+<rect class="diagram-node act-node critical-node" x="1344" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="1469" y="75" text-anchor="middle" dominant-baseline="central">Construction permits</text>
+<text class="text-id" x="1469" y="103" text-anchor="middle" dominant-baseline="central">A-201</text>
+<text class="text-secondary" x="1586" y="120" text-anchor="end">20d</text>
+<rect class="diagram-node act-node" x="1344" y="152" width="250" height="80" rx="8"/>
+<text class="text-primary" x="1469" y="179" text-anchor="middle" dominant-baseline="central">Interior design</text>
+<text class="text-id" x="1469" y="207" text-anchor="middle" dominant-baseline="central">A-202</text>
+<text class="text-secondary" x="1586" y="224" text-anchor="end">15d</text>
+<rect class="diagram-node act-node critical-node" x="1674" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="1799" y="75" text-anchor="middle" dominant-baseline="central">Construction work</text>
+<text class="text-id" x="1799" y="103" text-anchor="middle" dominant-baseline="central">A-203</text>
+<text class="text-secondary" x="1916" y="120" text-anchor="end">30d</text>
+<rect class="diagram-node act-node critical-node" x="2004" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="2129" y="75" text-anchor="middle" dominant-baseline="central">IT infrastructure install</text>
+<text class="text-id" x="2129" y="103" text-anchor="middle" dominant-baseline="central">A-204</text>
+<text class="text-secondary" x="2246" y="120" text-anchor="end">12d</text>
+<rect class="diagram-node act-node" x="2004" y="152" width="250" height="80" rx="8"/>
+<text class="text-primary" x="2129" y="179" text-anchor="middle" dominant-baseline="central">Furniture delivery</text>
+<text class="text-id" x="2129" y="207" text-anchor="middle" dominant-baseline="central">A-205</text>
+<text class="text-secondary" x="2246" y="224" text-anchor="end">5d</text>
+<rect class="diagram-node act-node critical-node" x="2334" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="2459" y="75" text-anchor="middle" dominant-baseline="central">Pack-up</text>
+<text class="text-id" x="2459" y="103" text-anchor="middle" dominant-baseline="central">A-301</text>
+<text class="text-secondary" x="2576" y="120" text-anchor="end">3d</text>
+<rect class="diagram-node act-node critical-node" x="2664" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="2789" y="75" text-anchor="middle" dominant-baseline="central">Physical move</text>
+<text class="text-id" x="2789" y="103" text-anchor="middle" dominant-baseline="central">A-302</text>
+<text class="text-secondary" x="2906" y="120" text-anchor="end">2d</text>
+<rect class="diagram-node act-node critical-node" x="2994" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="3119" y="75" text-anchor="middle" dominant-baseline="central">Unpacking and setup</text>
+<text class="text-id" x="3119" y="103" text-anchor="middle" dominant-baseline="central">A-303</text>
+<text class="text-secondary" x="3236" y="120" text-anchor="end">3d</text>
+<rect class="diagram-node act-node critical-node milestone-node" x="3324" y="48" width="250" height="80" rx="8"/>
+<text class="text-primary" x="3449" y="75" text-anchor="middle" dominant-baseline="central">New HQ opens</text>
+<text class="text-id" x="3449" y="103" text-anchor="middle" dominant-baseline="central">M-OPEN-DAY</text>
+<path d="M1264,88 C1347.2,88 1260.8,192 1344,192" class="diagram-edge" marker-end="url(#arrow)"/>
+<path d="M1594,192 C1677.2,192 1590.8,88 1674,88" class="diagram-edge" marker-end="url(#arrow)"/>
+<path d="M1924,88 C2007.2,88 1920.8,192 2004,192" class="diagram-edge" marker-end="url(#arrow)"/>
+<path d="M2254,192 C2337.2,192 2250.8,88 2334,88" class="diagram-edge" marker-end="url(#arrow)"/>
+<path d="M274,88 C338,88 290,88 354,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M604,88 C668,88 620,88 684,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M934,88 C998,88 950,88 1014,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M1264,88 C1328,88 1280,88 1344,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M1594,88 C1658,88 1610,88 1674,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M1924,88 C1988,88 1940,88 2004,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M2254,88 C2318,88 2270,88 2334,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M2584,88 C2648,88 2600,88 2664,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M2914,88 C2978,88 2930,88 2994,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+<path d="M3244,88 C3308,88 3260,88 3324,88" class="diagram-edge critical-edge" marker-end="url(#arrow-crit)"/>
+</svg>

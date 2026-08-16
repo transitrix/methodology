@@ -19,6 +19,30 @@ Transitrix is a text-native methodology for enterprise architecture: every artef
 
 ---
 
+## What it produces
+
+Real output, not a mockup — each image below is rendered from this repository's own worked examples (`notations/examples/`) by [`@transitrix/diagrams`](https://www.npmjs.com/package/@transitrix/diagrams), the same shared rendering library that draws these notations in Studio and in DSM. Every notation the plugin's `onboard` skill can scaffold has a real renderer in that library; this gallery shows only the subset that renders as a static image today (a diagram view, not an HTML fragment or a data report). A view with no example here is a view this plugin does not yet turn into a picture — nothing below is drawn by hand.
+
+| Goals | DGCA/DGA |
+|---|---|
+| ![Goals tree](examples/goals.svg) | ![DGCA chain](examples/dgca.svg) |
+
+| Capability map | Nested blocks |
+|---|---|
+| ![Capability map tree](examples/capability-map.svg) | ![Nested blocks](examples/blocks.svg) |
+
+**Process Blueprint**
+
+![Process Blueprint](examples/process-blueprint.svg)
+
+**Action schedule**
+
+![Action schedule network view](examples/action.svg)
+
+Regenerate with `node packages/plugin-examples/src/generate.mjs`; CI (`.github/workflows/plugin-examples-drift.yml`) regenerates on every PR touching the sources and fails the build if the committed images differ by a single byte.
+
+---
+
 ## Skills
 
 | Skill | Invocation | What it does | Min methodology version |

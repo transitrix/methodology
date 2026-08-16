@@ -1,0 +1,8 @@
+# These SVGs are compared byte-for-byte by the drift check in
+# .github/workflows/plugin-examples-drift.yml (regenerate and diff against
+# what's committed here), so every checkout must produce identical bytes.
+#
+# Without this, `core.autocrlf=true` on Windows checks these files out with
+# CRLF while Linux CI (and the generator itself) produces LF, and the diff
+# fails on line endings alone rather than on real drift.
+* text eol=lf
