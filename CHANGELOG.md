@@ -6,6 +6,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.5.0] — 2026-08-15
+
+Bump category: **MINOR** — new `TERM` element type, a new catalogue-integration spec surface (levels, binding envelope, adopter pattern, `ingest-cli` commands), a new render contract section, and `document-renderer` pass 2/run-record/PDF output; all additive, no migration recipe required. Also cuts the tag `v3.4.0` never got — `notations/CURRENT_VERSION.yaml` was bumped in #475 but the release was never tagged; this release folds that gap in rather than shipping an intermediate untagged version.
+
+### Added
+
+- **`TERM` element type** (business-layer vocabulary, ArchiMate Meaning) — the 31st live element TYPE, folded into the `ELEM-ALIAS-001` cross-catalogue uniqueness gate. New **glossary report view** (`32-glossary.md`) projects name/aliases/description from `TERM` and every other TYPE into one flat, alphabetised lookup surface. (#479)
+- **Catalogue integration — four levels and the binding envelope.** The ownership rule and the four separately-enabled levels (decisions / vocabulary / recognition / promotion) at which a project repository joins a network around a central catalogue repository, plus the `canon_id`/`origin` binding envelope and its validation rules (`BIND-001`–`005`). (#477)
+- **Catalogue publication, the consumer pin, and the L1 vocabulary-divergence check** — publication format, the `transitrix.yaml` `catalogue:` pin, the fails-closed load rule, the pin-bump ADR gate, and a report-only L1 divergence check; `ingest-cli` gains a fails-closed catalogue loader. (#478)
+- **`ingest-cli` L2 recognition + L3 promotion** — `catalogue-recognize` (propose a binding by unambiguous name/alias + TYPE match), `catalogue-bind` (human-gated write, fails closed against `BIND-001`–`004`), and `catalogue-promote` (emits a promotion proposal, never writes across the repository boundary); `repo-check` surfaces the full `BIND-001`–`005` envelope check. (#480)
+- **Catalogue — adopter-facing half.** New pattern (`patterns/network-catalogue.md`), a §7 "Setting it up" section on the catalogue-integration doc, and `ingest-cli`'s `adopt-adl` (L0) and `catalogue-pin` (L1) commands. (#481)
+- **`blocks` render contract for the matrix subset (§7a)** — what a conformant renderer must produce for a `grid:` root document: rectangular table sizing, header order, pre-layout `assign:` expansion, and inline validation surfacing per `BL-020`–`025`. States explicitly that the general layered-grid superset remains unspecified by design. (#484)
+- **`document-renderer` pass 2** — fills `{{# instruct ... }}` slots left open by pass 1 via a caller-supplied `fill` hook, agent-agnostic by construction, enforcing the closed-input discipline of the 2026-08-12 instruction-slot decision. (#485)
+- **`document-renderer` run record** — a pure function over template id/version, repository commit, model id, run timestamp, and per-slot instruction/verdict (sufficient / insufficient / not-attempted). (#485)
+- **`document-renderer` PDF output** — dependency-free Markdown-to-PDF, A4, paginating automatically; bold/italic stripped and figures become text placeholders as named, non-silent scope limits. (#485)
+
+### Changed
+
+- Dependabot now watches all six npm manifests under `packages/`, including `document-renderer` and `document-view-engine`. (#482)
+- The public-surface hygiene scan now also runs on direct pushes to `main`, not only on pull requests. (#483)
+
+---
+
 ## [3.4.0] — 2026-08-09
 
 Bump category: **MINOR** — new notation spec file (diagram view), additive `ingest-cli` checks, and tooling/doc fixes only; no migration recipe required.

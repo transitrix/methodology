@@ -880,7 +880,7 @@ Structural layout of a view document:
 ```yaml
 notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
-methodology_version: "3.4.0"  # manifest-pinned methodology version
+methodology_version: "3.5.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
@@ -961,7 +961,7 @@ views/
 ```yaml
 view_id: DGCA-RETAIL-1               # canonical ID of the view being captured
 generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
-methodology_version: "3.4.0"          # methodology version in use at generation time
+methodology_version: "3.5.0"          # methodology version in use at generation time
 # …notation-specific element list follows (format defined per notation spec)…
 ```
 
