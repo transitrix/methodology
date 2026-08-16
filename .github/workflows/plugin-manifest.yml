@@ -1,0 +1,41 @@
+name: Plugin manifest
+
+# Keeps the plugin's two manifests from drifting apart and keeps
+# `claude plugin validate` passing on every PR, not only before a
+# community-catalogue submission (epic transitrix-hq#158, deliverable 1).
+#
+# `transitrix/.claude-plugin/plugin.json` is Claude Code's own manifest,
+# hand-maintained. `transitrix/plugin.json` is the portable Agent Plugins
+# v1.0.0 manifest <https://agent-plugins.org/specification>, generated from
+# it (scripts/generate-plugin-manifests.mjs) so the two never disagree on
+# name or version. Runs on every PR, unconditional on paths touched — a
+# manifest can silently drift from an unrelated release-version bump.
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:05 UTC — weekly safety net for drift introduced via
+    # direct-commit changes to main that bypass PR review.
+    - cron: '5 9 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check transitrix/plugin.json is generated, not hand-edited out of sync
+        run: node scripts/generate-plugin-manifests.mjs --check
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate the Claude Code plugin manifest
+        run: claude plugin validate ./transitrix --strict
