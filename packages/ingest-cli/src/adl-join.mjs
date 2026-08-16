@@ -1,7 +1,7 @@
-// L0 — join the decision-log network in one step (method/03-architecture-decision-log.md
-// §10, method/05-catalogue-integration.md §2 "L0 — decisions"). L0's mechanism already
+// L0 — join the decision-log network in one step (method/07-decisions.md
+// §9, method/09-releases-and-propagation.md §6.2 "L0 — decisions"). L0's mechanism already
 // ships (operations/decisions/, check-adl.mjs); this module packages the three manual
-// steps §10 Step 1/3 otherwise walks a human through by hand into one idempotent call:
+// steps guides/adl-adopter-setup.md Step 1/3 otherwise walks a human through by hand into one idempotent call:
 // the records folder, the CI guard wired into this repo's own workflow, and the line
 // the central architecture repo's harvest.config.yaml needs to see this repo.
 //
@@ -49,7 +49,7 @@ function workflowYaml() {
 }
 
 // The `sources:` entry a human adds to the central repo's
-// architecture/decision-log/harvest.config.yaml (method/03 §5) to onboard this repo
+// architecture/decision-log/harvest.config.yaml (method/07-decisions.md §5) to onboard this repo
 // into the harvest. Returned as text only — this command never writes across a
 // repository boundary, so it prints the line rather than opening a PR anywhere.
 function harvestSourceLine(repoCoordinate) {

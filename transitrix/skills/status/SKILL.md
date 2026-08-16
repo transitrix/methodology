@@ -53,7 +53,7 @@ Sources scanned, each degrading gracefully to an omitted section when its folder
 
 | Object | Phase source |
 |---|---|
-| ADR | `operations/decisions/*.md` `status:` (`author: agent` proposed broken out as its own row — [`method/02`](../../../method/02-team-operations.md) §6.7) |
+| ADR | `operations/decisions/*.md` `status:` (`author: agent` proposed broken out as its own row — [`method/07-decisions.md`](../../../method/07-decisions.md) §2) |
 | Work Item | `operations/work-items/*.md` `status:` |
 | Canon element | `canon/**` top-level `status:` |
 | REQUIREMENT/CONSTRAINT | overdue for review (reuses `check-stale`'s scan) |

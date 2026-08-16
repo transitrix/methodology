@@ -1,4 +1,4 @@
-// L1 — vocabulary catalogue integration (method/05-catalogue-integration.md §4,
+// L1 — vocabulary catalogue integration (method/09-releases-and-propagation.md §6.4,
 // CONTRACT.md §17). Reads the optional `catalogue:` pin off transitrix.yaml, loads
 // the vendored catalogue slice it names, and computes the two report-only findings
 // (surface-form collision / unbound surface-form match) against a repo's own canon.
@@ -81,7 +81,7 @@ export function parseCatalogueDecl(text) {
 // ── Catalogue slice parsing (the vendored release artefact) ────────────────
 
 // Parse a vendored catalogue slice's content into { version, elements }.
-// Expected shape (method/05-catalogue-integration.md):
+// Expected shape (method/09-releases-and-propagation.md):
 //   version: "X.Y.Z"
 //   elements:
 //     - id: TERM-042
@@ -174,7 +174,7 @@ export function writeCataloguePin(text, { source, version, path }) {
     );
   }
   const block = [
-    'catalogue:                          # optional — pins a central catalogue this repo consumes (L1); see method/05-catalogue-integration.md §4',
+    'catalogue:                          # optional — pins a central catalogue this repo consumes (L1); see method/09-releases-and-propagation.md §6.4',
     `  source: ${source}`,
     `  version: "${version}"`,
     `  path: ${path}`,
@@ -206,7 +206,7 @@ export async function applyCataloguePin(orgRoot, { source, version, path }) {
 // Once a pin IS present: a missing/unreadable path, unparseable content, or a
 // version mismatch between the slice's own declared `version` and the manifest's
 // `catalogue.version` all throw CatalogueError — no fallback, no partial catalogue
-// (method/05-catalogue-integration.md — "fails closed").
+// (method/09-releases-and-propagation.md — "fails closed").
 export async function loadCatalogueSlice(orgRoot) {
   const manifestText = await readManifestText(orgRoot);
   const decl = parseCatalogueDecl(manifestText || '');
@@ -298,7 +298,7 @@ export async function collectLocalElements(orgRoot) {
 function normSurface(s) { return typeof s === 'string' ? s.trim().toLowerCase() : null; }
 
 // Diff local canon elements against a loaded catalogue slice's elements, per
-// method/05-catalogue-integration.md's L1 check:
+// method/09-releases-and-propagation.md §6.4.5's L1 check:
 //   collisions       — a BOUND local element (canon_id set) whose name/alias surface
 //                       form also matches a DIFFERENT central element (an id other
 //                       than its own canon_id) — an ambiguous or conflicting binding.

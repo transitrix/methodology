@@ -2,7 +2,7 @@
 // Discovery — noticing drift on a schedule.
 //
 // Realises the scheduled-trigger contract in
-// method/04-methodology-update-propagation.md §7. For each consumer listed in
+// RELEASING.md, "Discovery — noticing drift on a schedule". For each consumer listed in
 // adopters.yaml, per run:
 //   * clones the consumer's default branch (shallow, read-only);
 //   * reads its `pin_key` from `pin_file` and compares against the latest tag
@@ -183,7 +183,7 @@ async function checkoutConsumer(consumer) {
 
 // Walk decisions_path and return ADR record paths — date-slug
 // (ADR-YYYY-MM-DD-<slug>.md) or legacy (ADR-NNNN-<slug>.md); the id is opaque
-// here, never parsed numerically (method/03-architecture-decision-log.md §4).
+// here, never parsed numerically (method/07-decisions.md §3).
 async function findAdrs(root, subpath) {
   const dir = join(root, subpath);
   if (!existsSync(dir)) return [];

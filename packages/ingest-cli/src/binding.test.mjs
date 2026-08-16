@@ -1,5 +1,5 @@
 // Unit tests for L2 recognition + L3 promotion (binding.mjs —
-// method/05-catalogue-integration.md §2, CONTRACT.md §17).
+// method/09-releases-and-propagation.md §6.2, CONTRACT.md §17).
 // Run: node --test packages/ingest-cli/src/binding.test.mjs
 
 import { test } from 'node:test';

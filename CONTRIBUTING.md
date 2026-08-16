@@ -4,7 +4,7 @@ Thanks for considering a contribution. This document describes how to get involv
 
 ## What kinds of contributions are welcome
 
-- **Methodology refinements** — edits to `method/01-methodology.md`, the glossary, or the project rules. Substantive changes (new notation, schema change, validation rule) need an issue first; phrasing and documentation fixes can land directly as a pull request.
+- **Methodology refinements** — edits to the files under `method/`, the glossary, or the project rules. Substantive changes (new notation, schema change, validation rule) need an issue first; phrasing and documentation fixes can land directly as a pull request.
 - **Worked examples** — contribute directly to the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo (its own PR flow), or propose a new sibling worked-example repo for a pattern not yet covered.
 - **Validators and templates** — new validation rules in `.validators/lint.py`, new YAML templates in `.templates/`, or new view templates in `views/`.
 - **Tooling integrations** — patches that make Transitrix easier to use with editors, CI systems, or downstream consumers (renderers, exporters, etc.).
@@ -29,7 +29,7 @@ For each issue, include the file path or section reference, what you observed, a
 2. **Branch from `main`.** Use a descriptive branch name (`docs/methodology-bpmn-clarifications`, `feat/validator-rule-policy-archive`).
 3. **Keep pull requests focused.** One concern per PR.
 4. **Run validators locally.** `python3 organizations/<org>/.validators/lint.py` for any organisation you touch.
-5. **Update related docs.** If your change affects naming, layout, or rules, update `method/01-methodology.md`, `method/00-glossary.md`, and `README.md` as needed.
+5. **Update related docs.** If your change affects naming, layout, or rules, update the relevant file(s) under `method/` (naming: `method/03-modelling.md`; layout: `method/02-repository.md`), `method/00-glossary.md`, and `README.md` as needed.
 6. **Open a pull request.** Describe what changed, why, and link the issue.
 
 ## Review process
@@ -47,8 +47,8 @@ Maintainer decisions on methodology-level changes (new notations, schema changes
 - **Language:** English for all canonical content. Other languages live under `translations/<lang>/`, marked clearly as derivatives.
 - **Markdown:** short paragraphs, descriptive headings, lower-case file names except `README.md`, `CONTRIBUTING.md`, `LICENSE`.
 - **YAML:** two-space indentation; lower-case keys; quoted ids; explicit types.
-- **File naming:** see `methodology.md` §9.
-- **Element ids:** `[TYPE]-[DOMAIN]-[SEQUENCE]`. See `methodology.md` §9.
+- **File naming:** see `method/03-modelling.md` §2.
+- **Element ids:** canonical grammar in [`notations/IDS_AND_REFERENCES.md`](notations/IDS_AND_REFERENCES.md) §1. See `method/03-modelling.md` §2.
 - **Tags and metadata in repository files: English.**
 
 ## Authorship and IP
@@ -81,7 +81,7 @@ This adds a `Signed-off-by: Your Name <you@example.com>` trailer to the commit.
 - Pull requests and issues are the primary channels.
 - For broader strategic discussion, use Discussions on the GitHub repository (when enabled).
 - For other enquiries — [hello@transitrix.com](mailto:hello@transitrix.com).
-- An adopter running the Team Operations convention (`method/02-team-operations.md`) raises a methodology-directed finding in their own repo's `operations/feedback.md`, not as a GitHub issue here. Sending an entry on to the project is opt-in and manual — the same [hello@transitrix.com](mailto:hello@transitrix.com) address above.
+- An adopter running the Team Operations convention (`method/06-team-operations.md`) raises a methodology-directed finding in their own repo's `operations/feedback.md`, not as a GitHub issue here. Sending an entry on to the project is opt-in and manual — the same [hello@transitrix.com](mailto:hello@transitrix.com) address above.
 - Keep tone professional. The project is a working tool, not a debate club.
 
 ## Code of conduct

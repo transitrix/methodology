@@ -1,5 +1,5 @@
 // Unit + integration tests for the L1 pin writer (catalogue.mjs's writeCataloguePin /
-// applyCataloguePin — method/05-catalogue-integration.md §4.2, §7).
+// applyCataloguePin — method/09-releases-and-propagation.md §6.4.2, §6.6).
 // Run: node --test packages/ingest-cli/src/catalogue-pin.test.mjs
 
 import { test } from 'node:test';

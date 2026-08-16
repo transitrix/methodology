@@ -4,11 +4,11 @@
 //
 // Companion to scripts/check-notations.mjs. Where check-notations guards the
 // model's front door, this guards the decision-record convention defined in
-// method/02-team-operations.md §3.1 and method/03-architecture-decision-log.md.
+// method/07-decisions.md §2 (record shape), §6–7 (immutability, CI guard).
 //
 // Scope: files matching  **/operations/decisions/ADR-YYYY-MM-DD-*.md  (new
 // records) or the legacy **/operations/decisions/ADR-NNNN-*.md  (existing
-// records; method/02 §3.1.2) — override the decisions sub-path with
+// records; method/07-decisions.md §2.2) — override the decisions sub-path with
 // --dir <relpath>. The methodology's own dated design ADRs under
 // docs/decisions/ are NOT in scope — different convention on purpose.
 //
@@ -54,7 +54,7 @@ const STATUSES = new Set(['proposed', 'accepted', 'superseded']);
 const AUTHORS = new Set(['human-architect', 'agent']);
 // Date-slug (new records) — checked first, since it is the more specific shape.
 const DATE_FILE_RE = /\/ADR-(\d{4}-\d{2}-\d{2})-[^/]+\.md$/;
-// Legacy four-digit sequence (existing records; method/02 §3.1.2).
+// Legacy four-digit sequence (existing records; method/07-decisions.md §2.2).
 const LEGACY_FILE_RE = /\/ADR-(\d{4})-[^/]+\.md$/;
 
 // --- helpers ---------------------------------------------------------------
@@ -69,7 +69,7 @@ function isRecordPath(rel) {
 
 // The specific decisions-folder instance a record belongs to (e.g. a
 // multi-org monorepo has one per org). Uniqueness (A5) is scoped to this —
-// "unique within their own folder, not globally" (method/02 §5) — so two
+// "unique within their own folder, not globally" (method/06-team-operations.md §5) — so two
 // unrelated decisions folders never collide over the same id.
 function decisionsFolderOf(rel) {
   const marker = `${DECISIONS_SUBPATH}/`;
@@ -189,7 +189,7 @@ async function main() {
 
     // A4 — filename/id agreement (either id form; date-slug also checks the
     // id's date against date:). A date-slug id is the whole filename stem
-    // (slug included, per method/02 §3.1); a legacy id is only the four-digit
+    // (slug included, per method/07-decisions.md §2); a legacy id is only the four-digit
     // segment (slug excluded, unchanged historical convention).
     const dateMatch = rel.match(DATE_FILE_RE);
     const legacyMatch = !dateMatch && rel.match(LEGACY_FILE_RE);
@@ -271,7 +271,7 @@ async function main() {
     console.error(`\nADL guard — ${failures.length} finding(s) (decisions sub-path: ${DECISIONS_SUBPATH}/):\n`);
     for (const f of failures.sort((a, b) => a.c.localeCompare(b.c)))
       console.error(`  - [${f.c}] ${f.m}`);
-    console.error(`\nSee method/03-architecture-decision-log.md §7–8 for the rules.\n`);
+    console.error(`\nSee method/07-decisions.md §6–7 for the rules.\n`);
     process.exit(1);
   }
   console.log(`ADL guard clean — ${records.length} decision record(s) under **/${DECISIONS_SUBPATH}/ valid${haveBase ? '' : ' (A2/A3/A5-base-reuse skipped — no base ref)'}.`);

@@ -1,5 +1,5 @@
 // `binding` — L2 (recognition) and L3 (promotion) tooling for catalogue integration
-// (method/05-catalogue-integration.md §5, §6; CONTRACT.md §17). Two concerns:
+// (method/09-releases-and-propagation.md §6.5; CONTRACT.md §17). Two concerns:
 //
 //   proposeBindings        — L2: match unbound local elements against the pinned
 //                             catalogue by normalised name/alias, filtered to the
@@ -18,7 +18,7 @@
 //                             deliverable; a human carries it to the central
 //                             repository by hand.
 //
-// Propose, never auto-merge (method/05-catalogue-integration.md §7): nothing in this
+// Propose, never auto-merge (method/09-releases-and-propagation.md §6.5): nothing in this
 // module writes a binding without an explicit, human-supplied accept.
 
 import { readFile, writeFile, readdir, access } from 'node:fs/promises';
@@ -144,7 +144,7 @@ function spliceCanonId(text, canonId) {
 
 // Write `canon_id` into the local element file `localId` names — the one place any
 // binding actually lands in canon. Never invoked without an explicit accept
-// (method/05-catalogue-integration.md §7 — propose, never auto-merge): the CLI
+// (method/09-releases-and-propagation.md §6.5 — propose, never auto-merge): the CLI
 // command wrapping this always requires an operator-supplied --canon-id, never a
 // value the tool derived itself.
 //
@@ -204,7 +204,7 @@ export async function applyBinding({ orgRoot, localId, canonId }) {
 
 // Shape a local element's own fields into the promotion proposal the central
 // repository's human admission gate consumes — the same fields a catalogue slice
-// element carries (method/05-catalogue-integration.md §4.1) plus `origin`, the
+// element carries (method/09-releases-and-propagation.md §6.4.1) plus `origin`, the
 // local-side provenance a *central* admission attaches once it accepts. `repository`
 // is supplied by the caller (an explicit --repository flag, never inferred from git
 // remote state or guessed from a manifest field this repository's own

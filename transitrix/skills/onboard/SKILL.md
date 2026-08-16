@@ -136,7 +136,7 @@ After the directory tree exists, copy the canonical root files from the skill bu
 Additionally, write these generated files inline (no template):
 
 - `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending the two VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview (including `.puml` files — no separate PlantUML extension needed), and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
-- `<repo-root>/operations/feedback.md` — the empty upstream feedback register (`method/02-team-operations.md` §3.3), the landing place `FINDINGS.md`'s `escalate-methodology` route points at. A `# Feedback register` heading, a one-line pointer at `method/02-team-operations.md` §3.3 and the opt-in `hello@transitrix.com` submission route, and an empty `## Register` section — no entries; the first `FB-0001` is added the first time a finding is actually raised, not at scaffold time. Write this **unconditionally**, alongside the other root files, so the register exists before anyone needs it — same treatment as `FINDINGS.md` itself, not a lazily-created folder like `operations/decisions/` (which the `adr` skill scaffolds on first use instead).
+- `<repo-root>/operations/feedback.md` — the empty upstream feedback register (`method/06-team-operations.md` §3.2), the landing place `FINDINGS.md`'s `escalate-methodology` route points at. A `# Feedback register` heading, a one-line pointer at `method/06-team-operations.md` §3.2 and the opt-in `hello@transitrix.com` submission route, and an empty `## Register` section — no entries; the first `FB-0001` is added the first time a finding is actually raised, not at scaffold time. Write this **unconditionally**, alongside the other root files, so the register exists before anyone needs it — same treatment as `FINDINGS.md` itself, not a lazily-created folder like `operations/decisions/` (which the `adr` skill scaffolds on first use instead).
 
 **Do not duplicate the agent guide itself outside `AGENTS.md`.** The canonical guide for every assistant is `AGENTS.md`; every per-tool file is a pointer, never a second copy of the guidance. Claude Code gets its `CLAUDE.md` pointer by default (bullet above, unconditional). For any other tool that doesn't read `AGENTS.md` natively (e.g. Cursor → `.cursor/rules/`), drop the equivalent one-line pointer file in that tool's location: *"Read `AGENTS.md` in the repo root and follow it."* See `AGENTS.md` §"Using this guide with your assistant".
 
@@ -461,7 +461,7 @@ One copy-and-fill template per ArchiMate layer, at `canon/elements/<NN>_<layer>/
 
 Schema: `notations/elements/17-relations.md`.
 
-### Operations zone templates (reference — see `method/02-team-operations.md` §8)
+### Operations zone templates (reference — see `method/06-team-operations.md` §7)
 
 Copied into an adopter's own `.templates/operations/` when it adopts the operations convention; not part of the `canon`/`field`/`codex` model zones.
 

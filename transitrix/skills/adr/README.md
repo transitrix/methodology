@@ -2,7 +2,7 @@
 
 Helps a user go from "we decided X" to a committed, `scripts/check-adl.mjs`-clean
 Architecture Decision Record — the entry point to the agent-authored decision flow
-[`method/03-architecture-decision-log.md`](../../../method/03-architecture-decision-log.md)
+[`method/07-decisions.md`](../../../method/07-decisions.md)
 specifies but ships no workflow for.
 
 This directory is the **`adr` skill** within the `transitrix` plugin (the plugin root
@@ -12,8 +12,8 @@ is [`transitrix/`](../../), which carries the shared
 
 ## Why it exists
 
-`method/02-team-operations.md` §3.1 and `method/03-architecture-decision-log.md`
-define the per-repo Architecture Decision Record format, its `author`/`source`
+`method/07-decisions.md` §2
+defines the per-repo Architecture Decision Record format, its `author`/`source`
 provenance fields, the ratification gate that keeps an agent from self-accepting its
 own decisions, and the harvest job that aggregates records across repos into a central
 enterprise log. None of that ships a workflow for actually *authoring* a record — a

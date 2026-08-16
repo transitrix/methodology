@@ -4,7 +4,7 @@ name: ADL guard
 # **/operations/decisions/ADR-YYYY-MM-DD-*.md (or legacy ADR-NNNN-*.md):
 # front-matter validity, accepted-record immutability, the author:agent
 # ratification gate, filename/id agreement, and id uniqueness.
-# Implementation: scripts/check-adl.mjs. Spec: method/03-architecture-decision-log.md.
+# Implementation: scripts/check-adl.mjs. Spec: method/07-decisions.md.
 #
 # fetch-depth: 0 so the immutability check (A2) and agent gate (A3) can diff a
 # record against its state on the base branch.

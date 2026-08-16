@@ -1,6 +1,6 @@
 # Methodology decision records — recorded centrally
 
-This repository is public. Per [`method/03-architecture-decision-log.md`](../../method/03-architecture-decision-log.md)
+This repository is public. Per [`method/07-decisions.md`](../../method/07-decisions.md)
 §1, the per-repo decision layer is canonical only where a repository's
 readership is the reasoning's intended audience — a public repository fails
 that condition, so this repository's architecture decisions are recorded in
