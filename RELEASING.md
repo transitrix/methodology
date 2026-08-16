@@ -36,7 +36,7 @@ For every release, in order:
 
 ## Adopter upgrade procedure
 
-The conceptual companion to this section — the **propagation mechanism**: transport, the named operation, the ratification gate on autonomous agents, and what makes the upgrade *bounded / traceable / reproducible* — lives in [`method/04-methodology-update-propagation.md`](method/04-methodology-update-propagation.md). This section is the operational checklist; that document is the contract the checklist satisfies.
+The conceptual companion to this section — the **propagation mechanism**: transport, the named operation, the ratification gate on autonomous agents, and what makes the upgrade *bounded / traceable / reproducible* — lives in [`method/09-releases-and-propagation.md`](method/09-releases-and-propagation.md). This section is the operational checklist; that document is the contract the checklist satisfies.
 
 When an adopter repo moves from one methodology version to another, **four artefacts must move together** — specs, skill bundle, CLI, and the vendored whole-repo validator — in this order:
 
@@ -100,6 +100,97 @@ Skills are not auto-synced to adopter repos. When the methodology releases a ver
 3. Commit the update as a separate PR titled `chore: update skills to methodology vX.Y.Z`.
 
 For MAJOR releases, skills are updated **after** the migration recipe is applied and `transitrix.yaml` reflects the new version — not before.
+
+---
+
+## Discovery — noticing drift on a schedule
+
+The mechanism in [`method/09-releases-and-propagation.md`](method/09-releases-and-propagation.md) §1–§6 says what an agent must do *once it has decided* to propose an upgrade. This section says how the deciding happens without a human having to ask, and does not change the ratification gate: everything Discovery emits still lands as a *proposed* ADR that a human ratifies ([`method/09-releases-and-propagation.md`](method/09-releases-and-propagation.md) §5, unchanged).
+
+### The failure mode this closes
+
+Two forms of drift are self-inflicted when nothing watches for them:
+
+- **Pin-vs-release drift.** An adopter's `methodology_version` sits behind the latest tag long enough that catching up spans multiple bumps in one PR — the diff is larger, the migration recipes compound, the review is harder. The propagation contract still holds each individual upgrade, but the *decision to propose one* was never triggered.
+- **Stale-proposed-ADR drift.** An agent-prepared ADR sits at `status: proposed` past the point a human was going to notice on their own — the ratification gate works as designed, but the queue has no reminder.
+
+Neither is a failure of the propagation contract; both are failures of *nobody looked*. Discovery is the periodic look.
+
+### The scheduled-trigger contract
+
+A recurring job runs against each source repo's registered downstream consumers (below). For each consumer, per run, it:
+
+1. Invokes the existing version-currency check — [`transitrix-ingest repo-check`](transitrix/skills/repo-check/SKILL.md) — on the consumer's checkout, reading its pinned `methodology_version` and comparing against the latest released tag on the source repo.
+2. **Where the pin is behind the latest tag**, invokes the existing recipe/sync mechanism ([`method/09-releases-and-propagation.md`](method/09-releases-and-propagation.md) §4) and opens the *already-specified* bounded PR: exactly the diff that section permits (pin field, recipe-scoped codemod output, one ADR with `author: agent` + `status: proposed`, and in the fallback transport the vendored artefacts). The PR opened by Discovery is *the same PR shape* — Discovery adds no new fields, no new diff surface, and no new merge path.
+3. **Where the pin is current**, emits nothing for that consumer beyond a "current" line in the digest (below).
+
+The job never merges, never flips a status, and never edits a source repo. Its only write is the bounded PR already permitted; the ratification gate is untouched.
+
+### The stale-proposed-ADR reminder
+
+The same job scans each registered consumer's decision folder (per the consumer's registry entry, below) for records at `status: proposed` whose `date:` is older than **fourteen calendar days**. Each such record is flagged in the same digest as the pin-vs-release output — one queue, one look.
+
+Fourteen days is chosen because it is short enough that a single missed weekly review cycle does not trip the reminder, and long enough that it does not compete with the normal review cadence. The threshold is a property of Discovery, not of the ADL: an ADR sitting `proposed` is not itself an integrity violation ([`method/07-decisions.md`](method/07-decisions.md) §7) — the reminder just says *this one has been waiting a while*.
+
+The reminder is a *flag in the digest*, not a state change on the ADR. Discovery never edits an ADR; the record is immutable except for a human ratifying `proposed → accepted` in a reviewed change ([`method/08-governance.md`](method/08-governance.md) §3). A ratification later than fourteen days is normal and is not itself a problem — the reminder exists so that ratification happens at all.
+
+The on-demand half of this visibility gap is closed by `transitrix-ingest workflow-status` ([`method/06-team-operations.md`](method/06-team-operations.md) §3.2) — an adopter or agent can run it at any time to see every ADR currently at `proposed`, `author: agent` broken out from human-authored, without waiting for a scheduled run. `workflow-status` deliberately reports phases and counts only, never age, so it has no equivalent of the fourteen-day filter above; the scheduled job may still consume its `--format yaml` output for the underlying list of proposed-ADR ids rather than re-walking `operations/decisions/` itself, then apply its own age threshold on top.
+
+### The downstream-consumer registry — contract
+
+Each source repo that participates in Discovery declares its known downstream consumers in a machine-readable registry at the repo root. The registry is the discovery job's iteration input: without it, "check each adopter" has no operand.
+
+**Location:** `adopters.yaml` at the source repo root. One file per source repo. The methodology repo carries the registry naming methodology's adopters (starting with acme-corp); a downstream source repo — e.g. acme-corp itself, whose downstream consumers are transitrix-studio's mirror and transitrix-dsm's demo-seed — carries the same-shape file naming *its* consumers. The shape is reusable across hops unchanged (the same reuse applies to the reference-catalog layer, [`method/09-releases-and-propagation.md`](method/09-releases-and-propagation.md) §6).
+
+**Schema:**
+
+```yaml
+# adopters.yaml — machine-readable registry of downstream consumers of this repo.
+# Read by the Discovery job; never edited by the job itself.
+version: 1
+consumers:
+  - repo: transitrix/acme-corp                  # required — the consumer's GitHub coordinate
+    clone: https://github.com/transitrix/acme-corp.git   # required — clone URL for the discovery job
+    role: reference-adopter                     # optional — human label; drives digest grouping only
+    pin_file: transitrix.yaml                   # required — path in the consumer repo carrying the pin
+    pin_key: methodology_version                # required — YAML key inside pin_file
+    decisions_path: operations/decisions        # required — directory of ADR records to scan (date-slug or legacy id)
+```
+
+Field semantics:
+
+- **`pin_file` + `pin_key`** — the version slot referred to above. Named explicitly so a downstream registry (e.g. acme-corp → studio) can point at whatever pin field the next layer uses without Discovery baking in `methodology_version` as the only recognised key.
+- **`decisions_path`** — the ADR folder scanned above. Named explicitly so a consumer using `docs/decisions/` instead of `operations/decisions/` is discoverable ([`method/07-decisions.md`](method/07-decisions.md) §3).
+- **`role`** — free-form label used only to group entries in the digest. Not a validated enum.
+- **`clone`** — the URL the job clones from. Discovery reads only; it does not push to consumers.
+
+**Reusability guarantee.** The schema above is what acme-corp's own `adopters.yaml` uses to name transitrix-studio and transitrix-dsm as its downstream consumers, with `pin_file` / `pin_key` set to whatever field those consumers pin acme-corp under. The same discovery job shape runs one hop further down without change — the mechanism defined here is the whole mechanism for the chain.
+
+**Worked example — the pin an adopter's ADR records.** [`operations/decisions/ADR-0002-pin-methodology-0-5-0.md`](https://github.com/transitrix/acme-corp/blob/main/operations/decisions/ADR-0002-pin-methodology-0-5-0.md) in the acme-corp reference repo is the shape of the ADR the Discovery job's proposed upgrade PR carries: `author: agent`, `status: proposed`, one bump recorded, awaiting human ratification. Discovery's job is to notice when a repo *should have* an ADR like that one but does not yet, and to open the PR that adds it.
+
+### What the digest reports
+
+One digest per run, one entry per registered consumer. For each consumer:
+
+- **`current`** — pin matches the latest source-repo tag; no PR opened; noted in the digest so a healthy consumer is visible, not silent.
+- **`behind`** — pin is behind the latest tag; a link to the bounded PR the job just opened (or the existing one it found already open — Discovery is idempotent, below).
+- **`stale-proposed`** — zero or more ADRs at `status: proposed` older than fourteen days, each with its `id:` and its age in days.
+
+The digest is Discovery's only user-visible output beyond the PRs themselves. Where the digest lives (Actions summary, a scheduled comment on a tracking issue, an emailed report) is an implementation detail deliberately left open, below.
+
+### Idempotence
+
+Discovery runs on a schedule; two runs a day apart with no intervening release must not produce two PRs, two ADRs, or two digest reminders for the same drift. The mechanics:
+
+- **Bounded PR for a pin bump.** Before opening one, the job checks for an open PR on the consumer repo that already bumps `pin_key` to the target version and carries an `author: agent` + `status: proposed` ADR. If one exists, the digest links it; a new one is not opened. The check matches on ADR front-matter — `title`/body naming the same `pin_key` and target version — not on filename: a date-slug id ([`method/07-decisions.md`](method/07-decisions.md) §2) encodes the record's creation date, not the pinned component or version, so filename can no longer stand in for content.
+- **Stale-proposed reminder.** Re-flagging the same ADR on every run is intentional — the reminder is a standing signal until the ratification happens. It is not a notification storm because each run emits one digest, not one message per finding.
+
+### What this section does NOT define
+
+- **Where the job runs.** GitHub Actions cron on the source repo, an external runner, or an internal automation platform — all satisfy the contract. The mechanism is the same regardless.
+- **How the digest is delivered.** An Actions summary, a comment on a tracking issue, an email — all satisfy the contract. The digest shape above is the invariant.
+- **Cross-hop authentication.** Whether the job clones consumer repos with a machine account, a fine-scoped PAT, or an app installation is deployment policy, not part of the propagation contract.
+- **A merge-side notifier.** Discovery notices *drift*; it does not notice *acceptance*. Ratification of a proposed ADR is already visible as a normal PR review and does not need Discovery to announce it.
 
 ---
 

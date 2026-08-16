@@ -20,7 +20,7 @@
 | **Field** | The zone for raw, unprocessed source material (interviews, surveys, observations, drafts) — not authoritative; its value is provenance. |
 | **Codex** | The zone for externally-given constraints and internally-issued authority documents (laws, regulations, policies, internal standards) — *given to* the organisation, not authored by it. |
 | **Zone** | One of the three parallel content areas above (`canon` / `field` / `codex`), defined in [`notations/CONTRACT.md`](notations/CONTRACT.md) §5. Parallel, not stacked. |
-| **Operations** | The team's own operational layer (`operations/decisions/`, `operations/work-items/`) — sits outside the three zones, not admitted through zone gates. See [`method/02-team-operations.md`](method/02-team-operations.md). |
+| **Operations** | The team's own operational layer (`operations/decisions/`, `operations/work-items/`) — sits outside the three zones, not admitted through zone gates. See [`method/06-team-operations.md`](method/06-team-operations.md). |
 
 ## Layers (ArchiMate)
 
