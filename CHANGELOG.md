@@ -6,6 +6,74 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [3.6.0] — 2026-08-16
+
+Bump category: **MINOR** — `method/` is divided from four content files (515 lines in the largest) into a ten-file structure, one file per reader question, plus a new `guides/` folder for task procedures. Three pre-existing documentation defects are fixed while splitting: two incompatible ID-grammar examples are reconciled to the one canonical grammar, a repository-tree listing missing `04_technology/` is restored, and a paraphrased compatibility policy is replaced with a pointer to its canonical source. No schema, field, enum, or validation-severity change; `check-notations.mjs` passes clean with no new findings.
+
+### Added
+
+- **A new `method/08-governance.md`** — assembled from doctrine previously scattered across `02-team-operations.md`, `03-architecture-decision-log.md`, `04-methodology-update-propagation.md`, and `01-methodology.md`: who may change what (human vs. agent authorship, the ratification gate, the cross-repo authorship limit), what gates a change (validation + review), immutability and supersession, mechanical enforcement, and the versioning/compatibility promise.
+- **A new `guides/` folder at the repository root** — unnumbered, adopter-facing task procedures that don't belong to `method/`'s reading order: `modelling-capabilities.md`, `modelling-complex-processes.md`, `adl-adopter-setup.md`.
+- **`notations/CONTRACT.md` §10.7** — a document path is now explicitly part of the published surface: retirable in a `MINOR` with one release of deprecation (a stub at the old path); a section-anchor change carries the same promise through a redirect table in the release notes (below).
+- **A "Discovery" section in `RELEASING.md`** — the scheduled drift-detection job, moved here from `method/04-methodology-update-propagation.md` §7 as maintainer-side operational content, distinct from the adopter-facing propagation contract it sits alongside.
+
+### Changed
+
+- **`method/` divided into ten files** (`00`–`09`), each answering one reader question in place of the former four mixed-scope files. See the redirect tables below for the full old-path → new-path and old-anchor → new-anchor mapping.
+- **The two incompatible ID-grammar examples are reconciled.** The former `01-methodology.md` showed `APPLICATION-ORDER-1` in one place and the abbreviated, explicitly-forbidden `APP-TRX-001` in another, plus a third relation-id variant. `method/03-modelling.md` now shows the one canonical grammar throughout and states the relation-id form once.
+- **The repository-tree listing in `method/02-repository.md`** (formerly `01-methodology.md` §4) restores the `canon/elements/04_technology/` line, missing from the tree since it was first written.
+- **The compatibility-policy paraphrase is replaced with a pointer.** The former §13's inline restatement of "breaking changes to the YAML DSL, file layout, or naming convention" is replaced, in `method/08-governance.md`, with a pointer to `notations/CONTRACT.md` §10 — the one place that policy is defined.
+- **`01-methodology.md` §12.1** (scaffold a new organisation) is merged into `GETTING_STARTED.md` Step 1 and deleted, rather than moved — it was the same recipe already told, in more depth, at the repository root.
+- **132+ inbound references across the repository** — skills, scripts, patterns, notation specs, `CONTRACT.md`, `MANIFEST.md`, `README.md`, `CONTRIBUTING.md` — repointed from the five retired paths to their successor file(s) and section(s); none left resolving to a stub.
+
+### Redirects — old path → new path
+
+| Old path | New path(s) |
+|---|---|
+| `method/01-methodology.md` | `method/01-foundations.md` (§1, §1a, §2, §3) · `method/02-repository.md` (§4) · `method/03-modelling.md` (§5, §9) · `method/04-notations.md` (§6) · `method/05-working-the-model.md` (§7, §8) · `method/08-governance.md` (§7 closing line, §8, §13) · `GETTING_STARTED.md` (§12.1, merged) · `guides/modelling-capabilities.md` (§12.2) · `guides/modelling-complex-processes.md` (§12.3) |
+| `method/02-team-operations.md` | `method/06-team-operations.md` (§1–§2, §3.2–§3.4, §4–§10) · `method/07-decisions.md` §2 (§3.1, the ADR record shape) |
+| `method/03-architecture-decision-log.md` | `method/07-decisions.md` (§1–§9, §11–§12) · `guides/adl-adopter-setup.md` (§10) |
+| `method/04-methodology-update-propagation.md` | `method/09-releases-and-propagation.md` (§1–§6, §8–§9) · `RELEASING.md` § "Discovery" (§7) |
+| `method/05-catalogue-integration.md` | `method/09-releases-and-propagation.md` §6 (in full) |
+
+Every retired path above keeps a stub pointing at its successor(s), kept for at least one further `MINOR` release (`notations/CONTRACT.md` §10.7).
+
+### Redirects — old anchor → new anchor
+
+| Old anchor | New anchor |
+|---|---|
+| `01-methodology.md#1-what-this-is` | `01-foundations.md#1-what-this-is` |
+| `01-methodology.md#1a-how-the-to-be-is-obtained` | `01-foundations.md#2-how-the-to-be-is-obtained` |
+| `01-methodology.md#2-four-core-principles` | `01-foundations.md#3-four-core-principles` |
+| `01-methodology.md#3-standards-transitrix-builds-on` | `01-foundations.md#4-standards-transitrix-builds-on` |
+| `01-methodology.md#3a-archimate-vocabulary-reference` | `notations/IDS_AND_REFERENCES.md` (deleted, replaced by a pointer) |
+| `01-methodology.md#4-repository-structure` | `02-repository.md#1-repository-structure` |
+| `01-methodology.md#41-operational-layer--team-operations-operations` | `02-repository.md#11-operational-layer--team-operations-operations` |
+| `01-methodology.md#5-the-yaml-dsl` | `03-modelling.md#1-the-yaml-dsl` |
+| `01-methodology.md#6-notation-kit` | `04-notations.md#1-the-notation-kit` |
+| `01-methodology.md#61-where-each-notation-lives-in-the-repository` | `notations/README.md` (deleted, replaced by a pointer) |
+| `01-methodology.md#7-change-lifecycle` | `05-working-the-model.md#1-change-lifecycle` |
+| `01-methodology.md#8-validation-matrix` | `05-working-the-model.md#2-validation-matrix` |
+| `01-methodology.md#9-naming-conventions` | `03-modelling.md#2-naming-conventions` |
+| `01-methodology.md#12-getting-started` | `GETTING_STARTED.md` (§12.1) · `guides/modelling-capabilities.md` (§12.2) · `guides/modelling-complex-processes.md` (§12.3) |
+| `01-methodology.md#13-versioning` | `08-governance.md#5-the-versioning-and-compatibility-promise` |
+| `02-team-operations.md#31-architecture-decision-record-adr` | `07-decisions.md#2-the-record-format` |
+| `02-team-operations.md#6-status-vocabularies` (ADR rows) | `07-decisions.md#21-provenance-and-source-author-source` |
+| `02-team-operations.md#6-status-vocabularies` (WI/Feedback rows) | `06-team-operations.md#31-work-item-wi` / `#32-feedback-record-fb` |
+| `02-team-operations.md#7-the-1-screen-rules-doc--operationsreadmemd` | `06-team-operations.md#6-the-1-screen-rules-doc--operationsreadmemd` |
+| `02-team-operations.md#8-templates` | `06-team-operations.md#7-templates` |
+| `03-architecture-decision-log.md#6-provenance-and-the-ratification-gate` | `07-decisions.md#4-provenance-and-the-ratification-gate` (mechanics) · `08-governance.md#2-who-may-change-what--human-and-agent-authorship` (doctrine) |
+| `03-architecture-decision-log.md#7-immutability-discipline` | `07-decisions.md#6-immutability-discipline` (mechanics) · `08-governance.md#3-immutability-and-supersession` (doctrine) |
+| `03-architecture-decision-log.md#8-ci-guard--scriptscheck-adlmjs` | `07-decisions.md#7-ci-guard--scriptscheck-adlmjs` |
+| `03-architecture-decision-log.md#10-adopter-setup--from-an-empty-repo-to-a-running-harvest` | `guides/adl-adopter-setup.md` |
+| `04-methodology-update-propagation.md#7-discovery--noticing-drift-on-a-schedule` | `RELEASING.md#discovery--noticing-drift-on-a-schedule` |
+| `05-catalogue-integration.md#1-the-ownership-rule` | `09-releases-and-propagation.md#61-the-ownership-rule` |
+| `05-catalogue-integration.md#2-the-four-levels` | `09-releases-and-propagation.md#62-the-four-levels` |
+| `05-catalogue-integration.md#4-catalogue-publication-and-the-pin--l1` | `09-releases-and-propagation.md#64-catalogue-publication-and-the-pin--l1` |
+| `05-catalogue-integration.md#7-setting-it-up` | `09-releases-and-propagation.md#66-setting-it-up` · `guides/adl-adopter-setup.md` (L0 step) |
+
+---
+
 ## [3.5.0] — 2026-08-15
 
 Bump category: **MINOR** — new `TERM` element type, a new catalogue-integration spec surface (levels, binding envelope, adopter pattern, `ingest-cli` commands), a new render contract section, and `document-renderer` pass 2/run-record/PDF output; all additive, no migration recipe required. Also cuts the tag `v3.4.0` never got — `notations/CURRENT_VERSION.yaml` was bumped in #475 but the release was never tagged; this release folds that gap in rather than shipping an intermediate untagged version.

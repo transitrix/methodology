@@ -154,7 +154,7 @@ A DGCA document opens with a shared header block (`notation:`, `spec_version:`, 
 ```yaml
 notation: dgca
 spec_version: "0.1"
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 id: DGCA-LAUNCH-1
 name: "Product launch strategy chain"
 period: "2026"
@@ -188,7 +188,7 @@ notation: dgca
 spec_version: "0.1"
 id: DGCA-RETAIL-1
 name: "Retail strategy chain 2026"
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 
 view_config:
   goals:
@@ -401,4 +401,4 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 - Action schedule notation: [`07-action.md`](./07-action.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)
 - Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection
-- Methodology section 6.2: `method/01-methodology.md`
+- Methodology, notation kit §2 (DGCA): `method/04-notations.md`
