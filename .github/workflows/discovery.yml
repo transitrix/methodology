@@ -1,7 +1,7 @@
 name: Discovery
 
 # Realises the scheduled-trigger contract in
-# method/04-methodology-update-propagation.md §7.
+# RELEASING.md, "Discovery — noticing drift on a schedule".
 #
 # Step 1 — scan (always): for each consumer in adopters.yaml, compare its
 # pinned methodology_version against the latest tag on this repo and scan its

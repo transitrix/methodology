@@ -179,7 +179,7 @@ Process Landscape Map    →  lists all processes
 - BPMN notation: `notations/01-bpmn.md`
 - Capabilities map: `notations/05-capability-map.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Methodology section 6.4: `method/01-methodology.md`
+- Methodology, notation kit §4 (BPMN and process landscape maps): `method/04-notations.md`
 
 ---
 

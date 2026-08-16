@@ -52,7 +52,7 @@ async function walkAll(dir) {
 
 // A markdown record's YAML front matter (between the leading `---` fences), or
 // null if the file has none. Minimal — sufficient for the flat ADR/WI header
-// (method/02 §3.1/§3.2); reuses yaml.mjs's readTopScalar against the slice.
+// (method/07-decisions.md §2 / method/06-team-operations.md §3.1); reuses yaml.mjs's readTopScalar against the slice.
 function frontMatterOf(text) {
   const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   return m ? m[1] : null;
@@ -61,8 +61,8 @@ function frontMatterOf(text) {
 function todayIso() { return new Date().toISOString().slice(0, 10); }
 
 // operations/decisions/ADR-*.md — status: proposed|accepted|superseded
-// (method/02 §6.1), author:agent proposed broken out as its own phase
-// (method/02 §3.1.1). ADR ids are opaque strings throughout — both
+// (method/07-decisions.md §2.1), author:agent proposed broken out as its own phase
+// (method/07-decisions.md §2.1). ADR ids are opaque strings throughout — both
 // ADR-NNNN and ADR-YYYY-MM-DD-<slug> forms work
 // without special-casing, since only `status`/`author` front-matter fields
 // are read here, never the id's shape.
@@ -89,7 +89,7 @@ async function scanAdr(root) {
 }
 
 // operations/work-items/WI-*.md — status: proposed|in_progress|blocked|done|closed
-// (method/02 §6.3).
+// (method/06-team-operations.md §3.1).
 async function scanWi(root) {
   const dir = join(root, 'operations', 'work-items');
   if (!(await exists(dir))) return null;

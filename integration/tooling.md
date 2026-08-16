@@ -456,7 +456,7 @@ kill -9 <PID>
 
 ### Transitrix Core Methodology
 
-- **Methodology:** `method/01-methodology.md`
+- **Methodology:** `method/01-foundations.md`
 - Section 4: Business process modelling layer (description of Transitrix Studio)
 - **integration/tooling.md:** This file (tools and integrations)
 

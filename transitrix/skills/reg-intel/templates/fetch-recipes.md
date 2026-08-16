@@ -52,4 +52,4 @@ fetch_body() {               # echo a local file path
 }
 ```
 
-`method` must be one of `etag | last_modified | api_version | amended_date | fragment_hash` (the `check-signal --method` enum). Keep the per-source URLs / API keys in `operations/config/reg-intel/` (committed operational settings, [`method/02-team-operations.md`](https://raw.githubusercontent.com/transitrix/methodology/main/method/02-team-operations.md) §3.3), never hard-coded in the driver.
+`method` must be one of `etag | last_modified | api_version | amended_date | fragment_hash` (the `check-signal --method` enum). Keep the per-source URLs / API keys in `operations/config/reg-intel/` (committed operational settings, [`method/06-team-operations.md`](https://raw.githubusercontent.com/transitrix/methodology/main/method/06-team-operations.md) §3.3), never hard-coded in the driver.

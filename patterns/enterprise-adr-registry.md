@@ -2,7 +2,7 @@
 
 **Pattern type:** three-tier
 **Complexity:** medium
-**Mechanism:** [`method/03-architecture-decision-log.md`](../method/03-architecture-decision-log.md) — this pattern is the when / why / choose entry point; the concrete record format, harvest job, and ratification gate are specified once, there.
+**Mechanism:** [`method/07-decisions.md`](../method/07-decisions.md) — this pattern is the when / why / choose entry point; the concrete record format, harvest job, and ratification gate are specified once, there.
 
 ---
 
@@ -12,14 +12,14 @@ Multiple project repos each accumulate architecture decisions locally, reviewed 
 
 ## Solution
 
-Adopt the [Architecture Decision Log (ADL)](../method/03-architecture-decision-log.md) convention: per-repo decision records feed a central, harvested enterprise log. This pattern tells you *when* to reach for the multi-repo layer and *how to start*; the mechanism itself — record format, the harvest job, the agent-authorship ratification gate, the CI guards — lives in `method/03`, not here.
+Adopt the [Architecture Decision Log (ADL)](../method/07-decisions.md) convention: per-repo decision records feed a central, harvested enterprise log. This pattern tells you *when* to reach for the multi-repo layer and *how to start*; the mechanism itself — record format, the harvest job, the agent-authorship ratification gate, the CI guards — lives in `method/07-decisions.md`, not here.
 
 Two layers, unchanged from the canon:
 
 | Layer | Where it lives | Canon reference |
 |---|---|---|
-| Per-repo decision records | `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`), each project repo | [Team Operations](../method/02-team-operations.md) §3.1, extended by `method/03` §3 |
-| Enterprise ADL | `architecture/decision-log/`, the central architecture repo | `method/03` §1, §5 |
+| Per-repo decision records | `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`), each project repo | [`method/07-decisions.md`](../method/07-decisions.md) §2 |
+| Enterprise ADL | `architecture/decision-log/`, the central architecture repo | `method/07-decisions.md` §1, §5 |
 
 The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync.
 
@@ -56,10 +56,10 @@ Three properties the diagram encodes, each load-bearing:
 
 Don't wait for a second repo to begin. An adopter with a single repo can stand up the per-repo half of the ADL immediately:
 
-1. **Adopt `operations/decisions/`** in this repo — the Team Operations convention `method/03` extends (`ADR-YYYY-MM-DD-<slug>.md`, front-matter per `method/03` §3).
+1. **Adopt `operations/decisions/`** in this repo — the record shape `method/07-decisions.md` §2 defines (`ADR-YYYY-MM-DD-<slug>.md`, front-matter per that section).
 2. **Write the first record** — `operations/decisions/ADR-<today's-date>-<slug>.md`, recording the decision to start keeping ADRs here. No numbering to start at — the id is today's date plus a slug. See [Transitrix Alone](transitrix-alone.md) §"How to start" step 6 for the same first-record move in the minimal deployment.
-   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, derives the id from today's date and a slug, validates the record, and opens the PR. It is the authoring workflow for the flow `method/03` specifies; it never self-accepts (§6's gate).
-3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/03` §8) lints the folder on every PR that touches it, including the uniqueness guard (A5) that makes two authors on separate branches safe to allocate independently.
+   *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, derives the id from today's date and a slug, validates the record, and opens the PR. It is the authoring workflow for the flow `method/07-decisions.md` specifies; it never self-accepts (§4's gate).
+3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/07-decisions.md` §7) lints the folder on every PR that touches it, including the uniqueness guard (A5) that makes two authors on separate branches safe to allocate independently.
 
 That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
 
@@ -68,21 +68,21 @@ That is a complete, working ADL for one repo. Move to the sections below only on
 - Two or more project repos share interfaces, libraries, or cross-cutting concerns.
 - A governance or compliance requirement calls for an auditable, aggregated record across repos.
 - Recurring coordination overhead from repos silently diverging on a decision another repo already made.
-- An autonomous agent needs to make architecturally-significant changes across repos with a gated, auditable trace (`method/03` §6).
+- An autonomous agent needs to make architecturally-significant changes across repos with a gated, auditable trace (`method/07-decisions.md` §4).
 
 ## How to stand up the central ADL
 
 1. **Every source repo already has `operations/decisions/`** (see "Start here" above) — nothing to change per-repo to onboard it into the harvest.
-2. **Create the central architecture repo's `architecture/decision-log/`** with a `harvest.config.yaml` listing every source repo (`method/03` §5).
+2. **Create the central architecture repo's `architecture/decision-log/`** with a `harvest.config.yaml` listing every source repo (`method/07-decisions.md` §5).
 3. **Run the harvest** (`scripts/adl-harvest.mjs`, scheduled + on demand) to regenerate `INDEX.md` and pull full copies of promoted records into `promoted/`.
-4. **Set the promotion scope** — which records count as enterprise-significant (`method/03` §5's `promote.scopes`) — and who has authority to mark a record as promoted.
-5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/03` §6). This is what makes it safe for an autonomous agent to author decisions across repos.
+4. **Set the promotion scope** — which records count as enterprise-significant (`method/07-decisions.md` §5's `promote.scopes`) — and who has authority to mark a record as promoted.
+5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/07-decisions.md` §4). This is what makes it safe for an autonomous agent to author decisions across repos.
 
-Full detail — record front-matter, the harvest algorithm, immutability discipline, the CI guard, TOGAF mapping: `method/03-architecture-decision-log.md`.
+Full detail — record front-matter, the harvest algorithm, immutability discipline, the CI guard, TOGAF mapping: `method/07-decisions.md`.
 
 ### Setting it up
 
-Step-by-step — what to create, what to run, where the scripts come from (they are **not** in the plugin payload), and the two policy calls to make before the first harvest: [`method/03-architecture-decision-log.md`](../method/03-architecture-decision-log.md) §10.
+Step-by-step — what to create, what to run, where the scripts come from (they are **not** in the plugin payload), and the two policy calls to make before the first harvest: [`guides/adl-adopter-setup.md`](../guides/adl-adopter-setup.md).
 
 ## Legacy path variants
 

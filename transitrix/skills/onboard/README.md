@@ -111,11 +111,11 @@ Three further groups live under `templates/` for manual copy — the automated S
 |---|---|---|
 | Element primitives (one per ArchiMate layer) | `templates/elements/{01_motivation,02_business,03_application,04_technology,05_implementation}_template.yaml` | `canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml` |
 | Relations | `templates/relations/relation_template.yaml` | `canon/relations/<ID>.yaml` |
-| Operations zone (`method/02-team-operations.md` §8) | `templates/operations/{WI-template.md,adl-harvest.config.template.yaml,central-adl-index.template.md,settings-template.md}` (the ADR template lives with the `adr` skill, `../adr/templates/ADR-template.md`) | adopter's own `.templates/operations/` and `operations/` tree |
+| Operations zone (`method/06-team-operations.md` §7) | `templates/operations/{WI-template.md,adl-harvest.config.template.yaml,central-adl-index.template.md,settings-template.md}` (the ADR template lives with the `adr` skill, `../adr/templates/ADR-template.md`) | adopter's own `.templates/operations/` and `operations/` tree |
 
 Plus one additional worked BPMN example beyond the Step-3 starter: [`templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml`](templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml) (multi-lane, multi-application).
 
-**One ADR template, not two.** The ADR template lives at `../adr/templates/ADR-template.md` and carries the date-slug id that `method/02-team-operations.md` §3.1 defines for new records; §3.1.2 keeps the legacy `ADR-NNNN` form for records that already exist and are never renamed. A second template seeding the legacy form would put new records on the retired convention, so there is not one.
+**One ADR template, not two.** The ADR template lives at `../adr/templates/ADR-template.md` and carries the date-slug id that `method/07-decisions.md` §2 defines for new records; §2.2 keeps the legacy `ADR-NNNN` form for records that already exist and are never renamed. A second template seeding the legacy form would put new records on the retired convention, so there is not one.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: Transitrix Feedback
-description: Author an upstream methodology-directed finding as a gated, anonymised entry in the repo's own operations/feedback.md register — the input door to the upstream feedback channel method/02-team-operations.md §3.3 specifies but ships no workflow for. Routes non-methodology observations away first, runs an interview, composes and shows the scrubbed wording for confirmation before writing, allocates the next FB-NNNN, and (on request only) renders a ready-to-send message for hello@transitrix.com without ever transmitting it itself.
+description: Author an upstream methodology-directed finding as a gated, anonymised entry in the repo's own operations/feedback.md register — the input door to the upstream feedback channel method/06-team-operations.md §3.2 specifies but ships no workflow for. Routes non-methodology observations away first, runs an interview, composes and shows the scrubbed wording for confirmation before writing, allocates the next FB-NNNN, and (on request only) renders a ready-to-send message for hello@transitrix.com without ever transmitting it itself.
 when_to_use: User says "log this as feedback for the methodology", "this is a gap in the notation, write it up", "raise a finding upstream", "update FB-0002 to triaged", "what feedback have we filed", or an agent operating under FINDINGS.md's propose → route → scrub protocol resolves an incidental finding's routing to escalate-methodology and needs to write the resulting entry.
 min_version: "2.1.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
@@ -10,11 +10,11 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 Turns "the methodology can't express X" (or "the tooling made Y harder than it should
 be") into a scrubbed, committed entry in the repo's own
-[`operations/feedback.md`](../../../method/02-team-operations.md) register — without
+[`operations/feedback.md`](../../../method/06-team-operations.md) register — without
 the user hand-writing the front-matter-free block, allocating the `FB-NNNN` id, or
 remembering the anonymisation discipline themselves. This is the **entry point** to
 the upstream feedback channel
-[`method/02-team-operations.md`](../../../method/02-team-operations.md) §3.3
+[`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.2
 specifies but ships no workflow for.
 
 This directory is the **`feedback` skill** within the `transitrix` plugin (the plugin
@@ -26,7 +26,7 @@ Code — same portability discipline as the `adr` skill
 ([`transitrix/skills/adr`](../adr/)) — check its structure before changing this one.
 
 Mechanism this skill sequences (read before or during first use):
-[`method/02-team-operations.md`](../../../method/02-team-operations.md) §3.3 (the
+[`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.2 (the
 Feedback Record shape, its `id`/`type`/`status`/`upstream` fields) and the repo's own
 `FINDINGS.md` (the propose → route → scrub protocol this skill is the tail end of).
 This `SKILL.md` does not restate the mechanism — it sequences it.
@@ -38,7 +38,7 @@ This `SKILL.md` does not restate the mechanism — it sequences it.
 1. **Route first — a data or model problem is never written here.** A problem with
    the modelled enterprise (wrong owner, stale relation, canon disagreeing with its
    source) is an `ASSESSMENT` in canon or a `WI`, never a Feedback Record
-   (`method/02` §1's hard distinction). This skill rejects that shape and says where
+   (`method/06-team-operations.md` §1's hard distinction). This skill rejects that shape and says where
    it belongs instead of writing it. See Step 1.
 2. **Scrub gate — mandatory, before writing, every time.** This skill composes the
    anonymised wording itself and shows the **exact text** it is about to write for
@@ -68,8 +68,8 @@ This `SKILL.md` does not restate the mechanism — it sequences it.
   # Feedback register
 
   Methodology-directed findings raised from this repo — see
-  [`method/02-team-operations.md`](https://github.com/transitrix/methodology/blob/main/method/02-team-operations.md)
-  §3.3. Sending an entry on to the project is opt-in and manual — see this repo's
+  [`method/06-team-operations.md`](https://github.com/transitrix/methodology/blob/main/method/06-team-operations.md)
+  §3.2. Sending an entry on to the project is opt-in and manual — see this repo's
   `CONTRIBUTING.md` (or `hello@transitrix.com` directly).
 
   ## Register
@@ -79,7 +79,7 @@ This `SKILL.md` does not restate the mechanism — it sequences it.
   raised (Step 4), not at scaffold time.
 - **Never** create a second, parallel file (`FEEDBACK.md`, `docs/feedback.md`,
   a per-entry folder) — `operations/feedback.md` is the single, canonical location
-  (`method/02` §3.3: "not one-file-per-record like ADR/WI").
+  (`method/06-team-operations.md` §3.2: "not one-file-per-record like ADR/WI").
 
 ---
 
@@ -91,7 +91,7 @@ Ask what was observed, then classify before doing anything else:
   looks wrong", "canon disagrees with the source doc", "we should model this
   differently given our own data") → **not** feedback. This is an `ASSESSMENT` written
   into canon, or a `WI` if it's a piece of work to queue. Tell the user which, and
-  stop — do not write a Feedback Record for it (`method/02` §1; `FINDINGS.md` §2's
+  stop — do not write a Feedback Record for it (`method/06-team-operations.md` §1; `FINDINGS.md` §2's
   `apply` / `escalate-owner` routes).
 - **A limitation in the notation, schema, tooling, or documentation itself** — the
   methodology cannot express something needed, a skill/validator/CLI command made the
@@ -113,9 +113,9 @@ Extract, conversationally, in this order:
 1. **Observation** — what was seen, in plain language.
 2. **`methodology_version`** — read `transitrix.yaml`'s pinned version in this repo;
    confirm with the user if it looks stale. **Required** — a finding is always raised
-   against a specific version (`method/02` §3.3).
+   against a specific version (`method/06-team-operations.md` §3.2).
 3. **`type`** — one of `notation-gap` | `tooling-friction` | `doc-gap` |
-   `model-suggestion` (`method/02` §6.4). If the user isn't sure which, ask what kind
+   `model-suggestion` (`method/06-team-operations.md` §3.2). If the user isn't sure which, ask what kind
    of limitation it was — "couldn't model something" (`notation-gap`), "the skill/CLI
    made this harder than it should be" (`tooling-friction`), "the docs didn't say" or
    said something wrong (`doc-gap`), "this works but could be guided better"
@@ -171,7 +171,7 @@ element"* — which passes.
    ```
 
    Leave the checkbox unchecked — it only becomes `[x]` when `status` reaches
-   `closed` or `wont-fix` (`method/02` §3.3, §6.5).
+   `closed` or `wont-fix` (`method/06-team-operations.md` §3.2).
 3. Append **one detail block** below the register, in append order (oldest first,
    matching the checklist order):
 
@@ -179,7 +179,7 @@ element"* — which passes.
    ---
    ### FB-0003
    type: notation-gap
-   methodology_version: "3.5.0"
+   methodology_version: "3.6.0"
    raised_by: Modeler
    date: "2026-07-28"
    status: open
@@ -192,7 +192,7 @@ element"* — which passes.
    never writes an entry pre-marked `sent-upstream` or `answered`, since neither has
    happened yet by definition of a freshly-authored entry.
 4. Never renumber or reuse an id, even if an earlier entry was later marked
-   `wont-fix` or `closed` — the sequence is monotonic within the file (`method/02` §5).
+   `wont-fix` or `closed` — the sequence is monotonic within the file (`method/06-team-operations.md` §5).
 
 ---
 
@@ -203,12 +203,12 @@ an answer", or similar, instead of a fresh observation:
 
 1. Locate the `### FB-NNNN` block and its matching checklist line.
 2. Update `status:` to the new value (`open` → `triaged` → `resolved-locally` /
-   `sent-upstream` → `answered` → `closed` / `wont-fix`, per `method/02` §6.5 — these
+   `sent-upstream` → `answered` → `closed` / `wont-fix`, per `method/06-team-operations.md` §3.2 — these
    are not required to be strictly linear; `triaged` may resolve straight to
    `resolved-locally` or `wont-fix` without ever going upstream).
 3. If the status change is about actually sending the entry, also update `upstream:`
    to `sent <date>` (or `answered <date>` once a reply arrives) — a distinct field
-   from `status`, per `method/02` §6.6. This skill never sets `upstream:` on its own;
+   from `status`, per `method/06-team-operations.md` §3.2. This skill never sets `upstream:` on its own;
    only when the user reports they actually sent (or received a reply to) the entry.
 4. Update the checklist line's trailing status text to match, and flip its checkbox
    to `[x]` only when the new `status` is `closed` or `wont-fix` — every other status
@@ -228,7 +228,7 @@ an answer", or similar, instead of a fresh observation:
    same diff).
 3. Open a PR. **Never merge it** — same discipline as every other skill in this
    plugin; a human accepts the change to their own repo's operations state.
-4. `operations/feedback.md` carries no CI gate (`method/02` §4–§5: outside the ID
+4. `operations/feedback.md` carries no CI gate (`method/06-team-operations.md` §4–§5: outside the ID
    grammar, outside `scripts/check-notations.mjs`) — there is no validator script to
    run before committing, unlike the `adr` skill's `check-adl.mjs` step. Correctness
    here rests entirely on Steps 3–4 of this skill.
@@ -267,7 +267,7 @@ never as part of Steps 4–6):
 - Does **not** send, transmit, or push an entry anywhere on its own, at any step —
   export (Step 7) only renders text; the human sends it, if they choose to at all.
 - Does **not** invent a second feedback location — `operations/feedback.md` is the
-  only place, per `method/02` §3.3.
+  only place, per `method/06-team-operations.md` §3.2.
 - Does **not** renumber or reuse an `FB-NNNN` id, and does not edit an entry's
   `observation`/`proposed`/`type`/`methodology_version` after authoring — only
   `status`/`upstream` change on a later invocation (Step 5).

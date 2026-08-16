@@ -1,6 +1,6 @@
 ---
 name: Transitrix ADR
-description: Help a user formulate an architecture decision and land it as a valid, gated Architecture Decision Record in the repo's per-repo decision log — the input door to the agent-authored decision flow method/03-architecture-decision-log.md specifies but ships no workflow for. Runs a Context → Decision → Consequences interview, derives the id from today's date and a slug (no allocation step), validates against scripts/check-adl.mjs, and opens a PR. Never self-accepts a decision and never edits an accepted record's body — course changes are a new record plus a status-pointer flip on the old one (supersession).
+description: Help a user formulate an architecture decision and land it as a valid, gated Architecture Decision Record in the repo's per-repo decision log — the input door to the agent-authored decision flow method/07-decisions.md specifies but ships no workflow for. Runs a Context → Decision → Consequences interview, derives the id from today's date and a slug (no allocation step), validates against scripts/check-adl.mjs, and opens a PR. Never self-accepts a decision and never edits an accepted record's body — course changes are a new record plus a status-pointer flip on the old one (supersession).
 when_to_use: User says "we decided X, write it up", "record this architecture decision", "log an ADR for this", "supersede ADR-…", "we're changing course on that decision", or an agent working autonomously in a Transitrix (or Team-Operations-adopting) repo needs to leave an auditable trace of a consequential choice it made (e.g. "bumped a version pin", "chose library X over Y").
 min_version: "0.6.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
@@ -12,8 +12,8 @@ Turns "we decided X" into a committed, `scripts/check-adl.mjs`-clean Architectur
 Decision Record on a PR — without the user (or the calling agent) hand-writing the
 front-matter, numbering the file, or working out the ratification gate themselves.
 This is the **entry point** to the agent-authored decision flow
-[`method/03-architecture-decision-log.md`](../../../method/03-architecture-decision-log.md)
-specifies (§6) but ships no workflow for.
+[`method/07-decisions.md`](../../../method/07-decisions.md)
+specifies (§4) but ships no workflow for.
 
 This directory is the **`adr` skill** within the `transitrix` plugin (the plugin root
 is [`transitrix/`](../../), which carries the shared
@@ -23,11 +23,9 @@ coding agent that can read/write files and run shell commands, not only Claude C
 same portability discipline as every other skill in this plugin.
 
 Mechanism this skill sequences (read before or during first use):
-[`method/02-team-operations.md`](../../../method/02-team-operations.md) §3.1 (the
-per-repo record shape) and
-[`method/03-architecture-decision-log.md`](../../../method/03-architecture-decision-log.md)
-(the `author`/`source` extension, the ratification gate, immutability, the harvest
-job). This `SKILL.md` does not restate the mechanism — it sequences it.
+[`method/07-decisions.md`](../../../method/07-decisions.md) §2 (the per-repo record
+shape, the `author`/`source` fields) and §4–§7 (the ratification gate, immutability,
+the harvest job). This `SKILL.md` does not restate the mechanism — it sequences it.
 
 ---
 
@@ -35,15 +33,15 @@ job). This `SKILL.md` does not restate the mechanism — it sequences it.
 
 1. **Ratification gate — never self-accept.** Every record this skill writes carries
    `author: agent`, `status: proposed`. It never sets `status: accepted` — that is a
-   separate, human-reviewed change (`method/03` §6). This is the whole safety story:
+   separate, human-reviewed change (`method/07-decisions.md` §4). This is the whole safety story:
    the worst this skill can do unattended is leave a *proposed* record for review.
 2. **Supersession, not mutation.** "Change a decision" is never an edit to an
    `accepted` record's body — it is a **new** record plus a `superseded_by` /
-   `supersedes` pointer flip on the old one (`method/03` §7). See Step 6.
+   `supersedes` pointer flip on the old one (`method/07-decisions.md` §6). See Step 6.
 3. **ADR vs living-design-doc.** A genuinely evolving artefact (a current-state design
    spec that changes as understanding improves) is not a decision. This skill detects
    that shape and routes it away from the append-only log instead of forcing it in
-   (`method/03` §7; Step 1 below).
+   (`method/07-decisions.md` §6; Step 1 below).
 
 ---
 
@@ -51,7 +49,7 @@ job). This `SKILL.md` does not restate the mechanism — it sequences it.
 
 Detect the repo's decision-record path:
 
-- **Canonical** — `operations/decisions/` (`method/02` §2, extended by `method/03`).
+- **Canonical** — `operations/decisions/` (`method/06-team-operations.md` §2, extended by `method/07-decisions.md`).
   Use this for any repo that does not already have an established alternative.
 - **Existing alternative** — if the repo already has `docs/decisions/` in active use
   (a general code repo that adopted the convention before the canonical path was
@@ -68,10 +66,10 @@ Detect the repo's decision-record path:
   this skill's own Step 5 validates locally regardless of whether CI is wired.
 
 **Never** create `docs/decisions/` or a central `Architecture/` folder from scratch —
-those are legacy aliases only (`method/03` was reconciled onto `operations/decisions/`
+those are legacy aliases only (`method/07-decisions.md` was reconciled onto `operations/decisions/`
 + `architecture/decision-log/`; see the pattern doc). This skill only ever writes the
 **per-repo** record — it never writes to a central `architecture/decision-log/`
-directly (that is the harvest job's job alone, `method/03` §5; Step 4 below only
+directly (that is the harvest job's job alone, `method/07-decisions.md` §5; Step 4 below only
 *marks* a record promotable).
 
 ---
@@ -84,7 +82,7 @@ Before running the interview, check the shape of what the user is describing:
   decided to stop doing Z") → it's an ADR. Continue to Step 2.
 - **An evolving description of current state** (an architecture-overview doc, a spec
   that will keep changing as the system does) → **not** an ADR. Tell the user this
-  belongs in a `doc_type: living-design-doc` artefact instead (`method/03` §7) — it
+  belongs in a `doc_type: living-design-doc` artefact instead (`method/07-decisions.md` §6) — it
   evolves freely and does not go through this skill's append-only flow. Stop here; do
   not force it into `operations/decisions/`.
 
@@ -104,7 +102,7 @@ Extract, conversationally, in this order:
    easier or harder.
 4. **`source`** — the forum this came from: an architecture review board, a named
    design review, a specific meeting, or `ad-hoc`. Optional but recommended
-   (`method/02` §3.1.1) — it's the context a future reader needs and the methodology
+   (`method/07-decisions.md` §2.1) — it's the context a future reader needs and the methodology
    does not get to skip just because it's convenient to omit.
 5. **Scope — single-repo or cross-project candidate?** Walk through
    [`patterns/enterprise-adr-registry.md`](../../../patterns/enterprise-adr-registry.md)
@@ -116,7 +114,7 @@ Extract, conversationally, in this order:
    are, and that's a complete, valid outcome, not a lesser one.
 6. **`relates_to`** (optional) — model entity IDs (Goals, Capabilities, …) this
    decision concerns, if the repo has a Transitrix `canon/` to link into
-   (`method/02` §4). Skip if not applicable.
+   (`method/06-team-operations.md` §4). Skip if not applicable.
 
 State your understanding back before writing anything — a wrong Context/Decision
 split is expensive to fix once the record exists (Step 5 makes the record immutable
@@ -132,7 +130,7 @@ the moment a human accepts it).
    author's unmerged work computes this alone, and two records authored the same day
    get distinct filenames from their distinct slugs. **Existing repos with legacy
    `ADR-NNNN` records:** do not renumber or touch them — the two forms coexist; only
-   new records use the date-slug form (`method/02` §3.1.2).
+   new records use the date-slug form (`method/07-decisions.md` §2.2).
 3. Copy [`templates/ADR-template.md`](templates/ADR-template.md) to
    `<decisions-folder>/ADR-YYYY-MM-DD-<slug>.md` — the same string for `id:` and the
    filename.
@@ -149,7 +147,7 @@ the moment a human accepts it).
 If Step 2.5 flagged this as enterprise-significant, add a `scope:` field to the
 front-matter (e.g. `scope: enterprise` — match whatever scope value the
 organisation's central `architecture/decision-log/harvest.config.yaml`
-`promote.scopes` list actually uses, per `method/03` §5; ask the user if unknown).
+`promote.scopes` list actually uses, per `method/07-decisions.md` §5; ask the user if unknown).
 This is the **only** thing this skill does to participate in promotion — the harvest
 job (`scripts/adl-harvest.mjs`, run from the *central* architecture repo, not this
 one) reads `scope:` on its own schedule and copies the record into
@@ -200,7 +198,7 @@ decision:
 1. Read the target record. If its `status` is `proposed` (not yet ratified), a
    straightforward edit in place is fine — nothing is immutable yet, so there is no
    supersession to perform; just revise it and re-run Step 5.
-2. If its `status` is `accepted`, immutability applies (`method/03` §7) — do **not**
+2. If its `status` is `accepted`, immutability applies (`method/07-decisions.md` §6) — do **not**
    edit its body or non-status front-matter:
    - Run Steps 1–5 to author a **new** record (its id is always the date-slug form,
      whichever form the record it supersedes uses) capturing the revised decision, its
@@ -235,13 +233,13 @@ decision:
 ## What this skill does NOT do
 
 - Does **not** ever set `status: accepted` on a record it authors — ratification is
-  always a separate, human-reviewed change (`method/03` §6).
+  always a separate, human-reviewed change (`method/07-decisions.md` §4).
 - Does **not** edit an `accepted` record's body or non-status front-matter, ever, for
   any reason — course changes are always a new record + a status-pointer flip
   (Step 6).
 - Does **not** write to a central `architecture/decision-log/` directly — that is the
   harvest job's exclusive output, run from the central architecture repo on its own
-  schedule (`method/03` §5). This skill only marks a per-repo record `scope:` for the
+  schedule (`method/07-decisions.md` §5). This skill only marks a per-repo record `scope:` for the
   harvest to pick up later.
 - Does **not** force an evolving design artefact into the append-only ADR shape —
   Step 1 routes that case to `doc_type: living-design-doc` instead.

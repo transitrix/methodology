@@ -45,7 +45,7 @@ notation: integration-map
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 view:
   # ... see §3
 ```
@@ -86,7 +86,7 @@ notation: integration-map
 spec_version: "0.1"
 name: "Enterprise integration landscape"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                  # optional per CONTRACT.md §4
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 
 view:
   id: INTEGRATION_MAP-ENTERPRISE-1
@@ -169,7 +169,7 @@ notation: integration-map
 spec_version: "0.1"
 name: "Full integration map"            # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 view:
   id: INTEGRATION_MAP-ALL-1
   name: "Full integration map"

@@ -64,19 +64,22 @@ direction before any file moves.
    `notations/README.md`.
 
 2. ~~**ArchiMate element IDs — prefix-IDs vs full-word TYPE-IDs.**~~ —
-   **resolved (Phase 4 freeze pass, 2026-07-04).** `method/01-methodology.md`
+   **resolved (Phase 4 freeze pass, 2026-07-04).** The former `method/01-methodology.md`
    §3a.2–§3a.5's legacy abbreviated-prefix columns (`GOAL-`, `APP-`, `ACTR-`,
-   …) are replaced by a "Canonical TYPE" column showing the full-word TYPE
+   …) were replaced by a "Canonical TYPE" column showing the full-word TYPE
    from `IDS_AND_REFERENCES.md` (`—` for ArchiMate types not yet registered).
    §3a.9's naming rule and the §3a.7/§3a.8 YAML examples were already fixed
    to the canonical grammar earlier the same day. Adopters who followed the
    old §3a abbreviated prefixes migrate via the 0.7→1.0 migration recipe.
+   §3a in full was subsequently deleted (2026-08-16 method-division), replaced
+   by a direct pointer to `IDS_AND_REFERENCES.md` as the sole canonical
+   authority; see `method/03-modelling.md`.
 
 3. ~~**SCENARIO / ISSUE reclassification**~~ — **resolved**. `SCENARIO` is now
    a standalone content element (`ELEMENT_PRIMITIVES.md` §7.18; view spec
    [`11-scenarios.md`](./notations/views/reports/11-scenarios.md) is a report-config
    surface over it, not a content home). The former model-side `ISSUE`
-   notation was retired 2026-06-07 (`method/01-methodology.md` §4.1). No
+   notation was retired 2026-06-07 (`method/02-repository.md` §1.1). No
    non-promotable `view-defined` rows remain (`ELEMENT_PRIMITIVES.md` §4.2).
 
 ---

@@ -1,5 +1,5 @@
 // Unit + integration tests for the L1 catalogue-integration loader and diff
-// (catalogue.mjs — method/05-catalogue-integration.md §6, CONTRACT.md §17).
+// (catalogue.mjs — method/09-releases-and-propagation.md §6.4, CONTRACT.md §17).
 // Run: node --test packages/ingest-cli/src/catalogue.test.mjs
 
 import { test } from 'node:test';

@@ -21,4 +21,4 @@ Starter files an adopter copies into their repo to **run** the reg-intel scan as
 
 ## The one rule
 
-Every run **proposes**. It writes `_intake/` artefacts and a `review-digest.yaml`; it never writes `canon/` and never auto-admits. A human reviews the digest and runs the admission gate. Keep per-source URLs / API keys in `operations/config/reg-intel/` (committed operational settings, [`method/02-team-operations.md`](https://raw.githubusercontent.com/transitrix/methodology/main/method/02-team-operations.md) §3.3) — never hard-coded in the driver.
+Every run **proposes**. It writes `_intake/` artefacts and a `review-digest.yaml`; it never writes `canon/` and never auto-admits. A human reviews the digest and runs the admission gate. Keep per-source URLs / API keys in `operations/config/reg-intel/` (committed operational settings, [`method/06-team-operations.md`](https://raw.githubusercontent.com/transitrix/methodology/main/method/06-team-operations.md) §3.3) — never hard-coded in the driver.

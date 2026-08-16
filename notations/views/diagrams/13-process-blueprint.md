@@ -376,4 +376,4 @@ What the renderer MUST NOT do:
 - Nested blocks (uses the same diagram engine): [`08-blocks.md`](./08-blocks.md)
 - Compliance impact view (flat obligation matrix; compliance lane is the blueprint-shaped realisation): [`21-compliance-impact.md`](../reports/21-compliance-impact.md)
 - Architecture decision — compliance lane decision.
-- Methodology: `method/01-methodology.md`
+- Methodology: `method/01-foundations.md`

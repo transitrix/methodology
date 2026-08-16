@@ -417,8 +417,9 @@ async function cmdRepoCheck(args) {
   return 0;
 }
 
-// L0 — join the decision-log network in one step (method/03-architecture-decision-log.md
-// §10, method/05-catalogue-integration.md §7): the records folder, the vendored CI
+// L0 — join the decision-log network in one step (method/07-decisions.md
+// §9, guides/adl-adopter-setup.md Step 1, method/09-releases-and-propagation.md
+// §6.6): the records folder, the vendored CI
 // guard + its workflow, and (with --repo) the harvest.config.yaml line a human adds to
 // the central repo. Idempotent — a file or folder already in place is left untouched.
 async function cmdAdoptAdl(args) {
@@ -439,8 +440,8 @@ async function cmdAdoptAdl(args) {
   return 0;
 }
 
-// L1 — write the catalogue: pin into transitrix.yaml (method/05-catalogue-integration.md
-// §4.2, §7). Refuses to touch the manifest if a catalogue: field is already declared —
+// L1 — write the catalogue: pin into transitrix.yaml (method/09-releases-and-propagation.md
+// §6.4.2, §6.6). Refuses to touch the manifest if a catalogue: field is already declared —
 // a re-pin is a deliberate edit, not something this command guesses at.
 async function cmdCataloguePin(args) {
   const { _ } = parseArgs(args);
@@ -451,7 +452,7 @@ async function cmdCataloguePin(args) {
   try {
     const res = await applyCataloguePin(orgRoot, { source, version, path: pinPath });
     console.log(`catalogue-pin  ${res.source}@${res.version}  ->  ${res.path}`);
-    console.log(`  vendor the slice at ${res.pinPath} before running catalogue-recognize/repo-check (method/05-catalogue-integration.md §4.3 — fails closed).`);
+    console.log(`  vendor the slice at ${res.pinPath} before running catalogue-recognize/repo-check (method/09-releases-and-propagation.md §6.4.3 — fails closed).`);
     return 0;
   } catch (err) {
     if (err instanceof CatalogueError) { console.error(err.message); return 1; }
@@ -461,7 +462,7 @@ async function cmdCataloguePin(args) {
 
 // L2 — recognition: propose bindings against the pinned catalogue for every unbound
 // local element with an unambiguous, same-TYPE name/alias match. Writes the review
-// artefact, never admits one (method/05-catalogue-integration.md §5) — a human
+// artefact, never admits one (method/09-releases-and-propagation.md §6.5) — a human
 // accepts a proposal by running `catalogue-bind` on it.
 async function cmdCatalogueRecognize(args) {
   const { _, flags } = parseArgs(args);
@@ -517,7 +518,7 @@ async function cmdCatalogueBind(args) {
 
 // L3 — promotion: emit a promotion proposal for a local element, consumable by the
 // central repository's human admission gate. Writes a file only — no agent writes
-// across a repository boundary (method/05-catalogue-integration.md §6, §7).
+// across a repository boundary (method/09-releases-and-propagation.md §6.5, §6.6).
 async function cmdCataloguePromote(args) {
   const { _, flags } = parseArgs(args);
   const localId = _[0];

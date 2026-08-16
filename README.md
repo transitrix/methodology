@@ -50,7 +50,7 @@ Using the Claude Code plugin workflow instead? Same result, from the terminal `c
 
 Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — same approach, illustrated against the worked [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
-New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-methodology.md)** for the *why* — but you don't need it to start.
+New to the ideas behind it? Read **[`method/01-foundations.md`](method/01-foundations.md)** for the *why* — but you don't need it to start.
 
 ## Documentation
 
@@ -58,12 +58,10 @@ New to the ideas behind it? Read **[`method/01-methodology.md`](method/01-method
 - **[`WALKTHROUGH.md`](WALKTHROUGH.md)** — a guided tour of the `acme-corp` worked example, read as one story.
 - **[`notations/CONVENTIONS.md`](notations/CONVENTIONS.md)** — ID grammar, naming, and best-practice checklist for authoring canon content.
 - **[`patterns/implementation-tiers.md`](patterns/implementation-tiers.md)** — two implementation tiers (Simple / Full): what belongs in each, where the boundary sits, and how the upgrade path works.
-- **[`method/01-methodology.md`](method/01-methodology.md)** — the methodology overview: model, principles, zones, change lifecycle.
+- **[`method/`](method/)** — the methodology itself, one file per reader question, numbered in reading order: [`00-glossary.md`](method/00-glossary.md) (terminology) · [`01-foundations.md`](method/01-foundations.md) (what/why) · [`02-repository.md`](method/02-repository.md) (layout) · [`03-modelling.md`](method/03-modelling.md) (elements/relations) · [`04-notations.md`](method/04-notations.md) (the notation kit) · [`05-working-the-model.md`](method/05-working-the-model.md) (change lifecycle, validation) · [`06-team-operations.md`](method/06-team-operations.md) (a team's own decisions/work) · [`07-decisions.md`](method/07-decisions.md) (the ADR record + multi-repo aggregation) · [`08-governance.md`](method/08-governance.md) (who may change what, what gates it) · [`09-releases-and-propagation.md`](method/09-releases-and-propagation.md) (how a new version reaches you, including catalogue integration).
+- **[`guides/`](guides/)** — task and component procedures that don't fit the reading order above (unnumbered — a menu, not a sequence): modelling capabilities, modelling complex processes, adopting the Architecture Decision Log.
 - **[`notations/README.md`](notations/README.md)** — the canonical notation index; [`notations/CONTRACT.md`](notations/CONTRACT.md) and the per-notation specs are the authoritative source for the model in detail.
 - **[`notations/views/documents/DIRECTIVE_LANGUAGE.md`](notations/views/documents/DIRECTIVE_LANGUAGE.md)** — the `.ttrs` document source format: one directive language shared by every document kind (`mrd`, `srs`, `sdd`, `sds`, …, the middle segment of `<basename>.<kind>.ttrs`). Canonical public explanation: [transitrix.com/ttrs](https://transitrix.com/ttrs/).
-- **[`method/00-glossary.md`](method/00-glossary.md)** — standardised terminology.
-- **[`method/03-architecture-decision-log.md`](method/03-architecture-decision-log.md)** — architecture decision records per repo and the harvested enterprise log across repos; §10 is the setup path, from an empty folder to a scheduled harvest.
-- **[`method/05-catalogue-integration.md`](method/05-catalogue-integration.md)** — the four separately-enabled levels (decisions / vocabulary / recognition / promotion) at which a project repository integrates with a central catalogue repository, and the ownership rule they share.
 - **[`transitrix/templates`](https://github.com/transitrix/templates)** — forkable starter templates (RACI, …): fork, edit for your own organisation, validate.
 
 Process & releases:
@@ -94,7 +92,7 @@ Per-organisation:
 
 The repository has three buckets:
 
-- **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/) (including [`method/00-glossary.md`](method/00-glossary.md)), [`migrations/`](migrations/).
+- **Spec** — what adopters consume: [`notations/`](notations/) (CONTRACT, IDS_AND_REFERENCES, ELEMENT_PRIMITIVES, MANIFEST, COVERAGE_PROFILES, plus `views/`, `elements/`, `examples/`), [`method/`](method/) (including [`method/00-glossary.md`](method/00-glossary.md)), [`guides/`](guides/) (task procedures), [`migrations/`](migrations/).
 - **Worked example** — a sample organisation to learn from, maintained as a standalone reference repo: [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp). Path references elsewhere in this repo of the form `organizations/acme_corp/...` point into that repo — clone it to `organizations/acme_corp/` locally to follow them verbatim, or browse it directly on GitHub.
 - **Tooling** — what you install or run: [`transitrix/skills/`](transitrix/skills/) (Agent Skills — onboard, ingest), [`packages/`](packages/) (CLIs — e.g. `@transitrix/ingest-cli`), [`integration/`](integration/) (Studio / CI), [`scripts/`](scripts/) (doc-lint).
 
@@ -112,7 +110,7 @@ See [Documentation](#documentation) above for the full list of root-level files 
 
 Transitrix defines text-native notations for the most common enterprise-architecture artefacts — process diagrams (BPMN), goals trees, capability maps, the DGCA / FGA strategy chains, action networks, process maps, blocks, products and applications catalogues, scenarios, issues, and process blueprints — plus element notations for the codex, requirements, assertions, relations, actors, and stakeholders. Each view notation has a `*.<short-name>.transitrix.yaml` extension and a `notation:` header.
 
-See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/01-methodology.md` §6](method/01-methodology.md#6-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
+See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/04-notations.md`](method/04-notations.md#1-the-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
 
 ## Validation in one paragraph
 

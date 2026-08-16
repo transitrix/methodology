@@ -1,6 +1,7 @@
 # adopters.yaml — machine-readable registry of downstream consumers of this repo.
-# Read by the Discovery job (method/04-methodology-update-propagation.md §7);
-# never edited by the job itself. Schema and semantics: §7.4 of that doc.
+# Read by the Discovery job (RELEASING.md, "Discovery — noticing drift on a
+# schedule"); never edited by the job itself. Schema and semantics: that
+# section's "The downstream-consumer registry — contract".
 version: 1
 consumers:
   - repo: transitrix/acme-corp

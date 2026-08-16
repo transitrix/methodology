@@ -343,6 +343,6 @@ Migration: adopters with existing inline values move each value into a single-en
 - Element template: `organizations/acme_corp/.templates/elements/02_business_template.yaml`
 - Capability template: `organizations/acme_corp/.templates/capability-map_template.yaml`
 - ID grammar (including the `CAPABILITY-V`/`H` exception) and TYPE registry: `notations/IDS_AND_REFERENCES.md`
-- Methodology section 6.3: `method/01-methodology.md`
+- Methodology, notation kit §3 (capabilities and maturity): `method/04-notations.md`
 - DSM: `docs/docs/concepts/bcm-explained.md` — BCM concept and addressing rules
 - DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation, sets)

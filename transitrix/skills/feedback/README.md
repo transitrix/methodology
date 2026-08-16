@@ -3,7 +3,7 @@
 Helps a user go from "the methodology can't express this" (or "this tool made that
 harder than it should be") to a scrubbed, committed entry in the repo's own
 `operations/feedback.md` register — the entry point to the upstream feedback channel
-[`method/02-team-operations.md`](../../../method/02-team-operations.md) §3.3 specifies
+[`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.3 specifies
 but ships no workflow for.
 
 This directory is the **`feedback` skill** within the `transitrix` plugin (the plugin
@@ -15,7 +15,7 @@ root is [`transitrix/`](../../), which carries the shared
 
 `FINDINGS.md`'s propose → route → scrub protocol names `operations/feedback.md` as the
 landing place for a methodology-directed finding (`escalate-methodology`), and
-`method/02-team-operations.md` §3.3 defines the record's shape and status
+`method/06-team-operations.md` §3.3 defines the record's shape and status
 vocabularies — but neither ships a workflow for actually *authoring* an entry. A user
 (or an autonomous agent resolving a `FINDINGS.md` routing decision) still had to
 hand-write the field set, allocate the next `FB-NNNN`, and remember the anonymisation

@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Discovery write-side — proposes bounded upgrade PRs on behind consumers.
 //
-// Realises the write half of method/04-methodology-update-propagation.md §7.2:
-// for each consumer in adopters.yaml whose pin is behind the latest source-repo
-// tag, this script opens the bounded upgrade PR specified in §4 — exactly the
-// diff that section permits (pin bump + one agent-authored proposed ADR).
+// Realises the write half of RELEASING.md, "Discovery — noticing drift on a
+// schedule" § "The scheduled-trigger contract": for each consumer in
+// adopters.yaml whose pin is behind the latest source-repo tag, this script
+// opens the bounded upgrade PR specified in method/09-releases-and-propagation.md
+// §4 — exactly the diff that section permits (pin bump + one agent-authored
+// proposed ADR).
 //
 // Idempotent per §7.6: before opening a PR it checks whether an open PR for
 // the same version bump already exists on the consumer repo and skips if found.

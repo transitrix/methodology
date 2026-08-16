@@ -1,5 +1,5 @@
-// Unit tests for the L0 one-step join (adl-join.mjs — method/03-architecture-decision-log.md
-// §10, method/05-catalogue-integration.md §7).
+// Unit tests for the L0 one-step join (adl-join.mjs — method/07-decisions.md
+// §9, method/09-releases-and-propagation.md §6.6).
 // Run: node --test packages/ingest-cli/src/adl-join.test.mjs
 
 import { test } from 'node:test';

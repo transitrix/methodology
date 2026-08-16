@@ -3,7 +3,7 @@
 # permitted cross-reference (Transitrix.CanonRef, reqif.md §3) something real
 # to cite, plus the reqif/ package folder itself.
 transitrix: 1
-methodology_version: "3.5.0"
+methodology_version: "3.6.0"
 notations: [requirement]
 zones: [canon]
 coverage_profile: core

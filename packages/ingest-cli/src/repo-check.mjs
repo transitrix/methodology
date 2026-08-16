@@ -162,7 +162,7 @@ export async function repoCheck(orgRoot) {
   totalUnreadable += diskTypes.unreadable.length;
   const completeness = profileCompleteness(diskTypes.types, profile);
 
-  // L1 vocabulary check (method/05-catalogue-integration.md §4.5, CONTRACT.md §17) —
+  // L1 vocabulary check (method/09-releases-and-propagation.md §6.4.5, CONTRACT.md §17) —
   // only present in the report when a `catalogue:` pin exists (MANIFEST.md); an L0
   // repo with no pin gets no catalogue section at all, not an empty one. The loader
   // fails closed (missing/unreadable path, unparseable slice, version mismatch) —
@@ -204,8 +204,8 @@ export async function repoCheck(orgRoot) {
   if (!manifestText) red_flags.push('no transitrix.yaml manifest at the repo root — not a recognised adopter repo');
   if (!versionMatch) red_flags.push(`methodology_version in transitrix.yaml (${declaredVersion}) does not match the CLI built-in presets version (${PRESETS_VERSION}) — reinstall @transitrix/ingest-cli after a methodology upgrade`);
   if (catalogueError) red_flags.push(`pinned catalogue (transitrix.yaml \`catalogue:\`) failed to load — ${catalogueError}`);
-  if (catalogue && catalogue.collisions.length > 0) red_flags.push(`${catalogue.collisions.length} local element(s) bound to the pinned catalogue whose name/alias also matches a different central element (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
-  if (catalogue && catalogue.unbound_matches.length > 0) red_flags.push(`${catalogue.unbound_matches.length} local element(s) whose name/alias matches a pinned-catalogue term but carry no \`canon_id\` binding (L1 vocabulary check, method/05-catalogue-integration.md §4.5)`);
+  if (catalogue && catalogue.collisions.length > 0) red_flags.push(`${catalogue.collisions.length} local element(s) bound to the pinned catalogue whose name/alias also matches a different central element (L1 vocabulary check, method/09-releases-and-propagation.md §6.4.5)`);
+  if (catalogue && catalogue.unbound_matches.length > 0) red_flags.push(`${catalogue.unbound_matches.length} local element(s) whose name/alias matches a pinned-catalogue term but carry no \`canon_id\` binding (L1 vocabulary check, method/09-releases-and-propagation.md §6.4.5)`);
   if (bindings.unresolved.length > 0) red_flags.push(`${bindings.unresolved.length} local element(s) carry a \`canon_id\` that does not resolve in the pinned catalogue (BIND-001)`);
   if (bindings.type_mismatch.length > 0) red_flags.push(`${bindings.type_mismatch.length} local element(s) bound to a central element of a different TYPE (BIND-002)`);
   if (bindings.duplicate_target.length > 0) red_flags.push(`${bindings.duplicate_target.length} central element(s) claimed as \`canon_id\` by more than one local element (BIND-003)`);
@@ -258,7 +258,7 @@ export async function repoCheck(orgRoot) {
         ? { catalogue: { pin_present: true, pin: catalogue.pin, collisions: catalogue.collisions, unbound_matches: catalogue.unbound_matches } }
         : {}),
     ...(hasBindingFindings(bindings) ? { bindings } : {}),
-    note: 'Data-free (aggregate counts and statuses only, no names/aliases/free text) except the `catalogue` and `bindings` sections — present only when a `catalogue:` pin is declared, or a binding-envelope finding exists, respectively — which name local and central element ids, the minimum needed to act on an L1 finding (method/05-catalogue-integration.md §4.5) or a BIND-001..005 violation (CONTRACT.md §17.2). Read-only: repo-check never writes a zone.',
+    note: 'Data-free (aggregate counts and statuses only, no names/aliases/free text) except the `catalogue` and `bindings` sections — present only when a `catalogue:` pin is declared, or a binding-envelope finding exists, respectively — which name local and central element ids, the minimum needed to act on an L1 finding (method/09-releases-and-propagation.md §6.4.5) or a BIND-001..005 violation (CONTRACT.md §17.2). Read-only: repo-check never writes a zone.',
   };
 }
 

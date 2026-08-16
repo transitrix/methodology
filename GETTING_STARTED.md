@@ -19,7 +19,15 @@ A Transitrix repo has three parallel **zones** ([`notations/CONTRACT.md`](notati
 - **`field/`** — raw inputs (interviews, surveys, …); not authoritative.
 - **`codex/`** — external laws/regulations + internal policies/standards, faithful to source.
 
-Read [`notations/README.md`](notations/README.md) for the notation index and family selection.
+Read [`notations/README.md`](notations/README.md) for the notation index and family selection. Full repository layout, including the multi-tenant `organizations/<org_slug>/` structure: [`method/02-repository.md`](method/02-repository.md).
+
+**Scaffolding a brand-new organisation from scratch** (rather than adding to an existing one) is the same onboarding Skill mentioned above, run once per organisation:
+
+1. Scaffold with `/transitrix:onboard`, or copy the structure from the [acme-corp reference repo](https://github.com/transitrix/acme-corp) as a starting point.
+2. Create `organizations/<your_org_slug>/` (multi-tenant repo) or use the repo root (single-tenant).
+3. Adapt `.templates/` to local conventions and overrides.
+4. Add the first elements to `canon/elements/` — Steps 2–3 below walk through the first one.
+5. Open a pull request to introduce the organisation; the validators check the structure.
 
 ## Step 2 — Author your first view (a Goals tree)
 
@@ -81,6 +89,7 @@ Every typed ID is `<TYPE>-[<middle>-]<INTEGER>` — uppercase TYPE from the regi
 - Methodology canon: [`notations/`](notations/) (start at [`README.md`](notations/README.md)).
 - Element-primitive schema: [`notations/ELEMENT_PRIMITIVES.md`](notations/ELEMENT_PRIMITIVES.md).
 - An adopter repo's own agent guide is scaffolded by the onboarding Skill from [`transitrix/skills/onboard/templates/AGENTS.md`](transitrix/skills/onboard/templates/AGENTS.md).
+- Task procedures beyond a first session — modelling capabilities, modelling complex processes, adopting the Architecture Decision Log: [`guides/`](guides/).
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Pattern type:** four-level, opt-in ladder
 **Complexity:** medium
-**Mechanism:** [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) — this pattern is the when / why / choose entry point; the ownership rule, the binding envelope, the catalogue publication format, and the four levels themselves are specified once, there. §7 of that document is the step-by-step adopter path.
+**Mechanism:** [`method/09-releases-and-propagation.md`](../method/09-releases-and-propagation.md) — this pattern is the when / why / choose entry point; the ownership rule, the binding envelope, the catalogue publication format, and the four levels themselves are specified once, there. §6.6 of that document is the step-by-step adopter path.
 
 ---
 
@@ -16,7 +16,7 @@ Two or more repositories each hold their own Transitrix canon, and the same real
 
 ## Solution
 
-Adopt the [catalogue integration levels](../method/05-catalogue-integration.md): a **central repository** publishes a versioned catalogue slice of its own admitted elements, and a **project repository** relates to it through four separately-enabled levels — each useful, and complete, on its own.
+Adopt the [catalogue integration levels](../method/09-releases-and-propagation.md): a **central repository** publishes a versioned catalogue slice of its own admitted elements, and a **project repository** relates to it through four separately-enabled levels — each useful, and complete, on its own.
 
 | Level | What a project repository does |
 |---|---|
@@ -54,7 +54,7 @@ L0 **is** the [Enterprise ADR Registry](enterprise-adr-registry.md) pattern's pe
 transitrix-ingest adopt-adl <org-root> [--repo <org>/<repo>]
 ```
 
-See [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) §7 Step 1 for what it creates and [`enterprise-adr-registry.md`](enterprise-adr-registry.md) for the mechanism itself.
+See [`guides/adl-adopter-setup.md`](../guides/adl-adopter-setup.md) Step 1 for what it creates and [`enterprise-adr-registry.md`](enterprise-adr-registry.md) for the mechanism itself.
 
 **A repository at L0 alone is a complete, valid state** — no pin, no new field, no reference to a central catalogue anywhere in its own canon.
 
@@ -63,14 +63,14 @@ See [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md
 - A central repository already publishes a catalogue slice you want your own terminology checked against.
 - You want early warning when a term you're about to mint already exists centrally, before you author the element — not after.
 
-`transitrix-ingest catalogue-pin <org>/<repo> <version> <path> [org-root]` writes the pin; `method/05-catalogue-integration.md` §7 Step 2 is the full walkthrough, including where the vendored slice goes.
+`transitrix-ingest catalogue-pin <org>/<repo> <version> <path> [org-root]` writes the pin; `method/09-releases-and-propagation.md` §6.6 is the full walkthrough, including where the vendored slice goes.
 
 ## When to add L2 / L3 (recognition, promotion)
 
 - L2, once you want locally authored elements checked for an existing central match, staged for human review rather than silently left unbound.
 - L3, once you're ready to propose one of your own elements for adoption centrally — the reverse direction, a local object becoming a shared one.
 
-Both are commands (`catalogue-recognize`, `catalogue-bind`, `catalogue-promote`) — `method/05-catalogue-integration.md` §7 Steps 3–4 and [`packages/ingest-cli/README.md`](../packages/ingest-cli/README.md) for the full reference.
+Both are commands (`catalogue-recognize`, `catalogue-bind`, `catalogue-promote`) — `method/09-releases-and-propagation.md` §6.6 and [`packages/ingest-cli/README.md`](../packages/ingest-cli/README.md) for the full reference.
 
 ## How this differs from Knowledge Store
 

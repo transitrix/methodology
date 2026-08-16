@@ -620,6 +620,15 @@ A spec file marked `status: "deprecated"` in its own front matter (§1 — the s
 
 **Historical note.** The `3.0.0` release (`CHANGELOG.md`) removed `HAZARD`, `RISK_CONTROL`, and the Design-Controls Trace Matrix view one minor after they shipped (`2.1.0` → `3.0.0`), with no deprecation window. That CHANGELOG entry is a record of what happened and is not rewritten to imply the window above was honoured — this section states the rule going forward, not retroactively.
 
+### 10.7 Document paths are part of the published surface
+
+§10.1–§10.6 govern the schema — fields, TYPEs, validation severities. This subsection governs the other thing a release can move: **where a spec document lives, and what its section anchors are.** An adopter, a skill, or a script can cite a file path or a `#section-anchor` as durably as it cites a field name, so a reorganisation of `method/` or `notations/` is a compatibility event too, not free housekeeping. Decided 2026-08-16 (the method-division restructuring).
+
+- **A document path is retirable in a `MINOR`, with one release of deprecation.** Moving, splitting, merging, or renaming a spec file does not require a `MAJOR` bump — unlike a schema change, it breaks no adopter's canon — but the **old path MUST keep resolving** for at least one further `MINOR` release: a short stub at the retired path, pointing at the successor file(s) that absorbed its content. The stub is not scheduled for removal in the same change that adds it; it is removed no earlier than the next `MINOR`.
+- **A section anchor carries the same promise, through a redirect table.** Where a reorganisation changes a document's internal heading structure (and therefore its `#anchor` targets), the release notes for that version carry an explicit **old-path → new-path table** and an **old-anchor → new-anchor table** — the redirect a URL-based `Location:` header would carry, expressed as a table because Markdown has no server to redirect through.
+- **Every inbound reference is repointed in the same change that moves the target**, never left resolving to a stub. A stub is for an outside reader following an old bookmark or an old citation already committed elsewhere (a downstream repo, a saved link); it is not a placeholder this repository's own cross-references are allowed to rest on.
+- **This does not relax §10.2.** A document move is additive to the compatibility promise, not a loophole in it — a `MINOR` claiming a document reorganisation still carries zero schema, field, enum, or validation-severity changes.
+
 ---
 
 ## 11. Confidence and freshness
@@ -880,7 +889,7 @@ Structural layout of a view document:
 ```yaml
 notation: dgca                # §1 — required header
 spec_version: "0.1"           # §1 — optional header
-methodology_version: "3.5.0"  # manifest-pinned methodology version
+methodology_version: "3.6.0"  # manifest-pinned methodology version
 name: "Retail strategy chain" # §1.1 — required document name
 
 view:                         # view identity block — id only; name lives at root per §1.1
@@ -961,7 +970,7 @@ views/
 ```yaml
 view_id: DGCA-RETAIL-1               # canonical ID of the view being captured
 generated_at: "2026-06-20T14:30:00Z" # ISO-8601 UTC timestamp — matches the file name
-methodology_version: "3.5.0"          # methodology version in use at generation time
+methodology_version: "3.6.0"          # methodology version in use at generation time
 # …notation-specific element list follows (format defined per notation spec)…
 ```
 
@@ -1094,7 +1103,7 @@ This is the property that makes the hatch a checker-verified exemption rather th
 
 ## 17. Binding envelope — `canon_id` and `origin`
 
-A project repository's element and a central repository's element are related by an optional, additive binding, not by a copy or a rename. The levels this binding is proposed and accepted at, the ownership rule it depends on, and the repository-boundary constraints it obeys are specified in [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md); this section defines the fields themselves and the rules a binding must satisfy.
+A project repository's element and a central repository's element are related by an optional, additive binding, not by a copy or a rename. The levels this binding is proposed and accepted at, the ownership rule it depends on, and the repository-boundary constraints it obeys are specified in [`method/09-releases-and-propagation.md`](../method/09-releases-and-propagation.md); this section defines the fields themselves and the rules a binding must satisfy.
 
 ### 17.1 Fields
 
@@ -1122,5 +1131,5 @@ A repository's own views always display its own `id` — a binding is metadata a
 ### 17.4 Out of scope here
 
 - **The catalogue itself** — its publication format, the pin field's shape and location in a consuming repository's manifest, and the version-match rule a pin resolves under — is specified where the catalogue-publishing mechanism lands, not here. `BIND-001` and `BIND-004` above assume that mechanism exists; they do not define it.
-- **How a binding is proposed** — the matching, staging, and review-queue mechanics of recognition and promotion (L2 / L3, [`method/05-catalogue-integration.md`](../method/05-catalogue-integration.md) §2) — is separate from the envelope shape and rules a binding must satisfy once accepted, which is all this section defines.
+- **How a binding is proposed** — the matching, staging, and review-queue mechanics of recognition and promotion (L2 / L3, [`method/09-releases-and-propagation.md`](../method/09-releases-and-propagation.md) §6.2) — is separate from the envelope shape and rules a binding must satisfy once accepted, which is all this section defines.
 - **`TERM` and other TYPE-specific catalogue content** are out of scope here; this section's fields and rules apply to any `standalone` element regardless of TYPE.
