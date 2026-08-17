@@ -1,0 +1,21 @@
+{
+  "name": "@transitrix/plugin-examples",
+  "version": "0.0.1",
+  "description": "Generates the rendered notation-view SVGs shown in transitrix/README.md from this repository's own notations/examples/ sources, via the shared @transitrix/diagrams rendering library. Regeneration is byte-reproducible: pinned exact dependency version, deterministic layout, no randomness.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "src/"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Transitrix"
+  },
+  "repository": "https://github.com/transitrix/methodology",
+  "dependencies": {
+    "@transitrix/diagrams": "1.9.18",
+    "js-yaml": "4.3.1"
+  }
+}

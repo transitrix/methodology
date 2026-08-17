@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1288" height="659" viewBox="0 0 1288 659">
+<style>:root{--ts-bg:#ffffff;--ts-bg-surface:#f8fafc;--ts-bg-elevated:#f1f5f9;--ts-text:#0f172a;--ts-text-muted:#64748b;--ts-text-inverse:#ffffff;--ts-border:#e2e8f0;--ts-divider:#cbd5e1;--ts-status-success-bg:#d1fae5;--ts-status-success-fg:#065f46;--ts-status-warning-bg:#fef9c3;--ts-status-warning-fg:#854d0e;--ts-status-info-bg:#e0f2fe;--ts-status-info-fg:#0c4a6e;--ts-status-error-bg:#fee2e2;--ts-status-error-fg:#991b1b;--ts-layer-driver:#eaf3f6;--ts-layer-factor:#eaf3f6;--ts-layer-goal:#d9ecf2;--ts-layer-change:#c7e5ef;--ts-layer-activity:#b4e0ee;--ts-node-stroke:#004d67;--ts-edge-stroke:#004d67;--ts-text-primary:#0d2b35;--ts-text-secondary:#516970;--ts-header-text:#0d2b35;--ts-maturity-1:#bf2518;--ts-maturity-2:#b05911;--ts-maturity-3:#8d7011;--ts-maturity-4:#407d21;--ts-maturity-5:#237b48;--ts-brand-amber:#ffaf00;--ts-brand-orange:#ff4d00;--ts-brand-orange-tint:#ffeee5;--ts-level-0:#eef4f7;--ts-level-1:#e6f1f4;--ts-level-2:#dfedf1;--ts-level-3:#d7e9ef;--ts-level-4:#cee6ed;--ts-level-5:#c6e2ec;--ts-level-6:#bfe0eb;--ts-level-7:#b7deeb;--ts-tree-level-0:#e6f1f4;--ts-tree-level-1:#d0e9f1;--ts-tree-level-2:#b5e3f2;--ts-tree-maturity-1:#bf2518;--ts-tree-maturity-2:#b05911;--ts-tree-maturity-3:#8d7011;--ts-tree-maturity-4:#407d21;--ts-tree-maturity-5:#237b48;}.diagram-node{stroke:var(--ts-node-stroke);stroke-width:1;}
+.layer-driver{fill:var(--ts-layer-driver);}
+.layer-factor{fill:var(--ts-layer-factor);}
+.layer-goal{fill:var(--ts-layer-goal);}
+.layer-change{fill:var(--ts-layer-change);}
+.layer-activity{fill:var(--ts-layer-activity);}
+.level-0{fill:var(--ts-level-0);}.level-1{fill:var(--ts-level-1);}.level-2{fill:var(--ts-level-2);}.level-3{fill:var(--ts-level-3);}.level-4{fill:var(--ts-level-4);}.level-5{fill:var(--ts-level-5);}.level-6{fill:var(--ts-level-6);}.level-7{fill:var(--ts-level-7);}
+.diagram-edge{stroke:var(--ts-edge-stroke);stroke-width:1.5;fill:none;}
+.arrow-fill{fill:var(--ts-edge-stroke);}
+.text-header{fill:var(--ts-header-text);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:13px;font-weight:700;dominant-baseline:central;}
+.text-primary{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:600;dominant-baseline:central;}
+.text-secondary{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:400;dominant-baseline:central;}
+.text-id{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:10px;font-weight:600;dominant-baseline:central;}
+.text-pill{fill:var(--ts-text-primary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:11px;font-weight:500;dominant-baseline:central;}
+.maturity-1{fill:var(--ts-maturity-1);}
+.maturity-2{fill:var(--ts-maturity-2);}
+.maturity-3{fill:var(--ts-maturity-3);}
+.maturity-4{fill:var(--ts-maturity-4);}
+.maturity-5{fill:var(--ts-maturity-5);}
+.compliance-gap{fill:var(--ts-status-warning-bg);stroke:var(--ts-status-warning-fg);}
+.compliance-gap text{fill:var(--ts-status-warning-fg);}
+.compliance-deadline{fill:var(--ts-status-error-bg);stroke:var(--ts-status-error-fg);}
+.compliance-deadline text{fill:var(--ts-status-error-fg);}
+.compliance-badge{fill:var(--ts-status-error-fg);}
+.compliance-badge-text{fill:var(--ts-text-inverse);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:8px;font-weight:700;}
+.tree-level-0{fill:var(--ts-tree-level-0);}
+.tree-level-1{fill:var(--ts-tree-level-1);}
+.tree-level-2{fill:var(--ts-tree-level-2);}
+.tree-maturity-1{fill:var(--ts-tree-maturity-1);}
+.tree-maturity-2{fill:var(--ts-tree-maturity-2);}
+.tree-maturity-3{fill:var(--ts-tree-maturity-3);}
+.tree-maturity-4{fill:var(--ts-tree-maturity-4);}
+.tree-maturity-5{fill:var(--ts-tree-maturity-5);}
+.tree-collapse-btn{cursor:pointer;fill:white;stroke:var(--ts-node-stroke);stroke-width:1.5;}
+.tree-collapse-btn:hover{fill:var(--ts-bg-elevated);}
+.tree-collapse-lbl{fill:var(--ts-text-secondary);font-family:var(--vscode-font-family, system-ui, -apple-system, sans-serif);font-size:12px;font-weight:700;dominant-baseline:central;pointer-events:none;}
+.blocks-grid-border{fill:none;stroke:var(--ts-border);}
+.bp-row-bg { fill: none; }
+.bp-border { fill: none; stroke: var(--ts-border, #cbd5e1); stroke-width: 1; }</style>
+<text class="text-header" x="24" y="18">Order fulfilment — operational blueprint</text>
+<rect class="diagram-node level-0 bp-row-bg" x="24" y="48" width="1240" height="587" rx="6" stroke="none"/>
+<defs><clipPath id="bp-clip"><rect x="24" y="48" width="1240" height="587" rx="6"/></clipPath></defs>
+<g clip-path="url(#bp-clip)"><rect class="diagram-node level-1" x="164" y="48" width="220" height="40" stroke="none"/>
+<text class="text-header" x="274" y="68" text-anchor="middle" dominant-baseline="central">Receive order</text>
+<rect class="diagram-node level-1" x="384" y="48" width="220" height="40" stroke="none"/>
+<text class="text-header" x="494" y="68" text-anchor="middle" dominant-baseline="central">Allocate inventory</text>
+<rect class="diagram-node level-1" x="604" y="48" width="220" height="40" stroke="none"/>
+<text class="text-header" x="714" y="68" text-anchor="middle" dominant-baseline="central">Pick &amp; pack</text>
+<rect class="diagram-node level-1" x="824" y="48" width="220" height="40" stroke="none"/>
+<text class="text-header" x="934" y="68" text-anchor="middle" dominant-baseline="central">Ship</text>
+<rect class="diagram-node level-1" x="1044" y="48" width="220" height="40" stroke="none"/>
+<text class="text-header" x="1154" y="68" text-anchor="middle" dominant-baseline="central">Confirm delivery &amp; close</text>
+<rect class="diagram-node level-2 bp-row-bg" x="24" y="88" width="140" height="71" stroke="none"/>
+<text class="text-primary" x="36" y="123.5" dominant-baseline="central">Goal</text>
+<rect class="diagram-node level-2 bp-row-bg" x="24" y="159" width="140" height="88" stroke="none"/>
+<text class="text-primary" x="36" y="203" dominant-baseline="central">Result</text>
+<rect class="diagram-node level-2 bp-row-bg" x="24" y="247" width="140" height="188" stroke="none"/>
+<text class="text-primary" x="36" y="341" dominant-baseline="central">Systems</text>
+<rect class="diagram-node level-2 bp-row-bg" x="24" y="435" width="140" height="100" stroke="none"/>
+<text class="text-primary" x="36" y="485" dominant-baseline="central">Actors</text>
+<rect class="diagram-node level-2 bp-row-bg" x="24" y="535" width="140" height="100" stroke="none"/>
+<text class="text-primary" x="36" y="585" dominant-baseline="central">Equipment</text>
+<rect class="diagram-node level-3 bp-row-bg" x="164" y="88" width="220" height="71" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="174" y="115">Capture a validated</tspan><tspan x="174" y="132">customer order.</tspan></text>
+<rect class="diagram-node level-3 bp-row-bg" x="384" y="88" width="220" height="71" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="394" y="106.5">Reserve stock to satisfy</tspan><tspan x="394" y="123.5">the order from the optimal</tspan><tspan x="394" y="140.5">warehouse.</tspan></text>
+<rect class="diagram-node level-3 bp-row-bg" x="604" y="88" width="220" height="71" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="614" y="106.5">Assemble the physical</tspan><tspan x="614" y="123.5">order from the reserved</tspan><tspan x="614" y="140.5">inventory.</tspan></text>
+<rect class="diagram-node level-3 bp-row-bg" x="824" y="88" width="220" height="71" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="834" y="106.5">Hand the shipment to the</tspan><tspan x="834" y="123.5">carrier and notify the</tspan><tspan x="834" y="140.5">customer.</tspan></text>
+<rect class="diagram-node level-3 bp-row-bg" x="1044" y="88" width="220" height="71" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="1054" y="106.5">Confirm delivery, settle</tspan><tspan x="1054" y="123.5">payment, and close the</tspan><tspan x="1054" y="140.5">order.</tspan></text>
+<rect class="diagram-node level-4 bp-row-bg" x="164" y="159" width="220" height="88" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="174" y="186">Validated order record in</tspan><tspan x="174" y="203">OMS with payment</tspan><tspan x="174" y="220">pre-authorised.</tspan></text>
+<rect class="diagram-node level-4 bp-row-bg" x="384" y="159" width="220" height="88" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="394" y="186">Reservation lines linked</tspan><tspan x="394" y="203">to the order across one or</tspan><tspan x="394" y="220">more warehouses.</tspan></text>
+<rect class="diagram-node level-4 bp-row-bg" x="604" y="159" width="220" height="88" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="614" y="177.5">Packed shipment scanned</tspan><tspan x="614" y="194.5">out of the warehouse and</tspan><tspan x="614" y="211.5">ready for carrier</tspan><tspan x="614" y="228.5">handover.</tspan></text>
+<rect class="diagram-node level-4 bp-row-bg" x="824" y="159" width="220" height="88" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="834" y="186">In-transit shipment with</tspan><tspan x="834" y="203">tracking number sent to</tspan><tspan x="834" y="220">the customer.</tspan></text>
+<rect class="diagram-node level-4 bp-row-bg" x="1044" y="159" width="220" height="88" stroke="none"/>
+<text class="text-secondary" dominant-baseline="central"><tspan x="1054" y="186">Closed order; payment</tspan><tspan x="1054" y="203">captured; post-purchase</tspan><tspan x="1054" y="220">feedback request queued.</tspan></text>
+<rect class="diagram-node level-5 bp-row-bg" x="164" y="247" width="1100" height="188" stroke="none"/>
+<rect class="diagram-node level-6 bp-row-bg" x="164" y="435" width="1100" height="100" stroke="none"/>
+<rect class="diagram-node level-7 bp-row-bg" x="164" y="535" width="1100" height="100" stroke="none"/>
+<line class="diagram-edge" x1="24" y1="88" x2="1264" y2="88"/>
+<line class="diagram-edge" x1="24" y1="159" x2="1264" y2="159"/>
+<line class="diagram-edge" x1="24" y1="247" x2="1264" y2="247"/>
+<line class="diagram-edge" x1="24" y1="435" x2="1264" y2="435"/>
+<line class="diagram-edge" x1="24" y1="535" x2="1264" y2="535"/>
+<line class="diagram-edge" x1="164" y1="48" x2="164" y2="635"/>
+<line class="diagram-edge" x1="384" y1="48" x2="384" y2="635"/>
+<line class="diagram-edge" x1="604" y1="48" x2="604" y2="635"/>
+<line class="diagram-edge" x1="824" y1="48" x2="824" y2="635"/>
+<line class="diagram-edge" x1="1044" y1="48" x2="1044" y2="635"/><rect class="diagram-node level-5" x="172" y="299" width="1084" height="40" rx="6"/>
+<text class="text-pill" x="714" y="311.5" text-anchor="middle" dominant-baseline="central">Order Management System</text>
+<text class="text-secondary" x="714" y="326.5" text-anchor="middle" dominant-baseline="central">APPLICATION-OMS-1</text>
+<rect class="diagram-node level-5" x="392" y="255" width="424" height="40" rx="6"/>
+<text class="text-pill" x="604" y="267.5" text-anchor="middle" dominant-baseline="central">Warehouse Management System</text>
+<text class="text-secondary" x="604" y="282.5" text-anchor="middle" dominant-baseline="central">APPLICATION-WMS-1</text>
+<rect class="diagram-node level-5" x="832" y="255" width="424" height="40" rx="6"/>
+<text class="text-pill" x="1044" y="267.5" text-anchor="middle" dominant-baseline="central">Transportation Management System</text>
+<text class="text-secondary" x="1044" y="282.5" text-anchor="middle" dominant-baseline="central">APPLICATION-TMS-1</text>
+<rect class="diagram-node level-5" x="172" y="255" width="204" height="40" rx="6"/>
+<text class="text-pill" x="274" y="267.5" text-anchor="middle" dominant-baseline="central">Payment gateway</text>
+<text class="text-secondary" x="274" y="282.5" text-anchor="middle" dominant-baseline="central">APPLICATION-PAYMENT-1</text>
+<rect class="diagram-node level-5" x="1052" y="387" width="204" height="40" rx="6"/>
+<text class="text-pill" x="1154" y="399.5" text-anchor="middle" dominant-baseline="central">Payment gateway</text>
+<text class="text-secondary" x="1154" y="414.5" text-anchor="middle" dominant-baseline="central">APPLICATION-PAYMENT-1</text>
+<rect class="diagram-node level-5" x="832" y="343" width="424" height="40" rx="6"/>
+<text class="text-pill" x="1044" y="363" text-anchor="middle" dominant-baseline="central">Carrier tracking webhook</text>
+<rect class="diagram-node level-6" x="172" y="443" width="204" height="40" rx="6"/>
+<text class="text-pill" x="274" y="455.5" text-anchor="middle" dominant-baseline="central">Customer service</text>
+<text class="text-pill" x="274" y="470.5" text-anchor="middle" dominant-baseline="central">representative</text>
+<rect class="diagram-node level-6" x="1052" y="443" width="204" height="40" rx="6"/>
+<text class="text-pill" x="1154" y="455.5" text-anchor="middle" dominant-baseline="central">Customer service</text>
+<text class="text-pill" x="1154" y="470.5" text-anchor="middle" dominant-baseline="central">representative</text>
+<rect class="diagram-node level-6" x="392" y="443" width="204" height="40" rx="6"/>
+<text class="text-pill" x="494" y="455.5" text-anchor="middle" dominant-baseline="central">Inventory planner</text>
+<text class="text-secondary" x="494" y="470.5" text-anchor="middle" dominant-baseline="central">ROLE-INVENTORY-PLANNER-1</text>
+<rect class="diagram-node level-6" x="612" y="443" width="424" height="40" rx="6"/>
+<text class="text-pill" x="824" y="455.5" text-anchor="middle" dominant-baseline="central">Warehouse operator</text>
+<text class="text-secondary" x="824" y="470.5" text-anchor="middle" dominant-baseline="central">ROLE-WAREHOUSE-OP-1</text>
+<rect class="diagram-node level-6" x="1052" y="487" width="204" height="40" rx="6"/>
+<text class="text-pill" x="1154" y="499.5" text-anchor="middle" dominant-baseline="central">Finance operations</text>
+<text class="text-secondary" x="1154" y="514.5" text-anchor="middle" dominant-baseline="central">ROLE-FINANCE-OP-1</text>
+<rect class="diagram-node level-7" x="612" y="587" width="424" height="40" rx="6"/>
+<text class="text-pill" x="824" y="607" text-anchor="middle" dominant-baseline="central">Barcode scanner</text>
+<rect class="diagram-node level-7" x="612" y="543" width="204" height="40" rx="6"/>
+<text class="text-pill" x="714" y="563" text-anchor="middle" dominant-baseline="central">Packing station</text>
+<rect class="diagram-node level-7" x="832" y="543" width="204" height="40" rx="6"/>
+<text class="text-pill" x="934" y="563" text-anchor="middle" dominant-baseline="central">Label printer</text></g>
+<rect class="bp-border" x="24" y="48" width="1240" height="587" rx="6" fill="none"/>
+</svg>

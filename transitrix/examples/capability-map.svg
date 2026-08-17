@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="966" height="860" viewBox="0 0 966 860">
+<defs>
+  <marker id="cap-tree-arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" class="arrow-fill"/>
+  </marker>
+</defs>
+<path d="M274,116 C338,116 290,64 354,64" class="diagram-edge"/>
+<path d="M604,168 C687.2,168 600.8,64 684,64" class="diagram-edge"/>
+<path d="M604,168 C668,168 620,168 684,168" class="diagram-edge"/>
+<path d="M274,116 C338,116 290,168 354,168" class="diagram-edge"/>
+<path d="M274,348 C338,348 290,296 354,296" class="diagram-edge"/>
+<path d="M274,348 C338,348 290,400 354,400" class="diagram-edge"/>
+<g>
+  <rect class="tree-level-0" x="354" y="24" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-3" x="364" y="55" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="378" y="64" text-anchor="middle" fill="white">L3</text>
+  <text class="text-primary" x="400" y="56" dominant-baseline="central">Order Intake</text>
+  <text class="text-id" x="400" y="73" dominant-baseline="central">CAPABILITY-V1.1</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="684" y="24" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-2" x="694" y="55" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="708" y="64" text-anchor="middle" fill="white">L2</text>
+  <text class="text-primary" x="730" y="56" dominant-baseline="central">Pick &amp; Pack</text>
+  <text class="text-id" x="730" y="73" dominant-baseline="central">CAPABILITY-V1.2.1</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="684" y="128" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-1" x="694" y="159" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="708" y="168" text-anchor="middle" fill="white">L1</text>
+  <text class="text-primary" x="730" y="160" dominant-baseline="central">Last-mile Delivery</text>
+  <text class="text-id" x="730" y="177" dominant-baseline="central">CAPABILITY-V1.2.2</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="354" y="128" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-2" x="364" y="159" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="378" y="168" text-anchor="middle" fill="white">L2</text>
+  <text class="text-primary" x="400" y="160" dominant-baseline="central">Order Fulfilment</text>
+  <text class="text-id" x="400" y="177" dominant-baseline="central">CAPABILITY-V1.2</text>
+  <circle class="tree-collapse-btn" cx="604" cy="168" r="8" data-node-id="CAPABILITY-V1.2" data-collapsed="false"/>
+  <text class="tree-collapse-lbl" x="604" y="168" text-anchor="middle">−</text>
+</g>
+<g>
+  <rect class="tree-level-0" x="24" y="76" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-2" x="34" y="107" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="48" y="116" text-anchor="middle" fill="white">L2</text>
+  <text class="text-primary" x="70" y="108" dominant-baseline="central">Order Management</text>
+  <text class="text-id" x="70" y="125" dominant-baseline="central">CAPABILITY-V1</text>
+  <circle class="tree-collapse-btn" cx="274" cy="116" r="8" data-node-id="CAPABILITY-V1" data-collapsed="false"/>
+  <text class="tree-collapse-lbl" x="274" y="116" text-anchor="middle">−</text>
+</g>
+<g>
+  <rect class="tree-level-0" x="354" y="256" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-2" x="364" y="287" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="378" y="296" text-anchor="middle" fill="white">L2</text>
+  <text class="text-primary" x="400" y="288" dominant-baseline="central">Customer Acquisition</text>
+  <text class="text-id" x="400" y="305" dominant-baseline="central">CAPABILITY-V2.1</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="354" y="360" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-3" x="364" y="391" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="378" y="400" text-anchor="middle" fill="white">L3</text>
+  <text class="text-primary" x="400" y="392" dominant-baseline="central">Customer Service</text>
+  <text class="text-id" x="400" y="409" dominant-baseline="central">CAPABILITY-V2.2</text>
+  
+</g>
+<g title="Customer Relationship Management">
+  <rect class="tree-level-0" x="24" y="308" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-3" x="34" y="339" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="48" y="348" text-anchor="middle" fill="white">L3</text>
+  <text class="text-primary" x="70" y="340" dominant-baseline="central">Customer Relationship…</text>
+  <text class="text-id" x="70" y="357" dominant-baseline="central">CAPABILITY-V2</text>
+  <circle class="tree-collapse-btn" cx="274" cy="348" r="8" data-node-id="CAPABILITY-V2" data-collapsed="false"/>
+  <text class="tree-collapse-lbl" x="274" y="348" text-anchor="middle">−</text>
+</g>
+<g>
+  <rect class="tree-level-0" x="24" y="436" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-4" x="34" y="467" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="48" y="476" text-anchor="middle" fill="white">L4</text>
+  <text class="text-primary" x="70" y="468" dominant-baseline="central">Financial Management</text>
+  <text class="text-id" x="70" y="485" dominant-baseline="central">CAPABILITY-V3</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="24" y="564" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-1" x="34" y="595" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="48" y="604" text-anchor="middle" fill="white">L1</text>
+  <text class="text-primary" x="70" y="596" dominant-baseline="central">Master Data Management</text>
+  <text class="text-id" x="70" y="613" dominant-baseline="central">CAPABILITY-H1</text>
+  
+</g>
+<g>
+  <rect class="tree-level-0" x="24" y="692" width="250" height="80" rx="11" stroke="var(--ts-node-stroke,#004d67)" stroke-width="3"/>
+  <rect class="tree-maturity-2" x="34" y="723" width="28" height="18" rx="4"/>
+  <text class="text-pill" x="48" y="732" text-anchor="middle" fill="white">L2</text>
+  <text class="text-primary" x="70" y="724" dominant-baseline="central">ESG &amp; Compliance</text>
+  <text class="text-id" x="70" y="741" dominant-baseline="central">CAPABILITY-H2</text>
+  
+</g>
+<rect class="tree-level-0" x="24" y="808" width="918" height="24" rx="4" stroke="var(--ts-node-stroke,#004d67)" stroke-width="1"/>
+  <text class="text-id" x="483" y="820" text-anchor="middle" dominant-baseline="central">Levels 0–2</text>
+</svg>

@@ -1,0 +1,47 @@
+name: Plugin examples drift check
+
+# transitrix/README.md leads with rendered SVG examples of the notation views
+# the plugin's onboard skill lets a user author (epic transitrix-hq#158,
+# deliverable 2). The images are generated, not hand-drawn — regenerating
+# them from this repository's own notations/examples/ sources via
+# @transitrix/plugin-examples must reproduce the committed
+# transitrix/examples/*.svg files byte-for-byte.
+#
+# This regenerates into a scratch directory and diffs it against what's
+# committed, failing the build on any difference — same style as the
+# notations doc-lint and the document-renderer conformance check.
+
+on:
+  pull_request:
+    paths:
+      - 'packages/plugin-examples/**'
+      - 'notations/examples/**'
+      - 'transitrix/examples/**'
+      - 'transitrix/README.md'
+      - '.github/workflows/plugin-examples-drift.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 10:35 UTC — weekly safety net, offset from the other Monday crons.
+    - cron: '35 10 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: packages/plugin-examples
+        run: npm ci --legacy-peer-deps
+
+      - name: Regenerate examples into a scratch directory
+        run: node packages/plugin-examples/src/generate.mjs "$RUNNER_TEMP/plugin-examples-scratch"
+
+      - name: Diff regenerated output against committed transitrix/examples/
+        run: diff -rq transitrix/examples "$RUNNER_TEMP/plugin-examples-scratch" --exclude=.gitattributes
