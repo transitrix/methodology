@@ -1004,12 +1004,16 @@ A `RELEASE` is a dated/versioned **state of a modelled subject** — one shipped
 | `of` | **yes** | string | `PRODUCT-…` or `APPLICATION-…` — the subject this is a release of. No other TYPE is a valid entry. |
 | `version` | **yes** | string | An opaque label (`"2.4.0"`, `"2026.07-hotfix1"`, whatever the subject's own versioning scheme uses). **Never parsed, compared, or sorted anywhere in shipped code** — order between releases of the same subject is expressed exclusively by `predecessor`, never inferred from this string. |
 | `predecessor` | no | string | `RELEASE-…` — the prior release of the *same* subject this one succeeds. Same-TYPE, inline, timeless — the same shape as `CHANGE.parent` (§7.3) and `LOCATION.parent` (§7.22). The only expression of version order; a subject's release history is a chain (or, where a vendor branches maintenance lines, more than one chain) reconstructed by following `predecessor` links, never by comparing `version` strings. |
-| `released_at` | no | string | Date this release shipped — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). Distinct from `valid_from`/`valid_to` (§3), which record the *element record's* canon lifecycle, not the shipped subject's own release date. |
+| `released_at` | no | string | Date this release shipped — quoted ISO 8601 ([CONTRACT.md](CONTRACT.md) §4). **Normally equal to `valid_from`**: a release takes effect when it ships, and [CONTRACT.md](CONTRACT.md) §7 defines the lifecycle as a property of the *modelled thing*, not of the record — so a release admitted long after it shipped carries the **ship date** in `valid_from`, never the admission date (that is `admitted_at`, and it is what freshness decays from — [CONTRACT.md](CONTRACT.md) §11.3). The two fields are kept separate because `released_at` is optional and records the subject's own historical ship date, while `valid_from` is required and pairs with `valid_to`, which closes the window if the release is later withdrawn. |
 | `description` | recommended | string | One-paragraph elaboration — what changed in this release, if worth recording beyond what `predecessor` and the attached claims already say. |
 
 **No list of its own contents.** A `RELEASE` does not enumerate what it contains — no `requirements[]`, no `changes[]`. Composition (which obligations apply to it, which claims target it) is derived by querying the `required_for` relation kind ([elements/17-relations.md](elements/17-relations.md) §3, `REQUIREMENT` → `RELEASE` — a first-class REL file, not a field on either endpoint) and the `ASSERTION`/`VERIFICATION` release qualifiers for this release's id, never stored on the `RELEASE` element itself — the same "derive, don't duplicate" discipline as `CHANGE`'s impact set (§7.3.1). The obligation side of that derivation, including how `predecessor` carries an obligation forward from one release to the next, is specified at [elements/17-relations.md](elements/17-relations.md) §3.2.
 
 **Authoring rule — catalogued only when referenced.** A `RELEASE` is not created preemptively for every version a vendor or a team has ever shipped. It is admitted to canon only once something needs to distinguish it — a `required_for` obligation that applies from a specific release onward, or an `ASSERTION`/`VERIFICATION` whose outcome differs by release. This mirrors the `STEP` promotion rule's restraint (§7.20, [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md) §1) without being the same mechanic: `STEP` is inline-then-promoted (it has a containing `PROCESS` to live in before promotion); `RELEASE` has no such containing document — it is always authored directly as a standalone file, just sparingly, so a subject's full vendor version history is never implied to belong in the catalogue as inert entries.
+
+**Provenance — no per-TYPE fields, because the envelope already carries it.** A `RELEASE` admitted from tag/branch evidence rather than a signed release document cites that evidence through **`derived_from`** (§3) — an envelope field every `standalone` TYPE carries, not one a TYPE opts into. There is consequently nothing for this section to add and nothing missing: a tag-sourced release is exactly as auditable as a document-sourced one, and its provenance belongs there rather than buried in free-text `description`. The matching field artefact for a repository/tag survey is an `OBSERVATION` ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.4).
+
+`RELEASE` has **no** `extraction_confidence` field — and neither does any other canon element, of any TYPE. `extraction_confidence` is a review flag on an ingest **candidate** (`candidate.extraction_confidence`, [vocabulary.yaml](vocabulary.yaml)); it is surfaced in the review queue, drives reviewer-authority routing ([CONTRACT.md](CONTRACT.md) §6.2), and is **never persisted into canon**. An admitted element carrying it is a defect in whatever wrote it, not a precedent to follow. (Decision recorded per `transitrix-hq#197`: documented convention, no schema extension.)
 
 ```yaml
 # canon/elements/05_implementation/releases/RELEASE-PAYMENTS-GATEWAY-2.yaml
@@ -1027,17 +1031,21 @@ released_at: "2026-07-15"
 
 # Admission record (CONTRACT.md §6)
 zone: canon
-admitted_at: "2026-07-15"
+admitted_at: "2026-08-03"          # when the record passed the gate — weeks after the ship date
 admitted_by: "v.korobeinikov"
 gate_checks:
   uniqueness: pass
   consistency: pass
   completeness: pass
+derived_from:                      # optional (§3) — the evidence this release was admitted from
+  - OBSERVATION-payments-gateway-tag-survey-1
 
 # Primitive lifecycle (CONTRACT.md §7)
-valid_from: "2026-07-15"
+valid_from: "2026-07-15"           # the SHIP date, not the admission date
 valid_to: null
 ```
+
+The three dates are deliberately not all equal. `released_at` and `valid_from` coincide — a release takes effect when it ships — while `admitted_at` is later, because the catalogue recorded it afterwards. An example in which all three carry the same date demonstrates nothing, and has been read as licence to set `valid_from` from the admission date; it is not.
 
 No view inline shape: `RELEASE` is standalone-only, like `RISK` and `NEED` — it is not authored inline inside any view document.
 
