@@ -328,6 +328,9 @@ relation_types:
   required_for:
     from: [REQUIREMENT]
     to: [RELEASE]
+  introduced_in:
+    from: [INTEGRATION, APPLICATION]
+    to: [RELEASE]
 
 # Retired relation kind names — accepted, warned on, never silently rewritten.
 deprecated_relation_types:
