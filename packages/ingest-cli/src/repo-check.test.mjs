@@ -11,6 +11,13 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { profileCompleteness, elementTypesOnDisk, repoCheck } from './repo-check.mjs';
+import { PRESETS_VERSION } from './coverage-presets.mjs';
+
+// Fixture manifests declare the version the built-in presets were stated against,
+// read from the constant rather than hardcoded — a literal here goes stale at every
+// release and silently flips `tooling.ok` to false in every fixture below, which is
+// the same drift transitrix-hq#199 reported in the constant itself.
+const MANIFEST = `methodology_version: "${PRESETS_VERSION}"\ncoverage_profile: core\n`;
 
 // ── profileCompleteness — pure-function unit tests ──────────────────────
 
@@ -97,7 +104,7 @@ test('elementTypesOnDisk: absent canon/elements/ yields an empty set, not a thro
 
 test('repoCheck: a hand-placed out-of-profile TYPE is flagged even though nothing loaded it as a candidate', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const nodesDir = join(root, 'canon', 'elements', '04_technology', 'nodes');
   mkdirSync(nodesDir, { recursive: true });
   // `core` (coverage-presets.mjs) excludes NODE — the issue's own example.
@@ -111,7 +118,7 @@ test('repoCheck: a hand-placed out-of-profile TYPE is flagged even though nothin
 
 test('repoCheck: an unresolved profile is reported as not-resolvable, never a false-clean empty list', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: not-a-real-preset\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), `methodology_version: "${PRESETS_VERSION}"\ncoverage_profile: not-a-real-preset\n`, 'utf8');
   const nodesDir = join(root, 'canon', 'elements', '04_technology', 'nodes');
   mkdirSync(nodesDir, { recursive: true });
   writeFileSync(join(nodesDir, 'NODE-1.yaml'), 'id: NODE-1\nname: Test Node\n', 'utf8');
@@ -123,7 +130,7 @@ test('repoCheck: an unresolved profile is reported as not-resolvable, never a fa
 
 test('repoCheck: a TYPE covered by the profile raises no flag', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
   mkdirSync(goalsDir, { recursive: true });
   writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
@@ -143,7 +150,7 @@ test('repoCheck: a TYPE covered by the profile raises no flag', async () => {
 
 test('repoCheck: a clean repo reports zero unreadable files and no red flag for it', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
   mkdirSync(goalsDir, { recursive: true });
   writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
@@ -155,7 +162,7 @@ test('repoCheck: a clean repo reports zero unreadable files and no red flag for 
 
 test('repoCheck: the data-free report never carries the per-file unreadable detail', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
 
   const report = await repoCheck(root);
   const serialized = JSON.stringify(report);
@@ -165,11 +172,39 @@ test('repoCheck: the data-free report never carries the per-file unreadable deta
   }
 });
 
+// ── version currency (F11.2) — `tooling.ok`, the report's headline signal ─
+//
+// transitrix-hq#199: PRESETS_VERSION sat at 2.1.0 across the 3.2.0 → 3.6.0
+// releases, so this signal read false for every adopter who correctly kept
+// `methodology_version` current — and nothing here covered it. These two tests
+// pin both directions of the comparison.
+
+test('repoCheck: tooling.ok is true when the declared version matches the built-in presets', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.tooling.cli_presets_version, PRESETS_VERSION);
+  assert.equal(report.tooling.methodology_version_match, true);
+  assert.equal(report.tooling.ok, true);
+  assert.ok(!report.integrity.red_flags.some((f) => f.includes('does not match the CLI built-in presets version')));
+});
+
+test('repoCheck: a declared version behind the built-in presets flips tooling.ok and raises a red flag', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "0.0.1"\ncoverage_profile: core\n', 'utf8');
+
+  const report = await repoCheck(root);
+  assert.equal(report.tooling.methodology_version_match, false);
+  assert.equal(report.tooling.ok, false);
+  assert.ok(report.integrity.red_flags.some((f) => f.includes('does not match the CLI built-in presets version')));
+});
+
 // ── binding envelope (BIND-001..005, CONTRACT.md §17.2) surfaces here too ─
 
 test('repoCheck: a clean repo (no canon_id, no origin) carries no `bindings` section at all', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
   mkdirSync(goalsDir, { recursive: true });
   writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\n', 'utf8');
@@ -180,7 +215,7 @@ test('repoCheck: a clean repo (no canon_id, no origin) carries no `bindings` sec
 
 test('repoCheck: BIND-005 — an `origin` field on a project repository\'s own element is flagged', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
   mkdirSync(goalsDir, { recursive: true });
   writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\norigin:\n  repository: acme/architecture\n  id: GOAL-1\n', 'utf8');
@@ -192,7 +227,7 @@ test('repoCheck: BIND-005 — an `origin` field on a project repository\'s own e
 
 test('repoCheck: BIND-004 — a canon_id present with no catalogue pin configured is flagged', async () => {
   const root = tmpOrgRoot();
-  writeFileSync(join(root, 'transitrix.yaml'), 'methodology_version: "2.1.0"\ncoverage_profile: core\n', 'utf8');
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
   const goalsDir = join(root, 'canon', 'elements', '01_motivation', 'goals');
   mkdirSync(goalsDir, { recursive: true });
   writeFileSync(join(goalsDir, 'GOAL-1.yaml'), 'id: GOAL-1\nname: Test Goal\ncanon_id: "TERM-001"\n', 'utf8');

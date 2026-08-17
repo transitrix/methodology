@@ -77,6 +77,13 @@
 //   SIZE1 per-file soft ceiling (warn-only) — a method/*.md file over 250
 //       lines or with more than nine `##` sections warns. Never fails the
 //       build — see main()'s separate warnings collection.
+//   PRESETS1 shipped coverage presets — packages/ingest-cli/src/coverage-presets.mjs
+//       carries `PRESETS_VERSION` equal to the version source of truth, and its
+//       `PRESETS` tables encode exactly the preset membership stated in
+//       COVERAGE_PROFILES.md §3 (element TYPEs) and §3.1 (relation kinds).
+//       `full` must stay the sentinel "everything" on both sides rather than
+//       an enumeration. Fails closed: an unimportable module or unparseable
+//       table is a failure, not a skip.
 //
 // Exit codes:
 //   0 — clean
@@ -101,6 +108,8 @@ const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES
 const RELATIONS_SPEC_PATH = join(REPO_ROOT, 'notations', 'elements', '17-relations.md');
 const IDS_AND_REFERENCES_PATH = join(REPO_ROOT, 'notations', 'IDS_AND_REFERENCES.md');
 const CONVENTIONS_PATH = join(REPO_ROOT, 'notations', 'CONVENTIONS.md');
+const COVERAGE_PROFILES_PATH = join(REPO_ROOT, 'notations', 'COVERAGE_PROFILES.md');
+const COVERAGE_PRESETS_MODULE = join(REPO_ROOT, 'packages', 'ingest-cli', 'src', 'coverage-presets.mjs');
 // Both files carry a deliberate ✓/✗ (or "invalid" — labelled) comparison
 // table teaching the grammar by counter-example; ID1 would otherwise flag
 // the ✗ side as a live violation.
@@ -1539,6 +1548,167 @@ async function checkSizeCeiling(warnings) {
   }
 }
 
+// --- PRESETS1: shipped coverage presets vs COVERAGE_PROFILES.md ------------
+//
+// packages/ingest-cli/src/coverage-presets.mjs hand-encodes two things the
+// release step is supposed to keep current: PRESETS_VERSION (the methodology
+// release the tables were stated against) and the per-layer element/relation
+// membership of each shipped preset. Both were remembered rather than checked,
+// and PRESETS_VERSION went five releases without moving (transitrix-hq#199) —
+// which pins repo-check's headline `tooling.ok` signal to false for every
+// adopter who correctly keeps `methodology_version` current, since repo-check
+// compares the two strings for exact equality.
+//
+// The version half is the drift that was reported; the membership half is the
+// other half of the same manual step, and is checked here too so that bumping
+// the version can't quietly assert a table nobody re-stated.
+//
+// `full` is the sentinel "everything" in both places — no allowlist in the
+// module, no enumeration in the spec — so the check asserts it stays a
+// sentinel on both sides instead of comparing members.
+
+// Pure — no I/O. Parses one of COVERAGE_PROFILES.md's preset tables into
+// Map<preset, {sentinel, layers: Map<layer, string[]>}>. `heading` selects the
+// section (§3's element table or §3.1's relation table) and `cellIndex` the
+// column holding the membership list, which differs between the two tables.
+// A cell that begins "Every …" is the sentinel row. Throws on a missing
+// section, an unparseable segment, or a table that yields no rows — a
+// corrupted artefact must fail this check, never pass silently.
+export function parsePresetTable(text, heading, cellIndex) {
+  const headingIdx = text.indexOf(`\n${heading}`);
+  if (headingIdx < 0) throw new Error(`COVERAGE_PROFILES.md: "${heading}" not found`);
+  const afterHeading = headingIdx + 1 + heading.length;
+  const nextHeadingOffset = text.slice(afterHeading).search(/\n#{2,3} /);
+  const section = nextHeadingOffset < 0 ? text.slice(afterHeading) : text.slice(afterHeading, afterHeading + nextHeadingOffset);
+
+  const out = new Map();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| **`')) continue; // only preset data rows
+    const cells = line.split('|').slice(1, -1).map(c => c.trim());
+    const nameM = cells[0].match(/^\*\*`([a-z][a-z0-9_-]*)`\*\*$/);
+    if (!nameM) continue;
+    const preset = nameM[1];
+    const cell = cells[cellIndex];
+    if (cell === undefined) {
+      throw new Error(`COVERAGE_PROFILES.md ${heading}: the ${preset} row has no column ${cellIndex}`);
+    }
+    if (/^Every\b/.test(cell)) {
+      out.set(preset, { sentinel: true, layers: new Map() });
+      continue;
+    }
+    const layers = new Map();
+    for (const chunk of cell.split('·')) {
+      const segment = chunk.trim();
+      if (!segment) continue;
+      const segM = segment.match(/^(\d\d_[a-z]+):\s*(.+)$/);
+      if (!segM) {
+        throw new Error(`COVERAGE_PROFILES.md ${heading}: unparseable segment "${segment}" in the ${preset} row`);
+      }
+      const values = [...segM[2].matchAll(/`([^`]+)`/g)].map(m => m[1]);
+      if (values.length === 0) {
+        throw new Error(`COVERAGE_PROFILES.md ${heading}: the ${preset} row names layer ${segM[1]} with no code-span values`);
+      }
+      layers.set(segM[1], values);
+    }
+    if (layers.size === 0) {
+      throw new Error(`COVERAGE_PROFILES.md ${heading}: the ${preset} row enumerates no layers`);
+    }
+    out.set(preset, { sentinel: false, layers });
+  }
+  if (out.size === 0) throw new Error(`COVERAGE_PROFILES.md ${heading}: table parsed empty`);
+  return out;
+}
+
+// Pure — no I/O. Compares the module's PRESETS table against the two parsed
+// spec tables and returns finding messages (empty when they agree). Membership
+// is compared as a set per layer — the spec's reading order is presentational,
+// so a reordering is not drift, but a missing/extra TYPE or layer is.
+export function derivePresetMembershipFindings(modulePresets, specElements, specRelations) {
+  const findings = [];
+  const names = [...new Set([...Object.keys(modulePresets), ...specElements.keys(), ...specRelations.keys()])].sort();
+
+  for (const name of names) {
+    const inModule = Object.prototype.hasOwnProperty.call(modulePresets, name);
+    const specEl = specElements.get(name);
+    const specRel = specRelations.get(name);
+    if (!inModule) {
+      findings.push(`COVERAGE_PROFILES.md ships preset \`${name}\` but coverage-presets.mjs PRESETS has no such entry — the CLI cannot resolve it.`);
+      continue;
+    }
+    if (!specEl || !specRel) {
+      const missing = [!specEl && '§3 (element TYPEs)', !specRel && '§3.1 (relation kinds)'].filter(Boolean).join(' and ');
+      findings.push(`coverage-presets.mjs PRESETS carries preset \`${name}\` with no matching row in COVERAGE_PROFILES.md ${missing}.`);
+      continue;
+    }
+
+    const moduleEntry = modulePresets[name];
+    const moduleIsSentinel = moduleEntry === 'ALL';
+    if (moduleIsSentinel !== (specEl.sentinel && specRel.sentinel)) {
+      findings.push(
+        `preset \`${name}\`: coverage-presets.mjs treats it as ${moduleIsSentinel ? 'the "everything" sentinel' : 'an enumerated allowlist'} ` +
+        `but COVERAGE_PROFILES.md §3/§3.1 state it as ${specEl.sentinel && specRel.sentinel ? 'the "everything" sentinel' : 'an enumerated allowlist'}.`
+      );
+      continue;
+    }
+    if (moduleIsSentinel) continue; // nothing to compare — both sides say "everything"
+
+    for (const [axis, moduleAxis, specAxis] of [
+      ['elements', moduleEntry.elements || {}, specEl.layers],
+      ['relations', moduleEntry.relations || {}, specRel.layers],
+    ]) {
+      const layers = [...new Set([...Object.keys(moduleAxis), ...specAxis.keys()])].sort();
+      for (const layer of layers) {
+        const mine = new Set(moduleAxis[layer] || []);
+        const theirs = new Set(specAxis.get(layer) || []);
+        const onlyModule = [...mine].filter(v => !theirs.has(v)).sort();
+        const onlySpec = [...theirs].filter(v => !mine.has(v)).sort();
+        if (onlyModule.length === 0 && onlySpec.length === 0) continue;
+        const parts = [];
+        if (onlySpec.length > 0) parts.push(`missing from the module: ${onlySpec.join(', ')}`);
+        if (onlyModule.length > 0) parts.push(`present only in the module: ${onlyModule.join(', ')}`);
+        findings.push(
+          `preset \`${name}\` ${axis} in ${layer} disagree with COVERAGE_PROFILES.md ` +
+          `${axis === 'elements' ? '§3' : '§3.1'} — ${parts.join('; ')}.`
+        );
+      }
+    }
+  }
+  return findings;
+}
+
+async function checkCoveragePresets(failures) {
+  const sotText = await readFile(VERSION_SOT, 'utf8');
+  const sotMatch = sotText.match(/^methodology_version:\s*"?([^"\s#]+)"?/m);
+  if (!sotMatch) throw new Error(`${relPosix(VERSION_SOT)}: methodology_version (source of truth) not found`);
+  const sot = sotMatch[1];
+
+  const mod = await import(pathToFileURL(COVERAGE_PRESETS_MODULE).href);
+  const modRel = relPosix(COVERAGE_PRESETS_MODULE);
+  if (typeof mod.PRESETS_VERSION !== 'string') {
+    throw new Error(`${modRel}: PRESETS_VERSION is not exported as a string`);
+  }
+  if (!mod.PRESETS || typeof mod.PRESETS !== 'object') {
+    throw new Error(`${modRel}: PRESETS is not exported as an object`);
+  }
+
+  if (mod.PRESETS_VERSION !== sot) {
+    failures.push({
+      check: 'PRESETS1',
+      message: `${modRel}: PRESETS_VERSION "${mod.PRESETS_VERSION}" ≠ source of truth "${sot}" (${relPosix(VERSION_SOT)}). ` +
+        `repo-check compares this string to the adopter's declared methodology_version for exact equality, so any ` +
+        `divergence reports a false "stale CLI" mismatch and pins its tooling.ok signal to false. Bump it in the same ` +
+        `PR as the pin, re-stating each preset's lists against COVERAGE_PROFILES.md §3 / §3.1 for the new release.`,
+    });
+  }
+
+  const profilesText = await readFile(COVERAGE_PROFILES_PATH, 'utf8');
+  const specElements = parsePresetTable(profilesText, '## 3. Shipped presets', 2);
+  const specRelations = parsePresetTable(profilesText, '### 3.1 Per-preset relation allowlists', 1);
+  for (const message of derivePresetMembershipFindings(mod.PRESETS, specElements, specRelations)) {
+    failures.push({ check: 'PRESETS1', message });
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
@@ -1561,6 +1731,7 @@ async function main() {
     await checkIdGrammar(failures);
     await checkLayerEnumeration(failures);
     await checkDualHomeTables(failures);
+    await checkCoveragePresets(failures);
     await checkSizeCeiling(warnings);
   } catch (e) {
     console.error(`error: ${e.message}`);

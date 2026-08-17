@@ -29,6 +29,8 @@ import {
   findLayerEnumerationGroups,
   parseMarkdownTables,
   findSizeCeilingWarnings,
+  parsePresetTable,
+  derivePresetMembershipFindings,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -691,4 +693,150 @@ test('findSizeCeilingWarnings — negative: more than nine "##" sections warns',
   assert.equal(warnings.length, 1);
   assert.equal(warnings[0].check, 'SIZE1');
   assert.match(warnings[0].message, /10 "##" sections/);
+});
+
+// --- PRESETS1: shipped coverage presets vs COVERAGE_PROFILES.md --------------
+
+// §3-shaped: three columns, membership in the third. §3.1-shaped: two columns,
+// membership in the second. Both carry a `full` row stated as a sentinel.
+const PRESET_SPEC_FIXTURE = `
+## 3. Shipped presets
+
+| Preset | Intent | Element TYPEs (in scope) |
+|---|---|---|
+| **\`minimal\`** | Bare chain. | 01_motivation: \`DRIVER\`, \`GOAL\` · 05_implementation: \`ACTION\` |
+| **\`full\`** | Everything. | Every TYPE in [\`IDS_AND_REFERENCES.md\`](IDS_AND_REFERENCES.md) §3.1. |
+
+### 3.1 Per-preset relation allowlists
+
+| Preset | Allowed relation kinds (per \`from\` layer) |
+|---|---|
+| **\`minimal\`** | 01_motivation: \`goal_parent\` · 05_implementation: \`action_goal\` |
+| **\`full\`** | Every relation kind in [\`elements/17-relations.md\`](elements/17-relations.md) §3. |
+
+## 4. Custom profiles
+`;
+
+test('parsePresetTable — positive: reads the §3 element table, its layers, and the sentinel row', () => {
+  const table = parsePresetTable(PRESET_SPEC_FIXTURE, '## 3. Shipped presets', 2);
+  assert.deepEqual([...table.keys()].sort(), ['full', 'minimal']);
+  assert.equal(table.get('minimal').sentinel, false);
+  assert.deepEqual(table.get('minimal').layers.get('01_motivation'), ['DRIVER', 'GOAL']);
+  assert.deepEqual(table.get('minimal').layers.get('05_implementation'), ['ACTION']);
+  assert.equal(table.get('full').sentinel, true, '"Every TYPE in …" is the sentinel, not an enumeration');
+});
+
+test('parsePresetTable — positive: reads the §3.1 relation table from its own column index', () => {
+  const table = parsePresetTable(PRESET_SPEC_FIXTURE, '### 3.1 Per-preset relation allowlists', 1);
+  assert.deepEqual(table.get('minimal').layers.get('01_motivation'), ['goal_parent']);
+  assert.deepEqual(table.get('minimal').layers.get('05_implementation'), ['action_goal']);
+  assert.equal(table.get('full').sentinel, true);
+});
+
+test('parsePresetTable — positive: stops at the next heading and does not read the following section', () => {
+  const table = parsePresetTable(PRESET_SPEC_FIXTURE, '## 3. Shipped presets', 2);
+  // §3.1's rows sit after the next heading; reading them here would put a
+  // relation kind in the element table.
+  assert.equal(table.get('minimal').layers.get('01_motivation').includes('goal_parent'), false);
+});
+
+test('parsePresetTable — negative: a missing section heading throws', () => {
+  assert.throws(() => parsePresetTable('# nothing here\n', '## 3. Shipped presets', 2), /not found/);
+});
+
+test('parsePresetTable — negative: a membership segment with no layer prefix throws', () => {
+  const text = '\n## 3. Shipped presets\n\n| P | I | E |\n|---|---|---|\n| **`minimal`** | x | `DRIVER`, `GOAL` |\n';
+  assert.throws(() => parsePresetTable(text, '## 3. Shipped presets', 2), /unparseable segment/);
+});
+
+test('parsePresetTable — negative: a layer named with no code-span values throws', () => {
+  const text = '\n## 3. Shipped presets\n\n| P | I | E |\n|---|---|---|\n| **`minimal`** | x | 01_motivation: DRIVER |\n';
+  assert.throws(() => parsePresetTable(text, '## 3. Shipped presets', 2), /no code-span values/);
+});
+
+test('parsePresetTable — negative: a section with no preset rows throws rather than passing empty', () => {
+  const text = '\n## 3. Shipped presets\n\nProse only, no table.\n';
+  assert.throws(() => parsePresetTable(text, '## 3. Shipped presets', 2), /parsed empty/);
+});
+
+// --- derivePresetMembershipFindings -----------------------------------------
+
+const specEl = () => parsePresetTable(PRESET_SPEC_FIXTURE, '## 3. Shipped presets', 2);
+const specRel = () => parsePresetTable(PRESET_SPEC_FIXTURE, '### 3.1 Per-preset relation allowlists', 1);
+
+const AGREEING_MODULE = {
+  minimal: {
+    elements: { '01_motivation': ['DRIVER', 'GOAL'], '05_implementation': ['ACTION'] },
+    relations: { '01_motivation': ['goal_parent'], '05_implementation': ['action_goal'] },
+  },
+  full: 'ALL',
+};
+
+test('derivePresetMembershipFindings — positive: agreeing module and spec yield no findings', () => {
+  assert.deepEqual(derivePresetMembershipFindings(AGREEING_MODULE, specEl(), specRel()), []);
+});
+
+test('derivePresetMembershipFindings — positive: reordering within a layer is presentational, not drift', () => {
+  const reordered = structuredClone(AGREEING_MODULE);
+  reordered.minimal.elements['01_motivation'] = ['GOAL', 'DRIVER'];
+  assert.deepEqual(derivePresetMembershipFindings(reordered, specEl(), specRel()), []);
+});
+
+test('derivePresetMembershipFindings — negative: a TYPE the spec states but the module omits is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.minimal.elements['01_motivation'] = ['DRIVER'];
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /missing from the module: GOAL/);
+  assert.match(findings[0], /§3/);
+});
+
+test('derivePresetMembershipFindings — negative: a TYPE only the module carries is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.minimal.elements['01_motivation'] = ['DRIVER', 'GOAL', 'CAPABILITY'];
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /present only in the module: CAPABILITY/);
+});
+
+test('derivePresetMembershipFindings — negative: a relation-kind drift is reported against §3.1', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.minimal.relations['05_implementation'] = ['action_goal', 'depends_on'];
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /relations in 05_implementation/);
+  assert.match(findings[0], /§3\.1/);
+  assert.match(findings[0], /present only in the module: depends_on/);
+});
+
+test('derivePresetMembershipFindings — negative: a whole layer only one side names is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.minimal.elements['02_business'] = ['CAPABILITY'];
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /02_business/);
+});
+
+test('derivePresetMembershipFindings — negative: turning the "everything" sentinel into an allowlist is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.full = { elements: { '01_motivation': ['DRIVER'] }, relations: {} };
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /sentinel/);
+});
+
+test('derivePresetMembershipFindings — negative: a preset the spec ships but the CLI cannot resolve is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  delete drifted.minimal;
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /cannot resolve/);
+});
+
+test('derivePresetMembershipFindings — negative: a module preset with no spec row is flagged', () => {
+  const drifted = structuredClone(AGREEING_MODULE);
+  drifted.compliance = { elements: { '01_motivation': ['REQUIREMENT'] }, relations: {} };
+  const findings = derivePresetMembershipFindings(drifted, specEl(), specRel());
+  assert.equal(findings.length, 1);
+  assert.match(findings[0], /no matching row/);
 });

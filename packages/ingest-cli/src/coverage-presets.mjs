@@ -8,13 +8,22 @@
 // resolve correctly); the resolver flattens to membership sets. `full` is the sentinel
 // "everything" — it carries no allowlist because every registry TYPE / REL kind is in.
 //
-// RELEASE DISCIPLINE: on every methodology MINOR or MAJOR bump, update PRESETS_VERSION
-// to match the new methodology_version and re-state each preset's element + relation
-// lists against COVERAGE_PROFILES.md §3 / §3.1 for that release. This is a manual
-// release step — run `node packages/ingest-cli/ingest.mjs repo-check <repo>` on a repo
-// pinned to the new version to confirm no false-negative mismatch before tagging.
+// RELEASE DISCIPLINE: on EVERY methodology release — PATCH included — update
+// PRESETS_VERSION to match the new methodology_version, and re-state each preset's
+// element + relation lists against COVERAGE_PROFILES.md §3 / §3.1 for that release.
+//
+// PATCH is included because repo-check compares this string to the adopter's declared
+// `methodology_version` for exact equality (repo-check.mjs — `tooling.ok`), so any
+// divergence at all, of any bump size, reports a false stale-CLI mismatch. That is not
+// hypothetical: this constant sat at 2.1.0 across the 3.2.0 → 3.6.0 releases, leaving
+// `tooling.ok` permanently false for every correctly pinned adopter (transitrix-hq#199).
+//
+// Both halves of the step are now mechanical rather than remembered — `PRESETS1` in
+// scripts/check-notations.mjs fails CI when PRESETS_VERSION diverges from
+// notations/CURRENT_VERSION.yaml, or when the tables below stop matching the §3 / §3.1
+// tables they encode. A release PR that bumps the pin and not this file cannot go green.
 
-export const PRESETS_VERSION = '2.1.0';
+export const PRESETS_VERSION = '3.6.0';
 
 export const LAYERS = ['01_motivation', '02_business', '03_application', '04_technology', '05_implementation'];
 
