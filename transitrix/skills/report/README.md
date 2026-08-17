@@ -1,6 +1,6 @@
 # `report` skill
 
-The conversational front-end for **compliance reporting** over a Transitrix repository. A user asks for a report in plain language; the skill resolves the parameters into a declarative **view-config artefact** and renders it through the deterministic `cervin export-compliance` CLI — to Markdown or PDF.
+The conversational front-end for **compliance reporting** over a Transitrix repository. A user asks for a report in plain language; the skill resolves the parameters into a declarative **view-config artefact** and renders it through the deterministic `@transitrix/cli export-compliance` command — to Markdown or PDF.
 
 It is the operator UX for two derived views:
 
@@ -15,14 +15,14 @@ Per the architecture decision *"Reports are rendered from declarative view-confi
 - **Rendering lives in the CLI**, never in the agent — so the same config re-renders identically under any runtime.
 - **The skill is thin and script-backed** — [`SKILL.md`](SKILL.md) sequences [`scripts/report.py`](scripts/report.py); both are agent-neutral.
 
-This is **Step 2** of the ADR's sequenced delivery. Step 1 — the `cervin export-compliance` renderer — ships in Transitrix Studio v1.4.x.
+This is **Step 2** of the ADR's sequenced delivery. Step 1 — the `export-compliance` renderer — ships as a subcommand of [`@transitrix/cli`](https://www.npmjs.com/package/@transitrix/cli), the same published CLI that also ships bundled inside **Transitrix Studio**. (A pre-2.0 build of this CLI used a `cervin` bin alias; that name is retired and unpublished — use `transitrix` / `@transitrix/cli`.)
 
 ## Files
 
 | Path | Role |
 |---|---|
 | [`SKILL.md`](SKILL.md) | The agent-facing protocol: pre-check → resolve parameters → materialise + render → return report + provenance. |
-| [`scripts/report.py`](scripts/report.py) | Dependency-free, cross-platform orchestrator over `cervin export-compliance`. Subcommands: `render`, `list`. |
+| [`scripts/report.py`](scripts/report.py) | Dependency-free, cross-platform orchestrator over `@transitrix/cli export-compliance`. Subcommands: `render`, `list`. |
 
 ## Quick start
 
@@ -52,10 +52,10 @@ python scripts/report.py list --root <repo>
 python scripts/report.py render --report-id … --name … --dry-run --root <repo>
 ```
 
-`render` resolves the renderer as `cervin`, then `npx cervin`, then `$TRANSITRIX_CLI`. Named reports are written to `<root>/canon/views/<notation>/<id>.<notation>.transitrix.yaml`. PDF output requires WeasyPrint on PATH (`pipx install weasyprint`).
+`render` resolves the renderer as `transitrix`, then `npx @transitrix/cli`, then `$TRANSITRIX_CLI`. Named reports are written to `<root>/canon/views/<notation>/<id>.<notation>.transitrix.yaml`. PDF output requires WeasyPrint on PATH (`pipx install weasyprint`).
 
 ## Prerequisites
 
-- **Transitrix Studio** (the `cervin` binary), v1.4.x or later — the renderer.
+- **[`@transitrix/cli`](https://www.npmjs.com/package/@transitrix/cli)** — the renderer. `npm install -g @transitrix/cli` (provides the `transitrix` bin), or use `npx @transitrix/cli` with no install. Also ships bundled inside the **Transitrix Studio** editor extension.
 - **Python 3.8+** — the orchestrator (stdlib only; no packages to install).
 - **WeasyPrint** — only for `--format pdf`.

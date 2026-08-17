@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Report-skill orchestrator — a thin, agent-neutral layer over the
-`cervin export-compliance` renderer CLI.
+`@transitrix/cli export-compliance` renderer command.
 
 Per the report-skill architecture decision:
 the report's parameters live in a *declarative view-config artefact*, the
@@ -51,15 +51,18 @@ COVERAGE_DEFAULTS = {
     "order": "rows and columns by id; all summary totals shown",
 }
 
-DEFAULT_CLI = os.environ.get("TRANSITRIX_CLI", "cervin")
+DEFAULT_CLI = os.environ.get("TRANSITRIX_CLI", "transitrix")
+CLI_PACKAGE = "@transitrix/cli"
 
 
 def find_cli(cli: str) -> list[str] | None:
-    """Resolve the renderer CLI invocation. Tries the bare binary, then `npx`."""
+    """Resolve the renderer CLI invocation. Tries the bare binary, then `npx`
+    (the `@transitrix/cli` package for the default binary, or the override
+    name itself for a custom TRANSITRIX_CLI)."""
     if shutil.which(cli):
         return [cli]
     if shutil.which("npx"):
-        return ["npx", cli]
+        return ["npx", CLI_PACKAGE if cli == DEFAULT_CLI else cli]
     return None
 
 
@@ -98,7 +101,7 @@ def build_view_config(args, notation: str, mver: str) -> tuple[str, list[str]]:
     products = split_list(args.products)
     lines = [
         f"# Materialised by the Transitrix report skill — {notation} view-config.",
-        f"# Renders via `cervin export-compliance`; spec: notations/views/"
+        f"# Renders via `@transitrix/cli export-compliance`; spec: notations/views/"
         + ("21-compliance-impact.md" if notation == "compliance-impact" else "22-coverage-metric.md")
         + ".",
         "",
@@ -161,7 +164,8 @@ def cmd_render(args) -> int:
     if cli is None:
         print(
             f"report: renderer CLI '{args.cli}' not found on PATH (nor via npx). "
-            f"Install Transitrix Studio (the `cervin` binary) or set TRANSITRIX_CLI.",
+            f"Install `@transitrix/cli` (`npm install -g @transitrix/cli`, or use "
+            f"`npx @transitrix/cli`) or set TRANSITRIX_CLI.",
             file=sys.stderr,
         )
         return 127
@@ -255,7 +259,7 @@ def run_cli(cmd: list[str], output: str | None) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="report.py",
-        description="Thin orchestrator over `cervin export-compliance` (ADR 2026-06-09).",
+        description="Thin orchestrator over `@transitrix/cli export-compliance` (ADR 2026-06-09).",
     )
     p.add_argument("--cli", default=DEFAULT_CLI, help=f"renderer binary (default: {DEFAULT_CLI}; or $TRANSITRIX_CLI)")
     sub = p.add_subparsers(dest="command", required=True)

@@ -1,6 +1,6 @@
 ---
 name: Transitrix Report
-description: "Produce a compliance report (obligation × subject impact matrix, or per-regime coverage metric) from a Transitrix repository, by conversation. Resolves the report's parameters — from the request, from the view spec's defaults, or from a named saved view-config — materialises a versioned view-config artefact, and renders it through the deterministic `cervin export-compliance` CLI to Markdown or PDF. The skill never computes a matrix itself; rendering stays in the CLI so the same config re-renders identically next quarter. Reports are reproducible and auditable: every report has a committed parameter artefact, and the skill states which spec defaults it assumed."
+description: "Produce a compliance report (obligation × subject impact matrix, or per-regime coverage metric) from a Transitrix repository, by conversation. Resolves the report's parameters — from the request, from the view spec's defaults, or from a named saved view-config — materialises a versioned view-config artefact, and renders it through the deterministic `@transitrix/cli export-compliance` command to Markdown or PDF. The skill never computes a matrix itself; rendering stays in the CLI so the same config re-renders identically next quarter. Reports are reproducible and auditable: every report has a committed parameter artefact, and the skill states which spec defaults it assumed."
 when_to_use: 'User says "give me the compliance report", "show the obligation impact for product X", "what is our GDPR coverage", "export the compliance matrix to PDF", "run the Q3 obligations matrix", "which obligations have no assertion (the gap report)", or wants a reproducible compliance/coverage report rendered from canon rather than hand-assembled.'
 min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
@@ -12,13 +12,13 @@ The **conversational front-end for compliance reporting.** A user asks for a rep
 
 This directory is the **`report` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, one `skills/<name>/` directory per skill). Invoked as `/transitrix:report`.
 
-> **Status — Step 2 of the report-skill architecture decision.** Step 1 (the deterministic `cervin export-compliance` CLI) ships in Transitrix Studio v1.4.x. This skill is the thin layer over it. All rendering is the CLI's; this `SKILL.md` and its [`scripts/report.py`](scripts/report.py) orchestrator only sequence it — so the skill loads agent-neutrally (Claude, Copilot, or a human at a shell).
+> **Status — Step 2 of the report-skill architecture decision.** Step 1 (the deterministic `export-compliance` renderer) ships as a subcommand of [`@transitrix/cli`](https://www.npmjs.com/package/@transitrix/cli) — the same published CLI the `validate` and `compile` commands ship from, bundled into **Transitrix Studio** and installable standalone via npm. (An earlier, pre-2.0 build of this CLI shipped a `cervin` bin alias; that name is retired and not published — use `transitrix` / `@transitrix/cli`.) This skill is the thin layer over it. All rendering is the CLI's; this `SKILL.md` and its [`scripts/report.py`](scripts/report.py) orchestrator only sequence it — so the skill loads agent-neutrally (Claude, Copilot, or a human at a shell).
 
 ---
 
 ## The one rule that governs everything
 
-**Parameters in an artefact, rendering in the CLI — never the agent.** The report's parameters (scope, filters, grouping, ordering) live in a versioned view-config the skill writes; the matrix is computed by `cervin export-compliance` from `(view-config + canon)`. The agent MUST NOT compute, tabulate, or "fill in" a matrix itself. A report assembled by the agent in chat is not reproducible, not diffable, and not auditable — exactly what the ADR exists to prevent. If the CLI is absent, stop (Step 0) rather than hand-rolling the render.
+**Parameters in an artefact, rendering in the CLI — never the agent.** The report's parameters (scope, filters, grouping, ordering) live in a versioned view-config the skill writes; the matrix is computed by `@transitrix/cli export-compliance` from `(view-config + canon)`. The agent MUST NOT compute, tabulate, or "fill in" a matrix itself. A report assembled by the agent in chat is not reproducible, not diffable, and not auditable — exactly what the ADR exists to prevent. If the CLI is absent, stop (Step 0) rather than hand-rolling the render.
 
 ---
 
@@ -27,11 +27,13 @@ This directory is the **`report` skill** within the `transitrix` plugin (the plu
 The deterministic work (scan canon, build the matrix, render Markdown/PDF) is done by the CLI, never reimplemented in the agent. Confirm it is available:
 
 ```
-cervin export-compliance --format md --scope matrix --root . > /dev/null
+transitrix export-compliance --format md --scope matrix --root . > /dev/null
+# or, without a global install:
+npx @transitrix/cli export-compliance --format md --scope matrix --root . > /dev/null
 ```
 
-- **Present** → proceed. (A non-zero exit with a usage error is fine here — it means the binary exists.)
-- **Absent** (`command not found`) → tell the user to install **Transitrix Studio** (the `cervin` binary, v1.4.x+). The orchestrator also tries `npx cervin`; if neither resolves, do not hand-roll the report. Set `TRANSITRIX_CLI` to override the binary name.
+- **Present** under either form → proceed. (A non-zero exit with a usage error is fine here — it means the binary exists.) The orchestrator (Step 2) resolves the same way: `transitrix` on PATH, else `npx @transitrix/cli`, else `$TRANSITRIX_CLI` if set.
+- **Absent** under both → tell the user to install the renderer: `npm install -g @transitrix/cli` ([npmjs.com/package/@transitrix/cli](https://www.npmjs.com/package/@transitrix/cli)), or use the `npx` form with no install. Do not hand-roll the report. (This is the same CLI bundled into the **Transitrix Studio** editor extension; installing Studio also puts `transitrix` on PATH. An older pre-2.0 build of this CLI used a `cervin` bin alias — that name was retired and is not published; do not search for it.)
 
 Also confirm you are inside a Transitrix repository (a `transitrix.yaml` manifest, with `canon/` containing `REQUIREMENT`, `ASSERTION`, `PRODUCT`, and `codex/` artefacts). With no canon there is nothing to report on.
 
@@ -79,10 +81,10 @@ python transitrix/skills/report/scripts/report.py render \
 For a coverage report add `--notation coverage-metric` and use `--regimes <codex-ids>` instead of `--obligations*`. Add `--format pdf --output <path>` for PDF. Add `--dry-run` to preview the config without rendering.
 
 The script:
-1. **resolves the renderer** (`cervin`, or `npx cervin`, or `$TRANSITRIX_CLI`);
+1. **resolves the renderer** (`transitrix`, or `npx @transitrix/cli`, or `$TRANSITRIX_CLI`);
 2. for a named report, **writes/updates** `<root>/canon/views/<notation>/<id>.<notation>.transitrix.yaml` — the canonical view-config artefact (it prints the path);
 3. **states the spec defaults** it left to the renderer for every field you did not pin;
-4. **invokes `cervin export-compliance`** and streams Markdown to stdout (or writes the file for `--output`/PDF);
+4. **invokes `export-compliance`** and streams Markdown to stdout (or writes the file for `--output`/PDF);
 5. **reports the config path used**, so the report is reproducible.
 
 ---
