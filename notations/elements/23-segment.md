@@ -47,7 +47,8 @@ type: SEGMENT
 name: "GDPR Art.30(1) — records of processing activities"
 source: REGULATION-GDPR-2016-1                # required — typed ID of the codex artefact this chunk came from
 locator: "Art.30(1)"                          # required — citation path within the source (article / section / clause)
-parent: SEGMENT-GDPR-ART-30-0                 # optional — enclosing SEGMENT (article → clause nesting)
+# parent: omitted — this is the top-level Art.30(1) chunk, not nested in an
+# enclosing SEGMENT (see the second example below for nesting via `parent`)
 
 # The extracted text. At least one of text_excerpt / text_hash MUST be present
 # (SEGMENT-003): the excerpt witnesses the text directly; the hash witnesses it

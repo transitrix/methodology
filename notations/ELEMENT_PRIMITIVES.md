@@ -225,11 +225,11 @@ Per the reconstruction invariant (§1.1), `view-defined` in the table above is a
 
 ## 5. Reconciliation with the legacy `.templates/elements/*` shape
 
-The four templates under `organizations/acme_corp/.templates/elements/*_template.yaml` predate [`CONTRACT.md`](CONTRACT.md) and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md). They use ArchiMate-style type names (`Goal`, `BusinessRole`, `ApplicationComponent`), zero-padded non-canonical IDs (`GOAL-XXX-001`), and a `metadata{…}` / `properties{…}` wrapper. The published canon worked examples (`CONSTRAINT-GDPR-RESIDENCY-1`, `RULE-DUAL-APPROVAL-1`, `REQUIREMENT-DATA-ERASURE-1`, `CAPABILITY-V1`) use the flat, contract-aligned envelope of §3. The canonical envelope follows the **worked examples**; the templates are stale. The mapping:
+The four templates under `organizations/acme_corp/.templates/elements/*_template.yaml` predate [`CONTRACT.md`](CONTRACT.md) and [`IDS_AND_REFERENCES.md`](IDS_AND_REFERENCES.md). They use ArchiMate-style type names (`Goal`, `BusinessRole`, `ApplicationComponent`), zero-padded non-canonical IDs (a three-letter subtype segment followed by a leading-zero-padded terminal, e.g. `GOAL-XXX-…` with a `-001`-style suffix instead of `-1`), and a `metadata{…}` / `properties{…}` wrapper. The published canon worked examples (`CONSTRAINT-GDPR-RESIDENCY-1`, `RULE-DUAL-APPROVAL-1`, `REQUIREMENT-DATA-ERASURE-1`, `CAPABILITY-V1`) use the flat, contract-aligned envelope of §3. The canonical envelope follows the **worked examples**; the templates are stale. The mapping:
 
 | Legacy template field | Canonical envelope (§3) | Disposition |
 |---|---|---|
-| `id: "GOAL-XXX-001"` | `id: GOAL-…` per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) (no zero-padding, numeric terminal) | **Changed** — ID grammar is now canonical. |
+| `id: "GOAL-XXX-…"` (zero-padded) | `id: GOAL-…` per [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) (no zero-padding, numeric terminal) | **Changed** — ID grammar is now canonical. |
 | `type: "Goal"` / `"BusinessRole"` (ArchiMate class) | `notation: goal` + `type:` for the *subtype* only | **Changed** — element TYPE moves to `notation:` + ID prefix; `type:` is reserved for subtype. |
 | `layer: "Motivation"` | `layer: motivation` (lowercase, optional, folder-derived) | **Kept, demoted** — optional, derived from folder (§6). |
 | `metadata.status` | top-level `status` (optional) | **Flattened.** |

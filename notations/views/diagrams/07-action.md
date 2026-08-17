@@ -108,14 +108,14 @@ actions:
   - id: A-001
     name: Requirements analysis
     duration: 5
-    goals: [GOAL-CUST-001]
+    goals: [GOAL-CUST-1]
     owner: ACTOR-PRODUCT-1
 
   - id: A-002
     name: Architecture design
     duration: 8
     predecessors: [A-001]
-    goals: [GOAL-CUST-001]
+    goals: [GOAL-CUST-1]
     owner: ACTOR-ENGINEERING-1
 ```
 
@@ -140,7 +140,7 @@ description: |
 view_config:
   scope:
     root_action: ACTION-PLATFORM-LAUNCH-1  # scope to this action and its descendants
-    # goals: [GOAL-CUST-001]          # alternative: scope by goal
+    # goals: [GOAL-CUST-1]            # alternative: scope by goal
     # type_filter: [Project, Task]    # alternative: scope by action type
     valid_at: null                     # ISO 8601 date; null = all lifecycle states
   schedule:

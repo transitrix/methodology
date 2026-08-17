@@ -53,6 +53,30 @@
 //       restates many) is not required to be the only row, but a restated
 //       severity must still agree. Fails closed: a missing or unparseable
 //       artefact is a failure, not a skip.
+//   ID1  example-ID grammar — every ID-shaped token (a candidate whose TYPE
+//       prefix is registered in IDS_AND_REFERENCES.md §3) found in a fenced
+//       code block or a backtick span under method/**/*.md and
+//       notations/**/*.md satisfies §1's grammar (CAPABILITY's V/H address
+//       excepted, §2). A token that is itself a known rule code
+//       (vocabulary.yaml rule_codes / deferred.rule_codes — several rule-code
+//       prefixes collide with a registered TYPE, e.g. ACTION-005, TERM-002)
+//       is not an element ID and is excluded. IDS_AND_REFERENCES.md and
+//       CONVENTIONS.md are excluded from the scan — both carry a deliberate
+//       ✓/✗ comparison table documenting invalid forms as negative examples.
+//   LAYER1 layer enumeration (extends VOC1's reach) — a contiguous group of
+//       three or more distinct `NN_<word>/` layer-folder tokens under
+//       method/**/*.md or notations/**/*.md (a directory tree, a table) is
+//       read as an attempt to enumerate the full layer set and must equal it
+//       exactly — no fewer, no extra. A single incidental folder citation
+//       (one element spec naming its own home folder) is not a "list" and is
+//       not checked.
+//   DUALHOME1 no dual-home tables (extends VOC1/VOC2's reach) — a Markdown
+//       table in method/**/*.md sharing two or more identical data rows with
+//       a table in notations/**/*.md is restating that table rather than
+//       pointing to it, which is exactly how the two drift apart unnoticed.
+//   SIZE1 per-file soft ceiling (warn-only) — a method/*.md file over 250
+//       lines or with more than nine `##` sections warns. Never fails the
+//       build — see main()'s separate warnings collection.
 //
 // Exit codes:
 //   0 — clean
@@ -69,11 +93,18 @@ const REPO_ROOT = join(dirname(__filename), '..');
 const CATALOGUE_PATH = join(REPO_ROOT, 'notations', 'README.md');
 const EXAMPLES_DIR = join(REPO_ROOT, 'notations', 'examples');
 const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
+const METHOD_DIR = join(REPO_ROOT, 'method');
 const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
 const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
 const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES.md');
 const RELATIONS_SPEC_PATH = join(REPO_ROOT, 'notations', 'elements', '17-relations.md');
+const IDS_AND_REFERENCES_PATH = join(REPO_ROOT, 'notations', 'IDS_AND_REFERENCES.md');
+const CONVENTIONS_PATH = join(REPO_ROOT, 'notations', 'CONVENTIONS.md');
+// Both files carry a deliberate ✓/✗ (or "invalid" — labelled) comparison
+// table teaching the grammar by counter-example; ID1 would otherwise flag
+// the ✗ side as a live violation.
+const ID1_EXCLUDED_FILES = new Set([IDS_AND_REFERENCES_PATH, CONVENTIONS_PATH]);
 
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
@@ -219,9 +250,9 @@ async function checkExamples(catalogue, failures) {
   }
 }
 
-// L1: relative markdown links in notations/**/*.md must resolve.
+// L1: relative markdown links in notations/**/*.md and method/**/*.md must resolve.
 async function checkLinks(failures) {
-  const files = await walk(NOTATIONS_DIR, '.md');
+  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
   // Inline links only: no newline in the link text or the target, so we never
   // splice an unrelated `[` and `](…)` across prose into a phantom link.
   const linkRe = /\[[^\]\n]*\]\(([^)\n]+)\)/g;
@@ -1188,10 +1219,331 @@ async function checkDocumentSources(failures) {
   failures.push(...findDocumentSourceFailures(all.map(relPosix)));
 }
 
+// --- ID1: example-ID grammar over method/ and notations/ -------------------
+//
+// notations/IDS_AND_REFERENCES.md §1 is the canonical ID grammar; §3 is the
+// TYPE registry that defines which prefixes this grammar governs at all. A
+// candidate token whose TYPE prefix isn't registered there (an ADR/WI id, a
+// rule-code prefix with no element-TYPE homonym) is simply not an ID this
+// check has jurisdiction over — see method/02-repository.md §1.1, which
+// states plainly that `operations/` ids are "deliberately outside the
+// canonical TYPE registry". A handful of rule codes DO collide with a
+// registered TYPE name (ACTION-005, TERM-002, DGCA-001, …); those are
+// excluded by exact match against vocabulary.yaml's rule_codes (VOC4 already
+// owns validating that registry, so ID1 only reads it).
+
+// Pure — no I/O. Parses "## 3. TYPE registry" through "## 4." of
+// IDS_AND_REFERENCES.md into the Set of every registered TYPE prefix, across
+// every §3.x subsection (element types, view-level types, field/codex
+// artefacts, assertion/verification/validation). Throws on a missing section
+// or an empty parse — a corrupted or missing artefact must fail this check,
+// never pass silently.
+export function parseIdTypeRegistry(text) {
+  const startIdx = text.indexOf('\n## 3. TYPE registry');
+  if (startIdx < 0) throw new Error('IDS_AND_REFERENCES.md: "## 3. TYPE registry" not found');
+  const endIdx = text.indexOf('\n## 4.', startIdx);
+  const section = endIdx > 0 ? text.slice(startIdx, endIdx) : text.slice(startIdx);
+  const out = new Set();
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('| `')) continue;
+    const m = line.match(/^\|\s*`([A-Z][A-Z0-9_]*)`\s*\|/);
+    if (m) out.add(m[1]);
+  }
+  if (out.size === 0) throw new Error('IDS_AND_REFERENCES.md §3: TYPE registry parsed empty');
+  return out;
+}
+
+// Pure. Validates one candidate token (already known to start `TYPE-`)
+// against §1's grammar, with §2's CAPABILITY V/H exception. Returns
+// { valid: true } or { valid: false, reason }.
+export function validateIdToken(token) {
+  const m = token.match(/^([A-Z][A-Z0-9_]*)-(.+)$/);
+  if (!m) return { valid: false, reason: 'not shaped like TYPE-<…> (an uppercase TYPE prefix followed by "-" is required)' };
+  const [, type, rest] = m;
+
+  if (type === 'CAPABILITY') {
+    if (!/^[VH][1-9]\d*(?:\.[1-9]\d*){0,2}$/.test(rest)) {
+      return { valid: false, reason: 'CAPABILITY id does not match the V/H diagram-address form, depth ≤ 3, no leading zeros (§2)' };
+    }
+    return { valid: true };
+  }
+
+  const segments = rest.split('-');
+  const terminal = segments[segments.length - 1];
+  if (!/^[1-9]\d*$/.test(terminal)) {
+    return { valid: false, reason: `terminal segment "${terminal}" is not a positive integer with no leading zeros (§1)` };
+  }
+  return { valid: true };
+}
+
+// Candidate ID token: an uppercase TYPE prefix, then one or more
+// hyphen-separated groups (letters/digits/underscore), each optionally
+// extended by `.<digits>` repeats — enough to capture a full CAPABILITY V/H
+// address (`V1.2.3`) while stopping before a non-numeric suffix. That
+// asymmetry is deliberate: every real trailing suffix this repo actually
+// writes after an ID (`.yaml`, `.history.yaml`, a directive `.field.path`
+// accessor) starts with a letter, never a digit, so `\.[0-9]+` never
+// over-consumes into one.
+const ID_TOKEN_RE = /\b[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+(?:\.[0-9]+)*)+\b/g;
+
+// Pure. Scans `text` for ID-shaped candidates inside a fenced code block
+// (the whole line is fair game — it's code, not prose) or inside a single-
+// backtick span outside a fence (the markdown sense of "inline literal" /
+// "table cell" — this repo backtick-quotes every ID it documents). Skips a
+// match that is itself a placeholder by this repo's own conventions: wrapped
+// in `<…>` (`<STEP-id>`, `<REQUIREMENT-HINT>`) or immediately followed by the
+// `-…` family-prefix ellipsis (`NEED-VALIDATION-COVERAGE-…`). Returns
+// [{ token, line }] with 1-based line numbers.
+export function findIdCandidates(text) {
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  let inFence = false;
+  const scan = (segment, line) => {
+    for (const m of segment.matchAll(ID_TOKEN_RE)) {
+      const before = segment[m.index - 1];
+      const afterIdx = m.index + m[0].length;
+      const after = segment[afterIdx];
+      if (before === '<' && after === '>') continue; // <STEP-id>-style placeholder
+      if (after === '…' || segment.slice(afterIdx, afterIdx + 2) === '-…') continue; // family-prefix marker
+      out.push({ token: m[0], line });
+    }
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) {
+      scan(line, i + 1);
+    } else {
+      for (const spanM of line.matchAll(/`([^`]+)`/g)) {
+        scan(spanM[1], i + 1);
+      }
+    }
+  }
+  return out;
+}
+
+async function checkIdGrammar(failures) {
+  let registryText;
+  try {
+    registryText = await readFile(IDS_AND_REFERENCES_PATH, 'utf8');
+  } catch {
+    failures.push({ check: 'ID1', message: `${relPosix(IDS_AND_REFERENCES_PATH)}: not found.` });
+    return;
+  }
+  let registry;
+  try {
+    registry = parseIdTypeRegistry(registryText);
+  } catch (e) {
+    failures.push({ check: 'ID1', message: `${relPosix(IDS_AND_REFERENCES_PATH)}: ${e.message}` });
+    return;
+  }
+
+  const ruleCodes = new Set();
+  try {
+    const vocText = await readFile(VOCABULARY_PATH, 'utf8');
+    for (const code of parseVocabularyRuleCodes(vocText).keys()) ruleCodes.add(code);
+    for (const code of parseVocabularyDeferredRuleCodes(vocText).keys()) ruleCodes.add(code);
+  } catch {
+    // vocabulary.yaml's own well-formedness is VOC4's job; ID1 degrades to
+    // "no rule-code exclusions" rather than duplicating that failure here.
+  }
+
+  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
+  const seen = new Set();
+  for (const abs of files) {
+    if (ID1_EXCLUDED_FILES.has(abs)) continue; // documents invalid forms on purpose
+    const rel = relPosix(abs);
+    const text = await readFile(abs, 'utf8');
+    for (const { token, line } of findIdCandidates(text)) {
+      const type = token.slice(0, token.indexOf('-'));
+      if (!registry.has(type)) continue; // not a TYPE this grammar governs
+      if (ruleCodes.has(token)) continue; // a rule code, not an element id
+      if (token === 'CAPABILITY-V' || token === 'CAPABILITY-H') continue; // schema placeholder, e.g. CAPABILITY-V[N]
+      const key = `${rel} ${token}`;
+      if (seen.has(key)) continue;
+      const result = validateIdToken(token);
+      if (!result.valid) {
+        seen.add(key);
+        failures.push({ check: 'ID1', message: `${rel}:${line}: \`${token}\` — ${result.reason}.` });
+      }
+    }
+  }
+}
+
+// --- LAYER1: layer/folder enumeration (extends VOC1's reach) ---------------
+//
+// The known defect this guards: a repository-tree listing of
+// canon/elements/NN_<layer>/ folders that silently drops one — exactly what
+// happened to 04_technology/ before it was restored (transitrix-hq#188).
+// Scoped deliberately to *fenced code blocks* only (a directory-tree
+// diagram), not prose or Markdown tables: this repo's spec tables
+// legitimately cite two, three, or four layer folders as one row's metadata
+// (a TYPE catalogue row, a worked-example file listing) without attempting
+// to enumerate the layer set at all — every such table produced a false
+// positive when tried. A fenced tree, by construction, is always attempting
+// completeness. A single isolated folder citation (fewer than three
+// distinct tokens) is not an enumeration and is not checked.
+
+const LAYER_FOLDER_RE = /\b(0[1-9]_[a-z]+)\b/g;
+
+// Pure. Finds every `NN_word` token inside a fenced code block in `text`
+// (one candidate hit per line — a line citing two or more *different*
+// folders is a table row rendered inside a fence, not a tree entry, and
+// contributes no hit). Consecutive hits within 3 lines of each other form a
+// group; a repeated folder starts a fresh group instead of extending the
+// current one, since a genuine tree never lists the same folder twice.
+// Returns only groups with three or more distinct folder tokens — the
+// threshold that separates "this tree is trying to list the layers" from
+// an incidental single mention.
+export function findLayerEnumerationGroups(text) {
+  const lines = text.split(/\r?\n/);
+  const hits = [];
+  let inFence = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\s*```/.test(lines[i])) {
+      inFence = !inFence;
+      continue;
+    }
+    if (!inFence) continue;
+    const lineMatches = [...lines[i].matchAll(LAYER_FOLDER_RE)];
+    if (lineMatches.length === 0) continue;
+    if (new Set(lineMatches.map(m => m[1])).size > 1) continue; // multiple different folders on one line
+    hits.push({ folder: lineMatches[0][1], line: i + 1 });
+  }
+  const groups = [];
+  let current = null;
+  for (const hit of hits) {
+    const startsNew = !current || hit.line - current.endLine > 3 || current.folders.has(hit.folder);
+    if (startsNew) {
+      current = { startLine: hit.line, endLine: hit.line, folders: new Set([hit.folder]) };
+      groups.push(current);
+    } else {
+      current.endLine = hit.line;
+      current.folders.add(hit.folder);
+    }
+  }
+  return groups.filter(g => g.folders.size >= 3);
+}
+
+async function checkLayerEnumeration(failures) {
+  const canonical = new Set(Object.values(LAYER_WORD_TO_FOLDER));
+  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
+  for (const abs of files) {
+    const rel = relPosix(abs);
+    const text = await readFile(abs, 'utf8');
+    for (const group of findLayerEnumerationGroups(text)) {
+      const missing = [...canonical].filter(f => !group.folders.has(f));
+      const extra = [...group.folders].filter(f => !canonical.has(f));
+      if (missing.length || extra.length) {
+        const parts = [];
+        if (missing.length) parts.push(`missing [${missing.join(', ')}]`);
+        if (extra.length) parts.push(`unexpected [${extra.join(', ')}]`);
+        failures.push({
+          check: 'LAYER1',
+          message: `${rel}:${group.startLine}-${group.endLine}: layer-folder list is incomplete — ${parts.join(', ')} (registry: [${[...canonical].join(', ')}]).`,
+        });
+      }
+    }
+  }
+}
+
+// --- DUALHOME1: no dual-home tables (extends VOC1/VOC2's reach) ------------
+//
+// The known defect this guards: method/ restating a notations/ table in full
+// (former §3a's ArchiMate vocabulary reference, former §6.1's per-notation
+// location catalogue) instead of pointing to it — two copies of the same
+// table drift apart the moment one is edited and the other isn't. A shared
+// row is compared by its full rendered text (every cell), so two tables that
+// happen to share one incidental value (a lone "Yes" / "No" cell) are not a
+// false positive — it takes two or more identical whole rows to report.
+
+// Pure. Finds every GFM table in `text` (a `|…|` row, a `|---|` separator
+// row, then its data rows) and returns [{ startLine, rows }] — `rows` are
+// the trimmed data-row lines (1-based `startLine` points at the header row).
+export function parseMarkdownTables(text) {
+  const lines = text.split(/\r?\n/);
+  const tables = [];
+  let i = 0;
+  while (i < lines.length) {
+    if (/^\|.*\|\s*$/.test(lines[i]) && i + 1 < lines.length && /^\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+      const startLine = i + 1;
+      const rows = [];
+      let j = i + 2;
+      while (j < lines.length && /^\|.*\|\s*$/.test(lines[j])) {
+        rows.push(lines[j].trim());
+        j++;
+      }
+      tables.push({ startLine, rows });
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  return tables;
+}
+
+async function checkDualHomeTables(failures) {
+  const methodTables = [];
+  for (const abs of await walk(METHOD_DIR, '.md')) {
+    const text = await readFile(abs, 'utf8');
+    for (const t of parseMarkdownTables(text)) methodTables.push({ file: relPosix(abs), ...t });
+  }
+  const notationsTables = [];
+  for (const abs of await walk(NOTATIONS_DIR, '.md')) {
+    const text = await readFile(abs, 'utf8');
+    for (const t of parseMarkdownTables(text)) notationsTables.push({ file: relPosix(abs), ...t });
+  }
+
+  for (const mt of methodTables) {
+    const mRows = new Set(mt.rows);
+    for (const nt of notationsTables) {
+      let overlap = 0;
+      for (const row of nt.rows) if (mRows.has(row)) overlap++;
+      if (overlap >= 2) {
+        failures.push({
+          check: 'DUALHOME1',
+          message: `${mt.file}:${mt.startLine} shares ${overlap} row(s) with ${nt.file}:${nt.startLine} — restating a notations/ table in method/ risks drift; replace with a pointer.`,
+        });
+      }
+    }
+  }
+}
+
+// --- SIZE1: per-file soft ceiling (warn-only, method/ only) ----------------
+//
+// Never fails the build — main() collects these into a separate `warnings`
+// list that is printed but never affects the exit code.
+
+// Pure. Returns the soft-ceiling warnings for one method/ file: over 250
+// lines, or more than nine top-level (`## `) sections.
+export function findSizeCeilingWarnings(text, rel) {
+  const lines = text.split(/\r?\n/);
+  const warnings = [];
+  if (lines.length > 250) {
+    warnings.push({ check: 'SIZE1', message: `${rel}: ${lines.length} lines (soft ceiling 250) — consider dividing further.` });
+  }
+  const sectionCount = lines.filter(l => /^## (?!#)/.test(l)).length;
+  if (sectionCount > 9) {
+    warnings.push({ check: 'SIZE1', message: `${rel}: ${sectionCount} "##" sections (soft ceiling 9) — consider dividing further.` });
+  }
+  return warnings;
+}
+
+async function checkSizeCeiling(warnings) {
+  for (const abs of await walk(METHOD_DIR, '.md')) {
+    const text = await readFile(abs, 'utf8');
+    warnings.push(...findSizeCeilingWarnings(text, relPosix(abs)));
+  }
+}
+
 // --- main ------------------------------------------------------------------
 
 async function main() {
   const failures = [];
+  const warnings = [];
   let catalogue;
   try {
     catalogue = await parseCatalogue();
@@ -1206,9 +1558,21 @@ async function main() {
     await checkVocabularyValueVocabularies(failures);
     await checkVocabularyRuleCodes(failures);
     await checkDocumentSources(failures);
+    await checkIdGrammar(failures);
+    await checkLayerEnumeration(failures);
+    await checkDualHomeTables(failures);
+    await checkSizeCeiling(warnings);
   } catch (e) {
     console.error(`error: ${e.message}`);
     process.exit(2);
+  }
+
+  if (warnings.length > 0) {
+    console.warn(`\nNotations doc-lint — ${warnings.length} warning(s) (do not fail the build):\n`);
+    for (const w of warnings) {
+      console.warn(`  - [${w.check}] ${w.message}`);
+    }
+    console.warn('');
   }
 
   if (failures.length > 0) {

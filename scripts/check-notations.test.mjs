@@ -23,6 +23,12 @@ import {
   parseRuleRowValues,
   parseVocabularyRuleCodes,
   parseVocabularyDeferredRuleCodes,
+  parseIdTypeRegistry,
+  validateIdToken,
+  findIdCandidates,
+  findLayerEnumerationGroups,
+  parseMarkdownTables,
+  findSizeCeilingWarnings,
 } from './check-notations.mjs';
 
 test('deriveClassCounts — positive: counts non-deprecated specs per class', () => {
@@ -532,4 +538,157 @@ test('findDocumentSourceFailures — unrelated files are untouched', () => {
     'packages/document-renderer/src/pass1.mjs',
   ]);
   assert.deepEqual(failures, []);
+});
+
+// --- ID1: example-ID grammar ------------------------------------------------
+
+test('parseIdTypeRegistry — positive: reads every TYPE prefix from §3, across subsections', () => {
+  const text = `
+intro
+
+## 3. TYPE registry
+
+### 3.1 Element types
+
+| \`GOAL\` | a goal |
+| \`ACTION\` | a work package |
+
+### 3.2 Other types
+
+| \`REL\` | a relation |
+
+## 4. Next section
+
+| \`NOT_REGISTERED\` | should not be read |
+`;
+  const out = parseIdTypeRegistry(text);
+  assert.deepEqual([...out].sort(), ['ACTION', 'GOAL', 'REL']);
+});
+
+test('parseIdTypeRegistry — negative: a missing "## 3. TYPE registry" heading throws', () => {
+  assert.throws(() => parseIdTypeRegistry('# Some doc\n\nno registry here\n'), /TYPE registry/);
+});
+
+test('parseIdTypeRegistry — negative: a section with no parseable rows throws', () => {
+  const text = `
+## 3. TYPE registry
+
+Prose only, no table rows.
+
+## 4. Next
+`;
+  assert.throws(() => parseIdTypeRegistry(text), /parsed empty/);
+});
+
+test('validateIdToken — positive: a plain TYPE-id with no leading zeros is valid', () => {
+  assert.deepEqual(validateIdToken('GOAL-CUST-1'), { valid: true });
+});
+
+test('validateIdToken — positive: a CAPABILITY V/H diagram address is valid', () => {
+  assert.deepEqual(validateIdToken('CAPABILITY-V1.2'), { valid: true });
+});
+
+test('validateIdToken — negative: a leading-zero terminal segment is invalid', () => {
+  const result = validateIdToken('ROLE-OPS-001');
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /positive integer with no leading zeros/);
+});
+
+test('validateIdToken — negative: a non-numeric terminal segment is invalid', () => {
+  const result = validateIdToken('GOAL-XYZ');
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /positive integer with no leading zeros/);
+});
+
+test('validateIdToken — negative: a malformed CAPABILITY address is invalid', () => {
+  const result = validateIdToken('CAPABILITY-V01');
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /V\/H diagram-address form/);
+});
+
+test('findIdCandidates — positive: a backtick span outside a fence is scanned', () => {
+  const out = findIdCandidates('See `GOAL-CUST-1` for the target.');
+  assert.deepEqual(out, [{ token: 'GOAL-CUST-1', line: 1 }]);
+});
+
+test('findIdCandidates — positive: a fenced code block line is scanned whole, not just backtick spans', () => {
+  const text = '```yaml\nowner_role: ROLE-OPS-001\n```\n';
+  const out = findIdCandidates(text);
+  assert.deepEqual(out, [{ token: 'ROLE-OPS-001', line: 2 }]);
+});
+
+test('findIdCandidates — negative: prose outside a backtick span is not scanned', () => {
+  const out = findIdCandidates('GOAL-CUST-1 with no backticks around it.');
+  assert.deepEqual(out, []);
+});
+
+test('findIdCandidates — negative: an angle-bracket placeholder is excluded', () => {
+  const out = findIdCandidates('`<STEP-id>` is a placeholder.');
+  assert.deepEqual(out, []);
+});
+
+test('findIdCandidates — negative: a family-prefix ellipsis marker is excluded', () => {
+  const out = findIdCandidates('`GOAL-…` refers to any goal id.');
+  assert.deepEqual(out, []);
+});
+
+// --- LAYER1: layer/folder enumeration ---------------------------------------
+
+test('findLayerEnumerationGroups — positive: three or more distinct folders in a fence form a group', () => {
+  const text = '```\ncanon/elements/\n  01_motivation/\n  02_business/\n  03_application/\n```\n';
+  const groups = findLayerEnumerationGroups(text);
+  assert.equal(groups.length, 1);
+  assert.deepEqual([...groups[0].folders].sort(), ['01_motivation', '02_business', '03_application']);
+});
+
+test('findLayerEnumerationGroups — negative: fewer than three distinct folders is not a group', () => {
+  const text = '```\n01_motivation/\n02_business/\n```\n';
+  assert.deepEqual(findLayerEnumerationGroups(text), []);
+});
+
+test('findLayerEnumerationGroups — negative: folders outside a fence are ignored', () => {
+  const text = '01_motivation/, 02_business/, 03_application/ are all layers.';
+  assert.deepEqual(findLayerEnumerationGroups(text), []);
+});
+
+test('findLayerEnumerationGroups — negative: a table row citing several folders on one line is not a tree entry', () => {
+  const text = '```\n| 01_motivation/ | 02_business/ | 03_application/ |\n```\n';
+  assert.deepEqual(findLayerEnumerationGroups(text), []);
+});
+
+// --- DUALHOME1: no dual-home tables ------------------------------------------
+
+test('parseMarkdownTables — positive: reads a header/separator/data table into rows with a 1-based startLine', () => {
+  const text = 'intro\n\n| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |\n';
+  const tables = parseMarkdownTables(text);
+  assert.equal(tables.length, 1);
+  assert.equal(tables[0].startLine, 3);
+  assert.deepEqual(tables[0].rows, ['| 1 | 2 |', '| 3 | 4 |']);
+});
+
+test('parseMarkdownTables — negative: text with no separator row is not read as a table', () => {
+  assert.deepEqual(parseMarkdownTables('| A | B |\nnot a separator row\n'), []);
+});
+
+// --- SIZE1: per-file soft ceiling (warn-only) --------------------------------
+
+test('findSizeCeilingWarnings — positive: a short file with few sections warns not at all', () => {
+  const text = '## One\n\ntext\n\n## Two\n\ntext\n';
+  assert.deepEqual(findSizeCeilingWarnings(text, 'method/00-x.md'), []);
+});
+
+test('findSizeCeilingWarnings — negative: over 250 lines warns', () => {
+  const text = Array.from({ length: 251 }, (_, i) => `line ${i}`).join('\n');
+  const warnings = findSizeCeilingWarnings(text, 'method/00-x.md');
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].check, 'SIZE1');
+  assert.match(warnings[0].message, /251 lines/);
+});
+
+test('findSizeCeilingWarnings — negative: more than nine "##" sections warns', () => {
+  const text = Array.from({ length: 10 }, (_, i) => `## Section ${i}`).join('\n\n');
+  const warnings = findSizeCeilingWarnings(text, 'method/00-x.md');
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].check, 'SIZE1');
+  assert.match(warnings[0].message, /10 "##" sections/);
 });

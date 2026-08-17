@@ -45,7 +45,7 @@ The reconstruction invariant applies: `render(Elements, view_config)` → Goals 
 
 A goals tree is a hierarchical view that arranges GOAL elements from `canon/elements/01_motivation/goals/` into a top-down tree — from broad strategic ambitions down to specific tactical objectives.
 
-The hierarchy is derived at render time from the `parent` field on each GOAL element: a goal whose `parent` is omitted (or null) is a root; a goal whose `parent` is `GOAL-XYZ` is a child of that goal. The Goals Tree document itself contains only scope and display configuration.
+The hierarchy is derived at render time from the `parent` field on each GOAL element: a goal whose `parent` is omitted (or null) is a root; a goal whose `parent` is `GOAL-…` is a child of that goal. The Goals Tree document itself contains only scope and display configuration.
 
 Goals trees live in `canon/views/goals/`.
 
