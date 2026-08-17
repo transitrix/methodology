@@ -50,6 +50,7 @@ Maintainer decisions on methodology-level changes (new notations, schema changes
 - **File naming:** see `method/03-modelling.md` §2.
 - **Element ids:** canonical grammar in [`notations/IDS_AND_REFERENCES.md`](notations/IDS_AND_REFERENCES.md) §1. See `method/03-modelling.md` §2.
 - **Tags and metadata in repository files: English.**
+- **Outbound links to a site we own** (currently `transitrix.com`) carry a `?utm_source=<surface-slug>` query parameter identifying which surface in this repository the link lives on — e.g. `methodology-readme` for a link in `README.md`, `methodology-plugin-manifest` for the plugin manifests' `homepage` field. This uses attribution the destination site already collects; it adds no new tracking dependency. A link to a page we don't operate (GitHub, npm, third-party docs) does not need one. When you add a new outbound link to a site we own, give it a slug following this pattern.
 
 ## Authorship and IP
 
