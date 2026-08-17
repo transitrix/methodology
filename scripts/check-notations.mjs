@@ -22,6 +22,11 @@
 //   V1  version — every concrete `methodology_version:` pin in the repo equals
 //       the single source of truth (notations/CURRENT_VERSION.yaml,
 //       per CONTRACT.md §10), except explicitly allowlisted placeholders.
+//   V2  preset version — packages/ingest-cli/src/coverage-presets.mjs's
+//       PRESETS_VERSION equals the same source of truth. Catches the release
+//       step (RELEASING.md checklist item 2) being skipped, the way V1 catches
+//       a stale methodology_version pin — PRESETS_VERSION drifting silently
+//       breaks repo-check's tooling.ok signal for every adopter (transitrix-hq#199).
 //   VOC1 vocabulary — every live element TYPE in notations/vocabulary.yaml's
 //       `element_types` has exactly one matching row in ELEMENT_PRIMITIVES.md
 //       §4 (same mode/layer/folder), and vice versa. A deprecated alias
@@ -96,6 +101,7 @@ const NOTATIONS_DIR = join(REPO_ROOT, 'notations');
 const METHOD_DIR = join(REPO_ROOT, 'method');
 const PACKAGES_SPEC_DIR = join(REPO_ROOT, 'notations', 'packages');
 const VERSION_SOT = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
+const PRESETS_PATH = join(REPO_ROOT, 'packages', 'ingest-cli', 'src', 'coverage-presets.mjs');
 const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
 const ELEMENT_PRIMITIVES_PATH = join(REPO_ROOT, 'notations', 'ELEMENT_PRIMITIVES.md');
 const RELATIONS_SPEC_PATH = join(REPO_ROOT, 'notations', 'elements', '17-relations.md');
@@ -305,6 +311,28 @@ async function checkVersion(failures) {
           `Bump it, or allowlist the file in scripts/check-notations.mjs if it is an intentional placeholder.`,
       });
     }
+  }
+}
+
+// V2: coverage-presets.mjs's PRESETS_VERSION must equal the SoT (RELEASING.md
+// checklist item 2) — this is what repo-check's tooling.ok signal is built on.
+async function checkPresetsVersion(failures) {
+  const sotText = await readFile(VERSION_SOT, 'utf8');
+  const sotMatch = sotText.match(/^methodology_version:\s*"?([^"\s#]+)"?/m);
+  if (!sotMatch) throw new Error(`${relPosix(VERSION_SOT)}: methodology_version (source of truth) not found`);
+  const sot = sotMatch[1];
+
+  const presetsText = await readFile(PRESETS_PATH, 'utf8');
+  const presetsMatch = presetsText.match(/^export const PRESETS_VERSION = '([^']+)'/m);
+  if (!presetsMatch) throw new Error(`${relPosix(PRESETS_PATH)}: PRESETS_VERSION not found`);
+  const presetsVersion = presetsMatch[1];
+
+  if (presetsVersion !== sot) {
+    failures.push({
+      check: 'V2',
+      message: `${relPosix(PRESETS_PATH)}: PRESETS_VERSION "${presetsVersion}" ≠ source of truth "${sot}" (${relPosix(VERSION_SOT)}). ` +
+        `Bump it and re-state each preset's element + relation lists against COVERAGE_PROFILES.md §3 / §3.1 for this release (RELEASING.md checklist item 2).`,
+    });
   }
 }
 
@@ -1550,6 +1578,7 @@ async function main() {
     await checkExamples(catalogue, failures);
     await checkLinks(failures);
     await checkVersion(failures);
+    await checkPresetsVersion(failures);
     await checkNotationCounts(failures);
     await checkNoStandardIdentifiers(failures);
     await checkPackageEnvelopeStatements(failures);

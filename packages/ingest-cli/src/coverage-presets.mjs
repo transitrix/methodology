@@ -10,11 +10,13 @@
 //
 // RELEASE DISCIPLINE: on every methodology MINOR or MAJOR bump, update PRESETS_VERSION
 // to match the new methodology_version and re-state each preset's element + relation
-// lists against COVERAGE_PROFILES.md §3 / §3.1 for that release. This is a manual
-// release step — run `node packages/ingest-cli/ingest.mjs repo-check <repo>` on a repo
-// pinned to the new version to confirm no false-negative mismatch before tagging.
+// lists against COVERAGE_PROFILES.md §3 / §3.1 for that release. Re-stating the tables
+// is still a manual step — run `node packages/ingest-cli/ingest.mjs repo-check <repo>`
+// on a repo pinned to the new version to confirm no false-negative mismatch before
+// tagging — but the version literal itself is enforced: scripts/check-notations.mjs's
+// V2 check fails the build if this drifts from notations/CURRENT_VERSION.yaml.
 
-export const PRESETS_VERSION = '2.1.0';
+export const PRESETS_VERSION = '3.6.0';
 
 export const LAYERS = ['01_motivation', '02_business', '03_application', '04_technology', '05_implementation'];
 
