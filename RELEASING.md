@@ -24,13 +24,14 @@ For every release, in order:
 
 1. **Confirm the bump category.** Read every PR landed since the previous tag; categorise each change per the table above; pick the bump.
 2. **Bump `notations/CURRENT_VERSION.yaml`** to the new version, in the same PR as the release notes. This is the manifest pin `scripts/check-notations.mjs`'s V1 check enforces every other concrete `methodology_version:` pin in this repo against — run `node scripts/check-notations.mjs` after bumping it and fix every pin the check flags (or add it to the script's allowlist if it is an intentional placeholder, e.g. a migration fixture pinned to a fixed source version). The tag is cut from a commit where this check is already clean — do not tag first and bump after.
-3. **Update `methodology_version` in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo's `transitrix.yaml`** to the new version, via a companion PR in that repo. acme-corp is the fixture adopter and tracks the latest released version.
-4. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
-5. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
-6. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
-7. **Tag** the release commit with `vX.Y.Z`.
-8. **Publish** the release notes as a GitHub Release on the tag.
-9. **Announce** the release (channel TBD with the maintainer).
+3. **Bump `PRESETS_VERSION` in `packages/ingest-cli/src/coverage-presets.mjs`** to the same new version, in the same PR, and re-state each preset's element + relation lists against [`notations/COVERAGE_PROFILES.md`](notations/COVERAGE_PROFILES.md) §3 / §3.1 if this release changed either. Required on **every** release including `PATCH`: `repo-check` compares this string to the adopter's declared `methodology_version` for exact equality, so any divergence reports a false "stale CLI" mismatch and pins its headline `tooling.ok` signal to false for correctly pinned adopters. `check-notations.mjs`'s `PRESETS1` check enforces both halves — the version and the tables — so step 2's run covers this; the step is listed because the fix belongs in the release PR, not because it needs remembering.
+4. **Update `methodology_version` in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo's `transitrix.yaml`** to the new version, via a companion PR in that repo. acme-corp is the fixture adopter and tracks the latest released version.
+5. **Update each notation spec's `version:` frontmatter** if any spec changed in this release. (`spec_version` on individual files is informational — see CONTRACT §10.1 — so this step is bookkeeping for discoverability, not enforcement.)
+6. **Write release notes** describing what changed by category (`Added`, `Changed`, `Fixed`, `Removed`). Reference PR numbers.
+7. **For a `MAJOR` release** — ship a migration recipe under `migrations/<prev>-to-<this>/` (recipe format: see [`migrations/`](migrations/) and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10.4). The recipe is a precondition for the tag.
+8. **Tag** the release commit with `vX.Y.Z`.
+9. **Publish** the release notes as a GitHub Release on the tag.
+10. **Announce** the release (channel TBD with the maintainer).
 
 ---
 
@@ -65,7 +66,7 @@ When an adopter repo moves from one methodology version to another, **four artef
    ```
    transitrix-ingest repo-check [org-root]
    ```
-   A clean run shows `tooling.ok: true` and no version-mismatch red flag. If `tooling.ok: false` still appears, the installed binary is still the old version — repeat step 4.
+   A clean run shows `tooling.ok: true` and no version-mismatch red flag. If `tooling.ok: false` still appears, compare the reported `cli_presets_version` against the version you pinned: if they differ and the binary really is freshly installed, the mismatch is upstream's — the release shipped without bumping `PRESETS_VERSION` (step 3 of the per-release checklist), not something you did wrong. Report it rather than reinstalling repeatedly; `check-notations.mjs`'s `PRESETS1` check exists to stop that release from being cut in the first place. Otherwise the installed binary is still the old version — repeat step 4.
 7. **Re-resolve the coverage profile** (if the new release changed the preset vocabulary — see `COVERAGE_PROFILES.md` §7 for what changes between versions). Fix `transitrix.yaml` if needed, then re-run `repo-check` to clear any `coverage_warning`.
 
 Steps 1–3 handle the **spec and canon**; step 4 handles the **CLI**; step 5 handles the **whole-repo validator**; steps 6–7 confirm all four artefacts are in sync. Skipping step 4 leaves the CLI binary stale — it will run against new artefacts with old validators and a mismatched coverage-preset vocabulary. Skipping step 5 leaves `.validators/lint.py` on its scaffold-time snapshot — any fix or rule change landed in `tools/lint.py` since then stays invisible to the adopter's own CI.
