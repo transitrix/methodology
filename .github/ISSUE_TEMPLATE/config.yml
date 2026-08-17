@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Other enquiries
+    url: mailto:hello@transitrix.com
+    about: Anything that isn't a bug report or a change request for this repository — see CONTRIBUTING.md § Communication.

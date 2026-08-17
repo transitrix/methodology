@@ -1,0 +1,57 @@
+name: Bug report
+description: A validator, a spec, an example, or the documentation behaves incorrectly or inconsistently with what it says.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For this repository's own defects: a validator false positive/negative, a
+        documentation bug, or a methodology ambiguity. See
+        [CONTRIBUTING.md § Reporting issues](../../CONTRIBUTING.md#reporting-issues).
+
+        Not for this: model content in an adopter repository (report it there
+        instead), or a question about a specific organisation's own architecture.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Validator false positive (flags something that should be valid)
+        - Validator false negative (misses something that should be invalid)
+        - Documentation bug (wrong, outdated, or broken content/link)
+        - Methodology question or ambiguity
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: File path or section reference
+      description: The file and, where useful, the section (e.g. a spec §, a schema field).
+      placeholder: notations/views/01-bpmn.md §3
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: What you observed
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction (optional)
+      description: A short snippet, example file, or command that reproduces this.
+    validations:
+      required: false
