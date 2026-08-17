@@ -50,7 +50,7 @@ Regenerate with `node packages/plugin-examples/src/generate.mjs`; CI (`.github/w
 | **Onboard** | `/transitrix:onboard` | Scaffolds a new adopter repository (zoned `canon/` + `field/` + `codex/` layout, assistant-neutral `AGENTS.md`, `transitrix.yaml` manifest) and walks through a first notation file | 0.5.0 |
 | **Ingest** | `/transitrix:ingest` | Turns raw organisational documents — interviews, policies, org charts — into `field`-zone artefacts and typed canon candidates, then stages a human review queue | 0.6.0 |
 | **Repo-check** | `/transitrix:repo-check` | Read-only health check: methodology version, coverage-profile resolution, per-TYPE element counts, and integrity flags — all data-free, safe to share externally | 0.6.0 |
-| **Report** | `/transitrix:report` | Produces a reproducible compliance report (obligation × subject impact matrix or per-regime coverage metric) via a committed view-config artefact and the `cervin` CLI renderer | 0.6.0 |
+| **Report** | `/transitrix:report` | Produces a reproducible compliance report (obligation × subject impact matrix or per-regime coverage metric) via a committed view-config artefact and the `@transitrix/cli` renderer | 0.6.0 |
 | **Reg-intel** | `/transitrix:reg-intel` | Monitors regulatory sources, classifies new instruments against the organisation's obligation catalogue, and stages a review digest for human triage | 0.6.0 |
 | **ADR** | `/transitrix:adr` | Runs a Context/Decision/Consequences interview and lands the result as a gated Architecture Decision Record (`operations/decisions/ADR-YYYY-MM-DD-*.md`), never self-accepting and never editing an accepted record's body | 0.6.0 |
 | **Feedback** | `/transitrix:feedback` | Routes a methodology-directed finding away from data/model problems, runs a scrub-gated interview, and lands it as an anonymised `FB-NNNN` entry in `operations/feedback.md`; exports a ready-to-send message on request only, never transmits it itself | 2.1.0 |
@@ -62,7 +62,7 @@ Regenerate with `node packages/plugin-examples/src/generate.mjs`; CI (`.github/w
 - **Claude Code** — the plugin runs inside a Claude Code session.
 - **An adopter repository** — a repository following the Transitrix zoned layout (`canon/` + `field/` + `codex/`). Create one with `/transitrix:onboard`, or clone the worked example at `github.com/transitrix/acme-corp`.
 - **Methodology version pin** — the repository must declare its methodology version in `transitrix.yaml`. Skills check the declared version against their `min_version` field and warn if the repo is on an older release.
-- **Transitrix Studio / CLI** (optional) — the `ingest` and `report` skills delegate deterministic work to `@transitrix/ingest-cli` and `cervin` respectively. Both skills run a pre-check (Step 0) and tell the user to install the CLI if it is absent; they do not hand-roll the logic.
+- **Transitrix Studio / CLI** (optional) — the `ingest` and `report` skills delegate deterministic work to `@transitrix/ingest-cli` and `@transitrix/cli` respectively. Both skills run a pre-check (Step 0) and tell the user to install the CLI if it is absent; they do not hand-roll the logic.
 
 ---
 
