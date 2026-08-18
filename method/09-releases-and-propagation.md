@@ -1,7 +1,7 @@
 ---
 title: Releases and propagation — how a new version reaches an adopter
 status: active
-last_reviewed: 2026-08-16
+last_reviewed: 2026-08-18
 audience: public
 license: MIT
 tags: [transitrix, methodology, operations, upgrade, versioning, catalogue, agents]
@@ -61,13 +61,19 @@ A `MINOR` or `PATCH` bump that carries no migration recipe (additive specs only)
 
 ## 5. The bound on autonomous agents
 
-An agent may prepare an upgrade. An agent may not silently apply one. The mechanism is the ADL ratification gate ([`07-decisions.md`](07-decisions.md) §4; doctrine: [`08-governance.md`](08-governance.md) §2):
+An agent may prepare an upgrade. An agent may not apply one that no human authorised. The mechanism is the ADL ratification gate ([`07-decisions.md`](07-decisions.md) §4; doctrine: [`08-governance.md`](08-governance.md) §2), and it has two paths — which one applies depends on whether a human ratified this upgrade or its class.
+
+**The default path — the human ratifies the instance.**
 
 - An agent-prepared upgrade PR **must** include an ADR with `author: agent` and `status: proposed` that records the bump. A worked example is `operations/decisions/ADR-0002-pin-methodology-0-5-0.md` in the acme-corp reference repo.
 - The pin in `transitrix.yaml` may change in the same PR, but the decision is **not in force** until a human flips the ADR `proposed → accepted` in a separate, reviewed change.
 - The ADL CI guard (`scripts/check-adl.mjs`, check A3) mechanically rejects an `author: agent` record introduced as `accepted`. The gate is enforced, not advised.
 
-The worst an unattended agent can do, then, is leave a *proposed* upgrade for human review — the entire bounded, recipe-scoped diff plus the ADR are visible in one PR.
+The worst an unattended agent can do on this path is leave a *proposed* upgrade for human review — the entire bounded, recipe-scoped diff plus the ADR are visible in one PR.
+
+**Under a standing grant — the human ratified the class first.** Where a repository's maintainers have accepted a standing grant for a bounded class of upgrade ([`08-governance.md`](08-governance.md) §2.1), an agent may land an upgrade inside that class without a per-instance ADR: the ratification happened when the grant was accepted, and the record of each landing is the run. A repeated non-major pin bump is the usual case — it is not a decision each time, and a per-instance record would document a judgement nobody made.
+
+This narrows nothing away from the paragraph above. The grant is accepted by a human; its conditions are checked mechanically on every use, or it is not in force; a bump outside the class — a `MAJOR` upgrade, or one whose conditions do not hold — takes the default path; and an agent can neither write a grant nor widen the one it acts under.
 
 ## 6. Catalogue integration — joining a network around a central catalogue
 
@@ -142,5 +148,5 @@ L0 is one command (`transitrix-ingest adopt-adl`) — see [`guides/adl-adopter-s
 
 ---
 
-**Last reviewed:** 2026-08-16. Merges the former `04-methodology-update-propagation.md` §1–§6, §8–§9 with `05-catalogue-integration.md` — see those files' redirects. §7 (Discovery) moved to [`RELEASING.md`](../RELEASING.md), a maintainer-side operational document, rather than staying in this adopter-facing folder. §6 above condenses the former standalone catalogue-integration document, pointing at [`notations/CONTRACT.md`](../notations/CONTRACT.md) §17 for the binding envelope's field shapes rather than restating them, to avoid the two documents drifting apart.
+**Last reviewed:** 2026-08-18. §5 now states the two paths an agent-prepared upgrade can take — the default per-instance ratification, unchanged, and landing inside a class ratified in advance ([`08-governance.md`](08-governance.md) §2.1). Previously it restated the doctrine in a form that a standing grant would contradict. Prior 2026-08-16: Merges the former `04-methodology-update-propagation.md` §1–§6, §8–§9 with `05-catalogue-integration.md` — see those files' redirects. §7 (Discovery) moved to [`RELEASING.md`](../RELEASING.md), a maintainer-side operational document, rather than staying in this adopter-facing folder. §6 above condenses the former standalone catalogue-integration document, pointing at [`notations/CONTRACT.md`](../notations/CONTRACT.md) §17 for the binding envelope's field shapes rather than restating them, to avoid the two documents drifting apart.
 **Status:** Active.

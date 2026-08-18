@@ -1,7 +1,7 @@
 ---
 title: Decisions — record shape and multi-repo aggregation
 status: active
-last_reviewed: 2026-08-16
+last_reviewed: 2026-08-18
 audience: public
 license: MIT
 tags: [transitrix, methodology, operations, adr, adl, togaf, governance]
@@ -119,6 +119,8 @@ The local filename and `id:` are unchanged — **no change to the per-repo conve
 
 An agent may author a record and open it as `status: proposed`. It may **not** self-promote to `accepted`. This is the mechanism [`08-governance.md`](08-governance.md) states as doctrine; this section is its mechanics.
 
+**A ratified class needs no per-instance record.** Where a human has accepted a standing grant covering a bounded class of change ([`08-governance.md`](08-governance.md) §2.1), an agent acting inside that class is executing a ratified decision rather than taking one, and the record of each instance is the run rather than a new ADR. The grant itself is an ordinary record — `author: human-architect`, ratified by a person, immutable once accepted, superseded rather than rewritten — so nothing above is loosened: the table still says an `author: agent` record is in force only when a human ratifies it, and an agent still cannot author or widen the grant it acts under.
+
 **The authorship limit — where, not just what.** An agent may author a decision record that is local to its own repository; it may **not** author one that crosses a boundary outside that repository — including writing directly into the central architecture repository, another project repository, or any location its own repository's agent cannot itself read. The control is structural rather than a review step: the crossing is defined by material the agent does not have (another repository's audience, confidentiality boundary, or reasoning), so the agent cannot reliably detect that it has crossed one — the boundary has to be enforced by *who may author where*, not by checking the record afterward. An agent that judges its own repository's decision belongs in the central log (§1) proposes that move to whoever can write there; it never writes across the boundary itself.
 
 ## 5. The harvest — central pull job
@@ -198,5 +200,5 @@ The mechanism is specified above (§2–§8); the step-by-step path through it �
 
 **Next:** [`08-governance.md`](08-governance.md) — who may change what, what gates it, and what an agent may do unattended.
 
-**Last reviewed:** 2026-08-16. Merges the former `03-architecture-decision-log.md` with the ADR record shape formerly at `02-team-operations.md` §3.1 — see those files for the redirect. The two are combined here because the record shape and its multi-repo aggregation are one question, not two.
+**Last reviewed:** 2026-08-18. §4 records that a class ratified in advance ([`08-governance.md`](08-governance.md) §2.1) needs no per-instance record — the run is the record — while the `author: agent` gate in the table above is unchanged. Prior 2026-08-16: Merges the former `03-architecture-decision-log.md` with the ADR record shape formerly at `02-team-operations.md` §3.1 — see those files for the redirect. The two are combined here because the record shape and its multi-repo aggregation are one question, not two.
 **Status:** Active.
