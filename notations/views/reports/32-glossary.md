@@ -13,6 +13,8 @@ dsm_status: "planned"
 **Scope:** Report-config view over the whole catalogue — projects `name` + `aliases[]` + `description` for every admitted element, whatever TYPE it is, into one flat, alphabetised lookup surface. No entry is defined inline in this document — it is a projection configuration, not an authoring surface (the reconstruction invariant, [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1).
 **Renderer:** Transitrix Studio — glossary panel (planned); Transitrix DSM — planned.
 
+> **No renderer ships today.** A `glossary` view admits and validates cleanly, but neither Studio nor DSM has built its consumer yet — authoring one now produces a file with no rendered output until one of those lands. Decide whether that's worth doing before investing time in a glossary view.
+
 ---
 
 ## File header
