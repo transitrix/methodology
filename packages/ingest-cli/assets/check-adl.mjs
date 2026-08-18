@@ -63,6 +63,14 @@ function relPosix(abs) {
   return relative(REPO_ROOT, abs).split('\\').join('/');
 }
 
+// Normalise CRLF to LF once at every point text enters the script, so a
+// Windows checkout (core.autocrlf=true → \r\n on disk) can't desync the
+// front-matter delimiter match or the A2 body/front-matter comparisons,
+// which are all written against a bare \n.
+function normalizeEol(text) {
+  return text.replace(/\r\n/g, '\n');
+}
+
 function isRecordPath(rel) {
   return DATE_FILE_RE.test(rel) || LEGACY_FILE_RE.test(rel);
 }
@@ -117,8 +125,9 @@ function parseFm(fmText) {
 // git show <ref>:<relpath> → string, or null if not present / no git.
 function gitShow(ref, relpath) {
   try {
-    return execFileSync('git', ['show', `${ref}:${relpath}`],
+    const out = execFileSync('git', ['show', `${ref}:${relpath}`],
       { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    return normalizeEol(out);
   } catch { return null; }
 }
 
@@ -162,7 +171,7 @@ async function main() {
 
   for (const abs of records) {
     const rel = relPosix(abs);
-    const text = await readFile(abs, 'utf8');
+    const text = normalizeEol(await readFile(abs, 'utf8'));
     const { fm: fmText, body } = splitFrontMatter(text);
 
     // A1 — front-matter validity
