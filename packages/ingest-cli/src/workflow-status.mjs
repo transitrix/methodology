@@ -13,7 +13,7 @@
 // recomputing admission state.
 
 import { readdir, readFile, access } from 'node:fs/promises';
-import { join, resolve, relative } from 'node:path';
+import { join, resolve, relative, basename } from 'node:path';
 import { readTopScalar } from './yaml.mjs';
 import { checkStale } from './check-stale.mjs';
 import { isUnresolvedPath } from './unresolved.mjs';
@@ -24,6 +24,20 @@ async function listMdFiles(dir) {
   let entries;
   try { entries = await readdir(dir, { withFileTypes: true }); } catch { return []; }
   return entries.filter(e => e.isFile() && e.name.endsWith('.md')).map(e => join(dir, e.name));
+}
+
+// operations/decisions/ADR-*.md filename shapes (method/07-decisions.md §2, §2.2) —
+// kept in sync by hand with scripts/check-adl.mjs's DATE_FILE_RE/LEGACY_FILE_RE
+// (and its vendored copy, packages/ingest-cli/assets/check-adl.mjs). Excludes by
+// construction anything that isn't a real record — most notably the shipped ADR
+// template (transitrix/skills/adr/templates/ADR-template.md), whose id and any
+// filename it might be copied in under never actually matches
+// ADR-<date>-<slug>.md or the legacy ADR-<NNNN>-<slug>.md shape
+// (transitrix-hq#211).
+const ADR_DATE_RE = /^ADR-\d{4}-\d{2}-\d{2}-[^/]+\.md$/;
+const ADR_LEGACY_RE = /^ADR-\d{4}-[^/]+\.md$/;
+function isAdrRecordFilename(name) {
+  return ADR_DATE_RE.test(name) || ADR_LEGACY_RE.test(name);
 }
 
 async function walkYaml(dir) {
@@ -62,16 +76,16 @@ function todayIso() { return new Date().toISOString().slice(0, 10); }
 
 // operations/decisions/ADR-*.md — status: proposed|accepted|superseded
 // (method/07-decisions.md §2.1), author:agent proposed broken out as its own phase
-// (method/07-decisions.md §2.1). ADR ids are opaque strings throughout — both
-// ADR-NNNN and ADR-YYYY-MM-DD-<slug> forms work
-// without special-casing, since only `status`/`author` front-matter fields
-// are read here, never the id's shape.
+// (method/07-decisions.md §2.1). Once a file clears the isAdrRecordFilename() gate,
+// its `id:` front-matter is read and reported as an opaque string — both ADR-NNNN
+// and ADR-YYYY-MM-DD-<slug> forms work without special-casing there.
 async function scanAdr(root) {
   const dir = join(root, 'operations', 'decisions');
   if (!(await exists(dir))) return null;
   const counts = { proposed_agent: 0, proposed_human: 0, accepted: 0, superseded: 0, unknown: 0 };
   const ids = { proposed_agent: [], proposed_human: [], accepted: [], superseded: [], unknown: [] };
   for (const file of await listMdFiles(dir)) {
+    if (!isAdrRecordFilename(basename(file))) continue;
     const text = await readFile(file, 'utf8');
     const fm = frontMatterOf(text);
     const id = (fm && readTopScalar(fm, 'id')) || relative(root, file);
