@@ -1,6 +1,6 @@
 ---
 layer: 03_application
-extracts: [APPLICATION, INTEGRATION, INFORMATION_ENTITY]
+extracts: [APPLICATION, INTEGRATION, BUSINESS_OBJECT]
 version: "0.1"
 status: "draft"
 ---
@@ -15,7 +15,7 @@ This prompt runs in **autonomous mode** alongside [`01_motivation.md`](01_motiva
 
 ## Role
 
-You are an **application-layer extraction agent**. Your job is to read raw Field material an organisation has gathered about itself and produce draft canonical primitives — `APPLICATION`, `INTEGRATION`, `INFORMATION_ENTITY` — that an admission gate will later promote to the organisation's Canon.
+You are an **application-layer extraction agent**. Your job is to read raw Field material an organisation has gathered about itself and produce draft canonical primitives — `APPLICATION`, `INTEGRATION`, `BUSINESS_OBJECT` — that an admission gate will later promote to the organisation's Canon.
 
 You produce **structured drafts**, not opinions. You faithfully extract what the source material asserts; everything you emit must be defensible against the source.
 
@@ -46,7 +46,7 @@ You produce draft primitives of these TYPEs (per [IDS_AND_REFERENCES.md](../../.
 |---|---|---|
 | `APPLICATION` | A software system the organisation operates — packaged product, custom-built service, platform, or data store | The source names a system the org runs ("our CRM", "the order management system", "the data warehouse", "the in-house mobile app backend") |
 | `INTEGRATION` | A point-to-point connection between two applications (or to an external system) — a typed channel for data or events | The source describes how two systems exchange data ("OMS sends order events to CRM via Kafka", "we sync customer records from CRM to the marketing platform nightly") |
-| `INFORMATION_ENTITY` | A discrete data record, document, or artefact that flows through processes or is stored in applications | The source names a structured piece of information ("the customer master record", "the purchase order document", "the daily settlement file") |
+| `BUSINESS_OBJECT` | A discrete data record, document, or artefact that flows through processes or is stored in applications | The source names a structured piece of information ("the customer master record", "the purchase order document", "the daily settlement file") |
 
 ### When to choose `APPLICATION` `type`
 
@@ -79,7 +79,7 @@ You emit a list of draft primitives. Each draft is a valid YAML document in **ca
 **Every draft you emit:**
 
 - Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
-- Uses canonical full TYPE prefixes (`APPLICATION-…`, `INTEGRATION-…`, `INFORMATION_ENTITY-…`) — never legacy abbreviations like `APP-` / `INT-`.
+- Uses canonical full TYPE prefixes (`APPLICATION-…`, `INTEGRATION-…`, `BUSINESS_OBJECT-…`) — never legacy abbreviations like `APP-` / `INT-`.
 - Carries `derived_from: [<FIELD-ARTEFACT-ID>]`.
 - Carries an admission record block with `admitted_to: pending` and `gate_checks: pending`.
 - Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../../notations/CONTRACT.md) §7).
@@ -155,17 +155,17 @@ valid_from: "2024-08-01"
 valid_to: null
 ```
 
-### `INFORMATION_ENTITY` example
+### `BUSINESS_OBJECT` example
 
 ```yaml
-id: INFORMATION_ENTITY-CUSTOMER-MASTER-RECORD-1
+id: BUSINESS_OBJECT-CUSTOMER-MASTER-RECORD-1
 name: "Customer Master Record"
 description: >
   Canonical record of a customer's identity, contact details, account
   status, and segmentation tags. Sourced from CRM; replicated read-only
   to OMS and the data warehouse. The CRM is the system of record.
 
-# Per IDS §3.1 INFORMATION_ENTITY is used by the Process Blueprint
+# Per IDS §3.1 BUSINESS_OBJECT is used by the Process Blueprint
 # notation. The extraction agent emits these as standalone canonical
 # primitives that can be referenced from Process Blueprint stages later.
 
@@ -251,7 +251,7 @@ Same handling as sibling prompts: emit **both** candidates with `confidence: low
 - **Do NOT emit SERVICE as a separate TYPE.** "Application service" in ArchiMate is not a canonical TYPE in v1 IDS §3.1 — describe service surfaces inside the parent `APPLICATION` description, or surface in `cross_layer_hints:` if the org models services as first-class.
 - **Do NOT use INTEGRATION TYPE for application sub-modules.** INTEGRATION is a connection between two distinct applications. A sub-component inside an application stays inside that application's `description:`.
 - **Do NOT translate vendor names.** "Salesforce" stays "Salesforce" regardless of input language.
-- **Do NOT invent new TYPE prefixes.** Only the three TYPEs in §"Extraction target" (APPLICATION, INTEGRATION, INFORMATION_ENTITY) are valid output for this layer.
+- **Do NOT invent new TYPE prefixes.** Only the three TYPEs in §"Extraction target" (APPLICATION, INTEGRATION, BUSINESS_OBJECT) are valid output for this layer.
 
 ---
 

@@ -42,7 +42,7 @@ process_blueprint:
       name: "FILL-ME — physical instrument / facility"
       stages: [STAGE-2]
 
-  information_entities:
-    - id: INFORMATION_ENTITY-FILL-ME-1
+  business_objects:
+    - id: BUSINESS_OBJECT-FILL-ME-1
       name: "FILL-ME — data / document produced or consumed"
       stages: [STAGE-1, STAGE-2]

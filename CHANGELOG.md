@@ -6,6 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **`INFORMATION_ENTITY`'s alias window is now recorded as closed, matching what 1.0.0 announced.** 1.0.0 declared the `INFORMATION_ENTITY` → `BUSINESS_OBJECT` alias closed and old ids a hard error; the specs, the artefact, and the validator were never updated to agree, so at 3.6.0 `ELEMENT_PRIMITIVES.md` §7.15 and `IDS_AND_REFERENCES.md` §6 still promised an open one-release window with a `BOBJ-D001` *warning* and a closure "in the following release". `BOBJ-D001` is now `error`; the spec text says the window closed at 1.0.0; and the old name stays listed only so a tool that meets it can name the replacement instead of reporting an unknown TYPE. `ACTIVITY` and `FACTOR` carry the same 1.0.0-vs-reality gap and are deliberately left open — closing them reaches past this table (the `activity_goal` relation alias, the `activity_type` field, the `activities/` path prefix) and is its own pass.
+- **`vocabulary.yaml`'s `deprecated_element_types` entries carry `accepted` (and `retired_in` when closed).** A retired TYPE name previously had no way to say whether it was still admissible, so every consumer inferred warn-vs-reject for itself. `accepted` is required and validated; a closed entry must name the release that closed it. `transitrix-ingest validate` words its finding from that field — an open window reads `[deprecation]`, a closed one `[error]` naming the release.
+
+### Fixed
+
+- **The ingest and onboard extraction prompts told agents to emit `INFORMATION_ENTITY`.** Both `03_application.md` prompts (and their READMEs, the two `SKILL.md`s, `templates/AGENTS.md`, and the process-blueprint template's `information_entities[]` block) still named the TYPE retired by ADR 2026-06-08, so every application-layer extraction produced candidates that failed `validate` on the first pass and had to be renamed by hand. All now say `BUSINESS_OBJECT` / `business_objects[]`. `ingest/SKILL.md`'s promotion rule additionally listed `EQUIPMENT` and `INFORMATION_ENTITY` as `view-defined`, which the same ADR reversed when it promoted both to standalone catalogued elements.
+
+---
+
 ## [3.6.0] — 2026-08-17
 
 Bump category: **MINOR** — categorised the 6 PRs landed since #486's 3.5.0 tag per RELEASING.md's bump table; highest is #487/#489 (new `CONTRACT.md` §10.7 section, new `check-notations.mjs` validation codes at warning severity) -> MINOR. `method/` is divided from four content files (515 lines in the largest) into a ten-file structure, one file per reader question, plus a new `guides/` folder for task procedures. Three pre-existing documentation defects are fixed while splitting: two incompatible ID-grammar examples are reconciled to the one canonical grammar, a repository-tree listing missing `04_technology/` is restored, and a paraphrased compatibility policy is replaced with a pointer to its canonical source. `check-notations.mjs` is widened to cover `method/` and gains four new mechanical invariants (ID1, LAYER1, DUALHOME1, SIZE1 — the last warn-only). No schema, field, enum, or required-field change; `node scripts/check-notations.mjs` passes clean with no new failures (two pre-existing SIZE1 warnings on files over the new soft ceiling, non-blocking).
