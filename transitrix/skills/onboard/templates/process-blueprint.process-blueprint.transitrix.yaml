@@ -4,7 +4,7 @@ spec_version: "0.1"
 # Process Blueprint — wide value-chain blueprint. Spec:
 # notations/views/diagrams/13-process-blueprint.md
 # Stages laid out left-to-right; per-stage aspects (systems, actors,
-# equipment, information entities) reference the stages they touch.
+# equipment, business objects) reference the stages they touch.
 
 name: "FILL-ME process blueprint"      # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"            # optional per CONTRACT.md §4
