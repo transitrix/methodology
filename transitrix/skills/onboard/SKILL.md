@@ -375,7 +375,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 
 Every typed ID follows `<TYPE>-[<middle>-]<INTEGER>` per `notations/IDS_AND_REFERENCES.md`:
 
-- Uppercase TYPE prefix (letters, digits, underscore; starts with a letter). Multi-word TYPEs are uppercase with underscores: `PROCESS_BLUEPRINT`, `INFORMATION_ENTITY`.
+- Uppercase TYPE prefix (letters, digits, underscore; starts with a letter). Multi-word TYPEs are uppercase with underscores: `PROCESS_BLUEPRINT`, `BUSINESS_OBJECT`.
 - Optional middle segments for disambiguation: `GOAL-RETENTION-12`, `ACTIVITY-Q3-2026-7`.
 - Terminal positive integer, **no leading zeros** (`-1` not `-001`).
 - Exception: `CAPABILITY-V1.2`, `CAPABILITY-H1.2.3` — capabilities use V/H diagram addresses instead of plain integers.

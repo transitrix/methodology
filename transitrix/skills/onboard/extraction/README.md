@@ -12,7 +12,7 @@ One prompt per ArchiMate 3.2 layer:
 |---|---|---|
 | [`01_motivation.md`](01_motivation.md) | Motivation | `DRIVER`, `GOAL`, `CONSTRAINT`, `REQUIREMENT` |
 | [`02_business.md`](02_business.md) | Business | `ROLE`, `UNIT`, `EMPLOYEE`, `PROCESS`, `RULE`, `PRODUCT` |
-| [`03_application.md`](03_application.md) | Application | `APPLICATION`, `INTEGRATION`, `INFORMATION_ENTITY` |
+| [`03_application.md`](03_application.md) | Application | `APPLICATION`, `INTEGRATION`, `BUSINESS_OBJECT` |
 
 Each prompt carries the same eight sections: **Role**, **Inputs**, **Extraction target**, **Output schema** (with full YAML examples per TYPE), **Edge cases** (multilingual, uncertain, cross-layer hints, contradictions), **Anti-goals**, **See also**.
 
