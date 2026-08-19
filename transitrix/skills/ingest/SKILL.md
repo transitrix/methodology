@@ -282,7 +282,7 @@ Where an admitted element lands is **not** a judgement call. Every element TYPE 
 
 - The review queue annotates each element candidate with its resolved `placement` (`mode`, `layer`, `folder`). Admit a `standalone` element to exactly that folder, one file per element.
 - Check any TYPE on demand: `transitrix-ingest resolve-placement <TYPE>`.
-- **Honour the §1 promotion rule explicitly.** A `view-defined` / `contained` TYPE (`INTEGRATION`, `STEP`, `EQUIPMENT`, `INFORMATION_ENTITY`, registry rows) stays **inline** in its host/view document and is promoted to its own catalogue file **only when a second document references it** — the id never changes on promotion. Do not pre-create a standalone file for a still-single-reference element.
+- **Honour the §1 promotion rule explicitly.** A `view-defined` / `contained` TYPE (`INTEGRATION`, `STEP`, `EQUIPMENT`, registry rows) stays **inline** in its host/view document and is promoted to its own catalogue file **only when a second document references it** — the id never changes on promotion. Do not pre-create a standalone file for a still-single-reference element.
 - After admitting, verify placement: `transitrix-ingest check-placement [org-root]` flags any admitted element sitting outside its §4 folder (and any `view-defined` TYPE wrongly given its own catalogue file). Read-only over `canon/`.
 
 ---

@@ -1,6 +1,6 @@
 ---
 layer: application
-extracts: [APPLICATION, INTEGRATION, INFORMATION_ENTITY]
+extracts: [APPLICATION, INTEGRATION, BUSINESS_OBJECT]
 version: "0.1"
 status: draft
 ---
@@ -36,7 +36,7 @@ A single JSON object, nothing else:
 |---|---|---|
 | `APPLICATION` | names a software system or application the org uses | one element per distinct system |
 | `INTEGRATION` | describes a connection/interface between systems | typically links two `APPLICATION`s |
-| `INFORMATION_ENTITY` | names a kind of information the business handles | a data concept, not a database table |
+| `BUSINESS_OBJECT` | names a kind of information the business handles | a data concept, not a database table |
 
 Application-layer relations you may propose (only above a high bar) come from the **closed** relation registry ([17-relations.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/17-relations.md)). An integration *between* two named systems is often best expressed as an `INTEGRATION` element referencing them; only emit a relation when the source states the link plainly.
 
@@ -52,7 +52,7 @@ Extract only the **stable** identity fields. Time-varying attributes (a system's
 
 - Do not invent TYPEs, relation kinds, or attribute fields.
 - Do not output `source_quality`, admission fields, or `admitted_to`.
-- Do not model a database schema; `INFORMATION_ENTITY` is a business information concept.
+- Do not model a database schema; `BUSINESS_OBJECT` is a business information concept.
 - Do not reference existing canon — read only the one field artefact.
 
 ## See also
