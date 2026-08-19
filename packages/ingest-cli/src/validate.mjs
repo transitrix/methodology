@@ -39,7 +39,8 @@ const CLOSED_REL_KINDS = relationKinds();
 const ASSERTION_STATUS = valueSet('ASSERTION.status');
 const ASSERTION_SUBJECT_TYPES = valueSet('ASSERTION.subject_type');
 
-// Retired element TYPE names → { replaced_by, rule }. Accepted, warned on.
+// Retired element TYPE names → { replaced_by, rule, accepted, retired_in? }. An open
+// window warns; a closed one rejects (vocabulary.yaml `deprecated_element_types`).
 const DEPRECATED_ELEMENT_TYPES = loadVocabulary().deprecated_element_types;
 
 // Rendered "a|b|c" for a message, so the wording cannot drift from the set either.
@@ -108,15 +109,22 @@ export function validateCandidate(cand, profile) {
     if (!cand.name) flags.push('element is missing name');
     if (!isValidType(cand.element_type)) flags.push(`element_type is not a valid TYPE: ${cand.element_type}`);
     type = cand.element_type;
-    // A retired TYPE name is accepted and warned on for its alias window — never
-    // silently rewritten. Both the alias set and its rule code come from the artefact,
-    // so retiring the next TYPE name needs no edit here.
+    // A retired TYPE name is never silently rewritten — it is always surfaced, and
+    // how it is surfaced comes from the artefact: `accepted: true` is an open alias
+    // window (warn and carry on), `accepted: false` is a closed one (reject, and say
+    // which release closed it). Both the alias set and its rule code live in
+    // vocabulary.yaml, so retiring the next TYPE name needs no edit here.
     const retired = DEPRECATED_ELEMENT_TYPES[type];
     if (retired) {
       const code = retired.rule ? `${retired.rule} ` : '';
+      const rename =
+        `rename element_type to ${retired.replaced_by} and update the id prefix ` +
+        `(${type}- → ${retired.replaced_by}-)`;
       flags.push(
-        `${code}[deprecation]: ${type} is a deprecated alias; rename element_type to ` +
-        `${retired.replaced_by} and update the id prefix (${type}- → ${retired.replaced_by}-)`
+        retired.accepted
+          ? `${code}[deprecation]: ${type} is a deprecated alias; ${rename}`
+          : `${code}[error]: ${type} is a retired TYPE name — its alias window closed ` +
+            `in ${retired.retired_in}, it is not an accepted spelling; ${rename}`
       );
     }
     // REQ-004 — origin closed vocabulary (15-requirement.md §4).

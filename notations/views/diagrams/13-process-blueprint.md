@@ -53,7 +53,7 @@ This notation's inline arrays split into two groups for lifecycle purposes:
 
 - **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`, `equipment[]`. These entries are scoped to the blueprint document and do not carry their own lifecycle. `EQUIPMENT-…` IDs are notation-local in v0.1 (promotable to an org-wide catalogue without renaming — the IDs already conform to the canonical grammar). When a `systems[]` or `actors[]` entry references a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
 - **Canonical-TYPE entries** — `business_objects[]` (`BUSINESS_OBJECT`). `BUSINESS_OBJECT` has an org-wide catalogue at `canon/elements/02_business/business-objects/` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.1, ADR 2026-06-08). Entries with a `BUSINESS_OBJECT-…` `id` reference that catalogue and carry the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../../CONTRACT.md) §7. Inline entries without an `id` are free-form labels (document-local only).
-- **Deprecated** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). See [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`. Validators emit `BOBJ-D001` for this field.
+- **Retired** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). The alias window closed at 1.0.0; validators emit `BOBJ-D001` (error) for this field. See [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`.
 
 The contract, field semantics, and validation rules (`LIFECYCLE-001..004`) are defined once in [CONTRACT.md](../../CONTRACT.md) §7. Per [CONTRACT.md](../../CONTRACT.md) §7.1, the process-blueprint document itself does not carry a lifecycle field.
 
@@ -187,7 +187,7 @@ A complete example: [`examples/process-blueprint/order-fulfilment.process-bluepr
 | `process_blueprint.actors` | no | array of actor entries — see §5.3 |
 | `process_blueprint.equipment` | no | array of equipment entries — see §5.3 |
 | `process_blueprint.business_objects` | no | array of business-object entries — see §5.3 |
-| `process_blueprint.information_entities` | no *(deprecated)* | **Deprecated** — use `business_objects` instead. [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6; validator emits `BOBJ-D001`. |
+| `process_blueprint.information_entities` | no *(retired)* | **Retired at 1.0.0** — use `business_objects` instead. [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6; validator emits `BOBJ-D001` (error). |
 | `lane_config` | no | optional rendering-config block controlling which lanes are visible — see §5.4 |
 
 The four authored aspect arrays are each optional individually; a blueprint MAY omit any aspect that does not apply (a fully digital process may have no `equipment:`, for example). At least one aspect array SHOULD be present — a blueprint with stages but no aspects renders as an empty grid and provides no operational context. The compliance lane (§5.4) is a fifth, opt-in, derived lane; it requires no authored array.

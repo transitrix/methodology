@@ -201,6 +201,20 @@ function validate(voc) {
     if (!elements[e.replaced_by]) {
       throw new VocabularyError(`deprecated_element_types.${type}.replaced_by \`${e.replaced_by}\` is not a live element TYPE`);
     }
+    // `accepted` decides whether a consumer warns or rejects, so it is required
+    // rather than defaulted — a missing value would silently pick one of the two
+    // behaviours, which is exactly the ambiguity this field exists to remove.
+    if (typeof e.accepted !== 'boolean') {
+      throw new VocabularyError(`deprecated_element_types.${type}.accepted must be a boolean`);
+    }
+    // A closed window must name the release that closed it: the diagnostic quotes
+    // it, and without it "retired" is an assertion no one can check.
+    if (e.accepted === false && typeof e.retired_in !== 'string') {
+      throw new VocabularyError(`deprecated_element_types.${type}.retired_in must be the release string that closed the alias window`);
+    }
+    if (e.accepted === true && e.retired_in !== undefined) {
+      throw new VocabularyError(`deprecated_element_types.${type}.retired_in must be absent while accepted is true`);
+    }
   }
 
   const relations = requireMap(voc.relation_types, 'relation_types');
