@@ -42,6 +42,7 @@ deprecated_element_types:
   FACTOR:
     replaced_by: DRIVER
     rule: null
+    accepted: true
 
 relation_types:
   goal_parent:
@@ -112,6 +113,34 @@ test('loadVocabulary — negative: a deprecated alias pointing at a non-live TYP
   const bad = minimalDoc().replace('replaced_by: DRIVER', 'replaced_by: NOT_A_REAL_TYPE');
   const { path, pinPath } = writeTmp(bad);
   assert.throws(() => loadVocabulary({ path, pinPath }), VocabularyError);
+});
+
+test('loadVocabulary — negative: a deprecated alias with no `accepted` flag fails', () => {
+  // `accepted` decides warn-vs-reject. Defaulting it would silently pick one of the
+  // two, which is the ambiguity the field exists to remove — so it must be present.
+  const bad = minimalDoc().replace('    rule: null\n    accepted: true', '    rule: null');
+  const { path, pinPath } = writeTmp(bad);
+  assert.throws(() => loadVocabulary({ path, pinPath }), VocabularyError);
+});
+
+test('loadVocabulary — negative: a closed alias window with no `retired_in` fails', () => {
+  const bad = minimalDoc().replace('    accepted: true', '    accepted: false');
+  const { path, pinPath } = writeTmp(bad);
+  assert.throws(() => loadVocabulary({ path, pinPath }), VocabularyError);
+});
+
+test('loadVocabulary — negative: an open alias window carrying `retired_in` fails', () => {
+  const bad = minimalDoc().replace('    accepted: true', '    accepted: true\n    retired_in: "1.0.0"');
+  const { path, pinPath } = writeTmp(bad);
+  assert.throws(() => loadVocabulary({ path, pinPath }), VocabularyError);
+});
+
+test('loadVocabulary — positive: a closed alias window with `retired_in` loads clean', () => {
+  const ok = minimalDoc().replace('    accepted: true', '    accepted: false\n    retired_in: "1.0.0"');
+  const { path, pinPath } = writeTmp(ok);
+  const voc = loadVocabulary({ path, pinPath });
+  assert.equal(voc.deprecated_element_types.FACTOR.accepted, false);
+  assert.equal(voc.deprecated_element_types.FACTOR.retired_in, '1.0.0');
 });
 
 test('loadVocabulary — negative: a rule_codes severity outside value_vocabularies["rule.severity"] fails', () => {

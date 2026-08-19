@@ -224,24 +224,48 @@ element_types:
 
 # ---------------------------------------------------------------------------
 # Retired element TYPE names. Each resolves to the placement of its replacement
-# so existing files keep resolving through the alias window. Not counted among
-# the 30 live TYPEs; a consumer SHOULD warn (never silently rewrite) on one.
+# so existing files keep resolving. Not counted among the 30 live TYPEs.
+#
+# `accepted` says whether the old name is still admissible:
+#
+#   accepted: true   the alias window is open — a consumer SHOULD warn and
+#                    carry on, and MUST NOT silently rewrite the name.
+#   accepted: false  the window has closed — the name is retired, not an
+#                    accepted spelling. A consumer MUST reject it. The entry
+#                    stays here only so the rejection can say what to rename
+#                    the name to, instead of "unknown TYPE".
+#
+# A closed entry carries `retired_in`, the release that closed it. Keeping the
+# closed names listed is deliberate: dropping the row would degrade a precise
+# "rename X to Y" diagnostic into a generic unknown-TYPE complaint.
 # ---------------------------------------------------------------------------
 deprecated_element_types:
   FACTOR:
     replaced_by: DRIVER
     # Grandfathered: existing FACTOR-… ids stay valid, no forced migration
-    # (IDS_AND_REFERENCES.md §6).
+    # (IDS_AND_REFERENCES.md §6). CHANGELOG 1.0.0 announced this grace period
+    # closing; it was never implemented, and closing it now is a separate
+    # decision from this table's 1.0.0 sync — see transitrix-hq#217.
     rule: null
+    accepted: true
   ACTIVITY:
     replaced_by: ACTION
-    # Deprecated 2026-06-25; accepted until the 1.0 cut (24-action.md §1).
+    # Deprecated 2026-06-25; 24-action.md §1 says "accepted until the 1.0 cut",
+    # and CHANGELOG 1.0.0 announced the closure — but the closure was never
+    # implemented, and ACTION-005 spans more than this table (the `activity_goal`
+    # relation alias, the `activity_type` field, the `activities/` path prefix).
+    # Left open deliberately: closing it is its own pass, not a side effect of
+    # the BUSINESS_OBJECT sync. See transitrix-hq#217.
     rule: ACTION-005
+    accepted: true
   INFORMATION_ENTITY:
     replaced_by: BUSINESS_OBJECT
-    # One-release alias window; hard error in the following release
-    # (ADR 2026-06-08, ELEMENT_PRIMITIVES.md §7.15).
+    # Renamed by ADR 2026-06-08 (ELEMENT_PRIMITIVES.md §7.15); the one-release
+    # alias window closed at 1.0.0 (CHANGELOG — "INFORMATION_ENTITY-* IDs …
+    # are hard errors").
     rule: BOBJ-D001
+    accepted: false
+    retired_in: "1.0.0"
 
 # ---------------------------------------------------------------------------
 # Relation `type` enum — elements/17-relations.md §3. Closed for a given
@@ -707,7 +731,7 @@ rule_codes:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   BOBJ-D001:
-    severity: warning
+    severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   BP-001:
     severity: error
