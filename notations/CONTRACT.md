@@ -201,6 +201,7 @@ For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitte
 | `ADMIT-006` | error | `reviewer_authority` is present and not one of `ai_reviewed` / `expert_confirmed` (§6.2). |
 | `ADMIT-007` | error | The admitter does not match the tier: `reviewer_authority: ai_reviewed` but `admitted_by` identifies a human, or `reviewer_authority: expert_confirmed` but `admitted_by` identifies a tool. A tool writes `ai_reviewed`; a human writes `expert_confirmed` (§6.2). |
 | `ADMIT-008` | warning | `admission_state: proposed` and `owner_to_confirm` is absent — the open item has no designated reviewer and will not route to any inbox. |
+| `ADMIT-009` | warning | An admitted artefact (`admission_state: active` or absent) in the `canon` zone carries `extraction_confidence` — a review flag that belongs to an ingest candidate and is never persisted into canon (§11.1). Cite the provenance through `derived_from` and the field artefact it came from instead. Does not apply to `canon/unresolved/` (§13, untyped) or to candidates under `_intake/`, where the flag is correct. |
 
 This lifecycle is what an automated regulatory-intelligence collector (a separate task) depends on: the collector emits `proposed` drafts plus a review digest, and the human gate admits or rejects. The per-TYPE specs note it where relevant ([15-requirement.md](elements/15-requirement.md), [16-assertion.md](elements/16-assertion.md)).
 
@@ -645,6 +646,8 @@ Confidence is **metadata about certainty, not a contradiction flag.** A low-conf
 | **freshness** | Derived — a function of how long ago the canonical statement was last reaffirmed. | Changes every day; recomputed at query / render time. | Not stored. Computed from the canon element's `admitted_at` (§6). |
 
 The two are deliberately separate. Collapsing them into one decaying number would erase the authored signal. A statement's overall confidence combines them (§11.4).
+
+**A third signal exists upstream and never reaches canon — `extraction_confidence`.** It answers a different question from either of the two above: *did the extractor read the source document correctly*. It is a review flag on an ingest **candidate** (`candidate.extraction_confidence`, [vocabulary.yaml](vocabulary.yaml)), surfaced in the review queue and used to route reviewer authority (§6.2). It is **never persisted into canon**, is never folded into `source_quality`, and never enters the §11.4 formula: once a candidate is admitted, the candidate is gone, and how confidently a now-superseded extraction was read is not a property of the element. An admitted element carrying it misrepresents a one-time routing signal as a permanent, citable attribute — the provenance an admitted element does carry is `derived_from` plus the cited field artefact (an `OBSERVATION` or other source record, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.4). Enforced by `ADMIT-009` (§6.1); stated per TYPE in [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.29.
 
 ### 11.2 Source-trust scale
 
