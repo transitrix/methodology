@@ -6,6 +6,7 @@ domain: "Connected equipment monitoring"
 description: "Platform that collects, stores, and reports operating telemetry from deployed field equipment on behalf of the equipment's operators."
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

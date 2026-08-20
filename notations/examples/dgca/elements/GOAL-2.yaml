@@ -5,6 +5,7 @@ factors: [DRIVER-2]
 description: "Cost efficiency target — automation-driven savings across manual processes."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

@@ -6,6 +6,7 @@ domain: "Connected equipment monitoring"
 description: "On-site appliance that buffers telemetry from field equipment and forwards it upstream. A separate product from the platform, with its own release line — present here only so that a release of the wrong subject exists to point at."
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

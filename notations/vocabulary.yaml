@@ -601,6 +601,12 @@ rule_codes:
   ADMIT-009:
     severity: warning
     spec: notations/CONTRACT.md
+  ADMIT-010:
+    severity: error
+    spec: notations/CONTRACT.md
+  ADMIT-011:
+    severity: error
+    spec: notations/CONTRACT.md
   AGREE-001:
     severity: error
     spec: notations/CONTRACT.md

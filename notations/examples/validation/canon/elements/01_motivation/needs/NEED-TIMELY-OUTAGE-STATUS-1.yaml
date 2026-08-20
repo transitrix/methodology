@@ -10,6 +10,7 @@ description: >
 stakeholder: STAKEHOLDER-ENTERPRISE-CUSTOMERS-1
 
 zone: canon
+example: true
 admitted_at: "2026-07-30"
 admitted_by: "v.korobeinikov"
 gate_checks:

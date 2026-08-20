@@ -202,6 +202,8 @@ For `admission_state: proposed`, the §6 requirement on `admitted_at` / `admitte
 | `ADMIT-007` | error | The admitter does not match the tier: `reviewer_authority: ai_reviewed` but `admitted_by` identifies a human, or `reviewer_authority: expert_confirmed` but `admitted_by` identifies a tool. A tool writes `ai_reviewed`; a human writes `expert_confirmed` (§6.2). |
 | `ADMIT-008` | warning | `admission_state: proposed` and `owner_to_confirm` is absent — the open item has no designated reviewer and will not route to any inbox. |
 | `ADMIT-009` | warning | An admitted artefact (`admission_state: active` or absent) in the `canon` zone carries `extraction_confidence` — a review flag that belongs to an ingest candidate and is never persisted into canon (§11.1). Cite the provenance through `derived_from` and the field artefact it came from instead. Does not apply to `canon/unresolved/` (§13, untyped) or to candidates under `_intake/`, where the flag is correct. |
+| `ADMIT-010` | error | `example` is present and is not `true`. The field is a marker; omit it or write `true` (§6.4). |
+| `ADMIT-011` | error | An artefact without `example: true` references one that has it. Cross-cutting — requires the full catalogue (§6.4). |
 
 This lifecycle is what an automated regulatory-intelligence collector (a separate task) depends on: the collector emits `proposed` drafts plus a review digest, and the human gate admits or rejects. The per-TYPE specs note it where relevant ([15-requirement.md](elements/15-requirement.md), [16-assertion.md](elements/16-assertion.md)).
 
@@ -269,6 +271,24 @@ agreed_at: "2026-08-04"      # optional; quoted ISO 8601 date (§4) — when thi
 | `AGREE-003` | error | `agreement` is present (any of the three values) but `agreed_by` is missing. |
 
 `AGREE-002` and `AGREE-003` can both describe an `agreement: agreed` record with no `agreed_by`; a validator MAY report either or both. A reference implementation of this check lives in [`scripts/check-agreement.mjs`](../scripts/check-agreement.mjs).
+
+### 6.4 Example marker — an artefact that illustrates rather than reports
+
+Every field above assumes the artefact describes something real about the organisation. Some do not: the worked examples bundled under `notations/examples/**/canon/` carry a full admission record — `zone: canon`, `admitted_at`, `admitted_by`, `gate_checks` — because a fixture that cut corners would be a poor illustration of a contract whose whole subject is that the gate leaves a record. The `example` field says so in the document itself, so a consumer never has to guess it from a path segment (per the 2026-08-19 example-declares-itself decision).
+
+```yaml
+example: true   # absent ⇒ real; only `true` is valid — ADMIT-010
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `example` | no | boolean | `true` — marks the artefact as an illustration, not a report about a real organisation. **Absent ⇒ real**, matching every other axis on this record (`admission_state`, `reviewer_authority`, `agreement`), so no existing file changes. `example: false` is an error, not a synonym for absence (`ADMIT-010`) — one fact should have one way to write it. |
+
+**What it asserts.** The artefact describes no real organisation; its admission record is part of the illustration and is still validated in full, so the fixture stays a genuine, checkable example rather than becoming one exempt from the contract it demonstrates.
+
+**Exclusion from derived views.** A consumer computing what counts as admitted canon — for aggregation, coverage, compliance, or any derived total — MUST exclude an artefact carrying `example: true`. This is the same treatment §6.1 already gives `proposed` and `rejected` artefacts (**Exclusion from derived views and cross-cutting checks**, above); the new field is a second reason to be outside the admitted set, not a second mechanism.
+
+**Nothing real may reference an example.** An artefact without `example: true` MUST NOT cross-reference one that has it — `ADMIT-005` pointed at this axis, at **error** rather than warning: a `proposed` artefact is expected to be admitted, so a reference to one is premature, while an example never becomes real and a reference into the example set never resolves (`ADMIT-011`, cross-cutting — requires the full catalogue). An example MAY reference another example.
 
 ---
 

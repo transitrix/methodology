@@ -6,6 +6,7 @@ level: system
 kind: quality
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "example"
 gate_checks:

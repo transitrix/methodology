@@ -11,6 +11,7 @@ assessed_at: "2026-06-25"
 assessed_by: "ROLE-COMPLIANCE-LEAD-1"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

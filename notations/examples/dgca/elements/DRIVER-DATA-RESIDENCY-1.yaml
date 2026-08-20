@@ -12,6 +12,7 @@ description: >
   records it as a strategic force the organisation acts on.
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

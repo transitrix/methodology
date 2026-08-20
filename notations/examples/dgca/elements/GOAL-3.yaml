@@ -5,6 +5,7 @@ factors: [DRIVER-1]
 description: "Retention target — reduce churn by enhancing the customer support experience."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

@@ -7,6 +7,7 @@ version: "2.3.0"
 released_at: "2026-03-02"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "example"
 gate_checks:

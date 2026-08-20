@@ -5,6 +5,7 @@ goals: [GOAL-2]
 description: "Replace high-volume manual workflows with RPA and digital tooling."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

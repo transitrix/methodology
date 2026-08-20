@@ -18,6 +18,7 @@ performed_at: "2026-06-24"
 performed_by: "ROLE-VERIFICATION-ENG-1"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

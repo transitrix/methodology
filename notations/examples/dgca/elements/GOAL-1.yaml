@@ -5,6 +5,7 @@ factors: [DRIVER-1, DRIVER-2]
 description: "Primary financial growth target for the 2026 plan."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

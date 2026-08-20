@@ -13,6 +13,7 @@ assessed_by: "ROLE-COMPLIANCE-LEAD-1"
 next_review_at: "2027-06-25"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

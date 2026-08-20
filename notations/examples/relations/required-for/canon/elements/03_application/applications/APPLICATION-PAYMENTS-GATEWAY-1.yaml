@@ -3,6 +3,7 @@ id: APPLICATION-PAYMENTS-GATEWAY-1
 name: Payments Gateway
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "example"
 gate_checks:

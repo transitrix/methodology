@@ -5,6 +5,7 @@ changes: [CHANGE-2]
 description: "Deploy and configure RPA tooling for the highest-volume manual workflows."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:
