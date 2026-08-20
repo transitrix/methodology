@@ -6,6 +6,7 @@ domain: "Customer experience"
 description: "Backend service that receives a verified data-export request from the Customer Self-Service Portal, assembles the requesting subject's personal data, and generates a downloadable export package."
 
 zone: canon
+example: true
 admitted_at: "2026-08-04"
 admitted_by: "v.korobeinikov"
 gate_checks:

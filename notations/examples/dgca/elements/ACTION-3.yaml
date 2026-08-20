@@ -5,6 +5,7 @@ changes: [CHANGE-2]
 description: "Inventory and assess all manual processes eligible for automation."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

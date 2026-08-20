@@ -5,6 +5,7 @@ type: business_unit
 description: "External organisations on an enterprise support tier; not part of the modelled org, represented here as a business_unit-typed actor for identity purposes."
 
 zone: canon
+example: true
 admitted_at: "2026-07-30"
 admitted_by: "v.korobeinikov"
 gate_checks:

@@ -7,6 +7,7 @@ result: null
 outcome: not_yet_run
 
 zone: canon
+example: true
 admitted_at: "2026-07-21"
 admitted_by: "v.korobeinikov"
 gate_checks:

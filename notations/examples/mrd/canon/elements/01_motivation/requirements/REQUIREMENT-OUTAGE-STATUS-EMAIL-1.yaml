@@ -8,6 +8,7 @@ severity: medium
 serves: NEED-TIMELY-OUTAGE-STATUS-1
 
 zone: canon
+example: true
 admitted_at: "2026-08-04"
 admitted_by: "v.korobeinikov"
 gate_checks:

@@ -11,6 +11,7 @@ predecessor: RELEASE-TELEMETRY-PLATFORM-1
 released_at: "2026-06-18"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

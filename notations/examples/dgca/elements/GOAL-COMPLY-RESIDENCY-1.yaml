@@ -5,6 +5,7 @@ factors: [DRIVER-DATA-RESIDENCY-1]
 description: "Achieve and maintain full data-residency compliance for all EU customer personal data."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

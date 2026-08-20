@@ -5,6 +5,7 @@ changes: [CHANGE-1]
 description: "Customer and competitor research to inform product specification."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

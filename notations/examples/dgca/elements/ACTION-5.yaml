@@ -5,6 +5,7 @@ changes: [CHANGE-3]
 description: "Implement and integrate a modern CRM to improve customer support visibility."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

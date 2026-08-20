@@ -6,6 +6,7 @@ level: system
 kind: functional
 
 zone: canon
+example: true
 admitted_at: "2026-08-05"
 admitted_by: "example"
 gate_checks:

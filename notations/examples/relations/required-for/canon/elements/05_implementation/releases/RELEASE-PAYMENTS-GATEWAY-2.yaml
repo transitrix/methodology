@@ -8,6 +8,7 @@ predecessor: RELEASE-PAYMENTS-GATEWAY-1
 released_at: "2026-07-15"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "example"
 gate_checks:

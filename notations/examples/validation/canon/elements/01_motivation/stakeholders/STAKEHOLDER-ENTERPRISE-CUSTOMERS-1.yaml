@@ -9,6 +9,7 @@ influence: medium
 description: "Enterprise-tier customers whose own operations depend on this service staying up, or on being told quickly when it is not."
 
 zone: canon
+example: true
 admitted_at: "2026-07-30"
 admitted_by: "v.korobeinikov"
 gate_checks:

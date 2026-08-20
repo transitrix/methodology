@@ -5,6 +5,7 @@ goals: [GOAL-3]
 description: "Modernise the customer support toolchain to improve first-contact resolution."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

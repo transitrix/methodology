@@ -14,6 +14,7 @@ performed_at: "2026-07-22"
 performed_by: "ROLE-UX-RESEARCH-LEAD-1"
 
 zone: canon
+example: true
 admitted_at: "2026-07-23"
 admitted_by: "v.korobeinikov"
 gate_checks:

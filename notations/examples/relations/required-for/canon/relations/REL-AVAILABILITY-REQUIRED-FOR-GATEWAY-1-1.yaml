@@ -5,6 +5,7 @@ from: REQUIREMENT-PAYMENT-AVAILABILITY-1
 to: RELEASE-PAYMENTS-GATEWAY-1
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "example"
 gate_checks:

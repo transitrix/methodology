@@ -77,6 +77,11 @@
 //   SIZE1 per-file soft ceiling (warn-only) — a method/*.md file over 250
 //       lines or with more than nine `##` sections warns. Never fails the
 //       build — see main()'s separate warnings collection.
+//   EX1  example marker — every notations/examples/**/*.yaml carrying a
+//       top-level `zone: canon` admission record also carries `example: true`
+//       (CONTRACT.md §6.4). Keeps the fixtures' own admission records from
+//       silently regressing into being indistinguishable from adopter canon,
+//       the defect the field exists to prevent (transitrix-hq#218/#219).
 //   PRESETS1 shipped coverage presets — packages/ingest-cli/src/coverage-presets.mjs
 //       carries `PRESETS_VERSION` equal to the version source of truth, and its
 //       `PRESETS` tables encode exactly the preset membership stated in
@@ -254,6 +259,26 @@ async function checkExamples(catalogue, failures) {
       failures.push({
         check: 'E2',
         message: `${rel}: \`notation: ${nm[1]}\` is not valid for extension ".${extShort}.transitrix.yaml" (accepted: ${[...validDirs].join(', ')}).`,
+      });
+    }
+  }
+}
+
+// EX1: every zone:canon example fixture carries example: true (CONTRACT.md §6.4).
+//
+// Scoped to `zone: canon` because that is the admission record the field
+// exists to mark — a fixture in a different zone, or one with no admission
+// record at all, carries nothing for `example` to disambiguate.
+async function checkExampleMarker(failures) {
+  const files = await walk(EXAMPLES_DIR, '.yaml');
+  for (const abs of files) {
+    const rel = relPosix(abs);
+    const text = await readFile(abs, 'utf8');
+    if (!/^zone:\s*canon\s*$/m.test(text)) continue;
+    if (!/^example:\s*true\s*$/m.test(text)) {
+      failures.push({
+        check: 'EX1',
+        message: `${rel}: zone: canon admission record with no \`example: true\` marker — every fixture under notations/examples/** must declare itself (CONTRACT.md §6.4).`,
       });
     }
   }
@@ -1718,6 +1743,7 @@ async function main() {
   try {
     catalogue = await parseCatalogue();
     await checkExamples(catalogue, failures);
+    await checkExampleMarker(failures);
     await checkLinks(failures);
     await checkVersion(failures);
     await checkNotationCounts(failures);

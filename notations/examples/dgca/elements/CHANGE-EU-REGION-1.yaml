@@ -5,6 +5,7 @@ goals: [GOAL-COMPLY-RESIDENCY-1]
 description: "Migrate all datastores that hold EU customer personal data to an EU/EEA-resident cloud region."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:

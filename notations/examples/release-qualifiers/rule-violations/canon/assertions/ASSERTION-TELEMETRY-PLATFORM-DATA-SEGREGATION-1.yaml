@@ -13,6 +13,7 @@ evidence:
 assessed_at: "2026-06-25"
 
 zone: canon
+example: true
 admitted_at: "2026-08-07"
 admitted_by: "v.korobeinikov"
 gate_checks:

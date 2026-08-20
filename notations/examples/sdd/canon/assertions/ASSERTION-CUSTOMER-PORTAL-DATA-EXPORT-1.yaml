@@ -14,6 +14,7 @@ assessed_at: "2026-08-04"
 next_review_at: "2027-02-04"
 
 zone: canon
+example: true
 admitted_at: "2026-08-04"
 admitted_by: "v.korobeinikov"
 gate_checks:

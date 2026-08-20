@@ -5,6 +5,7 @@ goals: [GOAL-1]
 description: "New product development to capture incremental market share."
 
 zone: canon
+example: true
 admitted_at: "2026-05-26"
 admitted_by: "example"
 gate_checks:
