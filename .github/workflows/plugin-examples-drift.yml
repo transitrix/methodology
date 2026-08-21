@@ -2,10 +2,11 @@ name: Plugin examples drift check
 
 # transitrix/README.md leads with rendered SVG examples of the notation views
 # the plugin's onboard skill lets a user author (epic transitrix-hq#158,
-# deliverable 2). The images are generated, not hand-drawn — regenerating
-# them from this repository's own notations/examples/ sources via
-# @transitrix/plugin-examples must reproduce the committed
-# transitrix/examples/*.svg files byte-for-byte.
+# deliverable 2), and the repository front page (README.md) leads with one
+# of the same generated examples (epic transitrix-hq#241). The images are
+# generated, not hand-drawn — regenerating them from this repository's own
+# notations/examples/ sources via @transitrix/plugin-examples must reproduce
+# the committed transitrix/examples/*.svg files byte-for-byte.
 #
 # This regenerates into a scratch directory and diffs it against what's
 # committed, failing the build on any difference — same style as the
@@ -18,6 +19,7 @@ on:
       - 'notations/examples/**'
       - 'transitrix/examples/**'
       - 'transitrix/README.md'
+      - 'README.md'
       - '.github/workflows/plugin-examples-drift.yml'
   workflow_dispatch:
   schedule:
