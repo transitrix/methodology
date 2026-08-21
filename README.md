@@ -1,5 +1,9 @@
 # Transitrix
 
+![A Goals tree rendered from this repository's own worked example — three levels of strategy, from a top-level revenue goal down through EU and MENA market goals to their supporting project goals](https://raw.githubusercontent.com/transitrix/methodology/main/transitrix/examples/goals.svg)
+
+Real output, not a mockup — rendered from this repository's own worked example (`notations/examples/goals/`) by [`@transitrix/diagrams`](https://www.npmjs.com/package/@transitrix/diagrams), the same shared rendering library that draws every notation in Studio and in DSM. Regenerate with `node packages/plugin-examples/src/generate.mjs`; CI fails the build if the committed image drifts from its source by a single byte.
+
 > **Open methodology and tools to describe an enterprise as text — and let humans and machines run it together.**
 
 ## Two ways in
