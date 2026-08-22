@@ -1,0 +1,8 @@
+# Worked example — notations/examples/mrd/README.md.
+# Its own catalogue root (MANIFEST.md §4): declares the boundary the
+# uniqueness scope in IDS_AND_REFERENCES.md §4 resolves against.
+transitrix: 1
+methodology_version: "3.6.0"
+notations: [mrd, requirement, stakeholder, actor]
+zones: [canon]
+coverage_profile: core

@@ -185,7 +185,7 @@ One artefact per file, named by its canonical ID. The folder sits at the canon-z
 - `canon/verifications/VERIFICATION-DEVICE-ALARM-TEST-1.yaml`
 - `canon/verifications/VERIFICATION-ENCLOSURE-DROP-TEST-1.yaml`
 
-A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives at [`../examples/verification/`](../examples/verification/), with a sibling [`reverse-trace-gaps/`](../examples/verification/reverse-trace-gaps/) fixture seeding both coverage rules.
+A generic worked example exercising `VERIFICATION` alongside `REQUIREMENT` lives at [`../examples/verification/`](../examples/verification/), with a sibling [`verification-reverse-trace-gaps/`](../examples/verification-reverse-trace-gaps/) fixture seeding both coverage rules.
 
 ---
 

@@ -82,6 +82,11 @@
 //       (CONTRACT.md §6.4). Keeps the fixtures' own admission records from
 //       silently regressing into being indistinguishable from adopter canon,
 //       the defect the field exists to prevent (transitrix-hq#218/#219).
+//   CAT-001/CAT-002 catalogue boundary — every notations/examples/** tree that
+//       carries a canon/, field/, or codex/ zone folder has its own
+//       transitrix.yaml at its root (CAT-001, warning), and no
+//       transitrix.yaml sits inside another one's subtree (CAT-002, error).
+//       MANIFEST.md §4, IDS_AND_REFERENCES.md §4.
 //   PRESETS1 shipped coverage presets — packages/ingest-cli/src/coverage-presets.mjs
 //       carries `PRESETS_VERSION` equal to the version source of truth, and its
 //       `PRESETS` tables encode exactly the preset membership stated in
@@ -214,6 +219,10 @@ async function checkExamples(catalogue, failures) {
     const base = posix.basename(rel);
     const parentDir = posix.basename(posix.dirname(rel));
 
+    // Skip a catalogue-root manifest (CAT-001/CAT-002) — it declares the
+    // tree's boundary, not a view, and carries none of E1/E2's shape.
+    if (base === 'transitrix.yaml') continue;
+
     // Skip companion element files nested inside a notation subdirectory
     // (e.g. notations/examples/dgca/elements/DRIVER-1.yaml). E1/E2 apply only
     // to view files one level inside a notation dir (<notation>/<file>).
@@ -280,6 +289,53 @@ async function checkExampleMarker(failures) {
         check: 'EX1',
         message: `${rel}: zone: canon admission record with no \`example: true\` marker — every fixture under notations/examples/** must declare itself (CONTRACT.md §6.4).`,
       });
+    }
+  }
+}
+
+// CAT-001 + CAT-002: catalogue boundary (MANIFEST.md §4, IDS_AND_REFERENCES.md
+// §4). A catalogue's boundary is declared by the nearest enclosing
+// `transitrix.yaml`, never inferred, and no manifest may enclose another.
+// Scoped to notations/examples/** — the same tree EX1 scans, and the twelve
+// bundled catalogues this rule was written for (transitrix-hq#219, ADR
+// 2026-08-21-a-catalogue-declares-its-boundary).
+async function checkCatalogueBoundary(failures, warnings) {
+  const files = await walk(EXAMPLES_DIR, '.yaml');
+
+  // Candidate roots: directories that are the immediate parent of a zone
+  // folder (canon/, field/, codex/) — the "scanned tree" CAT-001 means.
+  const candidateRoots = new Set();
+  for (const abs of files) {
+    const m = relPosix(abs).match(/^(.*)\/(?:canon|field|codex)\//);
+    if (m) candidateRoots.add(m[1]);
+  }
+
+  // Declared roots: directories carrying their own transitrix.yaml.
+  const manifestDirs = [...new Set(
+    files
+      .map(abs => relPosix(abs))
+      .filter(rel => posix.basename(rel) === 'transitrix.yaml')
+      .map(rel => posix.dirname(rel))
+  )].sort();
+  const manifestSet = new Set(manifestDirs);
+
+  for (const root of [...candidateRoots].sort()) {
+    if (!manifestSet.has(root)) {
+      warnings.push({
+        check: 'CAT-001',
+        message: `${root}/: scanned tree carries zone content but no transitrix.yaml at its root — the catalogue is undeclared (MANIFEST.md §4).`,
+      });
+    }
+  }
+
+  for (const inner of manifestDirs) {
+    for (const outer of manifestDirs) {
+      if (inner !== outer && inner.startsWith(outer + '/')) {
+        failures.push({
+          check: 'CAT-002',
+          message: `${inner}/transitrix.yaml lies inside ${outer}/transitrix.yaml's subtree — no manifest may enclose another (MANIFEST.md §4).`,
+        });
+      }
     }
   }
 }
@@ -1744,6 +1800,7 @@ async function main() {
     catalogue = await parseCatalogue();
     await checkExamples(catalogue, failures);
     await checkExampleMarker(failures);
+    await checkCatalogueBoundary(failures, warnings);
     await checkLinks(failures);
     await checkVersion(failures);
     await checkNotationCounts(failures);

@@ -191,6 +191,8 @@ The validation-domain counterpart to `VERIFICATION` (§3.7) — a claim that a p
 
 Each TYPE has a scope within which its IDs must be unique. Cross-document references rely on the wider scope holding.
 
+**"The organisation's element catalogue" (and, below, its `field/` and `codex/…` zones) is relative to the nearest enclosing `transitrix.yaml`** — the manifest is what declares a catalogue's boundary, and no manifest may enclose another ([MANIFEST.md](MANIFEST.md) §4). A tree with no enclosing manifest has no declared catalogue, and a consumer MUST NOT merge it with anything else. This adds no field to any table row below; it names the root every path in this section was always relative to.
+
 | TYPE | Uniqueness scope |
 |---|---|
 | `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the DGCA / FGA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |

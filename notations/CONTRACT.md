@@ -130,7 +130,7 @@ derived_from:               # optional; typed IDs of the artefacts this one deri
 
 | Zone | Standard checks | Meaning |
 |---|---|---|
-| `canon` | `uniqueness`, `consistency`, `completeness` | IDs unique within the catalogue; no contradiction with existing canon; required fields present. |
+| `canon` | `uniqueness`, `consistency`, `completeness` | IDs unique within the catalogue rooted at the nearest enclosing `transitrix.yaml` ([MANIFEST.md](MANIFEST.md) §4); no contradiction with existing canon; required fields present. |
 | `field` | `provenance` | The source of the material is recorded — who, when, in what setting, and at what trust (`source_quality`, §11.2). |
 | `codex` | `source_authority` | The issuing or authoritative source is identified and the artefact is faithful to it. |
 

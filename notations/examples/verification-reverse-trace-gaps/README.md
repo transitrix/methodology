@@ -1,6 +1,6 @@
 # Reverse-trace completeness — seeded-gap fixture
 
-A sibling fixture to [`../`](../) (the happy path, where the forward link resolves and nothing is seeded as incomplete). This one deliberately seeds both reverse-trace completeness gaps so the rules that check them have something to flag. Same posture as the parent fixture: generic, invented scenario; no real product, organisation, or adopter named.
+A sibling fixture to [`../verification/`](../verification/) (the happy path, where the forward link resolves and nothing is seeded as incomplete). This one deliberately seeds both reverse-trace completeness gaps so the rules that check them have something to flag. Same posture as the parent fixture: generic, invented scenario; no real product, organisation, or adopter named.
 
 Every file here is **structurally valid** — every notation-local rule (`REQ-*`, `VERIF-*`) passes and every forward link (`verifies`) resolves. Only the cross-cutting reverse-trace rules fire, because that is exactly what this fixture is for.
 
@@ -18,6 +18,6 @@ A single requirement carrying both gaps at once. One gap per requirement keeps e
 
 ## References
 
-- [`../README.md`](../README.md) — the happy-path fixture this one is a sibling to.
-- [`../../../elements/15-requirement.md`](../../../elements/15-requirement.md) §4 — `REQ-VERIF-COVERAGE-001` / `-002`.
-- [`../../../CONTRACT.md`](../../../CONTRACT.md) §8 — aggregated compliance and verification domain validation rules.
+- [`../verification/README.md`](../verification/README.md) — the happy-path fixture this one is a sibling to.
+- [`../../elements/15-requirement.md`](../../elements/15-requirement.md) §4 — `REQ-VERIF-COVERAGE-001` / `-002`.
+- [`../../CONTRACT.md`](../../CONTRACT.md) §8 — aggregated compliance and verification domain validation rules.

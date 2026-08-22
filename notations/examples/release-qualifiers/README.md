@@ -20,7 +20,7 @@ Like the [`verification/`](../verification/) and [`validation/`](../validation/)
 | [`.../verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-1.yaml`](canon/verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-1.yaml) | `VERIFICATION` | `verified_on: RELEASE-TELEMETRY-PLATFORM-1`, `outcome: fail` — run against the release that has since been superseded. |
 | [`.../verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-2.yaml`](canon/verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-2.yaml) | `VERIFICATION` | The same protocol re-run on `RELEASE-TELEMETRY-PLATFORM-2`, `outcome: pass` — the positive case for `VERIF-007`, and the head-of-chain contrast to the one above. |
 
-Every file here is **structurally valid**: every notation-local rule passes and every reference resolves. The deliberately invalid counterparts live in the sibling [`rule-violations/`](rule-violations/) fixture.
+Every file here is **structurally valid**: every notation-local rule passes and every reference resolves. The deliberately invalid counterparts live in the sibling [`release-qualifiers-rule-violations/`](../release-qualifiers-rule-violations/) fixture.
 
 ## The shape
 
@@ -51,7 +51,7 @@ Note that the superseded verification is **not** an error and **not** something 
 
 ## References
 
-- [`rule-violations/`](rule-violations/) — sibling fixture seeding each negative case for `ASSERT-010` and `VERIF-007`.
+- [`release-qualifiers-rule-violations/`](../release-qualifiers-rule-violations/) — sibling fixture seeding each negative case for `ASSERT-010` and `VERIF-007`.
 - [`../../elements/16-assertion.md`](../../elements/16-assertion.md) §2.4, §5 — `subject_release` and `ASSERT-010`.
 - [`../../elements/27-verification.md`](../../elements/27-verification.md) §2.1, §2.1.1, §5 — `verified_on`, the superseded-state read, and `VERIF-007`.
 - [`../../ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.29 — the `RELEASE` element TYPE and its `predecessor` chain.
