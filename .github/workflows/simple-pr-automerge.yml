@@ -25,4 +25,13 @@ jobs:
   simple-pr-automerge:
     uses: transitrix/templates/.github/workflows/simple-pr-automerge.yml@main
     with:
-      dry_run: ${{ inputs.dry_run != false }}
+      # Written against the EVENT, not against the input. On a scheduled run there
+      # are no inputs at all, and GitHub renders the absent input and `false` the
+      # same way, so `inputs.dry_run != false` evaluated to false and the hourly
+      # run went LIVE - the exact opposite of what the header above promises.
+      # Observed 2026-08-22 in this workflow's own env dump (`DRY_RUN: false` on a
+      # schedule run). Nothing was merged only because the checklist rejected the
+      # open pull requests on their titles, so the gate covered for the mode.
+      # Keep the event test: it does not depend on how an absent input compares
+      # to anything.
+      dry_run: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run }}
