@@ -1,8 +1,8 @@
 ---
 title: "Codex — external & internal authority artefacts"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-28"
+last_updated: "2026-08-22"
 status: "draft"
 ---
 
@@ -50,8 +50,19 @@ The folder an external artefact sits in MUST match its `jurisdiction:` frontmatt
 | `REGULATION` | external | a regulation issued under a law |
 | `POLICY` | internal | an internal policy the organisation issues |
 | `INTERNAL_STANDARD` | internal | an internal standard or convention |
+| `PRINCIPLE` | internal | a rule the organisation holds over itself, with no stated issuing authority or conformance test |
 
-Registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `INTERNAL_STANDARD-coding-conventions-1`, …).
+Registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `INTERNAL_STANDARD-coding-conventions-1`, `PRINCIPLE-data-minimisation-1`, …).
+
+### 2.1 PRINCIPLE vs POLICY vs INTERNAL_STANDARD — the discriminator
+
+All three are internal, self-issued artefacts, and it is easy to misfile one as another. The test is stated in words a reader applies at admission time, not a field the validator can compute:
+
+- **Can the artefact state who holds it in force (an `issuing_authority`) *and* how conformance is checked?** Then it is a `POLICY` (a rule with a named enforcer) or an `INTERNAL_STANDARD` (a prescription with a conformance test) — whichever of the two the artefact actually is. `INTERNAL_STANDARD` is reserved for the artefacts that are genuinely standards: a prescription checked against a stated conformance test, not merely issued by someone.
+- **Can it state neither?** Then it is a `PRINCIPLE` — a value the organisation holds itself to without a named enforcer or a pass/fail test. A code-of-conduct clause ("we minimise the personal data we collect") is typically a PRINCIPLE; the retention schedule that operationalises it into a checked rule is typically a POLICY.
+- **Where both are true, it is a POLICY** (or INTERNAL_STANDARD) — `PRINCIPLE` is the residual category for what genuinely has neither, not a lighter-weight alternative to authoring the stronger artefact properly.
+
+There is deliberately **one TYPE, not two** — no `IT_PRINCIPLE` or other domain-qualified variant. The layer a principle constrains is already carried by whatever cites it (a `REQUIREMENT` in a given layer, an `ASSERTION` against a given subject); the TYPE itself does not need to repeat that.
 
 ---
 
@@ -279,6 +290,8 @@ Keep the two in sync: if you change an entry's `cadence` in `scan-sources.yaml`,
 
 ## 4. Frontmatter — internal codex artefacts
 
+`POLICY` and `INTERNAL_STANDARD` share the shape below. `PRINCIPLE`'s shape is distinct — see [§4.1](#41-frontmatter-principle) — because it carries no stated issuing authority by default (§2.1).
+
 ```yaml
 id: INTERNAL_STANDARD-coding-conventions-1
 name: "Engineering Coding Conventions"
@@ -299,6 +312,32 @@ effective_date: "2026-01-01"
 
 Internal artefacts have no `jurisdiction` and are not foldered by country. As with external codex, internal artefacts carry no bindings to entities or processes; those live on `REQUIREMENT` and `ASSERTION` (see [§8 Migration](#8-migration)).
 
+### 4.1 Frontmatter — `PRINCIPLE`
+
+```yaml
+id: PRINCIPLE-data-minimisation-1
+name: "Data Minimisation"
+type: PRINCIPLE
+zone: codex
+admitted_at: "2026-08-22"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  source_authority: "Architecture Review Board"
+statement: "The organisation collects no personal data beyond what a stated purpose requires."
+rationale: "Reduces breach exposure and regulatory surface; a value the organisation holds itself to rather than a rule imposed by an external authority or checked by a stated conformance test."
+established_by: "ADR-2026-08-21-a-catalogue-declares-its-boundary"
+```
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `statement` | yes | string | One normative sentence stating the rule. |
+| `rationale` | yes | string | Why the organisation holds itself to this rule. |
+| `issuing_authority` | no | string | Present only where the principle happens to also carry a named enforcer — at which point §2.1's discriminator classifies it as `POLICY` instead. Optional here for the artefact still being reclassified rather than rejected while that judgement is made. |
+| `effective_date` | no | string | Date the principle took effect — quoted ISO 8601. Optional: a standing value often has no distinguishable effective date. |
+| `established_by` | no | string | The decision that established this principle, in the decision-log reference form already in use for architecture decisions ([`method/07-decisions.md`](../../method/07-decisions.md) §2 — an `ADR-YYYY-MM-DD-<slug>` id, or the legacy `ADR-NNNN-<slug>` form; central-namespaced `<repo-slug>/<id>` per §3 when the record lives in the central architecture repository). Absence is admissible — `CODEX-006` flags it as a review finding, not a validator error. |
+
+`gate_checks.source_authority` is still required, unchanged from every other codex artefact ([CONTRACT.md](../CONTRACT.md) §6) — it records who admitted this artefact into the catalogue, which is a different question from whether the principle itself names an issuing authority.
+
 ---
 
 ## 5. File location and naming
@@ -313,6 +352,7 @@ One artefact per file, named by its canonical ID. Examples:
 - `codex/external/ge/LAW-PERSONAL-DATA-2017-1.yaml`
 - `codex/external/eu/REGULATION-GDPR-2016-1.yaml`
 - `codex/internal/INTERNAL_STANDARD-coding-conventions-1.yaml`
+- `codex/internal/PRINCIPLE-data-minimisation-1.yaml`
 
 ---
 
@@ -321,9 +361,10 @@ One artefact per file, named by its canonical ID. Examples:
 | Rule | Severity | Description |
 |---|---|---|
 | `CODEX-001` | error | An external artefact's `jurisdiction:` does not match its parent folder name under `codex/external/<jurisdiction>/`. |
-| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal needs `issuing_authority` + `effective_date`. All codex artefacts also carry the admission record ([CONTRACT.md](../CONTRACT.md) §6). |
+| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal `POLICY`/`INTERNAL_STANDARD` need `issuing_authority` + `effective_date`; internal `PRINCIPLE` needs `statement` + `rationale` (§4.1) — `issuing_authority` and `effective_date` are optional on `PRINCIPLE`. All codex artefacts also carry the admission record ([CONTRACT.md](../CONTRACT.md) §6). |
 | `CODEX-004` | warning | An `applies_to:` field is present on a codex artefact. The field was retired in this revision (see [§8 Migration](#8-migration)); bindings now live on `REQUIREMENT.derived_from` ([15-requirement.md](15-requirement.md)) and on `ASSERTION` ([16-assertion.md](16-assertion.md)). |
 | `CODEX-005` | info | A `type: REGULATION` artefact does not declare `monitoring_needed:`. The field SHOULD be explicit so downstream consumers (and scanner agents) know whether the source is static or live — see §3.4. Info severity, not warning, because some legacy artefacts predate the field; new REGULATION artefacts SHOULD set it. |
+| `CODEX-006` | info | A `type: PRINCIPLE` artefact does not declare `established_by` (§4.1). Info severity — a record without one is admissible; the absence is a review finding for whoever admits it, not a defect the validator blocks on. |
 
 Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved and is not reassigned.
 
@@ -377,3 +418,9 @@ The migration is data-shape-only — no semantics are lost; the same matrix is j
 - `CODEX-002` (error, updated in v0.2) no longer lists `applies_to` among the required fields.
 
 Post-migration, when adopters have removed `applies_to` from all codex artefacts and the warning ceases firing, `CODEX-004` is a candidate for promotion to `error` (or removal). That decision happens in the broader methodology-upgrade-path workstream, not on a per-revision basis here.
+
+---
+
+## 9. Evolution
+
+- **v0.2 → v0.3 — `PRINCIPLE` TYPE added (§2, §2.1, §4.1, `CODEX-002`, `CODEX-006`).** Purely additive: a new sibling TYPE in the existing `internal` sub-zone, with its own required-field pair (`statement` + `rationale`) and its own optional fields (`issuing_authority`, `effective_date`, `established_by`). No existing field became required, no existing TYPE's shape changed, and no existing artefact needs updating — a repository with no `PRINCIPLE` artefact validates exactly as it did before. `REQUIREMENT.derived_from`'s permitted TYPEs list widened to include `PRINCIPLE` ([15-requirement.md](15-requirement.md) §2, `REQ-003`) — also additive, since widening a permitted-values enum accepts strictly more than it did before.

@@ -79,8 +79,9 @@ function usage() {
     '  admit-source <md> --zone field|codex   Admit a converted source to the field or codex zone',
     '                 field: --type INTERVIEW|SURVEY|OBSERVATION|DRAFT --role R --date YYYY-MM-DD',
     '                        [--captured-by X] [--source-quality Q] [--slug SL] [--admitted-at A]',
-    '                 codex: --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD',
-    '                        [--jurisdiction J] [--source-authority A] [--issuing-authority A] [--slug SL] [--monitoring]',
+    '                 codex: --type LAW|REGULATION|POLICY|INTERNAL_STANDARD|PRINCIPLE --effective-date YYYY-MM-DD',
+    '                        (--effective-date optional for PRINCIPLE; PRINCIPLE instead requires --statement --rationale)',
+    '                        [--jurisdiction J] [--source-authority A] [--issuing-authority A] [--established-by A] [--slug SL] [--monitoring]',
     '                 [--force]  admit even if an identical source (same source_hash) is already admitted',
     '  field-artefact / codex-artefact        Deprecated aliases of admit-source --zone field|codex',
     '  emit-candidates <field-artefact> --from <result.json> [--candidates-dir <dir>]',
@@ -231,8 +232,14 @@ async function cmdCodexArtefact(args) {
   if (!md) { console.error('codex-artefact: missing <md> (a converted file in _intake/processing/)'); return 1; }
   const mdPath = resolve(md);
   try { await access(mdPath); } catch { console.error(`codex-artefact: file not found: ${md}`); return 2; }
-  if (!flags.type || !flags['effective-date']) {
-    console.error('codex-artefact: --type and --effective-date are required');
+  if (!flags.type) {
+    console.error('codex-artefact: --type is required');
+    return 1;
+  }
+  // --effective-date is required for every TYPE except PRINCIPLE (optional there,
+  // 14-codex.md §4.1); emitCodexArtefact enforces the per-TYPE required fields.
+  if (String(flags.type).toUpperCase() !== 'PRINCIPLE' && !flags['effective-date']) {
+    console.error('codex-artefact: --effective-date is required');
     return 1;
   }
   const orgRoot = await findOrgRoot(mdPath);
@@ -246,6 +253,9 @@ async function cmdCodexArtefact(args) {
       effectiveDate: flags['effective-date'],
       sourceAuthority: flags['source-authority'],
       issuingAuthority: flags['issuing-authority'],
+      statement: flags.statement,
+      rationale: flags.rationale,
+      establishedBy: flags['established-by'],
       admittedAt: flags['admitted-at'] || today(),
       admittedBy: flags['admitted-by'] || '@transitrix/ingest-cli',
       monitoring: flags.monitoring === true || flags.monitoring === 'true',

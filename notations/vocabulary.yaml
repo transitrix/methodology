@@ -802,6 +802,9 @@ rule_codes:
   CODEX-005:
     severity: info
     spec: notations/elements/14-codex.md
+  CODEX-006:
+    severity: info
+    spec: notations/elements/14-codex.md
   COMPIMP-001:
     severity: error
     spec: notations/views/reports/21-compliance-impact.md

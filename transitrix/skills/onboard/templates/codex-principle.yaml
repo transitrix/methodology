@@ -1,0 +1,40 @@
+# Codex internal artefact — a PRINCIPLE: a rule the org holds over itself with no
+# stated issuing authority or conformance test (14-codex.md §2.1). If the artefact
+# CAN state who enforces it and how conformance is checked, it is a POLICY or an
+# INTERNAL_STANDARD instead — use templates/codex-internal.yaml.
+# Schema: notations/elements/14-codex.md §4.1 + admission record (notations/CONTRACT.md §6).
+# File location: codex/internal/<ID>.yaml — internal artefacts are NOT foldered by jurisdiction.
+# File name: the artefact's canonical ID + .yaml — one artefact per file.
+
+id: PRINCIPLE-FILL-ME-1              # canonical ID per IDS_AND_REFERENCES.md
+name: "FILL-ME principle name"
+type: PRINCIPLE
+description: "FILL-ME — what the principle is about"
+
+# Admission record (CONTRACT.md §6) — admitted_at/admitted_by are computed by
+# the assistant driving the onboarding skill, not hand-typed (SKILL.md
+# "Admission record and lifecycle"). gate_checks.source_authority is the one
+# field that IS real content the user supplies — who admitted this artefact
+# into the catalogue (a different question from whether the principle itself
+# names an issuing authority — see the required fields below).
+zone: codex
+admitted_at: "2026-01-01"            # quoted ISO 8601 date — assistant-computed
+admitted_by: "FILL-ME-handle"        # assistant-computed — never left for the user to type
+gate_checks:
+  source_authority: "FILL-ME — who admitted this artefact into the catalogue"
+
+# PRINCIPLE frontmatter (14-codex.md §4.1) — required.
+statement: "FILL-ME — one normative sentence stating the rule"
+rationale: "FILL-ME — why the organisation holds itself to this rule"
+
+# Optional. Set issuing_authority only if the principle also has a named
+# enforcer — at which point it is a POLICY, not a PRINCIPLE (§2.1); leave
+# both of these unset for a genuine principle.
+# issuing_authority: "FILL-ME — internal body / role, if one applies"
+# effective_date: "2026-01-01"       # quoted ISO 8601, if a specific date applies
+
+# Optional. The decision that established this principle, in the decision-log
+# reference form already in use (method/07-decisions.md §2): an
+# ADR-YYYY-MM-DD-<slug> id, or the legacy ADR-NNNN-<slug> form. Absent is
+# admissible — CODEX-006 flags it as a review finding, not a validator error.
+# established_by: "ADR-YYYY-MM-DD-<slug>"

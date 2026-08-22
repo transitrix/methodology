@@ -25,6 +25,7 @@ const TYPE_INFO = {
   REGULATION:        { scope: 'external' },
   POLICY:            { scope: 'internal' },
   INTERNAL_STANDARD: { scope: 'internal' },
+  PRINCIPLE:         { scope: 'internal' },
 };
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
@@ -69,12 +70,18 @@ async function findRaw(orgRoot, mdPath, sourcesDir) {
 export async function emitCodexArtefact(opts) {
   const {
     orgRoot, mdPath, type, jurisdiction, effectiveDate, sourceAuthority,
-    issuingAuthority, admittedAt, admittedBy, monitoring, slug, name, force = false,
+    issuingAuthority, statement, rationale, establishedBy,
+    admittedAt, admittedBy, monitoring, slug, name, force = false,
   } = opts;
 
   const info = TYPE_INFO[type];
   if (!info) throw new Error(`unknown --type ${type}; expected one of ${Object.keys(TYPE_INFO).join(', ')}`);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate || '')) throw new Error('--effective-date must be YYYY-MM-DD');
+  const isPrinciple = type === 'PRINCIPLE';
+  // effective_date is required on every codex TYPE except PRINCIPLE (14-codex.md §4.1,
+  // optional there); PRINCIPLE's format is still checked when the caller supplies one.
+  if (!isPrinciple || effectiveDate) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate || '')) throw new Error('--effective-date must be YYYY-MM-DD');
+  }
 
   let codexDir;
   let frontJurisdiction = null;
@@ -82,6 +89,10 @@ export async function emitCodexArtefact(opts) {
     if (!jurisdiction) throw new Error(`--jurisdiction is required for ${type} (codex/external/<jurisdiction>/, CODEX-001)`);
     frontJurisdiction = String(jurisdiction).toLowerCase();
     codexDir = join(resolve(orgRoot), 'codex', 'external', frontJurisdiction);
+  } else if (isPrinciple) {
+    if (!statement) throw new Error(`--statement is required for ${type} (14-codex.md §4.1)`);
+    if (!rationale) throw new Error(`--rationale is required for ${type} (14-codex.md §4.1)`);
+    codexDir = join(resolve(orgRoot), 'codex', 'internal');
   } else {
     if (!issuingAuthority) throw new Error(`--issuing-authority is required for ${type} (codex/internal/)`);
     codexDir = join(resolve(orgRoot), 'codex', 'internal');
@@ -148,6 +159,17 @@ export async function emitCodexArtefact(opts) {
         effective_date: effectiveDate,
         ...snapshot,
         monitoring_needed: Boolean(monitoring),
+      }
+    : isPrinciple
+    ? {
+        ...common,
+        gate_checks: { source_authority: sourceAuthority || issuingAuthority || 'recorded' },
+        statement,
+        rationale,
+        ...(issuingAuthority ? { issuing_authority: issuingAuthority } : {}),
+        ...(effectiveDate ? { effective_date: effectiveDate } : {}),
+        ...(establishedBy ? { established_by: establishedBy } : {}),
+        ...snapshot,
       }
     : {
         ...common,
