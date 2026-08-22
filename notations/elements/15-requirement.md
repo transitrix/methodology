@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "1.1"
+version: "1.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-30"
+last_updated: "2026-08-22"
 status: "draft"
 ---
 
@@ -121,7 +121,7 @@ valid_to: null
 | `parent` | no | string | `REQUIREMENT-…` — the higher-scale REQUIREMENT this one decomposes from. Enables authoring a broad obligation once and decomposing it into more specific sub-requirements. Inline; not time-aware (v0.x transitional, same shape as `CHANGE.parent` in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.3 and `LOCATION.parent` in §7.22). Origin-agnostic — see §2.4. |
 | `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
 | `serves` | no | string | `NEED-…` — the stakeholder/user need this requirement traces to. See §2.7. |
-| `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Empty or absent for internal-only requirements with no codex source. |
+| `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `admitted_by` | yes | string | Person handle or tool ID that ran the admission gate. |
@@ -296,7 +296,7 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 |---|---|---|
 | `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `name`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
-| `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`. Requirements derive only from codex source documents. |
+| `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Requirements derive only from codex source documents. |
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
 | `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
@@ -311,6 +311,9 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-22, PRINCIPLE codex TYPE):**
+- `derived_from`'s permitted TYPEs widened to include `PRINCIPLE` (§2 field table, `REQ-003`) — [14-codex.md](14-codex.md) §2.1 adds `PRINCIPLE` as a codex TYPE for a self-held rule with no stated issuing authority or conformance test. Additive: widening a permitted-values enum accepts strictly more than it did before; no existing REQUIREMENT needs updating.
 
 **Landed (2026-08-05, requirement dependency):**
 - First-class `depends_on` REL kind ([17-relations.md](17-relations.md) §3) — `REQUIREMENT → REQUIREMENT`, conditional dependency between obligations (not decomposition, not work order). §2.4 above distinguishes it from inline `parent`. Validator codes `REL-005` (self-reference error) and `REL-006` (cycle warning). Additive MINOR; no migration.
