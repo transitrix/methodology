@@ -56,11 +56,30 @@ operating_parameters:               # optional — org-wide operating defaults
 | `confidence_decay` | no | map | Per-element-TYPE freshness-decay parameters (`fresh_days`, `stale_days`, `floor`) used by confidence scoring. A `defaults` sub-map applies to any TYPE not listed under `by_type`. Defined in [CONTRACT.md](CONTRACT.md) §11.3. Omitted ⇒ the §11.3 defaults apply. |
 | `operating_parameters` | no | map | Org-wide defaults for automated operating activities. v1 carries `default_scan_frequency` (ISO 8601 duration) — the fallback scan cadence for `REGISTRY` rows that declare no `scan_frequency` and whose registry sets no `default_scan_frequency` ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.19). Additive — further operating defaults may be added here as automated activities are modelled. |
 
-No validator enforces the manifest yet; it is declarative. Tooling MAY read it to discover the pinned methodology version and the active notations and zones.
+Most of the manifest is declarative and unenforced; tooling MAY read it to discover the pinned methodology version and the active notations and zones. §4 below is the exception — the manifest's own *presence and nesting* are validated.
 
 ---
 
-## 3. References
+## 4. Catalogue boundary
+
+**A catalogue's boundary is declared rather than inferred, and `transitrix.yaml` is what declares it.** Every scope in [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §4 written as "within the organisation's element catalogue" (or `field/` zone, or `codex/…` zone) resolves against the same root: the nearest enclosing `transitrix.yaml`. This adds no field and invents no marker — it names the thing those paths were always relative to.
+
+**No manifest encloses another.** The rule is not *innermost wins* — nesting is invalid. [CONTRACT.md](CONTRACT.md) §10 already refuses per-folder overrides ("No per-folder override; no per-notation override"), and *innermost wins* would introduce exactly that per-folder scoping for one property while §10 forbids it for another. Forbidding nesting fails loudly instead of silently re-scoping a subtree.
+
+**A tree with no enclosing manifest has no declared catalogue.** A consumer MUST NOT merge it with anything — the honest answer to "what catalogue is this" is *undeclared*, never a guess from a path segment.
+
+Two validator rules follow, in their own `CAT-` series — the subject is the catalogue and its boundary, where `ADMIT-` is about a document's own admission record ([CONTRACT.md](CONTRACT.md) §6):
+
+| Rule | Severity | Description |
+|---|---|---|
+| `CAT-001` | warning | A scanned tree's root — a directory holding a `canon/`, `field/`, or `codex/` zone folder — carries no `transitrix.yaml`; the catalogue is undeclared. |
+| `CAT-002` | error | A `transitrix.yaml` lies inside the subtree of another `transitrix.yaml`. |
+
+Decided in the 2026-08-21 ADR *A catalogue declares its own boundary*. The bundled worked examples under `notations/examples/` carry one manifest per catalogue root — twelve roots, each independently unique — and no example root sits inside another.
+
+---
+
+## 5. References
 
 - Zone model and admission record: [CONTRACT.md](CONTRACT.md) §5–6.
 - Notation catalogue (short names): [README.md](README.md).
@@ -69,3 +88,4 @@ No validator enforces the manifest yet; it is declarative. Tooling MAY read it t
 - Domain Packages (the `packages:` field): [PACKAGES.md](PACKAGES.md).
 - Catalogue integration / the `catalogue:` field: [`method/09-releases-and-propagation.md`](../method/09-releases-and-propagation.md) §6.4.
 - Confidence and freshness (the `confidence_decay:` field): [CONTRACT.md](CONTRACT.md) §11.
+- Uniqueness scope resolving against the manifest root: [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §4.

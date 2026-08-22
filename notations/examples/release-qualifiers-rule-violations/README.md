@@ -1,10 +1,10 @@
 # Release qualifiers — rule-violation fixture
 
-A sibling fixture to [`../`](../) (the valid case, where both qualifiers resolve correctly and nothing is flagged). This one deliberately breaks each qualifier so the two new rules have something to catch.
+A sibling fixture to [`../release-qualifiers/`](../release-qualifiers/) (the valid case, where both qualifiers resolve correctly and nothing is flagged). This one deliberately breaks each qualifier so the two new rules have something to catch.
 
-> **Every claim file in this folder is invalid on purpose. Do not copy one as a starting point** — copy from [`../`](../) instead. The element files the claims point at (`PRODUCT-…`, `RELEASE-…`, `REQUIREMENT-…`) are valid; only the four `ASSERTION` / `VERIFICATION` files are seeded.
+> **Every claim file in this folder is invalid on purpose. Do not copy one as a starting point** — copy from [`../release-qualifiers/`](../release-qualifiers/) instead. The element files the claims point at (`PRODUCT-…`, `RELEASE-…`, `REQUIREMENT-…`) are valid; only the four `ASSERTION` / `VERIFICATION` files are seeded.
 
-This differs from the sibling [`verification/reverse-trace-gaps/`](../../verification/reverse-trace-gaps/) fixture, whose files are all structurally valid and trip only cross-cutting *warnings*. `ASSERT-010` and `VERIF-007` are **errors**, so demonstrating them requires files that genuinely fail validation. Keeping them behind their own folder and this banner is what stops the valid fixture next door from being contaminated by them.
+This differs from the sibling [`verification-reverse-trace-gaps/`](../verification-reverse-trace-gaps/) fixture, whose files are all structurally valid and trip only cross-cutting *warnings*. `ASSERT-010` and `VERIF-007` are **errors**, so demonstrating them requires files that genuinely fail validation. Keeping them behind their own folder and this banner is what stops the valid fixture next door from being contaminated by them.
 
 Same posture as the parent otherwise: generic, invented scenario; no real product, organisation, or adopter named.
 
@@ -17,7 +17,7 @@ Same posture as the parent otherwise: generic, invented scenario; no real produc
 | [`.../verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-1.yaml`](canon/verifications/VERIFICATION-INGEST-AUDIT-TRAIL-TEST-1.yaml) | `verified_on: RELEASE-TELEMETRY-PLATFORM-9` resolves to nothing in this catalogue. | `VERIF-007` (unresolvable) |
 | [`.../verifications/VERIFICATION-OPERATOR-DATA-SEGREGATION-TEST-1.yaml`](canon/verifications/VERIFICATION-OPERATOR-DATA-SEGREGATION-TEST-1.yaml) | `verified_on: PRODUCT-TELEMETRY-PLATFORM-1` resolves to an admitted element that is not a `RELEASE`. | `VERIF-007` (wrong TYPE) |
 
-Each rule gets both of its halves. `ASSERT-010` fires on an unresolvable reference as well as a mismatched `of`, because the mismatch check cannot run until the reference resolves and a mistyped release id would otherwise pass silently ([`16-assertion.md`](../../../elements/16-assertion.md) §5). `VERIF-007` covers non-resolution and wrong-TYPE resolution for the same reason.
+Each rule gets both of its halves. `ASSERT-010` fires on an unresolvable reference as well as a mismatched `of`, because the mismatch check cannot run until the reference resolves and a mistyped release id would otherwise pass silently ([`16-assertion.md`](../../elements/16-assertion.md) §5). `VERIF-007` covers non-resolution and wrong-TYPE resolution for the same reason.
 
 ## Supporting elements — valid
 
@@ -36,7 +36,7 @@ Each rule gets both of its halves. `ASSERT-010` fires on an unresolvable referen
 
 ## References
 
-- [`../README.md`](../README.md) — the valid fixture this one is a sibling to.
-- [`../../../elements/16-assertion.md`](../../../elements/16-assertion.md) §2.4, §5 — `subject_release` and `ASSERT-010`.
-- [`../../../elements/27-verification.md`](../../../elements/27-verification.md) §2.1, §5 — `verified_on` and `VERIF-007`.
-- [`../../../CONTRACT.md`](../../../CONTRACT.md) §8 — aggregated compliance and verification domain rules.
+- [`../release-qualifiers/README.md`](../release-qualifiers/README.md) — the valid fixture this one is a sibling to.
+- [`../../elements/16-assertion.md`](../../elements/16-assertion.md) §2.4, §5 — `subject_release` and `ASSERT-010`.
+- [`../../elements/27-verification.md`](../../elements/27-verification.md) §2.1, §5 — `verified_on` and `VERIF-007`.
+- [`../../CONTRACT.md`](../../CONTRACT.md) §8 — aggregated compliance and verification domain rules.

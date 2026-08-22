@@ -20,11 +20,11 @@ REQUIREMENT-BACKUP-POWER-1
 VERIFICATION-BACKUP-POWER-TEST-1  (outcome: pass)
 ```
 
-The forward link (`verifies`) resolves in this fixture — nothing is seeded as incomplete; it demonstrates the schema and the happy path only. The reverse-trace completeness rules (`REQ-VERIF-COVERAGE-001` / `-002`) are demonstrated in the sibling fixture [`reverse-trace-gaps/`](reverse-trace-gaps/).
+The forward link (`verifies`) resolves in this fixture — nothing is seeded as incomplete; it demonstrates the schema and the happy path only. The reverse-trace completeness rules (`REQ-VERIF-COVERAGE-001` / `-002`) are demonstrated in the sibling fixture [`verification-reverse-trace-gaps/`](../verification-reverse-trace-gaps/).
 
 ## References
 
-- [`reverse-trace-gaps/`](reverse-trace-gaps/) — sibling fixture seeding each reverse-trace completeness gap.
+- [`verification-reverse-trace-gaps/`](../verification-reverse-trace-gaps/) — sibling fixture seeding each reverse-trace completeness gap.
 - [`../../elements/27-verification.md`](../../elements/27-verification.md) — `VERIFICATION` schema and validation rules.
 - [`../../elements/15-requirement.md`](../../elements/15-requirement.md) — `REQUIREMENT` schema, and `REQ-VERIF-COVERAGE-001` / `-002` in §4.
 - [`../../CONTRACT.md`](../../CONTRACT.md) §8 — aggregated compliance and verification domain validation rules.

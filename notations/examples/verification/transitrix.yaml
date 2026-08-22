@@ -1,0 +1,9 @@
+# Worked example — notations/examples/verification/README.md.
+# Its own catalogue root (MANIFEST.md §4), a sibling of
+# notations/examples/verification-reverse-trace-gaps/ rather than its
+# parent — no manifest may enclose another.
+transitrix: 1
+methodology_version: "3.6.0"
+notations: [verification, requirement]
+zones: [canon]
+coverage_profile: core
