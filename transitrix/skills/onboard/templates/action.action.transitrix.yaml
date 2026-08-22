@@ -1,6 +1,6 @@
 notation: action
 spec_version: "0.1"
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 
 # Action schedule — pure projection over standalone ACTION elements.
 # Spec: notations/views/diagrams/07-action.md (v2.0). No action data is authored inline.

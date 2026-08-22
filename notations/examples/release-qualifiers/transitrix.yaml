@@ -3,7 +3,7 @@
 # notations/examples/release-qualifiers-rule-violations/ rather than its
 # parent — no manifest may enclose another.
 transitrix: 1
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 notations: [requirement, assertion, verification]
 zones: [canon]
 coverage_profile: core

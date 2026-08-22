@@ -1,8 +1,8 @@
 ---
 title: "Assertion — REQUIREMENT realisation claim"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-07"
+last_updated: "2026-08-22"
 status: "draft"
 ---
 
