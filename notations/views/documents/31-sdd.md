@@ -45,7 +45,7 @@ notation: sdd
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 view:
   # ... see §3
 ```
@@ -101,7 +101,7 @@ notation: sdd
 spec_version: "0.1"
 name: "Data export capability — SDD"          # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"                    # optional per CONTRACT.md §4
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 
 view:
   id: SDD-DATA-EXPORT-1
@@ -170,7 +170,7 @@ notation: sdd
 spec_version: "0.1"
 name: "Full SDD — all design elements"   # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"               # optional per CONTRACT.md §4
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 view:
   id: SDD-ALL-1
   name: "Full SDD — all design elements"

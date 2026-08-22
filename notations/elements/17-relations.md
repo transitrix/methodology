@@ -1,8 +1,8 @@
 ---
 title: "Relations — first-class time-aware links"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-07"
+last_updated: "2026-08-22"
 status: "draft"
 ---
 

@@ -24,7 +24,7 @@ A profile is declared at the repository root in `transitrix.yaml` under the `cov
 
 ```yaml
 transitrix: 1
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 notations: [dgca, goals, activities, capability-map]
 zones: [canon, field]
 coverage_profile: core         # short form — name a shipped preset
@@ -48,7 +48,7 @@ Notation files themselves (`notations:` in the manifest) are governed by `MANIFE
 ### 2.1 What a profile does NOT bound
 
 - **Attribute-level restrictions within a TYPE.** Out of scope for v1 (see §10).
-- **Codex artefacts.** `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` live in the `codex/` zone, not `canon/elements/<layer>/`, and are governed by the `codex` notation ([`elements/14-codex.md`](elements/14-codex.md)) and the manifest's `zones:` field — not by this profile.
+- **Codex artefacts.** `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` / `PRINCIPLE` live in the `codex/` zone, not `canon/elements/<layer>/`, and are governed by the `codex` notation ([`elements/14-codex.md`](elements/14-codex.md)) and the manifest's `zones:` field — not by this profile.
 - **The cross-cutting primitives `ASSERTION`, `VERIFICATION`, and `REL`.** `ASSERTION` lives at `canon/assertions/` and `VERIFICATION` at `canon/verifications/` (neither is layer-placed); `REL` lives at `canon/relations/`. ASSERTION is governed by [`elements/16-assertion.md`](elements/16-assertion.md) directly and VERIFICATION by [`elements/27-verification.md`](elements/27-verification.md) directly — neither is bounded by a profile. The set of permitted REL **kinds** is what the profile bounds (§2 above); the `REL` TYPE itself is always available when at least one relation kind is allowed.
 - **Subtype values within a TYPE.** A profile says *which TYPEs are in scope*, not which `type:` subtype values are allowed within a TYPE. ACTOR's `type ∈ {person, business_unit, system}` is fixed by the ACTOR spec.
 
@@ -250,7 +250,7 @@ The shipped presets (`minimal`, `core`, `full`) are *re-defined per methodology 
 ```yaml
 # transitrix.yaml
 transitrix: 1
-methodology_version: "3.6.0"
+methodology_version: "3.7.0"
 notations: [dgca, goals, activities, capability-map, applications]
 zones: [canon, field]
 # coverage_profile omitted → defaults to `full`
