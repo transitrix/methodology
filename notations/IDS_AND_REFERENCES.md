@@ -124,6 +124,7 @@ Each notation file carries its own ID using the same grammar; the TYPE names the
 | `ACTION_CARD` | `*.action-card.transitrix.yaml` (deprecated alias: `*.activity-card.transitrix.yaml`) |
 | `COMPLIANCE_IMPACT` | `*.compliance-impact.transitrix.yaml` |
 | `COVERAGE_METRIC` | `*.coverage-metric.transitrix.yaml` |
+| `RULES_IN_FORCE` | `*.rules-in-force.transitrix.yaml` |
 | `MRD` | `*.mrd.transitrix.yaml` |
 | `SRS` | `*.srs.transitrix.yaml` |
 | `SDD` | `*.sdd.transitrix.yaml` |
