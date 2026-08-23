@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Migration codemod — methodology 3.1 → 4.0.
 //
-// Covers the FGA → DGCA notation-key retirement (CONTRACT.md §10.6; spec:
+// Transform A — FGA → DGCA notation-key retirement (CONTRACT.md §10.6; spec:
 // notations/views/diagrams/03-fga.md). FGA was deprecated in 2.0.0 and is
 // removed in 4.0.0.
 //
@@ -13,9 +13,18 @@
 // over as-is; FGA had no changes[] layer, which is exactly what
 // view_config.layers.changes: off produces in DGCA (DGA mode).
 //
+// Transform B — recipe-file header rename (recipe-naming decision, 2026-08-23).
+//
+//   template_id: <id>        → recipe_id: <id>         (header field rewrite)
+//   template_version: <ver>  → recipe_version: <ver>   (header field rewrite)
+//
+// Applies to any *.ttrs file's front matter. No other field and no part of the
+// document body changes.
+//
 // Conventions (canonical for every migration recipe):
 //   - Pure-Node, no native deps; Node ≥ 20.
-//   - Idempotent: a repo already on 4.0 form (no *.fga.transitrix.yaml) is a no-op.
+//   - Idempotent: a repo already on 4.0 form (no *.fga.transitrix.yaml, no
+//     template_id/template_version header field) is a no-op.
 //   - CLI: [--dry-run] [target-dir]. Default target = current working dir.
 //   - Diff-style summary of changes. Exit 0 on clean run.
 
@@ -44,6 +53,35 @@ function walkFga(dir, out = []) {
   return out;
 }
 
+function walkTtrs(dir, out = []) {
+  let entries;
+  try { entries = readdirSync(dir); } catch { return out; }
+  for (const ent of entries) {
+    const full = join(dir, ent);
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) walkTtrs(full, out);
+    else if (st.isFile() && ent.endsWith('.ttrs')) out.push(full);
+  }
+  return out;
+}
+
+// Rewrites the two header fields inside the front-matter block only (between
+// the opening and first closing `---`) — a body transclusion tag never
+// contains a bare `template_id:`/`template_version:` line, but scoping to the
+// header avoids relying on that.
+function rewriteTtrsHeader(content) {
+  const end = content.indexOf('\n---', content.indexOf('---') + 3);
+  if (end === -1) return { content, modified: 0 };
+  const headerEnd = end + 4;
+  let n = 0;
+  const header = content
+    .slice(0, headerEnd)
+    .replace(/^(template_id\s*:)/m, (_, pre) => { n++; return pre.replace('template_id', 'recipe_id'); })
+    .replace(/^(template_version\s*:)/m, (_, pre) => { n++; return pre.replace('template_version', 'recipe_version'); });
+  return { content: header + content.slice(headerEnd), modified: n };
+}
+
 // Rewrites notation: fga → dgca and inserts view_config.layers.changes: off
 // directly after the header block (after generated_at:, or after
 // methodology_version: if generated_at is absent).
@@ -66,11 +104,10 @@ function rewriteFgaDocument(content) {
   return { content: result, modified: n };
 }
 
-const files = walkFga(target);
-let totalModified = 0;
-const touched = [];
+const fgaFiles = walkFga(target);
+const fgaTouched = [];
 
-for (const f of files) {
+for (const f of fgaFiles) {
   let content;
   try { content = readFileSync(f, 'utf8'); } catch { continue; }
 
@@ -78,8 +115,7 @@ for (const f of files) {
   if (r.modified === 0) continue;
 
   const dest = join(dirname(f), basename(f).replace(/\.fga\.transitrix\.yaml$/, '.dgca.transitrix.yaml'));
-  touched.push(`${relative(target, f)} → ${relative(target, dest)}`);
-  totalModified += r.modified;
+  fgaTouched.push(`${relative(target, f)} → ${relative(target, dest)}`);
 
   if (!dryRun) {
     writeFileSync(f, r.content);
@@ -87,10 +123,29 @@ for (const f of files) {
   }
 }
 
-console.log('Transform — notation: fga → dgca; insert view_config.layers.changes: off; file rename');
-touched.forEach(x => console.log(`  ~ ${x}`));
+const ttrsFiles = walkTtrs(target);
+const ttrsTouched = [];
+
+for (const f of ttrsFiles) {
+  let content;
+  try { content = readFileSync(f, 'utf8'); } catch { continue; }
+
+  const r = rewriteTtrsHeader(content);
+  if (r.modified === 0) continue;
+
+  ttrsTouched.push(relative(target, f));
+  if (!dryRun) writeFileSync(f, r.content);
+}
+
+console.log('Transform A — notation: fga → dgca; insert view_config.layers.changes: off; file rename');
+fgaTouched.forEach(x => console.log(`  ~ ${x}`));
+console.log('');
+console.log('Transform B — template_id/template_version → recipe_id/recipe_version');
+ttrsTouched.forEach(x => console.log(`  ~ ${x}`));
 console.log('');
 console.log('Summary:');
-console.log(`  files scanned   ${files.length}`);
-console.log(`  files changed   ${touched.length}${dryRun ? ' (dry-run; no files written)' : ''}`);
+console.log(`  fga files scanned    ${fgaFiles.length}`);
+console.log(`  fga files changed    ${fgaTouched.length}${dryRun ? ' (dry-run; no files written)' : ''}`);
+console.log(`  ttrs files scanned   ${ttrsFiles.length}`);
+console.log(`  ttrs files changed   ${ttrsTouched.length}${dryRun ? ' (dry-run; no files written)' : ''}`);
 process.exit(0);

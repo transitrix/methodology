@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // End-to-end test: the whole loop a full run must complete, run against the
-// package's own committed template — pass 1, pass 2, the run record, and PDF —
+// package's own committed recipe — pass 1, pass 2, the run record, and PDF —
 // composed exactly as an adopter's CLI would compose them. This package ships
 // none of that composition as a product (README: "reference implementation,
 // not a product"); this test exists so the loop is exercised at least once,
@@ -23,7 +23,7 @@ import { buildRunRecord, serializeRunRecord } from '../src/run-record.mjs';
 import { renderMarkdownToPdf } from '../src/render-pdf.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_PATH = join(HERE, 'fixtures', 'product.mrd.ttrs');
+const RECIPE_PATH = join(HERE, 'fixtures', 'product.mrd.ttrs');
 const RENDER_DATE = '2026-08-07';
 const RUN_TIMESTAMP = '2026-08-07T12:00:00Z';
 
@@ -50,15 +50,15 @@ async function referenceFill({ slotId, inputs }) {
 }
 
 const { header, markdown: pass1Markdown, instructionSlots, ok: pass1Ok, errors } = await runPass1({
-  text: await (await import('node:fs/promises')).readFile(TEMPLATE_PATH, 'utf8'),
-  templatePath: TEMPLATE_PATH,
+  text: await (await import('node:fs/promises')).readFile(RECIPE_PATH, 'utf8'),
+  recipePath: RECIPE_PATH,
   renderDate: RENDER_DATE,
   profile: 'strict',
 });
 
-check(pass1Ok, `pass 1 renders the committed template clean: ${JSON.stringify(errors)}`);
+check(pass1Ok, `pass 1 renders the committed recipe clean: ${JSON.stringify(errors)}`);
 check(instructionSlots.length === 1 && instructionSlots[0].slotId === 'market-size',
-  'the template exercises exactly the one instruction slot the epic asked for');
+  'the recipe exercises exactly the one instruction slot the epic asked for');
 
 const { markdown, slotResults } = await runPass2({
   markdown: pass1Markdown, instructionSlots, fill: referenceFill,
@@ -85,15 +85,15 @@ const record = buildRunRecord({
   slotResults,
 });
 
-check(record.template_id === 'product.mrd' && record.template_version === '1.0',
-  'the run record names the template and its version');
+check(record.recipe_id === 'product.mrd' && record.recipe_version === '1.0',
+  'the run record names the recipe and its version');
 check(record.repository_commit === repositoryCommit, 'and the repository commit it was read at');
-check(record.slots.length === 1, 'and every slot the template declared, here the one');
+check(record.slots.length === 1, 'and every slot the recipe declared, here the one');
 check(record.slots[0].verdict === 'sufficient' && record.slots[0].produced_text.length > 0,
   'carrying the verdict and the produced text');
 
 const recordJson = serializeRunRecord(record);
-check(JSON.parse(recordJson).template_id === 'product.mrd', 'the serialised run record round-trips');
+check(JSON.parse(recordJson).recipe_id === 'product.mrd', 'the serialised run record round-trips');
 
 // ── PDF — A4, declared explicitly ─────────────────────────────────────────
 

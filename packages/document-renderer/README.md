@@ -1,7 +1,7 @@
 # @transitrix/document-renderer
 
 **The reference implementation of the `{{ … }}` directive language** — parser for
-the `.ttrs` document-template format, its pass 1 deterministic resolver (which
+the `.ttrs` document-recipe format, its pass 1 deterministic resolver (which
 runs and is testable with no agent present), pass 2 (which fills the
 instruction slots pass 1 left, through a caller-supplied agent hook), the run
 record, and PDF output.
@@ -69,7 +69,7 @@ from "not in this package".
 
 A deferred construct is **recognised, not implemented in this pass**. It fails by
 that name under its own code and is never reported as unknown syntax
-(`TTRS-002`) — telling an author their valid template is a typo sends them
+(`TTRS-002`) — telling an author their valid recipe is a typo sends them
 looking for a mistake they did not make.
 
 Document kinds — `mrd`, `srs`, `sdd`, `sds` — are **kinds, not notations**
@@ -97,14 +97,14 @@ YAML front matter. Four required fields, one optional:
 ---
 document: Market Requirements Document   # required — the name its readers use
 kind: mrd                                # required — matches the filename's middle segment
-template_id: product.mrd                 # required — named in the run record
-template_version: "1.0"                  # required — named in the run record
+recipe_id: product.mrd                 # required — named in the run record
+recipe_version: "1.0"                  # required — named in the run record
 canon: ../canon                          # OPTIONAL — the repository
 ---
 ```
 
 **`canon:` is deliberately optional — the repository is an optional input.** A
-template naming no model object and no derived figure renders standalone, with no
+recipe naming no model object and no derived figure renders standalone, with no
 repository configured at all. That is a legitimate input, not a degraded one.
 
 ## Slot kinds
@@ -170,10 +170,10 @@ const {
   ok, markdown, instructionSlots, figures, errors,
   findings, states, suspicion,        // the four computed states, and why ⚑S is not
 } = await runPass1({
-  text,                       // template source
-  templatePath,               // enables the filename/`kind:` check; bases figure paths
+  text,                       // recipe source
+  recipePath,               // enables the filename/`kind:` check; bases figure paths
   // repositoryRoot,          // optional override; omitted, the header's `canon:` is used,
-                              // resolved relative to the template. Pass null to force
+                              // resolved relative to the recipe. Pass null to force
                               // the no-repository case.
   // rasterise,               // optional hook: ({kind, source, name, number, fit}) => embedPath
   // profile: 'strict',       // 'strict' (default) | 'review'
@@ -184,15 +184,15 @@ const {
 `findings` lists every non-ok reference state in document order — `{ code, state,
 flag, id, file }` — whatever the profile. `states` counts them by state.
 
-`instructionSlots` lists every slot in the template, in document order, each with
+`instructionSlots` lists every slot in the recipe, in document order, each with
 its full instruction — that is what the run record names.
 
 The parser is available on its own when only syntax is wanted:
 
 ```js
-import { parseTemplate } from '@transitrix/document-renderer/src/parse-template.mjs';
+import { parseRecipe } from '@transitrix/document-renderer/src/parse-recipe.mjs';
 
-const { header, ast, errors } = parseTemplate(text);
+const { header, ast, errors } = parseRecipe(text);
 ```
 
 ## Pass 2 — filling instruction slots
@@ -206,7 +206,7 @@ it orchestrates one.
 import { runPass1 } from '@transitrix/document-renderer/src/pass1.mjs';
 import { runPass2 } from '@transitrix/document-renderer/src/pass2.mjs';
 
-const { markdown, instructionSlots } = await runPass1({ text, templatePath });
+const { markdown, instructionSlots } = await runPass1({ text, recipePath });
 
 const { markdown: finalMarkdown, slotResults } = await runPass2({
   markdown,
@@ -242,7 +242,7 @@ text }` — `verdict` is `sufficient` · `insufficient` · `not-attempted`.
 ## The run record
 
 The third of a full run's three artefacts, alongside Markdown and the PDF:
-template id and version, repository commit, model id, run timestamp, and — per slot, including
+recipe id and version, repository commit, model id, run timestamp, and — per slot, including
 every slot that produced nothing — the instruction and its verdict.
 
 `buildRunRecord` is a **pure function over its inputs**. It reads no
@@ -273,7 +273,7 @@ await writeFile(`${name}.run.json`, serializeRunRecord(record));
 `slot_id`, `question`, `inputs`, `sufficient`, `verdict`, `reason`,
 `produced_text`, `attributions` — including a slot whose verdict is
 `not-attempted`: a slot absent from the record would be indistinguishable from
-one that was never in the template at all.
+one that was never in the recipe at all.
 
 ## PDF output
 
@@ -328,7 +328,7 @@ has already failed by the time anyone reads it.
 | `TTRS-003` | two instruction slots share one id |
 | `TTRS-004` | **recognised, not implemented in this pass** — `each`, `trace`, `{{ .field }}` |
 | `TTRS-010` | a model-object reference does not resolve — no such id, or no such field path (`⚑U`) |
-| `TTRS-011` | the template references a model object or derived figure, but **no repository is configured** |
+| `TTRS-011` | the recipe references a model object or derived figure, but **no repository is configured** |
 | `TTRS-012` | a figure source does not exist, or a `figref` names no declared figure |
 | `TTRS-013` | the filename is not `<basename>.<kind>.ttrs`, or its kind disagrees with the header |
 | `TTRS-014` | the object exists but is **not admitted** (`⚑A`) |
@@ -390,7 +390,7 @@ ran under, so a rendered document can be traced to which was used.
 `⚑S` link suspicion is not computed by pass 1 — out of scope by the
 rendered-documents decision, derived from commit history rather than read from a
 file, and scoped by [`CONTRACT.md`](../../notations/CONTRACT.md) §16.2 to `REL`
-and claim records rather than the element references a template cites.
+and claim records rather than the element references a recipe cites.
 
 Declining to compute it is permitted; **being silent about declining is not.**
 The language requires three distinguishable outcomes, not two — *suspect*,
@@ -409,7 +409,7 @@ that never checked — that is the one failure mode which reads as success.
 ## Tests
 
 ```
-node packages/document-renderer/tests/test_parse_template.mjs
+node packages/document-renderer/tests/test_parse_recipe.mjs
 node packages/document-renderer/tests/test_pass1.mjs
 node packages/document-renderer/tests/test_conformance.mjs
 node packages/document-renderer/tests/test_pass2.mjs
@@ -418,15 +418,15 @@ node packages/document-renderer/tests/test_render_pdf.mjs
 node packages/document-renderer/tests/test_full_run.mjs
 ```
 
-`tests/fixtures/product.mrd.ttrs` is a complete worked template — every slot kind,
+`tests/fixtures/product.mrd.ttrs` is a complete worked recipe — every slot kind,
 one instruction slot — rendered end-to-end against `tests/fixtures/canon/` by the
-pass-1 suite. `test_full_run.mjs` carries that same template all the way through
+pass-1 suite. `test_full_run.mjs` carries that same recipe all the way through
 pass 2, the run record and the PDF, the way an adopter's CLI would compose the
 four modules — the full loop an adopter's CLI is expected to complete.
 
 ## Conformance fixture
 
-`tests/fixtures/product.mrd.expected.md` is that template's rendered output,
+`tests/fixtures/product.mrd.expected.md` is that recipe's rendered output,
 **generated once and committed as a frozen target**. It is the artefact an
 independent implementation of the language diffs its own output against, which
 is what makes the specification checkable rather than merely written down.

@@ -1,12 +1,12 @@
-// Skeleton-file parser for the document-view engine (hub epic "Document-view engine:
-// skeleton transclusion, reference flags, render profiles", §1-2).
+// Recipe-file parser for the document-view engine (hub epic "Document-view engine:
+// recipe transclusion, reference flags, render profiles", §1-2).
 //
-// Scope of this module: syntax only. It turns a skeleton file's text into a header
+// Scope of this module: syntax only. It turns a recipe file's text into a header
 // object and a body AST. It does NOT resolve references against canon, does not compute
 // the four reference-resolution states (§3), and does not render — those are the
 // engine's next layers, built on top of this AST.
 //
-// The skeleton format and `.ttrs` are one notation, and @transitrix/document-renderer
+// The recipe format and `.ttrs` are one notation, and @transitrix/document-renderer
 // owns its parser and resolver. The grammar below — the ID rules, front matter, header
 // scalars, the id/field-path split — is imported from there rather than copied. What
 // this module still owns is the construct set the view engine implements (`each`,
@@ -353,13 +353,13 @@ function buildAst(tokens) {
 
 // ── Public entry point ──────────────────────────────────────────────────
 
-export function parseSkeleton(text) {
+export function parseRecipe(text) {
   const fmMatch = FRONT_MATTER.exec(text);
   if (!fmMatch) {
     return {
       header: { document: undefined, canon: undefined, profile: 'neutral' },
       ast: [],
-      errors: [{ message: 'skeleton file must start with a YAML front-matter header (---\\n...\\n---)' }],
+      errors: [{ message: 'recipe file must start with a YAML front-matter header (---\\n...\\n---)' }],
     };
   }
 

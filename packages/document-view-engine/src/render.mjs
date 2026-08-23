@@ -1,6 +1,6 @@
-// Render profiles (hub epic "Document-view engine: skeleton transclusion,
-// reference flags, render profiles", §4) — walks a skeleton's AST
-// (parse-skeleton.mjs) through an evaluator (evaluate.mjs) and emits HTML in
+// Render profiles (hub epic "Document-view engine: recipe transclusion,
+// reference flags, render profiles", §4) — walks a recipe's AST
+// (parse-recipe.mjs) through an evaluator (evaluate.mjs) and emits HTML in
 // one of two profiles from the one evaluation pass:
 //
 //   review — every span is coloured by its §3 state, and colour is never the
@@ -103,7 +103,7 @@ function renderTraceTable({ rows, cols, covered }, profile) {
 
 // ── Figure numbering (§2 "Illustrations": "Numbers are assigned at render
 // time in document order") ─────────────────────────────────────────────
-// A `figref` can name a figure that appears later in the skeleton than the
+// A `figref` can name a figure that appears later in the recipe than the
 // reference itself, so numbers can't be assigned during the single
 // streaming render pass — a forward reference wouldn't know its number yet.
 // This walks the AST once, ahead of the real render, expanding `each` rows
@@ -191,7 +191,7 @@ async function renderNode(node, evaluator, ctx, out) {
       const number = out.figureCounter;
       const label = `Figure ${number}`;
       const fitClass = `dv-fit-${node.fit ?? 'width'}`;
-      const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
+      const absPath = isAbsolute(node.path) ? node.path : join(ctx.recipeDir ?? '.', node.path);
       // eslint-disable-next-line no-await-in-loop -- order matters; this node's own illustration number must be assigned before the next one
       const exists = await fileExists(absPath);
       let svg = null;
@@ -227,7 +227,7 @@ async function renderNode(node, evaluator, ctx, out) {
     case 'figure': {
       out.figureCounter += 1;
       const number = out.figureCounter;
-      const absPath = isAbsolute(node.path) ? node.path : join(ctx.skeletonDir ?? '.', node.path);
+      const absPath = isAbsolute(node.path) ? node.path : join(ctx.recipeDir ?? '.', node.path);
       // eslint-disable-next-line no-await-in-loop -- order matters; this node's own figure number must be assigned before the next one
       const exists = await fileExists(absPath);
       const captionText = node.caption ? `Figure ${number} — ${node.caption}` : `Figure ${number}`;
@@ -263,9 +263,9 @@ async function renderNode(node, evaluator, ctx, out) {
   }
 }
 
-// Renders `ast` (from parseSkeleton()) against `evaluator` (from
-// createEvaluator()) in the given profile. `skeletonDir` — the directory
-// containing the skeleton file — resolves a `figure`'s relative image path;
+// Renders `ast` (from parseRecipe()) against `evaluator` (from
+// createEvaluator()) in the given profile. `recipeDir` — the directory
+// containing the recipe file — resolves a `figure`'s relative image path;
 // omit it only when every `figure` path in the AST is already absolute (as
 // unit-test fixtures typically are). Returns:
 //   html   — the rendered document body (no page chrome — §7's layout is a
@@ -274,12 +274,12 @@ async function renderNode(node, evaluator, ctx, out) {
 //            anywhere in the render
 //   counts — { [state]: number } — how many spans landed in each §3 state,
 //            across the whole render
-export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, skeletonDir } = {}) {
+export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, recipeDir } = {}) {
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
   }
   const figureState = { count: 0, numbers: new Map() };
-  await collectFigureNumbers(ast, evaluator, { profile, renderDate, skeletonDir }, figureState);
+  await collectFigureNumbers(ast, evaluator, { profile, renderDate, recipeDir }, figureState);
 
   const out = {
     html: [],
@@ -287,7 +287,7 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
     failedStates: [],
     figureCounter: 0,
   };
-  await renderNodes(ast, evaluator, { profile, renderDate, skeletonDir, figureNumbers: figureState.numbers }, out);
+  await renderNodes(ast, evaluator, { profile, renderDate, recipeDir, figureNumbers: figureState.numbers }, out);
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
 

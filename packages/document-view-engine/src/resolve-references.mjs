@@ -1,6 +1,6 @@
 // Reference resolution — the document-view engine's four distinguishable
-// states (hub epic "Document-view engine: skeleton transclusion, reference
-// flags, render profiles", §3). Given an ID a skeleton wants to transclude,
+// states (hub epic "Document-view engine: recipe transclusion, reference
+// flags, render profiles", §3). Given an ID a recipe wants to transclude,
 // classify it against canon as resolved, or one of:
 //
 //   ⚑U unresolved      — the id does not exist anywhere in canon
@@ -25,7 +25,7 @@
 // Inline reference fields on a plain element (e.g. `REQUIREMENT.parent`) do
 // not get ⚑S — CONTRACT.md §16 defines suspicion only for REL/ASSERTION/
 // VERIFICATION/VALIDATION records, each with one admission anchor covering
-// all of its own references. A skeleton's own `{{ ID }}` tag is not a canon
+// all of its own references. A recipe's own `{{ ID }}` tag is not a canon
 // record and has no anchor of its own, so it never carries ⚑S directly —
 // only when the id it names *is* a REL/claim record does §3's ⚑S apply, to
 // that record's endpoints.
@@ -217,7 +217,7 @@ export async function checkSuspicion({ orgRoot, anchorCommit, targetRelPath, man
 }
 
 // ── Canon index ───────────────────────────────────────────────────────────
-// A skeleton's `canon:` header field names the `canon/` directory directly
+// A recipe's `canon:` header field names the `canon/` directory directly
 // (README example: `canon: ../canon`). Git plumbing and migration manifests
 // key off the organisation root one level up — the same layout
 // scripts/check-link-suspicion.mjs assumes (`root` = the repo containing

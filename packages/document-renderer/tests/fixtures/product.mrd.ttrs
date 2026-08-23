@@ -1,8 +1,8 @@
 ---
 document: Market Requirements Document
 kind: mrd
-template_id: product.mrd
-template_version: "1.0"
+recipe_id: product.mrd
+recipe_version: "1.0"
 canon: canon
 ---
 # {{ CAP-1.title }}
