@@ -670,6 +670,9 @@ rule_codes:
   ASSERT-DEAD-LINK-001:
     severity: warning
     spec: notations/elements/16-assertion.md
+  ASSESS-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
   ATREE-001:
     severity: error
     spec: notations/views/reports/23-actions-tree.md
