@@ -1,11 +1,11 @@
 name: document-renderer test
 
-# Unit tests for @transitrix/document-renderer — the `.ttrs` document-template
+# Unit tests for @transitrix/document-renderer — the `.ttrs` recipe
 # parser and its pass 1 deterministic resolver. Deterministic, no API key and no
 # model: pass 1 runs with no agent present by design, so the whole suite is a
 # plain Node run.
 #
-# The pass-1 suite renders the committed worked template
+# The pass-1 suite renders the committed worked recipe
 # (packages/document-renderer/tests/fixtures/product.mrd.ttrs) end-to-end against
 # its fixture repository, and covers the no-repository cases, the named failures,
 # and re-run byte-stability.
@@ -47,8 +47,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run template-parser tests
-        run: node packages/document-renderer/tests/test_parse_template.mjs
+      - name: Run recipe-parser tests
+        run: node packages/document-renderer/tests/test_parse_recipe.mjs
 
       - name: Run pass-1 resolver tests
         run: node packages/document-renderer/tests/test_pass1.mjs
