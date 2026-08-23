@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **`DRIVER.falsifier` and `ASSESSMENT.geographic_scope`** — two optional fields on the motivation-layer primitives (`ELEMENT_PRIMITIVES.md` §7.1, §7.17). `falsifier` is prose recording the observation that would weaken or refute a driver as a standing force; whether it has fired stays a human judgement, not a stored boolean. `geographic_scope` is a list of country codes (ISO 3166-1 alpha-2 or `eu`, reusing the codex jurisdiction vocabulary, `elements/14-codex.md` §1.1) naming where a finding was observed — a region is an explicit list of the countries it comprises, a market is not modelled by this field at all, and the reserved value `[global]` states "everywhere" explicitly, distinct from omitting the field ("not stated"). New `ASSESS-001` (error) validates the value grammar. Purely additive — both fields are optional, no existing field's semantics changed, and an existing `DRIVER` or `ASSESSMENT` file with neither field validates exactly as before. No backfill.
+
 ---
 
 ## [3.7.0] — 2026-08-22
