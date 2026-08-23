@@ -1237,6 +1237,27 @@ rule_codes:
   REQIF-009:
     severity: error
     spec: notations/packages/reqif.md
+  RIF-001:
+    severity: error
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-002:
+    severity: error
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-003:
+    severity: error
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-004:
+    severity: warning
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-005:
+    severity: warning
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-006:
+    severity: warning
+    spec: notations/views/reports/24-rules-in-force.md
+  RIF-007:
+    severity: warning
+    spec: notations/views/reports/24-rules-in-force.md
   RISK-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
