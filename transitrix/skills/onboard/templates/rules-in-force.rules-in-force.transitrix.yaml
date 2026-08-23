@@ -1,0 +1,47 @@
+notation: rules-in-force
+spec_version: "0.1"
+methodology_version: "3.7.0"
+
+# Rules in Force. Spec: notations/views/reports/24-rules-in-force.md
+# Report-config over the codex zone itself (sibling of Compliance Impact and
+# Coverage Metric — same REQUIREMENT.derived_from join key, but reads the
+# source catalogue rather than the obligation x subject overlay). Carries no
+# canonical content — every row is DERIVED from admitted LAW / REGULATION /
+# POLICY / INTERNAL_STANDARD codex artefacts plus REQUIREMENT.derived_from.
+# PRINCIPLE is out of scope by definition (spec §1) — it names no issuing
+# authority and no conformance test.
+
+name: "FILL-ME rules in force"        # required per CONTRACT.md §1.1
+
+view:
+  id: RULES_IN_FORCE-FILL-ME-1
+  name: "FILL-ME — e.g. Rules in force"
+  description: "FILL-ME — which rules, why"
+
+  # What the view scopes over. Either an explicit include list of codex
+  # artefact IDs, or a filter that narrows by jurisdiction / TYPE. If both
+  # are present, include wins and filter (and exclude_paths) are ignored.
+  # Omit both to scope over every LAW / REGULATION / POLICY / INTERNAL_STANDARD
+  # artefact admitted anywhere under codex/.
+  scope:
+    codex:
+      include:
+        - REGULATION-FILL-ME-1
+        # - LAW-FILL-ME-1
+      # filter:
+      #   jurisdiction: [eu, ge]                                        # optional; default — no jurisdiction narrowing
+      #   codex_type: [LAW, REGULATION, POLICY, INTERNAL_STANDARD]      # optional; default — all four (PRINCIPLE is never selectable)
+      # exclude_paths:                                                  # optional — globs relative to codex/ root; ignored when include: is set
+      #   - "templates/**"
+
+  # Grouping of the rendered list. Default: no grouping (a flat, ordered list).
+  grouping:
+    by: "none"          # none | codex_type | jurisdiction
+
+  # Ordering within the (possibly grouped) list.
+  order_by: "id"         # id | name | effective_date | jurisdiction
+
+  # Optional summary knobs.
+  summary:
+    show_requirement_count: true    # per-rule count of REQUIREMENTs drawn from it
+    show_grand_total: true          # total rule count across the whole view
