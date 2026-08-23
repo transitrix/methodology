@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **`DRIVER.falsifier` and `ASSESSMENT.geographic_scope`** — two optional fields on the motivation-layer primitives (`ELEMENT_PRIMITIVES.md` §7.1, §7.17). `falsifier` is prose recording the observation that would weaken or refute a driver as a standing force; whether it has fired stays a human judgement, not a stored boolean. `geographic_scope` is a list of country codes (ISO 3166-1 alpha-2 or `eu`, reusing the codex jurisdiction vocabulary, `elements/14-codex.md` §1.1) naming where a finding was observed — a region is an explicit list of the countries it comprises, a market is not modelled by this field at all, and the reserved value `[global]` states "everywhere" explicitly, distinct from omitting the field ("not stated"). New `ASSESS-001` (error) validates the value grammar. Purely additive — both fields are optional, no existing field's semantics changed, and an existing `DRIVER` or `ASSESSMENT` file with neither field validates exactly as before. No backfill.
+
 ### Changed
 
 - **BREAKING: the document-view source object is named `recipe`, not `template`/`skeleton`, across `@transitrix/document-view-engine` and `@transitrix/document-renderer`.** One object previously carried four names (`.ttrs` "template", the view engine's "skeleton", `template_id`/`template_version`, `parseSkeleton`/`parse-skeleton.mjs`); it is now `recipe` everywhere in both packages — filenames, identifiers, comments, and package descriptions (`parse-template.mjs`/`parse-skeleton.mjs` → `parse-recipe.mjs`, `parseSkeleton` → `parseRecipe`). Decided 2026-08-23 (`communications/tokens.md` §4a); what a recipe produces is a **model-backed document**, never *live*/*living document*. The directive language spec and site copy are unaffected — this change is scoped to the two packages and their tests. (#515)
