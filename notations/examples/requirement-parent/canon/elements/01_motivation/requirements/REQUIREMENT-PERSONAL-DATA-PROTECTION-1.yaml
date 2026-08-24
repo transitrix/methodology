@@ -1,0 +1,20 @@
+notation: requirement
+id: REQUIREMENT-PERSONAL-DATA-PROTECTION-1
+name: "Protect personal data throughout its lifecycle"
+description: "The organisation must protect personal data from collection through deletion, in stakeholder/business language independent of any particular system or solution."
+
+origin: legislative
+level: stakeholder
+kind: functional
+
+zone: canon
+example: true
+admitted_at: "2026-08-24"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-24"
+valid_to: null
