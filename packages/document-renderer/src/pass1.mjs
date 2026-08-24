@@ -1,7 +1,7 @@
 // Pass 1 — the deterministic half of the document renderer.
 //
 // Resolves every model-object reference and every derived figure in a `.ttrs`
-// template. Runs and is testable with NO agent present: nothing in this module
+// recipe. Runs and is testable with NO agent present: nothing in this module
 // calls a model, and nothing in it may. Instruction slots are pass 2's job and
 // are copied through untouched, so an unfilled section is visible in the output
 // rather than silently blank.
@@ -30,7 +30,7 @@
 //   unresolved         ⚑U  TTRS-010  no object with that id in the repository
 //   not-admitted       ⚑A  TTRS-014  it exists, but admission_state isn't active
 //   out-of-validity    ⚑V  TTRS-015  [valid_from, valid_to] misses the render date
-//   no-repository      —   TTRS-011  the template cites canon; none is configured
+//   no-repository      —   TTRS-011  the recipe cites canon; none is configured
 //
 // The worst defect this guards against is not a missing reference — it is a
 // reference that resolves and renders as plainly correct text when the object
@@ -47,7 +47,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 
-import { parseTemplate, templateKindFromFilename } from './parse-template.mjs';
+import { parseRecipe, recipeKindFromFilename } from './parse-recipe.mjs';
 import { buildRepositoryIndex } from './repository.mjs';
 
 // Rendered in place of a reference that did not land in `ok`. The run has already
@@ -72,7 +72,7 @@ const SUSPICION_NOT_COMPUTED = {
     'link suspicion (⚑S) is not computed in pass 1: it is out of scope by the '
     + 'rendered-documents decision, it is derived from commit history rather than '
     + 'read from a file, and CONTRACT.md §16.2 scopes it to REL/claim records '
-    + 'rather than the element references a template cites.',
+    + 'rather than the element references a recipe cites.',
 };
 
 // Field consulted, in order, when a reference names no field path of its own.
@@ -125,12 +125,12 @@ function traverse(entry, fields, index) {
 // needs them in.
 function recordState(node, state, ctx) {
   const { code, label, flag } = STATES[state];
-  ctx.findings.push({ code, state, flag, id: node.id, file: ctx.templateLabel });
+  ctx.findings.push({ code, state, flag, id: node.id, file: ctx.recipeLabel });
   ctx.states[state] = (ctx.states[state] ?? 0) + 1;
   if (ctx.profile === 'strict') {
     ctx.errors.push({
       code,
-      message: `${ctx.templateLabel}: model-object reference "${node.id}" is ${label}`,
+      message: `${ctx.recipeLabel}: model-object reference "${node.id}" is ${label}`,
     });
   }
 }
@@ -142,7 +142,7 @@ function renderReference(node, index, ctx) {
   if (state !== 'ok') {
     recordState(node, state, ctx);
     // In review the value is shown WITH its flag, so a reader sees both what the
-    // template meant and that it is not usable. In strict it never renders as
+    // recipe meant and that it is not usable. In strict it never renders as
     // its bare value — a wrong-but-plausible render is the defect being guarded
     // against, and it is worse than a visibly missing one.
     if (ctx.profile === 'review' && entry) {
@@ -166,7 +166,7 @@ function renderReference(node, index, ctx) {
     : 'does not resolve — the field path is not present on that object';
   ctx.errors.push({
     code: 'TTRS-010',
-    message: `${ctx.templateLabel}: model-object reference "${path}" ${detail}`,
+    message: `${ctx.recipeLabel}: model-object reference "${path}" ${detail}`,
   });
   return UNRESOLVED_MARKER(path);
 }
@@ -233,7 +233,7 @@ function renderFigref(node, ctx, errors) {
   if (number === undefined) {
     errors.push({
       code: 'TTRS-012',
-      message: `figref "${node.name}" names no figure declared earlier in this template`,
+      message: `figref "${node.name}" names no figure declared earlier in this recipe`,
     });
     return UNRESOLVED_MARKER(node.name);
   }
@@ -241,11 +241,11 @@ function renderFigref(node, ctx, errors) {
 }
 
 /**
- * Run pass 1 over a `.ttrs` template.
+ * Run pass 1 over a `.ttrs` recipe.
  *
  * @param {object} options
- * @param {string} options.text            template source
- * @param {string} [options.templatePath]  path the source came from — enables the
+ * @param {string} options.text            recipe source
+ * @param {string} [options.recipePath]    path the source came from — enables the
  *                                         filename/`kind:` cross-check and gives
  *                                         figure paths a base directory
  * @param {string} [options.repositoryRoot] canon root; overrides the header's `canon:`.
@@ -264,13 +264,13 @@ function renderFigref(node, ctx, errors) {
  * @returns {Promise<{ok, markdown, header, instructionSlots, figures, errors, findings, states, suspicion, profile, renderDate}>}
  */
 export async function runPass1({
-  text, templatePath, repositoryRoot, rasterise, profile = 'strict', renderDate,
+  text, recipePath, repositoryRoot, rasterise, profile = 'strict', renderDate,
 } = {}) {
   if (profile !== 'strict' && profile !== 'review') {
     throw new Error(`runPass1: profile must be "strict" or "review", got "${profile}"`);
   }
   const date = renderDate ?? todayIso();
-  const { header, ast, errors } = parseTemplate(text);
+  const { header, ast, errors } = parseRecipe(text);
 
   const emptyResult = (hdr) => ({
     ok: false,
@@ -288,12 +288,12 @@ export async function runPass1({
 
   if (header === null) return emptyResult(null);
 
-  if (templatePath) {
-    const kindFromName = templateKindFromFilename(basename(templatePath));
+  if (recipePath) {
+    const kindFromName = recipeKindFromFilename(basename(recipePath));
     if (kindFromName === undefined) {
       errors.push({
         code: 'TTRS-013',
-        message: `"${templatePath}" is not named <basename>.<kind>.ttrs`,
+        message: `"${recipePath}" is not named <basename>.<kind>.ttrs`,
       });
     } else if (header.kind && kindFromName !== header.kind) {
       errors.push({
@@ -306,36 +306,36 @@ export async function runPass1({
   // The repository is an optional input. Resolve which root we have, if any.
   const explicit = repositoryRoot !== undefined;
   let canonRoot = explicit ? repositoryRoot : header.canon;
-  if (canonRoot && !explicit && templatePath) {
-    canonRoot = resolvePath(join(dirname(templatePath), canonRoot));
+  if (canonRoot && !explicit && recipePath) {
+    canonRoot = resolvePath(join(dirname(recipePath), canonRoot));
   }
 
   // The fourth state, and the only one that is about configuration rather than
   // canon. Named in the same breath as the other three so a caller reading the
   // findings never has to look in two places for "why did nothing resolve".
-  const templateLabel = templatePath ? basename(templatePath) : '<template>';
+  const recipeLabel = recipePath ? basename(recipePath) : '<recipe>';
   const noRepository = !canonRoot && needsRepository(ast);
   if (noRepository) {
     errors.push({
       code: 'TTRS-011',
-      message: `${templateLabel}: template references a model object but no repository is configured`,
+      message: `${recipeLabel}: recipe references a model object but no repository is configured`,
     });
   }
 
   const index = await buildRepositoryIndex(canonRoot);
 
   const ctx = {
-    baseDir: templatePath ? dirname(templatePath) : null,
+    baseDir: recipePath ? dirname(recipePath) : null,
     exists: (p) => existsSync(p),
     rasterise: rasterise ?? null,
     figures: [],
     figureNumbers: new Map(),
     profile,
     renderDate: date,
-    templateLabel,
+    recipeLabel,
     errors,
     findings: noRepository
-      ? [{ code: 'TTRS-011', state: 'no-repository', flag: null, id: null, file: templateLabel }]
+      ? [{ code: 'TTRS-011', state: 'no-repository', flag: null, id: null, file: recipeLabel }]
       : [],
     states: noRepository ? { 'no-repository': 1 } : {},
   };

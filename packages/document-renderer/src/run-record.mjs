@@ -3,7 +3,7 @@
 //
 // What it must carry:
 //
-//   template id and version, repository commit, model id, run timestamp
+//   recipe id and version, repository commit, model id, run timestamp
 //   (ISO 8601), and per instruction slot the instruction text and the text
 //   it produced — every slot, including those that produced nothing.
 //
@@ -23,7 +23,7 @@
 /**
  * @param {object} options
  * @param {object} options.header          pass 1's `header` — carries
- *                                          `template_id` and `template_version`
+ *                                          `recipe_id` and `recipe_version`
  * @param {string} [options.repositoryCommit] the commit the repository was
  *                                          read at; `null` when no repository
  *                                          was configured for this run
@@ -41,11 +41,11 @@ export function buildRunRecord({
   header, repositoryCommit = null, modelId = null, runTimestamp, renderDate, profile, slotResults = [],
 } = {}) {
   if (!header) {
-    throw new TypeError('buildRunRecord: header is required — pass 1 must have parsed the template');
+    throw new TypeError('buildRunRecord: header is required — pass 1 must have parsed the recipe');
   }
   return {
-    template_id: header.template_id,
-    template_version: header.template_version,
+    recipe_id: header.recipe_id,
+    recipe_version: header.recipe_version,
     repository_commit: repositoryCommit,
     model_id: modelId,
     run_timestamp: runTimestamp ?? new Date().toISOString(),
@@ -53,7 +53,7 @@ export function buildRunRecord({
     profile,
     // Every slot pass 1 found, in document order — including one that
     // produced nothing. A slot absent from this list would be indistinguishable
-    // from a slot that was never in the template at all.
+    // from a slot that was never in the recipe at all.
     slots: slotResults.map((s) => ({
       slot_id: s.slotId,
       question: s.question,

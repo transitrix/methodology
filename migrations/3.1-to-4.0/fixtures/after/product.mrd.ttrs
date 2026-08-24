@@ -1,0 +1,12 @@
+---
+document: Market Requirements Document
+kind: mrd
+recipe_id: product.mrd
+recipe_version: "1.0"
+canon: canon
+---
+# {{ CAP-1.title }}
+
+## Scope
+
+This document covers {{ CAP-1.text }}

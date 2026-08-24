@@ -1,7 +1,7 @@
 // Shared syntax primitives of the document directive language.
 //
-// `.ttrs` templates and the view engine's skeleton files are one notation with two
-// current implementations (parse-template.mjs here, parse-skeleton.mjs in
+// `.ttrs` recipes and the view engine's recipe files are one notation with two
+// current implementations (parse-recipe.mjs here, parse-recipe.mjs in
 // @transitrix/document-view-engine). The two differ in which constructs they
 // implement and in how they report errors — but the pieces below are the grammar
 // itself, and were carried as byte-identical copies in both. One notation, one

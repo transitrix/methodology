@@ -4,8 +4,8 @@
 //
 //   * runs with a repository and no agent: references resolved, derived figures
 //     rendered, instruction slots left visibly unresolved;
-//   * runs with NO repository at all for a template that names none — succeeds;
-//   * a template that DOES name one with no repository configured fails by a
+//   * runs with NO repository at all for a recipe that names none — succeeds;
+//   * a recipe that DOES name one with no repository configured fails by a
 //     distinct name (TTRS-011), not folded into unresolved-reference handling;
 //   * an unresolvable reference fails by name (TTRS-010), never renders empty;
 //   * deleting a cited element is a named failure, not a silent gap;
@@ -24,7 +24,7 @@ import { runPass1 } from '../src/pass1.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(HERE, 'fixtures');
 const CANON = join(FIXTURES, 'canon');
-const TEMPLATE_PATH = join(FIXTURES, 'product.mrd.ttrs');
+const RECIPE_PATH = join(FIXTURES, 'product.mrd.ttrs');
 
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
@@ -36,7 +36,7 @@ function checkEqual(actual, expected, msg) {
 }
 function codes(result) { return result.errors.map((e) => e.code); }
 
-const HEADER = 'document: Market Requirements Document\nkind: mrd\ntemplate_id: product.mrd\ntemplate_version: "1.0"\n';
+const HEADER = 'document: Market Requirements Document\nkind: mrd\nrecipe_id: product.mrd\nrecipe_version: "1.0"\n';
 function tpl(body, headerExtra = '') {
   return `---\n${HEADER}${headerExtra}---\n${body}`;
 }
@@ -62,7 +62,7 @@ function tpl(body, headerExtra = '') {
 
   const result = await runPass1({
     text: tpl(body),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: CANON,
   });
 
@@ -98,18 +98,18 @@ function tpl(body, headerExtra = '') {
     text: tpl('Plain prose, no model objects and no derived figures.'),
     repositoryRoot: null,
   });
-  check(result.ok, `no-repository template should succeed trivially, got: ${JSON.stringify(result.errors)}`);
+  check(result.ok, `no-repository recipe should succeed trivially, got: ${JSON.stringify(result.errors)}`);
   check(result.markdown === 'Plain prose, no model objects and no derived figures.',
     'fixed text is copied verbatim');
 }
 
 {
-  // A template with only an instruction slot still needs no repository.
+  // A recipe with only an instruction slot still needs no repository.
   const result = await runPass1({
     text: tpl('{{# instruct scope }}\nquestion: Q?\nsufficient: S.\n{{/ instruct }}'),
     repositoryRoot: null,
   });
-  check(result.ok, 'an instruction-only template needs no repository');
+  check(result.ok, 'an instruction-only recipe needs no repository');
   check(result.instructionSlots.length === 1, 'and its slot is still reported');
 }
 
@@ -117,7 +117,7 @@ function tpl(body, headerExtra = '') {
   // A supplied asset is not derived from the model, so it needs no repository either.
   const result = await runPass1({
     text: tpl('{{ figure assets/rig.svg caption = "The rig" as = rig }}'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: null,
   });
   check(result.ok, `a supplied figure needs no repository, got: ${JSON.stringify(result.errors)}`);
@@ -140,7 +140,7 @@ function tpl(body, headerExtra = '') {
 {
   const result = await runPass1({
     text: tpl('{{ view diagrams/context.blocks.transitrix.yaml }}'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: null,
   });
   check(codes(result).includes('TTRS-011'),
@@ -221,7 +221,7 @@ const ACTIVE = 'id: REQ-23\nname: Active requirement\nvalid_from: "2020-01-01"\n
 await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
   const result = await runPass1({
     text: tpl('Cites {{ REQ-20 }}.'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: canon,
     renderDate: '2026-08-07',
   });
@@ -282,7 +282,7 @@ await withCanon({ 'REQ-23.yaml': ACTIVE }, async (canon) => {
 {
   const result = await runPass1({
     text: tpl('{{ REQ-14 }}'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: null,
   });
   check(result.findings.some((f) => f.state === 'no-repository'),
@@ -331,7 +331,7 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
 {
   const body = 'A {{ REQ-14.title }} and {{ CAP-1 }} and '
     + '{{ view diagrams/context.blocks.transitrix.yaml as = ctx }} and {{ figref ctx }}.';
-  const opts = { text: tpl(body), templatePath: TEMPLATE_PATH, repositoryRoot: CANON };
+  const opts = { text: tpl(body), recipePath: RECIPE_PATH, repositoryRoot: CANON };
   const first = await runPass1(opts);
   const second = await runPass1(opts);
   check(first.ok && second.ok, 'both runs succeed');
@@ -343,7 +343,7 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
 {
   const result = await runPass1({
     text: tpl('{{ view diagrams/missing.transitrix.yaml }}'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: CANON,
   });
   check(codes(result).includes('TTRS-012'), 'a figure source that does not exist fails by name');
@@ -360,7 +360,7 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
   const seen = [];
   const result = await runPass1({
     text: tpl('{{ view diagrams/context.blocks.transitrix.yaml as = ctx }}'),
-    templatePath: TEMPLATE_PATH,
+    recipePath: RECIPE_PATH,
     repositoryRoot: CANON,
     rasterise: ({ kind, name, number }) => { seen.push({ kind, name, number }); return `build/${name}.png`; },
   });
@@ -369,15 +369,15 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
   check(result.markdown === '![Figure 1](build/ctx.png)', 'and its return value is what gets embedded');
 }
 
-// ── The file-driven path: `canon:` resolved relative to the template ────
+// ── The file-driven path: `canon:` resolved relative to the recipe ────
 
 {
   // No `repositoryRoot` argument at all — the header's `canon:` is the repository,
-  // resolved relative to the template's own directory. This is the ordinary route.
-  const text = await readFile(TEMPLATE_PATH, 'utf8');
-  const result = await runPass1({ text, templatePath: TEMPLATE_PATH });
+  // resolved relative to the recipe's own directory. This is the ordinary route.
+  const text = await readFile(RECIPE_PATH, 'utf8');
+  const result = await runPass1({ text, recipePath: RECIPE_PATH });
 
-  check(result.ok, `the committed example template renders clean: ${JSON.stringify(result.errors)}`);
+  check(result.ok, `the committed example recipe renders clean: ${JSON.stringify(result.errors)}`);
   check(result.header.canon === 'canon', 'the header carries the repository path');
   check(result.markdown.startsWith('# Batch release capability'),
     'the heading resolved from the model');
@@ -394,7 +394,7 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
 {
   const result = await runPass1({
     text: tpl('x'),
-    templatePath: join(FIXTURES, 'product.srs.ttrs'),
+    recipePath: join(FIXTURES, 'product.srs.ttrs'),
     repositoryRoot: null,
   });
   check(codes(result).includes('TTRS-013'), 'filename kind disagreeing with the header is flagged');
@@ -403,10 +403,10 @@ await withCanon({ 'REQ-20.yaml': PROPOSED }, async (canon) => {
 {
   const result = await runPass1({
     text: tpl('x'),
-    templatePath: join(FIXTURES, 'product.mrd.trs'),
+    recipePath: join(FIXTURES, 'product.mrd.trs'),
     repositoryRoot: null,
   });
-  check(codes(result).includes('TTRS-013'), 'a .trs near-miss filename is not accepted as a template');
+  check(codes(result).includes('TTRS-013'), 'a .trs near-miss filename is not accepted as a recipe');
 }
 
 if (_failures.length > 0) {

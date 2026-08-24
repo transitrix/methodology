@@ -13,7 +13,7 @@
 //   * an attribution outside the slot's own declared `inputs:` is rejected —
 //     the one part of the filler's account pass 2 can check mechanically;
 //   * pass 2 runs only against the markdown pass 1 produced for the same
-//     template — a slot-count or slot-order mismatch is a caller error.
+//     recipe — a slot-count or slot-order mismatch is a caller error.
 //
 // Run: node packages/document-renderer/tests/test_pass2.mjs
 // Exit: 0 = all pass; 1 = a check failed.

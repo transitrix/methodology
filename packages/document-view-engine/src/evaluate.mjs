@@ -1,6 +1,6 @@
-// Evaluation — resolves a skeleton's derived content against canon (hub epic
-// "Document-view engine: skeleton transclusion, reference flags, render
-// profiles"). Given the AST from parse-skeleton.mjs and an index built by
+// Evaluation — resolves a recipe's derived content against canon (hub epic
+// "Document-view engine: recipe transclusion, reference flags, render
+// profiles"). Given the AST from parse-recipe.mjs and an index built by
 // resolve-references.mjs, this module answers two questions render.mjs (§4)
 // needs answered before it can colour anything:
 //
@@ -32,7 +32,7 @@ import { isValidId } from '../../document-renderer/src/ids.mjs';
 // ── Generic scalar field extraction ─────────────────────────────────────
 // A canon element's own content fields (name/description/level/kind/...)
 // have no fixed schema this engine knows about — `.field` names whatever the
-// skeleton author asks for. Reads one top-level `key: value` scalar; a
+// recipe author asks for. Reads one top-level `key: value` scalar; a
 // nested mapping/list value (e.g. `gate_checks:` with indented children) has
 // no scalar on its own line and is reported as absent, not as its raw YAML.
 

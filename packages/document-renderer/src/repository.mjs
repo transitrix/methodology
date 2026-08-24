@@ -1,12 +1,12 @@
 // Repository index — the deterministic half of what pass 1 resolves against.
 //
-// A template's `canon:` header names a `canon/` directory. This module walks it
+// A recipe's `canon:` header names a `canon/` directory. This module walks it
 // once into an id → object map so every reference in one render pass shares a
 // single index. Top-level scalars only: a model-object reference substitutes a
 // field's text, it does not traverse into nested structure.
 //
 // The repository is an OPTIONAL input. `buildRepositoryIndex(null)` is not an
-// error — it yields an empty index, and pass 1 decides whether the template
+// error — it yields an empty index, and pass 1 decides whether the recipe
 // actually needed one.
 //
 // Own hand-rolled field extraction, no shared cross-package runtime import —

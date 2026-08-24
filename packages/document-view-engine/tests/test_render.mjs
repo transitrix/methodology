@@ -9,7 +9,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { renderDocument } from '../src/render.mjs';
-import { parseSkeleton } from '../src/parse-skeleton.mjs';
+import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
 const _failures = [];
@@ -112,7 +112,7 @@ async function run() {
     checkEqual(review.html, '<span class="dv-ok">ROW-1-name</span>;<span class="dv-ok">ROW-2-name</span>;', 'each renders its children once per selected row, in order');
   }
 
-  // a field-ref outside any each is unreachable via parseSkeleton (rejected
+  // a field-ref outside any each is unreachable via parseRecipe (rejected
   // at parse time) but render.mjs still degrades safely if handed one
   {
     const ast = [{ type: 'field-ref', fields: ['x'] }];
@@ -123,8 +123,8 @@ async function run() {
 
   // figure / figref — numbering, manual/missing borders, forward references
   {
-    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-figs-'));
-    writeFileSync(join(skeletonDir, 'device.png'), 'not a real png, existence is all that matters', 'utf8');
+    const recipeDir = mkdtempSync(join(tmpdir(), 'render-figs-'));
+    writeFileSync(join(recipeDir, 'device.png'), 'not a real png, existence is all that matters', 'utf8');
 
     // a figref before its target (forward reference) still resolves, and
     // numbering is shared across the whole document, not just the ref's own scope
@@ -141,7 +141,7 @@ async function run() {
     ];
     const evaluator = stubEvaluator({});
 
-    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    const review = await renderDocument(ast, evaluator, { profile: 'review', recipeDir });
     check(review.html.includes('<span class="dv-figref">Figure 1</span>'), 'figref: forward reference resolves to the correct number');
     check(review.html.includes('Figure 1 — Device, front'), 'figure: caption includes its assigned number and text');
     check(review.html.includes('dv-illus-manual'), 'figure: an existing file gets the manual border class');
@@ -150,21 +150,21 @@ async function run() {
     check(!review.failed, 'review profile carries no failed flag (only clean fails the build)');
     check(review.html.includes('<span class="dv-unresolved"><sup class="dv-flag">⚑U</sup></span>'), 'figref: an unresolved anchor name renders unresolved, like any other unresolvable reference');
 
-    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', recipeDir });
     check(clean.html.includes('<figure class="dv-clean">'), 'clean profile: figures render without border-class or flag information');
     check(!clean.html.includes('dv-illus'), 'clean profile: no illustration border classes leak through');
     check(clean.failed, 'clean profile: a missing figure file fails the build');
 
-    rmSync(skeletonDir, { recursive: true, force: true });
+    rmSync(recipeDir, { recursive: true, force: true });
   }
 
-  // figure: a relative path with no skeletonDir resolves against "."; an
-  // absolute path is used as-is regardless of skeletonDir
+  // figure: a relative path with no recipeDir resolves against "."; an
+  // absolute path is used as-is regardless of recipeDir
   {
     const ast = [{ type: 'figure', path: '/definitely/not/here.png', caption: null, as: null }];
     const evaluator = stubEvaluator({});
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
-    check(review.html.includes('src="/definitely/not/here.png"'), 'figure: an absolute path is used as-is, ignoring skeletonDir');
+    check(review.html.includes('src="/definitely/not/here.png"'), 'figure: an absolute path is used as-is, ignoring recipeDir');
     check(review.html.includes('dv-illus-missing'), 'figure: a nonexistent absolute path still renders as missing');
   }
 
@@ -207,7 +207,7 @@ async function run() {
   // view (blocks notation) — rendered SVG, missing file, unparseable file,
   // suspect border, and shared numbering with figure
   {
-    const skeletonDir = mkdtempSync(join(tmpdir(), 'render-views-'));
+    const recipeDir = mkdtempSync(join(tmpdir(), 'render-views-'));
     const blocksYaml = [
       'notation: blocks',
       'name: "Test architecture"',
@@ -222,9 +222,9 @@ async function run() {
       '        - id: FRONTEND',
       '          name: "Frontend"',
     ].join('\n');
-    writeFileSync(join(skeletonDir, 'arch.blocks.transitrix.yaml'), blocksYaml, 'utf8');
-    writeFileSync(join(skeletonDir, 'not-blocks.yaml'), 'notation: capability-map\nname: "Not blocks"\n', 'utf8');
-    writeFileSync(join(skeletonDir, 'ignored.png'), 'not a real png, existence is all that matters', 'utf8');
+    writeFileSync(join(recipeDir, 'arch.blocks.transitrix.yaml'), blocksYaml, 'utf8');
+    writeFileSync(join(recipeDir, 'not-blocks.yaml'), 'notation: capability-map\nname: "Not blocks"\n', 'utf8');
+    writeFileSync(join(recipeDir, 'ignored.png'), 'not a real png, existence is all that matters', 'utf8');
 
     const evaluator = {
       ...stubEvaluator({}),
@@ -243,22 +243,22 @@ async function run() {
       { type: 'view', path: 'not-blocks.yaml', as: null, fit: 'width' },
     ];
 
-    const review = await renderDocument(ast, evaluator, { profile: 'review', skeletonDir });
+    const review = await renderDocument(ast, evaluator, { profile: 'review', recipeDir });
     check(review.html.includes('<svg'), 'view: a valid blocks document renders inline SVG');
     check(review.html.includes('dv-illus-suspect'), 'view: a block id resolving suspect gets the suspect border class');
     check(review.html.includes('⚑S'), 'view: the suspect border carries the ⚑S flag as a second channel');
     check(review.html.includes('Figure 2'), 'view: numbering continues the sequence figure started (figure was Figure 1)');
     check((review.html.match(/dv-illus-missing/g) ?? []).length === 2, 'view: a missing file and an unparseable (wrong-notation) file both get the missing border class');
 
-    const clean = await renderDocument(ast, evaluator, { profile: 'clean', skeletonDir });
+    const clean = await renderDocument(ast, evaluator, { profile: 'clean', recipeDir });
     check(clean.html.includes('<figure class="dv-clean'), 'view clean: renders without border-class or flag information');
     check(!clean.html.includes('dv-illus'), 'view clean: no illustration border classes leak through');
     check(clean.failed, 'view clean: a missing/unparseable view file fails the build');
 
-    rmSync(skeletonDir, { recursive: true, force: true });
+    rmSync(recipeDir, { recursive: true, force: true });
   }
 
-  // ── Integration — real parseSkeleton + createEvaluator end to end ──
+  // ── Integration — real parseRecipe + createEvaluator end to end ──
   {
     function writeYaml(dir, name, lines) {
       mkdirSync(dir, { recursive: true });
@@ -277,7 +277,7 @@ async function run() {
       'zone: canon', 'valid_from: "2020-01-01"', 'valid_to: null',
     ]);
 
-    const skeletonText = [
+    const recipeText = [
       '---',
       'document: test doc',
       'canon: ../canon',
@@ -287,8 +287,8 @@ async function run() {
       '{{/ each }}',
     ].join('\n');
 
-    const { header, ast, errors } = parseSkeleton(skeletonText);
-    checkEqual(errors.length, 0, 'the integration skeleton parses cleanly');
+    const { header, ast, errors } = parseRecipe(recipeText);
+    checkEqual(errors.length, 0, 'the integration recipe parses cleanly');
     checkEqual(header.canon, '../canon', 'header canon path parsed');
 
     const evaluator = await createEvaluator(canonRoot);

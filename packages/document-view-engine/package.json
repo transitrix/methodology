@@ -1,7 +1,7 @@
 {
   "name": "@transitrix/document-view-engine",
   "version": "0.0.1",
-  "description": "Skeleton-file parser and renderer for the document-view engine — turns a Markdown skeleton with {{ ... }} transclusion syntax into a header + body AST, resolves it against canon, and renders review/clean HTML. Layers over @transitrix/document-renderer for the notation's shared grammar (see README for current scope).",
+  "description": "Recipe-file parser and renderer for the document-view engine — turns a Markdown recipe with {{ ... }} transclusion syntax into a header + body AST, resolves it against canon, and renders review/clean HTML. Layers over @transitrix/document-renderer for the notation's shared grammar (see README for current scope).",
   "type": "module",
   "engines": {
     "node": ">=20"
