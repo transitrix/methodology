@@ -262,5 +262,5 @@ In DSM the Goals Tree is the G layer of DGCA. Goals are linked to Actions via `a
 - DGCA notation: [`02-dgca.md`](./02-dgca.md)
 - GOAL element field schema: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.2
 - ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)
-- Family selection across DGCA / FGA / Goals / Actions: [`README.md`](../../README.md) § Family selection
+- Family selection across DGCA / Goals / Actions: [`README.md`](../../README.md) § Family selection
 - Per-notation file location catalogue: [`README.md`](../../README.md); notation kit overview: `method/04-notations.md`

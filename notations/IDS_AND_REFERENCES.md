@@ -70,10 +70,10 @@ Elements that get referenced across documents.
 
 | TYPE | What it is | Used by |
 |---|---|---|
-| `DRIVER` | strategic driver — external or internal | DGCA, FGA |
-| `GOAL` | strategic or tactical goal | Goals tree, DGCA, FGA, Action schedule |
+| `DRIVER` | strategic driver — external or internal | DGCA |
+| `GOAL` | strategic or tactical goal | Goals tree, DGCA, Action schedule |
 | `CHANGE` | business transformation (the BDN change layer) | DGCA, Action schedule (`delivers_changes:`) |
-| `ACTION` | implementation-layer work package — Initiative / Programme / Project / Task (ArchiMate Work Package). **Deprecated alias:** `ACTIVITY` (accepted with `ACTION-005` warning until 1.0 cut). | DGCA, FGA, Action schedule, Actions tree, Action Card; see [elements/24-action.md](elements/24-action.md) |
+| `ACTION` | implementation-layer work package — Initiative / Programme / Project / Task (ArchiMate Work Package). **Deprecated alias:** `ACTIVITY` (accepted with `ACTION-005` warning until 1.0 cut). | DGCA, Action schedule, Actions tree, Action Card; see [elements/24-action.md](elements/24-action.md) |
 | `CAPABILITY` | capability — V/H sub-grammar, see §2 | Capability map, Products, Applications, Process map |
 | `PROCESS` | business process | Process landscape map, BPMN |
 | `STEP` | process-flow step — a single node (task / event / gateway) in a `PROCESS` element's `flow`. Canonical-by-containment within its PROCESS (which carries the admission record); addressable by its `STEP-…` id and promoted to a standalone catalogue record only when a second document first references it — a step-level `CHANGE`, a `RULE.applies_to`, an `ACTION` realising it, or an `ASSERTION` (`subject` / `realised_via`). | `PROCESS.flow` (inline, §7.5); promoted to `canon/elements/02_business/steps/`. Schema: [ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.21. |
@@ -197,7 +197,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 
 | TYPE | Uniqueness scope |
 |---|---|
-| `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the DGCA / FGA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |
+| `DRIVER`, `GOAL`, `CHANGE`, `ACTION` | within the DGCA / Goals / Action schedule document that defines them. When referenced from across documents, IDs must also be unique within the organisation's element catalogue (`canon/elements/01_motivation/`, `canon/elements/02_business/`). |
 | `CAPABILITY` | within the capability set (`set_name`, per [`05-capability-map.md`](./views/diagrams/05-capability-map.md) §5). |
 | `PROCESS` | within the organisation's element catalogue (`canon/elements/02_business/`). |
 | `STEP` | within its `PROCESS` element while inline (canonical-by-containment); once promoted, within the organisation's element catalogue (`canon/elements/02_business/steps/`), one file per promoted STEP. The id is unchanged by promotion (no rename). |
@@ -230,7 +230,7 @@ Each TYPE has a scope within which its IDs must be unique. Cross-document refere
 | `LAW`, `REGULATION` | within the organisation's `codex/external/` zone. |
 | `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE` | within the organisation's `codex/internal/` zone. |
 
-Document-level IDs (`DGCA-…`, `FGA-…`, etc.) are unique within the organisation.
+Document-level IDs (`DGCA-…`, etc.) are unique within the organisation.
 
 ---
 
