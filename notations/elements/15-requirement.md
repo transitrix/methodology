@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "1.2"
+version: "1.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-22"
+last_updated: "2026-08-24"
 status: "draft"
 ---
 
@@ -231,6 +231,18 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 
 **Precedent — one convention across `parent` fields.** Same-TYPE inline `parent` is the settled v0.x shape across multi-scale primitives: `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3, capability → process → step decomposition) and `LOCATION.parent` (§7.22, enclosing location). Reusing that shape here keeps the authoring surface uniform; no new pattern is introduced.
 
+### 2.4.1 Decision guide — connecting two `REQUIREMENT` records
+
+Three mechanisms exist for stating how one `REQUIREMENT` relates to another, or to a shipped state of a subject — `parent` above, and two first-class REL kinds registered in [17-relations.md](17-relations.md) §3. They answer different questions; picking the wrong one because two obligations "feel related" is the recurring authoring mistake this guide exists to head off.
+
+| Mechanism | Answers | Shape | Use when | Avoid when |
+|---|---|---|---|---|
+| `parent` (§2.4, above) | Is this obligation a narrower restatement of a broader one? | Inline field, same-TYPE (`REQUIREMENT` → `REQUIREMENT`), timeless | Structural decomposition — a broad obligation split into sub-obligations sharing its source, subject set, or accountability chain | The two obligations are independent, not one narrower than the other (use `depends_on`); or the question is about a release, not another `REQUIREMENT` (use `required_for`) |
+| `depends_on` ([17-relations.md](17-relations.md) §3) | Does obligation A only hold, or only make sense, because obligation B holds? | First-class REL, same-TYPE (`REQUIREMENT` → `REQUIREMENT`), time-aware | A conditional dependency between two peer obligations, neither of which is a restatement of the other | A is actually a narrower form of B (use `parent`); or the link encodes work order — that stays with `ACTION` / `CHANGE` |
+| `required_for` ([17-relations.md](17-relations.md) §3, §3.1) | In which shipped state of the subject must this obligation hold? | First-class REL, cross-TYPE (`REQUIREMENT` → `RELEASE`), time-aware | Scoping one obligation to one release of a `PRODUCT`/`APPLICATION`, so it doesn't read as binding retroactively on every earlier release | The relationship is between two `REQUIREMENT`s, not a release (use `parent` or `depends_on`); or the intent is to record who does the work or by when — that is `ACTION` / `CHANGE`, never a scope statement (§3.1) |
+
+The three never overlap: `parent` and `depends_on` both connect two `REQUIREMENT`s but disagree on whether one is a narrower form of the other; `required_for`'s `to` is always a `RELEASE`, never another `REQUIREMENT`, so it is never a candidate for a REQUIREMENT-to-REQUIREMENT question in the first place.
+
 ### 2.5 `level` — specification tier (ISO/IEC/IEEE 29148 ladder)
 
 `level` records which specification tier the requirement belongs to, per the ISO/IEC/IEEE 29148 StRS → SyRS → SRS ladder:
@@ -311,6 +323,9 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-24, connecting-REQUIREMENT decision guide):**
+- §2.4.1 — a compact decision guide distinguishing `parent`, `depends_on`, and `required_for` at one discoverable point, cross-linked from [17-relations.md](17-relations.md) §3. Documentation only: clarifies existing normative text (§2.4's `parent` decomposition, [17-relations.md](17-relations.md) §3's `depends_on` and `required_for` rows), introduces no new field, TYPE, or validator rule.
 
 **Landed (2026-08-22, PRINCIPLE codex TYPE):**
 - `derived_from`'s permitted TYPEs widened to include `PRINCIPLE` (§2 field table, `REQ-003`) — [14-codex.md](14-codex.md) §2.1 adds `PRINCIPLE` as a codex TYPE for a self-held rule with no stated issuing authority or conformance test. Additive: widening a permitted-values enum accepts strictly more than it did before; no existing REQUIREMENT needs updating.
