@@ -1,0 +1,21 @@
+notation: requirement
+id: REQUIREMENT-DATA-ERASURE-API-1
+name: "Data-erasure API completes a verified request within 30 days"
+description: "The data-erasure API must accept a verified erasure request, propagate deletion to every downstream store it owns, and return a confirmation receipt within 30 days of receipt — the software-tier realisation of the system-level erasure obligation."
+parent: REQUIREMENT-DATA-ERASURE-1
+
+origin: legislative
+level: software
+kind: functional
+
+zone: canon
+example: true
+admitted_at: "2026-08-24"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-24"
+valid_to: null

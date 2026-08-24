@@ -1,0 +1,21 @@
+notation: requirement
+id: REQUIREMENT-DATA-ERASURE-1
+name: "Personal-data erasure on user request within 30 days"
+description: "On request from a data subject, the system must erase personal data within 30 days. The window starts at the time the request is received and verified — one of the ways the stakeholder-level data-protection obligation is realised at the system tier."
+parent: REQUIREMENT-PERSONAL-DATA-PROTECTION-1
+
+origin: legislative
+level: system
+kind: functional
+
+zone: canon
+example: true
+admitted_at: "2026-08-24"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-24"
+valid_to: null
