@@ -35,17 +35,13 @@ name: Public-surface hygiene
 #
 # Two further guards cover the CLAUDE.md/AGENTS.md leak channel:
 #
-# - Filename guard (unconditional): `CLAUDE.md` is gitignored maintainer-local
-#   content and must never be committed anywhere in the tree. This check is
-#   the backstop that catches a force-add or merge regardless of gitignore.
+# - Filename guard (unconditional): root `CLAUDE.md` and `AGENTS.md` are
+#   gitignored maintainer-local content and must never be committed.
 #
 # - Content-scan (conditional on the HYGIENE_INTERNAL_MARKERS secret): every
-#   committed `CLAUDE.md`/`AGENTS.md` in the tree (in practice just root
-#   `AGENTS.md` and the adopter template, since CLAUDE.md is banned above) is
+#   committed nested `CLAUDE.md`/`AGENTS.md` product template is
 #   scanned in full against an internal-markers regex read from the
-#   HYGIENE_INTERNAL_MARKERS repository secret. `AGENTS.md` legitimately
-#   ships committed (adopter template + this repo's own content-clean guide),
-#   so it is checked by content rather than banned by name. Safe no-op when
+#   HYGIENE_INTERNAL_MARKERS repository secret. Safe no-op when
 #   the secret is unset. Same never-print discipline as above — file path
 #   only, never the matched term.
 #
@@ -323,16 +319,16 @@ jobs:
           fi
           echo "OK - full-tree scan clean."
 
-      - name: Filename guard - CLAUDE.md must never be committed
+      - name: Filename guard - root agent instructions must never be committed
         shell: bash
         run: |
           set -euo pipefail
 
-          if git ls-files | grep -qiE '(^|/)CLAUDE\.md$'; then
-            echo "::error::CLAUDE.md is gitignored/maintainer-local — never commit it"
+          if git ls-files | grep -qiE '^(CLAUDE|AGENTS)\.md$'; then
+            echo "::error::root CLAUDE.md/AGENTS.md are gitignored maintainer-local instructions — never commit them"
             exit 1
           fi
-          echo "OK - no CLAUDE.md committed."
+          echo "OK - no root agent instructions committed."
 
       - name: Content-scan committed CLAUDE.md/AGENTS.md for internal markers
         shell: bash
