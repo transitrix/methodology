@@ -164,7 +164,7 @@ DGCA supports toggling individual layers off via `view_config.layers`. The table
 
 **Decision (2026-05-26)** — flat form across all strategy-chain notations (supersedes the earlier "nested for trees, flat for DAGs" heuristic). Reasoning: a single shape removes the spec-vs-implementation gap; tree-shape semantics survive as `parent`-references inside a flat array.
 
-**Decision (2026-06-23)** — FGA merged into DGCA as DGA mode. `fga` / `fgca` are deprecated pre-2026-06 keys; migrate to `dgca` with `view_config.layers.changes: off` for the 3-layer variant.
+**Decision (2026-06-23)** — FGA merged into DGCA as DGA mode. `fga` / `fgca` were the pre-2026-06 keys; `fga` was removed in `4.0.0` (deprecated `2.0.0`, migration recipe under [`migrations/3.1-to-4.0/`](../migrations/3.1-to-4.0/)). Migrate to `dgca` with `view_config.layers.changes: off` for the 3-layer variant.
 
 ## Examples
 

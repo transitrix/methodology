@@ -180,7 +180,7 @@ Mermaid's own docs mark all of these beta — syntax may change.
 
 Unlike Mermaid/PlantUML, a Transitrix notation is not a single fenced block — it's a `*.<short-name>.transitrix.yaml` file with a `notation: <short-name>` header (contract in [CONTRACT.md](CONTRACT.md) §3), rendered by Transitrix Studio. The full index with extensions lives in [README.md](README.md); this table adds the "when to recommend it" framing to match §2–§3 above.
 
-### 4.1 Views — render-able artefacts (16 active, 1 deprecated)
+### 4.1 Views — render-able artefacts (16 active)
 
 | Notation | Short name | What it models | When to recommend it | Status |
 |---|---|---|---|---|
@@ -200,7 +200,6 @@ Unlike Mermaid/PlantUML, a Transitrix notation is not a single fenced block — 
 | Compliance Impact | `compliance-impact` | Report-config (obligation × subject) matrix from `ASSERTION` + `REQUIREMENT` | Show which regulations/obligations are covered by which processes/products | draft |
 | Coverage Metric | `coverage-metric` | Report-config — subjects with zero admitted obligations, per jurisdiction | Measure compliance-modelling coverage gaps | draft |
 | Actions Tree | `actions-tree` | Report-config tree — Initiative → Programme → Project → Task | Strategic delivery portfolio tree | draft |
-| ~~FGA Strategy-to-Execution Chain~~ | `fga` | Superseded by DGCA with `layers.changes: off` | Never — migrate any reference to DGCA/DGA mode | **deprecated** |
 
 For the DGCA / Goals / Action three-way overlap (they sit on the same strategy-to-execution spectrum and are easy to conflate), see the **Family selection** section of [README.md](README.md#family-selection) — it has the full layer-composition and selection-matrix tables; not duplicated here.
 

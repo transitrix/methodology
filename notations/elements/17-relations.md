@@ -209,7 +209,7 @@ Each notation spec declares its relation kinds as either **inline (timeless)** o
 Inline relations that stay timeless in v1 (per the same per-notation declarations):
 
 - BPMN sequence flows ([01-bpmn.md](../views/diagrams/01-bpmn.md)) — within one process flow document.
-- DGCA / FGA / Action schedule cross-layer references (`driver.references_constraint`, etc.) where the model captures *what holds today* rather than the history of changes.
+- DGCA / Action schedule cross-layer references (`driver.references_constraint`, etc.) where the model captures *what holds today* rather than the history of changes.
 
 Each notation that adopts a first-class relation kind:
 

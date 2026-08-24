@@ -48,7 +48,7 @@ No curation pipeline, no promotion gate, no separate knowledge repo. All memory 
 
 | Memory kind | What it captures | Transitrix carrier |
 |---|---|---|
-| Semantic — intent | Goals you are pursuing | DRIVER, GOAL, DGCA / FGA chains |
+| Semantic — intent | Goals you are pursuing | DRIVER, GOAL, DGCA chains |
 | Semantic — contacts | People and organisations | ACTOR, ROLE |
 | Semantic — work | Ongoing projects and capabilities | CAPABILITY, PROJECT, PRODUCT |
 | Episodic — decisions | Why you made a choice | ADRs in `operations/decisions/` |
