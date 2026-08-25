@@ -48,7 +48,7 @@ export const PRESETS = {
     },
     relations: {
       '01_motivation': ['goal_parent', 'stakeholding', 'depends_on'],
-      '02_business': ['parent', 'unit_parent', 'employment'],
+      '02_business': ['parent', 'process_parent', 'unit_parent', 'employment'],
       '05_implementation': ['action_goal'],
     },
   },

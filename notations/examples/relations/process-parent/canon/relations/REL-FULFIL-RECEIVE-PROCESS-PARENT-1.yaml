@@ -1,0 +1,17 @@
+notation: relation
+id: REL-FULFIL-RECEIVE-PROCESS-PARENT-1
+type: process_parent
+from: PROCESS-FULFIL-RECEIVE-1
+to: PROCESS-FULFIL-CHAIN-1
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

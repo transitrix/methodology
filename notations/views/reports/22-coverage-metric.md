@@ -219,7 +219,7 @@ This section is the **render contract**: the deterministic algorithm any conform
 
 A conformant renderer reads exactly these canonical inputs:
 
-1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
+1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…`, a child `PROCESS-…`, or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
 2. **`REQUIREMENT` catalogue** — every `REQUIREMENT-…` file under `canon/elements/01_motivation/requirements/`. Each contributes its `derived_from[]` list of codex artefact IDs. The renderer joins each admitted `ASSERTION`'s `about` to a `REQUIREMENT`, and the `REQUIREMENT`'s `derived_from[]` to the regime axis.
 3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
 4. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.20).
@@ -234,7 +234,7 @@ For each (row, column) cell in the materialised matrix:
 1. **Resolve the column's regime set** — apply in precedence order: (a) if `view.regimes.include` is set, use exactly those artefacts and skip steps b–c; (b) otherwise, start from every codex artefact in the `codex/` zone and exclude any whose file path (relative to `codex/`) matches a pattern in `view.regimes.exclude_paths`; (c) then narrow by `view.regimes.filter` if present. When `view.grouping.columns: jurisdiction`, bucket the resulting set by `jurisdiction:` field (internal codex artefacts → bucket `internal`).
 2. **Resolve the row's subject set** from `view.subjects.*` and `view.grouping.subject_grain`:
    - `product` — one row per `PRODUCT-…`.
-   - `product-stage` — one row per (`PRODUCT-…`, stage). Stages come from process-blueprints; absent a blueprint, a coarse-grain flow grouping is used.
+   - `product-stage` — one row per (`PRODUCT-…`, stage). Stages come from process-blueprints. A `PROCESS-…` column is that process: an assertion covers the row when `realised_via` contains that process or a `STEP` whose home process is that process. A sketch `STAGE-…` column has no `realised_via` join. Absent a blueprint, a coarse-grain flow grouping is used.
    - `task` — one row per (`PRODUCT-…`, `STEP-…`) flow step.
 3. **Count covered (row, column) pairs.** For each cell:
    - Find every admitted `ASSERTION` whose `subject` (or, when finer-grain than `subject_grain`, whose `realised_via[]`) intersects the row's subject set, and whose `about` resolves to a `REQUIREMENT` whose `derived_from[]` intersects the column's regime set.
@@ -268,12 +268,12 @@ Coverage Metric view (this notation — report-config)
   ├── reads   → ASSERTION elements             (16-assertion.md §1; admitted state only by default)
   │     ├── about       → REQUIREMENT
   │     ├── subject     → PRODUCT / PROCESS / CAPABILITY
-  │     ├── realised_via → STEP / CAPABILITY / …  (admitted elements only; not a blueprint STAGE)
+  │     ├── realised_via → STEP / child PROCESS / CAPABILITY / …  (admitted elements only; not a sketch STAGE)
   │     └── status      → compliant | partial | non_compliant | under_review | n_a
   ├── reads   → REQUIREMENT.derived_from[]      (15-requirement.md — the regime-join key)
   ├── reads   → codex artefacts                 (14-codex.md — the regime axis; jurisdiction grouping)
   ├── reads   → PROCESS.flow.steps[]            (ELEMENT_PRIMITIVES.md §7.5 / §7.20 — the task grain)
-  └── reads   → process-blueprint stages[]      (13-process-blueprint.md — view grouping axis when present; not a realised_via TYPE)
+  └── reads   → process-blueprint stages[]      (13-process-blueprint.md — view grouping; PROCESS- columns join per 13 §5.2; STAGE- columns do not)
 ```
 
 Pairs with the **Compliance Impact view** ([21-compliance-impact.md](./21-compliance-impact.md)) — the first read of the same canonical inputs, rendered as the obligation × subject matrix with cell statuses. The Coverage Metric view is the second read: the per-regime count of dark cells, classified into modelling gaps and modelled facts.
@@ -307,7 +307,7 @@ The shared header rules `HDR-001..004` ([CONTRACT.md](../../CONTRACT.md) §2) ap
 - REQUIREMENT element schema (the obligation; the `derived_from` link to a codex regime): [15-requirement.md](../../elements/15-requirement.md).
 - Codex artefacts and the `jurisdiction:` field: [14-codex.md](../../elements/14-codex.md).
 - Process flow and the STEP grain: [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5 (process flow), §7.20 (standalone STEP, promotion mechanic).
-- Process-blueprint stages: [13-process-blueprint.md](../diagrams/13-process-blueprint.md).
+- Process-blueprint stages: [13-process-blueprint.md](../diagrams/13-process-blueprint.md) (`PROCESS-…` columns join via `realised_via`; sketch `STAGE-…` columns do not).
 - Compliance Impact — the sibling report-config view (same canonical inputs, different read): [21-compliance-impact.md](./21-compliance-impact.md).
 - ID grammar and TYPE registry: [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) (`COVERAGE_METRIC` registered in §3.2).
 - Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1.

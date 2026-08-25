@@ -32,7 +32,7 @@ A REQUIREMENT records *what the organisation is obliged to do*. An Assertion rec
                             valid_from / valid_to
 ```
 
-`realised_via[]` names the **elements that technically deliver the requirement** — capabilities, processes, internal standards, applications. These are factual references, not claims; the claim itself is the `status` field. Status and evidence are mutable over the assertion's lifecycle; the realisation set may also change (a process is replaced, a capability matures). Where an obligation lands not on the whole subject but on a **specific task**, the bearing flow step is named here — the task-level idiom in §2.1.
+`realised_via[]` names the **elements that technically deliver the requirement** — capabilities, processes, internal standards, applications. These are factual references, not claims; the claim itself is the `status` field. Status and evidence are mutable over the assertion's lifecycle; the realisation set may also change (a process is replaced, a capability matures). Where an obligation lands not on the whole subject but on a **specific task or phase**, the bearing flow step or child process is named here — the task- and phase-level idiom in §2.1.
 
 Assertions are about **REQUIREMENTs only.** CONSTRAINT compliance — the parallel question "is the organisation respecting the restriction?" — is **out of scope for v1.** A CONSTRAINT is either honoured or violated, and that is currently modelled inline on the CONSTRAINT artefact or via downstream tooling, not via an ASSERTION. (See §5.)
 
@@ -85,7 +85,7 @@ valid_to: null
 | `about` | yes | string | Typed ID of the REQUIREMENT this assertion is about. The validator resolves it (`ASSERT-002`). |
 | `subject` | yes | string | Exactly one typed ID of the element that owns the claim. TYPE MUST be one of `PRODUCT`, `PROCESS`, `CAPABILITY` (`ASSERT-003`). |
 | `subject_release` | no | string | A `RELEASE-…` typed ID ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) narrowing the claim to **one release of `subject`** rather than the subject as a whole. The named release's `of` MUST equal `subject` (`ASSERT-010`). Absent ⇒ the claim is about the subject as such, exactly as before this field existed. See §2.4. |
-| `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. MAY name a process-flow `STEP-…` to localise the claim to a specific task (§2.1); a process-blueprint `STAGE-…` id is document-local and MUST NOT appear here (`ASSERT-004`); referencing a step is a cross-document reference that promotes it (`ASSERT-009`; [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20). |
+| `realised_via` | no | list | Typed IDs of elements that technically realise the requirement for the subject. Any number; the validator resolves each (`ASSERT-004`). No TYPE restriction. MAY name a process-flow `STEP-…` to localise the claim to a specific task, or a child `PROCESS-…` to localise it to a value-chain phase (§2.1); a process-blueprint `STAGE-…` id is document-local and MUST NOT appear here (`ASSERT-004`); referencing a step is a cross-document reference that promotes it (`ASSERT-009`; [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20). |
 | `status` | yes | string | One of: `compliant`, `partial`, `non_compliant`, `under_review`, `n_a`. See §3 below. |
 | `evidence` | no | list | Hybrid array of evidence entries; each carries a `kind` and kind-specific fields. See §4. |
 | `assessed_at` | no | string | Date the current status was determined — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
@@ -100,9 +100,9 @@ valid_to: null
 
 ---
 
-## 2.1 Task-level compliance impact
+## 2.1 Task- and phase-level compliance impact
 
-A REQUIREMENT often lands not on a whole subject but on a **specific task within a process** — "this obligation impacts *this step*". The canonical way to express that keeps the compliance **subject at the established grain** (`PRODUCT` / `PROCESS` / `CAPABILITY`, `ASSERT-003`) and names the **bearing flow step(s)** in `realised_via`:
+A REQUIREMENT often lands not on a whole subject but on a **specific task or phase within a process** — "this obligation impacts *this step*" or "*this phase*". The canonical way to express that keeps the compliance **subject at the established grain** (`PRODUCT` / `PROCESS` / `CAPABILITY`, `ASSERT-003`) and names the **bearing element(s)** in `realised_via`:
 
 ```yaml
 about: REQUIREMENT-RIGHT-TO-ERASURE-1
@@ -114,7 +114,19 @@ status: compliant
 
 Read it as: the **PROCESS bears** the obligation (it is the unit of compliance), and the named **STEP is where in the process the obligation is realised** — and therefore the step that a change to the obligation impacts. The same idiom extends to any **resolvable** bearing element (an `ACTION`, an `APPLICATION`); `realised_via` carries no TYPE restriction, but every id must still resolve under `ASSERT-004`.
 
-A process-blueprint stage is **not** such an element. Stages are document-local labels ([13-process-blueprint.md](../views/diagrams/13-process-blueprint.md), Element-lifecycle): they are not a registered TYPE, they are not promoted, and a `STAGE-…` id in `realised_via` fails `ASSERT-004`. How a coarser value-chain phase becomes addressable is a separate decision; it is not this idiom.
+**Phase-level impact uses a child `PROCESS`.** A value-chain phase — larger than a BPMN task, smaller than the enclosing process — *is* a `PROCESS`, related to its parent by `process_parent` ([17-relations.md](17-relations.md) §3). Name that child in `realised_via` when the obligation is owned by the parent (or a `PRODUCT`) and realised in the phase:
+
+```yaml
+about: REQUIREMENT-RIGHT-TO-ERASURE-1
+subject: PROCESS-USER-DATA-PURGE-1         # the value chain bears the obligation
+realised_via:
+  - PROCESS-USER-DATA-PURGE-ERASURE-1      # the child process — the phase
+status: compliant
+```
+
+If the obligation is owned by the phase itself, `subject` is that child `PROCESS` — already legal under `ASSERT-003`; no enum change. `ASSERT-003` stays `{PRODUCT, PROCESS, CAPABILITY}`.
+
+A process-blueprint stage is **not** such an element. Sketch `STAGE-…` labels are document-local ([13-process-blueprint.md](../views/diagrams/13-process-blueprint.md) §5.2): they are not a registered TYPE, they are not promoted, and a `STAGE-…` id in `realised_via` fails `ASSERT-004`. A blueprint column whose `id` is an admitted `PROCESS-…` *is* that process; join it by naming the process (or a `STEP` whose home process is that process) in `realised_via`, never the sketch prefix.
 
 **This is the decided idiom.** The alternative — making a process step (or `ACTIVITY`) an `ASSERTION.subject` directly — was **considered and rejected**: it would fragment the unit of compliance into many sub-process subjects, grow the `ASSERT-003` subject enum, and break tooling that assumes the `{PRODUCT, PROCESS, CAPABILITY}` subject grain. The process-with-bearing-steps idiom localises impact **without** moving the compliance unit, and is fully backward-compatible — existing assertions are unaffected and `ASSERT-003` is unchanged.
 
@@ -244,7 +256,7 @@ Each entry in `evidence[]` carries a `kind` plus kind-specific fields. Mix freel
 | `ASSERT-DEAD-LINK-001` | warning | The assertion's `subject` or any entry in `realised_via` resolves to a primitive whose `valid_to` is set and is earlier than today — the assertion is bound to a currently-retired element. The rule is `warning` rather than `error` because an assertion MAY be intentionally preserved as a historical record after one of its bound elements retires (the claim itself remains true for the period it covered). Distinct from `LIFECYCLE-004` ([CONTRACT.md](../CONTRACT.md) §7.3), which checks the referenced primitive's `valid_to` against the *referrer's* `valid_from` rather than against today. |
 | `PROCESS-COVERAGE-001` | warning | A `PROCESS` element has no admitted `ASSERTION` with it as `subject` — the process's regulatory obligations are entirely unmodelled. An admitted assertion with `status: n_a` counts as coverage (the model has considered the regime against the process and recorded an explicit exclusion); only the total absence of any assertion triggers this warning. Cross-cutting — requires the full assertions catalogue to evaluate. Indexed in [CONTRACT.md](../CONTRACT.md) §8; relates to the coverage read in [22-coverage-metric.md](../views/reports/22-coverage-metric.md). |
 
-**`ASSERT-003` is deliberately unchanged.** Task-level impact (§2.1) is expressed through `realised_via`, not by widening the `subject` enum — the subject grain stays `{PRODUCT, PROCESS, CAPABILITY}`, and every assertion authored before this addition remains valid. The only addition is `ASSERT-009`, a warning that never fires on assertions without step references. Release scoping (§2.4) leaves it unchanged for the same reason: `subject_release` qualifies the subject rather than widening what may be one.
+**`ASSERT-003` is deliberately unchanged.** Task- and phase-level impact (§2.1) is expressed through `realised_via`, not by widening the `subject` enum — the subject grain stays `{PRODUCT, PROCESS, CAPABILITY}`, and every assertion authored before this addition remains valid. A phase that owns the obligation *is* a `PROCESS` subject; a phase that realises an obligation owned by its parent is named in `realised_via`. The only addition from the task-level idiom is `ASSERT-009`, a warning that never fires on assertions without step references. Release scoping (§2.4) leaves `ASSERT-003` unchanged for the same reason: `subject_release` qualifies the subject rather than widening what may be one.
 
 **`ASSERT-010` reads two conditions, not one.** The rule as scoped named only the mismatched-`of` case; an unresolvable `subject_release` is folded into the same code rather than left unchecked, because a mistyped release id would otherwise pass validation silently and every other cross-reference field in core carries a resolution check (`ASSERT-002`, `RELEASE-002`, `BSV-003`, `TSVC-003`, `REQ-SERVES-001`). One code covers both because the mismatch check cannot run at all until the reference resolves.
 
@@ -271,7 +283,7 @@ A typical naming convention encodes the subject + requirement in the middle segm
 
 **Landed (v0.2, 2026-08-07):** the optional `subject_release` qualifier (§2.4) and `ASSERT-010`. Purely additive — `subject` and `ASSERT-003` are unchanged, no field became required, and a repository that never writes the qualifier validates exactly as it did before. A worked fixture pair lives at [`../examples/release-qualifiers/`](../examples/release-qualifiers/).
 
-**Clarified (2026-08-25):** §2.1 no longer lists a process-blueprint stage as a `realised_via` target. Stages are document-local; a `STAGE-…` id does not resolve under `ASSERT-004`. The decided process-local idiom is `STEP`. How a coarser value-chain phase becomes addressable is out of scope for this clarification.
+**Clarified (2026-08-25):** §2.1 no longer lists a process-blueprint stage as a `realised_via` target. Sketch `STAGE-…` ids are document-local and do not resolve under `ASSERT-004`. The decided process-local idiom is `STEP`. A coarser value-chain phase is a child `PROCESS` named in `realised_via` (or used as `subject` when the phase owns the obligation), related by `process_parent`.
 
 Out of scope for this initial schema:
 

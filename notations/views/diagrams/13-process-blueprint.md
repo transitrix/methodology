@@ -1,6 +1,6 @@
 ---
 notation: "Process Blueprint"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
 last_updated: "2026-08-25"
 status: "draft"
@@ -51,7 +51,7 @@ process_blueprint:
 
 This notation's inline arrays split into two groups for lifecycle purposes:
 
-- **Document-local arrays** — `stages[]`, `systems[]`, `actors[]`, `equipment[]`. These entries are scoped to the blueprint document and do not carry their own lifecycle. `EQUIPMENT-…` IDs are notation-local in v0.1 (promotable to an org-wide catalogue without renaming — the IDs already conform to the canonical grammar). When a `systems[]` or `actors[]` entry references a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file.
+- **Document-local arrays** — sketch `stages[]` entries (`STAGE-…`), `systems[]`, `actors[]`, `equipment[]`. Sketch stage entries are scoped to the blueprint document and do not carry their own lifecycle. `EQUIPMENT-…` IDs are notation-local in v0.1 (promotable to an org-wide catalogue without renaming — the IDs already conform to the canonical grammar). When a `systems[]` or `actors[]` entry references a registered element (an `APPLICATION-…` or `ROLE-…`), the lifecycle lives on that target's canonical file. When a `stages[]` entry's `id` is an admitted `PROCESS-…`, the column *is* that process; lifecycle lives on the process element, not on the view.
 - **Canonical-TYPE entries** — `business_objects[]` (`BUSINESS_OBJECT`). `BUSINESS_OBJECT` has an org-wide catalogue at `canon/elements/02_business/business-objects/` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.1, ADR 2026-06-08). Entries with a `BUSINESS_OBJECT-…` `id` reference that catalogue and carry the canonical primitive lifecycle (`valid_from` / `valid_to`) per [CONTRACT.md](../../CONTRACT.md) §7. Inline entries without an `id` are free-form labels (document-local only).
 - **Retired** — `information_entities[]` (`INFORMATION_ENTITY`). Use `business_objects[]` instead (renamed for ArchiMate alignment). The alias window closed at 1.0.0; validators emit `BOBJ-D001` (error) for this field. See [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §6 and the migration recipe in `migrations/0.5-to-0.6/`.
 
@@ -71,7 +71,7 @@ The blueprint is a single, wide diagram. The horizontal axis is the value chain 
 - **Information entities** — the data, documents, and records produced or consumed.
 - **Compliance** *(opt-in, derived)* — the regulatory obligations that bind each stage, computed from the assertion + requirement + codex graph. No compliance data is stored in the blueprint; the lane is a read-only projection. See §5.4.
 
-Each stage also carries an explicit **goal** (what the stage should achieve) and a **result** (the deliverable that exits the stage).
+Each **sketch** stage (`STAGE-…`) also carries an explicit **goal** (what the stage should achieve) and a **result** (the deliverable that exits the stage) on the view. A **catalogued** column (`PROCESS-…`) derives those sentences from the process element; they MUST NOT be restated on the view.
 
 The blueprint is a **view**, not a flow. It does not describe procedural sequencing within a stage — that is the job of BPMN. It does not decompose strategy — that is the job of DGCA / Goals. It is the operational blueprint of a value chain at a glance.
 
@@ -105,7 +105,7 @@ Examples:
 
 ## 4. Top-level structure — flat form
 
-Process Blueprint uses the **flat form**. The document carries a single `process_blueprint:` root key with parallel arrays: `stages[]` and one array per aspect category (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`). Each aspect entry references the stages it appears in via a `stages: [STAGE-…]` cross-reference field.
+Process Blueprint uses the **flat form**. The document carries a single `process_blueprint:` root key with parallel arrays: `stages[]` and one array per aspect category (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`). Each aspect entry references the columns it appears in via a `stages: […]` cross-reference field (sketch `STAGE-…` ids or catalogued `PROCESS-…` ids, matching `stages[].id`).
 
 This shape matches the blueprint's semantic graph: a single system or actor typically spans several stages (one Order Management application is used in Receive, Validate, and Update Inventory); a nested form would force the same element to be duplicated in every stage it touches. The flat form expresses the M:N relation directly. The family-wide rule "nested for trees, flat for DAGs" — set on 2026-05-20 alongside the DGCA schema — places Process Blueprint on the flat side. See [README.md](../../README.md) § Family selection.
 
@@ -163,7 +163,7 @@ process_blueprint:
       stages: [STAGE-3]
 ```
 
-A complete example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](../../examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml).
+A complete sketch example: [`examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml`](../../examples/process-blueprint/order-fulfilment.process-blueprint.transitrix.yaml). A catalogued-column example (`PROCESS-…` ids plus `process_parent` RELs): [`examples/relations/process-parent/`](../../examples/relations/process-parent/).
 
 ---
 
@@ -196,12 +196,19 @@ The four authored aspect arrays are each optional individually; a blueprint MAY 
 
 A stage is a column in the rendered blueprint. The array order defines the left-to-right rendering order. A stage MUST NOT reference predecessor stages — blueprints are not flow diagrams; sequencing comes from array order alone.
 
+`stages[].id` accepts either:
+
+- an admitted `PROCESS-…` — the column *is* that process. `name`, `goal`, and `result` are **derived** from the element ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5) and MUST NOT be restated on the view (`BP-013`). The id MUST resolve to an admitted `PROCESS` (`BP-012`). Listing a process as a column is **not** composition; composition is the `process_parent` REL ([17-relations.md](../../elements/17-relations.md) §3). A validator warns (`BP-014`) when `process_blueprint.process` is set, a column is a `PROCESS-…`, and no in-effect `process_parent` links that column to that parent — warning, not error, so a sketch overlay and a shared subprocess remain well-formed.
+- a document-local `STAGE-…` — a sketch column, unique within the document, not a registered TYPE, not a `realised_via` target. Sketch entries keep required `name`, `goal`, and `result` on the view (`BP-005`). `STAGE` is **not** registered and is not promoted.
+
+Existing `STAGE-` only blueprints keep validating. `PROCESS-` columns are additive.
+
 | Field | Required | Description |
 |---|---|---|
-| `id` | yes | `STAGE-[<middle>-]<INTEGER>`; unique within the document |
-| `name` | yes | stage name as shown in the rendered box header |
-| `goal` | yes | what this stage should achieve, in one short sentence |
-| `result` | yes | the deliverable that exits this stage, in one short sentence |
+| `id` | yes | Unique within the document. Either `STAGE-[<middle>-]<INTEGER>` (sketch) or `PROCESS-[<middle>-]<INTEGER>` (catalogued column). |
+| `name` | sketch only | Stage name as shown in the rendered box header. Required on a `STAGE-…` entry; forbidden on a `PROCESS-…` entry (derived from the process). |
+| `goal` | sketch only | What this stage should achieve, in one short sentence. Required on a `STAGE-…` entry; forbidden on a `PROCESS-…` entry (derived from `PROCESS.goal` when present). |
+| `result` | sketch only | The deliverable that exits this stage, in one short sentence. Required on a `STAGE-…` entry; forbidden on a `PROCESS-…` entry (derived from `PROCESS.result` when present). |
 | `description` | no | one-paragraph elaboration |
 
 ### 5.3 Aspect entries — `systems[]`, `actors[]`, `equipment[]`, `information_entities[]`
@@ -212,7 +219,7 @@ All four aspect arrays share the same entry shape. Each entry is an object with 
 |---|---|---|
 | `id` | no | cross-reference to an element in an organisational catalogue. When present, MUST follow the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. The TYPE prefix is fixed per aspect category — see the table below. |
 | `name` | yes | label as shown in the rendered aspect box |
-| `stages` | yes | non-empty array of `STAGE-…` IDs naming every stage this aspect appears in. The renderer draws the entry inside each listed stage's aspect box. |
+| `stages` | yes | non-empty array of column ids naming every stage this aspect appears in — each id MUST be a `stages[].id` already declared (`STAGE-…` or `PROCESS-…`). The renderer draws the entry inside each listed stage's aspect box. |
 | `description` | no | one-paragraph elaboration |
 
 #### TYPE prefix per aspect category
@@ -241,14 +248,16 @@ Decision record: the compliance-impact-as-blueprint-lane architecture decision.
 
 #### Derivation formula
 
-For each stage the compliance lane is computed as follows:
+For each column the compliance lane is computed as follows:
 
-1. Collect every `ASSERTION` whose `realised_via` names an admitted canonical element that localises the claim. A process-blueprint `STAGE-…` id is document-local and **MUST NOT** appear in `realised_via` — it does not resolve (`ASSERT-004`; [16-assertion.md](../../elements/16-assertion.md) §2.1). The decided process-local target is a `STEP`. Mapping a `STEP` (or a future phase element) onto a blueprint column is not specified in this notation; a renderer MUST NOT invent that correspondence.
+1. Collect every `ASSERTION` that pins to the column:
+   - **`PROCESS-…` column.** The assertion pins when `realised_via` contains that process, or a `STEP` whose home process is that process (contained in `PROCESS.flow` or promoted). The column *is* the process; there is no second join key.
+   - **`STAGE-…` sketch column.** A sketch id is document-local and **MUST NOT** appear in `realised_via` — it does not resolve (`ASSERT-004`; [16-assertion.md](../../elements/16-assertion.md) §2.1). Sketch columns have no `realised_via` join. The decided process-local target remains a `STEP`; a coarser phase is a child `PROCESS`, not a `STAGE` TYPE.
 2. Lift each `ASSERTION` to its `REQUIREMENT` via `ASSERTION.about`.
 3. Lift each `REQUIREMENT` to its source law / regulation via `REQUIREMENT.derived_from` → codex artefact.
-4. Group the impacting law IDs under the stage only where a specified correspondence places the assertion's realised element in that column. Until that correspondence exists, the lane MAY still render, but it MUST NOT treat `STAGE-…` as a join key.
+4. Group the impacting law IDs under the column.
 
-The lane therefore remains a **derived** projection of the assertion + requirement + codex graph: no compliance data is written into the blueprint. Jurisdiction filtering (via `REQUIREMENT.derived_from` → codex `jurisdiction` field) narrows the lane to one or more regimes. Stage-column localisation is a later decision, not a silent renderer convention.
+The lane therefore remains a **derived** projection of the assertion + requirement + codex graph: no compliance data is written into the blueprint. Jurisdiction filtering (via `REQUIREMENT.derived_from` → codex `jurisdiction` field) narrows the lane to one or more regimes. A renderer MUST NOT treat a sketch `STAGE-…` id as a join key.
 
 #### Cell decoration — three orthogonal signals
 
@@ -309,13 +318,16 @@ lane_config:
 | `BP-002` | error | `process_blueprint.id` missing or does not match `PROCESS_BLUEPRINT-[<middle>-]<INTEGER>`. |
 | `BP-003` | error | `process_blueprint.name` missing or empty. |
 | `BP-004` | error | `process_blueprint.stages` missing or empty. |
-| `BP-005` | error | every entry in `stages[]` must have non-empty `id`, `name`, `goal`, and `result`. |
-| `BP-006` | error | stage IDs must be unique within the document and must match `STAGE-[<middle>-]<INTEGER>`. |
-| `BP-007` | error | every aspect entry (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`) must have a non-empty `name` and a non-empty `stages: [STAGE-…]` array. |
-| `BP-008` | error | every ID in any aspect entry's `stages: [...]` must reference a stage declared in `stages[]`. |
+| `BP-005` | error | every `STAGE-…` entry in `stages[]` must have non-empty `name`, `goal`, and `result`. Does not apply to `PROCESS-…` columns (`BP-013`). |
+| `BP-006` | error | stage IDs must be unique within the document; each must match `STAGE-[<middle>-]<INTEGER>` or `PROCESS-[<middle>-]<INTEGER>`. |
+| `BP-007` | error | every aspect entry (`systems[]`, `actors[]`, `equipment[]`, `information_entities[]`) must have a non-empty `name` and a non-empty `stages: […]` array of declared column ids (`STAGE-…` or `PROCESS-…`). |
+| `BP-008` | error | every ID in any aspect entry's `stages: [...]` must reference a column declared in `stages[]`. |
 | `BP-009` | error | if an aspect entry has an `id`, the ID must match the canonical grammar `<TYPE>-[<middle>-]<INTEGER>`. |
 | `BP-010` | error | for `systems[]`, an entry's `id` (when present) MUST use the `APPLICATION-` prefix. For `actors[]`, the prefix MUST be `ROLE-`. For `equipment[]`, the prefix MUST be `EQUIPMENT-`. For `business_objects[]`, the prefix MUST be `BUSINESS_OBJECT-`. For `information_entities[]` *(deprecated)*, the prefix MUST be `INFORMATION_ENTITY-`. |
 | `BP-011` | warn | a stage with no aspect entries pointing at it from any of the four aspect arrays is structurally empty and SHOULD be reviewed. |
+| `BP-012` | error | a `PROCESS-…` column `id` must resolve to an admitted `PROCESS` element. |
+| `BP-013` | error | a `PROCESS-…` column MUST NOT restate `name`, `goal`, or `result` on the view — those fields are derived from the process element. |
+| `BP-014` | warning | `process_blueprint.process` is set, a column `id` is a `PROCESS-…`, and no in-effect `process_parent` REL links that column (child) to that parent. Warning rather than error: view membership is not composition; a shared subprocess and a sketch overlay remain well-formed. |
 | `JURISDICTION-CONSISTENCY-001` | warning | a jurisdiction code listed in `lane_config.compliance_filter.jurisdictions` does not match the `jurisdiction` field of any codex source resolved in scope for this blueprint — the filter references an unrecognised or out-of-scope jurisdiction code, so the compliance lane will silently return no obligations for that code. Cross-cutting — requires the codex catalogue to evaluate. Indexed in [CONTRACT.md](../../CONTRACT.md) §8. |
 
 ---
@@ -327,7 +339,7 @@ The blueprint renders to a wide grid of nested boxes via the **shared diagram en
 A renderer that consumes this notation MUST:
 
 - Lay out `stages[]` as a horizontal sequence of stage boxes in array order, left to right.
-- Render each stage box with a header showing the stage's `name`, and a body containing two fixed labelled rows for `goal` and `result`.
+- Render each stage box with a header showing the column's display name, and a body containing two fixed labelled rows for `goal` and `result`. For a `STAGE-…` column those three strings are authored on the view. For a `PROCESS-…` column they are derived from the process element's `name`, `goal`, and `result` (empty labelled rows when the optional fields are omitted).
 - Under each stage's goal/result rows, render one labelled sub-box per non-empty aspect category present anywhere in the document, in the order `systems`, `actors`, `equipment`, `information_entities`. The same set of aspect rows MUST appear in every stage box, so that aspects align horizontally across stages — empty rows render as empty placeholders.
 - Render each aspect entry inside every stage's matching aspect sub-box whenever that stage's ID appears in the entry's `stages: [...]` list. An entry that spans `N` consecutive stages MAY render as a single horizontal pill that visually spans those stages; an entry that spans non-consecutive stages MUST render as one separate label per listed stage.
 - Show each aspect entry's `name` as the visible label. When `id` is present, the renderer SHOULD expose it on hover or in a secondary detail line.
@@ -349,6 +361,7 @@ A renderer MAY:
 - Export the blueprint to image formats (SVG / PNG).
 - Highlight a single stage on selection, dimming the rest.
 - Cross-link aspect IDs into their source catalogues (`APPLICATION-…` into the applications catalogue, `ROLE-…` into the roles list).
+- Cross-link a `PROCESS-…` column header into that process's catalogue record.
 
 What the renderer MUST NOT do:
 

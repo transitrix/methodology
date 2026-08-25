@@ -61,7 +61,7 @@ The view handles both **product-compliance** scenarios (a law obliges a PRODUCT,
 The renderer materialises that matrix from canon. Nothing is stored twice:
 
 - The fact that *a subject is obliged by a requirement* is recorded once — on an `ASSERTION` (its `subject` + `about`).
-- The fact that *the obligation lands on a specific task* of the subject is recorded once — on the same `ASSERTION` (its `realised_via`, naming a process-flow `STEP`; see [16-assertion.md](../../elements/16-assertion.md) §2.1, the decided task-level idiom). A process-blueprint `STAGE-…` id is document-local and is not a `realised_via` target.
+- The fact that *the obligation lands on a specific task or phase* of the subject is recorded once — on the same `ASSERTION` (its `realised_via`, naming a process-flow `STEP` or a child `PROCESS`; see [16-assertion.md](../../elements/16-assertion.md) §2.1). A process-blueprint `STAGE-…` id is document-local and is not a `realised_via` target.
 - The fact that *the subject is composed of stages and tasks at all* is recorded once — on the process-blueprint and on the `PROCESS` element's flow.
 - The compliance status of each pair is recorded once — on the `ASSERTION.status` field.
 
@@ -89,6 +89,7 @@ For the canonical authoring of an obligation, the claim that a subject realises 
 | The obligation itself (what the rule requires). | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)) at `canon/elements/01_motivation/requirements/REQUIREMENT-<…>.yaml`. |
 | The claim that a subject satisfies (or partially / does not satisfy) a requirement. | `ASSERTION` element ([16-assertion.md](../../elements/16-assertion.md) §1) at `canon/assertions/ASSERTION-<…>.yaml`. |
 | The specific flow step that bears the obligation. | `ASSERTION.realised_via: [STEP-…]` ([16-assertion.md](../../elements/16-assertion.md) §2.1, the task-level idiom). The named step is promoted to a standalone `STEP` element under the canonical-by-containment + promotion rule. |
+| The value-chain phase that bears the obligation. | `ASSERTION.realised_via: [PROCESS-…]` naming a child process ([16-assertion.md](../../elements/16-assertion.md) §2.1). Composition is `process_parent`, not the blueprint column list. |
 | The process whose stages / tasks the view displays. | `PROCESS` element flow ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5) and/or process-blueprint ([13-process-blueprint.md](../diagrams/13-process-blueprint.md)). |
 | The status of a (subject, obligation) pair. | `ASSERTION.status` ([16-assertion.md](../../elements/16-assertion.md) §3). |
 
@@ -211,7 +212,7 @@ This section is the **render contract**: the deterministic algorithm any conform
 
 A conformant renderer reads exactly these canonical inputs:
 
-1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.status_display.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
+1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.status_display.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…`, a child `PROCESS-…`, or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
 2. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.20).
 3. **Process-blueprint stages** — when a process-blueprint document covers the same processes, its `stages[]` are the canonical stage grain for `view.grouping.columns: product-stage` or `process-stage`. The blueprint is read as supplementary structure; nothing in the view derivation requires it (a renderer without a blueprint falls back to grouping by flow step).
 4. **`REQUIREMENT` status** — the `status:` field of each `REQUIREMENT` named in (or selected by) `view.obligations`. The view does not display this field directly; it is used by the renderer to surface obligations whose own status (e.g. `proposed`, `superseded`) modifies how a cell should be displayed (e.g. a row backed by a superseded obligation MAY be rendered with a strikethrough — but the data fact is the obligation's own status, not anything the view document carries).
@@ -240,7 +241,10 @@ For each (row, column) cell in the materialised matrix:
 
    This invariant exists because a config with only `subjects.processes` can produce a visually identical column layout to a product-centric view if labels are not type-explicit, causing users to misread the scope of the compliance report (violation logged as `COMPIMP-010`).
 
-3. **Find the matching `ASSERTION`(s)** — every admitted `ASSERTION` whose `(about, subject)` matches the row's obligation and the column's subject (with the column's subject possibly being a `PRODUCT-…` whose bearing process is the assertion's `subject`), and — when the column includes a `TASK` finer-grain than the assertion's `subject` — whose `realised_via[]` contains a `STEP` that intersects the cell's `TASK`. A process-blueprint `STAGE-…` id in `realised_via` does not resolve and MUST NOT be used as a join key. Stage-only columns (`product-stage`, `process-stage`) remain a grouping axis over the blueprint's document-local `stages[]`; an assertion does not pin to such a column via `realised_via` until a STEP↔stage (or phase) correspondence is specified.
+3. **Find the matching `ASSERTION`(s)** — every admitted `ASSERTION` whose `(about, subject)` matches the row's obligation and the column's subject (with the column's subject possibly being a `PRODUCT-…` whose bearing process is the assertion's `subject`), and — when the column is finer-grain than the assertion's `subject` — whose `realised_via[]` intersects the cell as follows:
+   - **`TASK` grain.** `realised_via` contains a `STEP` that intersects the cell's `TASK`.
+   - **`PROCESS-…` blueprint column.** The assertion pins when `realised_via` contains that process, or a `STEP` whose home process is that process (contained or promoted).
+   - **`STAGE-…` sketch column.** No `realised_via` join. A sketch `STAGE-…` id does not resolve and MUST NOT be used as a join key. Stage-only grouping over sketch columns remains a view axis; it does not pin an assertion.
 4. **Cell value** — the resulting status, picked deterministically when multiple assertions bind one cell:
    - If any matching assertion has `status: non_compliant`, the cell renders `non_compliant`.
    - Else if any has `status: partial`, the cell renders `partial`.
@@ -273,10 +277,10 @@ Compliance Impact view (this notation — report-config)
   ├── reads   → ASSERTION elements             (16-assertion.md §1; admitted state only by default)
   │     ├── about       → REQUIREMENT
   │     ├── subject     → PRODUCT / PROCESS / CAPABILITY
-  │     ├── realised_via → STEP / CAPABILITY / …  (admitted elements only; not a blueprint STAGE)
+  │     ├── realised_via → STEP / child PROCESS / CAPABILITY / …  (admitted elements only; not a sketch STAGE)
   │     └── status      → compliant | partial | non_compliant | under_review | n_a
   ├── reads   → PROCESS.flow.steps[]            (ELEMENT_PRIMITIVES.md §7.5 / §7.20 — the task grain)
-  ├── reads   → process-blueprint stages[]      (13-process-blueprint.md — view grouping axis when present; not a realised_via TYPE)
+  ├── reads   → process-blueprint stages[]      (13-process-blueprint.md — view grouping; PROCESS- columns join per §5.2; STAGE- columns do not)
   └── reads   → REQUIREMENT status              (15-requirement.md — for row-level decoration)
 ```
 
@@ -324,7 +328,7 @@ Adopters choosing `combined` render two distinct column groups in one report. Re
 ## 8. References
 
 - ASSERTION element schema (the canonical compliance claim): [16-assertion.md](../../elements/16-assertion.md).
-- ASSERTION §2.1 — task-level compliance impact idiom (`realised_via` naming a `STEP`; a blueprint stage is not a target): [16-assertion.md](../../elements/16-assertion.md).
+- ASSERTION §2.1 — task- and phase-level compliance impact idiom (`realised_via` naming a `STEP` or a child `PROCESS`; a sketch blueprint stage is not a target): [16-assertion.md](../../elements/16-assertion.md).
 - ASSERTION §2.3 — system/data/infrastructure obligation subjects (PROCESS as compliance unit, APPLICATION in `realised_via`): [16-assertion.md](../../elements/16-assertion.md).
 - REQUIREMENT element schema (the obligation): [15-requirement.md](../../elements/15-requirement.md).
 - Process flow and the STEP grain: [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.5 (process flow), §7.20 (standalone STEP, promotion mechanic).

@@ -276,7 +276,7 @@ deprecated_element_types:
 #   to_subtype       ACTOR `type` values the endpoint is narrowed to, when the
 #                    spec narrows it; `null` when unrestricted
 #
-# 19 live kinds. Endpoint TYPE constraints are enforced once the catalogue is
+# 20 live kinds. Endpoint TYPE constraints are enforced once the catalogue is
 # loaded (REL-002); the candidate stage checks enum membership and ID grammar.
 # ---------------------------------------------------------------------------
 relation_types:
@@ -284,6 +284,9 @@ relation_types:
   parent:
     from: [CAPABILITY]
     to: [CAPABILITY]
+  process_parent:
+    from: [PROCESS]
+    to: [PROCESS]
   goal_parent:
     from: [GOAL]
     to: [GOAL]
@@ -775,6 +778,15 @@ rule_codes:
   BP-010:
     severity: error
     spec: notations/views/diagrams/13-process-blueprint.md
+  BP-012:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-013:
+    severity: error
+    spec: notations/views/diagrams/13-process-blueprint.md
+  BP-014:
+    severity: warning
+    spec: notations/views/diagrams/13-process-blueprint.md
   BSV-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
@@ -1166,6 +1178,12 @@ rule_codes:
     severity: error
     spec: notations/elements/17-relations.md
   REL-006:
+    severity: warning
+    spec: notations/elements/17-relations.md
+  REL-007:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-008:
     severity: warning
     spec: notations/elements/17-relations.md
   RELEASE-001:
