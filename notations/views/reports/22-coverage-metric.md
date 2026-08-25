@@ -2,7 +2,7 @@
 notation: "Coverage Metric"
 version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-07"
+last_updated: "2026-08-25"
 status: "draft"
 file_extension: "*.coverage-metric.transitrix.yaml"
 dsm_status: "not implemented — Studio compliance-views renderer planned (consumer-side, tracked separately)"
@@ -219,7 +219,7 @@ This section is the **render contract**: the deterministic algorithm any conform
 
 A conformant renderer reads exactly these canonical inputs:
 
-1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or process-blueprint stage to localise the impact), and `status`.
+1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…` or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
 2. **`REQUIREMENT` catalogue** — every `REQUIREMENT-…` file under `canon/elements/01_motivation/requirements/`. Each contributes its `derived_from[]` list of codex artefact IDs. The renderer joins each admitted `ASSERTION`'s `about` to a `REQUIREMENT`, and the `REQUIREMENT`'s `derived_from[]` to the regime axis.
 3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
 4. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.20).
@@ -268,12 +268,12 @@ Coverage Metric view (this notation — report-config)
   ├── reads   → ASSERTION elements             (16-assertion.md §1; admitted state only by default)
   │     ├── about       → REQUIREMENT
   │     ├── subject     → PRODUCT / PROCESS / CAPABILITY
-  │     ├── realised_via → STEP / stage / CAPABILITY / …
+  │     ├── realised_via → STEP / CAPABILITY / …  (admitted elements only; not a blueprint STAGE)
   │     └── status      → compliant | partial | non_compliant | under_review | n_a
   ├── reads   → REQUIREMENT.derived_from[]      (15-requirement.md — the regime-join key)
   ├── reads   → codex artefacts                 (14-codex.md — the regime axis; jurisdiction grouping)
   ├── reads   → PROCESS.flow.steps[]            (ELEMENT_PRIMITIVES.md §7.5 / §7.20 — the task grain)
-  └── reads   → process-blueprint stages[]      (13-process-blueprint.md — the stage grain, when present)
+  └── reads   → process-blueprint stages[]      (13-process-blueprint.md — view grouping axis when present; not a realised_via TYPE)
 ```
 
 Pairs with the **Compliance Impact view** ([21-compliance-impact.md](./21-compliance-impact.md)) — the first read of the same canonical inputs, rendered as the obligation × subject matrix with cell statuses. The Coverage Metric view is the second read: the per-regime count of dark cells, classified into modelling gaps and modelled facts.

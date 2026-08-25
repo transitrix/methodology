@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Fixed
+
+- **`ASSERTION.realised_via` no longer claims a process-blueprint stage as a resolvable target.** `16-assertion.md` §2.1, `21-compliance-impact.md`, `22-coverage-metric.md`, and `13-process-blueprint.md` §5.4 listed a blueprint `STAGE-…` id as a `realised_via` / lane-join target; stages are document-local and `ASSERT-004` cannot resolve them. The decided process-local idiom is `STEP`. View grouping by `stages[]` is unchanged. No schema, enum, TYPE, or validation-severity change. PATCH.
+
 ---
 
 ## [3.7.0] — 2026-08-22
