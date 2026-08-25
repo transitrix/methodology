@@ -1,6 +1,6 @@
 notation: goals
 spec_version: "0.1"
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 
 # Goals tree — pure projection over standalone GOAL elements.
 # Spec: notations/views/diagrams/04-goals.md (v2.0). No element data is authored inline.

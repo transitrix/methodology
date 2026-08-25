@@ -6,6 +6,9 @@ The on-disk migration recipe an adopter follows when upgrading to methodology ve
 |---|---|
 | **A** | FGA retirement — `notation: fga` → `notation: dgca` |
 | **B** | Recipe-file header rename — `template_id`/`template_version` → `recipe_id`/`recipe_version` |
+| **C** | ID middle-segment underscore — `_` is TYPE-only; a middle segment is `[A-Za-z0-9]+` |
+
+Adopters on any `3.x` pin, including `3.7.0`, use this recipe when moving to `4.0.0`.
 
 ---
 
@@ -77,10 +80,18 @@ No other field, and no part of the document body, changes.
 
 ---
 
+## Transform C — ID middle-segment underscore
+
+`4.0.0` records that `_` is TYPE-only. A middle segment is `[A-Za-z0-9]+`. An ID written `LAW-PERSONAL_DATA-1` is now `LAW-PERSONAL-DATA-1`. TYPE prefixes that contain `_` (`BUSINESS_OBJECT`, `PROCESS_BLUEPRINT`, `INTERNAL_STANDARD`) are unchanged.
+
+This transform is **documented, not coded**. A blanket `_` → `-` rewrite would also hit TYPE prefixes. Walk each ID: split on `-`; leave the TYPE segment; replace `_` with `-` in middle segments only; leave the terminal integer. Files and cross-references that name the old id must move together.
+
+---
+
 ## Step 1 — Run the codemod
 
 `codemod.mjs` automates A.1–A.2 and B.1.
-It is idempotent — re-running on a repo with no remaining `*.fga.transitrix.yaml` file and no remaining `template_id`/`template_version` header field is a no-op.
+It is idempotent — re-running on a repo with no remaining `*.fga.transitrix.yaml` file and no remaining `template_id`/`template_version` header field is a no-op. Transform C is not in the codemod.
 
 ```bash
 # Preview — shows what would change without writing any files

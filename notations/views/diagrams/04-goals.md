@@ -117,7 +117,7 @@ After goals are promoted to `canon/elements/01_motivation/goals/`, the view beco
 ```yaml
 notation: goals
 spec_version: "0.1"
-methodology_version: "3.7.0"          # required from v2.0 onward
+methodology_version: "4.0.0"          # required from v2.0 onward
 
 id: GOALS-STRAT-2026-1                 # required — GOALS-[<middle>-]<INTEGER>
 name: "Strategy 2026 — Goals Tree"    # required per CONTRACT.md §1.1

@@ -4,7 +4,7 @@
 # manifest may enclose another, which is also why this fixture moved out
 # from under its parent folder.
 transitrix: 1
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 notations: [requirement, assertion, verification]
 zones: [canon]
 coverage_profile: core

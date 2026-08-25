@@ -23,7 +23,7 @@
 // notations/CURRENT_VERSION.yaml, or when the tables below stop matching the §3 / §3.1
 // tables they encode. A release PR that bumps the pin and not this file cannot go green.
 
-export const PRESETS_VERSION = '3.7.0';
+export const PRESETS_VERSION = '4.0.0';
 
 export const LAYERS = ['01_motivation', '02_business', '03_application', '04_technology', '05_implementation'];
 
