@@ -21,7 +21,7 @@ Two layers, unchanged from the canon:
 | Per-repo decision records | `operations/decisions/ADR-YYYY-MM-DD-<slug>.md` (or legacy `ADR-NNNN-<slug>.md`), each project repo | [`method/07-decisions.md`](../method/07-decisions.md) §2 |
 | Enterprise ADL | `architecture/decision-log/`, the central architecture repo | `method/07-decisions.md` §1, §5 |
 
-The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync.
+The per-repo layer is canonical — a decision's single source of truth is the repo where it was made. The central log is a derived, harvested index plus full copies of *promoted* (enterprise-significant) records. There is no two-way sync. Those two layers are **roles**, not a requirement that they live in two git repositories — see [One repository, both roles](#one-repository-both-roles).
 
 ```
    PROJECT REPOS (canonical)                    CENTRAL ARCHITECTURE REPO (derived)
@@ -61,7 +61,7 @@ Don't wait for a second repo to begin. An adopter with a single repo can stand u
    *Don't hand-write the front-matter.* The [`adr` skill](../transitrix/skills/adr/SKILL.md) — `/transitrix:adr` once the plugin is installed — runs the Context → Decision → Consequences interview, derives the id from today's date and a slug, validates the record, and opens the PR. It is the authoring workflow for the flow `method/07-decisions.md` specifies; it never self-accepts (§4's gate).
 3. **Optionally wire the CI guard** — `scripts/check-adl.mjs` (`method/07-decisions.md` §7) lints the folder on every PR that touches it, including the uniqueness guard (A5) that makes two authors on separate branches safe to allocate independently.
 
-That is a complete, working ADL for one repo. Move to the sections below only once a **second** repo needs to see the first repo's decisions.
+That is a complete, working ADL for one repo. Add the central half — in a second repository, or in this same one — only once another project needs its decisions indexed or admitted here. See [One repository, both roles](#one-repository-both-roles) if this repository will also be the central log.
 
 ## When to add the enterprise layer (multi-repo)
 
@@ -70,10 +70,37 @@ That is a complete, working ADL for one repo. Move to the sections below only on
 - Recurring coordination overhead from repos silently diverging on a decision another repo already made.
 - An autonomous agent needs to make architecturally-significant changes across repos with a gated, auditable trace (`method/07-decisions.md` §4).
 
+The central role can sit in a dedicated architecture repository, or in a repository that already holds its own project decisions. Two distinct repositories are typical, not required.
+
+## One repository, both roles
+
+A repository may hold both the project role and the central role. It keeps its own `operations/decisions/` as any project repository does, and it is also the log other projects treat as central. Dual-role does not fuse ownership: **each decision record has exactly one canonical owner.**
+
+Two flows. Do not conflate them.
+
+| Flow | Already true | What moves | Owner after |
+|---|---|---|---|
+| **Harvest / index** | An ADR already ratified and owned by a project | The index entry — and, for records in `promote.scopes`, a copy under `architecture/decision-log/promoted/` | Unchanged. The project still owns the canonical record. |
+| **Central admission / promotion** | An external *candidate*, not yet a canonical central record | A human-admitted ADR, created centrally | The central role. This is a new canonical record, not a harvested copy. |
+
+**Harvest / index** is the pull job in `method/07-decisions.md` §5. The record never changes owner; only its index (and, in scope, a copy) moves. `promoted/` in that job is still this flow — a copy of a record owned elsewhere, not a transfer of ownership.
+
+**Central admission / promotion** is a pull request into **namespaced non-canonical intake**, then a human admits it. On admission the canonical ADR is created and owned centrally. Do not call this a harvest, and do not run a candidate through the harvest job to "make it central." Harvest indexes what is already owned; admission creates what the central role will own.
+
+The analogue for elements is [Network Catalogue](network-catalogue.md) L3 — same shape, applied to canon elements rather than decision records.
+
+When both roles share one repository, the boundary is the **role**, not a second clone:
+
+- `operations/decisions/` holds this repository's own, project-owned records.
+- `architecture/decision-log/` holds the harvested index and copies of records still owned at their source.
+- Intake holds non-canonical candidates until a human admits a centrally-owned record.
+
+An agent does not write the admitted central record. It may open the intake pull request; a human admits. Same gate `method/07-decisions.md` §4 already places on `author: agent`.
+
 ## How to stand up the central ADL
 
 1. **Every source repo already has `operations/decisions/`** (see "Start here" above) — nothing to change per-repo to onboard it into the harvest.
-2. **Create the central architecture repo's `architecture/decision-log/`** with a `harvest.config.yaml` listing every source repo (`method/07-decisions.md` §5).
+2. **Create `architecture/decision-log/`** in the repository that holds the central role — a dedicated architecture repository, or the same repository that already holds `operations/decisions/` — with a `harvest.config.yaml` listing every source (`method/07-decisions.md` §5).
 3. **Run the harvest** (`scripts/adl-harvest.mjs`, scheduled + on demand) to regenerate `INDEX.md` and pull full copies of promoted records into `promoted/`.
 4. **Set the promotion scope** — which records count as enterprise-significant (`method/07-decisions.md` §5's `promote.scopes`) — and who has authority to mark a record as promoted.
 5. **Respect the ratification gate** — an `author: agent` record is never accepted until a human ratifies it (`method/07-decisions.md` §4). This is what makes it safe for an autonomous agent to author decisions across repos.
