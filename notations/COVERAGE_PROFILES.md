@@ -69,7 +69,7 @@ The methodology ships three presets. Each is defined at the version pinned in `m
 | Preset | Allowed relation kinds (per `from` layer) |
 |---|---|
 | **`minimal`** | 01_motivation: `goal_parent` · 05_implementation: `action_goal` |
-| **`core`** | 01_motivation: `goal_parent`, `stakeholding`, `depends_on` · 02_business: `parent`, `unit_parent`, `employment` · 05_implementation: `action_goal` |
+| **`core`** | 01_motivation: `goal_parent`, `stakeholding`, `depends_on` · 02_business: `parent`, `process_parent`, `unit_parent`, `employment` · 05_implementation: `action_goal` |
 | **`full`** | Every relation kind in [`elements/17-relations.md`](elements/17-relations.md) §3. |
 
 The presets compose by subset — every TYPE in `minimal` is in `core`; every TYPE in `core` is in `full`. This is a property of the v1 presets, not a general rule: a future preset may slice the vocabulary along a different axis (e.g. a `compliance` preset that adds `REQUIREMENT`/`ASSERTION` to `minimal` without adding `CAPABILITY`).

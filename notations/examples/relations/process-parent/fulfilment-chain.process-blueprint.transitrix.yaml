@@ -1,0 +1,35 @@
+notation: process-blueprint
+spec_version: "0.1"
+name: "Order fulfilment — catalogued phases"
+generated_at: "2026-08-25"
+
+process_blueprint:
+  id: PROCESS_BLUEPRINT-FULFIL-CHAIN-1
+  name: "Order fulfilment — catalogued phases"
+  description: >
+    The same value chain as the STAGE-only sketch, with columns naming
+    admitted child processes. name, goal, and result are derived from
+    those PROCESS elements, not restated here.
+  period: "2026"
+  version: "0.1"
+  author: "Valerii Korobeinikov"
+  process: PROCESS-FULFIL-CHAIN-1
+
+  stages:
+    - id: PROCESS-FULFIL-RECEIVE-1
+    - id: PROCESS-FULFIL-PICK-1
+    - id: PROCESS-FULFIL-SHIP-1
+
+  systems:
+    - name: "Order Management System"
+      stages: [PROCESS-FULFIL-RECEIVE-1, PROCESS-FULFIL-PICK-1]
+    - name: "Warehouse Management System"
+      stages: [PROCESS-FULFIL-PICK-1]
+    - name: "Transportation Management System"
+      stages: [PROCESS-FULFIL-SHIP-1]
+
+  actors:
+    - name: "Customer service representative"
+      stages: [PROCESS-FULFIL-RECEIVE-1]
+    - name: "Warehouse operator"
+      stages: [PROCESS-FULFIL-PICK-1, PROCESS-FULFIL-SHIP-1]

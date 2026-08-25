@@ -1,0 +1,22 @@
+notation: process
+id: PROCESS-FULFIL-CHAIN-1
+name: Order fulfilment
+
+goal: "Fulfil a customer order from receipt to confirmed delivery."
+result: "Closed order with captured payment and a delivered shipment."
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  The enclosing value chain. Its phases are child processes linked by
+  process_parent, not document-local STAGE ids.

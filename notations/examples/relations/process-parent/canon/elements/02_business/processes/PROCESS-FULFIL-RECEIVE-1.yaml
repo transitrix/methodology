@@ -1,0 +1,22 @@
+notation: process
+id: PROCESS-FULFIL-RECEIVE-1
+name: Receive order
+
+goal: "Capture a validated customer order."
+result: "Validated order record in OMS."
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  First phase of the fulfilment chain. The blueprint column id is this
+  process; name, goal, and result are not restated on the view.

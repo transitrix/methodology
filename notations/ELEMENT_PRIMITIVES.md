@@ -402,9 +402,13 @@ The `PROCESS` element is the **complete, self-sufficient definition** of a busin
 | `owner_role` | no | string | `ROLE-…` accountable for the process as a whole. |
 | `capability` | no | string | `CAPABILITY-…` this process realises. |
 | `maturity` | no | integer | CMM level 1–5. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9), not inline. |
+| `goal` | no | string | One-sentence purpose — what this process should achieve. A process used as a value-chain phase SHOULD carry it; a process that is only a BPMN flow MAY omit it. Homed here, not on a view: a process-blueprint `PROCESS-…` column derives the header from this field ([views/diagrams/13-process-blueprint.md](./views/diagrams/13-process-blueprint.md) §5.2). |
+| `result` | no | string | One-sentence exit-deliverable — what leaves this process when it completes. Same authorship rule as `goal`. |
 | `participants` | no | list | The process's lanes — each a reference to a canonical active-structure element, `ROLE-…` or `ACTOR-…` (person / business_unit / system). A participant's lane caption is **derived** from the referenced element's `name`; no caption text is stored here. List order is the rendered top-to-bottom lane order. |
 | `flow` | no | object | The canonical process graph — steps, gateways, and sequence flows (see below). Sufficient to regenerate a BPMN diagram; the view adds only layout, which is computed deterministically. |
 | `description` | recommended | string | One-paragraph elaboration. |
+
+**`PROCESS` is recursive.** Composition is the first-class `process_parent` relation ([elements/17-relations.md](./elements/17-relations.md) §3) — child → parent, `PROCESS` → `PROCESS`. There is no inline `parent` field: re-parenting a phase is a temporal event, recorded as a new REL with its own window. A value-chain phase *is* a child `PROCESS`; it is not a second TYPE. A process-blueprint column MAY name a `PROCESS-…` (the column *is* that process) or keep a document-local `STAGE-…` sketch; listing a process as a column is not composition — the REL is.
 
 The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **removed as a source field**. The flow is no longer authored in a separate `.bpmn` file the element points at; any `.bpmn.transitrix.yaml` is a *derived projection* of `flow` (generated output), never the source — see [views/01-bpmn.md](./views/diagrams/01-bpmn.md).
 

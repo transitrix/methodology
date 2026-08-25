@@ -1,0 +1,21 @@
+notation: process
+id: PROCESS-FULFIL-PICK-1
+name: Pick and pack
+
+goal: "Assemble the physical order from reserved inventory."
+result: "Packed shipment ready for carrier handover."
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  Warehouse phase of the fulfilment chain.

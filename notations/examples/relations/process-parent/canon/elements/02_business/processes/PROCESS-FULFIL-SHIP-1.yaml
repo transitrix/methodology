@@ -1,0 +1,21 @@
+notation: process
+id: PROCESS-FULFIL-SHIP-1
+name: Ship
+
+goal: "Hand the shipment to the carrier and notify the customer."
+result: "In-transit shipment with tracking number sent to the customer."
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
+
+description: >
+  Carrier-handover phase of the fulfilment chain.

@@ -51,4 +51,5 @@ process_blueprint:
 
 | File | Description |
 |---|---|
-| `order-fulfilment.process-blueprint.transitrix.yaml` | Five-stage order fulfilment blueprint with systems, actors, equipment, and information entities. |
+| `order-fulfilment.process-blueprint.transitrix.yaml` | Five-stage order fulfilment blueprint with systems, actors, equipment, and information entities. Sketch `STAGE-…` columns; `name` / `goal` / `result` authored on the view. |
+| [`../relations/process-parent/`](../relations/process-parent/) | The same value chain with catalogued `PROCESS-…` columns and `process_parent` RELs. |
