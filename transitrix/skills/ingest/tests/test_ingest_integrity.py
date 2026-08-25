@@ -102,7 +102,7 @@ def _presets_version():
 
 PRESETS_VERSION = _presets_version()
 
-ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$")
+ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9]+)*-[1-9][0-9]*$")
 SOURCE_HASH_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 SOURCE_QUALITY = {"authoritative", "corroborated", "single_source", "unverified"}
 
@@ -421,7 +421,7 @@ def part_e_ig2():
                     "--admitted-at", "2026-06-07", "--monitoring")
         check(r.returncode == 0, "IG-2: codex-artefact failed: %s" % (r.stderr or r.stdout))
 
-        art = os.path.join(org, "codex", "external", "eu", "LAW-conveyor_safety-1.yaml")
+        art = os.path.join(org, "codex", "external", "eu", "LAW-conveyor-safety-1.yaml")
         if check(os.path.isfile(art), "IG-2: codex artefact not written under codex/external/eu/"):
             d = yaml.safe_load(open(art, encoding="utf-8"))
             check(d.get("zone") == "codex", "IG-2: codex artefact zone is not 'codex'")
@@ -451,12 +451,16 @@ def part_e_ig2():
         r = run_cli("emit-candidates", art, "--from", res, "--candidates-dir", cdir)
         check(r.returncode == 0, "IG-2: emit-candidates from a codex artefact failed: %s" % (r.stderr or r.stdout))
 
-        req = json.load(open(os.path.join(cdir, "REQUIREMENT-CONVEYOR-CERT-1.json"), encoding="utf-8"))
-        ass = json.load(open(os.path.join(cdir, "ASSERTION-FLEXLINE-CERT-1.json"), encoding="utf-8"))
-        check(req.get("derived_from") == ["LAW-conveyor_safety-1"],
-              "IG-2: REQUIREMENT candidate does not cite the codex LAW: %r" % req.get("derived_from"))
-        check(ass.get("kind") == "assertion" and ass.get("derived_from") == ["LAW-conveyor_safety-1"],
-              "IG-2: ASSERTION candidate does not cite the codex LAW: %r" % ass.get("derived_from"))
+        req_path = os.path.join(cdir, "REQUIREMENT-CONVEYOR-CERT-1.json")
+        ass_path = os.path.join(cdir, "ASSERTION-FLEXLINE-CERT-1.json")
+        if check(os.path.isfile(req_path), "IG-2: REQUIREMENT candidate was not written"):
+            req = json.load(open(req_path, encoding="utf-8"))
+            check(req.get("derived_from") == ["LAW-conveyor-safety-1"],
+                  "IG-2: REQUIREMENT candidate does not cite the codex LAW: %r" % req.get("derived_from"))
+        if check(os.path.isfile(ass_path), "IG-2: ASSERTION candidate was not written"):
+            ass = json.load(open(ass_path, encoding="utf-8"))
+            check(ass.get("kind") == "assertion" and ass.get("derived_from") == ["LAW-conveyor-safety-1"],
+                  "IG-2: ASSERTION candidate does not cite the codex LAW: %r" % ass.get("derived_from"))
         r = run_cli("validate", cdir)
         check(r.returncode == 0, "IG-2: codex-derived candidates did not validate clean: %s" % (r.stdout + r.stderr))
 
@@ -468,7 +472,7 @@ def part_e_ig2():
         if check(os.path.isfile(rq), "F13: review-queue.yaml was not created"):
             q = yaml.safe_load(open(rq, encoding="utf-8"))
             fas = q.get("field_artefacts") or []
-            law = next((fa for fa in fas if fa.get("id") == "LAW-conveyor_safety-1"), None)
+            law = next((fa for fa in fas if fa.get("id") == "LAW-conveyor-safety-1"), None)
             if check(law is not None, "F13: review queue did not list the cited codex LAW source"):
                 check(law.get("zone") == "codex", "F13: codex source not marked zone:codex (got %r)" % law.get("zone"))
                 check(law.get("found") is True, "F13: codex source did not resolve (found != True)")
