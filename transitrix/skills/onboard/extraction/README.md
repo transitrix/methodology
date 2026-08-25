@@ -47,7 +47,7 @@ See [`fixtures/`](fixtures/) for a worked Field artefact + the kind of draft pri
 Every draft primitive carries:
 
 - A canonical ID (`<TYPE>-[<middle>-]<INTEGER>` from [IDS §1](../../../../notations/IDS_AND_REFERENCES.md#1-grammar), with full TYPE prefixes — no legacy abbreviations).
-- `derived_from: [<FIELD-ARTEFACT-ID>]` citing the Field source. (For REQUIREMENTs, the codex-side `derived_from` to `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` is established at admission, not by the extraction prompt.)
+- `derived_from: [<FIELD-ARTEFACT-ID>]` citing the Field source, except on `REQUIREMENT`: omit `derived_from` (Field stays in `field/`; `REQ-003` rejects Field TYPEs). A human may add a permitted codex TYPE (`LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` / `PRINCIPLE`) at admission if one is also a source of authority.
 - An admission record with `admitted_to: pending` / `gate_checks: pending` — the human gate completes these.
 - `valid_from` / `valid_to` per the primitive lifecycle ([CONTRACT §7](../../../../notations/CONTRACT.md#7-primitive-lifecycle)).
 - `confidence: high | medium | low` and `extraction_notes:` documenting ambiguities, contradictions, or judgement calls.

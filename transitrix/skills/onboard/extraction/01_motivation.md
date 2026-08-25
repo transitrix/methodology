@@ -56,7 +56,7 @@ You produce draft primitives of these TYPEs:
 
 **`DRIVER` vs `ASSESSMENT` boundary:** the *standing force* vs a *finding about it*. The neutral, standing thing the organisation acts on is the `DRIVER` (e.g. "Support response time" / "Customer churn" / "EU regulatory window"). A dated, observed statement about that thing's current state — a number, a trend, a judgement — is an `ASSESSMENT` that `assesses` the driver. When the source gives both ("our support response time" + "it's 8h and degrading"), emit a `DRIVER` and an `ASSESSMENT` referencing it; **never collapse the finding into the DRIVER name or description**. A DRIVER like "Support response time degraded over Q1" is wrong — the DRIVER is "Support response time" (the dimension), and "degraded over Q1" is the ASSESSMENT. An assessment records **what was found, never whether it is good or bad** — emit no polarity / strength-weakness-opportunity-threat label; that judgement is established later, separately. If the source states a finding but names no underlying driver, emit the `DRIVER` you infer the finding is about and set `confidence: low` with a note.
 
-`derived_from` on a REQUIREMENT cites the Field artefact ID, **not** a codex source. Codex sources are admitted separately; the connection between REQUIREMENT and its codex source (`LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`) is established at admission time, after this prompt has run.
+`REQUIREMENT.derived_from` cites only permitted codex TYPEs (`LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` / `PRINCIPLE`) — never a Field artefact (`REQ-003`, [15-requirement.md](../../../../notations/elements/15-requirement.md) §2.1). A draft REQUIREMENT extracted from Field material typically **omits** `derived_from`; the Field artefact stays in `field/`, and the maintain signal is `next_review_at`. A human may add a codex citation at admission if a permitted TYPE is also a source of authority. Other TYPEs in this prompt (`DRIVER`, `GOAL`, `CONSTRAINT`, `ASSESSMENT`) still cite the Field source via `derived_from`.
 
 ---
 
@@ -68,7 +68,7 @@ You emit a list of draft primitives. Each draft is a valid YAML document in **ca
 
 - Uses a canonical ID per the grammar in [IDS_AND_REFERENCES.md](../../../../notations/IDS_AND_REFERENCES.md) §1 (`<TYPE>-[<middle>-]<INTEGER>`).
 - Uses canonical full TYPE prefixes (`DRIVER-…`, `GOAL-…`, `CONSTRAINT-…`, `REQUIREMENT-…`) — never legacy abbreviations like `DRV-` / `GL-` / `REQ-`.
-- Carries `derived_from: [<FIELD-ARTEFACT-ID>]` citing the Field source(s) (`INTERVIEW-…` / `SURVEY-…` / `OBSERVATION-…` / `DRAFT-…`).
+- Carries `derived_from: [<FIELD-ARTEFACT-ID>]` citing the Field source(s) (`INTERVIEW-…` / `SURVEY-…` / `OBSERVATION-…` / `DRAFT-…`), **except** `REQUIREMENT` — omit `derived_from` on a REQUIREMENT draft unless a permitted codex TYPE is also a source of authority (`REQ-003`).
 - Carries an admission record block with `admitted_to: pending` and `gate_checks: pending` — the human gate fills these in.
 - Carries `valid_from` and `valid_to` per the primitive lifecycle ([CONTRACT.md](../../../../notations/CONTRACT.md) §7). When the source dates the driver / goal / obligation, use that date; otherwise mark as `valid_from: pending` for the human to set.
 
@@ -166,14 +166,17 @@ valid_to: null
 ```yaml
 notation: requirement
 id: REQUIREMENT-MDR-CONFORMITY-FILING-1
-title: "Submit MDR conformity-assessment dossier per product line"
+name: "Submit MDR conformity-assessment dossier per product line"
 description: >
   For each product line marketed in the EU, the organisation must
   submit a conformity-assessment dossier to a notified body and obtain
   certification before continuing sale.
 
-derived_from:
-  - INTERVIEW-cfo-strategy-2026-04-15-1
+origin: project-product
+next_review_at: "2027-04-15"
+# derived_from omitted — Field provenance stays on the INTERVIEW in field/;
+# REQ-003 rejects INTERVIEW-… here. A human may add a LAW/REGULATION citation
+# at admission if a codex artefact is also a source of authority.
 
 confidence: high
 extraction_notes: |
