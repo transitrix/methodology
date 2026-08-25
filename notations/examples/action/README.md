@@ -84,3 +84,4 @@ project:
 |---|---|
 | `platform-launch.action.transitrix.yaml` | 10-action platform launch; two parallel paths merge at integration testing; 3-action critical path tail. Network view only — no `project:` block and no pinned dates, so the Gantt view does not render. |
 | `office-relocation.action.transitrix.yaml` | 13-action HQ relocation with two milestones (`M-LEASE-SIGNED`, `M-OPEN-DAY`) and pinned `start_date` / `end_date` on every leaf action (pinned-mode Gantt per §9.1). Renders in both network and Gantt views; 105 working-day critical path (2026-06-01 → 2026-10-23). |
+| [`root-action-scope/`](root-action-scope/) | Projection over a Project and two Tasks, one of them missing `parent`. The scoped view warns `ACT-021` on the unwired child; the unscoped sibling does not. |

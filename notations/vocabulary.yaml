@@ -553,6 +553,9 @@ rule_codes:
   ACT-008:
     severity: error
     spec: notations/views/diagrams/07-action.md
+  ACT-021:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
   ACTION-001:
     severity: error
     spec: notations/elements/24-action.md

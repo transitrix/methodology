@@ -1,0 +1,16 @@
+notation: action
+spec_version: "0.1"
+methodology_version: "3.7.0"
+id: ACTION_SCHED-LAUNCH-UNSCOPED-1
+name: "Launch — no root_action"
+generated_at: "2026-08-25"
+description: |
+  Same three ACTION elements, no root_action. ACT-021 does not fire;
+  ACTION-LAUNCH-COMMS-1 having no parent is not this rule's business.
+
+view_config:
+  scope: {}
+  schedule:
+    start_date: "2026-09-01"
+  display:
+    view: network

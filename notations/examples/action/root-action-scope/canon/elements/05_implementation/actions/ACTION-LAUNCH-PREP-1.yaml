@@ -1,0 +1,20 @@
+notation: action
+id: ACTION-LAUNCH-PREP-1
+name: "Launch preparation"
+type: Task
+parent: ACTION-LAUNCH-1
+description: >
+  Wired child — reachable from ACTION-LAUNCH-1 by following parent.
+  ACT-021 does not warn on this id.
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-09-01"
+valid_to: null
