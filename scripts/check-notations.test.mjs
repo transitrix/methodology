@@ -608,6 +608,20 @@ test('validateIdToken — negative: a malformed CAPABILITY address is invalid', 
   assert.match(result.reason, /V\/H diagram-address form/);
 });
 
+test('validateIdToken — positive: underscore in TYPE is valid', () => {
+  assert.deepEqual(validateIdToken('PROCESS_BLUEPRINT-FULFIL-1'), { valid: true });
+});
+
+test('validateIdToken — positive: hyphen-separated middle segments are valid', () => {
+  assert.deepEqual(validateIdToken('LAW-PERSONAL-DATA-1'), { valid: true });
+});
+
+test('validateIdToken — negative: underscore in a middle segment is invalid', () => {
+  const result = validateIdToken('LAW-PERSONAL_DATA-1');
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /underscore is TYPE-only/);
+});
+
 test('findIdCandidates — positive: a backtick span outside a fence is scanned', () => {
   const out = findIdCandidates('See `GOAL-CUST-1` for the target.');
   assert.deepEqual(out, [{ token: 'GOAL-CUST-1', line: 1 }]);
