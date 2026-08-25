@@ -228,7 +228,10 @@ is never resolved. Border classes, per §4's illustration provenance rule:
 
 `fit` (`width` / `page` / `none`, §2) is carried through as a `dv-fit-<value>` class
 on the wrapping `<figure>` — a hook for the print layout (§7, not built yet), not yet
-acted on by this module.
+acted on by this module. Pagination — page size, orientation, and what to do when a
+view does not fit — is specified in
+[`guides/how-a-document-prints.md`](../../guides/how-a-document-prints.md). This
+package carries `fit` as the CSS hook; print layout is not built.
 
 Derivation share (§5), telemetry (§6) and PDF output (§7) are parked (2026-08-07 scope
 change) — not built in this package.

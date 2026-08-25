@@ -300,12 +300,14 @@ embedding an image is a separate, larger feature this module does not take
 on. A reader comparing the PDF to the Markdown will see plainer typography and
 a placeholder where a figure was, not a missing section.
 
-**A4 is non-negotiable** — an explicit constraint on this output. Every page
-this module emits declares `/MediaBox [0 0 595 842]` (A4 at 72dpi) outright,
-because a renderer that omits the declaration defaults to US Letter and
-silently spills the last 18mm onto a second page. Pagination breaks a new page
-whenever the next line would cross the bottom margin — a long document spans
-more than one `/Page` automatically, never truncated.
+Every page this module emits declares `/MediaBox [0 0 595 842]` (A4 at 72dpi)
+outright, because a renderer that omits the declaration defaults to US Letter
+and silently spills the last 18mm onto a second page. The page-size rule
+itself is in [`guides/how-a-document-prints.md`](../../guides/how-a-document-prints.md)
+— this README is the implementation statement, not the home of the rule.
+Pagination breaks a new page whenever the next line would cross the bottom
+margin — a long document spans more than one `/Page` automatically, never
+truncated.
 
 Base-14 `Helvetica` needs no font embedding, so this module ships no font
 file. Text outside printable ASCII is sanitised: common prose punctuation
