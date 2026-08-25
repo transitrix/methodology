@@ -1,8 +1,8 @@
 ---
 notation: "Action — Project Schedule"
-version: "2.1"
+version: "2.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-15"
+last_updated: "2026-08-25"
 status: "documented"
 file_extension: "*.action.transitrix.yaml"
 dsm_status: "partially implemented — Actions page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
@@ -182,7 +182,7 @@ Scope fields filter which ACTION elements the renderer includes. All are optiona
 
 | Field | Required | Type | Notes |
 |---|---|---|---|
-| `root_action` | no | string | `ACTION-…` ID to scope the schedule to this action and its descendants. Omit to include elements from the full catalogue (or use `goals`/`type_filter` for other scoping). |
+| `root_action` | no | string | `ACTION-…` ID to scope the schedule to this action and its descendants. Descendants resolve only through `ACTION.parent` ([elements/24-action.md](../../elements/24-action.md) §1). Omit to include elements from the full catalogue (or use `goals`/`type_filter` for other scoping). An ACTION the view would otherwise include that is not this root and not a descendant is omitted and warned (`ACT-021`); it is not silently dropped. |
 | `goals` | no | array of string | `GOAL-…` IDs. When non-empty, only actions linked to these goals (via inline `goals[]` or `action_goal` REL) are included. |
 | `type_filter` | no | array of string | `Initiative` \| `Programme` \| `Project` \| `Task`. When non-empty, only actions of the listed types are included. |
 | `valid_at` | no | string | Quoted ISO 8601 date. Includes only actions valid at this date. Omit to include all regardless of lifecycle. |
@@ -223,6 +223,13 @@ The `schedule` block anchors the view on a calendar for Gantt rendering. Absent 
 | `ACT-008` | error | `view_config.schedule.calendar.holidays` entries not valid ISO 8601 dates |
 | `ACT-009` | warn | `view_config.schedule.start_date` absent and no selected action has pinned dates → Gantt view will not render; the network view still does |
 | `ACT-020` | warn | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `type`. |
+| `ACT-021` | warning | `view_config.scope.root_action` is set and resolves, and an ACTION in the view's authored `actions[]` — or one the projection would otherwise select — is neither that root nor reachable from it by following `parent`. The message names the ACTION id and the `root_action`. |
+
+`ACT-021` is the scoped-view case only. It does not fire when `root_action` is absent. It does not make `parent` required on a true root (`ACTION-003` is unchanged). Reachability walks `parent` from the candidate toward its ancestors until it hits the root or runs out; a cycle in `parent` is not a substitute for this check. The ACTION that fails the walk is omitted from the render — the warning is what used to be a silent drop.
+
+For the projection form, "would otherwise select" means the ACTION elements the other scope fields (`goals`, `type_filter`, `valid_at`) would include; when those are empty or omitted, that is every admitted ACTION in the catalogue. Numbered `ACT-021` because `ACT-004`–`ACT-009` already name different checks.
+
+Worked fixture: [`examples/action/root-action-scope/`](../../examples/action/root-action-scope/).
 
 Element-level validation (predecessor cycles, duration non-negativity, date consistency, ID grammar) lives in the ACTION element rules applied when the canonical element files are validated; see [elements/24-action.md](../../elements/24-action.md) §6.
 

@@ -1,0 +1,18 @@
+notation: action
+spec_version: "0.1"
+methodology_version: "3.7.0"
+id: ACTION_SCHED-LAUNCH-1
+name: "Launch — scoped by root_action"
+generated_at: "2026-08-25"
+description: |
+  Projection over the three ACTION elements in this catalogue, scoped to
+  ACTION-LAUNCH-1 and its parent-descendants. ACTION-LAUNCH-COMMS-1 is in
+  the catalogue but has no parent walk to that root — ACT-021.
+
+view_config:
+  scope:
+    root_action: ACTION-LAUNCH-1
+  schedule:
+    start_date: "2026-09-01"
+  display:
+    view: network

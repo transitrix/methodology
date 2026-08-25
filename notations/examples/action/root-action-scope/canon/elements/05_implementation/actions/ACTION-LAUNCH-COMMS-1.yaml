@@ -1,0 +1,20 @@
+notation: action
+id: ACTION-LAUNCH-COMMS-1
+name: "Launch communications"
+type: Task
+description: >
+  Unwired child — no parent. In the scoped view this id is in the
+  catalogue but not a descendant of ACTION-LAUNCH-1, so ACT-021 warns.
+  parent is not backfilled; the warning is the point of the fixture.
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-09-01"
+valid_to: null

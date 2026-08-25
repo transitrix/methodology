@@ -1,0 +1,19 @@
+notation: action
+id: ACTION-LAUNCH-1
+name: "Platform launch"
+type: Project
+description: >
+  The root of this schedule. parent is omitted — a true root; ACTION-003
+  does not require one.
+
+zone: canon
+example: true
+admitted_at: "2026-08-25"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-09-01"
+valid_to: null
