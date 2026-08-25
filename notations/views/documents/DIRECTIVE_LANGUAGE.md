@@ -1,14 +1,14 @@
 ---
 version: "1.0"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-07"
+last_updated: "2026-08-25"
 status: "stable"
 ---
 
 # Directive language — normative conformance document
 
 **Version:** 1.0
-**Date:** 2026-08-07
+**Date:** 2026-08-25
 **Status:** Stable — the single normative definition of the `{{ … }}` directive
 language shared by every document source in this class.
 **Applies to:** `.ttrs` document templates and document-view skeleton files.
@@ -181,8 +181,16 @@ three attributes are required.
 | `{{ figure <path> [caption = "…"] [as = <name>] }}` | **Supplied** figure — an asset embedded as-is. Never generated. |
 | `{{ figref <name> }}` | Cross-reference to a figure declared earlier in the same document, by its `as` name. |
 
+**Which supplied pictures are legitimate.** A `figure` is a photograph, a
+screenshot of third-party software, or a scan. A picture of model content is
+a `view`, never a pre-exported raster placed as a `figure`.
+
 Figures are numbered in document order. A `figref` naming no figure declared
 earlier in the document is a failure — forward references are not resolved.
+
+Page size, orientation, and what to do when a view does not fit are in
+[`guides/how-a-document-prints.md`](../../../guides/how-a-document-prints.md)
+— this section does not restate them.
 
 ---
 

@@ -89,7 +89,7 @@ Every typed ID is `<TYPE>-[<middle>-]<INTEGER>` — uppercase TYPE from the regi
 - Methodology canon: [`notations/`](notations/) (start at [`README.md`](notations/README.md)).
 - Element-primitive schema: [`notations/ELEMENT_PRIMITIVES.md`](notations/ELEMENT_PRIMITIVES.md).
 - An adopter repo's own agent guide is scaffolded by the onboarding Skill from [`transitrix/skills/onboard/templates/AGENTS.md`](transitrix/skills/onboard/templates/AGENTS.md).
-- Task procedures beyond a first session — modelling capabilities, modelling complex processes, adopting the Architecture Decision Log: [`guides/`](guides/).
+- Task procedures beyond a first session — modelling capabilities, modelling complex processes, adopting the Architecture Decision Log, how a model-backed document prints: [`guides/`](guides/).
 
 ---
 
