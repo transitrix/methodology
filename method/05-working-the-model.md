@@ -23,6 +23,8 @@ Working with the Transitrix repository is structurally identical to working with
 
 What this means for governance — every change is observable, reviewable, and reversible, and who may change what without a human in the loop — is stated once, as doctrine, in [`08-governance.md`](08-governance.md).
 
+Task procedure for versioning a model-backed document (the recipe, an issued render, the revision table inside the PDF): [`guides/how-a-document-is-versioned.md`](../guides/how-a-document-is-versioned.md).
+
 ## 2. Validation matrix
 
 The linter applies five categories of rules. Each category has progressively-deeper checks; this is the v1 baseline.

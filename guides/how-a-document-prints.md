@@ -41,3 +41,5 @@ Those packages do not emit a landscape page, and they do not embed a picture in 
 ## Insert syntax
 
 The three forms (`{{ view }}` / `{{ figure }}` / `{{ figref }}`) are defined in [`DIRECTIVE_LANGUAGE.md`](../notations/views/documents/DIRECTIVE_LANGUAGE.md) §3.5 and are not restated here. When the public explainer at `/recipes/` is live, it is a projection of this guide and of that section.
+
+Recipe identity, issued-document baselines, and the revision table inside the PDF: [`how-a-document-is-versioned.md`](how-a-document-is-versioned.md). That table is filled by hand.
