@@ -59,6 +59,9 @@ jobs:
       - name: Run ADL one-step join (L0) unit tests
         run: node --test packages/ingest-cli/src/adl-join.test.mjs
 
+      - name: Run ID grammar unit tests
+        run: node --test packages/ingest-cli/src/ids.test.mjs
+
       - name: Run Ingest pipeline test (deterministic)
         run: python transitrix/skills/ingest/tests/test_ingest_integrity.py
 

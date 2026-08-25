@@ -1363,6 +1363,11 @@ export function validateIdToken(token) {
   if (!/^[1-9]\d*$/.test(terminal)) {
     return { valid: false, reason: `terminal segment "${terminal}" is not a positive integer with no leading zeros (§1)` };
   }
+  for (const seg of segments.slice(0, -1)) {
+    if (!/^[A-Za-z0-9]+$/.test(seg)) {
+      return { valid: false, reason: `middle segment "${seg}" is not alphanumeric (§1 — underscore is TYPE-only; a hyphen splits segments)` };
+    }
+  }
   return { valid: true };
 }
 

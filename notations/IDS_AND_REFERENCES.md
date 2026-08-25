@@ -12,8 +12,8 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 <TYPE>-[<middle segment(s)>-]<INTEGER>
 ```
 
-- **TYPE** — uppercase entity-type prefix from the registry in §3. The prefix names *what kind of thing* the ID refers to. The TYPE segment is composed of uppercase letters `A`–`Z`, digits `0`–`9`, and the underscore `_`; it MUST start with a letter. The underscore allows multi-word TYPE names — `PROCESS_BLUEPRINT` (the first registered TYPE to use one, decided 2026-05-21) and `INFORMATION_ENTITY` (registered alongside it).
-- **Middle segments** — optional, notation-specific. Add for disambiguation (a domain code, a period, a programme name). The grammar fixes only the start and the end of an ID; a notation MAY define one or more middle segments where needed. A middle segment may be alphanumeric or purely numeric, and a numeric middle segment **MAY carry leading zeros** where it is a zero-padded date or period component — e.g. the month and day of an ISO date, `INTERVIEW-cfo-onboarding-2026-04-15-1` (`04`, `15`). The no-leading-zeros rule below constrains the **terminal** integer only; middle segments are labels, not the sort key.
+- **TYPE** — uppercase entity-type prefix from the registry in §3. The prefix names *what kind of thing* the ID refers to. The TYPE segment is composed of uppercase letters `A`–`Z`, digits `0`–`9`, and the underscore `_`; it MUST start with a letter. The underscore is **TYPE-only** — it allows multi-word TYPE names (`PROCESS_BLUEPRINT`, `INTERNAL_STANDARD`, `INFORMATION_ENTITY`) and MUST NOT appear in a middle segment.
+- **Middle segments** — optional, notation-specific. Add for disambiguation (a domain code, a period, a programme name). The grammar fixes only the start and the end of an ID; a notation MAY define one or more middle segments where needed. A middle segment is `[A-Za-z0-9]+` (letters and digits only — no underscore). A hyphen splits segments; it is not a character inside one. A middle segment may be purely numeric, and a numeric middle segment **MAY carry leading zeros** where it is a zero-padded date or period component — e.g. the month and day of an ISO date, `INTERVIEW-cfo-onboarding-2026-04-15-1` (`04`, `15`). The no-leading-zeros rule below constrains the **terminal** integer only; middle segments are labels, not the sort key.
 - **INTEGER** — terminal positive integer, ≥ 1, **no leading zeros** — this constraint applies to the **terminal** integer only (it is the numeric sort key; numeric middle segments are exempt, see above). Sorting and comparison MUST parse it numerically, never lexically. There is no fixed width and no upper bound.
 
 **Examples:**
@@ -29,6 +29,8 @@ Recorded 2026-05-20 as the canonical decision for the methodology.
 | `DRIVER-` | — | — | — | **invalid** — missing terminal integer. |
 | `PROCESS_BLUEPRINT-FULFIL-1` | PROCESS_BLUEPRINT | FULFIL | 1 | underscore in TYPE — permitted |
 | `BUSINESS_OBJECT-ORDER-3` | BUSINESS_OBJECT | ORDER | 3 | underscore in TYPE — permitted |
+| `LAW-PERSONAL-DATA-1` | LAW | PERSONAL, DATA | 1 | hyphen splits middle segments |
+| `LAW-PERSONAL_DATA-1` | — | — | — | **invalid** — underscore in a middle segment. Use `LAW-PERSONAL-DATA-1`. |
 
 ---
 

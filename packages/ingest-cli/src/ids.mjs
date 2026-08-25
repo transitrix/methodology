@@ -1,8 +1,8 @@
 // Canonical ID grammar — IDS_AND_REFERENCES.md §1: <TYPE>-[<middle>-]<INTEGER>.
-// Uppercase TYPE (letter-led, letters/digits/underscore), optional middle
-// segments, terminal positive integer with NO leading zeros.
+// Uppercase TYPE (letter-led, letters/digits/underscore — underscore is TYPE-only),
+// optional alphanumeric middle segments, terminal positive integer with NO leading zeros.
 
-export const ID_RE = /^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$/;
+export const ID_RE = /^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9]+)*-[1-9][0-9]*$/;
 
 // Capability V/H diagram-address exception (IDS_AND_REFERENCES.md §1): a capability
 // is addressed by a vertical/horizontal diagram path instead of a terminal integer —
@@ -57,13 +57,14 @@ export function makeId(type, middle, ordinal) {
   return id;
 }
 
-// Lower-case a free-text label into a safe middle segment (letters/digits/underscore,
-// hyphen-free so it does not collide with the ID separator). Empty → null.
+// Lower-case a free-text label into hyphen-separated middle segments
+// (letters/digits only). Non-alphanumerics split segments; they are not
+// collapsed to underscore (underscore is TYPE-only, IDS §1). Empty → null.
 export function slugSegment(text) {
   const s = String(text || '')
     .normalize('NFKD')
-    .replace(/[^A-Za-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
     .toLowerCase();
   return s || null;
 }
