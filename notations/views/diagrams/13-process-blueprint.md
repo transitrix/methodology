@@ -2,7 +2,7 @@
 notation: "Process Blueprint"
 version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-05"
+last_updated: "2026-08-25"
 status: "draft"
 file_extension: "*.process-blueprint.transitrix.yaml"
 dsm_status: "not implemented — render module planned in Transitrix Studio (sibling task)"
@@ -243,12 +243,12 @@ Decision record: the compliance-impact-as-blueprint-lane architecture decision.
 
 For each stage the compliance lane is computed as follows:
 
-1. Collect every `ASSERTION` whose `realised_via` resolves to the stage (or a `STEP` within that stage's corresponding process).
+1. Collect every `ASSERTION` whose `realised_via` names an admitted canonical element that localises the claim. A process-blueprint `STAGE-…` id is document-local and **MUST NOT** appear in `realised_via` — it does not resolve (`ASSERT-004`; [16-assertion.md](../../elements/16-assertion.md) §2.1). The decided process-local target is a `STEP`. Mapping a `STEP` (or a future phase element) onto a blueprint column is not specified in this notation; a renderer MUST NOT invent that correspondence.
 2. Lift each `ASSERTION` to its `REQUIREMENT` via `ASSERTION.about`.
 3. Lift each `REQUIREMENT` to its source law / regulation via `REQUIREMENT.derived_from` → codex artefact.
-4. Group the impacting law IDs under the stage.
+4. Group the impacting law IDs under the stage only where a specified correspondence places the assertion's realised element in that column. Until that correspondence exists, the lane MAY still render, but it MUST NOT treat `STAGE-…` as a join key.
 
-The lane therefore shows **which laws bear on each stage**, derived entirely from existing canon. Jurisdiction filtering (via `REQUIREMENT.derived_from` → codex `jurisdiction` field) narrows the lane to one or more regimes.
+The lane therefore remains a **derived** projection of the assertion + requirement + codex graph: no compliance data is written into the blueprint. Jurisdiction filtering (via `REQUIREMENT.derived_from` → codex `jurisdiction` field) narrows the lane to one or more regimes. Stage-column localisation is a later decision, not a silent renderer convention.
 
 #### Cell decoration — three orthogonal signals
 

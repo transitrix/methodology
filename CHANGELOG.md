@@ -23,6 +23,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 - **BREAKING: the `fga` notation key is removed.** `*.fga.transitrix.yaml` / `notation: fga` — the 3-layer Driver → Goal → Activity chain — is no longer a valid notation; author it as a `dgca` document with `view_config.layers.changes: off` (DGA mode) instead, per the 2026-06-23 FGA-into-DGCA merge decision (`notations/README.md` § Family selection). FGA was deprecated in `2.0.0` (2026-07-12); its own spec front matter named `removed_in: "4.0.0"` (`CONTRACT.md` §10.6's one-major window, satisfied as of `3.0.0`). The spec file (`notations/views/diagrams/03-fga.md`) and its example stub (`notations/examples/fga/`) are deleted — preserved in git history only, not repackaged. Migration recipe: [`migrations/3.1-to-4.0/`](migrations/3.1-to-4.0/) Transform A, pre-staged ahead of this cut. No adopter `*.fga.transitrix.yaml` file exists outside the migration recipe's own fixture, so the recipe carries nothing real to rewrite today.
 
+### Fixed
+
+- **`ASSERTION.realised_via` no longer claims a process-blueprint stage as a resolvable target.** `16-assertion.md` §2.1, `21-compliance-impact.md`, `22-coverage-metric.md`, and `13-process-blueprint.md` §5.4 listed a blueprint `STAGE-…` id as a `realised_via` / lane-join target; stages are document-local and `ASSERT-004` cannot resolve them. The decided process-local idiom is `STEP`. View grouping by `stages[]` is unchanged. No schema, enum, TYPE, or validation-severity change. PATCH.
+
 ---
 
 ## [3.7.0] — 2026-08-22
