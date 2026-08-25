@@ -1,8 +1,8 @@
 ---
 title: "Relations — first-class time-aware links"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-22"
+last_updated: "2026-08-24"
 status: "draft"
 ---
 
@@ -66,6 +66,8 @@ valid_to: null
 ## 3. Relation `type` enum
 
 The enum is **closed** in v1. Each value names a specific kind of link between two primitive types; the validator enforces both the enum membership and (when the catalogue is loaded) the endpoint TYPE constraints.
+
+**Not every connection is a REL.** Some links are inline fields on the host element instead — timeless, own-record cross-references (§1). `REQUIREMENT.parent` ([15-requirement.md](15-requirement.md) §2.4) is the clearest case: it connects two `REQUIREMENT`s the same way `depends_on` below does, but stays inline because the link carries no time-varying state of its own. [15-requirement.md](15-requirement.md) §2.4.1 is the decision guide for choosing between `parent`, `depends_on`, and `required_for`.
 
 | `type` | Direction (from → to) | Endpoint TYPEs | Semantics |
 |---|---|---|---|
@@ -209,7 +211,7 @@ Each notation spec declares its relation kinds as either **inline (timeless)** o
 Inline relations that stay timeless in v1 (per the same per-notation declarations):
 
 - BPMN sequence flows ([01-bpmn.md](../views/diagrams/01-bpmn.md)) — within one process flow document.
-- DGCA / FGA / Action schedule cross-layer references (`driver.references_constraint`, etc.) where the model captures *what holds today* rather than the history of changes.
+- DGCA / Action schedule cross-layer references (`driver.references_constraint`, etc.) where the model captures *what holds today* rather than the history of changes.
 
 Each notation that adopts a first-class relation kind:
 

@@ -123,7 +123,7 @@ export async function runPass2({ markdown, instructionSlots, fill } = {}) {
     throw new Error(
       `pass2: markdown carries ${spans.length} instruction slot(s) but `
       + `instructionSlots lists ${instructionSlots.length} — pass 2 must run `
-      + 'against the markdown pass 1 produced for the same template',
+      + 'against the markdown pass 1 produced for the same recipe',
     );
   }
   for (let i = 0; i < spans.length; i++) {

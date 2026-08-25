@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "1.2"
+version: "1.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-22"
+last_updated: "2026-08-24"
 status: "draft"
 ---
 
@@ -222,6 +222,7 @@ A REQUIREMENT is a single obligation, but obligations naturally decompose: a bro
 - **Same-TYPE.** `parent` names another admitted `REQUIREMENT` — the higher-scale obligation this one decomposes from. Cross-TYPE hierarchies (REQUIREMENT → CONSTRAINT and vice versa) are not supported: a REQUIREMENT (positive obligation) and a CONSTRAINT (restriction) are peer motivation-layer elements per §1, not decompositions of one another. Mirror-pairs authored per §1.2 do not use `parent`.
 - **Inline; not time-aware.** `parent` is a timeless cross-reference on the requirement's own record — the same shape as `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3) and `LOCATION.parent` (§7.22). It is v0.x transitional and does **not** live in a `REL-…` file. If a time-aware requirement hierarchy is ever needed, a first-class `requirement_parent` REL kind ([elements/17-relations.md](17-relations.md)) is the promotion path — the current inline field is chosen for parity with the existing multi-scale primitives.
 - **Origin-agnostic.** The taxonomy in §2.1 does not restrict `parent`. Any two REQUIREMENTs may be linked regardless of their `origin` values — a broad `legislative` obligation may decompose into `legislative` sub-obligations, and a `project-product` deliverable-quality obligation may decompose into finer `project-product` sub-obligations. Cross-`origin` decomposition (e.g. a `legislative` parent with a `process-product` child) is permitted but should be authored deliberately: it typically signals an organisational choice to satisfy a legal duty through a process-quality obligation, and the reasoning belongs in the child's `description`.
+- **Stage-agnostic — MAY cross document-stage boundaries.** `parent` is not scoped to one ISO/IEC/IEEE 29148 specification document (StRS / SyRS / SRS, recorded by `level`, §2.5). Crossing tiers — a `system`-level child decomposing a `stakeholder`-level parent — is in fact the *typical* direction (§2.5's ladder is a decomposition guide, not a same-tier requirement); staying within one tier is equally valid. Not a validator constraint (§2.5). `parent` is independently silent on the endpoints' lifecycle/admission stage: the general rule that an inline reference must resolve to an *admitted* primitive applies exactly as it does to `derived_from` or `serves` (§6.1 of [CONTRACT.md](../CONTRACT.md)), with no further coupling between a parent's and a child's `admission_state`.
 - **Structure only, no traversal semantics.** `parent` records structure; it does **not** imply that satisfying the parent's obligation is realised by satisfying all children, or that a claim about the parent aggregates its children. Compliance claims remain per-REQUIREMENT via `ASSERTION` ([elements/16-assertion.md](16-assertion.md)); a hierarchy view over `parent` is a downstream tooling concern, not a validator concern. In particular, `REQ-COVERAGE-001` (§4) evaluates per-REQUIREMENT and is unaffected by parent linkage — a parent REQUIREMENT is not "covered" by an ASSERTION targeting its child.
 - **Optional.** Requirements without `parent` are top-level. Cycles in the `parent` chain are ill-formed (a REQUIREMENT is not its own transitive parent) but not currently a validator concern — same posture as `CHANGE.parent` and `LOCATION.parent`. Backfilling `parent` on existing admitted requirements is optional.
 
@@ -230,6 +231,20 @@ A REQUIREMENT is a single obligation, but obligations naturally decompose: a bro
 The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.13): authors MAY set `parent: CONSTRAINT-…` to decompose a broad restriction ("no personal data outside the EEA without safeguards") into narrower ones ("no PII in analytics logs sent outside the EEA"). Same-TYPE, same origin-agnostic semantics, same structure-only interpretation.
 
 **Precedent — one convention across `parent` fields.** Same-TYPE inline `parent` is the settled v0.x shape across multi-scale primitives: `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3, capability → process → step decomposition) and `LOCATION.parent` (§7.22, enclosing location). Reusing that shape here keeps the authoring surface uniform; no new pattern is introduced.
+
+### 2.4.1 Decision guide — connecting two `REQUIREMENT` records
+
+Three mechanisms exist for stating how one `REQUIREMENT` relates to another, or to a shipped state of a subject — `parent` above, and two first-class REL kinds registered in [17-relations.md](17-relations.md) §3. They answer different questions; picking the wrong one because two obligations "feel related" is the recurring authoring mistake this guide exists to head off.
+
+| Mechanism | Answers | Shape | Use when | Avoid when |
+|---|---|---|---|---|
+| `parent` (§2.4, above) | Is this obligation a narrower restatement of a broader one? | Inline field, same-TYPE (`REQUIREMENT` → `REQUIREMENT`), timeless | Structural decomposition — a broad obligation split into sub-obligations sharing its source, subject set, or accountability chain | The two obligations are independent, not one narrower than the other (use `depends_on`); or the question is about a release, not another `REQUIREMENT` (use `required_for`) |
+| `depends_on` ([17-relations.md](17-relations.md) §3) | Does obligation A only hold, or only make sense, because obligation B holds? | First-class REL, same-TYPE (`REQUIREMENT` → `REQUIREMENT`), time-aware | A conditional dependency between two peer obligations, neither of which is a restatement of the other | A is actually a narrower form of B (use `parent`); or the link encodes work order — that stays with `ACTION` / `CHANGE` |
+| `required_for` ([17-relations.md](17-relations.md) §3, §3.1) | In which shipped state of the subject must this obligation hold? | First-class REL, cross-TYPE (`REQUIREMENT` → `RELEASE`), time-aware | Scoping one obligation to one release of a `PRODUCT`/`APPLICATION`, so it doesn't read as binding retroactively on every earlier release | The relationship is between two `REQUIREMENT`s, not a release (use `parent` or `depends_on`); or the intent is to record who does the work or by when — that is `ACTION` / `CHANGE`, never a scope statement (§3.1) |
+
+The three never overlap: `parent` and `depends_on` both connect two `REQUIREMENT`s but disagree on whether one is a narrower form of the other; `required_for`'s `to` is always a `RELEASE`, never another `REQUIREMENT`, so it is never a candidate for a REQUIREMENT-to-REQUIREMENT question in the first place.
+
+Worked examples: [`examples/requirement-parent/`](../examples/requirement-parent/) (`parent`, crossing document-stage boundaries per §2.4's "Stage-agnostic" point), [`examples/relations/depends-on/`](../examples/relations/depends-on/), [`examples/relations/required-for/`](../examples/relations/required-for/).
 
 ### 2.5 `level` — specification tier (ISO/IEC/IEEE 29148 ladder)
 
@@ -245,7 +260,7 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 
 **Distinct from `origin`.** `origin` (§2.1) records the *authority chain* a requirement was drawn from (a law, a process spec, a project brief) — orthogonal to `level`. A `legislative`-origin requirement can be authored at any tier: a clause quoted near-verbatim from a regulation is typically `stakeholder`-level; a `system`-level requirement decomposed from it (§2.4, `parent`) inherits the same `origin` but narrows the tier, not the source.
 
-**Distinct from `parent`.** `parent` (§2.4) records structural decomposition — which broader REQUIREMENT this one narrows from — with no level semantics of its own. `parent` linkage may span tiers (a `system`-level child of a `stakeholder`-level parent, the typical direction of decomposition) or stay within one (splitting a broad `stakeholder` requirement into two narrower `stakeholder` requirements). The ladder above describes the *typical* decomposition direction; it is authoring guidance, not a validator constraint in v1 — `REQ-005` checks only that a present `level` value is one of the three, not that a child's `level` deepens relative to its parent's.
+**Distinct from `parent`.** `parent` (§2.4) records structural decomposition — which broader REQUIREMENT this one narrows from — with no level semantics of its own. Whether and how a `parent` link crosses this ladder's tiers is answered in §2.4's "Stage-agnostic" point, not repeated here.
 
 **Optional.** Requirements without `level` are level-agnostic — the same posture as pre-existing requirements admitted before this field was introduced. Backfilling `level` on existing admitted requirements is optional.
 
@@ -311,6 +326,9 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-24, connecting-REQUIREMENT decision guide):**
+- §2.4.1 — a compact decision guide distinguishing `parent`, `depends_on`, and `required_for` at one discoverable point, cross-linked from [17-relations.md](17-relations.md) §3. Documentation only: clarifies existing normative text (§2.4's `parent` decomposition, [17-relations.md](17-relations.md) §3's `depends_on` and `required_for` rows), introduces no new field, TYPE, or validator rule.
 
 **Landed (2026-08-22, PRINCIPLE codex TYPE):**
 - `derived_from`'s permitted TYPEs widened to include `PRINCIPLE` (§2 field table, `REQ-003`) — [14-codex.md](14-codex.md) §2.1 adds `PRINCIPLE` as a codex TYPE for a self-held rule with no stated issuing authority or conformance test. Additive: widening a permitted-values enum accepts strictly more than it did before; no existing REQUIREMENT needs updating.

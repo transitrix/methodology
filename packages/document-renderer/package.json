@@ -1,7 +1,7 @@
 {
   "name": "@transitrix/document-renderer",
   "version": "0.0.1",
-  "description": "Reference implementation of the .ttrs document-template format: pass 1 (deterministic resolution, no agent present), pass 2 (instruction-slot filling via a caller-supplied agent hook), the run record, and dependency-free PDF output.",
+  "description": "Reference implementation of the .ttrs document-recipe format: pass 1 (deterministic resolution, no agent present), pass 2 (instruction-slot filling via a caller-supplied agent hook), the run record, and dependency-free PDF output.",
   "type": "module",
   "engines": {
     "node": ">=20"

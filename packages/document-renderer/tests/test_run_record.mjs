@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Unit tests for src/run-record.mjs, against the run record's own
-// requirement: it names template id and version, repository commit, model
+// requirement: it names recipe id and version, repository commit, model
 // id, run timestamp (ISO 8601), and — per slot, including one that produced
 // nothing — the instruction and the text it produced. The 2026-08-12 decision
 // "an instruction slot specifies the outcome, not the procedure" adds a
@@ -17,8 +17,8 @@ function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
 const HEADER = {
   document: 'Market Requirements Document',
   kind: 'mrd',
-  template_id: 'product.mrd',
-  template_version: '1.0',
+  recipe_id: 'product.mrd',
+  recipe_version: '1.0',
   canon: 'canon',
 };
 
@@ -56,14 +56,14 @@ const NOT_ATTEMPTED_SLOT = {
     slotResults: [SUFFICIENT_SLOT, NOT_ATTEMPTED_SLOT],
   });
 
-  check(record.template_id === 'product.mrd', 'template id is carried from the header');
-  check(record.template_version === '1.0', 'template version is carried from the header');
+  check(record.recipe_id === 'product.mrd', 'recipe id is carried from the header');
+  check(record.recipe_version === '1.0', 'recipe version is carried from the header');
   check(record.repository_commit === 'abc1234', 'repository commit is named');
   check(record.model_id === 'claude-sonnet-5', 'model id is named');
   check(record.run_timestamp === '2026-08-15T12:00:00.000Z', 'run timestamp is carried through, not recomputed');
   check(record.render_date === '2026-08-15', 'render date is carried from pass 1');
   check(record.profile === 'strict', 'the profile a run used is named');
-  check(record.slots.length === 2, 'every slot present in the template is named — including the empty one');
+  check(record.slots.length === 2, 'every slot present in the recipe is named — including the empty one');
 }
 
 // ── Every slot, including one that produced nothing ───────────────────────
@@ -104,7 +104,7 @@ const NOT_ATTEMPTED_SLOT = {
 {
   const record = buildRunRecord({ header: HEADER, renderDate: '2026-08-15', profile: 'strict' });
   check(Array.isArray(record.slots) && record.slots.length === 0,
-    'a template with no instruction slots still gets a well-formed record');
+    'a recipe with no instruction slots still gets a well-formed record');
 }
 
 // ── Repository commit / model id are null, not omitted, when absent ──────

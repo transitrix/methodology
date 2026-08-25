@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Post-migration validation — methodology 3.1 → 4.0 (FGA retirement).
+// Post-migration validation — methodology 3.1 → 4.0 (FGA retirement +
+// recipe-file header rename).
 //
-// Asserts no FGA residue remains:
+// Asserts no residue of either transform remains:
 //   - no *.fga.transitrix.yaml file
 //   - no file with notation: fga
+//   - no *.ttrs file with a template_id or template_version header field
 //
-// Exit 0 = clean (fully on 4.0 form); Exit 1 = FGA residue found (run codemod again).
+// Exit 0 = clean (fully on 4.0 form); Exit 1 = residue found (run codemod again).
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -19,7 +21,7 @@ function walk(dir, out = []) {
     const f = join(dir, e);
     let st; try { st = statSync(f); } catch { continue; }
     if (st.isDirectory()) walk(f, out);
-    else if (st.isFile() && e.endsWith('.yaml')) out.push(f);
+    else if (st.isFile() && (e.endsWith('.yaml') || e.endsWith('.ttrs'))) out.push(f);
   }
   return out;
 }
@@ -35,13 +37,20 @@ for (const f of walk(target)) {
   const c = readFileSync(f, 'utf8');
   if (/^notation\s*:\s*fga\b/m.test(c))
     problems.push(`${rel}: notation: fga — run codemod to migrate to notation: dgca`);
+
+  if (f.endsWith('.ttrs')) {
+    if (/^template_id\s*:/m.test(c))
+      problems.push(`${rel}: template_id — run codemod to migrate to recipe_id`);
+    if (/^template_version\s*:/m.test(c))
+      problems.push(`${rel}: template_version — run codemod to migrate to recipe_version`);
+  }
 }
 
 if (problems.length) {
-  console.error(`FAIL — ${problems.length} FGA residue(s):`);
+  console.error(`FAIL — ${problems.length} residue(s):`);
   problems.forEach(p => console.error(`  ✗ ${p}`));
   process.exit(1);
 }
 
-console.log('PASS — no FGA residue; repo is fully on 4.0 form.');
+console.log('PASS — no FGA or recipe-header residue; repo is fully on 4.0 form.');
 process.exit(0);

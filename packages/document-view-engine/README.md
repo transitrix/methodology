@@ -1,7 +1,7 @@
 # @transitrix/document-view-engine
 
-Parser for **skeleton files** — the Markdown-with-transclusion source format the
-document-view engine renders against canon. A skeleton carries structure and
+Parser for **recipe files** — the Markdown-with-transclusion source format the
+document-view engine renders against canon. A recipe carries structure and
 transclusion tags; the engine resolves them and emits a document. No document layout
 ships with this package — a layout is authored by whoever needs that document, in
 their own repository.
@@ -9,7 +9,7 @@ their own repository.
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
 rendering, the `trace` coverage matrix, and `view` rendering for the `blocks`
-notation.** `parseSkeleton()` turns a skeleton file's text
+notation.** `parseRecipe()` turns a recipe file's text
 into a header object and a body AST. `resolveReference()` / `createResolver()`
 classify an id against canon into one of the four states below. `createEvaluator()`
 resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
@@ -73,7 +73,7 @@ its AST node names, and everything downstream of the parse — reference resolut
 The two packages are consumed in-tree from this repository, so the imports are
 repo-relative paths; there is no install step and no build.
 
-## Skeleton file shape
+## Recipe file shape
 
 ```markdown
 ---
@@ -113,9 +113,9 @@ against a literal, ANDed only — no other operator is expressible, by design.
 ## Usage
 
 ```js
-import { parseSkeleton } from '@transitrix/document-view-engine/src/parse-skeleton.mjs';
+import { parseRecipe } from '@transitrix/document-view-engine/src/parse-recipe.mjs';
 
-const { header, ast, errors } = parseSkeleton(fileText);
+const { header, ast, errors } = parseRecipe(fileText);
 if (errors.length > 0) {
   // each entry is { message } — surface all of them, not just the first
 }
@@ -123,7 +123,7 @@ if (errors.length > 0) {
 
 ## Reference resolution (§3)
 
-Given the `canon:` path from a skeleton's header, `createResolver()` walks canon once
+Given the `canon:` path from a recipe's header, `createResolver()` walks canon once
 and returns a bound `resolveReference(id, { renderDate })` — every reference in one
 render pass shares the same canon index and migration-manifest load.
 
@@ -202,13 +202,13 @@ the model, not a broken reference, so it never feeds `failOn`; that check is
 `REQ-VERIF-COVERAGE-001` ([15-requirement.md](../../notations/elements/15-requirement.md)
 §4), a separate cross-cutting rule.
 
-`figure` / `figref` render for real. Pass `skeletonDir` — the directory containing
-the skeleton file — so a `figure`'s (or `view`'s) relative path resolves; an absolute
+`figure` / `figref` render for real. Pass `recipeDir` — the directory containing
+the recipe file — so a `figure`'s (or `view`'s) relative path resolves; an absolute
 path is used as-is. Numbers are assigned once, in document order, across every
 `figure` **and** `view` node in the AST together (§2 treats them as one shared
 "illustration" sequence) — a `figref` may point at either form, later in the
 document, and a forward reference still resolves to the right number; inserting a
-`figure` or `view` earlier in the skeleton shifts every later number correctly. A
+`figure` or `view` earlier in the recipe shifts every later number correctly. A
 `figure` whose file doesn't exist on disk renders with the `dv-illus-missing` border
 class instead of `dv-illus-manual`, and counts as a failing state for `clean`'s
 `failOn` the same way an unresolved reference does.
@@ -236,7 +236,7 @@ change) — not built in this package.
 ## Tests
 
 ```
-node packages/document-view-engine/tests/test_parse_skeleton.mjs
+node packages/document-view-engine/tests/test_parse_recipe.mjs
 node packages/document-view-engine/tests/test_resolve_references.mjs
 node packages/document-view-engine/tests/test_evaluate.mjs
 node packages/document-view-engine/tests/test_blocks_view.mjs

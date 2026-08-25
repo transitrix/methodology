@@ -1,7 +1,7 @@
 # The conformance fixture is compared byte-for-byte, so every input that feeds it
 # and the frozen output itself must check out identically on every platform.
 #
-# Without this, `core.autocrlf=true` on Windows checks the template out with CRLF
+# Without this, `core.autocrlf=true` on Windows checks the recipe out with CRLF
 # and Linux CI checks it out with LF — pass 1 copies fixed text through verbatim,
 # so the rendered Markdown differs by line ending alone and the comparison fails
 # on whichever platform did not generate the fixture. That would make the frozen

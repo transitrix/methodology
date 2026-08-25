@@ -1,6 +1,6 @@
 name: document-view-engine test
 
-# Unit tests for @transitrix/document-view-engine — the skeleton-file parser,
+# Unit tests for @transitrix/document-view-engine — the recipe-file parser,
 # reference resolver, evaluator, blocks view renderer and document renderer.
 # Deterministic, no API key and no model: a plain Node run.
 #
@@ -35,8 +35,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Run skeleton-parser tests
-        run: node packages/document-view-engine/tests/test_parse_skeleton.mjs
+      - name: Run recipe-parser tests
+        run: node packages/document-view-engine/tests/test_parse_recipe.mjs
 
       - name: Run reference-resolution tests
         run: node packages/document-view-engine/tests/test_resolve_references.mjs

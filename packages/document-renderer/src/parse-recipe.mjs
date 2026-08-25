@@ -1,4 +1,4 @@
-// `.ttrs` document-template parser — syntax only.
+// `.ttrs` document-recipe parser — syntax only.
 //
 // A `.ttrs` file is prose with directives, not a mapping. It carries a YAML
 // front-matter header and a body made of four slot kinds:
@@ -9,7 +9,7 @@
 //                           / `{{ figref … }}` (cross-reference)
 //   instruction slot        `{{# instruct <slot-id> }} … {{/ instruct }}`
 //
-// Scope of this module: syntax. It turns a template's text into a header object
+// Scope of this module: syntax. It turns a recipe's text into a header object
 // and a body AST. It resolves nothing against a repository and renders nothing —
 // that is pass1.mjs, built on top of this AST.
 //
@@ -23,12 +23,12 @@
 //             names and declines, never silently drops and never reports as
 //             though the author mistyped something
 //
-// Folding the second into the first would tell an author their valid template
+// Folding the second into the first would tell an author their valid recipe
 // is a typo.
 //
 // Zero runtime dependencies outside this package. The grammar itself — front
 // matter, header scalars, the id/field-path split — lives in syntax.mjs, shared
-// with the view engine's skeleton parser: one notation, one parser. What stays
+// with the view engine's recipe parser: one notation, one parser. What stays
 // here is what pass 1 alone decides: its construct set and its error codes.
 
 import { isValidId } from './ids.mjs';
@@ -41,23 +41,23 @@ import {
 
 // `<basename>.<kind>.ttrs` — the middle segment is the document kind, so the
 // existing extension/parent-folder lint applies to it unchanged.
-const TEMPLATE_FILENAME = /^[^.]+\.([a-z0-9-]+)\.ttrs$/;
+const RECIPE_FILENAME = /^[^.]+\.([a-z0-9-]+)\.ttrs$/;
 
 const SLOT_ID = /^[a-z0-9][a-z0-9-]*$/;
 
-const REQUIRED_HEADER_FIELDS = ['document', 'kind', 'template_id', 'template_version'];
+const REQUIRED_HEADER_FIELDS = ['document', 'kind', 'recipe_id', 'recipe_version'];
 
 // Returns the document kind declared by a `.ttrs` filename, or undefined when the
 // name is not of that shape. Exported so a caller can check it against the header's
 // `kind:` without re-deriving the pattern.
-export function templateKindFromFilename(name) {
-  const m = TEMPLATE_FILENAME.exec(String(name));
+export function recipeKindFromFilename(name) {
+  const m = RECIPE_FILENAME.exec(String(name));
   return m ? m[1] : undefined;
 }
 
 // ── Header ───────────────────────────────────────────────────────────────
 // `canon:` is deliberately optional — the repository is an optional input. A
-// template naming no model object and no derived figure renders standalone.
+// recipe naming no model object and no derived figure renders standalone.
 
 function parseHeader(headerText) {
   const errors = [];
@@ -79,8 +79,8 @@ function parseHeader(headerText) {
     header: {
       document: fields.document,
       kind: fields.kind,
-      template_id: fields.template_id,
-      template_version: fields.template_version,
+      recipe_id: fields.recipe_id,
+      recipe_version: fields.recipe_version,
       canon: fields.canon ?? null,
     },
     errors,
@@ -360,14 +360,14 @@ function classify(rawContent, errors) {
 
 // ── Entry point ──────────────────────────────────────────────────────────
 
-export function parseTemplate(text) {
+export function parseRecipe(text) {
   const errors = [];
   const m = FRONT_MATTER.exec(String(text));
   if (!m) {
     return {
       header: null,
       ast: [],
-      errors: [{ code: 'TTRS-001', message: 'template has no `---` front-matter header' }],
+      errors: [{ code: 'TTRS-001', message: 'recipe has no `---` front-matter header' }],
     };
   }
 

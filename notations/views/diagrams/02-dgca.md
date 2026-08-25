@@ -19,7 +19,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 | `notation:` value | `dgca` |
 | File extension | `*.dgca.transitrix.yaml` |
 
-> **Deprecation note:** `fgca` and `fga` were the pre-2026-06 notation keys. Migrate to `dgca`. The old 3-layer FGA view (Driver → Goal → Activity) is now expressed as a `dgca` document with `view_config.layers.changes: off`.
+> **Deprecation note:** `fgca` and `fga` were the pre-2026-06 notation keys — `fga` was removed in `4.0.0` (migration recipe under [`migrations/3.1-to-4.0/`](../../../migrations/3.1-to-4.0/)). Migrate to `dgca`. The old 3-layer FGA view (Driver → Goal → Activity) is now expressed as a `dgca` document with `view_config.layers.changes: off`.
 
 ---
 

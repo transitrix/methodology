@@ -112,7 +112,7 @@ See [Documentation](#documentation) above for the full list of root-level files 
 
 ## Notations supported
 
-Transitrix defines text-native notations for the most common enterprise-architecture artefacts — process diagrams (BPMN), goals trees, capability maps, the DGCA / FGA strategy chains, action networks, process maps, blocks, products and applications catalogues, scenarios, issues, and process blueprints — plus element notations for the codex, requirements, assertions, relations, actors, and stakeholders. Each view notation has a `*.<short-name>.transitrix.yaml` extension and a `notation:` header.
+Transitrix defines text-native notations for the most common enterprise-architecture artefacts — process diagrams (BPMN), goals trees, capability maps, the DGCA strategy chain, action networks, process maps, blocks, products and applications catalogues, scenarios, issues, and process blueprints — plus element notations for the codex, requirements, assertions, relations, actors, and stakeholders. Each view notation has a `*.<short-name>.transitrix.yaml` extension and a `notation:` header.
 
 See **[`notations/README.md`](notations/README.md)** for the canonical index of every notation — short names, file extensions, and spec-maturity status (`draft` / `documented` / `stable`) — and [`method/04-notations.md`](method/04-notations.md#1-the-notation-kit) for the rationale. The catalogue is not duplicated here, to keep a single source of truth.
 
@@ -133,7 +133,7 @@ Each organisation is structurally isolated. They share methodology, validators, 
 
 ## Authorship and license
 
-Transitrix — including the DGCA / FGA notations that form part of it — is authored by **Valerii Korobeinikov**. The methodology is published under the **MIT license** as open documentation. Contributions are welcomed — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Transitrix — including the DGCA notation that forms part of it — is authored by **Valerii Korobeinikov**. The methodology is published under the **MIT license** as open documentation. Contributions are welcomed — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 **Contact:** [hello@transitrix.com](mailto:hello@transitrix.com)
 
