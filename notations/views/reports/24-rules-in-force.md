@@ -45,7 +45,7 @@ notation: rules-in-force
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 view:
   # ... see §3
 ```
@@ -94,7 +94,7 @@ notation: rules-in-force
 spec_version: "0.1"
 name: "Rules in force"                      # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                  # optional per CONTRACT.md §4
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 
 view:
   id: RULES_IN_FORCE-ALL-1
@@ -163,7 +163,7 @@ notation: rules-in-force
 spec_version: "0.1"
 name: "Rules in force"                 # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 view:
   id: RULES_IN_FORCE-ALL-1
   name: "Rules in force"

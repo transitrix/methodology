@@ -34,7 +34,7 @@ An MRD view file carries the shared envelope (`notation:`, `spec_version:`, `met
 ```yaml
 notation: mrd
 spec_version: "0.1"
-methodology_version: "3.7.0"
+methodology_version: "4.0.0"
 
 view:
   id: MRD-<NAME>-1
