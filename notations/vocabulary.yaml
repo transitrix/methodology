@@ -358,6 +358,9 @@ relation_types:
   introduced_in:
     from: [INTEGRATION, APPLICATION]
     to: [RELEASE]
+  assembled_on:
+    from: [RELEASE]
+    to: [RELEASE]
 
 # Retired relation kind names — accepted, warned on, never silently rewritten.
 deprecated_relation_types:
