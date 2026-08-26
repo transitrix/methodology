@@ -80,3 +80,4 @@ Once an adopter has admitted its first `REQUIREMENT` and expects a design review
 - [`notations/CONTRACT.md`](../notations/CONTRACT.md) §6, §6.1, §6.2, §7, §8 — the underlying mechanism.
 - [`notations/elements/15-requirement.md`](../notations/elements/15-requirement.md), [`16-assertion.md`](../notations/elements/16-assertion.md), [`27-verification.md`](../notations/elements/27-verification.md) — the elements a baseline manifest reads.
 - [`notations/views/21-compliance-impact.md`](../notations/views/reports/21-compliance-impact.md), [`22-coverage-metric.md`](../notations/views/reports/22-coverage-metric.md) — the sibling audit surfaces over the same content.
+- [`guides/how-a-document-is-versioned.md`](../guides/how-a-document-is-versioned.md) — issued model-backed documents: the tag is the baseline; the revision table in the PDF is prose in the recipe.
