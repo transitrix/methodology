@@ -52,7 +52,7 @@ python scripts/report.py list --root <repo>
 python scripts/report.py render --report-id … --name … --dry-run --root <repo>
 ```
 
-`render` resolves the renderer as `transitrix`, then `npx @transitrix/cli`, then `$TRANSITRIX_CLI`. Named reports are written to `<root>/canon/views/<notation>/<id>.<notation>.transitrix.yaml`. PDF output requires WeasyPrint on PATH (`pipx install weasyprint`).
+`render` resolves the renderer as `transitrix`, then `npx @transitrix/cli`, then `$TRANSITRIX_CLI`. Named reports are written to `<root>/views/<notation>/<id>.<notation>.transitrix.yaml`. PDF output requires WeasyPrint on PATH (`pipx install weasyprint`).
 
 ## Prerequisites
 

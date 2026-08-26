@@ -71,7 +71,7 @@ A single Transitrix repo for one person or a small team. All memory kinds live i
 
 ```
 canon/elements/        ← semantic: goals, capabilities, processes
-canon/views/           ← derived diagrams
+views/           ← derived diagrams
 field/                 ← episodic: observations, notes, artefacts
 operations/decisions/  ← episodic: ADRs — the decision log
 codex/                 ← governance constraints
@@ -112,7 +112,7 @@ The Knowledge Store's curated canon *is* the semantic layer of the Enterprise Me
 ## How to start
 
 1. **Follow the Transitrix Alone pattern.** A Transitrix repo is an Enterprise Memory. The `canon/` + `field/` + `operations/` layout established by [Transitrix Alone](transitrix-alone.md) is the base structure — nothing extra needed to start.
-2. **Author your first Goals tree.** This is the seed of the semantic layer. One `*.goals.transitrix.yaml` file in `canon/views/` captures intent at the top of the model.
+2. **Author your first Goals tree.** This is the seed of the semantic layer. One `*.goals.transitrix.yaml` file in `views/` captures intent at the top of the model.
 3. **Capture the first episodic entries.** Write the initial ADR documenting why you are adopting Transitrix (`operations/decisions/0001-initial-scope.md`). Every future decision that belongs in the model record gets an ADR here.
 4. **Use `field/` for observations.** Notes, interview summaries, meeting outputs — anything not yet ready for canon goes in `field/`. If you are using the Knowledge Store pattern, these feed the OKF curation track. If not, they remain as-is until you are ready to promote.
 5. **Add the Knowledge Store when curation load grows.** The Knowledge Store is the natural next step when field material volume exceeds what one reviewer can handle directly. The repo structure does not change — `canon/` remains the centre.

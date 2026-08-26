@@ -70,7 +70,7 @@ No curation pipeline, no promotion gate, no separate knowledge repo. All memory 
 
 1. **Scaffold the repo.** Run `/transitrix:onboard` in a Claude Code session with the methodology plugin, or copy `organizations/acme_corp/` as a reference. The standard layout — `canon/`, `field/`, `operations/` — is your personal memory structure. No extra configuration.
 2. **Pin the methodology version.** Set `methodology_version` in `transitrix.yaml` to the current release.
-3. **Author your first Goals tree.** One `*.goals.transitrix.yaml` file in `canon/views/` seeds the semantic layer. Write three to five goals; goals require nothing else to be in place.
+3. **Author your first Goals tree.** One `*.goals.transitrix.yaml` file in `views/` seeds the semantic layer. Write three to five goals; goals require nothing else to be in place.
 4. **Add your first contacts.** An `ACTOR` element per person or organisation you engage with regularly. Link them from goals and projects as you add those.
 5. **Capture the first episodic entries.** Write an ADR (`operations/decisions/0001-initial-scope.md`) explaining why you started this repo. Every significant personal or professional decision that belongs in the record gets an ADR here.
 6. **Put new observations in `field/`.** Meeting notes, research summaries, interview outputs — anything not yet ready for the semantic canon goes in `field/`. If you run a curation step later, these are the inputs.

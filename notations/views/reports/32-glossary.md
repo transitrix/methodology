@@ -60,12 +60,12 @@ An entry from either provenance renders **indistinguishable in shape**: `name`, 
 Per the named view-config convention ([REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md) §2):
 
 ```
-<repo-root>/canon/views/glossary/<NAME>.glossary.transitrix.yaml
+<repo-root>/views/glossary/<NAME>.glossary.transitrix.yaml
 ```
 
 Examples:
-- `canon/views/glossary/full.glossary.transitrix.yaml`
-- `canon/views/glossary/business-layer.glossary.transitrix.yaml`
+- `views/glossary/full.glossary.transitrix.yaml`
+- `views/glossary/business-layer.glossary.transitrix.yaml`
 
 ---
 

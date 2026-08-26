@@ -39,7 +39,7 @@ An Action Schedule document has two valid authoring forms — both use the same 
 
 The **promotion trigger** is cross-document sharing: an action stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/05_implementation/actions/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
-The reconstruction invariant applies: `render(Elements, view_config)` → schedule diagram. Deleting `canon/views/action/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements, view_config)` → schedule diagram. Deleting `views/action/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
 **Where actions are authored.** In the inline form, actions are authored directly in the view file under `actions[]`. In the projection form, new actions are authored as standalone element files in `canon/elements/05_implementation/actions/<ACTION-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §3 and §7.4) and the ACTION schema ([elements/24-action.md](../../elements/24-action.md)). The Action Schedule view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](./02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](../reports/23-actions-tree.md)), and the Action Card ([`18-action-card.md`](./18-action-card.md)).
 
@@ -74,12 +74,12 @@ The notation captures **what work is planned** (from the ACTION elements), **for
 Action Schedule view documents live in:
 
 ```
-canon/views/action/<NAME>.action.transitrix.yaml
+views/action/<NAME>.action.transitrix.yaml
 ```
 
 Examples:
-- `canon/views/action/platform-launch-2026.action.transitrix.yaml`
-- `canon/views/action/gdpr-remediation.action.transitrix.yaml`
+- `views/action/platform-launch-2026.action.transitrix.yaml`
+- `views/action/gdpr-remediation.action.transitrix.yaml`
 
 ---
 

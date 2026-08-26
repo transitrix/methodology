@@ -1,7 +1,7 @@
 # Transitrix BPMN process template — multi-lane (copy-and-fill)
 # Spec:      notations/views/diagrams/01-bpmn.md
 # Extension: *.bpmn.transitrix.yaml
-# Location:  canon/views/bpmn/   (one pool; lanes partition it; file-local node labels)
+# Location:  views/bpmn/   (one pool; lanes partition it; file-local node labels)
 #
 # Swimlanes are the actors: each lane sets performed_by_role (and optionally
 # supported_by_application) as the default for its tasks; a task overrides with its

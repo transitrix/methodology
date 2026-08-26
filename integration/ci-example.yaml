@@ -11,7 +11,7 @@
 #   - model  (repo scope) — the whole loaded model: repo structure + manifest,
 #            atomicity, referential integrity, ArchiMate semantics, policy.
 #            Backed by .validators/lint.py (ships in the worked example; scans canon/).
-#   - views  (file scope) — every canon/views/**/*.transitrix.yaml validates/compiles,
+#   - views  (file scope) — every views/**/*.transitrix.yaml validates/compiles,
 #            one file at a time, via npx @transitrix/cli. All canonical notation
 #            extensions are accepted without --ext; pass --ext <notation-name>
 #            only for a non-canonical extension outside the built-in registry.
@@ -32,12 +32,14 @@ on:
   pull_request:
     paths:
       - 'canon/**'
+      - 'views/**'
       - 'transitrix.yaml'
       - '.validators/**'
   push:
     branches: [main]
     paths:
       - 'canon/**'
+      - 'views/**'
       - 'transitrix.yaml'
   workflow_dispatch:
 
@@ -88,7 +90,7 @@ jobs:
           shopt -s globstar nullglob
           status=0
           found=0
-          for f in canon/views/**/*.transitrix.yaml; do
+          for f in views/**/*.transitrix.yaml; do
             found=1
             echo "::group::validate $f"
             npx --yes @transitrix/cli@1 validate "$f" || status=1

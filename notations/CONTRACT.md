@@ -2,7 +2,7 @@
 
 All Transitrix notations share the same file-header contract: the same required field, the same reserved field, the same validator rules, and the same extension/content match guarantee. This document defines those shared rules once. Each notation spec links here and lists only its per-notation values (the `notation:` short name and the file extension).
 
-This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and verification domain (REQUIREMENT + ASSERTION + VERIFICATION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves — and §8.1 covers risk modelling — the dedicated `RISK` element type, and the ArchiMate Risk and Security Overlay mapping onto core motivation primitives as an alternative. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — and §14.5 the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`. §17 defines the **binding envelope** (`canon_id` / `origin`) that relates a project repository's element to a central repository's, additive to every other section here.
+This document also defines four organisation-level contracts shared across all notations: the **zone model** (§5), the **admission record** (§6), the **primitive lifecycle** (§7), and the **versioned-attribute sidecar** (§9) — the four shared shapes every organisation artefact may carry. §8 aggregates the validation rules of the compliance and verification domain (REQUIREMENT + ASSERTION + VERIFICATION) for discoverability — the per-notation specs remain authoritative for the rule definitions themselves — and §8.1 covers risk modelling — the dedicated `RISK` element type, and the ArchiMate Risk and Security Overlay mapping onto core motivation primitives as an alternative. §10 sets the **versioning and compatibility policy** for the methodology itself — what kind of change each SemVer bump may carry, and what adopters can rely on across releases. §12 defines the **extensions bag** (`extensions:` — the open attribute escape hatch on every entity) and §13 the **unresolved holding area** (`canon/unresolved/` — where ingestion parks an object it cannot yet type); together they are the zero-information-loss contract the ingest pipeline relies on. §14 defines the **view-config contract** — the presentation layer of a view document — §14.5 covers the **legacy layout** (deprecated `canon/views/` coexistence), and §14.6 defines the **rendered snapshot format** — the committed output artefact produced by each CLI Capture run. §15 defines the **domain vocabulary** separating the project-domain `Action` from the process-domain `Activity`. §17 defines the **binding envelope** (`canon_id` / `origin`) that relates a project repository's element to a central repository's, additive to every other section here.
 
 A change to the rules below applies to all notations simultaneously — they should be edited here, not duplicated into each spec.
 
@@ -901,7 +901,7 @@ A `view_config` is the **presentation layer** of a view document: the configurat
 - Admission records
 - Any fact about how the organisation works or what it has decided
 
-**Corollary.** Deleting `canon/views/**` entirely loses no model knowledge — views regenerate from elements + view_config files. A view carries no non-derivable information beyond its configuration ([`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §1.1).
+**Corollary.** Deleting the entire `views/` folder entirely loses no model knowledge — all views regenerate from elements + relations + view_config files. A view carries no non-derivable information beyond its configuration ([`ELEMENT_PRIMITIVES.md`](ELEMENT_PRIMITIVES.md) §1.1).
 
 ### 14.2 Where view_config lives in a file
 
@@ -965,7 +965,25 @@ Each per-view migration (VP-3+) adds this defaults block to its spec.
 
 ---
 
-### 14.5 Rendered snapshots
+### 14.5 Legacy layout (`canon/views/` — deprecated)
+
+Repositories created before 2026-08-26 may carry views nested inside `canon/views/`, where `canon/views/<notation>/` holds view documents. This layout is **legacy and deprecated**. The normative layout places view documents in a `views/` folder that is a sibling of `canon/` at the organisation root, so the path becomes `views/<notation>/` instead.
+
+**Transition policy.**
+
+A repository in transition may carry both `canon/views/` (legacy) and `views/` (normative) during migration. The **diagnostic `MIX-001`** fires when both layouts coexist in the same organization:
+
+| Rule | Severity | Description |
+|---|---|---|
+| `MIX-001` | warning | Both legacy `canon/views/` and normative `views/` folders exist under the same organisation root. The repository is in transition. Views are authoritative from the normative `views/` layout; the legacy `canon/views/` layout SHOULD NOT receive new elements. The diagnostic MUST name both paths found (e.g., "both `<org>/canon/views/` and `<org>/views/` exist") and SHOULD direct migration to the normative layout per [`method/02-repository.md`](../method/02-repository.md) §1.1a. |
+
+When only `canon/views/` exists (no `views/` sibling yet), the validator accepts it as valid legacy. When both layouts exist, `MIX-001` fires to highlight that the repository is mid-transition. When only `views/` exists, `MIX-001` does not fire; the layout is fully migrated.
+
+**Validator behaviour:** A validator that encounters `MIX-001` SHOULD warn that the legacy layout is deprecated and MAY halt admission of new elements into `canon/views/`. Validators MAY offer a codemod to migrate existing `canon/views/**` files to `views/**` automatically.
+
+---
+
+### 14.6 Rendered snapshots
 
 A `view_config` defines *what* to render (§14.1). A **rendered snapshot** is the committed output of that render — a point-in-time record of which elements the view projected and their key display values, written by the CLI and checked into the adopter repository. It makes the captured state visible in git without re-running the CLI.
 

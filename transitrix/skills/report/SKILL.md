@@ -82,7 +82,7 @@ For a coverage report add `--notation coverage-metric` and use `--regimes <codex
 
 The script:
 1. **resolves the renderer** (`transitrix`, or `npx @transitrix/cli`, or `$TRANSITRIX_CLI`);
-2. for a named report, **writes/updates** `<root>/canon/views/<notation>/<id>.<notation>.transitrix.yaml` — the canonical view-config artefact (it prints the path);
+2. for a named report, **writes/updates** `<root>/views/<notation>/<id>.<notation>.transitrix.yaml` — the canonical view-config artefact (it prints the path);
 3. **states the spec defaults** it left to the renderer for every field you did not pin;
 4. **invokes `export-compliance`** and streams Markdown to stdout (or writes the file for `--output`/PDF);
 5. **reports the config path used**, so the report is reproducible.
