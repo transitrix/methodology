@@ -65,7 +65,9 @@ async function main() {
       process.exitCode = 1;
       return;
     }
-    if (existing !== generated) {
+    // Normalize line endings before comparison so CRLF checkouts don't report as stale
+    const normalizeEol = (str) => str.replace(/\r\n/g, '\n');
+    if (normalizeEol(existing) !== normalizeEol(generated)) {
       console.error(`generate-plugin-manifests: ${TARGET_PATH} is stale relative to ${SOURCE_PATH}.`);
       console.error('Run: node scripts/generate-plugin-manifests.mjs');
       process.exitCode = 1;
