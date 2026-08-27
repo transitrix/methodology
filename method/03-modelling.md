@@ -82,6 +82,10 @@ metadata:
 
 ---
 
+**See also:**
+- [`guides/how-a-release-records-the-systems-it-was-assembled-on.md`](../guides/how-a-release-records-the-systems-it-was-assembled-on.md) — authoring `assembled_on` relations to freeze a release's build environment
+- [`notations/elements/17-relations.md`](../notations/elements/17-relations.md) §3 — the full relation-type enum and semantics
+
 **Next:** [`04-notations.md`](04-notations.md) — how to express different aspects of an enterprise.
 
 **Last reviewed:** 2026-08-16. Split from the former `01-methodology.md` §5 and §9 — see [`method/01-methodology.md`](01-methodology.md) for the redirect. §3a (the ArchiMate vocabulary reference table) is dropped in favour of [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md), the canonical ID authority it already pointed to. This release also corrects the element and relation ID examples, which previously mixed the canonical full-word grammar with a second, abbreviated form the naming rules explicitly forbade — every example now uses the one canonical grammar.
