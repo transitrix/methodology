@@ -1,13 +1,15 @@
-# Codex external artefact — a law or regulation given to the org by an outside authority.
+# Codex external artefact — a law, regulation, or SDO-issued standard given to
+# the org by an outside authority.
 # Schema: notations/elements/14-codex.md §3 + admission record (notations/CONTRACT.md §6).
 # File location: codex/external/<jurisdiction>/<ID>.yaml
 #   <jurisdiction> = ISO 3166-1 alpha-2 (ge, de, ru, …), `eu`, or `intl` — MUST match
-#   the `jurisdiction:` field below (validator rule CODEX-001).
+#   the `jurisdiction:` field below (validator rule CODEX-001). `intl` is live
+#   (internationally issued SDO artefacts — ISO, IEC, IEEE, and peers).
 # File name: the artefact's canonical ID + .yaml — one artefact per file.
 
-id: LAW-FILL-ME-1                   # canonical ID per IDS_AND_REFERENCES.md (LAW | REGULATION)
-name: "FILL-ME law or regulation name"
-type: LAW                           # LAW | REGULATION
+id: LAW-FILL-ME-1                   # canonical ID per IDS_AND_REFERENCES.md (LAW | REGULATION | STANDARD)
+name: "FILL-ME law, regulation, or standard name"
+type: LAW                           # LAW | REGULATION | STANDARD
 description: "FILL-ME — what the artefact governs"
 
 # Admission record (CONTRACT.md §6) — admitted_at/admitted_by are computed by
@@ -26,3 +28,5 @@ gate_checks:
 # do NOT add an applies_to block here. See 14-codex.md §8 Migration.
 jurisdiction: ge                    # MUST match parent folder codex/external/<jurisdiction>/
 effective_date: "2017-01-01"        # quoted ISO 8601 date the artefact takes effect
+# Required on type: STANDARD (CODEX-002) — the standards-developing organisation.
+# issuing_authority: "ISO"

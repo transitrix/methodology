@@ -176,7 +176,7 @@ The same `source_hash` deduplicates: if the identical content was already admitt
 
 The skill **proposes**; a human **confirms**. Never silently bake a higher trust than the source warrants.
 
-**Codex sources — laws, regulations, policies, standards — take the parallel `codex` route:** `transitrix-ingest admit-source --zone codex <processing/file.md> --type LAW|REGULATION|POLICY|INTERNAL_STANDARD --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION) or `codex/internal/` (POLICY/INTERNAL_STANDARD) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`.
+**Codex sources — laws, regulations, externally issued standards, policies, internal standards — take the parallel `codex` route:** `transitrix-ingest admit-source --zone codex <processing/file.md> --type LAW|REGULATION|STANDARD|POLICY|INTERNAL_STANDARD|PRINCIPLE --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>] [--issuing-authority <body>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION/STANDARD) or `codex/internal/` (POLICY/INTERNAL_STANDARD/PRINCIPLE) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`. STANDARD requires `--jurisdiction` and `--issuing-authority` (the issuing body).
 
 ---
 
@@ -401,7 +401,7 @@ Motivation-only extraction result the agent produces from `prompts/01_motivation
 
 After `emit-candidates`, each becomes a candidate under `_intake/processing/candidates/` with `derived_from: [<the field artefact id>]`, `admitted_to: pending`, `origin: project-product`, and the `extraction_confidence` review flag preserved. The review queue lists them for the human gate; nothing lands in `canon/` until admitted.
 
-For a **process-product** origin, swap the source: an SOP passage like "the returns process shall produce a completed refund confirmation within 24 hours" yields a `REQUIREMENT` with `origin: process-product` under the same steps. For a **legislative** origin, use the codex route ([Step 3](#step-3--emit-the-field-artefact-with-proposed-source_quality) — `admit-source --zone codex --type LAW|REGULATION|POLICY|INTERNAL_STANDARD`) instead of the field route; the motivation-only extraction still applies.
+For a **process-product** origin, swap the source: an SOP passage like "the returns process shall produce a completed refund confirmation within 24 hours" yields a `REQUIREMENT` with `origin: process-product` under the same steps. For a **legislative** origin, use the codex route ([Step 3](#step-3--emit-the-field-artefact-with-proposed-source_quality) — `admit-source --zone codex --type LAW|REGULATION|STANDARD|POLICY|INTERNAL_STANDARD|PRINCIPLE`) instead of the field route; the motivation-only extraction still applies.
 
 ---
 

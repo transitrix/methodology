@@ -14,7 +14,7 @@ dsm_status: "not implemented — Studio compliance-views renderer planned (consu
 **Date:** 2026-08-23
 **Status:** Draft — first cut of the canonical report-config for the codex-catalogue read. Sibling of the Compliance Impact ([21-compliance-impact.md](./21-compliance-impact.md)) and Coverage Metric ([22-coverage-metric.md](./22-coverage-metric.md)) views — shares the same `REQUIREMENT.derived_from` join key, but reads the **codex zone itself** rather than the obligation × subject overlay.
 **File extension:** `*.rules-in-force.transitrix.yaml`
-**Scope:** A **rendering / grouping / filtering configuration** over the `codex` zone ([14-codex.md](../../elements/14-codex.md)) — every admitted `LAW`, `REGULATION`, `POLICY`, and `INTERNAL_STANDARD` artefact currently in force, together with the `REQUIREMENT`s drawn from each via `derived_from`. The document is a presentation surface — it carries no canonical content of its own. Everything the view displays is **derived** from codex artefacts under `codex/external/<jurisdiction>/` and `codex/internal/` ([14-codex.md](../../elements/14-codex.md)), and from `REQUIREMENT` elements under `canon/elements/01_motivation/requirements/` ([15-requirement.md](../../elements/15-requirement.md)).
+**Scope:** A **rendering / grouping / filtering configuration** over the `codex` zone ([14-codex.md](../../elements/14-codex.md)) — every admitted `LAW`, `REGULATION`, `STANDARD`, `POLICY`, and `INTERNAL_STANDARD` artefact currently in force, together with the `REQUIREMENT`s drawn from each via `derived_from`. The document is a presentation surface — it carries no canonical content of its own. Everything the view displays is **derived** from codex artefacts under `codex/external/<jurisdiction>/` and `codex/internal/` ([14-codex.md](../../elements/14-codex.md)), and from `REQUIREMENT` elements under `canon/elements/01_motivation/requirements/` ([15-requirement.md](../../elements/15-requirement.md)).
 **Renderer:** Transitrix Studio — compliance views (planned); Transitrix DSM (planned).
 
 ---
@@ -58,7 +58,7 @@ A rules-in-force view answers one question: **what binds the organisation today,
 
 Every structural and change-shaped part of a model already has at least one view — the capability map, the process map, the products/applications catalogues. The `codex` zone ([14-codex.md](../../elements/14-codex.md)) has none: "what rules bind us today" was renderable only by reading `codex/external/<jurisdiction>/` and `codex/internal/` directly, file by file. This view closes that gap the same way every other report-config view closes one — a named, re-runnable projection, not a new element TYPE and not a new binding. The view adds no fact; every row is reconstructible from the codex catalogue and the `REQUIREMENT` catalogue alone ([ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1 reconstruction invariant).
 
-**`PRINCIPLE` is deliberately out of scope.** A `PRINCIPLE` artefact names no issuing authority and no conformance test ([14-codex.md](../../elements/14-codex.md) §2.1) — it is a value the organisation holds itself to, not a rule imposed from outside or checked from within. "In force" names the latter condition; a `PRINCIPLE` fails it by definition, not by a filter an adopter can loosen. `view.scope.codex.filter.codex_type` (§4) is closed to the same four TYPEs the Coverage Metric view already restricts its regime axis to (`COVMET-003`) — `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`.
+**`PRINCIPLE` is deliberately out of scope.** A `PRINCIPLE` artefact names no issuing authority and no conformance test ([14-codex.md](../../elements/14-codex.md) §2.1) — it is a value the organisation holds itself to, not a rule imposed from outside or checked from within. "In force" names the latter condition; a `PRINCIPLE` fails it by definition, not by a filter an adopter can loosen. `view.scope.codex.filter.codex_type` (§4) is closed to the same five TYPEs the Coverage Metric view already restricts its regime axis to (`COVMET-003`) — `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD`.
 
 This mirrors how the Compliance Impact ([21-compliance-impact.md](./21-compliance-impact.md)) and Coverage Metric ([22-coverage-metric.md](./22-coverage-metric.md)) views are report-configs over the same canonical join (`REQUIREMENT.derived_from` → codex artefact) — those two read the obligation-to-subject overlay; this view reads the source catalogue the overlay is derived from.
 
@@ -80,8 +80,8 @@ For the canonical authoring of the inputs the view reads, use the element primit
 
 | Concern | Authored as |
 |---|---|
-| The codex artefact that defines a rule (a law, a regulation, an internal policy or standard). | `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
-| The obligation extracted from a rule. | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)), with `derived_from: [LAW-… \| REGULATION-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
+| The codex artefact that defines a rule (a law, a regulation, an externally issued standard, an internal policy or standard). | `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
+| The obligation extracted from a rule. | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)), with `derived_from: [LAW-… \| REGULATION-… \| STANDARD-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
 
 ---
 
@@ -99,7 +99,7 @@ methodology_version: "4.1.0"
 view:
   id: RULES_IN_FORCE-ALL-1
   name: "Rules in force"
-  description: "Every admitted law, regulation, policy, and internal standard, with the requirements drawn from each."
+  description: "Every admitted law, regulation, external standard, policy, and internal standard, with the requirements drawn from each."
 
   # What the view scopes over. Either an explicit include list of codex artefact
   # IDs, or a filter that narrows by jurisdiction / TYPE. If both are present,
@@ -111,7 +111,7 @@ view:
         - LAW-GE-PERSONAL-DATA-2017-1
       # filter:
       #   jurisdiction: [eu, ge]                                        # optional; default — no jurisdiction narrowing
-      #   codex_type: [LAW, REGULATION, POLICY, INTERNAL_STANDARD]      # optional; default — all four (PRINCIPLE is never selectable, §1)
+      #   codex_type: [LAW, REGULATION, STANDARD, POLICY, INTERNAL_STANDARD]  # optional; default — all five (PRINCIPLE is never selectable, §1)
       # exclude_paths:                                                  # optional — globs relative to codex/ root; ignored when include: is set
       #   - "templates/**"
       #   - "service/**"
@@ -142,15 +142,15 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.id` | yes | string | — (required) | View identifier, canonical-grammar (`RULES_IN_FORCE-…`) per [IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.2 (`RULES_IN_FORCE` view-level TYPE). |
 | `view.name` | yes | string | — (required) | Human-readable name shown in the renderer. |
 | `view.description` | no | string | empty | Short description of the purpose of this view (which rules, why). |
-| `view.scope.codex.include` | no ¹ | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../../elements/14-codex.md)) — a `PRINCIPLE` reference here is a validation error (§1, `RIF-002`), not a silent drop. |
-| `view.scope.codex.filter` | no ¹ | object | **no filter — every `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../../elements/14-codex.md) §1.1), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four; `PRINCIPLE` is never a valid member, §1). The renderer resolves the filter against the `codex/` zone at render time. |
+| `view.scope.codex.include` | no ¹ | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs. Permitted TYPEs: `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../../elements/14-codex.md)) — a `PRINCIPLE` reference here is a validation error (§1, `RIF-002`), not a silent drop. |
+| `view.scope.codex.filter` | no ¹ | object | **no filter — every `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../../elements/14-codex.md) §1.1), `codex_type: […]` (subset of `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD`; default — all five; `PRINCIPLE` is never a valid member, §1). The renderer resolves the filter against the `codex/` zone at render time. |
 | `view.scope.codex.exclude_paths` | no ¹ | list of strings | unset (no path exclusions) | Glob patterns relative to the `codex/` root, same semantics as the Coverage Metric view's `view.regimes.exclude_paths` ([22-coverage-metric.md](./22-coverage-metric.md) §4). **Ignored when `view.scope.codex.include` is set.** |
-| `view.grouping.by` | no | string | `none` | `none` (a single flat, ordered list), `codex_type` (one group per `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`), `jurisdiction` (one group per jurisdiction; internal artefacts collapse into the synthetic bucket `internal`). |
+| `view.grouping.by` | no | string | `none` | `none` (a single flat, ordered list), `codex_type` (one group per `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD`), `jurisdiction` (one group per jurisdiction; internal artefacts collapse into the synthetic bucket `internal`). |
 | `view.order_by` | no | string | `id` | Ordering key applied within each group (or across the whole list when `grouping.by: none`): `id`, `name`, `effective_date`, `jurisdiction`. |
 | `view.summary.show_requirement_count` | no | bool | `true` | When true, render the count of admitted `REQUIREMENT`s whose `derived_from[]` names this artefact, per rule row. A rule with zero is rendered as a **counted zero**, not an absent row — see §5.3. |
 | `view.summary.show_grand_total` | no | bool | `true` | When true, render a grand-total row: total count of rules in scope, and (when `show_requirement_count` is also true) the sum of per-rule requirement counts. |
 
-¹ **`scope.codex`** — all three keys are optional and only ever *narrow* the rule axis. Omitting them enumerates every `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone. **Priority**: `include` wins over everything — when set, `filter` and `exclude_paths` are both ignored. When `include` is absent, `exclude_paths` is applied first (path-based exclusion from the candidate set), then `filter` (type / jurisdiction filter).
+¹ **`scope.codex`** — all three keys are optional and only ever *narrow* the rule axis. Omitting them enumerates every `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone. **Priority**: `include` wins over everything — when set, `filter` and `exclude_paths` are both ignored. When `include` is absent, `exclude_paths` is applied first (path-based exclusion from the candidate set), then `filter` (type / jurisdiction filter).
 
 All references in `view.scope.codex.include` resolve to canon primitives via the usual cross-reference rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §5).
 
@@ -169,7 +169,7 @@ view:
   name: "Rules in force"
 ```
 
-— renders **deterministically**: every `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` artefact admitted anywhere under `codex/`, ungrouped, ordered by `id`, each row carrying its per-rule requirement count and a grand total. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user. Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
+— renders **deterministically**: every `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` artefact admitted anywhere under `codex/`, ungrouped, ordered by `id`, each row carrying its per-rule requirement count and a grand total. This is the fallback the report skill (per the *reports rendered from declarative view-configs* architecture decision, §4) states back to the user. Each field a caller omits falls back to its §4 default; the result is reproducible from canon alone.
 
 Where a named, saved view-config of this notation lives in an adopter repo, and how a reader lists or re-runs it by name, is the registry convention in [REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md).
 
@@ -183,7 +183,7 @@ This section is the **render contract**: the deterministic algorithm any conform
 
 A conformant renderer reads exactly these canonical inputs:
 
-1. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `id`, `name`, `type`, `effective_date`, and — depending on sub-zone — `jurisdiction` (external) or `issuing_authority` (internal). `PRINCIPLE` artefacts are never read by this view (§1).
+1. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `STANDARD-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `id`, `name`, `type`, `effective_date`, and — depending on sub-zone — `jurisdiction` (external) or `issuing_authority` (internal). `PRINCIPLE` artefacts are never read by this view (§1).
 2. **`REQUIREMENT` catalogue** — every `REQUIREMENT-…` file under `canon/elements/01_motivation/requirements/` ([15-requirement.md](../../elements/15-requirement.md)). Each contributes its `derived_from[]` list of codex artefact IDs — the join key back to the rows above.
 
 The renderer reads **no other input**. In particular: the view document itself contributes only scope / grouping / ordering / labelling configuration — never a cell value.
@@ -192,7 +192,7 @@ The renderer reads **no other input**. In particular: the view document itself c
 
 For each codex artefact selected per §4 (`view.scope.codex.*`):
 
-1. **Resolve the scoped codex set** — apply in precedence order: (a) if `view.scope.codex.include` is set, use exactly those artefacts and skip steps b–c; (b) otherwise, start from every `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone and exclude any whose file path (relative to `codex/`) matches a pattern in `view.scope.codex.exclude_paths`; (c) then narrow by `view.scope.codex.filter` if present.
+1. **Resolve the scoped codex set** — apply in precedence order: (a) if `view.scope.codex.include` is set, use exactly those artefacts and skip steps b–c; (b) otherwise, start from every `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` artefact in the `codex/` zone and exclude any whose file path (relative to `codex/`) matches a pattern in `view.scope.codex.exclude_paths`; (c) then narrow by `view.scope.codex.filter` if present.
 2. **Row fields** — for each selected artefact, emit `id`, `name`, `type`, `effective_date`, and either `jurisdiction` (external sub-zone) or `issuing_authority` (internal sub-zone).
 3. **Join to REQUIREMENT** — for each selected artefact, the row's `requirements[]` is the sorted (by id) list of every admitted `REQUIREMENT-…` whose `derived_from[]` names this artefact's id. `requirement_count` is the length of that list — **zero is a valid, rendered count**, never an omitted row (§5.3).
 4. **Grouping** — apply `view.grouping.by` (§4): `codex_type` groups rows by `type`; `jurisdiction` groups external rows by `jurisdiction` and collapses every internal row into the synthetic group `internal`; `none` emits one flat list.
@@ -211,7 +211,7 @@ A codex artefact with `requirement_count: 0` — no admitted `REQUIREMENT` yet c
 
 ```
 Rules in Force view (this notation — report-config)
-  ├── reads   → codex artefacts                 (14-codex.md — LAW / REGULATION / POLICY / INTERNAL_STANDARD only; PRINCIPLE excluded, §1)
+  ├── reads   → codex artefacts                 (14-codex.md — LAW / REGULATION / STANDARD / POLICY / INTERNAL_STANDARD only; PRINCIPLE excluded, §1)
   └── reads   → REQUIREMENT.derived_from[]      (15-requirement.md — the join key back to each codex artefact)
 ```
 
@@ -226,7 +226,7 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | Rule | Severity | Description |
 |---|---|---|
 | `RIF-001` | error | A required field from §4 is missing, or `id` does not match the canonical grammar `RULES_IN_FORCE-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §1). |
-| `RIF-002` | error | A reference in `view.scope.codex.include` does not resolve to an admitted codex artefact of TYPE `LAW`, `REGULATION`, `POLICY`, or `INTERNAL_STANDARD`. A `PRINCIPLE` reference is the same error (§1) — it is not a silent drop. |
+| `RIF-002` | error | A reference in `view.scope.codex.include` does not resolve to an admitted codex artefact of TYPE `LAW`, `REGULATION`, `STANDARD`, `POLICY`, or `INTERNAL_STANDARD`. A `PRINCIPLE` reference is the same error (§1) — it is not a silent drop. |
 | `RIF-003` | error | `view.grouping.by` or `view.order_by` is set to a value outside the enumerated set in §4. |
 | `RIF-004` | warning | Both `view.scope.codex.include` and `view.scope.codex.filter` are present (the include wins; the filter is silently ignored). |
 | `RIF-005` | warning | The view selects zero codex artefacts after applying `include` / `filter` — the rendered list will be empty. Usually indicates a typo or that no artefacts of the requested kind have been admitted. |

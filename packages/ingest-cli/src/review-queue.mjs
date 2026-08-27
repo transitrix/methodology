@@ -18,10 +18,10 @@ import { TYPE_INFO as CODEX_TYPE_INFO } from './codex-artefact.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
-// Locate a codex artefact file by id. Internal codex (POLICY / INTERNAL_STANDARD) is
-// flat under codex/internal/; external codex (LAW / REGULATION) lives under
-// codex/external/<jurisdiction>/ and the jurisdiction is not derivable from the id, so
-// scan the jurisdiction subfolders.
+// Locate a codex artefact file by id. Internal codex (POLICY / INTERNAL_STANDARD /
+// PRINCIPLE) is flat under codex/internal/; external codex (LAW / REGULATION /
+// STANDARD) lives under codex/external/<jurisdiction>/ and the jurisdiction is
+// not derivable from the id, so scan the jurisdiction subfolders.
 async function findCodexFile(orgRoot, id, scope) {
   const root = resolve(orgRoot);
   if (scope === 'internal') {

@@ -18,7 +18,7 @@ import { findCodexFile } from './codex.mjs';
 
 const ID_RE = /^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+)*-[1-9][0-9]*$/;
 const HASH_RE = /^sha256:[0-9a-f]{64}$/;
-const CODEX_TYPES = new Set(['LAW', 'REGULATION', 'POLICY', 'INTERNAL_STANDARD']);
+const CODEX_TYPES = new Set(['LAW', 'REGULATION', 'STANDARD', 'POLICY', 'INTERNAL_STANDARD']);
 const CAND_TYPES = new Set(['REQUIREMENT', 'CONSTRAINT']);
 const LEVELS = new Set(['SHALL', 'SHALL_NOT', 'SHOULD', 'MAY']);
 const CONFIDENCE = new Set(['high', 'medium', 'low']);
@@ -65,7 +65,7 @@ async function validateSegment(text, segIndex, codexResolve) {
 
   // SEGMENT-002 — source resolves to a codex artefact of an allowed TYPE.
   if (!source || !ID_RE.test(source)) flags.push(flag('SEGMENT-002', 'error', `source missing or malformed: ${JSON.stringify(source)}`));
-  else if (!CODEX_TYPES.has(typeOf(source))) flags.push(flag('SEGMENT-002', 'error', `source TYPE must be LAW|REGULATION|POLICY|INTERNAL_STANDARD (got ${typeOf(source)})`));
+  else if (!CODEX_TYPES.has(typeOf(source))) flags.push(flag('SEGMENT-002', 'error', `source TYPE must be LAW|REGULATION|STANDARD|POLICY|INTERNAL_STANDARD (got ${typeOf(source)})`));
   else if (codexResolve && !(await codexResolve(source))) flags.push(flag('SEGMENT-002', 'error', `source does not resolve to a codex artefact under codex/: ${source}`));
 
   // SEGMENT-003 — text_excerpt or text_hash.

@@ -181,7 +181,7 @@ npx @transitrix/reg-intel-cli classify <_intake/processing/segments/> --from <re
 
 ## Step 6 — Validate (coverage-profile aware)
 
-Every staged SEGMENT and every canon candidate is run through the canonical validators — ID grammar, TYPE registry, and the SEGMENT / REQUIREMENT / CONSTRAINT field rules ([`SEGMENT-001..008`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/23-segment.md), the REQUIREMENT / CONSTRAINT rules in their specs). `SEGMENT-002` resolves each SEGMENT's `source` against the repo's `codex/` (TYPE must be `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`); `SEGMENT-004/005` check `parent` nesting within the staged batch.
+Every staged SEGMENT and every canon candidate is run through the canonical validators — ID grammar, TYPE registry, and the SEGMENT / REQUIREMENT / CONSTRAINT field rules ([`SEGMENT-001..008`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/23-segment.md), the REQUIREMENT / CONSTRAINT rules in their specs). `SEGMENT-002` resolves each SEGMENT's `source` against the repo's `codex/` (TYPE must be `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD`); `SEGMENT-004/005` check `parent` nesting within the staged batch.
 
 ```
 npx @transitrix/reg-intel-cli validate [org-root] [--json]

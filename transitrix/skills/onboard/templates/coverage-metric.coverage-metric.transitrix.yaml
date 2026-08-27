@@ -32,7 +32,7 @@ view:
       # - LAW-FILL-ME-1
     # filter:
     #   jurisdiction: [eu, ge]
-    #   codex_type: [LAW, REGULATION]   # optional; default — all four codex TYPEs
+    #   codex_type: [LAW, REGULATION, STANDARD]   # optional; default — all five (PRINCIPLE excluded)
 
   # Grouping (the axes of the matrix). Default: subject × regime.
   grouping:

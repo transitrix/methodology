@@ -1,5 +1,6 @@
-// `codex-artefact` — admit a converted external law/regulation or internal policy /
-// standard into the CODEX zone as a FAITHFUL source artefact (14-codex.md §3/§4).
+// `codex-artefact` — admit a converted external law/regulation/standard or
+// internal policy / internal standard / principle into the CODEX zone as a
+// FAITHFUL source artefact (14-codex.md §3/§4).
 //
 // Unlike a FIELD artefact, a codex artefact:
 //   - carries NO source_quality — a codex source is authoritative by construction;
@@ -23,6 +24,7 @@ import { hashFile, findDuplicateSource, DuplicateSourceError } from './source-ha
 const TYPE_INFO = {
   LAW:               { scope: 'external' },
   REGULATION:        { scope: 'external' },
+  STANDARD:          { scope: 'external' },
   POLICY:            { scope: 'internal' },
   INTERNAL_STANDARD: { scope: 'internal' },
   PRINCIPLE:         { scope: 'internal' },
@@ -77,6 +79,7 @@ export async function emitCodexArtefact(opts) {
   const info = TYPE_INFO[type];
   if (!info) throw new Error(`unknown --type ${type}; expected one of ${Object.keys(TYPE_INFO).join(', ')}`);
   const isPrinciple = type === 'PRINCIPLE';
+  const isStandard = type === 'STANDARD';
   // effective_date is required on every codex TYPE except PRINCIPLE (14-codex.md §4.1,
   // optional there); PRINCIPLE's format is still checked when the caller supplies one.
   if (!isPrinciple || effectiveDate) {
@@ -87,6 +90,9 @@ export async function emitCodexArtefact(opts) {
   let frontJurisdiction = null;
   if (info.scope === 'external') {
     if (!jurisdiction) throw new Error(`--jurisdiction is required for ${type} (codex/external/<jurisdiction>/, CODEX-001)`);
+    if (isStandard && !issuingAuthority) {
+      throw new Error('--issuing-authority is required for STANDARD (the issuing body, 14-codex.md §2.2)');
+    }
     frontJurisdiction = String(jurisdiction).toLowerCase();
     codexDir = join(resolve(orgRoot), 'codex', 'external', frontJurisdiction);
   } else if (isPrinciple) {
@@ -157,6 +163,7 @@ export async function emitCodexArtefact(opts) {
         gate_checks: { source_authority: sourceAuthority || 'recorded' },
         jurisdiction: frontJurisdiction,
         effective_date: effectiveDate,
+        ...(isStandard ? { issuing_authority: issuingAuthority } : {}),
         ...snapshot,
         monitoring_needed: Boolean(monitoring),
       }
