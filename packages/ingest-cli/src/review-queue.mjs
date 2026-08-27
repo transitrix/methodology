@@ -76,7 +76,7 @@ async function readSourceArtefact(orgRoot, id) {
   };
 }
 
-export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [], semanticLinks = [], roleAssignmentProposals = [] }) {
+export async function buildReviewQueue({ orgRoot, candidatesDir, profile, suggestions = [], semanticLinks = [], roleAssignmentProposals = [], runId }) {
   const loaded = await loadCandidates(candidatesDir);
   // Read (never write) canon so the queue is idempotent against it: a candidate that
   // already passed the human gate is excluded, not re-listed for re-approval.
@@ -142,6 +142,7 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
   return {
     generated_by: '@transitrix/ingest-cli',
     org_root: resolve(orgRoot),
+    ...(runId ? { run_id: String(runId) } : {}),
     coverage_profile: (profile && profile.display) || 'full',
     ...(profile && profile.warning ? { coverage_warning: profile.warning } : {}),
     field_artefacts,

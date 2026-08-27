@@ -341,10 +341,11 @@ async function cmdReviewQueue(args) {
   const roleAssignmentProposalsPath = join(stageDir(r.orgRoot, 'processing'), 'role-assignment-proposals.json');
   try { roleAssignmentProposals = JSON.parse(await readFile(roleAssignmentProposalsPath, 'utf8')); } catch { /* none */ }
 
-  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, semanticLinks, roleAssignmentProposals });
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
+  const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, semanticLinks, roleAssignmentProposals, runId });
   const out = flags.out
     ? resolve(flags.out)
-    : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope, content: dump(queue) });
+    : await resolveBatchPath({ processingDir: stageDir(r.orgRoot, 'processing'), filename: 'review-queue.yaml', scope: flags.scope, content: dump(queue), runId });
   await writeReviewQueue(queue, out);
   const flagged = queue.candidates.filter(c => c.validation_flags.length || c.coverage_flag === 'out_of_profile').length;
   if (queue.coverage_warning) console.error(`WARNING: ${queue.coverage_warning}`);
@@ -487,10 +488,11 @@ async function cmdCatalogueRecognize(args) {
     throw err;
   }
 
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
   const content = dump(doc);
   const out = flags.out
     ? resolve(flags.out)
-    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'catalogue-bindings.proposed.yaml', scope: flags.scope, content });
+    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'catalogue-bindings.proposed.yaml', scope: flags.scope, content, runId });
   await mkdir(dirname(out), { recursive: true });
   await writeFile(out, content, 'utf8');
 
@@ -545,10 +547,11 @@ async function cmdCataloguePromote(args) {
     throw err;
   }
 
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
   const content = dump(doc);
   const out = flags.out
     ? resolve(flags.out)
-    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'promotions.proposed.yaml', scope: flags.scope, content });
+    : await resolveBatchPath({ processingDir: stageDir(orgRoot, 'processing'), filename: 'promotions.proposed.yaml', scope: flags.scope, content, runId });
   await mkdir(dirname(out), { recursive: true });
   await writeFile(out, content, 'utf8');
 

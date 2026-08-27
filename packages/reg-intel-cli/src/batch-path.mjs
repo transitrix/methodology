@@ -31,16 +31,23 @@ const SAFE_SCOPE_RE = /^[a-z][a-z0-9_-]*$/;
 function todayCompact() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
 
 // Resolve the path a batch's stable-filename artifact should be written to.
-// `content` is the freshly serialised artefact about to be written, used to
-// tell an in-place refresh of the same digest from a genuinely new one (see
-// above). Without `content`, falls back to the non-destructive default: never
-// returns a path that already exists.
-export async function resolveBatchPath({ processingDir, filename, scope, content }) {
+// Batch identity is determined by explicit `runId` matching against the existing
+// file's run_id field (if present). Only a matching run_id allows same-batch
+// refresh in place; different or missing run_id means different batch → dated
+// directory. Without `runId`, the existing flat path is treated as unresolved
+// and a dated directory is created instead. Same mechanism as
+// @transitrix/ingest-cli's batch-path.mjs (each package keeps its own copy).
+export async function resolveBatchPath({ processingDir, filename, scope, content, runId }) {
   const flat = join(processingDir, filename);
   if (!(await exists(flat))) return flat;
-  if (content !== undefined) {
+
+  if (runId !== undefined) {
     const onDisk = await readFile(flat, 'utf8').catch(() => null);
-    if (onDisk !== null && onDisk !== content) return flat;
+    if (onDisk !== null) {
+      const match = /^run_id:\s*(.+)$/m.exec(onDisk);
+      const fileRunId = match ? match[1].trim() : null;
+      if (fileRunId === String(runId)) return flat;
+    }
   }
 
   const stem = filename.replace(/\.[^.]+$/, '');
