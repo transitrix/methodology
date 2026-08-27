@@ -11,19 +11,20 @@
 // against canon, run it again to see what's left) reruns against the SAME
 // flat path on purpose, and must keep updating it in place. The signal that
 // distinguishes that refresh from a genuinely separate concurrent batch is
-// content — if the freshly built `content` differs from what's already on
-// disk (e.g. some candidates were admitted since, so the queue shrank), real
-// progress happened against THIS batch and it is still the same one, so the
-// flat file is updated in place. Only when the fresh content would be
-// byte-identical to what is already there — nothing has moved since it was
-// last written — is the existing file read as untouched/unresolved, and this
-// run gets routed to its own dated directory instead of masquerading as it.
+// `run_id` — if the on-disk scalar matches this run's id, it is still the
+// same batch and the flat file is updated in place. A different or missing
+// `run_id` means the existing file is a different (or unresolved) batch, and
+// this run gets routed to its own dated directory instead of overwriting it.
+// Scalars on disk are YAML (this CLI's dump always double-quotes strings),
+// so the comparison must unquote; a raw regex match against the quoted
+// value would treat a same-batch refresh as a new batch.
 //
 // `scope` is a caller-supplied word (`--scope`), never an org-identifying
 // string — it defaults to the generic `batch` when absent or malformed.
 
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readTopScalar } from './yaml.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -32,16 +33,21 @@ const SAFE_SCOPE_RE = /^[a-z][a-z0-9_-]*$/;
 function todayCompact() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
 
 // Resolve the path a batch's stable-filename artifact should be written to.
-// `content` is the freshly serialised artefact about to be written, used to
-// tell an in-place refresh of the same batch from a genuinely new one (see
-// above). Without `content`, falls back to the non-destructive default: never
-// returns a path that already exists.
-export async function resolveBatchPath({ processingDir, filename, scope, content }) {
+// Batch identity is determined by explicit `runId` matching against the existing
+// file's run_id field (if present). Only a matching run_id allows same-batch
+// refresh in place; different or missing run_id means different batch → dated
+// directory. Without `runId`, the existing flat path is treated as unresolved
+// and a dated directory is created instead.
+export async function resolveBatchPath({ processingDir, filename, scope, content, runId }) {
   const flat = join(processingDir, filename);
   if (!(await exists(flat))) return flat;
-  if (content !== undefined) {
+
+  if (runId !== undefined) {
     const onDisk = await readFile(flat, 'utf8').catch(() => null);
-    if (onDisk !== null && onDisk !== content) return flat;
+    if (onDisk !== null) {
+      const fileRunId = readTopScalar(onDisk, 'run_id');
+      if (fileRunId === String(runId)) return flat;
+    }
   }
 
   const stem = filename.replace(/\.[^.]+$/, '');

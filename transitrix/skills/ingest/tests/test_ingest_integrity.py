@@ -664,7 +664,9 @@ def part_h_idempotent():
                              "admitted_to": "pending", "extraction_confidence": "high"})
 
         def queue():
-            r = run_cli("review-queue", cdir)
+            # Same-batch refresh requires matching --run-id (SKILL.md); without it
+            # a re-run is a concurrent harvest and lands in a dated directory.
+            r = run_cli("review-queue", cdir, "--run-id", "idempotent")
             check(r.returncode == 0, f"G: review-queue failed: {r.stderr.strip()}")
             return yaml.safe_load(open(os.path.join(org, "_intake", "processing", "review-queue.yaml"), encoding="utf-8"))
 

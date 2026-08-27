@@ -54,7 +54,7 @@ transitrix-ingest <command> [args]
 
 ## Multi-batch naming
 
-`review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Re-running against the same candidates keeps updating that file in place as long as the output actually changes (e.g. admitted candidates drop out of the queue) — that is a refresh of the same batch, not a new one. Only a re-run that would produce byte-identical output routes to its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory.
+`review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Batch identity is explicit: pass `--run-id <id>` to refresh the same batch in place (matching run_id is required). Without a matching run_id, or if no prior batch exists, a run creates its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory.
 
 ## Upgrading
 

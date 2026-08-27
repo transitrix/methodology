@@ -368,8 +368,9 @@ async function cmdDigest(args) {
   const asOf = flags['as-of'] ? String(flags['as-of']) : today();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) { console.error('digest: --as-of must be YYYY-MM-DD'); return 1; }
 
-  const digest = await buildDigest({ orgRoot, asOf, runId: typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined });
-  const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot, { scope: flags.scope, content: dump(digest) });
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
+  const digest = await buildDigest({ orgRoot, asOf, runId });
+  const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot, { scope: flags.scope, content: dump(digest), runId });
   await writeDigest(digest, out);
 
   const t = digest.tally;

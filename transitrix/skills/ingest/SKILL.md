@@ -266,15 +266,15 @@ When the reviewer works through the agent rather than the CLI's own TTY loop (`t
 
 Hard rules carried from the epic and CONTRACT unchanged: `merge` is not a new decision verb in v1 — a "these are duplicates" call from the reviewer is recorded as `accept` or `defer` with a reason string naming the existing id, never a new enum. `ADMIT-007` (tiered `reviewer_authority`) still applies to whatever `--by` handle the agent passes through. This is the agent-assisted counterpart to `transitrix-decisions review`'s TTY loop — same `list-undecided`/`record` contract, different surface; it never replaces the CLI path and never writes canon itself.
 
-### Multi-batch naming — a stable filename, a dated directory when a batch is already unresolved
+### Multi-batch naming — a stable filename, a dated directory when batch identity is not explicitly matched
 
-`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Re-running `review-queue` against the same candidates — the everyday idempotent-refresh workflow, admit a few, re-run to see what's left — keeps updating that same file in place: the exclusion list changing is real progress on the same batch, not a new one. Only when a re-run would produce **byte-identical** output to what's already there — nothing has moved since it was last written — is the existing file read as untouched/unresolved, and a genuinely concurrent batch instead gets its own **human-facing batch directory**, `type-scope-date-seq`:
+`review-queue.yaml` is a **stable package filename**: the first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`, unchanged from every prior release. Batch identity is explicit: run `review-queue --run-id <id>` to refresh the same batch in place (matching run_id is required). Without an explicit `--run-id` matching the file's recorded `run_id`, or if no prior batch exists, a run creates its own **human-facing batch directory**, `type-scope-date-seq`:
 
 ```
 _intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml
 ```
 
-`<scope>` comes from `--scope <word>` (a generic word — never an org-identifying string) or defaults to `batch`; `<seq>` disambiguates same-day, same-scope batches. `transitrix-ingest workflow-status` discovers both the flat path and every dated directory, using the directory name as the batch's display id.
+`<scope>` comes from `--scope <word>` (a generic word — never an org-identifying string) or defaults to `batch`; `<seq>` disambiguates same-day, same-scope batches. `transitrix-ingest workflow-status` discovers both the flat path and every dated directory, using the directory name as the batch's display id. For the everyday idempotent-refresh workflow (admit a few candidates, re-run to see what's left), track and re-use the batch's `run_id` from the prior `review-queue.yaml` to keep updating the same file in place.
 
 ### Placement is deterministic — pinned to ELEMENT_PRIMITIVES §4
 
