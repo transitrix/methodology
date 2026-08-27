@@ -1,6 +1,6 @@
 notation: rules-in-force
 spec_version: "0.1"
-methodology_version: "4.0.0"
+methodology_version: "4.1.0"
 
 # Rules in Force. Spec: notations/views/reports/24-rules-in-force.md
 # Report-config over the codex zone itself (sibling of Compliance Impact and
