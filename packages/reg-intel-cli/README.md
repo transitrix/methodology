@@ -11,7 +11,7 @@ Deterministic CLI for the [Transitrix Reg-Intel skill](../../transitrix/skills/r
 | Command | Status | Purpose |
 |---|---|---|
 | `--version` / `--help` | ✅ | Version (the skill's Step-0 pre-check) and usage. |
-| `list-due [org-root] [--as-of YYYY-MM-DD] [--json]` | ✅ | List codex sources due for a scan: `monitoring_needed: true` artefacts whose `scan.next_scan_due <= as-of` (or never scanned), plus the `monitor_instead[]` counterparts of static sources. One run filters by date — not N schedules. |
+| `list-due [org-root] [--as-of YYYY-MM-DD] [--json]` | ✅ | List sources due for a scan from `operations/config/scan-sources.yaml`: reads the watch-list, then for each entry reads the codex artefact's `scan.next_scan_due` to find which are due. Surfaces the `monitor_instead[]` counterparts of static sources. One run filters by date — not N schedules. |
 | `update-scan <CODEX-ID\|file> [--today YYYY-MM-DD] [--frequency daily\|weekly\|monthly\|quarterly] [--change "<summary>"] [--review]` | ✅ | Write the codex `scan` block (`last_scanned_at`, `next_scan_due` from the cadence, `change_detected`, `change_description`, `review_needed`) — operating state only; never touches any other field. |
 | `check-signal <CODEX-ID\|file> --observed <value> [--method etag\|last_modified\|api_version\|amended_date\|fragment_hash] [--accept-no-signal] [--today YYYY-MM-DD]` | ✅ | The cheap change-signal gate (network-free — caller supplies the observed value). Compares to the last-seen value in `operations/state/reg-intel/signal-cache.json`: `unchanged` → bump scan; `moved` / `no_signal` → proceed. |
 | `fetch-snapshot <CODEX-ID\|file> --from <fetched-file> [--ext <ext>] [--today YYYY-MM-DD]` | ✅ | Snapshot the caller-fetched bytes to `_intake/snapshots/<id>-<date>.<ext>`, fingerprint (`source_hash: sha256:…`), and detect `captured` / `changed` / `cosmetic_change` (bytes differ but normative text unchanged — markup/whitespace/tracker churn) / `bytes_identical` (cross-checkout via the committed cache). Network-free — the caller fetches. |
@@ -45,7 +45,7 @@ packages/reg-intel-cli/
     batch-path.mjs     # non-destructive batch-directory naming
 ```
 
-The "source registry" is **the codex artefacts the repo already carries** (`14-codex.md` §3.4–3.5), not a separate database — the schedule rides on each codex YAML's `scan` block, so scan history is auditable via git. The change-signal cache is committed operational **state** at `operations/state/reg-intel/signal-cache.json` (`method/06-team-operations.md` §3.3) — outside the model, disposable, survives clone/CI. Zero runtime dependencies, Node ≥ 18.
+The "source registry" is the centralised watch-list at **`operations/config/scan-sources.yaml`** (`14-codex.md` §3.7), not a walk of the `codex/` directory. `list-due` reads this file; for each entry, it reads the codex artefact's `scan` block for runtime state (`14-codex.md` §3.4–3.5) — the schedule and history are auditable via git. The change-signal cache is committed operational **state** at `operations/state/reg-intel/signal-cache.json` (`method/06-team-operations.md` §3.3) — outside the model, disposable, survives clone/CI. Zero runtime dependencies, Node ≥ 18.
 
 ## Tests
 

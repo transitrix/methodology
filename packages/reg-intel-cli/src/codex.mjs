@@ -112,19 +112,38 @@ export async function listDue(orgRoot, asOf) {
     try { text = await readFile(codexPath, 'utf8'); } catch { continue; }
     const art = parseCodexArtefact(text, codexPath);
 
-    const next = (art.scan && art.scan.next_scan_due) || null;
-    if (!isDue(next, asOf)) continue;
+    // A static source (monitoring_needed: false) does not get scanned directly;
+    // instead, its monitor_instead counterparts are surfaced as separate scan targets.
+    if (!art.monitoring_needed && art.monitor_instead) {
+      for (const alt of art.monitor_instead) {
+        due.push({
+          id: alt.id,
+          type: null,
+          name: alt.name || alt.id,
+          source_url: alt.url,
+          scan_frequency: entry.cadence || null,
+          next_scan_due: null,
+          monitoring_needed: true,
+          reason: 'monitor_instead',
+          via: entry.id || art.id,
+        });
+      }
+    } else {
+      // A live source (monitoring_needed: true) is scanned directly.
+      const next = (art.scan && art.scan.next_scan_due) || null;
+      if (!isDue(next, asOf)) continue;
 
-    due.push({
-      id: entry.id || art.id,
-      type: art.type,
-      name: art.name,
-      source_url: art.source_url,
-      scan_frequency: entry.cadence || (art.scan && art.scan.scan_frequency) || null,
-      next_scan_due: next,
-      monitoring_needed: true,
-      reason: next ? 'due' : 'never_scanned',
-    });
+      due.push({
+        id: entry.id || art.id,
+        type: art.type,
+        name: art.name,
+        source_url: art.source_url,
+        scan_frequency: entry.cadence || (art.scan && art.scan.scan_frequency) || null,
+        next_scan_due: next,
+        monitoring_needed: true,
+        reason: next ? 'due' : 'never_scanned',
+      });
+    }
   }
   return due;
 }
