@@ -2,7 +2,7 @@ notation: sdd
 spec_version: "0.1"
 name: "Data export capability — SDD"
 generated_at: "2026-08-04"
-methodology_version: "4.1.0"
+methodology_version: "4.2.0"
 
 view:
   id: SDD-DATA-EXPORT-1

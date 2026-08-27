@@ -3,7 +3,7 @@
 # notations/examples/verification-reverse-trace-gaps/ rather than its
 # parent — no manifest may enclose another.
 transitrix: 1
-methodology_version: "4.1.0"
+methodology_version: "4.2.0"
 notations: [verification, requirement]
 zones: [canon]
 coverage_profile: core
