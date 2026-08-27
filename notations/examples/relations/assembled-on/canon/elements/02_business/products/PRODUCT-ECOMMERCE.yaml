@@ -1,0 +1,18 @@
+notation: element
+type: PRODUCT
+id: PRODUCT-ECOMMERCE
+name: "E-commerce Platform"
+description: "Consumer e-commerce web platform"
+owner: "platform-team"
+
+zone: canon
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2020-01-01"
+valid_to: null

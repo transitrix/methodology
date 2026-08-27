@@ -1,0 +1,17 @@
+notation: element
+type: APPLICATION
+id: APPLICATION-REACT
+name: "React Framework"
+description: "Front-end application framework"
+
+zone: canon
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2020-01-01"
+valid_to: null

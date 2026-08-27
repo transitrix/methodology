@@ -1,0 +1,17 @@
+notation: relation
+id: REL-INVALID-NOT-RELEASE-FROM-1
+type: assembled_on
+from: PRODUCT-ECOMMERCE
+to: RELEASE-APPLICATION-REACT-18.2
+
+zone: canon
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

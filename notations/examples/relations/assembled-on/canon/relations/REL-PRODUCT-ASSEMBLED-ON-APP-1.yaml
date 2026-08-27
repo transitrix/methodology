@@ -1,0 +1,17 @@
+notation: relation
+id: REL-PRODUCT-ASSEMBLED-ON-APP-1
+type: assembled_on
+from: RELEASE-PRODUCT-ECOMMERCE-3.0
+to: RELEASE-APPLICATION-REACT-18.2
+
+zone: canon
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-20"
+valid_to: null

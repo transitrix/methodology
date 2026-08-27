@@ -1,0 +1,20 @@
+notation: element
+type: RELEASE
+id: RELEASE-PRODUCT-ECOMMERCE-3.0
+name: "E-commerce 3.0.0"
+description: "E-commerce platform release 3.0.0"
+of: PRODUCT-ECOMMERCE
+version: "3.0.0"
+released_at: "2026-08-20"
+
+zone: canon
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-20"
+valid_to: null
