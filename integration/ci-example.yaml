@@ -9,8 +9,8 @@
 # whether a single file is wrong or the model as a whole is:
 #
 #   - model  (repo scope) — the whole loaded model: repo structure + manifest,
-#            atomicity, referential integrity, ArchiMate semantics, policy.
-#            Backed by .validators/lint.py (ships in the worked example; scans canon/).
+#            atomicity, referential integrity, policy. Type and layer rules are available
+#            via @transitrix/cli --scope=repo. Backed by .validators/lint.py (ships in the worked example; scans canon/).
 #   - views  (file scope) — every views/**/*.transitrix.yaml validates/compiles,
 #            one file at a time, via npx @transitrix/cli. All canonical notation
 #            extensions are accepted without --ext; pass --ext <notation-name>
@@ -69,8 +69,8 @@ jobs:
         run: pip install pyyaml
       - name: Run the model-integrity linter
         # Scans canon/elements/** and canon/relations/**: atomicity (no relations
-        # inside element files), referential integrity, ArchiMate semantics, policy.
-        # Exits non-zero on any error.
+        # inside element files), referential integrity, policy. Type and layer rules
+        # available via @transitrix/cli --scope=repo. Exits non-zero on any error.
         run: python3 .validators/lint.py
 
   views:

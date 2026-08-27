@@ -105,7 +105,7 @@ See [Documentation](#documentation) above for the full list of root-level files 
 ## How it works in five lines
 
 1. The architecture is YAML files in Git — atomic elements and atomic relations, separated.
-2. Linters enforce syntax, atomicity, referential integrity, ArchiMate semantics, and policy on every commit.
+2. Linters enforce syntax, atomicity, referential integrity, and policy on every commit. Type and layer rules are available via `@transitrix/cli --scope=repo`.
 3. **Transitrix Studio** is the reference editor — a VS Code extension and CLI that handles every Transitrix custom format.
 4. Diagrams are rendered by a shared OSS library (`@transitrix/diagrams`) so the same picture appears in Studio, in DSM, and in any other host.
 5. Every change goes through a pull request. Code review = architecture review.
@@ -118,7 +118,7 @@ See **[`notations/README.md`](notations/README.md)** for the canonical index of 
 
 ## Validation in one paragraph
 
-Transitrix separates validation by responsibility — **view notations**, **element primitives**, **relations**, and **repo structure**. As you author, a single view file validates inline in **Transitrix Studio** (on save) or with `npx @transitrix/cli validate <file>`. All canonical `*.<short-name>.transitrix.yaml` extensions are accepted without `--ext`; pass `--ext <notation-name>` only for a non-canonical extension outside the built-in registry. **On Windows PowerShell** with a restricted execution policy (the default on many workstations), invoke as `npx.cmd @transitrix/cli validate <file>` — the unsuffixed `npx` resolves to a `.ps1` wrapper that the policy refuses to launch. Across the whole repository, the model-integrity linter `.validators/lint.py` runs the element/relation/structure checks — atomicity (no relations inside element files), referential integrity (every relation endpoint exists), ArchiMate semantics (layer-respecting connections), and policy (Active status requires an owner; deprecated elements reference successors) — over `canon/` and gates pull requests in CI. See [`integration/ci-example.yaml`](integration/ci-example.yaml) for the pipeline.
+Transitrix separates validation by responsibility — **view notations**, **element primitives**, **relations**, and **repo structure**. As you author, a single view file validates inline in **Transitrix Studio** (on save) or with `npx @transitrix/cli validate <file>`. All canonical `*.<short-name>.transitrix.yaml` extensions are accepted without `--ext`; pass `--ext <notation-name>` only for a non-canonical extension outside the built-in registry. **On Windows PowerShell** with a restricted execution policy (the default on many workstations), invoke as `npx.cmd @transitrix/cli validate <file>` — the unsuffixed `npx` resolves to a `.ps1` wrapper that the policy refuses to launch. Across the whole repository, the model-integrity linter `.validators/lint.py` runs the element/relation/structure checks — atomicity (no relations inside element files), referential integrity (every relation endpoint exists), and policy (Active status requires an owner; deprecated elements reference successors) — over `canon/` and gates pull requests in CI. Type and layer rules are available via `npx @transitrix/cli --scope=repo`. See [`integration/ci-example.yaml`](integration/ci-example.yaml) for the pipeline.
 
 ## Use cases
 

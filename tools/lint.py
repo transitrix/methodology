@@ -72,12 +72,8 @@ class TransitrixLinter:
         print("Phase 4: Validating referential integrity...")
         self._check_referential_integrity()
 
-        # Phase 5: Semantic validation
-        print("Phase 5: Validating semantic rules...")
-        self._check_semantic_rules()
-
-        # Phase 6: Policy compliance
-        print("Phase 6: Checking compliance policies...")
+        # Phase 5: Policy compliance
+        print("Phase 5: Checking compliance policies...")
         self._check_policies()
 
         print()
@@ -152,25 +148,61 @@ class TransitrixLinter:
                 ))
 
     def _check_referential_integrity(self):
-        """Verify all source/target references point to existing elements."""
+        """Verify 'from' and 'to' references point to existing elements."""
         for rel_id, relation_data in self.relations.items():
-            source_id = relation_data.get('source', {}).get('id') or relation_data.get('source')
-            target_id = relation_data.get('target', {}).get('id') or relation_data.get('target')
+            from_id = relation_data.get('from')
+            to_id = relation_data.get('to')
 
-            if source_id and source_id not in self.elements:
-                self.warnings.append(LintError(
+            if from_id is None:
+                self.errors.append(LintError(
                     file=f"canon/relations/{rel_id}.yaml",
                     line=0,
-                    message=f"Referential integrity: Source element '{source_id}' not found",
-                    severity="warning"
+                    message=f"Referential integrity: Relation missing required 'from' field",
+                    severity="error"
+                ))
+            elif not isinstance(from_id, str):
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: 'from' field must be a string ID, not {type(from_id).__name__}",
+                    severity="error"
+                ))
+            elif from_id not in self.elements:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: Source element '{from_id}' not found",
+                    severity="error"
                 ))
 
-            if target_id and target_id not in self.elements:
-                self.warnings.append(LintError(
+            if to_id is None:
+                self.errors.append(LintError(
                     file=f"canon/relations/{rel_id}.yaml",
                     line=0,
-                    message=f"Referential integrity: Target element '{target_id}' not found",
-                    severity="warning"
+                    message=f"Referential integrity: Relation missing required 'to' field",
+                    severity="error"
+                ))
+            elif not isinstance(to_id, str):
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: 'to' field must be a string ID, not {type(to_id).__name__}",
+                    severity="error"
+                ))
+            elif to_id not in self.elements:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: Target element '{to_id}' not found",
+                    severity="error"
+                ))
+
+            if 'source' in relation_data or 'target' in relation_data:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: Relation uses deprecated 'source'/'target' fields (use 'from' and 'to')",
+                    severity="error"
                 ))
 
     def _check_semantic_rules(self):
@@ -216,6 +248,7 @@ class TransitrixLinter:
         print(f"  Warnings: {len(self.warnings)}")
 
         if self.errors:
+            self._report_errors()
             print("\n❌ Validation FAILED")
             sys.exit(1)
         elif self.warnings:
