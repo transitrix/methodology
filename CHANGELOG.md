@@ -8,9 +8,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+---
+
+## [4.2.0] — 2026-08-27
+
+Bump category: **MINOR** — highest change since the 4.1.0 pin is a new catalogued TYPE (`STANDARD`). Parser/lint/batch-path/reg-intel fixes in the same window ride along. No migration recipe: a repository that never admits a `STANDARD` validates as it did on 4.1.0. New `error` enforcement that only names already-specified rules (`TTRS-002`, relation `from`/`to`) is grandfathered for already-admitted adopter canon per CONTRACT §10.4.
+
 ### Added
 
-- **`STANDARD` — a new codex TYPE for a technical standard issued by a standards-developing organisation** (`notations/elements/14-codex.md` §2, §2.2). Lives in `codex/external/<jurisdiction>/` with `LAW`/`REGULATION`; internationally issued bodies use `intl` (no longer reserved). Discriminator at admission: statute → `REGULATION` (or `LAW`); org writes it for itself → `INTERNAL_STANDARD`/`POLICY`/`PRINCIPLE`; an SDO issues it → `STANDARD`. A regulation that incorporates a standard by reference stays a `REGULATION` and cites the `STANDARD`. Required fields are `jurisdiction`, `effective_date`, and `issuing_authority` (the issuing body). Permitted-TYPE lists for `REQ-003`, `TERM-002`, `COVMET-003`, `RIF-002`, `SEGMENT-002`, and `AMENDMENT-002` widen to include `STANDARD`; `PRINCIPLE` stays out of rules-in-force. `@transitrix/ingest-cli` accepts `--type STANDARD` with `--jurisdiction` and `--issuing-authority`. Purely additive: no existing field became required on `LAW`/`REGULATION`, and a repository with no `STANDARD` artefact validates as before. (transitrix-hq#318)
+- **`STANDARD` — a new codex TYPE for a technical standard issued by a standards-developing organisation** (`notations/elements/14-codex.md` §2, §2.2). Lives in `codex/external/<jurisdiction>/` with `LAW`/`REGULATION`; internationally issued bodies use `intl` (no longer reserved). Discriminator at admission: statute → `REGULATION` (or `LAW`); org writes it for itself → `INTERNAL_STANDARD`/`POLICY`/`PRINCIPLE`; an SDO issues it → `STANDARD`. A regulation that incorporates a standard by reference stays a `REGULATION` and cites the `STANDARD`. Required fields are `jurisdiction`, `effective_date`, and `issuing_authority` (the issuing body). Permitted-TYPE lists for `REQ-003`, `TERM-002`, `COVMET-003`, `RIF-002`, `SEGMENT-002`, and `AMENDMENT-002` widen to include `STANDARD`; `PRINCIPLE` stays out of rules-in-force. `@transitrix/ingest-cli` accepts `--type STANDARD` with `--jurisdiction` and `--issuing-authority`. Purely additive: no existing field became required on `LAW`/`REGULATION`, and a repository with no `STANDARD` artefact validates as before. (transitrix-hq#318, #539)
+
+### Fixed
+
+- **`tools/lint.py` reads relation `from`/`to`.** Missing or non-string endpoints are errors; the advertised empty ArchiMate semantics pass is removed (use `@transitrix/cli --scope=repo`). (#536)
+- **Document parsers reject unknown directive attributes and leftover text** on `view` / `figure`, matching `DIRECTIVE_LANGUAGE` §7 (`TTRS-002`). (#535)
+- **Ingest and reg-intel batch paths no longer overwrite an unresolved flat file** when a second run has different content; identity is `run_id`. (#538)
+- **`reg-intel` discovery reads `operations/config/scan-sources.yaml`**, and date checks reject impossible or unpadded ISO dates. (#537)
+- **Plugin `--check` treats CRLF and LF manifests as equal**; the plugin description names the document views the skill offers. (#534)
 
 ---
 
