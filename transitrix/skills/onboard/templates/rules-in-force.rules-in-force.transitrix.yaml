@@ -7,7 +7,7 @@ methodology_version: "4.1.0"
 # Coverage Metric — same REQUIREMENT.derived_from join key, but reads the
 # source catalogue rather than the obligation x subject overlay). Carries no
 # canonical content — every row is DERIVED from admitted LAW / REGULATION /
-# POLICY / INTERNAL_STANDARD codex artefacts plus REQUIREMENT.derived_from.
+# STANDARD / POLICY / INTERNAL_STANDARD codex artefacts plus REQUIREMENT.derived_from.
 # PRINCIPLE is out of scope by definition (spec §1) — it names no issuing
 # authority and no conformance test.
 
@@ -21,7 +21,7 @@ view:
   # What the view scopes over. Either an explicit include list of codex
   # artefact IDs, or a filter that narrows by jurisdiction / TYPE. If both
   # are present, include wins and filter (and exclude_paths) are ignored.
-  # Omit both to scope over every LAW / REGULATION / POLICY / INTERNAL_STANDARD
+  # Omit both to scope over every LAW / REGULATION / STANDARD / POLICY / INTERNAL_STANDARD
   # artefact admitted anywhere under codex/.
   scope:
     codex:
@@ -30,7 +30,7 @@ view:
         # - LAW-FILL-ME-1
       # filter:
       #   jurisdiction: [eu, ge]                                        # optional; default — no jurisdiction narrowing
-      #   codex_type: [LAW, REGULATION, POLICY, INTERNAL_STANDARD]      # optional; default — all four (PRINCIPLE is never selectable)
+      #   codex_type: [LAW, REGULATION, STANDARD, POLICY, INTERNAL_STANDARD]  # optional; default — all five (PRINCIPLE is never selectable)
       # exclude_paths:                                                  # optional — globs relative to codex/ root; ignored when include: is set
       #   - "templates/**"
 

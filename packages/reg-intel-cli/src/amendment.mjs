@@ -9,7 +9,7 @@ import { join, resolve } from 'node:path';
 import { dump, readTopScalar } from './yaml.mjs';
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
-const CODEX_TYPES = new Set(['LAW', 'REGULATION', 'POLICY', 'INTERNAL_STANDARD']);
+const CODEX_TYPES = new Set(['LAW', 'REGULATION', 'STANDARD', 'POLICY', 'INTERNAL_STANDARD']);
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -59,7 +59,7 @@ export async function emitAmendment(orgRoot, file, { changeDescription, name, am
   const source = readTopScalar(text, 'id');
   const stype = readTopScalar(text, 'type');
   if (!source) throw new Error(`${file}: codex artefact has no id`);
-  if (!CODEX_TYPES.has(stype)) throw new Error(`${file}: amendment source TYPE must be LAW|REGULATION|POLICY|INTERNAL_STANDARD (got ${JSON.stringify(stype)}) (AMENDMENT-002)`);
+  if (!CODEX_TYPES.has(stype)) throw new Error(`${file}: amendment source TYPE must be LAW|REGULATION|STANDARD|POLICY|INTERNAL_STANDARD (got ${JSON.stringify(stype)}) (AMENDMENT-002)`);
   if (readTopScalar(text, 'monitoring_needed') !== true) {
     throw new Error(`${file}: amendment applies to a monitoring_needed: true source (14-codex.md §3.4)`);
   }

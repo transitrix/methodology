@@ -1,0 +1,13 @@
+id: STANDARD-iso-27001-1
+name: "ISO/IEC 27001 Information security management systems — Requirements"
+type: STANDARD
+description: "Example SDO-issued technical standard. Not an adopter document."
+zone: codex
+example: true
+admitted_at: "2026-08-27"
+admitted_by: "example"
+gate_checks:
+  source_authority: "ISO"
+jurisdiction: intl
+issuing_authority: "ISO/IEC"
+effective_date: "2022-10-25"

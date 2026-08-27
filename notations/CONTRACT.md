@@ -357,7 +357,7 @@ The compliance domain spans two notations — **`REQUIREMENT`** (motivation-laye
 |---|---|---|---|---|
 | `REQ-001` | error | REQUIREMENT | `id` grammar invalid, or any required field missing | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-002` | error | REQUIREMENT | `derived_from` references an ID that does not resolve | [15-requirement.md](elements/15-requirement.md) §4 |
-| `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` | [15-requirement.md](elements/15-requirement.md) §4 |
+| `REQ-003` | error | REQUIREMENT | `derived_from` ID is not of TYPE `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` / `PRINCIPLE` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-005` | error | REQUIREMENT | `level` not in `{stakeholder, system, software}` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-006` | error | REQUIREMENT | `kind` not in `{functional, quality}` | [15-requirement.md](elements/15-requirement.md) §4 |
 | `REQ-COVERAGE-001` | warning | REQUIREMENT (cross-cutting) | REQUIREMENT has no ASSERTION targeting it — compliance gap | [15-requirement.md](elements/15-requirement.md) §4 |

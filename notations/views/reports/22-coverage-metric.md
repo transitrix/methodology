@@ -83,8 +83,8 @@ For the canonical authoring of the inputs the view reads, use the element primit
 
 | Concern | Authored as |
 |---|---|
-| The codex artefact that defines a regime (a law, a regulation, an internal standard). | `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
-| The obligation extracted from a regime. | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)), with `derived_from: [REGULATION-… \| LAW-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
+| The codex artefact that defines a regime (a law, a regulation, an external standard, an internal policy or standard). | `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD` element ([14-codex.md](../../elements/14-codex.md)) under `codex/external/<jurisdiction>/` or `codex/internal/`. |
+| The obligation extracted from a regime. | `REQUIREMENT` element ([15-requirement.md](../../elements/15-requirement.md)), with `derived_from: [REGULATION-… \| LAW-… \| STANDARD-… \| POLICY-… \| INTERNAL_STANDARD-…]`. |
 | The claim that a subject is bound by an obligation. | `ASSERTION` element ([16-assertion.md](../../elements/16-assertion.md)). |
 | The modelled fact that an obligation explicitly does not apply to a subject. | `ASSERTION.status: n_a` ([16-assertion.md](../../elements/16-assertion.md) §3). |
 
@@ -121,7 +121,7 @@ view:
       - LAW-GE-CONSUMER-RIGHTS-1
     # filter:
     #   jurisdiction: [eu, ge]
-    #   codex_type: [LAW, REGULATION]   # optional; default — all four codex TYPEs
+    #   codex_type: [LAW, REGULATION, STANDARD]   # optional; default — all five codex TYPEs (PRINCIPLE excluded)
     # exclude_paths:                    # optional — globs relative to codex/ root; ignored when include: is set
     #   - "templates/**"
     #   - "service/**"
@@ -167,8 +167,8 @@ Every field carries an explicit default, so a view with only the required envelo
 | `view.description` | no | string | empty | Short description of the purpose of this view (which subjects, which regimes, why). |
 | `view.subjects.products` | no ¹ | list | **all `PRODUCT`s in canon**, sorted by id | Explicit list of `PRODUCT-…` IDs whose realising processes the view covers. The renderer derives the set of bearing processes via canon (the `realises` relations from `PROCESS` to `PRODUCT`) and walks each process's flow for stages and tasks. |
 | `view.subjects.processes` | no ¹ | list | processes derived from `products` | Explicit list of `PROCESS-…` IDs to count over, in addition to (or instead of) the processes derived from `products`. |
-| `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../../elements/14-codex.md)). |
-| `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `POLICY` / `INTERNAL_STANDARD`; default — all four). The renderer resolves the filter against the `codex/` zone at render time. |
+| `view.regimes.include` | no ² | list | unset (use `filter`, or the full set) | Explicit list of codex artefact IDs — each is one regime. Permitted TYPEs: `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD` ([14-codex.md](../../elements/14-codex.md)). |
+| `view.regimes.filter` | no ² | object | **no filter — every codex artefact in the `codex/` zone** | Declarative filter — `jurisdiction: […]` (ISO 3166-1 alpha-2, `eu`, or `intl` per [14-codex.md](../../elements/14-codex.md) §3), `codex_type: […]` (subset of `LAW` / `REGULATION` / `STANDARD` / `POLICY` / `INTERNAL_STANDARD`; default — all five). The renderer resolves the filter against the `codex/` zone at render time. |
 | `view.regimes.exclude_paths` | no ² | list of strings | unset (no path exclusions) | Glob patterns relative to the `codex/` root. Any file whose path (relative to `codex/`) matches a pattern is excluded from the regime candidate set before `filter` is applied. Supports `*` (any characters except `/`) and `**` (any characters including `/`). **Ignored when `view.regimes.include` is set** — an explicit include list bypasses path-based exclusion entirely. Useful for omitting non-catalogue sub-folders (templates, service files, drafts) without duplicating their paths across every view config. Example: `["templates/**", "service/**"]`. |
 | `view.grouping.rows` | no | string | `subject` | Row dimension: `subject` (one row per subject at `subject_grain`), `regime` (one row per regime). |
 | `view.grouping.subject_grain` | no | string | `task` | Subject grain when `rows: subject` or when the matrix is per-subject: `product` (one row per `PRODUCT`), `product-stage` (one row per stage of each process), `task` (one row per flow step). |
@@ -221,7 +221,7 @@ A conformant renderer reads exactly these canonical inputs:
 
 1. **`ASSERTION` catalogue** — every `ASSERTION-…` file under `canon/assertions/` in **admitted** state (`admission_state: active`; proposed assertions are excluded unless `view.coverage_rule.treat_proposed_as: shown-distinct`). Each contributes its `about` (the obligation), `subject` (the bearing element), `realised_via[]` (which MAY name a `STEP-…`, a child `PROCESS-…`, or any other admitted canonical element to localise the impact; a process-blueprint `STAGE-…` id is not such an element), and `status`.
 2. **`REQUIREMENT` catalogue** — every `REQUIREMENT-…` file under `canon/elements/01_motivation/requirements/`. Each contributes its `derived_from[]` list of codex artefact IDs. The renderer joins each admitted `ASSERTION`'s `about` to a `REQUIREMENT`, and the `REQUIREMENT`'s `derived_from[]` to the regime axis.
-3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
+3. **Codex catalogue** — every `LAW-…` / `REGULATION-…` / `STANDARD-…` / `POLICY-…` / `INTERNAL_STANDARD-…` file under `codex/` ([14-codex.md](../../elements/14-codex.md)). Each contributes its `jurisdiction:` (external artefacts) — the regime-to-jurisdiction lookup used for the `columns: jurisdiction` grouping. Internal codex artefacts have no `jurisdiction` ([14-codex.md](../../elements/14-codex.md) §3); when grouped by jurisdiction they collapse into the synthetic bucket `internal`.
 4. **Process flows** — the `flow.steps[]` of each `PROCESS-…` element named directly in `view.subjects.processes` or derived from `view.subjects.products`. Each step carries an addressable canonical ID under the canonical-by-containment + promotion rule ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §3.3; promotion mechanic [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §7.20).
 5. **Process-blueprint stages** — when a process-blueprint document covers the same processes, its `stages[]` are the canonical stage grain for `subject_grain: product-stage`. The blueprint is read as supplementary structure; nothing in the view derivation requires it (a renderer without a blueprint falls back to `subject_grain: task`).
 
@@ -288,7 +288,7 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 |---|---|---|
 | `COVMET-001` | error | A required field from §4 is missing, or `id` does not match the canonical grammar `COVERAGE_METRIC-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../../IDS_AND_REFERENCES.md) §1). |
 | `COVMET-002` | error | `view.subjects` is empty (neither `products` nor `processes` present). |
-| `COVMET-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.regimes.include` does not resolve to an admitted canonical element of the expected TYPE. A value in `view.regimes.include` whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD` is the same error. |
+| `COVMET-003` | error | A reference in `view.subjects.products` / `view.subjects.processes` / `view.regimes.include` does not resolve to an admitted canonical element of the expected TYPE. A value in `view.regimes.include` whose TYPE is not one of `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD` is the same error. |
 | `COVMET-004` | error | `view.grouping.rows`, `view.grouping.subject_grain`, or `view.grouping.columns` is set to a value outside the enumerated set in §4. |
 | `COVMET-005` | error | `view.coverage_rule.counts_as_covered`, `view.coverage_rule.treat_proposed_as`, or `view.coverage_rule.treat_ai_reviewed_as` is set to a value outside its enumeration (the last per CONTRACT §6.2: `shown-distinct` \| `shown-same` \| `hidden`). |
 | `COVMET-006` | warning | A pattern in `view.regimes.exclude_paths` is not a valid glob string (unbalanced brackets or other malformed syntax). The renderer MUST skip the malformed pattern and emit this warning; it MUST NOT abort the render. |

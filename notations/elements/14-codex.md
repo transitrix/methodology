@@ -1,14 +1,14 @@
 ---
 title: "Codex — external & internal authority artefacts"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-22"
+last_updated: "2026-08-27"
 status: "draft"
 ---
 
 # Codex Notation — Reference
 
-**Scope:** The **Codex** zone — external constraints (laws, regulations) and internal authority documents (policies, standards) that are *given to* the organisation rather than authored by it. The three-zone model and the shared admission record are defined in [CONTRACT.md](../CONTRACT.md) §5–6.
+**Scope:** The **Codex** zone — external constraints (laws, regulations, and standards issued by a standards-developing organisation) and internal authority documents (policies, internal standards, principles) that are *given to* or *held by* the organisation rather than modelled as canon. The three-zone model and the shared admission record are defined in [CONTRACT.md](../CONTRACT.md) §5–6.
 
 Codex artefacts are **zone primitives**, not view documents: each artefact is a single YAML file named by its ID (`<TYPE>-…-<INTEGER>.yaml`, per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md)). They are not `.transitrix.yaml` notation files and carry no `notation:` header; instead they carry the shared admission record ([CONTRACT.md](../CONTRACT.md) §6, with `zone: codex`) plus the codex-specific frontmatter below.
 
@@ -25,7 +25,7 @@ codex/
   internal/          # issued by the org itself
 ```
 
-- **`external/`** — laws and regulations, sub-foldered by **jurisdiction** because a distributed organisation operates under multiple legal regimes that bind different processes differently.
+- **`external/`** — laws, regulations, and externally issued technical standards, sub-foldered by **jurisdiction** because a distributed organisation operates under multiple legal (and standards) regimes that bind different processes differently. Internationally issued SDO artefacts live under `intl`.
 - **`internal/`** — policies and internal standards the organisation issues to itself. Not foldered by country.
 
 ### 1.1 Jurisdiction codes
@@ -36,7 +36,7 @@ External codex artefacts live under a jurisdiction folder:
 |---|---|
 | ISO 3166-1 alpha-2 (`ge`, `de`, `ru`, …) | a single country's legal regime |
 | `eu` | EU-wide law applying across member states |
-| `intl` | supranational bodies (UN, etc.) — **reserved; no content in v1** |
+| `intl` | internationally issued bodies (ISO, IEC, IEEE, UN, and peers) — live; not reserved |
 
 The folder an external artefact sits in MUST match its `jurisdiction:` frontmatter (rule `CODEX-001`).
 
@@ -48,11 +48,12 @@ The folder an external artefact sits in MUST match its `jurisdiction:` frontmatt
 |---|---|---|
 | `LAW` | external | a statute or act binding the organisation |
 | `REGULATION` | external | a regulation issued under a law |
+| `STANDARD` | external | a technical standard issued by a standards-developing organisation (ISO, IEC, IEEE, ANSI, NIST-as-SDO, DIN, BSI, PCI SSC, and peers) |
 | `POLICY` | internal | an internal policy the organisation issues |
 | `INTERNAL_STANDARD` | internal | an internal standard or convention |
 | `PRINCIPLE` | internal | a rule the organisation holds over itself, with no stated issuing authority or conformance test |
 
-Registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `INTERNAL_STANDARD-coding-conventions-1`, `PRINCIPLE-data-minimisation-1`, …).
+Registered in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.5; IDs follow the canonical grammar (`LAW-PERSONAL-DATA-2017-1`, `STANDARD-iso-27001-1`, `INTERNAL_STANDARD-coding-conventions-1`, `PRINCIPLE-data-minimisation-1`, …).
 
 ### 2.1 PRINCIPLE vs POLICY vs INTERNAL_STANDARD — the discriminator
 
@@ -64,6 +65,16 @@ All three are internal, self-issued artefacts, and it is easy to misfile one as 
 
 There is deliberately **one TYPE, not two** — no `IT_PRINCIPLE` or other domain-qualified variant. The layer a principle constrains is already carried by whatever cites it (a `REQUIREMENT` in a given layer, an `ASSERTION` against a given subject); the TYPE itself does not need to repeat that.
 
+### 2.2 STANDARD vs REGULATION vs INTERNAL_STANDARD — the discriminator
+
+This test is stated in words a reader applies at **admission time**, not a field the validator can compute:
+
+- **Issued under a statute?** Then it is a `REGULATION` (or `LAW` if the artefact *is* the statute).
+- **The adopting organisation writes it for itself?** Then it is `INTERNAL_STANDARD` / `POLICY` / `PRINCIPLE` — apply §2.1.
+- **A standards-developing organisation issues it** (ISO, IEC, IEEE, ANSI, NIST acting as an SDO, DIN, BSI, PCI SSC, and peers)? Then it is a `STANDARD`. `issuing_authority` names that body. Folder under `codex/external/<jurisdiction>/` with `LAW` / `REGULATION`; internationally issued bodies use `intl`.
+
+A regulation that **incorporates a standard by reference** stays a `REGULATION` and cites the `STANDARD` (typically via `related_documents[]` or a downstream `REQUIREMENT.derived_from` that names both). Incorporating a standard does not reclassify the regulation.
+
 ---
 
 ## 3. Frontmatter — external codex artefacts
@@ -73,7 +84,7 @@ Carries the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: codex`, 
 ```yaml
 id: LAW-PERSONAL-DATA-2017-1
 name: "Law of Georgia on Personal Data Protection"
-type: LAW                       # LAW | REGULATION
+type: LAW                       # LAW | REGULATION | STANDARD
 zone: codex
 admitted_at: "2026-05-27"
 admitted_by: "v.korobeinikov"
@@ -116,12 +127,13 @@ A static artefact (Final Rule, published once) omits the `scan` block and instea
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `jurisdiction` | yes | string | ISO 3166-1 alpha-2, `eu`, or `intl`. MUST equal the parent folder name. |
+| `issuing_authority` | conditional | string | The body that issued the artefact. **Required on `type: STANDARD`** (`CODEX-002`) — the standards-developing organisation. Optional on `LAW` / `REGULATION` (the legislative source is typically `gate_checks.source_authority`). |
 | `effective_date` | yes | string | Date the artefact takes effect — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). |
 | `source_url` | no | string | Canonical online location of the source document. Informational for static artefacts; the fetch target for the scanner agent (see §3.5) on live artefacts. For an admitted source this is the **authoritative watch target** — when a `REGISTRY` row points at this artefact (via its `codex_id`), this `source_url` wins over the row's and the two MUST agree ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, rule `REG-001`; ADR 2026-06-10). |
 | `snapshot_file` | no | string | Relative path to a locally-captured copy of the source document (see §3.1). Required-together with `snapshot_date`. |
 | `snapshot_date` | no | string | Date the snapshot was taken — quoted ISO 8601 ([CONTRACT.md](../CONTRACT.md) §4). Required-together with `snapshot_file`. |
 | `related_documents` | no | list | Pointers to documents in the same regulatory family — see §3.2. |
-| `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW`. See §3.4. |
+| `monitoring_needed` | conditional | boolean | Whether the artefact's source changes over time. **Required on `type: REGULATION`** (`CODEX-005`); optional on `type: LAW` and `type: STANDARD`. See §3.4. |
 | `monitor_instead` | no | list | When `monitoring_needed: false`, lists live documents to watch in lieu of monitoring this one. See §3.4. |
 | `scan` | no | map | Runtime scan state + human-visibility marker — `last_scanned_at` / `next_scan_due` / `scan_frequency` / `change_detected` / `change_description` / `review_needed`. Only meaningful on `monitoring_needed: true` artefacts. Discovery is via `scan-sources.yaml` (§3.7), not this block. The **authoritative runtime scan state** for an admitted source: once a `REGISTRY` row links this artefact via `codex_id`, scan state defers here (the row's `scan_frequency` / `change_signal_method` are superseded — [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.20, ADR 2026-06-10). See §3.5. |
 
@@ -197,7 +209,7 @@ monitoring_needed: true
 | `name` | yes | string | Human-readable title of the live document. |
 | `url` | no | string | URL pointing at the live document. Required when `id` is absent. |
 
-`monitoring_needed` is **required on `type: REGULATION`** (CODEX-005). It is optional on `type: LAW` — laws also receive amendments, but treating that as a separate concern is deferred until a real adopter brings the use case.
+`monitoring_needed` is **required on `type: REGULATION`** (CODEX-005). It is optional on `type: LAW` and `type: STANDARD` — laws and standards also receive amendments, but treating that as a separate concern is deferred until a real adopter brings the use case.
 
 A `monitor_instead[]` entry duplicating the artefact's own `source_url` is a configuration error: the field is for *other* live documents, not the same one.
 
@@ -351,6 +363,7 @@ One artefact per file, named by its canonical ID. Examples:
 
 - `codex/external/ge/LAW-PERSONAL-DATA-2017-1.yaml`
 - `codex/external/eu/REGULATION-GDPR-2016-1.yaml`
+- `codex/external/intl/STANDARD-iso-27001-1.yaml`
 - `codex/internal/INTERNAL_STANDARD-coding-conventions-1.yaml`
 - `codex/internal/PRINCIPLE-data-minimisation-1.yaml`
 
@@ -361,7 +374,7 @@ One artefact per file, named by its canonical ID. Examples:
 | Rule | Severity | Description |
 |---|---|---|
 | `CODEX-001` | error | An external artefact's `jurisdiction:` does not match its parent folder name under `codex/external/<jurisdiction>/`. |
-| `CODEX-002` | error | Required frontmatter missing. External needs `jurisdiction` + `effective_date`; internal `POLICY`/`INTERNAL_STANDARD` need `issuing_authority` + `effective_date`; internal `PRINCIPLE` needs `statement` + `rationale` (§4.1) — `issuing_authority` and `effective_date` are optional on `PRINCIPLE`. All codex artefacts also carry the admission record ([CONTRACT.md](../CONTRACT.md) §6). |
+| `CODEX-002` | error | Required frontmatter missing. External `LAW`/`REGULATION` need `jurisdiction` + `effective_date`; external `STANDARD` needs those plus `issuing_authority` (the issuing body, §2.2); internal `POLICY`/`INTERNAL_STANDARD` need `issuing_authority` + `effective_date`; internal `PRINCIPLE` needs `statement` + `rationale` (§4.1) — `issuing_authority` and `effective_date` are optional on `PRINCIPLE`. All codex artefacts also carry the admission record ([CONTRACT.md](../CONTRACT.md) §6). |
 | `CODEX-004` | warning | An `applies_to:` field is present on a codex artefact. The field was retired in this revision (see [§8 Migration](#8-migration)); bindings now live on `REQUIREMENT.derived_from` ([15-requirement.md](15-requirement.md)) and on `ASSERTION` ([16-assertion.md](16-assertion.md)). |
 | `CODEX-005` | info | A `type: REGULATION` artefact does not declare `monitoring_needed:`. The field SHOULD be explicit so downstream consumers (and scanner agents) know whether the source is static or live — see §3.4. Info severity, not warning, because some legacy artefacts predate the field; new REGULATION artefacts SHOULD set it. |
 | `CODEX-006` | info | A `type: PRINCIPLE` artefact does not declare `established_by` (§4.1). Info severity — a record without one is admissible; the absence is a review finding for whoever admits it, not a defect the validator blocks on. |
@@ -423,4 +436,5 @@ Post-migration, when adopters have removed `applies_to` from all codex artefacts
 
 ## 9. Evolution
 
+- **v0.3 → v0.4 — `STANDARD` TYPE added (§2, §2.2).** Purely additive: a new sibling TYPE in the existing `external` sub-zone for a technical standard issued by a standards-developing organisation. Required fields are the external pair (`jurisdiction` + `effective_date`) plus `issuing_authority` (the issuing body). `intl` is live (no longer reserved). No existing field became required on `LAW` / `REGULATION`, no existing TYPE's shape changed, and a repository with no `STANDARD` artefact validates exactly as it did before. `REQUIREMENT.derived_from`'s permitted TYPEs list widened to include `STANDARD` ([15-requirement.md](15-requirement.md) §2, `REQ-003`) — also additive.
 - **v0.2 → v0.3 — `PRINCIPLE` TYPE added (§2, §2.1, §4.1, `CODEX-002`, `CODEX-006`).** Purely additive: a new sibling TYPE in the existing `internal` sub-zone, with its own required-field pair (`statement` + `rationale`) and its own optional fields (`issuing_authority`, `effective_date`, `established_by`). No existing field became required, no existing TYPE's shape changed, and no existing artefact needs updating — a repository with no `PRINCIPLE` artefact validates exactly as it did before. `REQUIREMENT.derived_from`'s permitted TYPEs list widened to include `PRINCIPLE` ([15-requirement.md](15-requirement.md) §2, `REQ-003`) — also additive, since widening a permitted-values enum accepts strictly more than it did before.

@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **`STANDARD` — a new codex TYPE for a technical standard issued by a standards-developing organisation** (`notations/elements/14-codex.md` §2, §2.2). Lives in `codex/external/<jurisdiction>/` with `LAW`/`REGULATION`; internationally issued bodies use `intl` (no longer reserved). Discriminator at admission: statute → `REGULATION` (or `LAW`); org writes it for itself → `INTERNAL_STANDARD`/`POLICY`/`PRINCIPLE`; an SDO issues it → `STANDARD`. A regulation that incorporates a standard by reference stays a `REGULATION` and cites the `STANDARD`. Required fields are `jurisdiction`, `effective_date`, and `issuing_authority` (the issuing body). Permitted-TYPE lists for `REQ-003`, `TERM-002`, `COVMET-003`, `RIF-002`, `SEGMENT-002`, and `AMENDMENT-002` widen to include `STANDARD`; `PRINCIPLE` stays out of rules-in-force. `@transitrix/ingest-cli` accepts `--type STANDARD` with `--jurisdiction` and `--issuing-authority`. Purely additive: no existing field became required on `LAW`/`REGULATION`, and a repository with no `STANDARD` artefact validates as before. (transitrix-hq#318)
+
 ---
 
 ## [4.1.0] — 2026-08-27

@@ -90,7 +90,7 @@ kind: functional                # functional | quality — see §2.6
 parent: REQUIREMENT-PERSONAL-DATA-PROTECTION-1  # optional; same-TYPE decomposition — see §2.4
 next_review_at: "2027-06-01"    # optional; drives REQ-STALE-001 — see §2.3
 serves: NEED-DATA-SUBJECT-CONTROL-1  # optional; the NEED this requirement traces to — see §2.7
-derived_from:                   # permitted codex TYPEs only — LAW / REGULATION / POLICY / INTERNAL_STANDARD / PRINCIPLE
+derived_from:                   # permitted codex TYPEs only — LAW / REGULATION / STANDARD / POLICY / INTERNAL_STANDARD / PRINCIPLE
   - LAW-PERSONAL-DATA-2017-1
   - REGULATION-GDPR-2016-1
 
@@ -121,7 +121,7 @@ valid_to: null
 | `parent` | no | string | `REQUIREMENT-…` — the higher-scale REQUIREMENT this one decomposes from. Enables authoring a broad obligation once and decomposing it into more specific sub-requirements. Inline; not time-aware (v0.x transitional, same shape as `CHANGE.parent` in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.3 and `LOCATION.parent` in §7.22). Origin-agnostic — see §2.4. |
 | `next_review_at` | no | string | Date by which the requirement should be re-reviewed — quoted ISO 8601. Drives the `REQ-STALE-001` staleness warning. Origin-agnostic (§2.3). |
 | `serves` | no | string | `NEED-…` — the stakeholder/user need this requirement traces to. See §2.7. |
-| `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Empty or absent for internal-only requirements with no codex source. |
+| `derived_from` | no | list | Typed IDs of the codex artefacts this requirement is drawn from. Permitted TYPEs: `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Empty or absent for internal-only requirements with no codex source. |
 | `zone` | yes | string | Always `canon` for REQUIREMENT — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `admitted_by` | yes | string | Person handle or tool ID that ran the admission gate. |
@@ -135,7 +135,7 @@ valid_to: null
 
 | Value | Meaning | Typical source documents | Default `derived_from` TYPEs |
 |---|---|---|---|
-| `legislative` | Obligation derived from a law, regulation, standard, or internal policy — an externally imposed or formally adopted rule the organisation must comply with. | Law / regulation text, standards documents, internal policies, compliance frameworks. | `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE` |
+| `legislative` | Obligation derived from a law, regulation, standard, or internal policy — an externally imposed or formally adopted rule the organisation must comply with. | Law / regulation text, standards documents, internal policies, compliance frameworks. | `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE` |
 | `process-product` | Requirement on the output or product of a **PROCESS** — what the process must deliver, in what shape, to what quality threshold. Typically extracted from SOPs, process specifications, or quality-management documents. | SOP, process spec, quality manual, ISO work instruction. | None — omit `derived_from`. Field artefacts stay in `field/`; cite a permitted codex TYPE only if a codex artefact is also a source of authority. |
 | `project-product` | Requirement on a deliverable or product of a **PROJECT** or initiative — what the project must produce to satisfy its stakeholders. Typically extracted from BRDs, project charters, product specs, or stakeholder briefs. | BRD, project charter, product spec, stakeholder brief, RFP. | None (same as above). |
 
@@ -143,7 +143,7 @@ valid_to: null
 
 **Default when omitted.** A REQUIREMENT without `origin` is treated as `legislative` by tooling that supports origin-based filtering. Existing requirements admitted before this field was introduced carry no `origin` and are grandfathered as implicitly `legislative` (they were extracted from codex sources under the original compliance scope of this spec). Authors SHOULD add `origin` on newly admitted requirements; backfilling existing records is optional.
 
-**Relation to `derived_from`.** `REQUIREMENT.derived_from` is restricted to the permitted codex TYPEs (`LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`) on every origin — `REQ-003` has no origin-based exception. `origin: legislative` requirements typically carry a `derived_from` list citing the codex artefact. `process-product` and `project-product` requirements typically omit `derived_from`: their motivating source is a Field artefact (an interview, a BRD, a process spec), which stays in `field/` and is not written into this field. The maintain signal for those origins is `next_review_at` (§2.3). A Field-zone id (`INTERVIEW-…`, `SURVEY-…`, `OBSERVATION-…`, `DRAFT-…`) in `derived_from` is `REQ-003`, not a valid provenance citation. A `derived_from` entry is present on a non-legislative origin only when a permitted codex artefact is also a source of authority (a process spec that is itself governed by a regulation may produce a `process-product` requirement that also cites the governing regulation). That citation does not override an explicit `origin: process-product`.
+**Relation to `derived_from`.** `REQUIREMENT.derived_from` is restricted to the permitted codex TYPEs (`LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`) on every origin — `REQ-003` has no origin-based exception. `origin: legislative` requirements typically carry a `derived_from` list citing the codex artefact. `process-product` and `project-product` requirements typically omit `derived_from`: their motivating source is a Field artefact (an interview, a BRD, a process spec), which stays in `field/` and is not written into this field. The maintain signal for those origins is `next_review_at` (§2.3). A Field-zone id (`INTERVIEW-…`, `SURVEY-…`, `OBSERVATION-…`, `DRAFT-…`) in `derived_from` is `REQ-003`, not a valid provenance citation. A `derived_from` entry is present on a non-legislative origin only when a permitted codex artefact is also a source of authority (a process spec that is itself governed by a regulation may produce a `process-product` requirement that also cites the governing regulation). That citation does not override an explicit `origin: process-product`.
 
 **Relation to `ASSERTION`.** The `origin` field does not change which elements may be subjects of an `ASSERTION` targeting this `REQUIREMENT`. `ASSERTION.about` always references a `REQUIREMENT` id regardless of origin; the subject TYPE constraint (`PRODUCT | PROCESS | CAPABILITY`) comes from [elements/16-assertion.md](16-assertion.md) §3, not from `origin`.
 
@@ -311,7 +311,7 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 |---|---|---|
 | `REQ-001` | error | `id` is missing or does not match the canonical grammar `REQUIREMENT-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or any required field from §2 (`notation`, `name`, `description`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `REQ-002` | error | A value in `derived_from` is a well-formed typed ID but does not resolve to any admitted codex artefact in the organisation's `codex/` zone. |
-| `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Requirements derive only from codex source documents. A Field-zone id (`INTERVIEW-…`, `SURVEY-…`, `OBSERVATION-…`, `DRAFT-…`) in this field is this failure, including on `process-product` / `project-product` records — origin is not an exception. |
+| `REQ-003` | error | A value in `derived_from` resolves to an artefact whose TYPE is not one of `LAW`, `REGULATION`, `STANDARD`, `POLICY`, `INTERNAL_STANDARD`, `PRINCIPLE`. Requirements derive only from codex source documents. A Field-zone id (`INTERVIEW-…`, `SURVEY-…`, `OBSERVATION-…`, `DRAFT-…`) in this field is this failure, including on `process-product` / `project-product` records — origin is not an exception. |
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
 | `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
@@ -326,6 +326,9 @@ The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3)
 ---
 
 ## 5. Evolution
+
+**Landed (2026-08-27, STANDARD codex TYPE):**
+- `derived_from`'s permitted TYPEs widened to include `STANDARD` (§2 field table, `REQ-003`) — [14-codex.md](14-codex.md) §2.2 adds `STANDARD` as a codex TYPE for a technical standard issued by a standards-developing organisation. Additive: widening a permitted-values enum accepts strictly more than it did before; no existing REQUIREMENT needs updating.
 
 **Landed (2026-08-25, origin guidance aligned with REQ-003):**
 - §2.1 — origin table, "Relation to `derived_from`", and the origin-agnostic backward-trace sentence no longer tell authors to put Field-zone ids in `REQUIREMENT.derived_from`. Field provenance for `process-product` / `project-product` stays in `field/`; the maintain signal is `next_review_at`; `derived_from` remains absent unless a permitted codex TYPE is also cited. `REQ-003` is unchanged.
