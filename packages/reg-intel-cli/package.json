@@ -1,7 +1,7 @@
 {
   "name": "@transitrix/reg-intel-cli",
   "version": "0.0.1",
-  "description": "Deterministic CLI for the Transitrix reg-intel skill — watch codex sources, run the change-signal gate, segment and classify regulatory text, and stage a review digest. Never writes canon. This package is being built incrementally; the scheduler core (list-due, update-scan) ships first.",
+  "description": "Deterministic CLI for the Transitrix reg-intel skill — read the codex watch-list, run the change-signal gate, segment and classify regulatory text, and stage a review digest. Never writes canon. All nine run-loop commands ship: list-due, check-signal, fetch-snapshot, segment, classify, validate, amendment, update-scan, digest.",
   "type": "module",
   "bin": {
     "transitrix-reg-intel": "./reg-intel.mjs"

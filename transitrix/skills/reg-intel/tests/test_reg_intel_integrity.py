@@ -133,7 +133,7 @@ def part_a_bundle():
 
 def _codex_org(work):
     org = os.path.join(work, "org")
-    for sub in ("codex/external/eu", "codex/external/us", "codex/internal"):
+    for sub in ("codex/external/eu", "codex/external/us", "codex/internal", "operations/config"):
         os.makedirs(os.path.join(org, sub), exist_ok=True)
     with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
         fh.write('transitrix: 1\nmethodology_version: "0.5.0"\n')
@@ -160,6 +160,20 @@ def _codex_org(work):
     w("codex/external/us/REGULATION-D-1.yaml",
       'id: "REGULATION-D-1"\ntype: "REGULATION"\nname: "Final Rule D"\nmonitoring_needed: false\n'
       'monitor_instead:\n  - id: "REGULATION-CFR-1"\n    name: "21 CFR Part 809"\n    url: "https://ecfr.gov/x"\n')
+
+    # Create the watch-list at operations/config/scan-sources.yaml (the discovery source).
+    # D is static (monitoring_needed: false) so it won't be returned as a due source;
+    # its monitor_instead entries will be surfaced as separate scan targets instead.
+    w("operations/config/scan-sources.yaml",
+      'sources:\n'
+      '  - id: "REGULATION-A-1"\n    type: "codex"\n    path_or_url: "codex/external/eu/REGULATION-A-1.yaml"\n'
+      '    cadence: monthly\n    domain: "test"\n    notes: "Test regulation A"\n'
+      '  - id: "REGULATION-B-1"\n    type: "codex"\n    path_or_url: "codex/external/us/REGULATION-B-1.yaml"\n'
+      '    cadence: quarterly\n    domain: "test"\n    notes: "Test regulation B"\n'
+      '  - id: "POLICY-C-1"\n    type: "codex"\n    path_or_url: "codex/internal/POLICY-C-1.yaml"\n'
+      '    cadence: weekly\n    domain: "test"\n    notes: "Test policy C"\n'
+      '  - id: "REGULATION-D-1"\n    type: "codex"\n    path_or_url: "codex/external/us/REGULATION-D-1.yaml"\n'
+      '    cadence: null\n    domain: "test"\n    notes: "Static source (monitoring_needed: false)"\n')
     return org
 
 
@@ -755,6 +769,39 @@ def part_k_templates():
 
 
 part_k_templates()
+
+
+# ── Part M — date validation ────────────────────────────────────
+
+def part_m_date_validation():
+    """addFrequency and isDue reject impossible or malformed dates."""
+    if not shutil.which("node"):
+        print("SKIP Part M: `node` not found.")
+        return
+    work = tempfile.mkdtemp(prefix="regintel-dates-")
+    try:
+        org = _codex_org(work)
+        a_file = os.path.join(org, "codex", "external", "eu", "REGULATION-A-1.yaml")
+
+        # addFrequency rejects impossible dates like Feb 31.
+        r = run_cli("update-scan", a_file, "--today", "2026-02-31", "--frequency", "daily")
+        check(r.returncode != 0 and ("impossible" in (r.stdout + r.stderr).lower() or "feb" in (r.stdout + r.stderr).lower() or "invalid" in (r.stdout + r.stderr).lower()),
+              f"M: addFrequency must reject impossible dates like Feb 31; got {r.stdout + r.stderr}")
+
+        # addFrequency rejects malformed dates (e.g., 2026-6-01 instead of 2026-06-01).
+        r = run_cli("update-scan", a_file, "--today", "2026-6-01", "--frequency", "daily")
+        check(r.returncode != 0 and "YYYY-MM-DD" in (r.stdout + r.stderr),
+              f"M: addFrequency must reject malformed dates like 2026-6-01; got {r.stdout + r.stderr}")
+
+        # isDue rejects non-dates (does not silently return false via string compare).
+        r = run_cli("check-signal", a_file, "--observed", "x", "--today", "not-a-date")
+        check(r.returncode != 0 and ("YYYY-MM-DD" in (r.stdout + r.stderr) or "date" in (r.stdout + r.stderr).lower()),
+              f"M: isDue must reject non-dates; got {r.stdout + r.stderr}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+part_m_date_validation()
 
 
 # ── Part L — #837 batch naming (non-destructive digest default) ─

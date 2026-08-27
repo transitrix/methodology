@@ -1,0 +1,40 @@
+name: Reg-intel skill test
+
+# Integrity test for the Transitrix Reg-Intel skill + @transitrix/reg-intel-cli.
+# Deterministic, no API key, no network. Runs the fixture end-to-end through all
+# CLI commands (list-due, check-signal, fetch-snapshot, segment, classify, validate,
+# amendment, update-scan, digest).
+
+on:
+  pull_request:
+    paths:
+      - 'transitrix/skills/reg-intel/**'
+      - 'packages/reg-intel-cli/**'
+      - '.github/workflows/reg-intel-skill-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:45 UTC — weekly safety net.
+    - cron: '45 9 * * 1'
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run reg-intel integrity test (deterministic)
+        run: python transitrix/skills/reg-intel/tests/test_reg_intel_integrity.py
