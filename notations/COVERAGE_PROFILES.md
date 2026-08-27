@@ -24,7 +24,7 @@ A profile is declared at the repository root in `transitrix.yaml` under the `cov
 
 ```yaml
 transitrix: 1
-methodology_version: "4.0.0"
+methodology_version: "4.1.0"
 notations: [dgca, goals, activities, capability-map]
 zones: [canon, field]
 coverage_profile: core         # short form — name a shipped preset
@@ -250,7 +250,7 @@ The shipped presets (`minimal`, `core`, `full`) are *re-defined per methodology 
 ```yaml
 # transitrix.yaml
 transitrix: 1
-methodology_version: "4.0.0"
+methodology_version: "4.1.0"
 notations: [dgca, goals, activities, capability-map, applications]
 zones: [canon, field]
 # coverage_profile omitted → defaults to `full`

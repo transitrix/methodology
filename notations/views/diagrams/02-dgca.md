@@ -154,7 +154,7 @@ A DGCA document opens with a shared header block (`notation:`, `spec_version:`, 
 ```yaml
 notation: dgca
 spec_version: "0.1"
-methodology_version: "4.0.0"
+methodology_version: "4.1.0"
 id: DGCA-LAUNCH-1
 name: "Product launch strategy chain"
 period: "2026"
@@ -188,7 +188,7 @@ notation: dgca
 spec_version: "0.1"
 id: DGCA-RETAIL-1
 name: "Retail strategy chain 2026"
-methodology_version: "4.0.0"
+methodology_version: "4.1.0"
 
 view_config:
   goals:
