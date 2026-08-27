@@ -1,0 +1,5 @@
+methodologies:
+  - version: "4.0.0"
+    methods:
+      - pattern: "canon/**/*.yaml"
+        zone: canon

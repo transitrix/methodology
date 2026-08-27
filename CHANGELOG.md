@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Added
+
+- **Validator tests for `assembled_on` relation kind** — positive and negative test fixtures in `notations/examples/relations/assembled-on/` covering endpoint constraints (both ends must be RELEASE), referential integrity (both ends must resolve to admitted primitives), and cross-subject permission (endpoints may be releases of different subject types, PRODUCT and/or APPLICATION). Additive — no new validator codes introduced; existing `REL-001`/`REL-002` codes suffice. (#345)
+
 ---
 
 ## [4.0.0] — 2026-08-25
