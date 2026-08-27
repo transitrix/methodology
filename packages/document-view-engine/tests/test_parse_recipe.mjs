@@ -175,6 +175,16 @@ function recipe(body, headerExtra = '') {
   check(errors.some((e) => /requires a path/.test(e.message)), 'view with no path is flagged');
 }
 
+{
+  const { errors } = parseRecipe(recipe('{{ view path/to/view-file bogus = x }}'));
+  check(errors.some((e) => /unknown attribute/.test(e.message)), 'unknown view attribute is flagged');
+}
+
+{
+  const { errors } = parseRecipe(recipe('{{ view path/to/view-file fit = page leftover text }}'));
+  check(errors.some((e) => /unparsed remainder/.test(e.message)), 'unparsed remainder in view is flagged');
+}
+
 // ── Figure / figref (§2) ──────────────────────────────────────────────────
 
 {
@@ -196,6 +206,16 @@ function recipe(body, headerExtra = '') {
 {
   const { errors } = parseRecipe(recipe('{{ figure }}'));
   check(errors.some((e) => /requires a path/.test(e.message)), 'figure with no path is flagged');
+}
+
+{
+  const { errors } = parseRecipe(recipe('{{ figure path/to/image.png bogus = x }}'));
+  check(errors.some((e) => /unknown attribute/.test(e.message)), 'unknown figure attribute is flagged');
+}
+
+{
+  const { errors } = parseRecipe(recipe('{{ figure path/to/image.png caption = "Device" unknown }}'));
+  check(errors.some((e) => /unparsed remainder/.test(e.message)), 'unparsed remainder in figure is flagged');
 }
 
 {

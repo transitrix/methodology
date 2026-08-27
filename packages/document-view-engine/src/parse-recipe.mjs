@@ -199,16 +199,17 @@ function parseKeyValuePairs(tokens, startIdx, errors, label) {
   const kv = {};
   let idx = startIdx;
   while (idx < tokens.length) {
-    const key = tokens[idx++];
-    const eq = tokens[idx++];
-    const value = tokens[idx++];
+    const key = tokens[idx];
+    const eq = tokens[idx + 1];
+    const value = tokens[idx + 2];
     if (eq !== '=' || value === undefined) {
-      errors.push({ message: `${label}: malformed "${key ?? ''} ${eq ?? ''}" — expected "key = value"` });
+      // Not a valid k=v triple, stop parsing and report the remainder as unparsed
       break;
     }
     kv[key] = value;
+    idx += 3;
   }
-  return kv;
+  return { kv, consumedIdx: idx };
 }
 
 // `caption = "Device, front"` needs quote-aware tokenizing (a bare `.split(/\s+/)`
@@ -222,8 +223,21 @@ function tokenizeRespectingQuotes(s) {
   return tokens;
 }
 
-function parseQuotedKeyValuePairs(rest, errors, label) {
-  return parseKeyValuePairs(tokenizeRespectingQuotes(rest), 0, errors, label);
+function parseQuotedKeyValuePairs(rest, errors, label, allowedAttrs) {
+  const tokens = tokenizeRespectingQuotes(rest);
+  const { kv, consumedIdx } = parseKeyValuePairs(tokens, 0, errors, label);
+  // Check for unknown attributes
+  for (const key of Object.keys(kv)) {
+    if (!allowedAttrs.has(key)) {
+      errors.push({ message: `${label}: unknown attribute "${key}"` });
+    }
+  }
+  // Check for unparsed remainder
+  if (consumedIdx < tokens.length) {
+    const unparsed = tokens.slice(consumedIdx).join(' ');
+    errors.push({ message: `${label}: unparsed remainder after attributes: "${unparsed}"` });
+  }
+  return kv;
 }
 
 // Splits "<path> key = value key2 = value2" into the leading bare path token (view/figure
@@ -237,7 +251,7 @@ function splitPathAndRest(afterKeyword) {
 
 function parseTrace(trimmed, errors) {
   const tokens = trimmed.split(/\s+/).filter(Boolean);
-  const kv = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
+  const { kv } = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
   for (const required of ['from', 'to', 'via']) {
     if (!kv[required]) errors.push({ message: `"{{ ${trimmed} }}": missing required "${required}"` });
   }
@@ -245,13 +259,15 @@ function parseTrace(trimmed, errors) {
 }
 
 const VIEW_FIT_VALUES = ['width', 'page', 'none'];
+const VIEW_ALLOWED_ATTRS = new Set(['fit', 'as']);
+const FIGURE_ALLOWED_ATTRS = new Set(['caption', 'as']);
 
 function parseView(trimmed, errors) {
   const { path, rest } = splitPathAndRest(trimmed.slice(4));
   if (!path) {
     errors.push({ message: `"{{ ${trimmed} }}": "view" requires a path` });
   }
-  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`);
+  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`, VIEW_ALLOWED_ATTRS);
   const fit = kv.fit ?? 'width';
   if (!VIEW_FIT_VALUES.includes(fit)) {
     errors.push({ message: `"{{ ${trimmed} }}": fit must be one of ${VIEW_FIT_VALUES.join('/')}, got "${fit}"` });
@@ -264,7 +280,7 @@ function parseFigure(trimmed, errors) {
   if (!path) {
     errors.push({ message: `"{{ ${trimmed} }}": "figure" requires a path` });
   }
-  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`);
+  const kv = parseQuotedKeyValuePairs(rest, errors, `"{{ ${trimmed} }}"`, FIGURE_ALLOWED_ATTRS);
   return { kind: 'figure', path, caption: kv.caption ?? null, as: kv.as ?? null };
 }
 
