@@ -33,7 +33,7 @@ node scripts/baseline-manifest.mjs <ref> [--root <adopter-repo>] [--out <file.md
 ```
 
 - **Read-only.** It reads every file via `git show <ref>:<path>` — it never runs `git checkout`, so it never disturbs the working tree and is safe to run against a tag from years ago while the working tree sits on a different branch.
-- **Scope is every admitted TYPE, derived from the ID on each file under `canon/`** (excluding `canon/views/`, which holds view/report/document configs, not individually admitted elements) — not a hardcoded directory list. A TYPE registered after the script was last touched appears in the manifest without any change to it.
+- **Scope is every admitted TYPE, derived from the ID on each file under `canon/`** (excluding `views/`, which holds view/report/document configs, not individually admitted elements) — not a hardcoded directory list. A TYPE registered after the script was last touched appears in the manifest without any change to it.
 - **`REQUIREMENT` carries additional detail** — split by `reviewer_authority` ([CONTRACT.md](../notations/CONTRACT.md) §6.2), so an auditor can see at a glance how much of the baseline rests on the top authority tier versus the AI-reviewed tier, plus `REQ-COVERAGE-001` as it existed at that ref — each requirement's compliance-coverage gap status ([CONTRACT.md](../notations/CONTRACT.md) §8) is computed from the `ASSERTION` set *at that same ref*, not from today's canon. A baseline answers "what did the model say then", not "what does it say now".
 
 Run it against any ref git can resolve — a tag, a branch, a SHA. There is nothing tag-specific in the mechanism; tags are simply the natural, human-legible way to mark a baseline commit.

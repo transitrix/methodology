@@ -170,7 +170,7 @@ Each tree node displays the following fields from the `ACTION` element:
 | `type` badge | `show_type_badge: true` | `ACTION.type` |
 | `start_date` – `end_date` | `show_dates: true` | `ACTION.start_date`, `ACTION.end_date` |
 | Owner | `show_owner: true` | resolved `ACTOR.name` from `ACTION.owner` |
-| Action Card link | `show_action_card_link: true` and node is Project-level | scan `canon/views/` for an Action Card referencing this `ACTION-…` as its project anchor |
+| Action Card link | `show_action_card_link: true` and node is Project-level | scan `views/` for an Action Card referencing this `ACTION-…` as its project anchor |
 | `description` tooltip | on hover / expand | `ACTION.description` |
 
 The `id` (`ACTION-…`) is available for drill-down navigation but is not shown as a primary label.

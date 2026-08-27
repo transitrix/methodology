@@ -62,11 +62,11 @@ Example of a well-formed review:
 
 > **Review: rename `APPLICATION-7` → `APPLICATION-CRM-7`**
 >
-> ❌ **Error** — `HDR-003` extension/content mismatch in `canon/views/dgca/RETENTION-2026.dgca.transitrix.yaml:1` (`notation: dgca` but the file extension reads `.goals.transitrix.yaml`).
+> ❌ **Error** — `HDR-003` extension/content mismatch in `views/dgca/RETENTION-2026.dgca.transitrix.yaml:1` (`notation: dgca` but the file extension reads `.goals.transitrix.yaml`).
 >
 > ⚠️ **Warning** — blast radius: `APPLICATION-7` is still referenced by 3 files not touched in this diff:
-> - `canon/views/applications/CRM.applications.transitrix.yaml:14`
-> - `canon/views/process-blueprint/ONBOARDING.process-blueprint.transitrix.yaml:52`
+> - `views/applications/CRM.applications.transitrix.yaml:14`
+> - `views/process-blueprint/ONBOARDING.process-blueprint.transitrix.yaml:52`
 > - `canon/relations/REL-3.yaml:3`
 >
 > Fix: update these three references to `APPLICATION-CRM-7`, or the rename orphans them.

@@ -48,7 +48,7 @@ anymore. The recipe therefore:
 |---|---|---|
 | `HAZARD` elements | `canon/elements/01_motivation/hazards/HAZARD-*.yaml` | `_archived/design-controls-3.0-migration/canon/elements/01_motivation/hazards/HAZARD-*.yaml` |
 | `RISK_CONTROL` elements | `canon/elements/01_motivation/risk-controls/RISK_CONTROL-*.yaml` | `_archived/design-controls-3.0-migration/canon/elements/01_motivation/risk-controls/RISK_CONTROL-*.yaml` |
-| Design-Controls Trace Matrix view-configs | any `*.design-controls-trace-matrix.transitrix.yaml`, wherever it lives in your `canon/views/` layout | `_archived/design-controls-3.0-migration/<same relative path>` |
+| Design-Controls Trace Matrix view-configs | any `*.design-controls-trace-matrix.transitrix.yaml`, wherever it lives in your `views/` layout | `_archived/design-controls-3.0-migration/<same relative path>` |
 
 `REQUIREMENT`, `ASSERTION`, and `VERIFICATION` files are not touched by this
 recipe under any circumstance.

@@ -34,7 +34,7 @@ The **promotion trigger** is cross-document sharing: an element stays inline unt
 
 > **Naming note:** The fourth column in the DGCA chain is called **Actions** (the column label, the YAML key `actions:`). The underlying element type is `ACTION` — element IDs use the `ACTION-[<middle>-]<INTEGER>` grammar (§Fields/ID grammar). An Action in a DGCA file is a reference to an `ACTION` element, optionally typed via `type:` to record its project-domain level (Initiative / Programme / Project / Work Package). The former element type name `ACTIVITY` is a deprecated alias accepted with `ACTION-005` warnings; see [CONTRACT.md](../../CONTRACT.md) §15.
 
-The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `canon/views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements + Relations, view_config)` → DGCA diagram. Deleting `views/dgca/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
 ---
 

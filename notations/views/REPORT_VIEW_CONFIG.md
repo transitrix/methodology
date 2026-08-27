@@ -31,12 +31,12 @@ A view file that lives anywhere else — an inline example under [`../examples/`
 ## 2. Location
 
 ```
-<repo-root>/canon/views/<short-name>/<basename>.<short-name>.transitrix.yaml
+<repo-root>/views/<short-name>/<basename>.<short-name>.transitrix.yaml
 ```
 
 | Path segment | Rule |
 |---|---|
-| `<repo-root>/canon/views/` | The single root of the registry in an adopter repo. The same root the [`canon/views/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/) example in the acme-corp reference repo uses. The view document lives under `canon/` for storage convenience — but it carries **no canonical content** of its own ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1 reconstruction invariant): everything it displays is reconstructible from the elements alone. A view document is a presentation surface, not a canonical fact. |
+| `<repo-root>/views/` | The single root of the registry in an adopter repo. The same root the [`views/`](https://github.com/transitrix/acme-corp/tree/main/views/) example in the acme-corp reference repo uses. The view document lives under `canon/` for storage convenience — but it carries **no canonical content** of its own ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §1.1 reconstruction invariant): everything it displays is reconstructible from the elements alone. A view document is a presentation surface, not a canonical fact. |
 | `<short-name>/` | One folder per view notation, named exactly as the notation's short name in [README.md](../README.md) §Views (e.g. `scenarios/`, `compliance-impact/`, `coverage-metric/`, `dgca/`, …). Tools list the registry per notation by walking these folders. |
 | `<basename>` | `kebab-case` slug uniquely identifying this saved config within its folder. Typically the slug-form of `view.id`'s middle segment (e.g. `view.id: SCENARIOS-2027-CUT-1` ⇒ basename `2027-cut`), or a `[DOMAIN]-[CONTEXT]` prefix (e.g. `retail-gdpr`, `eu-compliance`). |
 | `.<short-name>.transitrix.yaml` | The canonical file extension per [CONTRACT.md](../CONTRACT.md) §3 and the catalogue in [README.md](../README.md) §Views. The doc-lint [`scripts/check-notations.mjs`](../../scripts/check-notations.mjs) (E1) enforces extension + parent-folder match. |
@@ -65,14 +65,14 @@ The two names are loosely coupled by convention, not by validation. The renderer
 A reader (or a tool, or the future report skill) lists the saved reports a repository carries by walking the registry root:
 
 ```
-<repo-root>/canon/views/<short-name>/*.<short-name>.transitrix.yaml
+<repo-root>/views/<short-name>/*.<short-name>.transitrix.yaml
 ```
 
 Per notation, the listing entry for each file is the triple `(basename, view.id, view.name)`. Tools that surface a richer listing MAY also display `view.description` and, for report-configs, the subjects / obligations / regimes the view is scoped to.
 
 The folder itself plays the role of the **small report registry** the *reports rendered from declarative view-configs* architecture decision, §5, names — no separate index file is maintained. The filesystem walk **is** the listing; this keeps the registry diffable, reviewable, and reproducible without an out-of-band catalogue to keep in sync.
 
-A `README.md` per `canon/views/<short-name>/` folder is recommended for human navigation (the [acme-corp](https://github.com/transitrix/acme-corp/tree/main/canon/views/) example repo carries one per folder) but is not part of the listing contract — tooling reads the YAML, not the README.
+A `README.md` per `views/<short-name>/` folder is recommended for human navigation (the [acme-corp](https://github.com/transitrix/acme-corp/tree/main/views/) example repo carries one per folder) but is not part of the listing contract — tooling reads the YAML, not the README.
 
 ---
 
@@ -84,19 +84,19 @@ The supported invocations:
 
 1. **By file path** (the power-user / CLI escape hatch — same decision, Alternative C):
 
-       transitrix-view render canon/views/scenarios/2027-cut.scenarios.transitrix.yaml
+       transitrix-view render views/scenarios/2027-cut.scenarios.transitrix.yaml
 
 2. **By notation + basename** (registry-style lookup):
 
        transitrix-view render --notation scenarios --name 2027-cut
 
-   The tool resolves the basename to `canon/views/scenarios/2027-cut.scenarios.transitrix.yaml`.
+   The tool resolves the basename to `views/scenarios/2027-cut.scenarios.transitrix.yaml`.
 
 3. **By `view.id`** (cross-reference-style lookup, for tooling that already carries the ID):
 
        transitrix-view render --id SCENARIOS-2027-CUT-1
 
-   The tool walks `canon/views/scenarios/` and selects the file whose `view.id` matches.
+   The tool walks `views/scenarios/` and selects the file whose `view.id` matches.
 
 4. **From a conversational front-end** (the thin report skill — same decision, §3, Step 2): the skill materialises or selects a named view-config under [§2](#2-location), states the defaults it applied per [§6](#6-zero-configuration-default), and shells out to the same CLI. No render logic in the skill.
 
@@ -129,7 +129,7 @@ Re-running a minimal view-config against a richer canon a quarter later picks up
 - View-notation catalogue (short names + extensions): [`README.md`](../README.md) §Views.
 - View-level TYPE registry (`SCENARIOS`, `COMPLIANCE_IMPACT`, `COVERAGE_METRIC`, …): [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §3.2.
 - File extension + header rules: [`CONTRACT.md`](../CONTRACT.md) §1, §3.
-- Worked example registry: [`canon/views/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/) in the acme-corp reference repo.
+- Worked example registry: [`views/`](https://github.com/transitrix/acme-corp/tree/main/views/) in the acme-corp reference repo.
 - Report-config view specs:
   - [`11-scenarios.md`](./reports/11-scenarios.md) — Scenarios.
   - [`21-compliance-impact.md`](./reports/21-compliance-impact.md) — Compliance Impact.

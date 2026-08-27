@@ -1429,6 +1429,9 @@ rule_codes:
   VALID-006:
     severity: warning
     spec: notations/elements/28-validation.md
+  MIX-001:
+    severity: warning
+    spec: notations/CONTRACT.md
   VC-001:
     severity: error
     spec: notations/CONTRACT.md

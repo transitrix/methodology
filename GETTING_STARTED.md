@@ -15,7 +15,8 @@ The fastest path for a brand-new repo is the **onboarding Skill** (`/transitrix:
 
 A Transitrix repo has three parallel **zones** ([`notations/CONTRACT.md`](notations/CONTRACT.md) §5):
 
-- **`canon/`** — the authoritative model. View documents in `canon/views/<notation>/`; element primitives in `canon/elements/<NN>_<layer>/<plural-type>/`; first-class relations in `canon/relations/`.
+- **`canon/`** — the authoritative model. Element primitives in `canon/elements/<NN>_<layer>/<plural-type>/`; first-class relations in `canon/relations/`.
+- **`views/`** — derived projections over canonical elements and relations. View documents in `views/<notation>/`.
 - **`field/`** — raw inputs (interviews, surveys, …); not authoritative.
 - **`codex/`** — external laws/regulations + internal policies/standards, faithful to source.
 
@@ -31,7 +32,7 @@ Read [`notations/README.md`](notations/README.md) for the notation index and fam
 
 ## Step 2 — Author your first view (a Goals tree)
 
-The Goals tree is the simplest starting point. The onboarding Skill copies a starter template (`templates/goals.dgca.transitrix.yaml` from its bundle) into `canon/views/goals/<domain>.dgca.transitrix.yaml`; the `transitrix/acme-corp` worked example already has one under [`canon/views/goals/`](https://github.com/transitrix/acme-corp/tree/main/canon/views/goals). Keep the `notation: goals` / `spec_version:` header — it's required ([`CONTRACT.md`](notations/CONTRACT.md) §1). Fill the `FILL-ME` placeholders. A Goals tree is flat top-level arrays — `goal_types[]` + `goals[]`, hierarchy via `parent: GOAL-…` ([`notations/views/04-goals.md`](./notations/views/diagrams/04-goals.md)).
+The Goals tree is the simplest starting point. The onboarding Skill copies a starter template (`templates/goals.dgca.transitrix.yaml` from its bundle) into `views/goals/<domain>.dgca.transitrix.yaml`; the `transitrix/acme-corp` worked example already has one under [`views/goals/`](https://github.com/transitrix/acme-corp/tree/main/views/goals). Keep the `notation: goals` / `spec_version:` header — it's required ([`CONTRACT.md`](notations/CONTRACT.md) §1). Fill the `FILL-ME` placeholders. A Goals tree is flat top-level arrays — `goal_types[]` + `goals[]`, hierarchy via `parent: GOAL-…` ([`notations/views/04-goals.md`](./notations/views/diagrams/04-goals.md)).
 
 ## Step 3 — Create an element primitive
 
@@ -57,7 +58,7 @@ Two ways to link, depending on whether time matters ([`ELEMENT_PRIMITIVES.md`](n
 ## Step 5 — Validate
 
 - **Studio** previews and validates on save.
-- **CLI:** `npx @transitrix/cli validate canon/views/goals/strategy-2026.dgca.transitrix.yaml`. All canonical `*.<short-name>.transitrix.yaml` extensions are accepted without `--ext`; pass `--ext <notation-name>` only for a non-canonical extension outside the built-in registry.
+- **CLI:** `npx @transitrix/cli validate views/goals/strategy-2026.dgca.transitrix.yaml`. All canonical `*.<short-name>.transitrix.yaml` extensions are accepted without `--ext`; pass `--ext <notation-name>` only for a non-canonical extension outside the built-in registry.
 - **On Windows PowerShell** with a restricted execution policy (the default on many workstations), invoke as `npx.cmd @transitrix/cli validate <file>` — the unsuffixed `npx` resolves to a `.ps1` wrapper that the policy refuses to launch. From `cmd.exe`, WSL, or a shell on macOS/Linux, plain `npx` is fine.
 - The rules: the shared header (`HDR-001..004`, [`CONTRACT.md`](notations/CONTRACT.md) §2), lifecycle (`LIFECYCLE-001..004`, §7), element placement (`ELEM-001..005`, [`ELEMENT_PRIMITIVES.md`](notations/ELEMENT_PRIMITIVES.md) §9), plus each notation's own "Validation rules" table.
 

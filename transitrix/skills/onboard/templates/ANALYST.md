@@ -54,7 +54,7 @@ Use the `canon` MCP server (configured in `.mcp.json`, see §6) to navigate and 
    - `03_application/` — APPLICATIONs, INTEGRATIONs
    - `04_technology/` — NODEs, ARTIFACTs, TECHNOLOGY_SERVICEs
 
-2. **Use views for context.** The `canon/views/` tree holds notation files (DGCA, Goals, BPMN, Capability Map, etc.) that show how elements relate to each other. Read a view file when the question is about relationships, groupings, or a strategic narrative.
+2. **Use views for context.** The `views/` tree holds notation files (DGCA, Goals, BPMN, Capability Map, etc.) that show how elements relate to each other. Read a view file when the question is about relationships, groupings, or a strategic narrative.
 
 3. **Search within files.** If the question names a specific element type or domain, `list_directory` to find candidates, then `read_file` on the most likely matches. Do not grep for IDs by pattern — navigate semantically.
 
@@ -88,7 +88,7 @@ Example of a well-formed answer:
 > - **Customer Onboarding** — end-to-end onboarding process and tooling (→ `CAPABILITY-V1.2` at `canon/elements/02_business/capabilities/CAPABILITY-V1.2.yaml`)
 > - **Identity Verification** — KYC and AML checks (→ `CAPABILITY-V2` at `canon/elements/02_business/capabilities/CAPABILITY-V2.yaml`)
 >
-> The linkage is stated in the Goals tree at `canon/views/goals/STRATEGY-2026.goals.transitrix.yaml`.
+> The linkage is stated in the Goals tree at `views/goals/STRATEGY-2026.goals.transitrix.yaml`.
 
 **When the model is silent**, say so and offer to help scope a modelling task:
 

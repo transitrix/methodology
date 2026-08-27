@@ -31,10 +31,10 @@ organizations/
 │   │   │   ├── 04_technology/     # Nodes, technology services, equipment
 │   │   │   └── 05_implementation/ # Activities, changes
 │   │   ├── relations/             # First-class, time-aware relations (1 relation = 1 file)
-│   │   ├── assertions/            # Compliance assertions (REQUIREMENT ↔ subject)
-│   │   └── views/                 # Composite diagrams and aggregations over elements
-│   │       ├── goals/  capabilities/  processmap/  bpmn/  dgca/
-│   │       └── blocks/  activities/  products/  applications/  scenarios/  …
+│   │   └── assertions/            # Compliance assertions (REQUIREMENT ↔ subject)
+│   ├── views/                     # Derived projections: compositions over elements (sibling of canon/)
+│   │   ├── goals/  capabilities/  processmap/  bpmn/  dgca/
+│   │   └── blocks/  activities/  products/  applications/  scenarios/  …
 │   ├── field/                     # Zone: raw material — interviews, surveys, observations, drafts
 │   ├── codex/                     # Zone: external laws / regulations + internal policies / standards
 │   │   ├── external/<jurisdiction>/
@@ -46,12 +46,20 @@ organizations/
 │   └── .validators/                # Lint and schema scripts
 ```
 
-Two layers stay separate inside `canon/`:
+Two layers stay separate at the organization root:
 
-- **`canon/elements/`** holds atomic ArchiMate-typed objects. Each file describes exactly one element — its identity, type, properties, metadata, admission record, and lifecycle. No aggregation, no flow, no list of related items.
-- **`canon/views/`** holds compositions over elements. A goals tree is a hierarchy referencing many Goal elements. A BPMN diagram is a detailed flow over a single BusinessProcess element. A products list is a filtered view over all elements of type Product. Views aggregate; elements stay atomic.
+- **`canon/`** holds validated, authoritative model state: atomic elements (`canon/elements/`), first-class relations (`canon/relations/`), and compliance assertions (`canon/assertions/`). `canon/` contains **no views**.
+- **`views/`** (sibling of `canon/`, not nested inside it) holds derived projections over the canonical elements and relations. A goals tree is a hierarchy referencing many Goal elements. A BPMN diagram is a detailed flow over a single BusinessProcess element. A products list is a filtered view over all elements of type Product. Views aggregate; elements stay atomic.
 
 Every canonical artefact carries an **admission record** and a **primitive lifecycle** (`valid_from` / `valid_to`) — both defined in [`notations/CONTRACT.md`](../notations/CONTRACT.md) §6–7. Attributes that change over time live in `*.history.yaml` sidecars, not inline.
+
+**Dependency:** views depend on elements and relations, never the reverse. Canon wins on conflict — if an element and a view disagree, the element is authoritative and the view is stale. Deleting the entire `views/` folder loses no model knowledge; all projections regenerate from elements + view configuration files (see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §14.1 — the reconstruction invariant).
+
+### 1.1a Legacy layout (`canon/views/` — deprecated)
+
+Repositories created before 2026-08-26 may carry views nested inside `canon/views/`. This layout is **legacy**. The new normative layout places `views/` as a sibling of `canon/` at the organization root, not nested inside `canon/`.
+
+**Transition:** A repository may carry both `canon/views/` and the root-level `views/` during migration. The **diagnostic `MIX-001`** fires when both layouts are present in the same organization, naming the paths and directing migration to the normative layout. A validator using this diagnostic MUST warn that the legacy layout is not canonical state and SHOULD halt admission of new elements into `canon/views/`. See [`notations/CONTRACT.md`](../notations/CONTRACT.md) §14.5 ("Legacy layout coexistence") for the full diagnostic rule.
 
 ### 1.1 Operational layer — Team Operations (`operations/`)
 

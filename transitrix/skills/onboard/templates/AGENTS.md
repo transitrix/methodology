@@ -123,7 +123,7 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
     └── internal/
 ```
 
-The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
+The `views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
 
 The agent does **not** change this layout without a deliberate decision recorded in the adopter's PR. Adopter-specific top-level additions (e.g. a `decisions/` ADR folder, a `glossary/` directory) are fine; renaming or removing the canonical folders is not.
 
@@ -247,7 +247,7 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 
 - **GitHub Issues on this repo.** Tasks live as issues on the adopter's repo; the agent reads them via `gh issue list -R <owner>/<repo>` and reports back via `gh issue comment`.
 - **Linear / Jira / Asana.** Tasks live in a project management tool; the agent reads tickets via the tool's API or pasted-in URLs; PRs link back via the tool's convention.
-- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `canon/views/issues/` per `notations/views/12-issues.md`. The agent reads and updates the YAML directly.
+- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `views/issues/` per `notations/views/12-issues.md`. The agent reads and updates the YAML directly.
 
 ---
 
@@ -255,7 +255,7 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 
 - Does **not** edit files under the methodology canon at `transitrix/methodology` from inside this repo.
 - Does **not** invent new notations, new TYPE prefixes, or new validation rules. Those decisions happen upstream.
-- Does **not** change the canonical repository layout — `canon/views/<notation>/`, `canon/elements/<NN>_<layer>/`, `codex/external/<jurisdiction>/`, `codex/internal/`, `field/<sub>/` — without an explicit adopter decision recorded in the PR.
+- Does **not** change the canonical repository layout — `views/<notation>/`, `canon/elements/<NN>_<layer>/`, `codex/external/<jurisdiction>/`, `codex/internal/`, `field/<sub>/` — without an explicit adopter decision recorded in the PR.
 - Does **not** strip the `notation:` / `spec_version:` headers, rename canonical extensions, or rewrite files into alias formats (`*.bpmn.yaml`, `*.dgca.yml`).
 - Does **not** auto-merge PRs. All PRs go through the gating in §11.
 - Does **not** push to `main` directly. Use a feature branch + PR every time.
@@ -296,7 +296,7 @@ The agent does **not** run the install command itself — it surfaces it promine
 
 When the adopter (or anyone else) asks a question *about the organization itself* — "what does capability X depend on", "are we covered for GDPR", "what's our biggest process risk" — the agent answers from the **zoned sources of truth**, in this order:
 
-1. **`canon/`** first — the validated model (`canon/elements/`, `canon/views/`). This is the authoritative answer. Cite the specific artefact ID(s) and file path(s) so the answer is verifiable.
+1. **`canon/`** first — the validated model (`canon/elements/`, `views/`). This is the authoritative answer. Cite the specific artefact ID(s) and file path(s) so the answer is verifiable.
 2. **`codex/`** for anything about external obligations (laws, regulations) or internal policy — cite the artefact's canonical ID.
 3. **`field/`** only if canon/codex don't cover the question, and only with an explicit caveat that it's raw, unvalidated material, not an organizational fact (see §3.1). Never present a `field/` artefact's content as if it were admitted truth.
 

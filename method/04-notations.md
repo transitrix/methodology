@@ -21,7 +21,7 @@ The **canonical index of all notations** — view notations and element notation
 
 A few cross-cutting notes:
 
-- Diagrams and aggregations live under `canon/views/`. Atomic ArchiMate elements live under `canon/elements/` ([`02-repository.md`](02-repository.md)). The two layers stay separate.
+- Diagrams and aggregations live under `views/`. Atomic ArchiMate elements live under `canon/elements/` ([`02-repository.md`](02-repository.md)). The two layers stay separate.
 - Every view notation follows the extension convention `*.<short-name>.transitrix.yaml` and begins with a `notation: <short-name>` header (see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §1–3). Element notations are addressed by ID and governed by per-notation file-location rules.
 - Gantt is not a separate notation — the calendar-timeline view ships as the Gantt projection of the Activities notation.
 - Products and Applications are **catalogue** forms — they render as text and tables rather than as a custom diagram. Every other view notation is a diagram, rendered through Transitrix Studio's shared diagram engine.

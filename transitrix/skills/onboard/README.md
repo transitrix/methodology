@@ -49,7 +49,7 @@ Once invoked, the agent runs the six-step flow documented in [`SKILL.md`](SKILL.
 
 1. **Confirm intent and surface area.** Asks which notation you want to start with (showing the family-selection matrix), and how deep an explanation you want.
 2. **Scaffold the repo.** Creates the canonical zoned tree (`canon/{elements,views}`, `field/{interviews,surveys,observations,drafts}`, `codex/{external/<jurisdiction>,internal}`), drops the `transitrix.yaml` manifest at the root, drops the assistant-neutral `AGENTS.md` agent guide and the `.github/copilot-instructions.md` pointer, and initialises `.gitignore` + a README stub.
-3. **Create the starter notation file from a template.** For view notations, copies the matching template from [`templates/`](templates/) into the right `canon/views/<notation>/` subfolder and renames it to `<DOMAIN>.<short-name>.transitrix.yaml`. For codex artefacts, copies a codex-external or codex-internal template into `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`.
+3. **Create the starter notation file from a template.** For view notations, copies the matching template from [`templates/`](templates/) into the right `views/<notation>/` subfolder and renames it to `<DOMAIN>.<short-name>.transitrix.yaml`. For codex artefacts, copies a codex-external or codex-internal template into `codex/external/<jurisdiction>/<ID>.yaml` or `codex/internal/<ID>.yaml`.
 4. **Interactive authoring with inline validation.** Walks the user through the placeholders one at a time and validates after each meaningful edit. Validation errors are surfaced by their canonical code (e.g. `DGCA-009 — change references unknown goal`, `CODEX-001 — jurisdiction folder mismatch`).
 5. **Hand off to Transitrix Studio.** Points the user at the VS Code extension for live preview, or at `npx @transitrix/cli validate` for CLI-only workflows.
 6. **Suggest next steps.** Proposes one — and only one — adjacent artefact in the family (e.g. "you built a Goals tree, the natural next step is a DGCA").
@@ -70,7 +70,7 @@ Three groups: root scaffolding, view notations, and codex zone primitives.
 | Assistant-neutral agent guide | [`AGENTS.md`](templates/AGENTS.md) | `<repo-root>/AGENTS.md` |
 | GitHub Copilot pointer → `AGENTS.md` | [`copilot-instructions.md`](templates/copilot-instructions.md) | `<repo-root>/.github/copilot-instructions.md` |
 
-### View notations (dropped into `canon/views/<notation-folder>/` in Step 3)
+### View notations (dropped into `views/<notation-folder>/` in Step 3)
 
 One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 15 view templates are:
 

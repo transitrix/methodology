@@ -35,7 +35,7 @@ A Goals Tree document has two valid authoring forms — both use the same YAML f
 
 The **promotion trigger** is cross-document sharing: a goal stays inline until a second document references it; at that point it is promoted to a standalone element file in `canon/elements/01_motivation/goals/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
-The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `canon/views/goals/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
+The reconstruction invariant applies: `render(Elements, view_config)` → Goals Tree diagram. Deleting `views/goals/` loses no model knowledge. See [`CONTRACT.md`](../../CONTRACT.md) §14 (view_config contract).
 
 **Where goals are authored.** In the inline form, goals are authored directly in the view file under `goals[]`. In the projection form, new goals are authored as standalone element files in `canon/elements/01_motivation/goals/<GOAL-…>.yaml`, following the canonical element envelope ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §3 and §7.2). The Goals Tree view then projects over them. This is the same pattern as DGCA ([`02-dgca.md`](./02-dgca.md)), the Actions Tree ([`23-actions-tree.md`](../reports/23-actions-tree.md)), and the Action Card ([`18-action-card.md`](./18-action-card.md)).
 
@@ -47,7 +47,7 @@ A goals tree is a hierarchical view that arranges GOAL elements from `canon/elem
 
 The hierarchy is derived at render time from the `parent` field on each GOAL element: a goal whose `parent` is omitted (or null) is a root; a goal whose `parent` is `GOAL-…` is a child of that goal. The Goals Tree document itself contains only scope and display configuration.
 
-Goals trees live in `canon/views/goals/`.
+Goals trees live in `views/goals/`.
 
 ---
 
@@ -65,12 +65,12 @@ Goals trees live in `canon/views/goals/`.
 ## 3. File location and naming
 
 ```
-canon/views/goals/<DOMAIN>.goals.transitrix.yaml
+views/goals/<DOMAIN>.goals.transitrix.yaml
 ```
 
 Examples:
-- `canon/views/goals/GROWTH.goals.transitrix.yaml`
-- `canon/views/goals/OPERATIONS.goals.transitrix.yaml`
+- `views/goals/GROWTH.goals.transitrix.yaml`
+- `views/goals/OPERATIONS.goals.transitrix.yaml`
 
 ---
 

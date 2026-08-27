@@ -49,7 +49,7 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 **1 — Read the repo silently.** Before speaking to the user:
 
 - Read `transitrix.yaml` — note `methodology_version`, `notations:`, `zones:`.
-- List `canon/views/` — note which notation sub-folders exist and which are non-empty.
+- List `views/` — note which notation sub-folders exist and which are non-empty.
 - List `canon/elements/` — note which ArchiMate layers have content.
 - Check whether `field/` and `codex/` directories exist and have files.
 - If `AGENTS.md` exists at the repo root, read it — it carries adopter-specific rules that govern the rest of this session.
@@ -57,7 +57,7 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 **2 — Orient the user.** Give a concise summary (3–5 bullets):
 
 - Which methodology version the repo uses.
-- Which notations are in use (non-empty `canon/views/` sub-folders).
+- Which notations are in use (non-empty `views/` sub-folders).
 - Which zones are active and populated.
 - Where the agent guide lives (`AGENTS.md` at repo root) and that you have read it.
 
@@ -117,7 +117,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 
 Use the org name from step 1 (or ask: "What's the organisation name? — lowercase, hyphens for spaces"). If the directory already exists and isn't empty, **don't overwrite** — confirm with the user before proceeding.
 
-The `canon/views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
+The `views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
 
 ### Drop in the canonical root files
 
@@ -155,7 +155,7 @@ The agent does **not** run these itself — it shows the command and lets the us
 
 The adopter manifest's `zones:` field selects which of `canon` / `field` / `codex` the repo maintains. Scaffold all three folders by default unless the user explicitly opts out — empty zones cost nothing and keep the layout consistent.
 
-- **`canon/`** — validated truth the organisation asserts. Authoritative; internally consistent. View notation files live in `canon/views/<notation>/`; reusable elements live in `canon/elements/<NN>_<layer>/`.
+- **`canon/`** — validated truth the organisation asserts. Authoritative; internally consistent. View notation files live in `views/<notation>/`; reusable elements live in `canon/elements/<NN>_<layer>/`.
 - **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point. **Not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, not a migration.
 - **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/elements/14-codex.md` and Step 3 below for how to seed a first codex artefact.
 
@@ -228,13 +228,13 @@ Take the user's chosen notation from step 1. Copy the matching template from `${
 
 ### View notations (canon zone)
 
-For any of the 15 view notations (DGCA / Goals / Capability map / Process map / BPMN / Action schedule / Actions tree / Nested blocks / Scenarios / Applications / Products / Process Blueprint / Action Card / Compliance Impact / Coverage Metric), the destination is `canon/views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
+For any of the 15 view notations (DGCA / Goals / Capability map / Process map / BPMN / Action schedule / Actions tree / Nested blocks / Scenarios / Applications / Products / Process Blueprint / Action Card / Compliance Impact / Coverage Metric), the destination is `views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
 - Point at the placeholder values they need to fill in — they all carry `FILL-ME` markers.
 - The template carries the canonical `notation:` and `spec_version:` headers plus the canonical root shape for the notation (a `view_config` block for pure-projection view notations — Goals tree, Action schedule, Actions tree, Action Card, Compliance Impact, Coverage Metric — and a canonical root key + one minimal placeholder entry per layer for the inline-shape notations — DGCA, BPMN, Capability map, Process map, Nested blocks, Scenarios, Applications, Products, Process Blueprint). **Do not strip the headers** — the canonical header is required by `notations/CONTRACT.md`.
-- For a pure-projection view (Goals tree, Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree. Ask the user only for the element's own content — the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION) — then compute the admission record and lifecycle yourself per "Admission record and lifecycle" above; don't hand the user a blank `admitted_by` or `valid_from` to fill in. The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `canon/views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `canon/views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
+- For a pure-projection view (Goals tree, Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree. Ask the user only for the element's own content — the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION) — then compute the admission record and lifecycle yourself per "Admission record and lifecycle" above; don't hand the user a blank `admitted_by` or `valid_from` to fill in. The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
 
 ### Codex artefacts (codex zone)
 
@@ -389,7 +389,7 @@ When in doubt, fetch the registry: `WebFetch https://raw.githubusercontent.com/t
 
 ## Templates
 
-The `${CLAUDE_SKILL_DIR}/templates/` directory contains starter files in three groups: **root scaffolding** (manifest + agent guides + Copilot pointer + MCP config), **view notations** (one per `.transitrix.yaml` notation, placed in `canon/views/<notation>/`), and **codex zone primitives** (placed in `codex/external/<jurisdiction>/` or `codex/internal/`).
+The `${CLAUDE_SKILL_DIR}/templates/` directory contains starter files in three groups: **root scaffolding** (manifest + agent guides + Copilot pointer + MCP config), **view notations** (one per `.transitrix.yaml` notation, placed in `views/<notation>/`), and **codex zone primitives** (placed in `codex/external/<jurisdiction>/` or `codex/internal/`).
 
 Each notation template carries the canonical `notation:` and `spec_version:` headers (per `notations/CONTRACT.md`), uses the canonical root key (or flat top-level arrays for the strategy-chain four), has placeholders labelled `FILL-ME`, and parses cleanly under the canonical validator.
 
@@ -410,7 +410,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 
 The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI workflow (`.github/workflows/architecture-validate.yaml`) are **not** bundled templates — they are fetched from the methodology canon at scaffold time. See "Scaffold validation tooling + CI" in Step 2.
 
-### View notations (drop into `canon/views/<notation-folder>/` in Step 3)
+### View notations (drop into `views/<notation-folder>/` in Step 3)
 
 | Notation | Template file |
 |---|---|
