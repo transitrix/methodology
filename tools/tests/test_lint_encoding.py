@@ -92,9 +92,6 @@ def check_lint_error():
 
 
 # ── lint.py: policy warning — warning-reporting path ─────────────────────────
-# (Uses the ownerless-Active-status policy check, not referential integrity —
-# a relation's plain-string source/target hits an unrelated pre-existing
-# AttributeError in _check_referential_integrity, out of scope for this fix.)
 
 def check_lint_warning():
     work = tempfile.mkdtemp(prefix="lint-encoding-warning-")
@@ -111,12 +108,82 @@ def check_lint_warning():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── lint.py: referential integrity — relation missing 'to' ────────────────────
+
+def check_lint_rel_missing_to():
+    work = tempfile.mkdtemp(prefix="lint-encoding-rel-missing-to-")
+    try:
+        _write(
+            os.path.join(work, "canon", "elements", "app.yaml"),
+            "id: APP-1\nname: Test App\n",
+        )
+        _write(
+            os.path.join(work, "canon", "relations", "rel1.yaml"),
+            "id: REL-1\nfrom: APP-1\n",
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py rel missing 'to': expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py rel missing 'to' crashed on encoding: {out}")
+        check("missing required 'to' field" in out, f"lint.py rel missing 'to': expected error message: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+# ── lint.py: referential integrity — relation with missing target element ─────
+
+def check_lint_rel_missing_target_element():
+    work = tempfile.mkdtemp(prefix="lint-encoding-rel-missing-elem-")
+    try:
+        _write(
+            os.path.join(work, "canon", "elements", "app.yaml"),
+            "id: APP-1\nname: Test App\n",
+        )
+        _write(
+            os.path.join(work, "canon", "relations", "rel1.yaml"),
+            "id: REL-1\nfrom: APP-1\nto: APP-999\n",
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py rel bad target: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py rel bad target crashed on encoding: {out}")
+        check("Target element 'APP-999' not found" in out, f"lint.py rel bad target: expected error message: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+# ── lint.py: referential integrity — relation with deprecated 'source' field ───
+
+def check_lint_rel_deprecated_source():
+    work = tempfile.mkdtemp(prefix="lint-encoding-rel-deprecated-source-")
+    try:
+        _write(
+            os.path.join(work, "canon", "elements", "app.yaml"),
+            "id: APP-1\nname: Test App\n",
+        )
+        _write(
+            os.path.join(work, "canon", "relations", "rel1.yaml"),
+            "id: REL-1\nsource: APP-1\ntarget: APP-1\n",
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py deprecated source: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py deprecated source crashed on encoding: {out}")
+        check("deprecated" in out.lower(), f"lint.py deprecated source: expected deprecation error: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def main():
     check_lint_clean()
     check_lint_error()
     check_lint_warning()
+    check_lint_rel_missing_to()
+    check_lint_rel_missing_target_element()
+    check_lint_rel_deprecated_source()
 
     if _failures:
+        # Use errors="replace" to handle emoji in captured output under legacy encoding
+        for stream in (sys.stdout, sys.stderr):
+            if hasattr(stream, "reconfigure"):
+                stream.reconfigure(encoding="utf-8", errors="replace")
         print(f"FAIL: {len(_failures)} check(s) failed:")
         for f in _failures:
             print(f"  - {f}")
