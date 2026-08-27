@@ -92,9 +92,7 @@ def check_lint_error():
 
 
 # ── lint.py: policy warning — warning-reporting path ─────────────────────────
-# (Uses the ownerless-Active-status policy check, not referential integrity —
-# a relation's plain-string source/target hits an unrelated pre-existing
-# AttributeError in _check_referential_integrity, out of scope for this fix.)
+# (Uses the ownerless-Active-status policy check.)
 
 def check_lint_warning():
     work = tempfile.mkdtemp(prefix="lint-encoding-warning-")
@@ -111,10 +109,85 @@ def check_lint_warning():
         shutil.rmtree(work, ignore_errors=True)
 
 
+# ── lint.py: relation referential integrity (from/to validation) ──────────────
+
+def check_lint_missing_from():
+    """Relation with missing 'from' endpoint should error."""
+    work = tempfile.mkdtemp(prefix="lint-missing-from-")
+    try:
+        _write(os.path.join(work, "canon", "elements", "app.yaml"), "id: APP-1\nname: Test App\n")
+        _write(
+            os.path.join(work, "canon", "relations", "rel.yaml"),
+            "id: REL-1\nto:\n  id: APP-1\n"
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py missing from: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py missing from crashed on encoding: {out}")
+        check("from" in out and "Validation FAILED" in out, f"lint.py missing from: missing from error: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def check_lint_missing_to():
+    """Relation with missing 'to' endpoint should error."""
+    work = tempfile.mkdtemp(prefix="lint-missing-to-")
+    try:
+        _write(os.path.join(work, "canon", "elements", "app.yaml"), "id: APP-1\nname: Test App\n")
+        _write(
+            os.path.join(work, "canon", "relations", "rel.yaml"),
+            "id: REL-1\nfrom:\n  id: APP-1\n"
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py missing to: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py missing to crashed on encoding: {out}")
+        check("to" in out and "Validation FAILED" in out, f"lint.py missing to: missing to error: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def check_lint_invalid_target_id():
+    """Relation pointing to non-existent element should error."""
+    work = tempfile.mkdtemp(prefix="lint-invalid-target-")
+    try:
+        _write(os.path.join(work, "canon", "elements", "app.yaml"), "id: APP-1\nname: Test App\n")
+        _write(
+            os.path.join(work, "canon", "relations", "rel.yaml"),
+            "id: REL-1\nfrom:\n  id: APP-1\nto:\n  id: NONEXISTENT-1\n"
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py invalid target: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py invalid target crashed on encoding: {out}")
+        check("NONEXISTENT-1" in out and "Validation FAILED" in out, f"lint.py invalid target: missing error: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def check_lint_string_endpoint():
+    """String-shaped endpoint (should be dict) should error, not crash."""
+    work = tempfile.mkdtemp(prefix="lint-string-endpoint-")
+    try:
+        _write(os.path.join(work, "canon", "elements", "app.yaml"), "id: APP-1\nname: Test App\n")
+        _write(
+            os.path.join(work, "canon", "relations", "rel.yaml"),
+            "id: REL-1\nfrom: APP-1\nto:\n  id: APP-1\n"
+        )
+        code, out = _run(LINT, env_root=work)
+        check(code == 1, f"lint.py string endpoint: expected exit 1, got {code}: {out}")
+        check("UnicodeEncodeError" not in out, f"lint.py string endpoint crashed on encoding: {out}")
+        check("AttributeError" not in out, f"lint.py string endpoint: crashed with AttributeError: {out}")
+        check("Validation FAILED" in out, f"lint.py string endpoint: missing error report: {out}")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def main():
     check_lint_clean()
     check_lint_error()
     check_lint_warning()
+    check_lint_missing_from()
+    check_lint_missing_to()
+    check_lint_invalid_target_id()
+    check_lint_string_endpoint()
 
     if _failures:
         print(f"FAIL: {len(_failures)} check(s) failed:")

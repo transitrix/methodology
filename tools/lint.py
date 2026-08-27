@@ -152,26 +152,90 @@ class TransitrixLinter:
                 ))
 
     def _check_referential_integrity(self):
-        """Verify all source/target references point to existing elements."""
+        """Verify all from/to references point to existing elements (17-relations.md §2)."""
         for rel_id, relation_data in self.relations.items():
-            source_id = relation_data.get('source', {}).get('id') or relation_data.get('source')
-            target_id = relation_data.get('target', {}).get('id') or relation_data.get('target')
+            # Extract from/to endpoints. Schema permits nested {id: ...} or string.
+            from_value = relation_data.get('from')
+            to_value = relation_data.get('to')
 
-            if source_id and source_id not in self.elements:
-                self.warnings.append(LintError(
+            # Check for missing from endpoint
+            if from_value is None:
+                self.errors.append(LintError(
                     file=f"canon/relations/{rel_id}.yaml",
                     line=0,
-                    message=f"Referential integrity: Source element '{source_id}' not found",
-                    severity="warning"
+                    message=f"Referential integrity: Missing required 'from' endpoint",
+                    severity="error"
                 ))
+                continue  # Skip further checks for this relation
 
-            if target_id and target_id not in self.elements:
-                self.warnings.append(LintError(
+            # Check for missing to endpoint
+            if to_value is None:
+                self.errors.append(LintError(
                     file=f"canon/relations/{rel_id}.yaml",
                     line=0,
-                    message=f"Referential integrity: Target element '{target_id}' not found",
-                    severity="warning"
+                    message=f"Referential integrity: Missing required 'to' endpoint",
+                    severity="error"
                 ))
+                continue
+
+            # Extract ID from endpoint (nested {id: ...} or string). String-shaped is an error.
+            from_id = self._extract_endpoint_id(from_value, rel_id, 'from')
+            to_id = self._extract_endpoint_id(to_value, rel_id, 'to')
+
+            if from_id is None or to_id is None:
+                continue  # Error already recorded
+
+            # Check that referenced elements exist
+            if from_id not in self.elements:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: 'from' endpoint references non-existent element '{from_id}'",
+                    severity="error"
+                ))
+
+            if to_id not in self.elements:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: 'to' endpoint references non-existent element '{to_id}'",
+                    severity="error"
+                ))
+
+    def _extract_endpoint_id(self, endpoint_value, rel_id: str, endpoint_name: str) -> str:
+        """Extract ID from endpoint (dict with 'id' key or string ID).
+
+        Returns the ID string, or None if endpoint is malformed (error recorded).
+        String-shaped endpoints that should be nested {id: ...} are errors."""
+
+        if isinstance(endpoint_value, dict):
+            endpoint_id = endpoint_value.get('id')
+            if endpoint_id is None:
+                self.errors.append(LintError(
+                    file=f"canon/relations/{rel_id}.yaml",
+                    line=0,
+                    message=f"Referential integrity: '{endpoint_name}' endpoint dict missing required 'id' key",
+                    severity="error"
+                ))
+                return None
+            return endpoint_id
+        elif isinstance(endpoint_value, str):
+            # String-shaped endpoint is malformed; the spec uses nested {id: ...}
+            self.errors.append(LintError(
+                file=f"canon/relations/{rel_id}.yaml",
+                line=0,
+                message=f"Referential integrity: '{endpoint_name}' endpoint must be a dict with 'id' key, not a string",
+                severity="error"
+            ))
+            return None
+        else:
+            self.errors.append(LintError(
+                file=f"canon/relations/{rel_id}.yaml",
+                line=0,
+                message=f"Referential integrity: '{endpoint_name}' endpoint has unexpected type {type(endpoint_value).__name__}",
+                severity="error"
+            ))
+            return None
 
     def _check_semantic_rules(self):
         """Validate semantic constraints (e.g., layer-appropriate relations)."""
