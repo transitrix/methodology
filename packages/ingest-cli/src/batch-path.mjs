@@ -11,19 +11,20 @@
 // against canon, run it again to see what's left) reruns against the SAME
 // flat path on purpose, and must keep updating it in place. The signal that
 // distinguishes that refresh from a genuinely separate concurrent batch is
-// content — if the freshly built `content` differs from what's already on
-// disk (e.g. some candidates were admitted since, so the queue shrank), real
-// progress happened against THIS batch and it is still the same one, so the
-// flat file is updated in place. Only when the fresh content would be
-// byte-identical to what is already there — nothing has moved since it was
-// last written — is the existing file read as untouched/unresolved, and this
-// run gets routed to its own dated directory instead of masquerading as it.
+// `run_id` — if the on-disk scalar matches this run's id, it is still the
+// same batch and the flat file is updated in place. A different or missing
+// `run_id` means the existing file is a different (or unresolved) batch, and
+// this run gets routed to its own dated directory instead of overwriting it.
+// Scalars on disk are YAML (this CLI's dump always double-quotes strings),
+// so the comparison must unquote; a raw regex match against the quoted
+// value would treat a same-batch refresh as a new batch.
 //
 // `scope` is a caller-supplied word (`--scope`), never an org-identifying
 // string — it defaults to the generic `batch` when absent or malformed.
 
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { readTopScalar } from './yaml.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -44,8 +45,7 @@ export async function resolveBatchPath({ processingDir, filename, scope, content
   if (runId !== undefined) {
     const onDisk = await readFile(flat, 'utf8').catch(() => null);
     if (onDisk !== null) {
-      const match = /^run_id:\s*(.+)$/m.exec(onDisk);
-      const fileRunId = match ? match[1].trim() : null;
+      const fileRunId = readTopScalar(onDisk, 'run_id');
       if (fileRunId === String(runId)) return flat;
     }
   }

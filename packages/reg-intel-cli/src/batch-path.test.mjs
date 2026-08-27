@@ -145,6 +145,26 @@ test('resolveBatchPath: multiple dated directories increment sequence number', a
   }
 });
 
+test('resolveBatchPath: quoted run_id from yaml.dump matches unquoted runId (same-batch refresh)', async () => {
+  await setup();
+  try {
+    const flatPath = join(testDir, 'digest.yaml');
+    const content = 'run_id: "abc123"\ndata: value\n';
+    await writeFile(flatPath, content, 'utf8');
+
+    const result = await resolveBatchPath({
+      processingDir: testDir,
+      filename: 'digest.yaml',
+      scope: 'batch',
+      runId: 'abc123',
+      content,
+    });
+    assert.equal(result, flatPath, 'should match dump-quoted run_id against unquoted runId');
+  } finally {
+    await cleanup();
+  }
+});
+
 test('resolveBatchPath: whitespace in run_id is trimmed before comparison', async () => {
   await setup();
   try {

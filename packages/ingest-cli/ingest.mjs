@@ -19,7 +19,6 @@
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { createHash } from 'node:crypto';
 
 import { scaffoldIntake, findOrgRoot, stageDir, readManifestText } from './src/intake.mjs';
 import { convert, ConvertError } from './src/convert.mjs';
@@ -322,15 +321,6 @@ async function cmdValidate(args) {
   return needsReview ? 1 : 0;
 }
 
-// Generate a stable run_id from org_root if not explicitly provided. Used for
-// batch identity when no --run-id flag is passed (ensures idempotent re-runs
-// of review-queue on the same org update the flat file in place).
-function getOrGenerateRunId(orgRoot, providedRunId) {
-  if (typeof providedRunId === 'string') return providedRunId;
-  const hash = createHash('sha256').update(resolve(orgRoot)).digest('hex').slice(0, 12);
-  return `auto-${hash}`;
-}
-
 async function cmdReviewQueue(args) {
   const { _, flags } = parseArgs(args);
   const r = await resolveDir(_[0], 'review-queue');
@@ -351,7 +341,7 @@ async function cmdReviewQueue(args) {
   const roleAssignmentProposalsPath = join(stageDir(r.orgRoot, 'processing'), 'role-assignment-proposals.json');
   try { roleAssignmentProposals = JSON.parse(await readFile(roleAssignmentProposalsPath, 'utf8')); } catch { /* none */ }
 
-  const runId = getOrGenerateRunId(r.orgRoot, typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined);
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
   const queue = await buildReviewQueue({ orgRoot: r.orgRoot, candidatesDir: r.dir, profile: r.profile, suggestions, semanticLinks, roleAssignmentProposals, runId });
   const out = flags.out
     ? resolve(flags.out)
@@ -498,7 +488,7 @@ async function cmdCatalogueRecognize(args) {
     throw err;
   }
 
-  const runId = getOrGenerateRunId(orgRoot, typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined);
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
   const content = dump(doc);
   const out = flags.out
     ? resolve(flags.out)
@@ -557,7 +547,7 @@ async function cmdCataloguePromote(args) {
     throw err;
   }
 
-  const runId = getOrGenerateRunId(orgRoot, typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined);
+  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
   const content = dump(doc);
   const out = flags.out
     ? resolve(flags.out)
