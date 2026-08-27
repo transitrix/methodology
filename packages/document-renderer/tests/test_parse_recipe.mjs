@@ -145,9 +145,39 @@ check(recipeKindFromFilename('product.mrd.trs') === undefined, 'the .trs near-mi
 }
 
 {
+  const { errors } = parseRecipe(tpl('{{ view d/c.yaml bogus = x }}'));
+  check(hasCode(errors, 'TTRS-002') && errors.some((e) => e.message.includes('unknown')),
+    'an unknown view attribute is flagged');
+}
+
+{
+  const { errors } = parseRecipe(tpl('{{ view d/c.yaml as = context bogus = y }}'));
+  check(hasCode(errors, 'TTRS-002') && errors.some((e) => e.message.includes('unknown')),
+    'multiple attributes including unknown one are flagged');
+}
+
+{
+  const { errors } = parseRecipe(tpl('{{ view d/c.yaml fit = width leftover text }}'));
+  check(hasCode(errors, 'TTRS-002') && errors.some((e) => e.message.includes('unparsed')),
+    'unparsed remainder after attributes is flagged');
+}
+
+{
   const { ast } = parseRecipe(tpl('{{ figure assets/photo.png caption = "The rig" as = rig }}'));
   checkEqual(ast, [{ type: 'figure', path: 'assets/photo.png', caption: 'The rig', as: 'rig' }],
     'a supplied figure carries a quoted caption');
+}
+
+{
+  const { errors } = parseRecipe(tpl('{{ figure assets/photo.png bogus = x }}'));
+  check(hasCode(errors, 'TTRS-002') && errors.some((e) => e.message.includes('unknown')),
+    'an unknown figure attribute is flagged');
+}
+
+{
+  const { errors } = parseRecipe(tpl('{{ figure assets/photo.png caption = "Device" unknown }}'));
+  check(hasCode(errors, 'TTRS-002') && errors.some((e) => e.message.includes('unparsed')),
+    'unparsed remainder in figure is flagged');
 }
 
 {

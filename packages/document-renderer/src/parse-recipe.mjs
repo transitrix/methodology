@@ -244,18 +244,22 @@ function splitFieldPath(raw, errors, context) {
 }
 
 // `key = value` attribute list, values optionally double-quoted.
+// Returns { attrs, lastMatchEnd } where lastMatchEnd is the index after the last
+// matched key=value pair, allowing the caller to detect unparsed remainder.
 function parseAttrs(rest) {
   const attrs = {};
   const re = /([a-z_][a-z0-9_]*)\s*=\s*("(?:[^"\\]|\\.)*"|\S+)/gi;
   let m;
+  let lastMatchEnd = 0;
   while ((m = re.exec(rest)) !== null) {
+    lastMatchEnd = re.lastIndex;
     let value = m[2];
     if (value.startsWith('"')) {
       try { value = JSON.parse(value); } catch { value = value.slice(1, -1); }
     }
     attrs[m[1]] = value;
   }
-  return attrs;
+  return { attrs, attrRest: rest.slice(lastMatchEnd) };
 }
 
 // The leading path argument: everything before the first `key =` attribute.
@@ -266,12 +270,24 @@ function splitPathAndAttrs(rest) {
 }
 
 const FIT_VALUES = new Set(['width', 'page', 'none']);
+const VIEW_ALLOWED_ATTRS = new Set(['fit', 'as']);
+const FIGURE_ALLOWED_ATTRS = new Set(['caption', 'as']);
 
 function parseView(trimmed, errors) {
   const { path, attrRest } = splitPathAndAttrs(trimmed.replace(/^view\s*/, ''));
-  const attrs = parseAttrs(attrRest);
+  const { attrs, attrRest: unparsed } = parseAttrs(attrRest);
   if (!path) {
     errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": missing view source path` });
+  }
+  // Check for unknown attributes
+  for (const key of Object.keys(attrs)) {
+    if (!VIEW_ALLOWED_ATTRS.has(key)) {
+      errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": unknown view attribute "${key}"` });
+    }
+  }
+  // Check for unparsed remainder
+  if (unparsed.trim()) {
+    errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": unparsed remainder after attributes: "${unparsed.trim()}"` });
   }
   const fit = attrs.fit ?? 'width';
   if (!FIT_VALUES.has(fit)) {
@@ -282,9 +298,19 @@ function parseView(trimmed, errors) {
 
 function parseFigure(trimmed, errors) {
   const { path, attrRest } = splitPathAndAttrs(trimmed.replace(/^figure\s*/, ''));
-  const attrs = parseAttrs(attrRest);
+  const { attrs, attrRest: unparsed } = parseAttrs(attrRest);
   if (!path) {
     errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": missing figure asset path` });
+  }
+  // Check for unknown attributes
+  for (const key of Object.keys(attrs)) {
+    if (!FIGURE_ALLOWED_ATTRS.has(key)) {
+      errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": unknown figure attribute "${key}"` });
+    }
+  }
+  // Check for unparsed remainder
+  if (unparsed.trim()) {
+    errors.push({ code: 'TTRS-002', message: `"{{ ${trimmed} }}": unparsed remainder after attributes: "${unparsed.trim()}"` });
   }
   return { type: 'figure', path, caption: attrs.caption ?? null, as: attrs.as ?? null };
 }
