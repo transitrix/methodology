@@ -17,6 +17,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { access } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 
 import { findOrgRoot, listDue, findCodexFile, loadScanSources } from './src/codex.mjs';
 import { updateScan } from './src/update-scan.mjs';
@@ -361,6 +362,15 @@ async function cmdAmendment(args) {
   }
 }
 
+// Generate a stable run_id from org_root if not explicitly provided. Used for
+// batch identity when no --run-id flag is passed (ensures idempotent re-runs
+// of digest on the same org update the flat file in place).
+function getOrGenerateRunId(orgRoot, providedRunId) {
+  if (typeof providedRunId === 'string') return providedRunId;
+  const hash = createHash('sha256').update(resolve(orgRoot)).digest('hex').slice(0, 12);
+  return `auto-${hash}`;
+}
+
 async function cmdDigest(args) {
   const { _, flags } = parseArgs(args);
   const orgRoot = await resolveOrgRoot(_[0], 'digest');
@@ -368,7 +378,7 @@ async function cmdDigest(args) {
   const asOf = flags['as-of'] ? String(flags['as-of']) : today();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) { console.error('digest: --as-of must be YYYY-MM-DD'); return 1; }
 
-  const runId = typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined;
+  const runId = getOrGenerateRunId(orgRoot, typeof flags['run-id'] === 'string' ? flags['run-id'] : undefined);
   const digest = await buildDigest({ orgRoot, asOf, runId });
   const out = flags.out ? resolve(flags.out) : await defaultDigestPath(orgRoot, { scope: flags.scope, content: dump(digest), runId });
   await writeDigest(digest, out);
