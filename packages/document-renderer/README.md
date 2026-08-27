@@ -278,12 +278,12 @@ one that was never in the recipe at all.
 ## PDF output
 
 The third artefact per run alongside Markdown and the run record — a
-**hand-rolled, dependency-free** Markdown-to-PDF writer. Every package in this
-repository ships zero runtime dependencies (`package.json`); a full HTML/PDF
-pipeline would break that posture for one output format, so this module
-assembles a minimal, valid PDF directly (a Catalog, a Pages tree, one shared
-Type1 Helvetica font, one Page + content stream per page) rather than shelling
-out to an external renderer.
+**hand-rolled, dependency-free** Markdown-to-PDF writer. This package ships
+zero runtime dependencies (`package.json`); a full HTML/PDF pipeline would
+break that posture for one output format, so this module assembles a minimal,
+valid PDF directly (a Catalog, a Pages tree, one shared Type1 Helvetica font,
+one Page + content stream per page) rather than shelling out to an external
+renderer.
 
 ```js
 import { renderMarkdownToPdf } from '@transitrix/document-renderer/src/render-pdf.mjs';
