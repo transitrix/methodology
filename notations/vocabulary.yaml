@@ -988,6 +988,27 @@ rule_codes:
   FRESHNESS-001:
     severity: warning
     spec: notations/CONTRACT.md
+  FGCA-008:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-009:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-010:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-011:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-012:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-013:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
+  FGCA-014:
+    severity: warning
+    spec: notations/views/diagrams/02-dgca.md
   GLOS-001:
     severity: error
     spec: notations/views/reports/32-glossary.md
@@ -1000,6 +1021,12 @@ rule_codes:
   GLOS-004:
     severity: warning
     spec: notations/views/reports/32-glossary.md
+  GOAL-ELEM-002:
+    severity: error
+    spec: notations/elements/02-goal.md
+  GOAL-ELEM-003:
+    severity: error
+    spec: notations/elements/02-goal.md
   GOALS-001:
     severity: error
     spec: notations/views/diagrams/04-goals.md
@@ -1021,6 +1048,15 @@ rule_codes:
   GOALS-007:
     severity: error
     spec: notations/views/diagrams/04-goals.md
+  GOALS-009:
+    severity: warning
+    spec: notations/elements/02-goal.md
+  GOALS-010:
+    severity: error
+    spec: notations/elements/02-goal.md
+  GOALS-011:
+    severity: warning
+    spec: notations/elements/02-goal.md
   HDR-001:
     severity: error
     spec: notations/CONTRACT.md

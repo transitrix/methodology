@@ -52,10 +52,11 @@ Every view notation follows the convention `*.<short-name>.transitrix.yaml`. Eve
 
 ## Elements
 
-The **15** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
+The **16** element notations live under [`elements/`](elements/) — each defines a zone primitive: standalone YAML files admitted to a zone and referenced (by ID) from views and other elements. Canon and codex element primitives carry their own admission record + primitive lifecycle per [`CONTRACT.md`](CONTRACT.md) §6–7; field-zone primitives carry the admission record without a primitive lifecycle (a field artefact records an event, not a temporal element of the organisation).
 
 | Spec | Short name | Purpose | File location | Status |
 |---|---|---|---|---|
+| [02-goal.md](elements/02-goal.md) | `goal` | Motivation-layer strategic outcome; hierarchical with lifecycle. | `canon/elements/01_motivation/goals/GOAL-<…>.yaml` | draft |
 | [14-codex.md](elements/14-codex.md) | `codex` | External laws / regulations and internal policies / standards in the codex zone. | `codex/external/<jurisdiction>/<ID>.yaml`, `codex/internal/<ID>.yaml` | documented |
 | [15-requirement.md](elements/15-requirement.md) | `requirement` | Motivation-layer element capturing a positive obligation derived from a codex source. | `canon/elements/01_motivation/requirements/REQUIREMENT-<…>.yaml` | documented |
 | [16-assertion.md](elements/16-assertion.md) | `assertion` | Canon-zone primitive linking a REQUIREMENT to a subject (PRODUCT / PROCESS / CAPABILITY). | `canon/assertions/ASSERTION-<…>.yaml` | documented |
