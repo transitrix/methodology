@@ -391,6 +391,22 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 
 ---
 
+## Cross-element validation rules (repo scope)
+
+The rules below apply when validating the **canonical element files** (`canon/elements/**`) at repo scope — i.e., when checking that admitted DRIVER, GOAL, CHANGE, and ACTION elements maintain referential integrity and cross-element semantic consistency. These rules fire during repo-scope validation (CLI: `transitrix validate --scope=repo`), not during DGCA document validation. They are listed here because they enforce DGCA chain semantics; the actual validation runs across the entire element catalogue, not just within a single DGCA document.
+
+| Rule | Severity | Description |
+|---|---|---|
+| `FGCA-008` | error | GOAL element carries `factors: [DRIVER-…]` entry that does not resolve to an admitted DRIVER element in canon. |
+| `FGCA-009` | error | CHANGE element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. |
+| `FGCA-010` | error | ACTION element carries `delivers_changes: [CHANGE-…]` entry that does not resolve to an admitted CHANGE element in canon. |
+| `FGCA-011` | error | ACTION element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. |
+| `FGCA-012` | warning | DRIVER element is not referenced by any `GOAL.factors[]` across canon (unreferenced driver). Advisory; does not indicate an error. |
+| `FGCA-013` | warning | GOAL element is not referenced by any `CHANGE.goals[]` or `ACTION.goals[]` across canon (unreferenced goal). Advisory; does not indicate an error. |
+| `FGCA-014` | warning | CHANGE element is not referenced by any `ACTION.delivers_changes[]` across canon (unreferenced change). Advisory; does not indicate an error. |
+
+---
+
 ## References
 
 - View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../../CONTRACT.md) §14 (VP-2)
