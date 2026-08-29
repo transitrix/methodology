@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 - **`guides/adoption-health-profile.md` — a framework to measure how effectively a Transitrix adoption is working in practice.** The profile defines five instrumental indicators (validity, coverage, freshness, assertion-queue age/drain, connectedness) calculated from two independent records each — the measure cannot be faked without doing the work. Denominator rule makes the blind spot explicit: every file is classified as read/out-of-scope/unread-marker/foreign, qualifying every coverage number that follows. Three properties: the adopter measures themselves and we do not collect; no norm from us beyond their declared scope; every result is a reconciliation of two independently produced records. Specification closes or defers each of four design questions (phase detection, survey questions, computation home, cross-adopter benchmarking). Purely additive — a repository without adoption-health measurement infrastructure validates as before. (#391)
 
+### Fixed
+
+- **`tools/lint.py` validates inline element field references** (`parent`, `goals`, `delivers_changes`, `predecessors`, `owner_role`): a missing target or a non-string ID is an error, same grain as relation `from`/`to`.
+
 ---
 
 ## [4.2.0] — 2026-08-27

@@ -1,0 +1,5 @@
+id: PARENT-001
+type: ACTIVITY
+display_name: Parent Activity
+metadata:
+  status: Active
