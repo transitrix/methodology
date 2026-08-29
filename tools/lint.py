@@ -169,7 +169,8 @@ class TransitrixLinter:
                 ))
 
     def _check_referential_integrity(self):
-        """Verify 'from' and 'to' references point to existing elements."""
+        """Verify element and relation references point to existing elements."""
+        # Check relation from/to references
         for rel_id, relation_data in self.relations.items():
             from_id = relation_data.get('from')
             to_id = relation_data.get('to')
@@ -225,6 +226,33 @@ class TransitrixLinter:
                     message=f"Referential integrity: Relation uses deprecated 'source'/'target' fields (use 'from' and 'to')",
                     severity="error"
                 ))
+
+        # Check inline element field references
+        inline_ref_fields = ['parent', 'goals', 'delivers_changes', 'predecessors', 'owner_role']
+        for element_id, element_data in self.elements.items():
+            for field in inline_ref_fields:
+                if field not in element_data:
+                    continue
+
+                ref_value = element_data[field]
+                # Handle both single ID strings and lists of IDs
+                ref_ids = [ref_value] if isinstance(ref_value, str) else (ref_value if isinstance(ref_value, list) else [])
+
+                for ref_id in ref_ids:
+                    if not isinstance(ref_id, str):
+                        self.errors.append(LintError(
+                            file=f"canon/elements/*/{element_id}.yaml",
+                            line=0,
+                            message=f"Referential integrity: Element '{element_id}' field '{field}' contains non-string ID: {type(ref_id).__name__}",
+                            severity="error"
+                        ))
+                    elif ref_id not in self.elements:
+                        self.errors.append(LintError(
+                            file=f"canon/elements/*/{element_id}.yaml",
+                            line=0,
+                            message=f"Referential integrity: Element '{element_id}' field '{field}' references non-existent element '{ref_id}'",
+                            severity="error"
+                        ))
 
     def _check_policies(self):
         """Check organizational policies (e.g., Active elements must have owner)."""

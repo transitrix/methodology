@@ -1,0 +1,6 @@
+id: CHILD-001
+type: ACTIVITY
+display_name: Child Activity
+parent: PARENT-001
+metadata:
+  status: Active
