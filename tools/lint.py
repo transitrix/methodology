@@ -8,10 +8,30 @@ import os
 import sys
 import yaml
 import glob
+import subprocess
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 
+__version__ = "4.2.0"
+
+def _get_version() -> str:
+    """Get linter version, attempting to read from git tag if in a repo."""
+    try:
+        repo_root = os.getenv("REPO_ROOT", ".")
+        result = subprocess.run(
+            ["git", "-C", repo_root, "describe", "--tags", "--abbrev=0"],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+        if result.returncode == 0:
+            tag = result.stdout.strip()
+            # Strip 'v' prefix if present (e.g. v4.2.0 -> 4.2.0)
+            return tag.lstrip('v')
+    except (subprocess.TimeoutExpired, Exception):
+        pass
+    return __version__
 
 def _ensure_utf8_stdio() -> None:
     # A legacy Windows console code page (e.g. cp1252) can't encode the status
@@ -42,7 +62,8 @@ class TransitrixLinter:
 
     def run(self) -> bool:
         """Run all validation checks. Returns True if no errors found."""
-        print("🔍 Transitrix Linter v1.0")
+        version = _get_version()
+        print(f"🔍 Transitrix Linter v{version}")
         print(f"📂 Scanning: {self.repo_root}")
         print()
 
@@ -204,11 +225,6 @@ class TransitrixLinter:
                     message=f"Referential integrity: Relation uses deprecated 'source'/'target' fields (use 'from' and 'to')",
                     severity="error"
                 ))
-
-    def _check_semantic_rules(self):
-        """Validate semantic constraints (e.g., layer-appropriate relations)."""
-        # Example: ApplicationComponent should not directly serve BusinessRole without an Interface
-        pass
 
     def _check_policies(self):
         """Check organizational policies (e.g., Active elements must have owner)."""
