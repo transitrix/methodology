@@ -124,7 +124,7 @@ Examples:
 
 ```yaml
 products_catalogue:
-  id: "PROD-CAT-001"
+  id: "PROD-CAT-ENTERPRISE-1"
   name: "Enterprise Products Catalogue"
   description: "Full inventory of products and services offered by the organisation"
   version: "1.0"
@@ -163,7 +163,7 @@ products_catalogue:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `products_catalogue.id` | Yes | Unique catalogue ID (`PROD-CAT-DOMAIN-SEQ`) |
+| `products_catalogue.id` | Yes | Unique catalogue ID, canonical TYPE `PRODUCTS_CAT` (`PRODUCTS_CAT-<DOMAIN>-<SEQ>`) |
 | `products_catalogue.name` | Yes | Human-readable name |
 | `products_catalogue.updated_at` | Yes | Last update date (YYYY-MM-DD) |
 | `products[].product_id` | Yes | Unique product ID — references element in `elements/02_business/` |

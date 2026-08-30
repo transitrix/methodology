@@ -33,6 +33,7 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 
 ### Fixed
 
+- **Products Catalogue ID grammar unified with registry.** `notations/views/diagrams/09-products.md` now references the canonical TYPE `PRODUCTS_CAT` in the field table (matching `IDS_AND_REFERENCES.md` registry and the pattern used by Capability Map), and the worked example corrects the catalogue ID from `PROD-CAT-001` (invalid leading zero on terminal integer) to `PROD-CAT-ENTERPRISE-1`. (transitrix-hq#458)
 - **DGCA chain-view spec (`notations/views/diagrams/02-dgca.md`) now uses the correct field name `action.delivers_changes`** (matching the ACTION element schema and Studio implementation) instead of the incorrect `action.changes`. Updated in the projection-form example, view_config defaults, view_config keys documentation, inline `actions[]` field table, and validation rule `DGCA-010`. Inline actions in DGCA documents using `changes:` remain valid but should migrate to `delivers_changes:`. (transitrix-hq#452)
 - **`tools/lint.py` validates inline element field references** (`parent`, `goals`, `delivers_changes`, `predecessors`, `owner_role`): a missing target or a non-string ID is an error, same grain as relation `from`/`to`.
 - **`notations/views/diagrams/04-goals.md` — goal tree level 0 description clarified.** §7.1 table no longer describes level 0 as the organisation's vision (which moved to `ORGANIZATION` element type); level 0 is now described as the top goal.
