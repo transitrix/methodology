@@ -991,6 +991,12 @@ rule_codes:
   DGCA-018:
     severity: warning
     spec: notations/views/diagrams/02-dgca.md
+  DGCA-019:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-020:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
   DGCA-REPO-008:
     severity: error
     spec: notations/views/diagrams/02-dgca.md
