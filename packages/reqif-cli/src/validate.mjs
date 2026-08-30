@@ -4,7 +4,6 @@
 // package's own content only).
 
 import { isValidPackageId, isValidCoreId, coreIdType } from './ids.mjs';
-import { isWorkflowState } from './workflow.mjs';
 
 const SUPPORTED_DATATYPES = new Set(['STRING', 'XHTML', 'DATE', 'INTEGER', 'BOOLEAN']);
 const CORE_REF_TYPES = new Set(['REQUIREMENT', 'CONSTRAINT']);
@@ -39,16 +38,8 @@ export function validatePackage(model) {
     }
   }
 
-  function isPositiveInt(v) { return Number.isInteger(v) && v >= 1; }
-
   for (const so of model.specObjects) {
     checkId('spec-object', so.id, `spec-object "${so.id}"`);
-    if ('workflow_state' in so && !isWorkflowState(so.workflow_state)) {
-      flag('REQIF-008', `spec-object "${so.id}": workflow_state "${so.workflow_state}" is not one of draft/reviewed/approved/baselined/superseded (reqif.md §2.9).`);
-    }
-    if ('revision' in so && !isPositiveInt(so.revision)) {
-      flag('REQIF-009', `spec-object "${so.id}": revision "${so.revision}" is not a positive integer (reqif.md §2.9).`);
-    }
     if (!sotIds.has(so.type)) {
       flag('REQIF-003', `spec-object "${so.id}": type "${so.type}" does not resolve to a spec-object-type in this package.`);
     } else {
@@ -71,9 +62,6 @@ export function validatePackage(model) {
     checkId('spec-relation', sr.id, `spec-relation "${sr.id}"`);
     if (!soIds.has(sr.source)) flag('REQIF-004', `spec-relation "${sr.id}": source "${sr.source}" does not resolve to a spec-object in this package.`);
     if (!soIds.has(sr.target)) flag('REQIF-004', `spec-relation "${sr.id}": target "${sr.target}" does not resolve to a spec-object in this package.`);
-    if ('recorded_target_revision' in sr && !isPositiveInt(sr.recorded_target_revision)) {
-      flag('REQIF-009', `spec-relation "${sr.id}": recorded_target_revision "${sr.recorded_target_revision}" is not a positive integer (reqif.md §2.9).`);
-    }
   }
 
   function checkHierarchyNode(node, where) {

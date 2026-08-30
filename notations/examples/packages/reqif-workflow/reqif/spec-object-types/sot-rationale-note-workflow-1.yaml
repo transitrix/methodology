@@ -1,9 +1,0 @@
-package: reqif
-kind: spec-object-type
-id: sot-rationale-note-workflow-1
-name: "Rationale note (workflow-tracked)"
-attributes:
-  - key: "ReqIF.Name"
-    datatype: STRING
-  - key: "ReqIF.Text"
-    datatype: XHTML
