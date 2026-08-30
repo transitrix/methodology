@@ -1174,3 +1174,89 @@ A repository's own views always display its own `id` — a binding is metadata a
 - **The catalogue itself** — its publication format, the pin field's shape and location in a consuming repository's manifest, and the version-match rule a pin resolves under — is specified where the catalogue-publishing mechanism lands, not here. `BIND-001` and `BIND-004` above assume that mechanism exists; they do not define it.
 - **How a binding is proposed** — the matching, staging, and review-queue mechanics of recognition and promotion (L2 / L3, [`method/09-releases-and-propagation.md`](../method/09-releases-and-propagation.md) §6.2) — is separate from the envelope shape and rules a binding must satisfy once accepted, which is all this section defines.
 - **`TERM` and other TYPE-specific catalogue content** are out of scope here; this section's fields and rules apply to any `standalone` element regardless of TYPE.
+
+## 18. Validator behaviour and notation coverage
+
+Every notation in the methodology family carries a published specification and a set of validation rules. The validator is the tool that enforces these rules across a repository. This section defines which notations are validated, what codes the validator may emit, and the requirement that every validation code produced by the validator must be documented in the specification.
+
+### 18.1 Validated notations
+
+The following notations are **validated** — their files are read and checked against the specification's validation rules:
+
+**View notations (diagram, report, document):**
+- `dgca` (Strategy-to-Execution Chain, §2-dgca.md)
+- `goals` (Goals tree, §04-goals.md)
+- `action` (Action schedule, §07-action.md)
+- `action-card` (Action card narrative, §18-action-card.md)
+- `blocks` (Multi-level container layouts, §08-blocks.md)
+
+**Element notations (zone primitives):**
+- `goal` (Goal element, §02-goal.md)
+- `codex` (Codex entry, §14-codex.md)
+- `requirement` (Requirement element, §15-requirement.md)
+- `assertion` (Assertion element, §16-assertion.md)
+- `relation` (Relation element, §17-relations.md)
+- `action` (Action element, §24-action.md)
+- `verification` (Verification element, §27-verification.md)
+- `validation` (Validation element, §28-validation.md)
+
+### 18.2 Skipped notations
+
+The following published notations are **not currently validated** — their files are recognised but not checked:
+
+**View notations:**
+- `bpmn` (BPMN process flow, §01-bpmn.md)
+- `capability-map` (Capability hierarchy with maturity, §05-capability-map.md)
+- `process-map` (Process catalogue, §06-process-map.md)
+- `applications` (Application inventory, §10-applications.md)
+- `integration-map` (Application integration graph, §12-integration-map.md)
+- `process-blueprint` (Value-chain blueprint, §13-process-blueprint.md)
+- `scenarios` (Scenarios report, §11-scenarios.md)
+- `compliance-impact` (Compliance matrix report, §21-compliance-impact.md)
+- `coverage-metric` (Coverage metric report, §22-coverage-metric.md)
+- `actions-tree` (Actions tree report, §23-actions-tree.md)
+- `rules-in-force` (Rules in force report, §24-rules-in-force.md)
+- `glossary` (Glossary report, §32-glossary.md)
+- `mrd` (Marketing Requirements Document, §29-mrd.md)
+- `srs` (Software Requirements Specification, §30-srs.md)
+- `sdd` (Software Design Description, §31-sdd.md)
+
+**Element notations:**
+- `actor` (Actor element, §19-actors.md)
+- `stakeholder` (Stakeholder element, §20-stakeholders.md)
+- `location` (Location element, §21-locations.md)
+- `amendment` (Amendment element, §22-amendment.md)
+- `segment` (Segment element, §23-segment.md)
+- `business-service` (Business Service element, §25-business-services.md)
+- `node` (Node element, §25-nodes.md)
+- `technology-service` (Technology Service element, §26-technology-services.md)
+
+### 18.3 Validator code publication rule
+
+Every code the validator may emit — error, warning, or info — **must appear in a published specification table.** Codes are documented in one of two places:
+
+1. **Shared codes** (apply to all or multiple notations) are documented in this document (CONTRACT.md). Examples: `HDR-001..004` (header rules, §2), `LIFECYCLE-001..004` (primitive lifecycle, §7.3), `MECH-001` (mechanical migration, §16.3), `BIND-001..005` (binding envelope, §17.2).
+
+2. **Notation-specific codes** (apply only to one notation) are documented in that notation's specification file, in the "Validation rules" section. Examples: `DGCA-001..021`, `GOALS-009..011`, `GOALS-REQ-001..003` (in their respective spec files).
+
+No code may be emitted by the validator that does not appear in a published table. When the validator is updated to emit a new code, the corresponding specification section must be updated in the same release.
+
+### 18.4 Skipped notation reporting
+
+The validator **must report which notations it encountered but did not validate.** When a file of a skipped notation type is discovered:
+
+- **In a validation run that reports counts:** the skipped notation's filename is listed in the output with a status of "SKIPPED" or "NOT VALIDATED" (exact wording is implementation-specific), distinguishing it from errors and warnings.
+- **In a validation run over a complete repository:** the count of files examined equals the count of files expected in the repository (i.e., a file of a skipped notation is counted as "examined" but reported as skipped, not silently omitted from the count).
+
+**Example output:**
+
+```
+✓ DGCA file: views/dgca/strategy-2026.dgca.transitrix.yaml (clean)
+⊘ BPMN file: views/diagrams/order-flow.bpmn.transitrix.yaml (SKIPPED — validator not yet implemented)
+✓ Goal element: canon/elements/01_motivation/goals/GOAL-REVENUE-1.yaml (clean)
+✓ Requirement element: canon/elements/01_motivation/requirements/REQUIREMENT-DATA-ERASURE-1.yaml (clean)
+
+Summary: 7 files examined, 6 validated, 1 skipped, 0 errors, 0 warnings.
+```
+
+This way, a file of a currently-skipped notation is never silent — its presence is visible, and the output tells the reader why it was not checked.

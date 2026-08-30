@@ -1,0 +1,27 @@
+notation: dgca
+spec_version: "0.1"
+methodology_version: "4.2.0"
+id: DGCA-TEST-1
+name: "Test strategy chain"
+period: "2026"
+
+factors:
+  - id: DRIVER-TEST-1
+    name: "Test driver"
+    type: external
+
+goals:
+  - id: GOAL-TEST-1
+    name: "Test goal"
+    factors: [DRIVER-TEST-1]
+
+changes:
+  - id: CHANGE-TEST-1
+    name: "Test change"
+    goals: [GOAL-TEST-1]
+
+actions:
+  - id: ACTION-TEST-1
+    name: "Test action"
+    type: Project
+    delivers_changes: [CHANGE-TEST-1]
