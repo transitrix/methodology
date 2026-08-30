@@ -431,6 +431,7 @@ The `goal.factors`, `change.goals`, and `action.delivers_changes` inline cross-r
 | `DGCA-018` | warning | `actions[].type` is not one of `Initiative` \| `Programme` \| `Project` \| `Task` (or deprecated alias `work_package` for `Task`). The validator treats the entry as `Initiative` for backward compat. |
 | `DGCA-019` | error | `view_config` defines both `goals.filter` and `actions.filter` — mutually exclusive. Choose goal-scoped mode (omit or set `actions.filter` implicitly to `null`) or action-scoped mode (omit `goals.filter`). |
 | `DGCA-020` | error | `view_config` in action-scoped mode (`actions.filter` is set) specifies `goals.filter` with a value other than the implicit default — confusing specification. Omit `goals.filter` entirely in action-scoped mode. |
+| `DGCA-021` | warning | an action carries both a direct `goals[]` link and a `delivers_changes[]` link where at least one goal is reachable via the changes — i.e., `goals[].{goal_id}` also appears in one of `delivers_changes[].{change_id}.goals[]`. The direct link is reserved for cases where the changes layer adds no new goals. |
 
 ---
 
