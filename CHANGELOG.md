@@ -23,6 +23,10 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 
 ## [Unreleased]
 
+### Removed
+
+- **BREAKING: ReqIF package's workflow-state, revision-history, and suspect-link commands and validators are removed.** The `transitrix-reqif transition`, `revise`, `history`, and `suspect` commands are deleted; validation rules `REQIF-008` and `REQIF-009` are removed from the rule table (§5). The package's own lifecycle surface is deprecated in favor of core's agreement axis (`CONTRACT.md` §6.3); a `spec-object` admitted into canon now carries its lifecycle state through core's `agreement` field, not through the package. Foreign `workflow_state`, `revision`, `revisions`, and `recorded_target_revision` fields arriving via ReqIF import are preserved as inert document metadata and round-trip unchanged; the package does not manage or validate them. `notations/packages/reqif.md` §2.9 is rewritten to clarify what remains. Migration: (1) remove any direct use of the four deleted commands; (2) for `spec-object` instances that will become core elements, use core's agreement axis (`CONTRACT.md` §6.3) to record lifecycle once admitted; (3) the `recorded_target_revision` field on `spec-relation` may be kept or removed — it is inert and round-trips either way. (#431)
+
 ### Added
 
 - **Products Catalogue projection form** — `notations/views/diagrams/09-products.md` adds full support for projection-form authoring alongside the existing inline form. A products catalogue can now be authored with a `view_config` block that selects PRODUCT elements from `canon/elements/02_business/products/`, allowing filtering by type, domain, owner_role, and custom extensions (e.g., pricing models). The inline form remains valid; promotion to projection form is optional until cross-document sharing requires it. New validation rules `PROD-001..010` and view_config defaults documented. Notation version bumped to 0.2, status to documented. Purely additive — a repository with products-catalogues in inline form validates as before. (transitrix-hq#436)
