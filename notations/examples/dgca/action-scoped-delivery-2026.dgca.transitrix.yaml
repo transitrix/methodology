@@ -1,0 +1,35 @@
+notation: dgca
+spec_version: "0.1"
+methodology_version: "4.2.0"
+
+id: DGCA-DELIVERY-1
+name: "Delivery chain 2026 — action-scoped"
+description: >
+  Bottom-up DGCA projection from two work packages on the automation
+  initiative. The renderer walks action.delivers_changes upward to the
+  change, then change.goals and goal.factors, so the view shows what
+  drives the work and what it changes — without selecting goals first.
+period: "2026"
+generated_at: "2026-08-30"
+author: Transitrix
+
+# Full-tier projection form, action-scoped (bottom-up from actions).
+# Element data lives in elements/ alongside this file (post-promotion).
+# Anchor: ACTION-3 (process audit) and ACTION-4 (RPA rollout), both
+# delivering CHANGE-2. See notations/views/diagrams/02-dgca.md §view_config.
+
+view_config:
+  actions:
+    filter: ids
+    ids: [ACTION-3, ACTION-4]   # anchor on the automation work packages
+  factors:
+    surface: derived            # derive: DRIVER-2 via goal.factors on GOAL-2
+  changes:
+    surface: derived            # derive: CHANGE-2 via action.delivers_changes
+  goals:
+    surface: derived            # derive: GOAL-2 via change.goals
+  layers:
+    drivers: on
+    goals: on
+    changes: on
+    actions: on
