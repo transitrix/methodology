@@ -388,6 +388,7 @@ The `goal.factors`, `change.goals`, and `action.delivers_changes` inline cross-r
 | `DGCA-016` | warning | `activities:` key used at document root or in `view_config` — deprecated; migrate to `actions:`. |
 | `DGCA-017` | warning | `view_config.layers.activities:` used — deprecated; migrate to `view_config.layers.actions:`. |
 | `DGCA-018` | warning | `actions[].type` is not one of `Initiative` \| `Programme` \| `Project` \| `Task` (or deprecated alias `work_package` for `Task`). The validator treats the entry as `Initiative` for backward compat. |
+| `DGCA-019` | warning | an action carries both a direct `goals[]` link and a `delivers_changes[]` link where at least one goal is reachable via the changes — i.e., `goals[].{goal_id}` also appears in one of `delivers_changes[].{change_id}.goals[]`. The direct link is reserved for cases where the changes layer adds no new goals. |
 
 ---
 
