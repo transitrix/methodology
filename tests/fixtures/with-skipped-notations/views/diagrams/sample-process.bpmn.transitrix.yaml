@@ -1,0 +1,19 @@
+notation: bpmn
+id: BPMN-SAMPLE-1
+name: "Sample process"
+description: "A BPMN process for testing skipped notation reporting."
+
+lanes:
+  - id: lane-1
+    name: "Sales Team"
+    actor_role: "ROLE-SALES-001"
+
+stages:
+  - id: stage-1
+    name: "Order Processing"
+
+steps:
+  - id: step-1
+    stage: stage-1
+    lane: lane-1
+    name: "Receive order"

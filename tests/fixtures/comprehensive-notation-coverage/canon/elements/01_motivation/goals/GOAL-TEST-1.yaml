@@ -1,0 +1,16 @@
+notation: goal
+id: GOAL-TEST-1
+name: "Test goal"
+level: 0
+description: "A goal for testing validator coverage."
+
+zone: canon
+admitted_at: "2026-08-30"
+admitted_by: "methodology-test"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-08-30"
+valid_to: null
