@@ -34,6 +34,7 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 - **DGCA chain-view spec (`notations/views/diagrams/02-dgca.md`) now uses the correct field name `action.delivers_changes`** (matching the ACTION element schema and Studio implementation) instead of the incorrect `action.changes`. Updated in the projection-form example, view_config defaults, view_config keys documentation, inline `actions[]` field table, and validation rule `DGCA-010`. Inline actions in DGCA documents using `changes:` remain valid but should migrate to `delivers_changes:`. (transitrix-hq#452)
 - **`tools/lint.py` validates inline element field references** (`parent`, `goals`, `delivers_changes`, `predecessors`, `owner_role`): a missing target or a non-string ID is an error, same grain as relation `from`/`to`.
 - **`notations/views/diagrams/04-goals.md` — goal tree level 0 description clarified.** §7.1 table no longer describes level 0 as the organisation's vision (which moved to `ORGANIZATION` element type); level 0 is now described as the top goal.
+- **`@transitrix/ingest-cli` — PII-004 detector no longer matches ISO 8601 dates as phone numbers.** The detector split into email-shape and phone-shape validators; phone-shaped matches with `YYYY-MM-DD` pattern are rejected, matching the Luhn-validation discipline of PII-005. ISO dates are reported as CLEAN; genuine phone tokens and emails still match.
 
 ---
 
