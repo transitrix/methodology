@@ -35,7 +35,11 @@ The adopter instantiates the convention at:
 ```
 organizations/<org>/operations/
 ├── README.md                      # Local rules (~1 screen)
-├── feedback.md                    # Upstream feedback register (FB-… entries, one file; §3.2)
+├── feedback/                      # Upstream feedback register (FB-… entries; §3.2)
+│   ├── feedback.md                # Journal — single file, one checklist + entry blocks
+│   ├── 2026-08-15/                # Optional: dated attachment folders for entries with images
+│   ├── 2026-08-20/                # one folder per date findings were recorded
+│   └── …
 ├── decisions/                     # Architecture decision records (ADR — human- or agent-authored; method/07-decisions.md)
 │   ├── ADR-2026-06-03-adopt-methodology.md
 │   ├── ADR-2026-06-05-pin-catalog-2-3-0.md
@@ -94,7 +98,9 @@ Body — free-form Markdown. A short outcome statement and a checklist is usuall
 
 A short record of a **methodology-directed finding** raised from this repo — the landing place for `FINDINGS.md`'s `escalate-methodology` route (see the adopter role guides: `AGENTS.md`, `ANALYST.md`, `VALIDATOR.md`, `INGEST.md`). A finding here is about the notation or the spec itself (a gap, a friction, a suggestion), never about the modelled enterprise — a problem with the model is an `ASSESSMENT` in canon, per the hard distinction in §1.
 
-Deliberately **not** one-file-per-record like ADR/WI: a single file, `operations/feedback.md`, holds a checklist index at the top and one short block per entry below it. The checkbox means "closed" — same convention as the ADR/WI index would use, adapted to one file instead of a folder.
+**Directory structure:** The feedback register lives in `operations/feedback/` — a directory, not a single file. It contains a single `feedback.md` journal file (checked-in and mandatory) and optional dated attachment folders for findings that include images.
+
+Deliberately **not** one-file-per-record like ADR/WI: the journal is a single file (`feedback.md` inside `operations/feedback/`), holding a checklist index at the top and one short block per entry below it. The checkbox means "closed" — same convention as the ADR/WI index would use, adapted to one file instead of a folder. The directory wrapper allows a finding that arrives with a screenshot to reference attachment files at a known path.
 
 ```markdown
 ## Register
@@ -115,7 +121,7 @@ proposed: <what the team believes the fix would be — optional>
 
 Fields:
 
-- `id` — `FB-NNNN`, carried by the entry's `###` heading (not repeated as a YAML key inside the block). Four-digit zero-padded, monotonically increasing within the single `operations/feedback.md` file — there is no per-record folder to enumerate, unlike ADR/WI (see §4).
+- `id` — `FB-NNNN`, carried by the entry's `###` heading (not repeated as a YAML key inside the block). Four-digit zero-padded. **Default (single-writer):** monotonically increasing within the single `operations/feedback/feedback.md` journal file. **Multi-writer variant:** when multiple concurrent writers are in use, the partition scheme (per-author ranges or equivalent) MUST be specified in the adopter's local `operations/README.md`.
 - `type` — `notation-gap` | `tooling-friction` | `doc-gap` | `model-suggestion` (below).
 - `methodology_version` — **required**. A finding is always raised against a specific methodology version; record the one the repo's `transitrix.yaml` pins at the time.
 - `raised_by` — the role that raised it: `Ingest` | `Modeler` | `Analyst` | `Validator`, per `FINDINGS.md` §3.
@@ -154,7 +160,13 @@ Fields:
 | `sent <date>` | Sent to `hello@transitrix.com` on `<date>`. |
 | `answered <date>` | The maintainer replied on `<date>`. |
 
-**Anonymised at authoring time, not at export.** An entry is written as a *generic limitation only* — no model content, no element IDs, no organisation-identifying detail — the same scrub discipline `FINDINGS.md` §2 step 3 already requires for methodology-directed findings, applied at the moment of writing rather than at the moment of sending. This is what makes the file safe to read, quote, or forward as-is; there is nothing left to redact later.
+**Single-writer and multi-writer variants.** The default register is a single `operations/feedback/feedback.md` journal file, designed for a single author or a small team coordinating entry writes. When a team has **several concurrent writers**, two collision issues arise: (1) merge conflicts on overlapping sections of the file, and (2) ID allocation race — two authors reading the file independently and allocating the same next `FB-NNNN` on parallel branches. An adopter with multiple concurrent writers **may** keep separate files — one per author (e.g., `operations/feedback/feedback-alice.md`, `operations/feedback/feedback-bob.md`), or the `feedback.md` file may be `.gitignore`'d (kept locally only), preventing repository collisions entirely. If multiple files are used, the `FB-NNNN` sequence **must** be partitioned per author (e.g., `FB-1000` range for Alice, `FB-2000` range for Bob) to prevent duplicates at merge time — the specification MUST state which scheme is in force. If files are gitignored, the convention MUST document what remains in the repo (directory structure, file-list index, summary README) and how entries are merged when submitted upstream. **The single-journal default is recommended for single-writer or coordinated-write repositories.** The multi-writer variant is permitted only where ID allocation conflicts are explicitly addressed and documented.
+
+**Attachments — when a finding arrives with an image.** An entry may reference images — screenshots, diagrams, error messages — stored in a dated subfolder inside `operations/feedback/`. Attachment references use relative paths from the journal file: `[screenshot: 2026-08-15/findings-001.png]` or a link in the entry body pointing to `./2026-08-15/findings-001.png`. The dated folder (e.g., `2026-08-15/`) contains all attachments for entries recorded on that date. An adopter with no attachments keeps a directory holding one file only.
+
+**Scrub gate for images — anonymisation applies to visual content.** A screenshot is model content: it is a render of the real enterprise with labels, element names, and organisational structure visible. An attachment inherits the scrub discipline required for prose — it is scrubbed at the moment it is attached, not when it leaves the repository. The rule: **no model elements, no element IDs, no organisational-identifying detail — same as prose.** For an image: crop/redact/re-render the frame to show only what is needed to describe the limitation, with labels and context removed or anonymised. An image that violates the scrub gate (that shows model content) is refused at authoring time — it is not attached and sent separately. This is what makes the file safe to read, quote, or forward as-is without a second redaction pass.
+
+**Anonymised at authoring time, not at export.** An entry is written as a *generic limitation only* — no model content, no element IDs, no organisation-identifying detail — the same scrub discipline `FINDINGS.md` §2 step 3 already requires for methodology-directed findings, applied at the moment of writing rather than at the moment of sending. This applies to both prose and images. This is what makes the file safe to read, quote, or forward as-is; there is nothing left to redact later.
 
 **The record stays in the adopter's own repository.** Nothing in this convention writes to, opens an issue on, or transmits anything to `transitrix/methodology` or any other host. Submission upstream is opt-in and manual — the convention recommends `hello@transitrix.com` (see `CONTRIBUTING.md` §Communication) and stops there; a human decides whether an entry actually leaves this repo, and the `upstream:` field records that decision once made.
 
@@ -185,7 +197,7 @@ If a Work Item or ADR references a model ID that does not resolve (typo, deleted
 
 ## 5. IDs — distinct namespace from the model
 
-`ADR-`, `WI-`, and `FB-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…`, `WI-…`, and `FB-…` are unique within their own folder (ADR/WI) or their own file (Feedback — see §3.2), not globally, and cannot be cross-referenced from inside the model. An ADR id form is defined in [`07-decisions.md`](07-decisions.md) §2; a `WI-` id keeps the zero-padded four-digit sequence (`WI-0042`); `FB-…` carries a zero-padded four-digit sequence (`FB-0002`).
+`ADR-`, `WI-`, and `FB-` are deliberately **outside** the canonical ID grammar. The TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) governs model IDs only; `ADR-…`, `WI-…`, and `FB-…` are unique within their own folder (ADR/WI) or within the feedback journal (Feedback — see §3.2; single-file default or multi-writer variant), not globally, and cannot be cross-referenced from inside the model. An ADR id form is defined in [`07-decisions.md`](07-decisions.md) §2; a `WI-` id keeps the zero-padded four-digit sequence (`WI-0042`); `FB-…` carries a zero-padded four-digit sequence (`FB-0002`).
 
 This is intentional: the team-operations namespace is a different *kind* of identifier than a model entity ID, and keeping ADR/WI/FB ids mechanically distinguishable from a model ID (no domain segment) prevents accidental collisions. Uniqueness within `operations/decisions/` is mechanically guarded — two records sharing an `id:` fail CI regardless of which id form each uses ([`method/07-decisions.md`](07-decisions.md) §7, check A5). Feedback Records are not aggregated across repos — each repo's register is independent, and there is no `FB-` equivalent of the central Architecture Decision Log.
 
@@ -199,6 +211,7 @@ Each adopter writes a short local README inside `operations/` covering:
 - The team's local **decision-making process** — when an ADR is required, who signs off, where supersedes are recorded.
 - The team's local **work-item flow** — how items are opened, who reviews, how items move through `proposed → in_progress → done`.
 - The team's local **feedback-routing process** — when a Feedback Record is written, whether the team reviews before marking `sent-upstream`, who owns actually sending it.
+- *If the team has multiple concurrent writers:* which multi-writer variant is in use (single-journal with coordination, per-author files with ID partitioning, gitignored journals) and the ID allocation scheme (if applicable).
 
 The local README is the team's adaptation; this canonical doc is the convention.
 
@@ -213,7 +226,7 @@ Starter templates live in this repository (an adopter copies one into its own `.
 
 Copy a template into the matching subfolder, fill in the front-matter and body, commit.
 
-Feedback carries no separate per-record template — it is one growing file, not one file per entry. The onboarding skill (`transitrix/skills/onboard`) scaffolds `operations/feedback.md` with its empty header directly; an entry is appended to it (by hand, or by the `/transitrix:feedback` skill once it lands) following the shape in §3.2.
+Feedback carries no separate per-record template — it is one growing file (optionally with attachment folders), not one file per entry. The onboarding skill (`transitrix/skills/onboard`) scaffolds `operations/feedback/feedback.md` (creating the directory if needed) with its empty header; an entry is appended to it (by hand, or by the `/transitrix:feedback` skill once it lands) following the shape in §3.2. When a repository already holds a register at the retired location (`operations/feedback.md`, before the directory restructure), both skills refuse to scaffold a second one at the new location — they detect the existing register and use it, documenting the layout found and refusing to create parallel journals.
 
 ## 8. What this convention is not (extended)
 
@@ -229,7 +242,7 @@ To keep the layer minimal and prevent it from drifting into a parallel process s
 ## 9. References
 
 - ADR record shape, multi-repo aggregation, agent authorship: [`method/07-decisions.md`](07-decisions.md).
-- Worked example: [`operations/`](https://github.com/transitrix/acme-corp/tree/main/operations/) in the acme-corp reference repo, including a filled [`operations/feedback.md`](https://github.com/transitrix/acme-corp/blob/main/operations/feedback.md).
+- Worked example: [`operations/`](https://github.com/transitrix/acme-corp/tree/main/operations/) in the acme-corp reference repo, including a filled [`operations/feedback/feedback.md`](https://github.com/transitrix/acme-corp/blob/main/operations/feedback/feedback.md) and dated attachment folders.
 - Repository structure: [`method/02-repository.md`](02-repository.md).
 - Architectural findings about the enterprise are modelled as `ASSESSMENT` (the former model-side `issues` notation was retired, 2026-06-07).
 - Distinct from the canon zones: [`notations/CONTRACT.md`](../notations/CONTRACT.md) §5.

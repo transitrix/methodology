@@ -148,8 +148,15 @@ const DETECTORS = [
   },
   {
     code: 'PII-004',
-    reason: 'personal contact detail (email or phone) not covered by the allowlist',
-    regex: /\b[\w.+-]+@[\w-]+\.[\w.-]+\b|\b\+?\d[\d\- ]{7,14}\d\b/g,
+    reason: 'personal contact detail (email) not covered by the allowlist',
+    regex: /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g,
+    allowlistable: true,
+  },
+  {
+    code: 'PII-004',
+    reason: 'personal contact detail (phone) not covered by the allowlist',
+    regex: /\b\+?\d[\d\- ]{7,14}\d\b/g,
+    validate: (m) => !/^\d{4}-\d{2}-\d{2}$/.test(m),
     allowlistable: true,
   },
 ];

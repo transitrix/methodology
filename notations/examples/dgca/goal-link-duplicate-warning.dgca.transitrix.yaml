@@ -3,13 +3,13 @@ spec_version: "0.1"
 methodology_version: "4.2.0"
 
 id: DGCA-DUPLICATE-GOAL-LINK-1
-name: "Goal link duplication — DGCA-019 demonstration"
+name: "Goal link duplication — DGCA-021 demonstration"
 description: >
   Inline DGCA example demonstrating both positive and negative cases for
-  DGCA-019: actions that carry both a direct goal link and a change-path link
+  DGCA-021: actions that carry both a direct goal link and a change-path link
   to the same goal.
 
-  Positive case (warns DGCA-019): ACTION-DUPL-POS carries both goals: [GOAL-SHARED-1]
+  Positive case (warns DGCA-021): ACTION-DUPL-POS carries both goals: [GOAL-SHARED-1]
   and delivers_changes: [CHANGE-VIA-GOAL], where CHANGE-VIA-GOAL.goals also
   includes GOAL-SHARED-1. The direct link duplicates the goal reached via the change.
 
@@ -48,7 +48,7 @@ changes:
 
 actions:
   # POSITIVE: Both direct link and change-path link to the same goal.
-  # Emits DGCA-019 warning.
+  # Emits DGCA-021 warning.
   - id: ACTION-DUPL-POS
     name: "Action with duplicate goal link (positive case)"
     type: Project
@@ -56,21 +56,21 @@ actions:
     delivers_changes: [CHANGE-VIA-GOAL]
 
   # NEGATIVE: Only delivers a change, no direct goal link.
-  # Does not emit DGCA-019.
+  # Does not emit DGCA-021.
   - id: ACTION-DEDUP-ONLY-CHANGE
     name: "Action with only delivers_changes (negative case 1)"
     type: Project
     delivers_changes: [CHANGE-VIA-GOAL]
 
   # NEGATIVE: Only links a goal directly, no delivers_changes.
-  # Does not emit DGCA-019.
+  # Does not emit DGCA-021.
   - id: ACTION-DEDUP-ONLY-GOAL
     name: "Action with only goals link (negative case 2)"
     type: Project
     goals: [GOAL-ONLY-DIRECT-1]
 
   # NEGATIVE: Has both, but goals are disjoint (no overlap).
-  # Does not emit DGCA-019.
+  # Does not emit DGCA-021.
   - id: ACTION-DEDUP-DISJOINT
     name: "Action with disjoint goals (negative case 3)"
     type: Project

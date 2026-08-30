@@ -992,6 +992,12 @@ rule_codes:
     severity: warning
     spec: notations/views/diagrams/02-dgca.md
   DGCA-019:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-020:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-021:
     severity: warning
     spec: notations/views/diagrams/02-dgca.md
   DGCA-REPO-008:
@@ -1240,6 +1246,36 @@ rule_codes:
   PKG-002:
     severity: error
     spec: notations/PACKAGES.md
+  PROD-001:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-002:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-003:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-004:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-005:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-006:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-007:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-008:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  PROD-009:
+    severity: warning
+    spec: notations/views/diagrams/09-products.md
+  PROD-010:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
   PROCESS-COVERAGE-001:
     severity: warning
     spec: notations/elements/16-assertion.md
