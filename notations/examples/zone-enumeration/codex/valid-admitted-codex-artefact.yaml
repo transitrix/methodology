@@ -1,0 +1,21 @@
+notation: standard
+name: "Regulation example"
+description: "A well-formed codex element with complete admission record"
+example: true
+zone: codex
+admitted_at: "2026-08-31"
+admitted_by: "automation"
+gate_checks:
+  source_authority: pass
+valid_from: "2026-01-01"
+valid_to: null
+
+---
+
+## Regulation
+
+id: REGULATION-EXAMPLE-001
+title: "Example regulation"
+description: |
+  A sample external regulation admitted to the codex zone.
+  This demonstrates a valid, enumerated artefact in the codex zone.

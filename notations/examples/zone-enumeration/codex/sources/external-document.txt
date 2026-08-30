@@ -1,0 +1,13 @@
+External Document Placeholder
+
+This is a placeholder for an external document (PDF, HTML, etc.)
+that might be archived under codex/sources/.
+
+Files in codex/sources/ are:
+- NOT validated for admission records
+- NOT enumerated as zone artefacts
+- Purely archival
+- Preserved as faithful copies of external sources
+
+The validator does NOT check files in sources/ for admission records
+or any validation rules. They exist outside the validation scope.

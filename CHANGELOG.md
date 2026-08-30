@@ -23,11 +23,13 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 
 ## [Unreleased]
 
+### Added
+
+- **Zone enumeration validation (CONTRACT §6.5) — every file is validated or reported.** The validator now reports on zones as a whole, not only on files it can parse. Every file under `canon/`, `field/`, and `codex/` (outside the `sources/` archival subfolder) must be either a YAML artefact with a complete admission record, or formally reported as unenumerated. New validation rules: `ZONE-001` (unenumerated file), `ZONE-002` (non-YAML syntax error), `ZONE-003` (contradictory admission+format), `ADMIT-012` (admission record in `sources/`). Fixtures and worked examples demonstrating all cases: `notations/examples/zone-enumeration/`. (transitrix-hq#455)
+
 ### Removed
 
 - **BREAKING: ReqIF package's workflow-state, revision-history, and suspect-link commands and validators are removed.** The `transitrix-reqif transition`, `revise`, `history`, and `suspect` commands are deleted; validation rules `REQIF-008` and `REQIF-009` are removed from the rule table (§5). The package's own lifecycle surface is deprecated in favor of core's agreement axis (`CONTRACT.md` §6.3); a `spec-object` admitted into canon now carries its lifecycle state through core's `agreement` field, not through the package. Foreign `workflow_state`, `revision`, `revisions`, and `recorded_target_revision` fields arriving via ReqIF import are preserved as inert document metadata and round-trip unchanged; the package does not manage or validate them. `notations/packages/reqif.md` §2.9 is rewritten to clarify what remains. Migration: (1) remove any direct use of the four deleted commands; (2) for `spec-object` instances that will become core elements, use core's agreement axis (`CONTRACT.md` §6.3) to record lifecycle once admitted; (3) the `recorded_target_revision` field on `spec-relation` may be kept or removed — it is inert and round-trips either way.
-
-### Added
 
 - **Validator coverage and code publication contract** (`notations/CONTRACT.md` §18) — documents which notations are validated and which are skipped (e.g., BPMN is skipped pending implementation, while DGCA and goal elements are validated). Establishes the rule that every validation code the validator may emit must appear in a published specification table (either CONTRACT.md for shared codes or the notation's own spec for notation-specific codes). Specifies that skipped notations must be explicitly reported in validator output (not silently omitted), with counts showing "files examined" ≥ "files validated" + "files skipped". Enables adopters to understand validator coverage gaps and prevents silent omission of unsupported notations. (transitrix-hq#448)
 

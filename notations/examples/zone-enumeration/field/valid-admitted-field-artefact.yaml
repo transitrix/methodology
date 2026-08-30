@@ -1,0 +1,23 @@
+notation: standard
+name: "Interview notes example"
+description: "A well-formed field artefact with complete admission record"
+example: true
+zone: field
+admitted_at: "2026-08-31"
+admitted_by: "automation"
+gate_checks:
+  provenance: pass
+source_quality: corroborated
+valid_from: "2026-08-15"
+valid_to: null
+
+---
+
+## Interview
+
+id: INTERVIEW-EXAMPLE-001
+title: "Field observations"
+description: |
+  Sample field material admitted to the field zone.
+  This demonstrates a valid, enumerated artefact in the field zone.
+  Raw, unprocessed material with documented provenance.
