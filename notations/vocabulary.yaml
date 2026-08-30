@@ -88,6 +88,13 @@ element_types:
     layer: 01_motivation
     folder: 01_motivation/metrics/
     promotable: false
+  ORGANIZATION:
+    # Motivation-layer organisation identity — mission, vision, and background.
+    # Schema: ELEMENT_PRIMITIVES.md §7.31. At most one valid per catalogue.
+    mode: standalone
+    layer: 01_motivation
+    folder: 01_motivation/organizations/
+    promotable: false
   RISK:
     mode: standalone
     layer: 01_motivation
@@ -1201,6 +1208,12 @@ rule_codes:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   NOD-002:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ORG-001:
+    severity: error
+    spec: notations/ELEMENT_PRIMITIVES.md
+  ORG-002:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   PC-001:

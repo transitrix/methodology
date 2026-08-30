@@ -52,6 +52,7 @@ canon/
       assessments/    ASSESSMENT-*.yaml      # §7.16 (assesses: one DRIVER; no polarity)
       needs/          NEED-*.yaml            # §7.28 — stakeholder/user need; REQUIREMENT.serves points here
       metrics/        METRIC-*.yaml          # §7.27 — managed indicator; measures GOAL/CAPABILITY/PROCESS
+      organizations/  ORGANIZATION-*.yaml    # §7.31 — organisation's own intent; mission, vision, identity
       risks/          RISK-*.yaml            # §7.26 — projected event; threatens / treated_by
     02_business/
       capabilities/   CAPABILITY-*.yaml      # views/diagrams/05-capability-map.md §13
@@ -169,6 +170,7 @@ The mode table. For each registry element TYPE: its mode (§1), its `notation` s
 | `ASSESSMENT` | standalone | `assessment` | motivation | `01_motivation/assessments/` | §7.16 (no dedicated spec) |
 | `NEED` | standalone | `need` | motivation | `01_motivation/needs/` | §7.28 (no dedicated spec) |
 | `METRIC` | standalone | `metric` | motivation | `01_motivation/metrics/` | §7.27 (no dedicated spec) |
+| `ORGANIZATION` | standalone | `organization` | motivation | `01_motivation/organizations/` | §7.31 (no dedicated spec) |
 | `RISK` | standalone | `risk` | motivation | `01_motivation/risks/` | §7.26 (no dedicated spec) |
 | `CAPABILITY` | standalone | `capability` | business | `02_business/capabilities/` | [views/05-capability-map.md](./views/diagrams/05-capability-map.md) §13 |
 | `PROCESS` | standalone | `process` | business | `02_business/processes/` | §7.5 + [views/06-process-map.md](./views/diagrams/06-process-map.md) |
@@ -1098,6 +1100,55 @@ valid_to: null
 
 No view inline shape: like `RELEASE`, `RISK`, and `NEED`, `TERM` is standalone-only — it is never authored inline inside a view document.
 
+### 7.31 `ORGANIZATION` — `01_motivation/organizations/`
+
+An `ORGANIZATION` is the organisation's own statement of itself — its name, mission, vision, and background. It is a canonical-by-reference element (ArchiMate has no direct counterpart; conceptually related to **Actor** identity). It carries the organisation's stated intent (`mission`, `vision`) alongside its descriptive identity.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `mission` | no | string | The organisation's stated purpose or primary objective — why it exists. |
+| `vision` | no | string | The organisation's aspirational future state — where it intends to go. |
+| `description` | recommended | string | Background, history, or elaboration on the organisation's identity. Background rides in the envelope `description`, not in a per-TYPE field. |
+| `aliases` | no | list | Legal or trading names. Alternate names (aliases) are non-authoritative surface forms; the `name` is the canonical label. |
+
+**Admission requirement.** An `ORGANIZATION` element MUST have at least one of `mission` or `vision` defined — both may be present, one is required (`ORG-002`). At most one valid `ORGANIZATION` may exist in a catalogue at any given date; simultaneous `valid_from` times across multiple `ORGANIZATION` elements is an error (`ORG-001`).
+
+**Time-varying.** Mission and vision are fixed properties once stated — they do not vary at issue level. An organisation restatement (changing mission or vision) is a new element with its own `valid_from` date and admission record, leaving the prior statement as a historical record. This follows the same time-aware pattern as other canon elements: the prior element's `valid_to` is set when the new element enters (a separate update or viewed via the lifecycle query), creating adjacent validity windows.
+
+```yaml
+# canon/elements/01_motivation/organizations/ORGANIZATION-TRANSITRIX-1.yaml
+notation: organization
+id: ORGANIZATION-TRANSITRIX-1
+name: "Transitrix"
+aliases:
+  - "transitrix.com"
+description: >
+  A methodology and tooling provider focused on model-centric enterprise
+  architecture. Founded 2025.
+
+mission: >
+  Enable organisations to hold their structure and strategy in a single
+  authoritative model, edited where it lives.
+
+vision: >
+  One shared model, a hundred trusted views. Model once, validate everywhere.
+
+# Admission record (CONTRACT.md §6)
+zone: canon
+admitted_at: "2026-08-30"
+admitted_by: "v.korobeinikov"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+# Primitive lifecycle (CONTRACT.md §7)
+valid_from: "2026-08-30"
+valid_to: null
+```
+
+**No view inline shape:** `ORGANIZATION` is standalone-only — it is never authored inline inside a view document.
+
 ---
 
 ## 8. Alignment with the ID grammar and TYPE registry
@@ -1151,6 +1202,8 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `METRIC-002` | error | `measures` is empty, or an entry does not resolve to an admitted `GOAL`, `CAPABILITY`, or `PROCESS` in canon. |
 | `METRIC-003` | error | `direction_of_good` is not one of `higher_is_better`, `lower_is_better`, `on_target`. |
 | `METRIC-004` | error | `owner_role` does not resolve to an admitted `ROLE` in canon. |
+| `ORG-001` | error | A catalogue contains more than one valid `ORGANIZATION` element with overlapping validity windows (valid_from ≤ now ≤ valid_to across two or more records). At most one valid `ORGANIZATION` may exist at any given date; multiple simultaneous statementsof the organisation's identity are forbidden. |
+| `ORG-002` | error | An `ORGANIZATION` element carries neither a `mission` nor a `vision` field. At least one MUST be present. |
 | `RISK-001` | error | A `RISK` element is missing `id`, `name`, or any required envelope field; or `id` does not match `RISK-[<middle>-]<INTEGER>`; or a required per-TYPE field (`likelihood`, `impact`, `residual`, `owner_role`, `threatens`) is missing. |
 | `RISK-002` | error | `likelihood`, `impact`, or `residual` is not one of `low`, `medium`, `high`. |
 | `RISK-003` | error | `threatens` is empty, or an entry does not resolve to an admitted element in canon. |
