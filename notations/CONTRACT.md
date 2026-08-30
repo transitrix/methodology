@@ -306,7 +306,7 @@ A file is a *finding* (error or warning) if it fails both criteria: an un-parsea
 
 | Rule | Severity | Description |
 |---|---|---|
-| `ZONE-001` | error (canon, field); warning (codex) | File in `<zone>/` (outside `sources/`) has no admission record and does not match any published notation schema. |
+| `ZONE-001` | error | File in `<zone>/` (outside `sources/`) has no admission record and does not match any published notation schema. (Error in `canon` and `field` zones; warning in `codex` — see §6.5 prose.) |
 | `ZONE-002` | error | File in `<zone>/` is not valid YAML (syntax error, not a mapping). |
 | `ZONE-003` | error | File in `<zone>/` has an admission record but the file format (extension or structure) does not match any published notation that admits records. |
 | `ADMIT-012` | error | File in `codex/sources/` carries an admission record (`zone`, `admitted_at`, etc.). The `sources/` folder is archival; files there are not validated or admitted. |
