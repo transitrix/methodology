@@ -30,6 +30,7 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 
 ### Fixed
 
+- **DGCA chain-view spec (`notations/views/diagrams/02-dgca.md`) now uses the correct field name `action.delivers_changes`** (matching the ACTION element schema and Studio implementation) instead of the incorrect `action.changes`. Updated in the projection-form example, view_config defaults, view_config keys documentation, inline `actions[]` field table, and validation rule `DGCA-010`. Inline actions in DGCA documents using `changes:` remain valid but should migrate to `delivers_changes:`. (transitrix-hq#452)
 - **`tools/lint.py` validates inline element field references** (`parent`, `goals`, `delivers_changes`, `predecessors`, `owner_role`): a missing target or a non-string ID is an error, same grain as relation `from`/`to`.
 
 ---
