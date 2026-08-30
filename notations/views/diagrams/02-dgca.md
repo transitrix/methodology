@@ -211,7 +211,10 @@ view_config:
 
 The DGCA semantic graph — one Change can deliver many Goals, one Action deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on either the inline element entries (inline form) or standalone element files (projection form). The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
 
-A simple self-contained inline example: [`examples/dgca/startup.dgca.transitrix.yaml`](../../examples/dgca/startup.dgca.transitrix.yaml). A Full-tier projection example (elements in `elements/` subfolder): [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../../examples/dgca/strategy-2026.dgca.transitrix.yaml).
+Examples:
+- Self-contained inline example (goal-scoped): [`examples/dgca/startup.dgca.transitrix.yaml`](../../examples/dgca/startup.dgca.transitrix.yaml)
+- Full-tier projection example, goal-scoped (elements in `elements/` subfolder): [`examples/dgca/strategy-2026.dgca.transitrix.yaml`](../../examples/dgca/strategy-2026.dgca.transitrix.yaml)
+- Full-tier projection example, action-scoped (bottom-up from initiatives): [`examples/dgca/action-scoped-delivery-2026.dgca.transitrix.yaml`](../../examples/dgca/action-scoped-delivery-2026.dgca.transitrix.yaml)
 
 ---
 
@@ -320,11 +323,13 @@ The `view_config` block (see [`CONTRACT.md`](../../CONTRACT.md) §14) defines wh
 
 ### view_config defaults
 
+**Goal-scoped mode** (default — top-down projection from goals):
+
 ```yaml
 # Canonical defaults — a view_config that omits any of these falls back to the value shown.
 view_config:
   goals:
-    filter: all          # include every active GOAL in canon
+    filter: all          # include every active GOAL in canon (anchor point)
     ids: []              # when filter is "ids": the explicit GOAL-… list to include
     tags: []             # when filter is "tags": include GOALs whose tags[] match any entry
   factors:
@@ -343,18 +348,54 @@ view_config:
     collapsed: []        # list of element IDs to render as collapsed nodes
 ```
 
+**Action-scoped mode** (bottom-up projection from actions):
+
+```yaml
+# Use actions as the anchor point; goals, factors.surface, and changes.surface are derived upward
+view_config:
+  actions:
+    filter: ids          # include only the ACTIONs listed in actions.ids (anchor point)
+    ids: [ACTION-PLATFORM-1, ACTION-DATA-MIGATION-1]  # explicit action roots to project from
+    tags: []             # when filter is "tags": include ACTIONs whose tags[] match any entry
+  factors:
+    surface: derived     # derive DRIVER set upward from goals, via goal.factors (same as goal-scoped)
+  changes:
+    surface: derived     # derive CHANGE set upward from actions.delivers_changes (reversed from goal-scoped)
+  goals:
+    surface: derived     # derive GOAL set upward from changes.goals (reversed from goal-scoped)
+  layers:
+    drivers: on          # show the Drivers column
+    goals: on            # show the Goals column
+    changes: on          # show the Changes column; off = DGA mode
+    actions: on          # show the Actions column
+  display:
+    depth: null          # maximum depth in the rendered chain; null = unlimited
+    collapsed: []        # list of element IDs to render as collapsed nodes
+```
+
 > **Deprecated aliases:** `view_config.activities:` is accepted in place of `view_config.actions:`, and `view_config.layers.activities:` is accepted in place of `view_config.layers.actions:`. Both emit a `DEPRECATED_NOTATION` warning. Migrate to the canonical keys.
 
 ### view_config keys
 
+**Scope anchor** — select one mode:
+
 | Key | Type | Default | Semantics |
 |---|---|---|---|
-| `goals.filter` | string | `all` | `all` — include every active GOAL; `ids` — include only the GOALs listed in `goals.ids`; `tags` — include GOALs whose `tags[]` match any entry in `goals.tags`. |
-| `goals.ids` | list | `[]` | `GOAL-…` IDs to include explicitly. Used when `goals.filter: ids`. |
-| `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. |
-| `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included goals. `all` — include every active DRIVER in canon. |
-| `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links for the included goal set. `all` — include every active CHANGE in canon. |
-| `actions.surface` | string | `derived` | `derived` — derive the ACTION set by following `action.changes` links for the included change set. `all` — include every active ACTION in canon. Deprecated alias: `activities.surface`. |
+| `goals.filter` | string | `all` | **Goal-scoped mode (default).** `all` — include every active GOAL; `ids` — include only the GOALs listed in `goals.ids`; `tags` — include GOALs whose `tags[]` match any entry in `goals.tags`. Mutually exclusive with `actions.filter`. |
+| `goals.ids` | list | `[]` | `GOAL-…` IDs to include explicitly. Used when `goals.filter: ids`. Only meaningful in goal-scoped mode. |
+| `goals.tags` | list | `[]` | Tag strings. Used when `goals.filter: tags`. Only meaningful in goal-scoped mode. |
+| `actions.filter` | string | *(not set)* | **Action-scoped mode.** `all` — include every active ACTION; `ids` — include only the ACTIONs listed in `actions.ids`; `tags` — include ACTIONs whose `tags[]` match any entry in `actions.tags`. When set, activates action-scoped (bottom-up) mode; `goals.filter` must not be set. |
+| `actions.ids` | list | `[]` | `ACTION-…` IDs to include as scope roots. Used when `actions.filter: ids`. Only meaningful in action-scoped mode. |
+| `actions.tags` | list | `[]` | Tag strings. Used when `actions.filter: tags`. Only meaningful in action-scoped mode. |
+
+**Derivation and display** — apply in both modes:
+
+| Key | Type | Default | Semantics |
+|---|---|---|---|
+| `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included (or derived) goals. `all` — include every active DRIVER in canon. Same traversal direction in both modes (upward from goals). |
+| `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links (goal-scoped) or `action.changes` links (action-scoped). `all` — include every active CHANGE in canon. **Direction reverses by mode:** top-down in goal-scoped, bottom-up in action-scoped. |
+| `goals.surface` | string | *(derived)* | **Action-scoped only.** `derived` — derive the GOAL set by following `change.goals` inline links on the included (or derived) changes. `all` — include every active GOAL in canon. Only used when `actions.filter` is set. Not part of goal-scoped mode (goals are the anchor). |
+| `actions.surface` | string | `derived` | `derived` — derive the ACTION set by following `action.changes` links (goal-scoped) or include selected roots (action-scoped). `all` — include every active ACTION in canon. Deprecated alias: `activities.surface`. |
 | `layers.drivers` | `on` \| `off` | `on` | Toggle the Drivers column in the rendered view. |
 | `layers.goals` | `on` \| `off` | `on` | Toggle the Goals column. Toggling off produces a degenerate view; `on` recommended. |
 | `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, actions link directly to goals via `actions[].goals`. |
@@ -362,7 +403,7 @@ view_config:
 | `display.depth` | integer \| null | `null` | Maximum depth of the rendered D→G→C→A chain. `null` renders all levels. |
 | `display.collapsed` | list | `[]` | IDs of elements to render as collapsed (children hidden). |
 
-The `goal.factors`, `change.goals`, and `activity.changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it only selects which goal set to anchor the projection on.
+The `goal.factors`, `change.goals`, and `action.changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it selects the scope anchor (goals for top-down, or actions for bottom-up) and derives the rest by following these links in the appropriate direction.
 
 ---
 
@@ -388,6 +429,8 @@ The `goal.factors`, `change.goals`, and `activity.changes` inline cross-referenc
 | `DGCA-016` | warning | `activities:` key used at document root or in `view_config` — deprecated; migrate to `actions:`. |
 | `DGCA-017` | warning | `view_config.layers.activities:` used — deprecated; migrate to `view_config.layers.actions:`. |
 | `DGCA-018` | warning | `actions[].type` is not one of `Initiative` \| `Programme` \| `Project` \| `Task` (or deprecated alias `work_package` for `Task`). The validator treats the entry as `Initiative` for backward compat. |
+| `DGCA-019` | error | `view_config` defines both `goals.filter` and `actions.filter` — mutually exclusive. Choose goal-scoped mode (omit or set `actions.filter` implicitly to `null`) or action-scoped mode (omit `goals.filter`). |
+| `DGCA-020` | error | `view_config` in action-scoped mode (`actions.filter` is set) specifies `goals.filter` with a value other than the implicit default — confusing specification. Omit `goals.filter` entirely in action-scoped mode. |
 
 ---
 
