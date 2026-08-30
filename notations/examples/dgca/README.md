@@ -95,5 +95,6 @@ author: "Your Name"
 |---|---|---|
 | `startup.dgca.transitrix.yaml` | **Inline (Simple)** | Primary example — self-contained, no `elements/` folder. All element data authored in this file. |
 | `strategy-2026.dgca.transitrix.yaml` | Projection (Full) | Full-tier example — projection-only `view_config`; element data lives in the `elements/` subfolder. |
+| `action-scoped-delivery-2026.dgca.transitrix.yaml` | Projection (Full), action-scoped | Bottom-up from `ACTION-3` and `ACTION-4`; drivers, goals, and changes are derived upward. |
 | `constraint-driven.dgca.transitrix.yaml` | Projection (Full) | Full-tier example — constraint-driven chain, GDPR data-residency scenario; elements in `elements/`. |
 | `strategy-2026-dga.dgca.transitrix.yaml` | Projection (Full) | Full-tier DGA mode example — Changes layer off; elements in `elements/`. |
