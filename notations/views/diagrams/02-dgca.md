@@ -28,7 +28,7 @@ Header rules — required `notation:` field, `spec_version:` semantics, validato
 A DGCA document has two valid authoring forms — both use the same YAML field schema:
 
 - **Inline form (default):** `factors[]`, `goals[]`, `changes[]`, and `actions[]` are authored directly in the view file. The file is self-contained. This is the expected form for a new adopter and for any DGCA chain where elements are not yet shared across documents.
-- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects elements already admitted to `canon/elements/**`. No element data is in this file; the renderer traverses inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on the standalone element files to derive the rendered set. See [`elements/17-relations.md`](../../elements/17-relations.md) §6.
+- **Projection form (Full tier — post-promotion):** the file carries only a `view_config` block that selects elements already admitted to `canon/elements/**`. No element data is in this file; the renderer traverses inline cross-reference fields (`goal.factors`, `change.goals`, `action.delivers_changes`) on the standalone element files to derive the rendered set. See [`elements/17-relations.md`](../../elements/17-relations.md) §6.
 
 The **promotion trigger** is cross-document sharing: an element stays inline until a second document references it; at that point it is promoted to a standalone file in `canon/elements/` and both documents reference it by ID ([`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1). Promotion is optional until it is forced by sharing — do not split elements into per-file form from day one.
 
@@ -178,7 +178,7 @@ actions:
   - id: ACTION-1
     name: "MVP development"
     type: Project
-    changes: [CHANGE-1]
+    delivers_changes: [CHANGE-1]
 ```
 
 **Projection form** (Full-tier post-promotion — `view_config` only, elements in `canon/elements/**`):
@@ -198,7 +198,7 @@ view_config:
   changes:
     surface: derived          # derive from change.goals inline links for the included goal set
   actions:
-    surface: derived          # derive from action.changes links for the included change set
+    surface: derived          # derive from action.delivers_changes links for the included change set
   layers:
     drivers: on               # on | off — toggle the Drivers column
     goals: on                 # on | off — Goals column (always on recommended)
@@ -209,7 +209,7 @@ view_config:
     collapsed: []             # no collapsed nodes
 ```
 
-The DGCA semantic graph — one Change can deliver many Goals, one Action deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `action.changes`) on either the inline element entries (inline form) or standalone element files (projection form). The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
+The DGCA semantic graph — one Change can deliver many Goals, one Action deliver many Changes — is expressed via the inline cross-reference fields (`goal.factors`, `change.goals`, `action.delivers_changes`) on either the inline element entries (inline form) or standalone element files (projection form). The view_config selects which goals to anchor on; the renderer traverses the inline links to derive the full displayed set.
 
 Examples:
 - Self-contained inline example (goal-scoped): [`examples/dgca/startup.dgca.transitrix.yaml`](../../examples/dgca/startup.dgca.transitrix.yaml)
@@ -280,7 +280,7 @@ Each entry in `actions[]` is an **Action** — a project-domain work item at wha
 | `id` | yes | `ACTION-[<middle>-]<INTEGER>` (deprecated alias: `ACTIVITY-[<middle>-]<INTEGER>`) |
 | `name` | yes | what the action is |
 | `type` | no | project-domain level: `Initiative` \| `Programme` \| `Project` \| `Task`. Deprecated alias: `work_package` = `Task`. Defaults to `Initiative` when omitted (backward compat). See §"Project domain elements" below. |
-| `changes` | no | array of `CHANGE-…` IDs this action delivers |
+| `delivers_changes` | no | array of `CHANGE-…` IDs this action delivers |
 | `goals` | no | array of `GOAL-…` IDs the action supports directly — used in DGA mode (`view_config.layers.changes: off`) or when the Change layer adds no information for that action |
 | `owner` | no | `ROLE-…` ID of the accountable role |
 | `status` | no | `Planned` / `In Progress` / `Done` |
@@ -337,7 +337,7 @@ view_config:
   changes:
     surface: derived     # derive CHANGE set from change.goals inline links for the included goals
   actions:
-    surface: derived     # derive ACTION set from action.changes links for the included changes
+    surface: derived     # derive ACTION set from action.delivers_changes links for the included changes
   layers:
     drivers: on          # show the Drivers column
     goals: on            # show the Goals column
@@ -355,7 +355,7 @@ view_config:
 view_config:
   actions:
     filter: ids          # include only the ACTIONs listed in actions.ids (anchor point)
-    ids: [ACTION-PLATFORM-1, ACTION-DATA-MIGATION-1]  # explicit action roots to project from
+    ids: [ACTION-PLATFORM-1, ACTION-DATA-MIGRATION-1]  # explicit action roots to project from
     tags: []             # when filter is "tags": include ACTIONs whose tags[] match any entry
   factors:
     surface: derived     # derive DRIVER set upward from goals, via goal.factors (same as goal-scoped)
@@ -393,9 +393,9 @@ view_config:
 | Key | Type | Default | Semantics |
 |---|---|---|---|
 | `factors.surface` | string | `derived` | `derived` — derive the DRIVER set by following `goal.factors` inline links on the included (or derived) goals. `all` — include every active DRIVER in canon. Same traversal direction in both modes (upward from goals). |
-| `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links (goal-scoped) or `action.changes` links (action-scoped). `all` — include every active CHANGE in canon. **Direction reverses by mode:** top-down in goal-scoped, bottom-up in action-scoped. |
+| `changes.surface` | string | `derived` | `derived` — derive the CHANGE set by following `change.goals` inline links (goal-scoped) or `action.delivers_changes` links (action-scoped). `all` — include every active CHANGE in canon. **Direction reverses by mode:** top-down in goal-scoped, bottom-up in action-scoped. |
 | `goals.surface` | string | *(derived)* | **Action-scoped only.** `derived` — derive the GOAL set by following `change.goals` inline links on the included (or derived) changes. `all` — include every active GOAL in canon. Only used when `actions.filter` is set. Not part of goal-scoped mode (goals are the anchor). |
-| `actions.surface` | string | `derived` | `derived` — derive the ACTION set by following `action.changes` links (goal-scoped) or include selected roots (action-scoped). `all` — include every active ACTION in canon. Deprecated alias: `activities.surface`. |
+| `actions.surface` | string | `derived` | `derived` — derive the ACTION set by following `action.delivers_changes` links (goal-scoped) or include selected roots (action-scoped). `all` — include every active ACTION in canon. Deprecated alias: `activities.surface`. |
 | `layers.drivers` | `on` \| `off` | `on` | Toggle the Drivers column in the rendered view. |
 | `layers.goals` | `on` \| `off` | `on` | Toggle the Goals column. Toggling off produces a degenerate view; `on` recommended. |
 | `layers.changes` | `on` \| `off` | `on` | Toggle the Changes column. `off` activates DGA mode: `changes[]` becomes optional, actions link directly to goals via `actions[].goals`. |
@@ -403,7 +403,7 @@ view_config:
 | `display.depth` | integer \| null | `null` | Maximum depth of the rendered D→G→C→A chain. `null` renders all levels. |
 | `display.collapsed` | list | `[]` | IDs of elements to render as collapsed (children hidden). |
 
-The `goal.factors`, `change.goals`, and `action.changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it selects the scope anchor (goals for top-down, or actions for bottom-up) and derives the rest by following these links in the appropriate direction.
+The `goal.factors`, `change.goals`, and `action.delivers_changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it selects the scope anchor (goals for top-down, or actions for bottom-up) and derives the rest by following these links in the appropriate direction.
 
 ---
 
@@ -420,7 +420,7 @@ The `goal.factors`, `change.goals`, and `action.changes` inline cross-reference 
 | `DGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
 | `DGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
 | `DGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
-| `DGCA-010` | error | `actions[].changes[]` (or deprecated `activities[].changes[]`) IDs must reference defined changes (when changes layer is on). |
+| `DGCA-010` | error | `actions[].delivers_changes[]` (or deprecated `activities[].changes[]`) IDs must reference defined changes (when changes layer is on). |
 | `DGCA-011` | error | `actions[].goals[]` (or deprecated `activities[].goals[]`) IDs must reference defined goals. |
 | `DGCA-012` | warning | a driver with no goal referencing it is orphan. |
 | `DGCA-013` | warning | a goal with no change (and no direct action) referencing it is orphan. |
@@ -455,7 +455,7 @@ The rules below apply when validating the **canonical element files** (`canon/el
 - View-config contract (selection / filter / grouping / display options): [`CONTRACT.md`](../../CONTRACT.md) §14 (VP-2)
 - Reconstruction invariant — `render(Elements + Relations, view_config)`: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §1.1
 - DRIVER, GOAL, CHANGE, ACTION element primitive schemas: [`ELEMENT_PRIMITIVES.md`](../../ELEMENT_PRIMITIVES.md) §7.1–§7.4
-- Timeless inline relations (`goal.factors`, `change.goals`, `action.changes`): [`elements/17-relations.md`](../../elements/17-relations.md) §6
+- Timeless inline relations (`goal.factors`, `change.goals`, `action.delivers_changes`): [`elements/17-relations.md`](../../elements/17-relations.md) §6
 - Goals tree notation: [`04-goals.md`](./04-goals.md)
 - Action schedule notation: [`07-action.md`](./07-action.md) — uses `delivers_changes:` to link into the DGCA chain
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)

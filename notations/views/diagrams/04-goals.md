@@ -221,7 +221,7 @@ The hierarchy depth is **not hardcoded** — it is configured in the `view_confi
 
 | Level | Name | Scope |
 |:---:|---|---|
-| **0** | Strategy | Single root — the organisation's overall vision |
+| **0** | Strategy | Single root — the top goal |
 | **1** | Strategic Intention | Broad areas of focus |
 | **2** | Strategic Goal | Measurable strategic milestones |
 | **3** | Business Goal | Department / unit level outcomes |
