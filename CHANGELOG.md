@@ -31,6 +31,7 @@ Bump category: **MINOR** — all changes are additive; the renamed rule codes ar
 ### Fixed
 
 - **`tools/lint.py` validates inline element field references** (`parent`, `goals`, `delivers_changes`, `predecessors`, `owner_role`): a missing target or a non-string ID is an error, same grain as relation `from`/`to`.
+- **`notations/views/diagrams/04-goals.md` — goal tree level 0 description clarified.** §7.1 table no longer describes level 0 as the organisation's vision (which moved to `ORGANIZATION` element type); level 0 is now described as the top goal.
 
 ---
 
