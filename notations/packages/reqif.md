@@ -286,7 +286,7 @@ This package is a requirements-*interchange* layer (§Scope): its objects are th
 
 **Landed (v0.1, 2026-07-28):** object model (§2), the one-way canon citation (§3), the package validator (§5), and the YAML↔ReqIF-XML converter (§6) — the base ReqIF-shaped layer.
 
-**Landed (2026-07-29):** workflow state, revision history, and suspect-link mechanics (§2.9) — the package's explicitly experimental surface. `REQIF-008`/`REQIF-009` (§5) and the `transition`/`revise`/`history`/`suspect` commands (§6). Not carried through the XML converter in v1 (§6). Worked example: [`notations/examples/packages/reqif-workflow/`](../../notations/examples/packages/reqif-workflow/).
+**Landed (2026-07-29):** workflow state, revision history, and suspect-link mechanics (§2.9) — the package's explicitly experimental surface. `REQIF-008`/`REQIF-009` (§5) and the `transition`/`revise`/`history`/`suspect` commands (§6). Not carried through the XML converter in v1 (§6).
 
 **Landed (2026-07-29):** removal procedure (§7) and experimental-status declaration (§8) — both required by [`PACKAGES.md`](../PACKAGES.md) §6 ("required, not implied"), demonstrated against the worked example that landed with the base layer above.
 

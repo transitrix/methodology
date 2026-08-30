@@ -1,9 +1,0 @@
-package: reqif
-kind: spec-hierarchy
-id: sh-root-1
-name: "Battery low-power shutdown requirements outline"
-children:
-  - object: so-battery-shutdown-req-1
-    children: []
-  - object: so-battery-shutdown-rationale-1
-    children: []

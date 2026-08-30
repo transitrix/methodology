@@ -1372,12 +1372,6 @@ rule_codes:
   REQIF-007:
     severity: error
     spec: notations/packages/reqif.md
-  REQIF-008:
-    severity: error
-    spec: notations/packages/reqif.md
-  REQIF-009:
-    severity: error
-    spec: notations/packages/reqif.md
   RIF-001:
     severity: error
     spec: notations/views/reports/24-rules-in-force.md

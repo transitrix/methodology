@@ -1,7 +1,0 @@
-package: reqif
-kind: spec-object
-id: so-battery-shutdown-rationale-1
-type: sot-rationale-note-workflow-1
-values:
-  ReqIF.Name: "Why a critical threshold, not zero"
-  ReqIF.Text: "Shutting down at zero leaves no headroom to flush state; the critical threshold is set high enough that a full graceful shutdown always completes before power loss."
