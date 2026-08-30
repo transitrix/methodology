@@ -397,13 +397,13 @@ The rules below apply when validating the **canonical element files** (`canon/el
 
 | Rule | Severity | Description |
 |---|---|---|
-| `FGCA-008` | error | GOAL element carries `factors: [DRIVER-…]` entry that does not resolve to an admitted DRIVER element in canon. |
-| `FGCA-009` | error | CHANGE element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. |
-| `FGCA-010` | error | ACTION element carries `delivers_changes: [CHANGE-…]` entry that does not resolve to an admitted CHANGE element in canon. |
-| `FGCA-011` | error | ACTION element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. |
-| `FGCA-012` | warning | DRIVER element is not referenced by any `GOAL.factors[]` across canon (unreferenced driver). Advisory; does not indicate an error. |
-| `FGCA-013` | warning | GOAL element is not referenced by any `CHANGE.goals[]` or `ACTION.goals[]` across canon (unreferenced goal). Advisory; does not indicate an error. |
-| `FGCA-014` | warning | CHANGE element is not referenced by any `ACTION.delivers_changes[]` across canon (unreferenced change). Advisory; does not indicate an error. |
+| `DGCA-REPO-008` | error | GOAL element carries `factors: [DRIVER-…]` entry that does not resolve to an admitted DRIVER element in canon. Accepted alias: `FGCA-008` (deprecated, removed at 5.0.0). |
+| `DGCA-REPO-009` | error | CHANGE element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. Accepted alias: `FGCA-009` (deprecated, removed at 5.0.0). |
+| `DGCA-REPO-010` | error | ACTION element carries `delivers_changes: [CHANGE-…]` entry that does not resolve to an admitted CHANGE element in canon. Accepted alias: `FGCA-010` (deprecated, removed at 5.0.0). |
+| `DGCA-REPO-011` | error | ACTION element carries `goals: [GOAL-…]` entry that does not resolve to an admitted GOAL element in canon. Accepted alias: `FGCA-011` (deprecated, removed at 5.0.0). |
+| `FGCA-012` | warning | Deprecated. DRIVER element is not referenced by any `GOAL.factors[]` across canon (unreferenced driver). This becomes a coverage observation; no successor code. Removed at 5.0.0. |
+| `FGCA-013` | warning | Deprecated. GOAL element is not referenced by any `CHANGE.goals[]` or `ACTION.goals[]` across canon (unreferenced goal). This becomes a coverage observation; no successor code. Removed at 5.0.0. |
+| `FGCA-014` | warning | Deprecated. CHANGE element is not referenced by any `ACTION.delivers_changes[]` across canon (unreferenced change). This becomes a coverage observation; no successor code. Removed at 5.0.0. |
 
 ---
 

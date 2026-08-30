@@ -6,6 +6,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [4.3.0] — 2026-08-30
+
+Bump category: **MINOR** — all changes are additive; the renamed rule codes are backward-compatible with aliases accepted through 4.x. No migration recipe: existing validators accept both the old codes and the new ones through 5.0.0.
+
+### Added
+
+- **`DGCA-REPO-008..011` — renamed repo-scope rules, formerly `FGCA-008..011`.** The codes print DGCA-REPO-008 (GOAL's missing DRIVER), DGCA-REPO-009 (CHANGE's missing GOAL), DGCA-REPO-010 (ACTION's missing CHANGE), DGCA-REPO-011 (ACTION's missing GOAL). Accepted aliases: `FGCA-008..011` resolve to the new codes through 5.0.0 (`notations/vocabulary.yaml`, `notations/views/diagrams/02-dgca.md` § Cross-element validation rules).
+
+### Deprecated
+
+- **`FGCA-008..011` — accepted aliases for `DGCA-REPO-008..011`, deprecated in favor of the renamed codes. Removal release: 5.0.0.** A tooling finding naming `FGCA-008` and the adopter's own validator accepting it read as the same finding; at 5.0.0 the old codes stop being recognized.
+- **`FGCA-012..014` — deprecated without replacement. Removal release: 5.0.0.** These three warnings (unreferenced driver, unreferenced goal, unreferenced change) are becoming a coverage observation rather than a per-element finding; the per-element codes are being retired. The observation lands under a separate code.
+
+---
+
 ## [Unreleased]
 
 ### Added

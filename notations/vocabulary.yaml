@@ -369,6 +369,32 @@ deprecated_relation_types:
     rule: ACTION-005
 
 # ---------------------------------------------------------------------------
+# Retired rule CODE names. A deprecated code carries `removed_in`, the release
+# that ends the deprecation window; a code that has a successor names it with
+# `replaced_by`. An entry carries `removed_in` on every code, since a deprecation
+# with no stated end is not a deprecation.
+# ---------------------------------------------------------------------------
+deprecated_rule_codes:
+  FGCA-008:
+    replaced_by: DGCA-REPO-008
+    removed_in: "5.0.0"
+  FGCA-009:
+    replaced_by: DGCA-REPO-009
+    removed_in: "5.0.0"
+  FGCA-010:
+    replaced_by: DGCA-REPO-010
+    removed_in: "5.0.0"
+  FGCA-011:
+    replaced_by: DGCA-REPO-011
+    removed_in: "5.0.0"
+  FGCA-012:
+    removed_in: "5.0.0"
+  FGCA-013:
+    removed_in: "5.0.0"
+  FGCA-014:
+    removed_in: "5.0.0"
+
+# ---------------------------------------------------------------------------
 # Closed value vocabularies. Keyed `<owner>.<field>` where `<owner>` is the
 # element TYPE, relation kind, or artefact that carries the field. A field whose
 # enum is explicitly open (e.g. BUSINESS_OBJECT.type, §7.15) is NOT listed here —
@@ -958,6 +984,18 @@ rule_codes:
   DGCA-018:
     severity: warning
     spec: notations/views/diagrams/02-dgca.md
+  DGCA-REPO-008:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-REPO-009:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-REPO-010:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  DGCA-REPO-011:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
   ELEM-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
@@ -988,18 +1026,6 @@ rule_codes:
   FRESHNESS-001:
     severity: warning
     spec: notations/CONTRACT.md
-  FGCA-008:
-    severity: error
-    spec: notations/views/diagrams/02-dgca.md
-  FGCA-009:
-    severity: error
-    spec: notations/views/diagrams/02-dgca.md
-  FGCA-010:
-    severity: error
-    spec: notations/views/diagrams/02-dgca.md
-  FGCA-011:
-    severity: error
-    spec: notations/views/diagrams/02-dgca.md
   FGCA-012:
     severity: warning
     spec: notations/views/diagrams/02-dgca.md
