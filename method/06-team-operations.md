@@ -124,7 +124,7 @@ Fields:
 - `id` — `FB-NNNN`, carried by the entry's `###` heading (not repeated as a YAML key inside the block). Four-digit zero-padded. **Default (single-writer):** monotonically increasing within the single `operations/feedback/feedback.md` journal file. **Multi-writer variant:** when multiple concurrent writers are in use, the partition scheme (per-author ranges or equivalent) MUST be specified in the adopter's local `operations/README.md`.
 - `type` — `notation-gap` | `tooling-friction` | `doc-gap` | `model-suggestion` (below).
 - `methodology_version` — **required**. A finding is always raised against a specific methodology version; record the one the repo's `transitrix.yaml` pins at the time.
-- `raised_by` — the role that raised it: `Ingest` | `Modeler` | `Analyst` | `Validator`, per `FINDINGS.md` §3.
+- `raised_by` — the adopter's own role that raised the finding. Any role the adopter's model admits is valid. The four shipped role guides (`Ingest`, `Modeler`, `Analyst`, `Validator`) are defaults and examples; an adopter with a richer role model uses their own role names.
 - `date` — ISO date the entry was written.
 - `status` — `open` | `triaged` | `resolved-locally` | `sent-upstream` | `answered` | `closed` | `wont-fix` (below).
 - `upstream` — `not-sent` | `sent <date>` | `answered <date>` (below).

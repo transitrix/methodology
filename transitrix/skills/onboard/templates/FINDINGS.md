@@ -36,7 +36,7 @@ No role auto-applies its own proposed fill. Raising a finding is never itself a 
 
 ```yaml
 type: data-error | model-suggestion | methodology-feedback
-raised_by: <role>              # Ingest | Modeler | Analyst | Validator
+raised_by: <role>              # the role that authored this finding — any role the adopter's model admits
 subject: <element/artefact ID or area, e.g. CAPABILITY-V2 or "GOAL relation kinds">
 confidence: structural | business-judgement
 observation: <what was seen, in plain language>
