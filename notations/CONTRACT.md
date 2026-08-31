@@ -290,6 +290,27 @@ example: true   # absent ⇒ real; only `true` is valid — ADMIT-010
 
 **Nothing real may reference an example.** An artefact without `example: true` MUST NOT cross-reference one that has it — `ADMIT-005` pointed at this axis, at **error** rather than warning: a `proposed` artefact is expected to be admitted, so a reference to one is premature, while an example never becomes real and a reference into the example set never resolves (`ADMIT-011`, cross-cutting — requires the full catalogue). An example MAY reference another example.
 
+### 6.5 Zone enumeration — every file is validated or reported
+
+The validator reports on zones as a whole, not only on the files it can parse. Every file under `canon/`, `field/`, and `codex/` (outside the special `sources/` subfolder in `codex/`, which holds cited copies) MUST be either:
+- **Validated:** A YAML artefact carrying a complete admission record (`zone`, `admitted_at`, `admitted_by`, `gate_checks`), or
+- **Reported as unvalidated:** A file in an unexpected format, carrying incomplete admission record, or falling outside the schema of any published notation.
+
+A file is a *finding* (error or warning) if it fails both criteria: an un-parseable file *with* an admission record (contradictory signal) is an error; a file with *no* admission record (neither validated nor reported) is an error in the canon and field zones, and a warning in the codex zone (where non-YAML external documents may legitimately exist).
+
+**The `sources/` exception.** The `codex/sources/` folder holds cited external documents (PDFs, HTML, archived web pages) that are faithful to their sources and are not edited. Files in `sources/` are never validation-checked and are not enumerated as zone artefacts — they are purely archival. A `sources/` file carrying an admission record is a configuration error (the two intentions are contradictory) and is reported as an `ADMIT-012` error.
+
+**What this ensures:** A repository with `0` validation warnings and `0` unenumerated files means its entire zone contents are in one of two states: validated against a published notation, or formally documented as outside the scope of validation. A consumer can trust that no file was silently skipped.
+
+**Validation rules:**
+
+| Rule | Severity | Description |
+|---|---|---|
+| `ZONE-001` | error | File in `<zone>/` (outside `sources/`) has no admission record and does not match any published notation schema. (Error in `canon` and `field` zones; warning in `codex` — see §6.5 prose.) |
+| `ZONE-002` | error | File in `<zone>/` is not valid YAML (syntax error, not a mapping). |
+| `ZONE-003` | error | File in `<zone>/` has an admission record but the file format (extension or structure) does not match any published notation that admits records. |
+| `ADMIT-012` | error | File in `codex/sources/` carries an admission record (`zone`, `admitted_at`, etc.). The `sources/` folder is archival; files there are not validated or admitted. |
+
 ---
 
 ## 7. Primitive lifecycle

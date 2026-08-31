@@ -1,0 +1,13 @@
+This is a plain text file, not YAML.
+
+{
+  "It might look like": "JSON or code",
+  "But it's actually": "not valid YAML"
+}
+
+This file should trigger **ZONE-002** (error) because:
+- It is in `codex/`
+- It is not valid YAML (syntax error)
+- It has no admission record
+
+The validator reports the YAML parse failure.

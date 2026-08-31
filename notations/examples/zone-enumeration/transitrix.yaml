@@ -1,0 +1,8 @@
+name: zone-enumeration-fixtures
+description: Fixtures demonstrating zone enumeration validation (CONTRACT §6.5)
+version: "1.0"
+manifests:
+  - zones:
+      - codex
+      - field
+      - canon

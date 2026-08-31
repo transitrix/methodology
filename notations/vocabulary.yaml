@@ -649,6 +649,9 @@ rule_codes:
   ADMIT-011:
     severity: error
     spec: notations/CONTRACT.md
+  ADMIT-012:
+    severity: error
+    spec: notations/CONTRACT.md
   AGREE-001:
     severity: error
     spec: notations/CONTRACT.md
@@ -1586,5 +1589,14 @@ rule_codes:
     severity: error
     spec: notations/CONTRACT.md
   VERSIONED-005:
+    severity: error
+    spec: notations/CONTRACT.md
+  ZONE-001:
+    severity: error
+    spec: notations/CONTRACT.md
+  ZONE-002:
+    severity: error
+    spec: notations/CONTRACT.md
+  ZONE-003:
     severity: error
     spec: notations/CONTRACT.md

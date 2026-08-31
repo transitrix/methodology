@@ -1,0 +1,24 @@
+notation: standard
+name: "Capability example"
+description: "A well-formed canon element with complete admission record"
+example: true
+zone: canon
+admitted_at: "2026-08-31"
+admitted_by: "automation"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-08-01"
+valid_to: null
+
+---
+
+## Capability
+
+id: CAPABILITY-EXAMPLE-001
+title: "Example capability"
+description: |
+  Sample canon element admitted to the canonical zone.
+  This demonstrates a valid, enumerated artefact in the canon zone.
+  Validated truth about the organisation.
