@@ -8,7 +8,7 @@ An adopter repository may use [PlantUML](https://plantuml.com) for supplementary
 
 **VS Code:** Transitrix Studio renders `.puml` files natively — no separate PlantUML extension needed. If you have followed [`GETTING_STARTED.md`](../GETTING_STARTED.md), Studio (`transitrix.transitrix-studio`) is already installed, bundling PlantUML `1.2026.6`. Open any `.puml` file and run **Transitrix: Preview PlantUML** from the Command Palette (`Ctrl+Shift+P` → `transitrixStudio.previewPuml`).
 
-**JetBrains (IntelliJ IDEA, PyCharm, …):** install "PlantUML Integration" by Eugene Steinberg from the JetBrains Marketplace (`com.github.eightpillow.plantuml`).
+**JetBrains (IntelliJ IDEA, PyCharm, …):** install "PlantUML Integration" by Eugene Steinberg from the JetBrains Marketplace (`com.github.eightpillow.plantuml`). PlantUML rendering is a Transitrix Studio capability for VS Code only; this is a deliberate design choice.
 
 **Recommended VS Code workspace extensions** are listed in the repo's `.vscode/extensions.json` — VS Code will prompt you to install them when you open the repo.
 
