@@ -6,7 +6,7 @@ An adopter repository may use [PlantUML](https://plantuml.com) for supplementary
 
 ## 1. Install the extension
 
-**VS Code:** Transitrix Studio renders `.puml` files natively — no separate PlantUML extension needed. If you have followed [`GETTING_STARTED.md`](../GETTING_STARTED.md), Studio (`transitrix.transitrix-studio`) is already installed. Open any `.puml` file and run **Transitrix: Preview PlantUML** from the Command Palette (`Ctrl+Shift+P` → `transitrixStudio.previewPuml`).
+**VS Code:** Transitrix Studio renders `.puml` files natively — no separate PlantUML extension needed. If you have followed [`GETTING_STARTED.md`](../GETTING_STARTED.md), Studio (`transitrix.transitrix-studio`) is already installed, bundling PlantUML `1.2026.6`. Open any `.puml` file and run **Transitrix: Preview PlantUML** from the Command Palette (`Ctrl+Shift+P` → `transitrixStudio.previewPuml`).
 
 **JetBrains (IntelliJ IDEA, PyCharm, …):** install "PlantUML Integration" by Eugene Steinberg from the JetBrains Marketplace (`com.github.eightpillow.plantuml`).
 
@@ -44,7 +44,7 @@ The theme file (`diagrams/transitrix-theme.puml`) does two things:
 
 1. Download the pinned JAR:
    ```
-   https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-1.2024.8.jar
+   https://github.com/plantuml/plantuml/releases/download/v1.2026.6/plantuml-1.2026.6.jar
    ```
    Save it to `.plantuml/plantuml.jar` (gitignored; each contributor downloads once).
 
