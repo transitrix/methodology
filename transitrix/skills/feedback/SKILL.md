@@ -9,8 +9,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 # Transitrix Feedback Skill
 
 Turns "the methodology can't express X" (or "the tooling made Y harder than it should
-be") into a scrubbed, committed entry in the repo's own
-[`operations/feedback.md`](../../../method/06-team-operations.md) register — without
+be") into a scrubbed, committed entry in the repo's own `operations/feedback/feedback.md`
+register (or the legacy single-file `operations/feedback.md` if that's what the repo carries) — without
 the user hand-writing the front-matter-free block, allocating the `FB-NNNN` id, or
 remembering the anonymisation discipline themselves. This is the **entry point** to
 the upstream feedback channel
@@ -54,32 +54,38 @@ This `SKILL.md` does not restate the mechanism — it sequences it.
 
 ---
 
-## Step 0 — Locate (or scaffold) `operations/feedback.md`
+## Step 0 — Locate (or scaffold) `operations/feedback/feedback.md`
 
-- **Already scaffolded** — most repos onboarded at methodology ≥ 2.1.0 already have
-  `operations/feedback.md` (the `onboard` skill writes it unconditionally, empty,
-  alongside the other root files). Use it as-is.
-- **Missing** — a repo onboarded before the Feedback Record convention shipped, or one
-  that hand-rolled its `operations/` folder, may not have it yet. Scaffold it now,
-  at exactly this path, with exactly this shape (matching what `onboard` would have
-  written, so the file is identical regardless of which path created it):
+The register is a directory with a journal file and optional attachment subfolders (`method/06-team-operations.md` §3.2).
 
-  ```markdown
-  # Feedback register
+**Detect which layout the repo carries:**
 
-  Methodology-directed findings raised from this repo — see
-  [`method/06-team-operations.md`](https://github.com/transitrix/methodology/blob/main/method/06-team-operations.md)
-  §3.2. Sending an entry on to the project is opt-in and manual — see this repo's
-  `CONTRIBUTING.md` (or `hello@transitrix.com` directly).
+1. **New layout (v4.3.0+)** — `operations/feedback/` directory with `operations/feedback/feedback.md` inside:
+   - Use it as-is. The journal carries all entries; attachment folders live at `operations/feedback/YYYYMMDD/` (one dated folder per attached finding).
+2. **Old layout (pre-v4.3.0)** — single file at `operations/feedback.md`:
+   - The file is still valid and must be preserved. If this is the only register, continue using it; the old layout is still supported.
+   - **Never migrate automatically**. If the repo has the old layout and you are asked to author an entry, check whether someone is simultaneously trying to create the new layout — if both exist or are being created at once, it's an error (see "Migration hazard" below).
+3. **Missing both** — a repo onboarded before the Feedback Record convention shipped, or one that hand-rolled its `operations/` folder, may not have either yet. Scaffold the **new layout** now:
+   - Create `operations/feedback/` directory (if it does not exist).
+   - Write `operations/feedback/feedback.md` with exactly this shape:
 
-  ## Register
-  ```
+     ```markdown
+     # Feedback register
 
-  No entries yet — the first `FB-0001` is added the first time a finding is actually
-  raised (Step 4), not at scaffold time.
-- **Never** create a second, parallel file (`FEEDBACK.md`, `docs/feedback.md`,
-  a per-entry folder) — `operations/feedback.md` is the single, canonical location
-  (`method/06-team-operations.md` §3.2: "not one-file-per-record like ADR/WI").
+     Methodology-directed findings raised from this repo — see
+     [`method/06-team-operations.md`](https://github.com/transitrix/methodology/blob/main/method/06-team-operations.md)
+     §3.2. Sending an entry on to the project is opt-in and manual — see this repo's
+     `CONTRIBUTING.md` (or `hello@transitrix.com` directly).
+
+     ## Register
+     ```
+
+     No entries yet — the first `FB-0001` is added the first time a finding is actually
+     raised (Step 4), not at scaffold time.
+
+**Migration hazard — refuse if both exist:**
+- If `operations/feedback.md` (old) and `operations/feedback/feedback.md` (new) both exist, this is a migration conflict. Do **not** write to either; report the issue and ask the user to resolve it (choose one layout, delete the other).
+- **Never** create a second parallel file (`FEEDBACK.md`, `docs/feedback.md`, `operations/feedback.md` when the new layout exists) — the register is either a single file or a directory containing one journal file, never both (`method/06-team-operations.md` §3.2: "not one-file-per-record like ADR/WI").
 
 ---
 
@@ -161,7 +167,11 @@ element"* — which passes.
 
 ## Step 4 — Allocate `FB-NNNN`, write the entry
 
-1. Read `operations/feedback.md`; find every `FB-NNNN` already present (checklist
+**Determine the journal location** (Step 0 has detected which layout):
+- **New layout**: `operations/feedback/feedback.md`
+- **Old layout**: `operations/feedback.md`
+
+1. Read the journal file from whichever location exists; find every `FB-NNNN` already present (checklist
    lines and/or `###` headings) and take the highest `NNNN`. The next id is that
    value + 1, zero-padded to four digits — `FB-0001` if the register is still empty.
 2. Append **one checklist line** at the bottom of the `## Register` section:
@@ -201,19 +211,20 @@ element"* — which passes.
 Triggered by "update FB-0002 to triaged", "mark FB-0001 sent-upstream", "FB-0004 got
 an answer", or similar, instead of a fresh observation:
 
-1. Locate the `### FB-NNNN` block and its matching checklist line.
-2. Update `status:` to the new value (`open` → `triaged` → `resolved-locally` /
+1. **Detect the journal location** (Step 0, same as Step 4): new layout at `operations/feedback/feedback.md` or old layout at `operations/feedback.md`.
+2. Locate the `### FB-NNNN` block and its matching checklist line in the journal.
+3. Update `status:` to the new value (`open` → `triaged` → `resolved-locally` /
    `sent-upstream` → `answered` → `closed` / `wont-fix`, per `method/06-team-operations.md` §3.2 — these
    are not required to be strictly linear; `triaged` may resolve straight to
    `resolved-locally` or `wont-fix` without ever going upstream).
-3. If the status change is about actually sending the entry, also update `upstream:`
+4. If the status change is about actually sending the entry, also update `upstream:`
    to `sent <date>` (or `answered <date>` once a reply arrives) — a distinct field
    from `status`, per `method/06-team-operations.md` §3.2. This skill never sets `upstream:` on its own;
    only when the user reports they actually sent (or received a reply to) the entry.
-4. Update the checklist line's trailing status text to match, and flip its checkbox
+5. Update the checklist line's trailing status text to match, and flip its checkbox
    to `[x]` only when the new `status` is `closed` or `wont-fix` — every other status
    keeps the checkbox open.
-5. Never edit `observation`, `proposed`, `type`, `methodology_version`, or the id
+6. Never edit `observation`, `proposed`, `type`, `methodology_version`, or the id
    itself on a status-update invocation — those are fixed at authoring time; only
    `status` and `upstream` (and the checklist line's mirrored text) change later.
 
@@ -223,12 +234,10 @@ an answer", or similar, instead of a fresh observation:
 
 1. Branch: `feedback/FB-NNNN` (or `feedback/update-FB-NNNN` for a Step 5 status-only
    change).
-2. Commit only the `operations/feedback.md` change (and, on Step 0's first-ever
-   scaffold, that addition, called out explicitly rather than buried silently in the
-   same diff).
+2. Commit only the journal file change — either `operations/feedback.md` (old layout) or `operations/feedback/feedback.md` (new layout) — depending on which Step 0 detected. On Step 0's first-ever scaffold of the **new layout**, the commit includes directory creation + journal write, called out explicitly rather than buried silently in the same diff.
 3. Open a PR. **Never merge it** — same discipline as every other skill in this
    plugin; a human accepts the change to their own repo's operations state.
-4. `operations/feedback.md` carries no CI gate (`method/06-team-operations.md` §4–§5: outside the ID
+4. The journal file carries no CI gate (`method/06-team-operations.md` §4–§5: outside the ID
    grammar, outside `scripts/check-notations.mjs`) — there is no validator script to
    run before committing, unlike the `adr` skill's `check-adl.mjs` step. Correctness
    here rests entirely on Steps 3–4 of this skill.
@@ -266,8 +275,12 @@ never as part of Steps 4–6):
   warning the user can override (Step 3).
 - Does **not** send, transmit, or push an entry anywhere on its own, at any step —
   export (Step 7) only renders text; the human sends it, if they choose to at all.
-- Does **not** invent a second feedback location — `operations/feedback.md` is the
-  only place, per `method/06-team-operations.md` §3.2.
+- Does **not** invent a second feedback location — the journal is either a single file
+  (`operations/feedback.md`) or a directory-based journal (`operations/feedback/feedback.md`),
+  never both, per `method/06-team-operations.md` §3.2. If both layouts exist (migration conflict),
+  Step 0 refuses and asks the user to resolve it.
+- Does **not** automatically migrate between layouts — Step 0 detects which exists
+  and uses it; migration must be manual (a git mv command in the user's workflow).
 - Does **not** renumber or reuse an `FB-NNNN` id, and does not edit an entry's
   `observation`/`proposed`/`type`/`methodology_version` after authoring — only
   `status`/`upstream` change on a later invocation (Step 5).
