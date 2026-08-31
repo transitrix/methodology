@@ -45,7 +45,7 @@ notation: compliance-impact
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 view:
   # ... see §3
 ```
@@ -104,7 +104,7 @@ notation: compliance-impact
 spec_version: "0.1"
 name: "Retail product — GDPR obligations"   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                  # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 
 view:
   id: COMPLIANCE_IMPACT-RETAIL-GDPR-1
@@ -191,7 +191,7 @@ notation: compliance-impact
 spec_version: "0.1"
 name: "Full compliance matrix"          # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 view:
   id: COMPLIANCE_IMPACT-ALL-1
   name: "Full compliance matrix"

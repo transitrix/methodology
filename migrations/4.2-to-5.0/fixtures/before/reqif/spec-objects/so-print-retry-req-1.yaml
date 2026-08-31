@@ -1,0 +1,13 @@
+package: reqif
+kind: spec-object
+id: so-print-retry-req-1
+type: sot-requirement-basic-1
+workflow_state: "reviewed"          # Foreign state, round-tripped as-is; not a managed transition
+revision: 2
+revisions:
+  - revision: 1
+    values: { "ReqIF.Text": "previous wording" }
+    recorded_at: "2026-07-28T21:45:04Z"
+values:
+  ReqIF.Name: "Print-queue retry on transient failure"
+  ReqIF.Text: "The system shall retry a failed print job up to 3 times before flagging it for manual review."
