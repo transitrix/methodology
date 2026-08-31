@@ -126,9 +126,10 @@ Extract, conversationally, in this order:
    made this harder than it should be" (`tooling-friction`), "the docs didn't say" or
    said something wrong (`doc-gap`), "this works but could be guided better"
    (`model-suggestion`).
-4. **`raised_by`** — the role that raised it: `Ingest` | `Modeler` | `Analyst` |
-   `Validator` (if this skill is being invoked as the tail end of `FINDINGS.md`'s
-   protocol from one of those roles), or ask the user directly if invoked standalone.
+4. **`raised_by`** — the adopter's own role that raised the finding. Any role the
+   adopter's model admits is valid. If this skill is invoked as the tail end of
+   `FINDINGS.md`'s protocol from one of the four shipped guides (`Ingest`, `Modeler`,
+   `Analyst`, `Validator`), use that role name; if invoked standalone, ask the user directly.
 5. **`proposed`** (optional) — what the team believes the fix would be.
 
 State your understanding back before composing the entry — the scrub gate in Step 3
