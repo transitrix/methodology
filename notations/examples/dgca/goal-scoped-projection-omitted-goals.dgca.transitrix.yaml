@@ -1,0 +1,57 @@
+notation: dgca
+spec_version: "0.1"
+methodology_version: "4.2.0"
+id: DGCA-PROJECTION-OMIT-1
+name: "Goal-scoped projection with omitted goals"
+description: >-
+  A goal-scoped projection that includes one goal but not another, both served
+  by the same action. The diagram renders only the in-scope goal path; the
+  out-of-scope goal is omitted (not missing). A derived caption explains the
+  scope.
+
+factors:
+  - id: DRIVER-MARKET-1
+    name: "Growing market demand"
+    type: external
+
+goals:
+  - id: GOAL-PRODUCT-1
+    name: "Launch product to market"
+    factors: [DRIVER-MARKET-1]
+  - id: GOAL-OPERATIONS-1
+    name: "Improve operational efficiency"
+    factors: []
+
+changes:
+  - id: CHANGE-LAUNCH-1
+    name: "Deliver minimum viable product"
+    goals: [GOAL-PRODUCT-1]
+  - id: CHANGE-PROCESS-1
+    name: "Streamline fulfillment workflow"
+    goals: [GOAL-OPERATIONS-1]
+
+actions:
+  - id: ACTION-MVP-1
+    name: "MVP engineering project"
+    type: Project
+    delivers_changes: [CHANGE-LAUNCH-1, CHANGE-PROCESS-1]
+    goals: [GOAL-PRODUCT-1, GOAL-OPERATIONS-1]
+
+view_config:
+  goals:
+    filter: ids
+    ids: [GOAL-PRODUCT-1]
+  factors:
+    surface: derived
+  changes:
+    surface: derived
+  actions:
+    surface: derived
+  layers:
+    drivers: on
+    goals: on
+    changes: on
+    actions: on
+  display:
+    depth: null
+    collapsed: []

@@ -405,6 +405,31 @@ view_config:
 
 The `goal.factors`, `change.goals`, and `action.delivers_changes` inline cross-reference fields are timeless inline relations on the element files — they are not view configuration. The view_config does not re-define or override these links; it selects the scope anchor (goals for top-down, or actions for bottom-up) and derives the rest by following these links in the appropriate direction.
 
+### Goal-scoped projections and reachability
+
+**Goal-scoped projections are not required to close under action→goal references.** A projection with `goals.filter: ids` or `goals.filter: tags` includes an action because it serves **at least one** selected goal. Other goals on that action stay in the catalogue and are **omitted from this picture**. That is the scope working, not a broken link. Do not require the selected goal set to be closed under those references. A connected model cannot close: multi-goal actions join the tree, so every subset pulls the rest.
+
+The same reading applies to DGCA-008 / DGCA-009 in projection form: a driver or change neighbour outside the selected set is omitted, not an error.
+
+### Why weren't all goals shown for this action?
+
+When a goal-scoped projection is rendered and an included action has goals outside the selected set, a derived caption appears above the diagram:
+
+> This diagram is shown for the selected goal scope. Actions on it may also serve goals outside that scope.
+
+This caption is **not authored text** — it is computed render output, the same class as layout. The condition that triggers it:
+- Goal-scoped mode, filter is not `all`
+- At least one included action (or change) has a goal outside the selected set
+
+If the selected goal set happens to be closed, the caption is omitted (no empty stamp).
+
+**An agent given only this specification can answer the question without inventing a second reading:**
+- Because this view is a projection scoped to a subset of goals, not a picture of the action.
+- The action's full `goals[]` lives on its element file. Goals outside the filter are omitted so the picture stays the scope the author asked for. They are not missing from the model.
+- The caption under the diagram says the same thing when it applies.
+- To see every goal the action serves: open the action, or a view whose filter includes those goals, or `goals.filter: all`, or an action-scoped view of that subtree (`actions.filter`).
+- Do not widen the goal filter to "fix" the omitted goals — that is how a connected model forces the view to become the whole chain.
+
 ---
 
 ## Validation rules
@@ -418,10 +443,10 @@ The `goal.factors`, `change.goals`, and `action.delivers_changes` inline cross-r
 | `DGCA-005` | error | every entry in the arrays must have a non-empty `id` and `name`. |
 | `DGCA-006` | error | IDs unique within their layer (and SHOULD be unique across all layers within a document). |
 | `DGCA-007` | error | every ID matches the canonical grammar `<TYPE>-[<middle>-]<INTEGER>` with the right type prefix for its layer. |
-| `DGCA-008` | error | `goals[].factors[]` IDs must reference defined drivers. |
-| `DGCA-009` | error | `changes[].goals[]` IDs must reference defined goals. |
+| `DGCA-008` | error | In **inline form**: `goals[].factors[]` IDs must reference defined (present in this document's arrays) drivers. In **projection form**: `goals[].factors[]` IDs must reference admitted DRIVER elements in canon. See [DGCA-REPO-008](#cross-element-validation-rules-repo-scope). |
+| `DGCA-009` | error | In **inline form**: `changes[].goals[]` IDs must reference defined (present in this document's arrays) goals. In **projection form**: `changes[].goals[]` IDs must reference admitted GOAL elements in canon. See [DGCA-REPO-009](#cross-element-validation-rules-repo-scope). |
 | `DGCA-010` | error | `actions[].delivers_changes[]` (or deprecated `activities[].changes[]`) IDs must reference defined changes (when changes layer is on). |
-| `DGCA-011` | error | `actions[].goals[]` (or deprecated `activities[].goals[]`) IDs must reference defined goals. |
+| `DGCA-011` | error | In **inline form**: `actions[].goals[]` IDs must reference defined (present in this document's arrays) goals. In **projection form**: `actions[].goals[]` IDs must reference admitted GOAL elements in canon. See [DGCA-REPO-011](#cross-element-validation-rules-repo-scope). |
 | `DGCA-012` | warning | a driver with no goal referencing it is orphan. |
 | `DGCA-013` | warning | a goal with no change (and no direct action) referencing it is orphan. |
 | `DGCA-014` | warning | a change with no action referencing it is orphan. |
