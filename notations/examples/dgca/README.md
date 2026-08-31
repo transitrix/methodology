@@ -98,3 +98,4 @@ author: "Your Name"
 | `action-scoped-delivery-2026.dgca.transitrix.yaml` | Projection (Full), action-scoped | Bottom-up from `ACTION-3` and `ACTION-4`; drivers, goals, and changes are derived upward. |
 | `constraint-driven.dgca.transitrix.yaml` | Projection (Full) | Full-tier example — constraint-driven chain, GDPR data-residency scenario; elements in `elements/`. |
 | `strategy-2026-dga.dgca.transitrix.yaml` | Projection (Full) | Full-tier DGA mode example — Changes layer off; elements in `elements/`. |
+| `goal-scoped-projection-omitted-goals.dgca.transitrix.yaml` | Inline | Goal-scoped projection: one action serves two goals, but the view filters to one goal. The omitted goal is not missing — the diagram shows the selected scope. Demonstrates the derived caption explaining scope boundaries. |
