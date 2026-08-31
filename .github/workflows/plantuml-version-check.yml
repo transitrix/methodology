@@ -1,0 +1,34 @@
+name: PlantUML version check
+
+# Ensures that the PlantUML version pinned in integration/plantuml.md matches
+# the version locked in transitrix/transitrix-studio's package-lock.json.
+#
+# The adopter guide must stay in sync with Studio's bundled engine to ensure
+# reproducible rendering across VS Code / JetBrains / CI.
+#
+# CI is red on drift — the check exits non-zero and the job fails.
+
+on:
+  pull_request:
+    paths:
+      - 'integration/plantuml.md'
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:10 UTC — weekly safety net for drift introduced via
+    # direct-commit changes to main that bypass PR review.
+    - cron: '10 9 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check PlantUML version consistency
+        run: node scripts/check-plantuml-version.mjs
