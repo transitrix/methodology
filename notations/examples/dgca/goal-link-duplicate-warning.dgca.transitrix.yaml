@@ -1,6 +1,6 @@
 notation: dgca
 spec_version: "0.1"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 
 id: DGCA-DUPLICATE-GOAL-LINK-1
 name: "Goal link duplication — DGCA-021 demonstration"

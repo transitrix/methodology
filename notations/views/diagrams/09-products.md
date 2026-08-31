@@ -59,7 +59,7 @@ The reconstruction invariant applies: `render(Elements, view_config)` → Produc
 ```yaml
 notation: products
 spec_version: "0.2"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 id: PROD-ENTERPRISE-1
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
@@ -72,7 +72,7 @@ products_catalogue:
 ```yaml
 notation: products
 spec_version: "0.2"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 id: PROD-RETAIL-1
 name: "Retail product portfolio"
 description: "All products and services offered in the retail channel"
@@ -234,7 +234,7 @@ A Products Catalogue document in projection form carries only the `view_config` 
 ```yaml
 notation: products
 spec_version: "0.2"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 id: PROD-DIGITAL-1
 name: "Digital Products & Services"
 description: "All digital-channel offerings sorted by maturity"

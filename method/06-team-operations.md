@@ -110,7 +110,7 @@ Deliberately **not** one-file-per-record like ADR/WI: the journal is a single fi
 ---
 ### FB-0002
 type: notation-gap
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 raised_by: modeler
 date: "2026-07-27"
 status: sent-upstream

@@ -1,8 +1,8 @@
 ---
 notation: "DGCA Strategy-to-Execution Chain"
-version: "1.7"
+version: "1.8"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-25"
+last_updated: "2026-08-31"
 status: "documented"
 file_extension: "*.dgca.transitrix.yaml"
 dsm_status: "implemented — D, G, C, A layers active; column selection via localStorage"
@@ -154,7 +154,7 @@ A DGCA document opens with a shared header block (`notation:`, `spec_version:`, 
 ```yaml
 notation: dgca
 spec_version: "0.1"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 id: DGCA-LAUNCH-1
 name: "Product launch strategy chain"
 period: "2026"
@@ -188,7 +188,7 @@ notation: dgca
 spec_version: "0.1"
 id: DGCA-RETAIL-1
 name: "Retail strategy chain 2026"
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 
 view_config:
   goals:

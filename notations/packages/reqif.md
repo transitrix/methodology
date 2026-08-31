@@ -1,8 +1,8 @@
 ---
 title: "ReqIF-shaped requirements interchange — domain package"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-04"
+last_updated: "2026-08-31"
 status: "draft"
 ---
 
@@ -21,7 +21,7 @@ This is a package, not a core notation: nothing here changes `IDS_AND_REFERENCES
 
 ```yaml
 transitrix: 1
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 packages: [reqif]
 ```
 

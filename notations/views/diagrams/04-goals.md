@@ -1,8 +1,8 @@
 ---
 notation: "Goals Tree"
-version: "1.1"
+version: "1.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-07-15"
+last_updated: "2026-08-31"
 status: "documented"
 file_extension: "*.goals.transitrix.yaml"
 dsm_status: "implemented — Goals & Activities section, Visual Editor (G)"
@@ -117,7 +117,7 @@ After goals are promoted to `canon/elements/01_motivation/goals/`, the view beco
 ```yaml
 notation: goals
 spec_version: "0.1"
-methodology_version: "4.2.0"          # required from v2.0 onward
+methodology_version: "5.0.0"          # required from v2.0 onward
 
 id: GOALS-STRAT-2026-1                 # required — GOALS-[<middle>-]<INTEGER>
 name: "Strategy 2026 — Goals Tree"    # required per CONTRACT.md §1.1

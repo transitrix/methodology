@@ -45,7 +45,7 @@ notation: mrd
 spec_version: "0.1"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 view:
   # ... see §3
 ```
@@ -99,7 +99,7 @@ notation: mrd
 spec_version: "0.1"
 name: "Incident status communication — MRD"   # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"                    # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 
 view:
   id: MRD-INCIDENT-STATUS-1
@@ -168,7 +168,7 @@ notation: mrd
 spec_version: "0.1"
 name: "Full MRD — all needs"           # required per CONTRACT.md §1.1
 generated_at: "2026-08-04"             # optional per CONTRACT.md §4
-methodology_version: "4.2.0"
+methodology_version: "5.0.0"
 view:
   id: MRD-ALL-1
   name: "Full MRD — all needs"
