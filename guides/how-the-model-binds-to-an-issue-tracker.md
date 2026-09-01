@@ -108,6 +108,47 @@ need makes it worth an administrator's time.**
   tagged item is a decision nobody has started. Both blind spots are the same query, run from
   opposite ends.
 
+## When the ticket carries a requirement
+
+Teams often write requirements and acceptance criteria straight into tickets, because that is
+where the work is. The same two pointers bind those too — the element type changes, the mechanism
+does not.
+
+```
+Requirement: REQUIREMENT-RETENTION-PERIOD-1
+```
+
+Use it on the ticket that **states** the obligation, and on the ticket that **implements** it. One
+tag per element referenced; a ticket serving two requirements carries two lines.
+
+**The rule that makes this worth doing: the requirement's text lives in the model, never in the
+ticket.** A ticket is a delivery record — it is closed, archived, and eventually migrated out of
+the instance that held it. An obligation outlives all three. If the only full statement of a
+requirement is inside a closed ticket, you do not have traceability; you have an archive you are
+hoping to be able to search.
+
+So the ticket carries a tag and a working summary. The catalogued `REQUIREMENT` carries the
+obligation, its source through `derived_from`, and the need it serves through `serves`
+([`elements/15-requirement.md`](../notations/elements/15-requirement.md)).
+
+**Acceptance criteria are evidence, and the model has a place for them.** Where a ticket's
+acceptance criteria are the check that an obligation is met, that check is a `VERIFICATION` against
+the requirement — method, result, pass or fail
+([`elements/27-verification.md`](../notations/elements/27-verification.md)) — and a claim that a
+product or process satisfies the requirement is an `ASSERTION`
+([`elements/16-assertion.md`](../notations/elements/16-assertion.md)). The ticket is where the work
+of checking happened; the outcome belongs where it can still be read in two years.
+
+What the binding then gives you is the chain end to end, none of it dependent on the tracker
+surviving: **need → requirement → what realises it → what verified it → which release it was
+required for.** Ask it from either end. From a regulation, which deliveries answer to it. From a
+ticket, what it is obliged to satisfy.
+
+> **Do not model the requirement in the tracker.** Trackers have no notion of an obligation that
+> outlives its ticket, no place for a source citation that survives a re-organisation of projects,
+> and no way to express that one requirement is realised by four things and verified by a fifth.
+> The tag is the whole of what the tracker needs to know.
+
 ## Choosing where to stop
 
 Model down to the scale at which you make decisions and defend budget; let the tracker own
