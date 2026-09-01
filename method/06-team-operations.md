@@ -232,7 +232,7 @@ Feedback carries no separate per-record template — it is one growing file (opt
 
 To keep the layer minimal and prevent it from drifting into a parallel process system:
 
-- **Not a ticket tracker.** Work Items are short, current, and few. A team that needs grooming, sprints, burn-down, and prioritisation has outgrown this convention and should use its existing tracker.
+- **Not a ticket tracker.** Work Items are short, current, and few. A team that needs grooming, sprints, burn-down, and prioritisation has outgrown this convention and should use its existing tracker — and should bind it to the model rather than run it alongside: [`guides/how-the-model-binds-to-an-issue-tracker.md`](../guides/how-the-model-binds-to-an-issue-tracker.md).
 - **Not a forum.** Long discussions belong in the PR that proposes the ADR, not in the ADR body.
 - **Not a versioned spec.** ADRs are decisions, not contracts; they do not carry `valid_from`/`valid_to` and they are not admitted to canon.
 - **Not a Transitrix Studio-rendered notation.** Operations files are plain Markdown — no rendering pipeline, no notation header, no extension convention. (The §3.3 config/state area is the one place `operations/` holds structured data rather than Markdown — but it is still un-rendered and un-linted.)

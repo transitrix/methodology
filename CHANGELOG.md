@@ -6,6 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`guides/how-the-model-binds-to-an-issue-tracker.md` — how an adopter joins the model to the tracker their delivery teams already use.** States the property that makes the binding portable: the work hierarchy stays in the model, where `ACTION` is recursive across `Initiative` / `Programme` / `Project` / `Task` via `parent`, so the tracker is asked to carry at most one level of it and never the shape. Two pointers, one in each direction — `ACTION.link` from the element to the work item, and an `Action: ACTION-…` tag from the work item back to the element. For the tag the guide gives two options with their costs stated: a line in the issue description, which needs no administrator and is identical in every tracker, or a dedicated custom field, which buys reliable querying at the price of an administrator, an instance-wide namespace, and portability. Both carry the same value under the same name, so moving between them is a change of location rather than of meaning. Includes where to stop modelling — `Project` for most adoptions, `Task` where traceability requires it — and notes that a tracker's own hierarchy above its epic level is often a paid tier, which an adoption following this guide does not need. Linked from `method/06-team-operations.md` §"Not a ticket tracker", which previously said to keep your existing tracker without saying how to connect it.
+
+---
+
 ## [5.0.0] — 2026-08-31
 
 Bump category: **MAJOR** — two breaking changes ride in this release: the ReqIF package's lifecycle commands/rules are removed, and the `FGCA-008..014` rule codes (deprecated in favor of `DGCA-REPO-008..011`) are retired. Every additive change accumulated since 4.2.0 rides along. Migration recipe: [`migrations/4.2-to-5.0/`](migrations/4.2-to-5.0/).
