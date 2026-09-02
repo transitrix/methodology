@@ -62,6 +62,8 @@ OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extens
 | `source:` | Transitrix extension | Repo path or URI of the originating document (provenance) |
 | `created_at:` | Transitrix extension | Date the object was curated (distinct from `timestamp:` which tracks modifications) |
 | `confidence:` | Transitrix extension | Curator's epistemic assessment: `observed` / `inferred` / `assumed` |
+| `supersedes:` | optional | Transitrix extension | ID or bundle-relative path of the knowledge object this one supersedes (re-curation; the old object is retained for history). Absent by default. |
+| `superseded_by:` | optional | Transitrix extension | ID or bundle-relative path of a newer knowledge object that supersedes this one. Absent by default. |
 
 OKF consumers must not reject bundles for unknown fields — Transitrix extensions are fully compatible.
 
