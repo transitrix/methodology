@@ -302,6 +302,77 @@ Auto-updated when knowledge objects are added or modified. Each entry: title, ty
 |---|---|---|---|
 ```
 
+## Worked Example — Supersession
+
+A curator encounters an insight in the knowledge store that was curated in 2025 but has been superseded by new information from a more recent source. Rather than editing the original in place, the curator creates a new knowledge object with the updated curation and links both via supersession fields.
+
+**Original object** (`knowledge/multi-tenant-isolation.md`, created 2025-03-15):
+```yaml
+---
+type: concept
+title: Multi-tenant isolation
+description: A security boundary between customer datasets; enforced at the row level via application logic.
+confidence: inferred
+source: /intake/processed/2025-03-15-architecture-audit.md
+mapping: confirms
+created_at: 2025-03-15
+timestamp: 2025-03-15T10:30:00Z
+tags: [security, multi-tenancy]
+---
+
+# Multi-tenant isolation
+
+In a multi-tenant SaaS application, isolation is typically enforced at the row level through application logic. Each query to the database includes a WHERE clause scoped to the current tenant's ID. This pattern is database-agnostic and works across relational, NoSQL, and search engines.
+
+## Risk considerations
+
+Isolation failures at the application layer are difficult to detect — a bug in one query does not fail all queries. Comprehensive query auditing is essential.
+```
+
+**Revised object** (`knowledge/multi-tenant-isolation-v2.md`, created 2026-09-02):
+```yaml
+---
+type: concept
+title: Multi-tenant isolation (updated 2026)
+description: A security boundary between customer datasets; enforced via a combination of row-level application logic, database-level schema separation, and cryptographic key isolation depending on trust tier.
+confidence: observed
+source: /intake/processed/2026-09-02-multi-tenancy-security-audit.md
+mapping: extends
+created_at: 2026-09-02
+supersedes: /knowledge/multi-tenant-isolation.md
+timestamp: 2026-09-02T14:22:00Z
+tags: [security, multi-tenancy, updated]
+---
+
+# Multi-tenant isolation (2026 update)
+
+Multi-tenant isolation has evolved beyond row-level application logic alone. Organizations now employ layered strategies:
+
+1. **Row-level filtering** — application logic (established 2025; remains the baseline)
+2. **Schema-level separation** — separate database schemas per tier (added 2025-Q4; used for high-trust customers)
+3. **Cryptographic isolation** — customer-held keys over encrypted blobs (new in 2026; emerging for compliance-sensitive workloads)
+
+The appropriate tier depends on the customer's trust level, data sensitivity, and regulatory requirements. Assume row-level only when contract explicitly allows it; default to schema-level for regulated industries.
+
+## Risk considerations
+
+The original 2025 assessment of row-level failures remains valid. Additionally, schema-level implementations now require cross-schema query auditing. Key-based isolation introduces operational burden in key rotation and recovery.
+```
+
+**Intake log entry** (`_intake/log.md`):
+```markdown
+## 2026-09-02
+
+[conflicts] multi-tenant-isolation: curated 2025 as row-level-only; newer audit (2026-09-02-multi-tenancy-security-audit.md) shows evolved approach (schema + crypto). New object replaces v1. Old object retained for history. Reference: multi-tenant-isolation-v2.md supersedes multi-tenant-isolation.md.
+```
+
+After merge of the new knowledge object:
+
+- **Old object** (`multi-tenant-isolation.md`) gains `superseded_by: /knowledge/multi-tenant-isolation-v2.md`
+- **New object** (`multi-tenant-isolation-v2.md`) already carries `supersedes: /knowledge/multi-tenant-isolation.md`
+
+Both objects remain queryable in the knowledge store. Consumers following the current state read the new object; historical queries (e.g., "what was known on 2025-03-15?") retrieve the original via `timestamp`.
+
 ## Compaction: Design Frame
 
 Knowledge stores grow without bound. As object counts accumulate, storage and query performance degrade. **Compaction** is the process of selectively removing objects to keep the store bounded while preserving provenance and reversibility.
@@ -340,7 +411,7 @@ Four compaction variants are visible across typical enterprise knowledge stores.
 2. ✓ Pointers survive (in new objects and VCS); removal is provable from history
 3. ✓ Can be human-triggered per ADR; no algorithm runs automatically
 
-**When to use:** Orga nizations that re-curate regularly (stable knowledge objects with periodic updates); low-risk compaction since only explicitly-replaced objects are removed.
+**When to use:** Organizations that re-curate regularly (stable knowledge objects with periodic updates); low-risk compaction since only explicitly-replaced objects are removed.
 
 #### Variant 2: Date-based (tiered expiry)
 

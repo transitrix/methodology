@@ -60,9 +60,9 @@ The register is a directory with a journal file and optional attachment subfolde
 
 **Detect which layout the repo carries:**
 
-1. **New layout (v4.3.0+)** — `operations/feedback/` directory with `operations/feedback/feedback.md` inside:
+1. **New layout (v5.0.0+)** — `operations/feedback/` directory with `operations/feedback/feedback.md` inside:
    - Use it as-is. The journal carries all entries; attachment folders live at `operations/feedback/YYYYMMDD/` (one dated folder per attached finding).
-2. **Old layout (pre-v4.3.0)** — single file at `operations/feedback.md`:
+2. **Old layout (pre-v5.0.0)** — single file at `operations/feedback.md`:
    - The file is still valid and must be preserved. If this is the only register, continue using it; the old layout is still supported.
    - **Never migrate automatically**. If the repo has the old layout and you are asked to author an entry, check whether someone is simultaneously trying to create the new layout — if both exist or are being created at once, it's an error (see "Migration hazard" below).
 3. **Missing both** — a repo onboarded before the Feedback Record convention shipped, or one that hand-rolled its `operations/` folder, may not have either yet. Scaffold the **new layout** now:
