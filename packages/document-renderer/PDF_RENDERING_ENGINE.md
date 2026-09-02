@@ -133,7 +133,7 @@ Methodology provides a dependency-free module for generating paged-media CSS wit
 
 ### What the module provides
 
-- `generatePagedMediaCss(metadata)` — generates CSS with @page rules, running footer, and base typography
+- `generatePagedMediaCss(metadata)` — generates CSS with @page rules, running footer, landscape page detection, and base typography
 - `wrapHtmlForPrintRendering(html, metadata)` — wraps HTML content with embedded CSS for rendering
 
 ### Paged-media CSS features implemented
@@ -143,7 +143,8 @@ Methodology provides a dependency-free module for generating paged-media CSS wit
 | Running footer | ✓ Done | Shows issuer, date, identity, commit, page number |
 | Page margins and size | ✓ Done | A4 (595 × 842 pt), 20mm margins |
 | Page counters | ✓ Done | `counter(page)` and `counter(pages)` available |
-| Landscape pages | ✓ Done | `@page landscape` rule for wide diagrams |
+| Landscape pages | ✓ Done | `@page landscape` rule; A4 rotated (842 × 595 pt) |
+| Wide view detection | ✓ Done | Automatically detects views where width > height and applies landscape page |
 | Typography rules | ✓ Done | Headings, paragraphs, lists, code, blockquotes, tables |
 | Page break avoidance | ✓ Done | Headings and figures use `page-break-after/inside: avoid` |
 | First page footer suppression | ✓ Done | Title page has no footer |
@@ -155,15 +156,24 @@ For adopters or tools that need to render HTML to PDF:
 ```javascript
 import { wrapHtmlForPrintRendering } from '@transitrix/document-renderer/src/render-vivliostyle.mjs';
 
-// Your HTML content
-const html = '<h1>Title</h1><p>Content...</p>';
+// Your HTML content (with id attributes on diagrams)
+const html = `
+  <h1>Title</h1>
+  <p>Content...</p>
+  <div id="diagram-architecture">
+    <svg><!-- wide diagram, 1200 x 600 --></svg>
+  </div>
+`;
 
-// Metadata for the footer
+// Metadata for the footer and view dimensions
 const metadata = {
   issuer: 'Acme Corp',
   issued_at: '2026-09-02T15:30:00Z',
   document_identity: 'PRODUCT-MRD-1.0',
   repository_commit: 'a1b2c3d4',
+  views: [
+    { id: 'diagram-architecture', width: 1200, height: 600 }, // wide: uses landscape page
+  ],
 };
 
 // Get HTML with embedded CSS
@@ -171,7 +181,10 @@ const htmlWithCss = wrapHtmlForPrintRendering(html, metadata);
 
 // Pass to Vivliostyle (or your chosen engine) for PDF rendering
 // E.g., via documents-cli or a headless browser
+// The wide diagram automatically renders on a landscape page.
 ```
+
+**Wide view handling:** Pass a `views` array in metadata. For each view with `width > height`, the CSS generator creates a rule that applies landscape page layout automatically. The HTML element must have an `id` matching the view's `id`.
 
 The HTML output is ready for any CSS Paged Media Module Level 3 compliant renderer.
 

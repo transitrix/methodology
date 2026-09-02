@@ -26,7 +26,7 @@ function escapeHtml(text) {
 }
 
 /**
- * Generate CSS for paged-media including running footer.
+ * Generate CSS for paged-media including running footer and landscape pages.
  * Defines @page rules for footer styling, landscape pages, and typography.
  *
  * @param {object} metadata - Document metadata
@@ -34,6 +34,7 @@ function escapeHtml(text) {
  * @param {string} metadata.issued_at - ISO 8601 timestamp
  * @param {string} metadata.document_identity - Recipe ID or document identifier
  * @param {string} [metadata.repository_commit] - Git commit hash
+ * @param {array} [metadata.views] - View specifications with width/height
  * @returns {string} CSS text with @page rules and base typography
  */
 export function generatePagedMediaCss(metadata = {}) {
@@ -61,6 +62,25 @@ export function generatePagedMediaCss(metadata = {}) {
   const footerParts = [issuer, issued, identity];
   if (commit) footerParts.push(commit);
   const footerText = footerParts.join(' • ');
+
+  // Detect wide views (width > height) and generate CSS for them
+  let wideViewsCss = '';
+  if (metadata.views && Array.isArray(metadata.views)) {
+    const wideViews = metadata.views.filter(view =>
+      view && view.width && view.height && view.width > view.height && view.id
+    );
+    if (wideViews.length > 0) {
+      wideViewsCss = wideViews.map(view => {
+        // View IDs come from trusted model data; CSS selectors don't need HTML escaping
+        // Use a safe identifier pattern: alphanumeric, hyphens, underscores
+        const safeId = String(view.id).replace(/[^a-zA-Z0-9_-]/g, '-');
+        return `#${safeId} {
+  page: landscape;
+  page-break-inside: avoid;
+}`;
+      }).join('\n\n');
+    }
+  }
 
   return `/* Paged Media CSS — footer, typography, page breaks */
 
@@ -210,6 +230,8 @@ a {
   color: #0066cc;
   text-decoration: underline;
 }
+
+${wideViewsCss}
 `;
 }
 
