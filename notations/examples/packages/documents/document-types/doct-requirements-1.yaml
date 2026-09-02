@@ -1,0 +1,20 @@
+package: documents
+kind: document-type
+id: doct-requirements-1
+name: "Requirements Document"
+fields:
+  - key: "Title"
+    datatype: STRING
+    required: true
+  - key: "Version"
+    datatype: STRING
+    required: true
+  - key: "Status"
+    datatype: STRING
+    required: true
+  - key: "IssuedDate"
+    datatype: DATE
+    required: true
+  - key: "CoverageArea"
+    datatype: STRING
+    required: false
