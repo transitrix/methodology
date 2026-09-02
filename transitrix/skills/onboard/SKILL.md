@@ -137,8 +137,8 @@ Additionally, write these generated files inline (no template):
 
 - `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending the two VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview (including `.puml` files — no separate PlantUML extension needed), and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
 - **Feedback register — detect old layout, scaffold new layout** (`method/06-team-operations.md` §3.2). Before scaffolding, check whether the repo already has a feedback register:
-  - **If `operations/feedback.md` exists (pre-v4.3.0 single-file layout)**: preserve it as-is. Do not modify or migrate it automatically.
-  - **If `operations/feedback/feedback.md` exists (v4.3.0+ directory layout)**: use it as-is.
+  - **If `operations/feedback.md` exists (pre-v5.0.0 single-file layout)**: preserve it as-is. Do not modify or migrate it automatically.
+  - **If `operations/feedback/feedback.md` exists (v5.0.0+ directory layout)**: use it as-is.
   - **If neither exists (new repo)**: scaffold the **new directory layout**:
     - Create `operations/feedback/` directory.
     - Write `operations/feedback/feedback.md` with the empty register (same content as the old single-file layout, now held in the directory). A `# Feedback register` heading, a one-line pointer at `method/06-team-operations.md` §3.2 and the opt-in `hello@transitrix.com` submission route, and an empty `## Register` section — no entries; the first `FB-0001` is added the first time a finding is actually raised, not at scaffold time.
@@ -413,7 +413,7 @@ Each notation template carries the canonical `notation:` and `spec_version:` hea
 | Shared protocol — raising a finding | `templates/FINDINGS.md` | `<repo-root>/FINDINGS.md` |
 | GitHub Copilot pointer | `templates/copilot-instructions.md` | `<repo-root>/.github/copilot-instructions.md` |
 | VS Code extension recommendations | `templates/extensions.json` | `<repo-root>/.vscode/extensions.json` |
-| Upstream feedback register (empty) | *authored inline, no template* | `<repo-root>/operations/feedback/feedback.md` (new layout, v4.3.0+) or `<repo-root>/operations/feedback.md` (legacy single-file, pre-v4.3.0) |
+| Upstream feedback register (empty) | *authored inline, no template* | `<repo-root>/operations/feedback/feedback.md` (new layout, v5.0.0+) or `<repo-root>/operations/feedback.md` (legacy single-file, pre-v5.0.0) |
 
 The whole-repo validator (`.validators/lint.py` + `requirements.txt`) and the CI workflow (`.github/workflows/architecture-validate.yaml`) are **not** bundled templates — they are fetched from the methodology canon at scaffold time. See "Scaffold validation tooling + CI" in Step 2.
 
