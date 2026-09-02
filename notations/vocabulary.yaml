@@ -898,6 +898,27 @@ rule_codes:
   COMPIMP-013:
     severity: error
     spec: notations/views/reports/21-compliance-impact.md
+  DOCS-001:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-002:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-003:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-004:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-005:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-006:
+    severity: error
+    spec: notations/packages/documents.md
+  DOCS-007:
+    severity: error
+    spec: notations/packages/documents.md
   COVMET-001:
     severity: error
     spec: notations/views/reports/22-coverage-metric.md

@@ -1,0 +1,16 @@
+package: documents
+kind: document
+id: doc-srs-v2-1
+type: doct-requirements-1
+version: "2.0"
+status: "issued"
+issued_at: "2026-09-01T14:30:00Z"
+values:
+  Title: "System Requirements Specification"
+  Version: "2.0"
+  Status: "Approved"
+  IssuedDate: "2026-09-01"
+  CoverageArea: "Platform Core"
+canon_refs:
+  - CAPABILITY-scheduler-1
+  - REQUIREMENT-auth-mfa-1

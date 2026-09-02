@@ -703,16 +703,21 @@ The two are deliberately separate. Collapsing them into one decaying number woul
 
 ### 11.3 Freshness decay
 
-Freshness anchors on the canon element's `admitted_at` (§6) — the date the admission gate last ran for it. Re-running the gate on an unchanged element ("still true as of today") is a **reaffirmation**: it bumps `admitted_at` and resets freshness. This is the maintenance action that cures staleness; canon content is not edited to refresh a score.
+Freshness anchors on a date and decays the same way for canonical elements and knowledge objects, computed using the formula below. The anchor date differs:
+
+- **Canonical elements** (`canon/…`): anchors on the element's `admitted_at` (§6) — the date the admission gate last ran for it. Re-running the gate on an unchanged element ("still true as of today") is a **reaffirmation**: it bumps `admitted_at` and resets freshness. This is the maintenance action that cures staleness; canon content is not edited to refresh a score.
+- **Knowledge objects** (`knowledge/…`): anchors on the object's `timestamp` — the date it was recorded or last curated. When a knowledge object needs refreshing due to staleness, re-curation records the change (rather than editing the original), preserving the full history.
 
 ```
-age_days  = today − admitted_at
+age_days  = today − anchor_date
 freshness = 1.0      if age_days ≤ fresh_days
           = floor    if age_days ≥ stale_days
           = 1.0 − (1.0 − floor) · (age_days − fresh_days) / (stale_days − fresh_days)   otherwise
 ```
 
-Freshness never reaches zero — old canon is less certain, not worthless; it bottoms out at `floor`. The three parameters are configured per element TYPE, because different facts age at different rates (an organisation's capability map ages over years; a price list over weeks). They live in the adopter manifest (`transitrix.yaml`) under `confidence_decay` ([MANIFEST.md](MANIFEST.md) §2); the `defaults` apply to any TYPE not overridden under `by_type`:
+Freshness never reaches zero — old content is less certain, not worthless; it bottoms out at `floor`. The three parameters live in the adopter manifest (`transitrix.yaml`) under `confidence_decay` ([MANIFEST.md](MANIFEST.md) §2):
+
+- **Canonical elements** use per-TYPE thresholds (different facts age at different rates: an organisation's capability map ages over years; a price list over weeks), configured under `by_type`:
 
 ```yaml
 confidence_decay:
@@ -720,7 +725,12 @@ confidence_decay:
   by_type:
     CAPABILITY:  { fresh_days: 365, stale_days: 1825 }
     APPLICATION: { fresh_days: 180, stale_days: 730 }
+  knowledge: { fresh_days: 180, stale_days: 730, floor: 0.3 }   # single threshold for all knowledge objects
 ```
+
+- **Knowledge objects** use a single default threshold pair (no per-object-type distinction), configured under `knowledge`. When `knowledge:` is absent, the `defaults` apply.
+
+
 
 ### 11.4 Element confidence
 
@@ -758,13 +768,16 @@ Data confidence (as of 2026-06-05): B (weakest link) · 0.71 mean · 92% sourced
 
 ### 11.7 Regular freshness check
 
-A scheduled validator pass computes freshness across canon and **reports** — it never writes. It flags every canonical element whose `age_days ≥ stale_days` for its TYPE (i.e. freshness has bottomed out at `floor`), so they can be reaffirmed. The cure is re-admission (§11.3), not an edit.
+A scheduled validator pass computes freshness across canon and knowledge objects, and **reports** — it never writes. It flags every artefact (canonical element or knowledge object) whose `age_days ≥ stale_days` for its category (i.e. freshness has bottomed out at `floor`), so they can be refreshed. The cure differs:
+
+- **Canonical elements:** re-admission (§11.3) — re-run the admission gate to bump `admitted_at`.
+- **Knowledge objects:** re-curation (§11.4a) — record a new object and supersede the old one (if there are changes to document).
 
 | Rule | Severity | Description |
 |---|---|---|
-| `FRESHNESS-001` | warning | A canonical element's `age_days` (today − `admitted_at`) is ≥ `stale_days` for its TYPE. The element is stale and should be reaffirmed. Advisory only — never blocks, never mutates canon. |
+| `FRESHNESS-001` | warning | A canonical element's `age_days` (today − `admitted_at`) is ≥ `stale_days` for its TYPE, OR a knowledge object's `age_days` (today − `timestamp`) is ≥ `stale_days` for knowledge objects (the single default threshold). The artefact is stale and should be refreshed. Advisory only — never blocks, never mutates, never filters. |
 
-`FRESHNESS-001` is cross-cutting in the §8 sense: it needs the element's admission date and the active `confidence_decay` config, not just the file in isolation.
+`FRESHNESS-001` is cross-cutting in the §8 sense: it needs the anchor date and the active `confidence_decay` config, not just the file in isolation.
 
 ### 11.8 Out of scope (v1)
 

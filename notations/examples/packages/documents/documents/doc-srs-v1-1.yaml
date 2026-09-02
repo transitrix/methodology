@@ -1,0 +1,15 @@
+package: documents
+kind: document
+id: doc-srs-v1-1
+type: doct-requirements-1
+version: "1.0"
+status: "superseded"
+issued_at: "2026-08-15T09:00:00Z"
+values:
+  Title: "System Requirements Specification"
+  Version: "1.0"
+  Status: "Superseded"
+  IssuedDate: "2026-08-15"
+  CoverageArea: "Platform Core"
+canon_refs:
+  - CAPABILITY-scheduler-1
