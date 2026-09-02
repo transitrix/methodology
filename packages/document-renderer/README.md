@@ -477,17 +477,39 @@ placeholder instead — see [PDF output](#pdf-output)).
 
 ## PDF rendering engine and paged-media CSS
 
-The current `render-pdf.mjs` is a simple, plain-text PDF generator with no external dependencies. Future work requires **paged-media CSS support** for landscape pages, running headers/footers, and named-page styling to support issued document rendering.
+**Status: Part 1 (engine spec) complete, Part 2 (running footer) in progress**
 
-This requires an **HTML-to-PDF rendering engine** (PrinceXML, WeasyPrint, Chromium, etc.) that supports CSS Paged Media Module Level 3.
+The package has two PDF rendering paths:
+
+1. **Simple path** (`render-pdf.mjs`) — hand-rolled, dependency-free PDF generator for plain Markdown
+2. **Paged-media path** (`render-vivliostyle.mjs`) — CSS generation for Vivliostyle or other CSS Paged Media engines
+
+### Paged-media CSS support
+
+`render-vivliostyle.mjs` (dependency-free) generates CSS and HTML structures for:
+- Running footers (issuer, date, identity, page number)
+- Landscape pages for wide diagrams
+- Page breaks and typography rules
+- First-page suppression (no footer on title page)
+
+**Usage:**
+
+```javascript
+import { wrapHtmlForPrintRendering } from './src/render-vivliostyle.mjs';
+
+const html = wrapHtmlForPrintRendering('<h1>Title</h1><p>Content...</p>', {
+  issuer: 'Your Corp',
+  issued_at: '2026-09-02T15:30:00Z',
+  document_identity: 'PRODUCT-MRD-1.0',
+  repository_commit: 'a1b2c3d',
+});
+
+// Pass html to Vivliostyle or another CSS Paged Media renderer
+```
 
 **Specification:** [`PDF_RENDERING_ENGINE.md`](./PDF_RENDERING_ENGINE.md)  
-**Covers:** Engine choice, paged-media feature matrix, conformance testing, integration contract
+**Engine reference:** Vivliostyle (option 2), caller-supplied supported (option 3)  
+**Feature matrix:** Named pages, landscape pages, break rules, running elements, counters  
+**Integration:** Vivliostyle rendering happens in documents-cli or caller's pipeline (not in this package)
 
-The specification documents:
-- Why PrinceXML is the **reference renderer** (strong paged-media support)
-- How adopters may substitute an engine (if feature matrix is met)
-- Required paged-media CSS features (named pages, break rules, running elements)
-- Integration points and responsibility split with caller/Studio
-
-Current state: Engine choice is documented. Implementation of paged-media CSS support is future work.
+Current state: Engine choice documented, paged-media CSS generation implemented and tested.
