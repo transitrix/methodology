@@ -205,6 +205,166 @@ This package carries document identity and traceability metadata: versioning, st
 
 ---
 
+## 9. DMS integration contract
+
+This package is upstream of document management. An adopter who keeps issued documents in a document management system (DMS) — whether commercial, open-source, or internal — integrates with this package at a defined seam. This section specifies what the module produces, what the adopter DMS provides, and what deliberate non-scope boundaries protect both sides.
+
+### 9.1 What the module produces — the contract's goods
+
+A rendered document run produces three artefacts:
+
+| Artefact | What it holds | Audience |
+|---|---|---|
+| **Run record** | Recipe identity (id, version), repository commit, model id, render timestamp, per-slot instructions and their verdicts. | DMS, integration layer, audit trails. |
+| **Snapshot manifest** | The model state the render captured: list of element IDs cited in the document, rendered date, methodology version. | Traceability queries, freshness checks, retirement detection. |
+| **Document identity** | Issuer, issue timestamp, document hash (content fingerprint), source reference (URI), baseline tag (git reference). | DMS registration, integrity checking, auditability. |
+
+**Format:** each is emitted as JSON by the reference implementation. A non-reference renderer may emit another format provided it carries the same semantic content and is documented per §9.6.
+
+### 9.2 What the adopter DMS provides — the contract's consumers
+
+| Consumer layer | Role |
+|---|---|
+| **Document store** | URI-addressable storage for the PDF (or other output format) — e.g. `resource://documents/srs-2026-q3/issue-1`. The URI is a reference, never dictated by the module. |
+| **Metadata intake** | An endpoint or queue where the module deposits run record, snapshot manifest, and document identity on every render. |
+| **Query surface** | An API exposing facts the adopter needs — e.g. "which documents cite this capability", "which documents may be stale because an element changed". These queries are application-specific; the module provides the data, not the queries. |
+| **Retention and lifecycle** | Retention schedules, approval workflows, signature capture, records classifications, any regulatory regime the adopter runs. None of this is the module's concern. |
+
+### 9.3 What the module deliberately does not do — non-scope boundaries
+
+The module carries document **identity and traceability**. It does not carry document **management**. This means:
+
+| The adopter DMS does | The module does not do |
+|---|---|
+| Route documents for approval | Decide whether a document is valid to issue. |
+| Capture signatures | Sign or verify signatures. |
+| Register documents for compliance | Create compliance records or regulatory filings. |
+| Hold retention schedules | Enforce retention policies. |
+| Classify by sensitivity | Assign classification levels or access control. |
+| Audit who accessed what | Log access to issued documents. |
+| Replace a real DMS | Substitute for a working document repository. |
+| Route for change control | Approve or reject changed elements. |
+
+The module answers the question "what model was rendered into this document?" — not "who may see it" or "when must it be deleted."
+
+### 9.4 Data exchange format — run record schema
+
+The run record is the primary interchange artefact. Its structure is governed by [`document-renderer/README.md`](../../packages/document-renderer/README.md), emitted as JSON following this schema:
+
+```json
+{
+  "recipe": {
+    "id": "product.srs",
+    "version": "1.0"
+  },
+  "repository": {
+    "commit": "a1b2c3d4…",
+    "baseline_tag": "release-2026-q3"
+  },
+  "model": {
+    "id": null,
+    "methodology_version": "5.0.0"
+  },
+  "rendered_at": "2026-09-02T14:30:00Z",
+  "profile": "strict",
+  "slots": [
+    {
+      "slot_id": "market-size",
+      "question": "How large is the addressable market?",
+      "inputs": ["CAP-1", "REQ-14"],
+      "sufficient": true,
+      "verdict": "sufficient",
+      "produced_text": "The addressable market is $5B growing at 15% CAGR.",
+      "attributions": ["CAP-1"]
+    }
+  ],
+  "suspicion": {
+    "computed": false,
+    "reason": "not-computed-by-this-pass"
+  }
+}
+```
+
+**Snapshot manifest** (extracted from the run record and document, for efficiency in queries):
+
+```json
+{
+  "document_id": "doc-srs-v2-1",
+  "document_hash": "sha256:a1b2c3…",
+  "rendered_at": "2026-09-02T14:30:00Z",
+  "recipe_id": "product.srs",
+  "recipe_version": "1.0",
+  "baseline_commit": "a1b2c3d4…",
+  "methodology_version": "5.0.0",
+  "elements_cited": [
+    "CAPABILITY-V2",
+    "REQUIREMENT-sched-auth-1",
+    "CONSTRAINT-4"
+  ]
+}
+```
+
+**Document identity** (metadata bound to the issued artefact):
+
+```json
+{
+  "id": "doc-srs-v2-1",
+  "type": "doct-requirements-1",
+  "version": "2.0",
+  "status": "issued",
+  "issued_at": "2026-09-02T14:30:00Z",
+  "issuer": "release-automation@example.com",
+  "content_hash": "sha256:a1b2c3…",
+  "source_uri": "resource://documents/srs-2026-q3/issue-1",
+  "baseline_tag": "release-2026-q3"
+}
+```
+
+All timestamps are ISO 8601 UTC, second-precision. Hashes use SHA256. A non-reference renderer must emit JSON carrying these fields; schema variations are acceptable if approved by the consuming DMS.
+
+### 9.5 Integration example — how a DMS consumes the data
+
+**Scenario:** The adopter runs Studio to render a recipe, capturing the run record and snapshot manifest. A webhook delivers them to the DMS integration layer.
+
+```
+1. Studio renders recipe -> PDF + run record + document identity
+2. Metadata integration layer receives all three
+3. DMS:
+   - Stores the PDF at the URI named in document identity
+   - Ingests snapshot manifest for traceability queries
+   - Logs the run record for audit trail
+   - Marks the document as "ready for review" (its own workflow)
+4. On later model change (element modified/deleted):
+   - Snapshot query: "which documents cite this element?"
+   - Result: [doc-srs-v2-1]
+   - DMS flags document as "stale, re-render recommended"
+   - Adopter decides: re-render, or retire the document
+```
+
+The module provides the data. The adopter DMS provides the **decision**, the **action**, and the **workflow**.
+
+### 9.6 Out-of-scope list — what the adopter DMS must guarantee
+
+- **The adopter is responsible for:**
+  - Storing the document bytes at the URI the module names
+  - Verifying the content hash matches what the module emitted
+  - Implementing access control (who may read/download)
+  - Enforcing retention schedules and lifecycle
+  - Capturing and verifying signatures if regulations require them
+  - Logging access and changes for audit
+  - Handling integration failures (e.g. webhook delivery retry)
+
+- **The module is NOT responsible for:**
+  - Storing the document (it emits bytes; storage is the DMS's)
+  - Approval workflows (the DMS owns that)
+  - Signature capture or verification
+  - Compliance registration or regulatory filing
+  - Access control or role-based permissions
+  - Retention enforcement
+  - Audit logging of who accessed what
+
+---
+
 ## 8. References
 
 - [`PACKAGES.md`](../PACKAGES.md) §4 (reversibility contract), §6 (what a package spec must state).
