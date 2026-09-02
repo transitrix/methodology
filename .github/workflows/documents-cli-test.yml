@@ -1,0 +1,41 @@
+name: Documents package test
+
+# Integration test for @transitrix/documents-cli + the Documents domain package's
+# worked examples (notations/packages/documents.md, packages/documents-cli/).
+# Deterministic, no API key. Drives the real CLI end-to-end against the
+# worked fixture (validate, removal integrity — test_documents_integrity.py).
+
+on:
+  pull_request:
+    paths:
+      - 'packages/documents-cli/**'
+      - 'notations/packages/documents.md'
+      - 'notations/examples/packages/documents/**'
+      - '.github/workflows/documents-cli-test.yml'
+  workflow_dispatch:
+  schedule:
+    # Mondays 09:50 UTC — weekly safety net, offset from other package test runs
+    - cron: '50 9 * * 1'
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Run Documents package integrity test
+        run: python packages/documents-cli/tests/test_documents_integrity.py
