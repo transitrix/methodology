@@ -119,7 +119,7 @@ Conformance = engine produces the expected PDF on all fixtures.
 
 ## Limitations and open questions
 
-**Raster images:** Embedded images (PNG, JPG) are deferred (epic #505 part 3). Methodology specifies the contract; Studio implements the integration.
+**Raster images:** Embedded images (PNG, JPG) are deferred. Methodology specifies the contract; Studio implements the integration.
 
 **Fonts:** Embedded or subsetting @font-face rules for non-base14 fonts is deferred. Most workflows use system fonts only.
 
@@ -129,7 +129,7 @@ Conformance = engine produces the expected PDF on all fixtures.
 
 | Date | Decision | Rationale |
 |---|---|---|
-| 2026-09-02 | Methodology owns engine choice | Studio is consumer, Methodology owns spec per transitrix-hq#553 |
+| 2026-09-02 | Methodology owns engine choice | Studio is consumer, Methodology owns spec |
 | 2026-09-02 | Reference = PrinceXML | Strong paged-media support, test stability, fallback for adopters |
 | 2026-09-02 | Standing shape = caller-supplied | Adopters may choose if they satisfy feature matrix |
-| (pending) | Implement HTML → PDF pipeline | Epic #505 part 2 |
+| (pending) | Implement HTML → PDF pipeline | Paged-media CSS integration work, Studio primary user |

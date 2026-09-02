@@ -477,7 +477,7 @@ placeholder instead — see [PDF output](#pdf-output)).
 
 ## PDF rendering engine and paged-media CSS
 
-The current `render-pdf.mjs` is a simple, plain-text PDF generator with no external dependencies. Future work (epic #505, "Issued document carries its identity on its own face") requires **paged-media CSS support** for landscape pages, running headers/footers, and named-page styling.
+The current `render-pdf.mjs` is a simple, plain-text PDF generator with no external dependencies. Future work requires **paged-media CSS support** for landscape pages, running headers/footers, and named-page styling to support issued document rendering.
 
 This requires an **HTML-to-PDF rendering engine** (PrinceXML, WeasyPrint, Chromium, etc.) that supports CSS Paged Media Module Level 3.
 
@@ -490,4 +490,4 @@ The specification documents:
 - Required paged-media CSS features (named pages, break rules, running elements)
 - Integration points and responsibility split with caller/Studio
 
-Current state: Engine choice is documented. Implementation is deferred to epic #505 parts 2–4.
+Current state: Engine choice is documented. Implementation of paged-media CSS support is future work.
