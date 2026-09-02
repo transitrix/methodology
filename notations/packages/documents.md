@@ -121,7 +121,7 @@ values:
   Status: "Approved"
   IssuedDate: "2026-09-01"
 canon_refs:
-  - CAPABILITY-scheduling-1
+  - CAPABILITY-V2
   - REQUIREMENT-sched-auth-1
 ```
 
