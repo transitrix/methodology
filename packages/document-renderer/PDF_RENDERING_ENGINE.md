@@ -17,17 +17,17 @@ This document specifies the HTML-to-PDF rendering engine and its integration con
 ## Engine choice: Option 2 (Reference renderer)
 
 **Standing shape:** Caller-supplied engine (Option 3)  
-**Reference implementation:** PrinceXML (Option 2)  
-**Reference rationale:** Strong paged-media CSS support; aligns with Studio's primary user role
+**Reference implementation:** Vivliostyle (Option 2)  
+**Reference rationale:** Complete paged-media CSS support; open-source and accessible to all adopters; Node.js native integration
 
 The **reference renderer** is the engine used in our canonical workflows and test fixtures. Adopters may supply their own engine **if and only if it satisfies the same paged-media feature matrix** (below).
 
-### Why PrinceXML as reference
+### Why Vivliostyle as reference
 
-1. **Paged-media CSS:** Robust support for named pages, page-size, break rules, running elements
-2. **Studio alignment:** Studio becomes the primary consumer/user; Methodology owns the spec
-3. **Test stability:** A frozen, well-behaved engine anchors conformance tests
-4. **Fallback:** If adopter's choice fails, reference engine is the troubleshooting baseline
+1. **Paged-media CSS:** Complete support for all required features (named pages, page-size, break rules, running elements, string-set counters)
+2. **Accessibility:** Free and open-source (AGPL-3.0/MPL-2.0 dual license); no licensing barrier for adopters or public methodology
+3. **Integration:** Native Node.js package; runs natively in CI/CD pipelines without external tools
+4. **Maintenance:** Actively maintained (August 2026 release); recent fixes for named-page edge cases improve production readiness
 
 ### Adopter's choice
 
@@ -38,7 +38,7 @@ An adopter may substitute a different engine **if it supports the paged-media fe
 
 ## Paged-media CSS feature matrix
 
-| Feature | PrinceXML | Adopter engine | Status |
+| Feature | Vivliostyle | Adopter engine | Status |
 |---|---|---|---|
 | `@page` rule | ✓ | ? | Required |
 | `size: A4; margin: ...` | ✓ | ? | Required |
@@ -74,7 +74,7 @@ The caller (Studio, an adopter's pipeline, Methodology's own tools):
 
 ### Engine's responsibility
 
-The rendering engine (PrinceXML, WeasyPrint, Chromium, …):
+The rendering engine (Vivliostyle, WeasyPrint, Chromium, …):
 1. Accepts HTML + CSS on stdin or as a file
 2. Applies paged-media CSS rules
 3. Outputs a valid PDF on stdout
@@ -91,7 +91,7 @@ The rendering engine (PrinceXML, WeasyPrint, Chromium, …):
 const html = generateViewHTML(recipe, model)
 const css = generateViewStylesheet(recipe)
 const pdf = await renderHTMLToPDF(html + css, {
-  engine: 'prince',  // or 'weasyprint', 'chromium', …
+  engine: 'vivliostyle',  // or 'weasyprint', 'chromium', … (if they satisfy feature matrix)
   pageSize: 'A4',
   margins: { top: 20, bottom: 20, left: 15, right: 15 }
 })
@@ -130,6 +130,6 @@ Conformance = engine produces the expected PDF on all fixtures.
 | Date | Decision | Rationale |
 |---|---|---|
 | 2026-09-02 | Methodology owns engine choice | Studio is consumer, Methodology owns spec |
-| 2026-09-02 | Reference = PrinceXML | Strong paged-media support, test stability, fallback for adopters |
+| 2026-09-02 | Reference = Vivliostyle | Open-source, all paged-media features, Node.js native, no licensing barrier |
 | 2026-09-02 | Standing shape = caller-supplied | Adopters may choose if they satisfy feature matrix |
 | (pending) | Implement HTML → PDF pipeline | Paged-media CSS integration work, Studio primary user |
