@@ -477,7 +477,7 @@ placeholder instead — see [PDF output](#pdf-output)).
 
 ## PDF rendering engine and paged-media CSS
 
-**Status: Part 1 (engine spec) complete, Part 2 (running footer) in progress**
+**Status:** Engine spec and running-footer CSS generation implemented
 
 The package has two PDF rendering paths:
 

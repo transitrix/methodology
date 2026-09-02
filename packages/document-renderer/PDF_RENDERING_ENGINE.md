@@ -127,7 +127,7 @@ Conformance = engine produces the expected PDF on all fixtures.
 
 ## CSS generation and Vivliostyle integration
 
-**Status: In progress (task #538)**
+**Status:** Implemented in this package
 
 Methodology provides a dependency-free module for generating paged-media CSS with running footers, landscape pages, and typography rules. The module lives in `packages/document-renderer/src/render-vivliostyle.mjs`.
 
