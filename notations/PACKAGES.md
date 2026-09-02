@@ -131,6 +131,7 @@ Like a coverage-profile preset, the set of *shipped* packages a methodology vers
 
 | `packages:` name | Spec | Status |
 |---|---|---|
+| `documents` | [`packages/documents.md`](packages/documents.md) | issued-document identity and traceability; experimental, reviewed by 2027-03-02 ([`documents.md`](packages/documents.md) §8) |
 | `reqif` | [`packages/reqif.md`](packages/reqif.md) | object model + workflow-state/revisions/suspect-links landed; experimental, reviewed by 2027-01-28 ([`reqif.md`](packages/reqif.md) §8) |
 
 ### 7.2 Externally-distributed packages
