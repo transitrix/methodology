@@ -125,6 +125,69 @@ Conformance = engine produces the expected PDF on all fixtures.
 
 **Accessibility:** PDF/A compliance, tagged PDFs, and screen-reader support are out of scope for this task. Studio's choice of engine may support these; Methodology documents the contract only.
 
+## CSS generation and Vivliostyle integration
+
+**Status:** Implemented in this package
+
+Methodology provides a dependency-free module for generating paged-media CSS with running footers, landscape pages, and typography rules. The module lives in `packages/document-renderer/src/render-vivliostyle.mjs`.
+
+### What the module provides
+
+- `generatePagedMediaCss(metadata)` — generates CSS with @page rules, running footer, landscape page detection, and base typography
+- `wrapHtmlForPrintRendering(html, metadata)` — wraps HTML content with embedded CSS for rendering
+
+### Paged-media CSS features implemented
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Running footer | ✓ Done | Shows issuer, date, identity, commit, page number |
+| Page margins and size | ✓ Done | A4 (595 × 842 pt), 20mm margins |
+| Page counters | ✓ Done | `counter(page)` and `counter(pages)` available |
+| Landscape pages | ✓ Done | `@page landscape` rule; A4 rotated (842 × 595 pt) |
+| Wide view detection | ✓ Done | Automatically detects views where width > height and applies landscape page |
+| Typography rules | ✓ Done | Headings, paragraphs, lists, code, blockquotes, tables |
+| Page break avoidance | ✓ Done | Headings and figures use `page-break-after/inside: avoid` |
+| First page footer suppression | ✓ Done | Title page has no footer |
+
+### How to integrate with Vivliostyle
+
+For adopters or tools that need to render HTML to PDF:
+
+```javascript
+import { wrapHtmlForPrintRendering } from '@transitrix/document-renderer/src/render-vivliostyle.mjs';
+
+// Your HTML content (with id attributes on diagrams)
+const html = `
+  <h1>Title</h1>
+  <p>Content...</p>
+  <div id="diagram-architecture">
+    <svg><!-- wide diagram, 1200 x 600 --></svg>
+  </div>
+`;
+
+// Metadata for the footer and view dimensions
+const metadata = {
+  issuer: 'Acme Corp',
+  issued_at: '2026-09-02T15:30:00Z',
+  document_identity: 'PRODUCT-MRD-1.0',
+  repository_commit: 'a1b2c3d4',
+  views: [
+    { id: 'diagram-architecture', width: 1200, height: 600 }, // wide: uses landscape page
+  ],
+};
+
+// Get HTML with embedded CSS
+const htmlWithCss = wrapHtmlForPrintRendering(html, metadata);
+
+// Pass to Vivliostyle (or your chosen engine) for PDF rendering
+// E.g., via documents-cli or a headless browser
+// The wide diagram automatically renders on a landscape page.
+```
+
+**Wide view handling:** Pass a `views` array in metadata. For each view with `width > height`, the CSS generator creates a rule that applies landscape page layout automatically. The HTML element must have an `id` matching the view's `id`.
+
+The HTML output is ready for any CSS Paged Media Module Level 3 compliant renderer.
+
 ## Decisions record
 
 | Date | Decision | Rationale |
@@ -132,4 +195,4 @@ Conformance = engine produces the expected PDF on all fixtures.
 | 2026-09-02 | Methodology owns engine choice | Studio is consumer, Methodology owns spec |
 | 2026-09-02 | Reference = Vivliostyle | Open-source, all paged-media features, Node.js native, no licensing barrier |
 | 2026-09-02 | Standing shape = caller-supplied | Adopters may choose if they satisfy feature matrix |
-| (pending) | Implement HTML → PDF pipeline | Paged-media CSS integration work, Studio primary user |
+| 2026-09-02 | Paged-media CSS in methodology | Dependency-free module in document-renderer; Vivliostyle integration in caller's pipeline |
