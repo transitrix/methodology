@@ -373,6 +373,121 @@ After merge of the new knowledge object:
 
 Both objects remain queryable in the knowledge store. Consumers following the current state read the new object; historical queries (e.g., "what was known on 2025-03-15?") retrieve the original via `timestamp`.
 
+## Compaction: Design Frame
+
+Knowledge stores grow without bound. As object counts accumulate, storage and query performance degrade. **Compaction** is the process of selectively removing objects to keep the store bounded while preserving provenance and reversibility.
+
+Compaction is **not automatic, not fast, and not a performance optimization alone.** It is an organizational decision — when and how an adopter chooses to retire old objects — recorded as an Architecture Decision Record in their own `operations/decisions/` folder, not a background cron job. This section documents the design frame: which variants exist, what each preserves and costs, and the invariants any algorithm must satisfy.
+
+### Three invariants (non-negotiable)
+
+Any compaction algorithm MUST satisfy all three:
+
+1. **Nothing reachable from canon by `derived_from` is ever compacted away.** Criterion is mechanical reachability — if a canon element carries `derived_from: /knowledge/object-name`, that object MUST remain in the store. Compaction never orphans a canon citation.
+
+2. **Reversible, or provable.** Either the compacted objects are restorable from archival storage (cold store, version control, S3), or the fact and contents of removal are cryptographically attested (SHA-256 manifest, signed deletion record) so the history survives and can be audited. Silent deletion is not permissible; evidence of what was removed MUST be preserved.
+
+3. **Never automatic.** Compaction is human-triggered, deliberate, and recorded. No cron job, no background process, no "cleanup" that runs on schedule. The `knowledge/` zone's contract is provenance; the zone whose raison d'être is "nothing lost" does not get automatic pruning. An adopter makes the call, documents it in their ADR, and takes responsibility.
+
+### Design variants
+
+Four compaction variants are visible across typical enterprise knowledge stores. Each is a different point in the trade-off space between recency (removing old objects) and reversibility (keeping evidence).
+
+#### Variant 1: Supersession-based (immature objects only)
+
+**What it removes:** knowledge objects marked `superseded_by:` field (have been re-curated with a newer version).
+
+**Preservation:** The superseding object carries `supersedes:` pointing back; consumers know where to look. Audit trail is semantic (explicit pointers in remaining objects), not cryptographic.
+
+**Reversibility:** Complete if the new object is kept; the old object is recoverable from version control or backup without new infrastructure.
+
+**Costs:**
+- Storage: Medium (old objects are removed once a successor exists)
+- Reversibility: High (implicit in semantic links and VCS history)
+- Complexity: Low (check for presence of `superseded_by:` field)
+
+**Satisfies invariants:**
+1. ✓ Canon references cannot be to superseded objects (superseded = no longer current; canon cites current)
+2. ✓ Pointers survive (in new objects and VCS); removal is provable from history
+3. ✓ Can be human-triggered per ADR; no algorithm runs automatically
+
+**When to use:** Organizations that re-curate regularly (stable knowledge objects with periodic updates); low-risk compaction since only explicitly-replaced objects are removed.
+
+#### Variant 2: Date-based (tiered expiry)
+
+**What it removes:** knowledge objects whose `timestamp:` is older than a threshold (e.g., objects not modified in 2 years), EXCEPT those cited by canon.
+
+**Preservation:** Objects are archived to cold storage (timestamped tarball, S3, version control tag) before removal. Manifest of removed objects (filename, hash, removal date, remover) is retained.
+
+**Reversibility:** Complete; cold store is consulted if an object is needed again; manifest proves what was removed and when.
+
+**Costs:**
+- Storage: Low (old objects moved off primary store)
+- Reversibility: Medium (requires operational discipline: cold store must be managed, manifests must be queryable)
+- Complexity: Medium (date parsing, canon reachability check, archival process)
+
+**Satisfies invariants:**
+1. ✓ Canon reachability is checked before removal
+2. ✓ Removal is recorded in manifest; cryptographic hashes ensure tamper evidence
+3. ✓ Manual trigger (per ADR) for archive-and-remove batches
+
+**When to use:** Organizations with large, mature knowledge stores and discipline around version control and archival. Requires external storage and lifecycle tooling.
+
+#### Variant 3: Risk-tier based (cascade from low-impact objects)
+
+**What it removes:** knowledge objects tiered by blast radius (inferred from dependent-object count in canon). Only Low-tier objects (few canon citations, none critical) are compacted; Medium and High tier are always preserved.
+
+**Preservation:** Removal is by tier; manifest records which objects belonged to which tier at removal time.
+
+**Reversibility:** Medium; depends on whether canon references still exist (if an object is removed and later needed, can canon point be re-resolved from history?).
+
+**Costs:**
+- Storage: Medium (some objects kept, risky ones always kept)
+- Reversibility: Medium (depends on tier assignments and canon stability)
+- Complexity: Medium-High (blast-radius computation, tier assignments, dependencies on canon)
+
+**Satisfies invariants:**
+1. ✓ Canon references are kept by default (only Low-tier removed)
+2. ⚠ Reversibility depends on tier assignments; manifest-only if blast-radius is recomputed
+3. ✓ Manual trigger per ADR
+
+**When to use:** Organizations with risk-averse governance (never lose cited objects) and smaller knowledge stores where Low-tier objects alone are sufficient compaction.
+
+#### Variant 4: Consensus-based (human curators pick what to remove)
+
+**What it removes:** A designated curator or curation team reviews objects using human judgment and explicitly selects which to remove (e.g., "this is stale, been superseded by three newer objects, nobody cites it, we're retiring it").
+
+**Preservation:** Removal decisions are recorded in `_intake/log.md` with `[compact]` entries: curator name, objects removed, date, justification.
+
+**Reversibility:** Complete from VCS; removal log provides audit trail and intent.
+
+**Costs:**
+- Storage: Variable (depends on curation judgement)
+- Reversibility: High (human decisions are recorded; VCS is immutable)
+- Complexity: Low (no algorithms; copy objects to archive, record in log, delete from store)
+
+**Satisfies invariants:**
+1. ✓ Can be done carefully (human checks canon references)
+2. ✓ Decisions are logged; removal is auditable
+3. ✓ Explicitly human-triggered
+
+**When to use:** Small knowledge stores where curators know the content intimately; organizations building compaction discipline (start here, move to date-based or tier-based as store grows).
+
+### Trade-off summary
+
+| Variant | Storage gain | Reversibility | Complexity | Risk | Best for |
+|---|---|---|---|---|---|
+| Supersession-only | Low | High | Low | Low | Mature stores with regular re-curation |
+| Date-based (cold storage) | High | High | Medium | Medium | Large stores with archival infrastructure |
+| Risk-tier-based | Medium | Medium | Medium-High | Low | Risk-averse orgs with stable canon |
+| Consensus-based | Variable | High | Low | Variable | Small stores, building discipline |
+
+### Implementation: None yet (frame only)
+
+This section documents the design space. Compaction algorithms are **not** implemented in this or any Transitrix version. Each adopter decides which variant matches their organization's risk tolerance, storage constraints, and operational capacity. The decision is recorded in their `operations/decisions/ADR-YYYY-MM-DD-knowledge-store-compaction.md` with full justification.
+
+Transitrix provides the frame (this section), the invariants (above), and reference tooling for manifest management and archival. The adopter chooses the variant and owns the implementation.
+
 ## Tooling
 
 Google Cloud publishes reference implementations alongside the OKF spec:
