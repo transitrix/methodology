@@ -8,6 +8,8 @@ created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
 mapping: confirms | extends | proposes | conflicts   # optional — Gate 2 classification
 conflicts_with: ""   # required when mapping: conflicts
+supersedes: ""   # optional — /knowledge/… path or id of the object this one replaces (re-curation)
+superseded_by: ""   # optional — /knowledge/… path or id of a newer object that replaces this one
 review_status: ready | ambiguous | blocked   # Gate 6 — proposer disposition
 ambiguity_note: ""   # required when review_status: ambiguous
 tags: []

@@ -102,6 +102,25 @@ Before an extracted knowledge object is written to `knowledge/`, it MUST be chec
 
 **Rationale:** a second definition of the same concept breaks the single-model guarantee. Every downstream user who queries the knowledge store gets one answer; ambiguity devalues the store.
 
+#### Gate 2.1 — Supersession, not rewriting
+
+When a knowledge object needs updating due to changed understanding or new information — a curation refresh — it is **superseded rather than rewritten in place**. The old object is retained in the repository for history and auditability; a new object is created with the updated curation, and both objects record their relationship via `supersedes` and `superseded_by` fields.
+
+**Rule:** a curator who needs to update a knowledge object MUST NOT edit the original in place. Instead:
+
+1. Create a new knowledge object with the updated curation.
+2. On the new object, add `supersedes: <old-object-id>` (or bundle-relative path `/knowledge/old-name.md`).
+3. On the old object, add `superseded_by: <new-object-id>` (or bundle-relative path).
+4. The old object is retained and remains queryable; consumers following the `superseded_by` pointer are directed to the newer version.
+
+**Fields:**
+- `supersedes:` (optional) — ID or bundle-relative path of the knowledge object this one replaces. Only one object may supersede another (no chains beyond two objects). Absent by default.
+- `superseded_by:` (optional) — ID or bundle-relative path of a newer knowledge object that supersedes this one. Only one object may be pointed to (no forks). Absent by default.
+
+The two fields form a bidirectional pair: when set, both MUST name each other. A linter will flag `KS-019` if the pair is incomplete (e.g., `supersedes` set but the target does not carry `superseded_by`, or vice versa).
+
+**Rationale:** re-curation produces new knowledge, not a replacement state machine. The full history — what was believed, when it changed, why — remains in the repository for audit, causal reasoning, and recovery. A repository that deletes old objects when they are superseded loses that history. Consumers reading `superseded_by` follow to the current version; queries over the store at a point in time can slice by `timestamp` to surface objects valid on a given date.
+
 ### Gate 3 — Blast-radius-aware promotion
 
 Not all knowledge objects carry equal risk. Core vocabulary and widely-referenced elements touch every downstream citation; an error in them multiplies across the entire knowledge store.
@@ -204,6 +223,9 @@ What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-fi
 | `KS-016` | error | 6 | Draft missing or with invalid `review_status:` (`ready` / `ambiguous` / `blocked`). |
 | `KS-017` | error | 6 | `review_status: ambiguous` without a non-empty `ambiguity_note:`. |
 
+| `KS-018` | error | — | `supersedes` present but the referenced object does not exist or does not resolve. |
+| `KS-019` | warning | — | `supersedes` and `superseded_by` point to each other but one is missing on the other side (bidirectional pointer inconsistency). |
+| `KS-020` | error | — | A knowledge object in `knowledge/` (non-draft) carries both `supersedes` (points backward) and is pointed to by a `superseded_by` with incorrect identity — the pointer target and actual pointer source do not match. |
 Integrity test harness: [`transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py`](../transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py) (CI job `knowledge-store-lint-test`).
 
 ---
