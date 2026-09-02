@@ -51,7 +51,7 @@ view_config:
 
 ## Transform B — Recipe-file header rename
 
-`4.0.0` renames the required `.ttrs` header fields `template_id` / `template_version` to `recipe_id` / `recipe_version`, matching the recipe-naming decision (2026-08-23, `communications/tokens.md` §4a) that retires `template`/`skeleton` as names for this object across the document-view packages. This is the only field-level change — `document`, `kind`, and `canon` are unaffected, and the body syntax (transclusion tags, directive language) does not change.
+`4.0.0` renames the required `.ttrs` header fields `template_id` / `template_version` to `recipe_id` / `recipe_version`, matching the recipe-naming decision (2026-08-23) that retires `template`/`skeleton` as names for this object across the document-view packages. This is the only field-level change — `document`, `kind`, and `canon` are unaffected, and the body syntax (transclusion tags, directive language) does not change.
 
 | Location | 3.x form | 4.0 form |
 |---|---|---|
