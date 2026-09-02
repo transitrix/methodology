@@ -1,6 +1,5 @@
 # Audit: Documents Package Reference Direction
 
-**Task:** transitrix-hq#533 — audit package→canon reference direction for documents package  
 **Date:** 2026-09-02  
 **Status:** Complete — no violations found
 
@@ -8,7 +7,7 @@
 
 ## Scope
 
-This audit verifies that the newly declared documents package (per PR #567, transitrix-hq#506 epic) follows the one-way reference rule defined in PACKAGES.md §4.1:
+This audit verifies that the newly declared documents package follows the one-way reference rule defined in PACKAGES.md §4.1:
 
 > **Reference direction:** Package objects may reference canonical material; canonical material must never reference package-specific types, validators, or removal procedures.
 
@@ -75,9 +74,9 @@ No canonical material needs to move or be modified to achieve compliance with th
 
 ## Ready for Next Phase
 
-Per task #533 acceptance criteria:
+Audit acceptance criteria met:
 - ✓ Audit complete with all violations identified (zero)
 - ✓ Violations documented with disposition (N/A — none found)
-- ✓ Ready for Part 3 (removal-test fixture) — removal test will verify these don't move back into canon
+- ✓ Reference direction verified and documented
 
-Part 3 can proceed; the reference direction is clean.
+The reference direction is clean and ready for downstream phases.
