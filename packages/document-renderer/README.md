@@ -474,3 +474,20 @@ hook can fill and leaves the rest exactly as visibly open, per the accepted
 Out of scope, still: choosing or running an actual agent (that is the CLI's
 or the adopter's), and rasterising a figure into the PDF (named as a text
 placeholder instead — see [PDF output](#pdf-output)).
+
+## PDF rendering engine and paged-media CSS
+
+The current `render-pdf.mjs` is a simple, plain-text PDF generator with no external dependencies. Future work (epic #505, "Issued document carries its identity on its own face") requires **paged-media CSS support** for landscape pages, running headers/footers, and named-page styling.
+
+This requires an **HTML-to-PDF rendering engine** (PrinceXML, WeasyPrint, Chromium, etc.) that supports CSS Paged Media Module Level 3.
+
+**Specification:** [`PDF_RENDERING_ENGINE.md`](./PDF_RENDERING_ENGINE.md)  
+**Covers:** Engine choice, paged-media feature matrix, conformance testing, integration contract
+
+The specification documents:
+- Why PrinceXML is the **reference renderer** (strong paged-media support)
+- How adopters may substitute an engine (if feature matrix is met)
+- Required paged-media CSS features (named pages, break rules, running elements)
+- Integration points and responsibility split with caller/Studio
+
+Current state: Engine choice is documented. Implementation is deferred to epic #505 parts 2–4.
