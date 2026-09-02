@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
+from datetime import datetime, date
 
 import yaml
 
@@ -66,6 +67,22 @@ class KnowledgeStoreLinter:
         self.log_path = self.root / "_intake" / "log.md"
         self.findings: List[Finding] = []
         self.objects: List[KnowledgeObject] = []
+        self.freshness_thresholds = self._load_freshness_thresholds()
+
+    def _load_freshness_thresholds(self) -> Dict[str, int]:
+        manifest_path = self.root / "transitrix.yaml"
+        defaults = {"fresh_days": 180, "stale_days": 730, "floor": 0.3}
+        if not manifest_path.exists():
+            return defaults
+        try:
+            manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
+            decay = manifest.get("confidence_decay", {})
+            knowledge = decay.get("knowledge")
+            if knowledge:
+                return {**defaults, **knowledge}
+            return {**defaults, **decay.get("defaults", {})}
+        except Exception:
+            return defaults
 
     def run(self) -> bool:
         print("Transitrix Knowledge Store Linter")
@@ -80,6 +97,7 @@ class KnowledgeStoreLinter:
         self._check_structural()
         self._check_referential_integrity()
         self._check_duplicates()
+        self._check_freshness()
         self._check_blast_radius_and_confidence()
         self._check_consistency()
         self._check_assisted_ingest()
@@ -209,6 +227,28 @@ class KnowledgeStoreLinter:
                         f"(similarity {ratio:.0%}) — confirm this Confirms/Extends an existing "
                         f"concept rather than silently minting a new one (Gate 2).",
                     ))
+
+    # --- freshness (CONTRACT §11.3) ----------------------------------------
+
+    def _check_freshness(self):
+        today = date.today()
+        stale_days = self.freshness_thresholds.get("stale_days", 730)
+        for obj in self.objects:
+            if obj.zone != "knowledge":
+                continue
+            timestamp_str = obj.frontmatter.get("timestamp")
+            if not timestamp_str:
+                continue
+            try:
+                timestamp = datetime.fromisoformat(str(timestamp_str).strip()).date()
+                age_days = (today - timestamp).days
+                if age_days >= stale_days:
+                    self.findings.append(Finding(
+                        obj.rel_path, "FRESHNESS-001", "warning",
+                        f"Knowledge object is stale (timestamp: {timestamp}, age {age_days} days >= {stale_days} days). Refresh by re-curation.",
+                    ))
+            except (ValueError, AttributeError):
+                pass
 
     # --- blast radius + confidence cross-check (Gate 3, Gate 4) ---------
 
