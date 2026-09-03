@@ -134,6 +134,7 @@ Methodology provides a dependency-free module for generating paged-media CSS wit
 ### What the module provides
 
 - `generatePagedMediaCss(metadata)` — generates CSS with @page rules, running footer, landscape page detection, and base typography
+- `formatFigureCaptions(html, snapshots)` — embeds snapshot build dates in figure captions
 - `wrapHtmlForPrintRendering(html, metadata)` — wraps HTML content with embedded CSS for rendering
 
 ### Paged-media CSS features implemented
@@ -148,6 +149,7 @@ Methodology provides a dependency-free module for generating paged-media CSS wit
 | Typography rules | ✓ Done | Headings, paragraphs, lists, code, blockquotes, tables |
 | Page break avoidance | ✓ Done | Headings and figures use `page-break-after/inside: avoid` |
 | First page footer suppression | ✓ Done | Title page has no footer |
+| Figure caption snapshot dates | ✓ Done | Captions include build date from snapshot metadata |
 
 ### How to integrate with Vivliostyle
 
@@ -156,16 +158,19 @@ For adopters or tools that need to render HTML to PDF:
 ```javascript
 import { wrapHtmlForPrintRendering } from '@transitrix/document-renderer/src/render-vivliostyle.mjs';
 
-// Your HTML content (with id attributes on diagrams)
+// Your HTML content with figures and wide diagrams
 const html = `
-  <h1>Title</h1>
-  <p>Content...</p>
+  <h1>Architecture</h1>
   <div id="diagram-architecture">
     <svg><!-- wide diagram, 1200 x 600 --></svg>
   </div>
+  <figure data-snapshot-id="snap-001">
+    <img src="diagram.svg" />
+    <figcaption>System Architecture</figcaption>
+  </figure>
 `;
 
-// Metadata for the footer and view dimensions
+// Metadata for the footer, view dimensions, and snapshots
 const metadata = {
   issuer: 'Acme Corp',
   issued_at: '2026-09-02T15:30:00Z',
@@ -174,17 +179,30 @@ const metadata = {
   views: [
     { id: 'diagram-architecture', width: 1200, height: 600 }, // wide: uses landscape page
   ],
+  snapshots: {
+    'snap-001': {
+      generated_at: '2026-09-02T14:45:00Z'
+    }
+  }
 };
 
-// Get HTML with embedded CSS
+// Get HTML with embedded CSS, landscape pages, and figure captions
 const htmlWithCss = wrapHtmlForPrintRendering(html, metadata);
 
 // Pass to Vivliostyle (or your chosen engine) for PDF rendering
 // E.g., via documents-cli or a headless browser
 // The wide diagram automatically renders on a landscape page.
+// Figure captions include snapshot build dates.
 ```
 
 **Wide view handling:** Pass a `views` array in metadata. For each view with `width > height`, the CSS generator creates a rule that applies landscape page layout automatically. The HTML element must have an `id` matching the view's `id`.
+
+**Figure captions with snapshot dates:** When figures are sourced from model views (rendered diagrams), include:
+- The figure's `data-snapshot-id` attribute referencing a snapshot object
+- The snapshot's `generated_at` timestamp (ISO 8601)
+- The caption automatically includes the build date: "Figure title (Sep 2, 2026)"
+
+This ensures every diagram in the PDF is traceable to its source snapshot and build time.
 
 The HTML output is ready for any CSS Paged Media Module Level 3 compliant renderer.
 
