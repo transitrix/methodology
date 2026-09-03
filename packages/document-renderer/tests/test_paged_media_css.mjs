@@ -114,5 +114,89 @@ function check(condition, message) {
   check(!css.includes('undefined'), 'No undefined values in CSS');
 }
 
+// Test 11: Wide views detected and landscaped
+{
+  const css = generatePagedMediaCss({
+    views: [
+      { id: 'diagram-arch', width: 1200, height: 600 }, // wide
+      { id: 'diagram-flow', width: 400, height: 800 },  // portrait
+    ],
+  });
+  check(css.includes('#diagram-arch'), 'Wide view CSS selector generated');
+  check(css.includes('page: landscape'), 'Wide view uses landscape page rule');
+  check(!css.includes('#diagram-flow'), 'Portrait view not marked as landscape');
+}
+
+// Test 12: Empty views array handled
+{
+  const css = generatePagedMediaCss({ views: [] });
+  check(css.includes('@page {'), 'CSS generated with empty views array');
+  check(!css.includes('undefined'), 'No undefined values with empty views');
+}
+
+// Test 13: Views with missing dimensions ignored
+{
+  const css = generatePagedMediaCss({
+    views: [
+      { id: 'no-width', height: 600 },
+      { id: 'no-height', width: 800 },
+      { id: 'no-dims' },
+    ],
+  });
+  check(!css.includes('#no-width'), 'View without width ignored');
+  check(!css.includes('#no-height'), 'View without height ignored');
+  check(!css.includes('#no-dims'), 'View without dimensions ignored');
+}
+
+// Test 14: Wide view at exact square boundary
+{
+  const css = generatePagedMediaCss({
+    views: [
+      { id: 'square', width: 600, height: 600 },       // not wide
+      { id: 'slightly-wide', width: 601, height: 600 }, // wide
+    ],
+  });
+  check(!css.includes('#square'), 'Square view not marked as landscape');
+  check(css.includes('#slightly-wide'), 'View with width > height marked as landscape');
+}
+
+// Test 15: Special characters in view IDs are sanitized
+{
+  const css = generatePagedMediaCss({
+    views: [
+      { id: 'diagram-with-"quotes"', width: 800, height: 400 },
+      { id: 'diagram<script>', width: 800, height: 400 },
+    ],
+  });
+  check(css.includes('#diagram-with--quotes-'), 'Quotes in view ID are removed/sanitized');
+  check(css.includes('#diagram-script-'), 'Special characters in view ID are removed/sanitized');
+  check(!css.includes('<script>'), 'No unescaped <script> tags in CSS');
+}
+
+// Test 16: Multiple wide views generate multiple selectors
+{
+  const css = generatePagedMediaCss({
+    views: [
+      { id: 'wide-1', width: 1000, height: 500 },
+      { id: 'wide-2', width: 900, height: 400 },
+      { id: 'portrait', width: 300, height: 600 },
+    ],
+  });
+  check(css.includes('#wide-1'), 'First wide view CSS selector generated');
+  check(css.includes('#wide-2'), 'Second wide view CSS selector generated');
+  check(!css.includes('#portrait'), 'Portrait view not included');
+  const count = (css.match(/page: landscape/g) || []).length;
+  check(count >= 2, `Multiple landscape rules generated (found ${count})`);
+}
+
+// Test 17: Landscape pages have correct dimensions (A4 rotated: 842 × 595 pt)
+{
+  const css = generatePagedMediaCss();
+  check(css.includes('size: A4 landscape'), 'Landscape page size rule exists');
+  // Verify margins are set for landscape pages
+  const landscapeSection = css.match(/@page landscape[\s\S]*?}/);
+  check(landscapeSection && landscapeSection[0].includes('margin:'), 'Landscape pages have margins');
+}
+
 console.log(`\nExit: ${failures === 0 ? 0 : 1} (${failures === 0 ? 'all pass' : failures + ' failures'})`);
 process.exit(failures === 0 ? 0 : 1);
