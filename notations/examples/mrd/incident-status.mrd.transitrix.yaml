@@ -2,7 +2,7 @@ notation: mrd
 spec_version: "0.1"
 name: "Incident status communication — MRD"
 generated_at: "2026-08-04"
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 
 view:
   id: MRD-INCIDENT-STATUS-1

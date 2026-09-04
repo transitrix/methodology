@@ -2,7 +2,7 @@
 # Its own catalogue root (MANIFEST.md §4): declares the boundary the
 # uniqueness scope in IDS_AND_REFERENCES.md §4 resolves against.
 transitrix: 1
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 notations: [codex]
 zones: [codex]
 coverage_profile: core

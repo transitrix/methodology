@@ -1,8 +1,8 @@
 ---
 title: "Domain Packages — optional, removable vocabulary extensions"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-04"
+last_updated: "2026-09-04"
 status: "draft"
 ---
 
@@ -20,7 +20,7 @@ A package is declared at the repository root in `transitrix.yaml` under the `pac
 
 ```yaml
 transitrix: 1
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 notations: [dgca, goals, activities, capability-map]
 zones: [canon, field]
 coverage_profile: core

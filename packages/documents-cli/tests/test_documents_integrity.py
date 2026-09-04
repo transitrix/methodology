@@ -32,7 +32,7 @@ def test_documents_removal_clean():
         transitrix_yaml = work_dir / "transitrix.yaml"
         transitrix_yaml.write_text(
             "transitrix: 1\n"
-            'methodology_version: "5.0.0"\n'
+            'methodology_version: "5.1.0"\n'
             "packages: [documents]\n"
         )
 
@@ -81,7 +81,7 @@ def test_absence_is_silent():
         transitrix_yaml = work_dir / "transitrix.yaml"
         yaml_content = (
             "transitrix: 1\n"
-            'methodology_version: "5.0.0"\n'
+            'methodology_version: "5.1.0"\n'
             "notations: [goals, activities]\n"
         )
         transitrix_yaml.write_text(yaml_content)
