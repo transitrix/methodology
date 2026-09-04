@@ -236,11 +236,64 @@ ${wideViewsCss}
 }
 
 /**
+ * Format figure captions to include snapshot build dates.
+ * Finds all <figure> elements with data-snapshot-id attributes and appends
+ * the snapshot's generated_at timestamp to the caption.
+ *
+ * @param {string} html - HTML content with figure elements
+ * @param {object} snapshots - Map of snapshot IDs to snapshot objects with generated_at
+ * @returns {string} HTML with formatted captions
+ */
+export function formatFigureCaptions(html, snapshots = {}) {
+  if (!snapshots || Object.keys(snapshots).length === 0) {
+    return html;
+  }
+
+  return html.replace(
+    /<figure([^>]*data-snapshot-id="([^"]*)"[^>]*)>([\s\S]*?)<\/figure>/g,
+    (match, attributes, snapshotId, content) => {
+      const snapshot = snapshots[snapshotId];
+      if (!snapshot || !snapshot.generated_at) {
+        return match;
+      }
+
+      let dateStr = 'Unknown date';
+      try {
+        const date = new Date(snapshot.generated_at);
+        if (!isNaN(date.getTime())) {
+          dateStr = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+        }
+      } catch {
+        // ignore invalid date, use default
+      }
+
+      const figcaptionRegex = /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/;
+      const captionMatch = figcaptionRegex.exec(content);
+
+      if (!captionMatch) {
+        return match;
+      }
+
+      const originalCaption = captionMatch[1];
+      const newCaption = `${originalCaption} (${dateStr})`;
+      const updatedContent = content.replace(figcaptionRegex, `<figcaption>${newCaption}</figcaption>`);
+
+      return `<figure${attributes}>${updatedContent}</figure>`;
+    }
+  );
+}
+
+/**
  * Wrap Markdown or HTML content with paged-media CSS for rendering.
  * Returns a complete HTML document ready to pass to an HTML-to-PDF engine.
  *
  * @param {string} content - HTML or Markdown content
  * @param {object} metadata - Document metadata
+ * @param {object} [metadata.snapshots] - Map of snapshot IDs to snapshot objects
  * @returns {string} Complete HTML document with embedded CSS
  */
 export function wrapHtmlForPrintRendering(content, metadata = {}) {
@@ -250,6 +303,9 @@ export function wrapHtmlForPrintRendering(content, metadata = {}) {
     issuer: escapeHtml(metadata.issuer || ''),
     document_identity: escapeHtml(metadata.document_identity || ''),
   };
+
+  // Format figure captions with snapshot dates if snapshots are provided
+  const processedContent = formatFigureCaptions(content, metadata.snapshots);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -262,7 +318,7 @@ export function wrapHtmlForPrintRendering(content, metadata = {}) {
   </style>
 </head>
 <body>
-  ${content}
+  ${processedContent}
 </body>
 </html>`;
 }
