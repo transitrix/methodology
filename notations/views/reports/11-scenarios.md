@@ -45,7 +45,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 view:
   # ... see §3
 ```
@@ -95,7 +95,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "Optimistic vs Conservative — 2027 cut"   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                       # optional per CONTRACT.md §4
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 
 view:
   id: SCENARIOS-<NAME>-1
@@ -152,7 +152,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "All scenarios"                   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 view:
   id: SCENARIOS-ALL-1
   name: "All scenarios"

@@ -1,8 +1,8 @@
 ---
 title: "Adopter manifest — transitrix.yaml"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-25"
+last_updated: "2026-09-04"
 status: "draft"
 ---
 
@@ -29,7 +29,7 @@ A worked example lives at `transitrix.yaml` in the [acme-corp reference repo](ht
 
 ```yaml
 transitrix: 1                       # manifest schema version (integer)
-methodology_version: "5.0.0"        # the methodology release this repo conforms to
+methodology_version: "5.1.0"        # the methodology release this repo conforms to
 notations: [dgca, goals, action, capability-map, codex]
 zones: [canon, field, codex]
 coverage_profile: full              # optional — see COVERAGE_PROFILES.md

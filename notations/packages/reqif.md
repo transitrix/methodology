@@ -21,7 +21,7 @@ This is a package, not a core notation: nothing here changes `IDS_AND_REFERENCES
 
 ```yaml
 transitrix: 1
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 packages: [reqif]
 ```
 

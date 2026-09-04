@@ -35,7 +35,7 @@ An SDD view file carries the shared envelope (`notation:`, `spec_version:`, `met
 ```yaml
 notation: sdd
 spec_version: "0.1"
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 
 view:
   id: SDD-<NAME>-1

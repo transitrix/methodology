@@ -5,4 +5,4 @@
 # placeholder allowlist in scripts/check-notations.mjs. Enforced by that
 # script's V1 check. See notations/CONTRACT.md §10 for the versioning and
 # compatibility policy this pin follows.
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"

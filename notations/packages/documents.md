@@ -23,7 +23,7 @@ This is a package, not a core notation: nothing here changes `IDS_AND_REFERENCES
 
 ```yaml
 transitrix: 1
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 packages: [documents]
 ```
 
@@ -263,7 +263,7 @@ The run record is the primary interchange artefact. Its structure is governed by
   },
   "model": {
     "id": null,
-    "methodology_version": "5.0.0"
+    "methodology_version": "5.1.0"
   },
   "rendered_at": "2026-09-02T14:30:00Z",
   "profile": "strict",
@@ -295,7 +295,7 @@ The run record is the primary interchange artefact. Its structure is governed by
   "recipe_id": "product.srs",
   "recipe_version": "1.0",
   "baseline_commit": "a1b2c3d4…",
-  "methodology_version": "5.0.0",
+  "methodology_version": "5.1.0",
   "elements_cited": [
     "CAPABILITY-V2",
     "REQUIREMENT-sched-auth-1",
@@ -508,7 +508,7 @@ document_provenance("doc-srs-v2-1")
   recipe_version: "1.0",
   baseline_commit: "a1b2c3d4…",
   baseline_tag: "release-2026-q3",
-  methodology_version: "5.0.0",
+  methodology_version: "5.1.0",
   elements_cited: ["CAPABILITY-V2", "REQUIREMENT-sched-auth-1"],
   run_record: { … }
 }

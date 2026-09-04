@@ -1,6 +1,6 @@
 notation: dgca
 spec_version: "0.1"
-methodology_version: "5.0.0"
+methodology_version: "5.1.0"
 id: DGCA-PROJECTION-OMIT-1
 name: "Goal-scoped projection with omitted goals"
 description: >-
