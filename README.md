@@ -137,6 +137,10 @@ Transitrix — including the DGCA notation that forms part of it — is authored
 
 **Contact:** [hello@transitrix.com](mailto:hello@transitrix.com)
 
+## Contributing
+
+Work for this repository is filed in [`transitrix/transitrix-hq`](https://github.com/transitrix/transitrix-hq), not in this repository's issue tracker. That repository is private; if you'd like to contribute or report feedback, open a pull request here or email [hello@transitrix.com](mailto:hello@transitrix.com).
+
 ---
 
 **Methodology status:** 1.0 (stable) — see [`CHANGELOG.md`](CHANGELOG.md) for the current release and [`notations/CONTRACT.md`](notations/CONTRACT.md) §10 for the compatibility policy.
