@@ -5,6 +5,7 @@ Concrete deployment guides for common enterprise scenarios. Each pattern covers 
 | Pattern | File | Tier | Scenario |
 |---|---|---|---|
 | Transitrix Alone | [transitrix-alone.md](transitrix-alone.md) | Simple or Full | One repo as the enterprise architecture source of truth. Simplest deployment — greenfield, small org, single-domain pilot. |
+| Transitrix Repository MCP Server | [transitrix-repository-mcp.md](transitrix-repository-mcp.md) | Simple or Full | Expose a Transitrix repository through MCP with governed semantic access, explicit capability profiles, and clear boundaries between canonical source and derived interfaces. |
 | Transitrix + Knowledge Store | [knowledge-store.md](knowledge-store.md) | Full | Three-layer architecture: raw sources feed a curated knowledge repo that feeds Transitrix canon. |
 | Transitrix + Enterprise ADR Registry | [enterprise-adr-registry.md](enterprise-adr-registry.md) | Full | Transitrix repo as the enterprise ADL, aggregating cross-project architecture decisions. |
 | Transitrix + Network Catalogue | [network-catalogue.md](network-catalogue.md) | Full | Two or more repos, each holding its own canon, recognise each other's elements through a four-level, opt-in ladder against a central catalogue. |
@@ -28,6 +29,7 @@ An adopter (or an adopter's agent) rarely asks "which pattern tier do I need" �
 |---|---|
 | "How do we keep architecture decisions?" / "How do we stand up an ADL?" / "Where do ADRs live?" | [Enterprise ADR Registry](enterprise-adr-registry.md) — start with its "Start here" section for a single repo |
 | "How do we get started with Transitrix at all?" / "Where does everything go in one repo?" | [Transitrix Alone](transitrix-alone.md) |
+| "How do we expose our Transitrix repo to AI agents or external tools?" / "How do we provide semantic query access?" | [Transitrix Repository MCP Server](transitrix-repository-mcp.md) |
 | "We have several repos producing raw material — how does it become canon?" | [Knowledge Store](knowledge-store.md) — repos that supply raw material to one curated canon |
 | "We have several repos, each already holding its own canon — how do they recognise each other's elements?" | [Network Catalogue](network-catalogue.md) — repos that each model on their own and need to bind to a shared central catalogue |
 | "How do we make this repo a shared memory for humans and agents?" | [Enterprise Memory](enterprise-memory.md) |
