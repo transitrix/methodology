@@ -100,6 +100,7 @@ class KnowledgeStoreLinter:
         self._check_freshness()
         self._check_blast_radius_and_confidence()
         self._check_consistency()
+        self._check_supersession()
         self._check_assisted_ingest()
 
         self._report()
@@ -386,6 +387,109 @@ class KnowledgeStoreLinter:
                         f"`{src.rel_path}` (`confidence: {src_conf}`) — epistemic ordering "
                         f"violation (Gate 5). Downgrade the object or upgrade the source assessment.",
                     ))
+
+    # --- supersession integrity (Gate 2.1) --------------------------------
+
+    def _check_supersession(self):
+        knowledge = self._knowledge_by_rel()
+        # Build index of all objects by path for supersession lookups
+        all_objects = {o.rel_path: o for o in self.objects}
+
+        for obj in self.objects:
+            if obj.zone not in ("knowledge", "draft"):
+                continue
+            fm = obj.frontmatter
+            supersedes = fm.get("supersedes")
+            superseded_by = fm.get("superseded_by")
+
+            # KS-018: Check if supersedes target exists and resolves
+            if supersedes:
+                target = str(supersedes).strip()
+                resolved = None
+
+                # Try to resolve as a path first
+                if target.startswith("/"):
+                    target_rel = target.lstrip("/")
+                else:
+                    target_rel = target
+                if target_rel in all_objects:
+                    resolved = all_objects[target_rel]
+
+                # If not found as path, it might be an ID (for future extensibility)
+                if not resolved:
+                    # For now, we only support paths; IDs would require an ID index
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-018", "error",
+                        f"`supersedes:` references `{supersedes}` which does not exist or cannot be resolved.",
+                    ))
+                elif obj.zone == "knowledge" and resolved.zone != "knowledge":
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-018", "error",
+                        f"`supersedes:` references `{supersedes}` which is not in knowledge/ zone.",
+                    ))
+
+            # KS-019: Check bidirectional consistency
+            if supersedes or superseded_by:
+                # If supersedes is set, the target should have superseded_by pointing back
+                if supersedes:
+                    target = str(supersedes).strip()
+                    target_rel = target.lstrip("/") if target.startswith("/") else target
+                    if target_rel in all_objects:
+                        target_obj = all_objects[target_rel]
+                        target_superseded_by = str(target_obj.frontmatter.get("superseded_by") or "").strip()
+                        obj_path_norm = obj.rel_path.lstrip("/")
+                        # Normalize both for comparison (with and without leading /)
+                        if not target_superseded_by or (
+                            target_superseded_by.lstrip("/") != obj_path_norm
+                            and target_superseded_by != "/" + obj_path_norm
+                            and target_superseded_by != obj.rel_path
+                        ):
+                            self.findings.append(Finding(
+                                obj.rel_path, "KS-019", "warning",
+                                f"`supersedes` points to `{supersedes}`, but that object does not carry "
+                                f"`superseded_by` pointing back to this object.",
+                            ))
+
+                # If superseded_by is set, the target should have supersedes pointing back
+                if superseded_by:
+                    target = str(superseded_by).strip()
+                    target_rel = target.lstrip("/") if target.startswith("/") else target
+                    if target_rel in all_objects:
+                        target_obj = all_objects[target_rel]
+                        target_supersedes = str(target_obj.frontmatter.get("supersedes") or "").strip()
+                        obj_path_norm = obj.rel_path.lstrip("/")
+                        # Normalize both for comparison
+                        if not target_supersedes or (
+                            target_supersedes.lstrip("/") != obj_path_norm
+                            and target_supersedes != "/" + obj_path_norm
+                            and target_supersedes != obj.rel_path
+                        ):
+                            self.findings.append(Finding(
+                                obj.rel_path, "KS-019", "warning",
+                                f"`superseded_by` points to `{superseded_by}`, but that object does not carry "
+                                f"`supersedes` pointing back to this object.",
+                            ))
+
+            # KS-020: Check pointer identity mismatch for knowledge/ objects
+            if obj.zone == "knowledge" and superseded_by:
+                target = str(superseded_by).strip()
+                target_rel = target.lstrip("/") if target.startswith("/") else target
+                if target_rel in all_objects:
+                    target_obj = all_objects[target_rel]
+                    if target_obj.zone == "knowledge":
+                        # Verify the target's supersedes actually points back to this object
+                        target_supersedes = str(target_obj.frontmatter.get("supersedes") or "").strip()
+                        obj_path_norm = obj.rel_path.lstrip("/")
+                        if target_supersedes and (
+                            target_supersedes.lstrip("/") != obj_path_norm
+                            and target_supersedes != "/" + obj_path_norm
+                            and target_supersedes != obj.rel_path
+                        ):
+                            self.findings.append(Finding(
+                                obj.rel_path, "KS-020", "error",
+                                f"Pointer identity mismatch: this object's `superseded_by` points to `{superseded_by}`, "
+                                f"but that object's `supersedes` points to `{target_supersedes}` instead.",
+                            ))
 
     # --- assisted ingest (Gate 6) ----------------------------------------
 
