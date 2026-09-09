@@ -1,7 +1,7 @@
 ---
 title: Adopting the Architecture Decision Log
 status: active
-last_reviewed: 2026-08-16
+last_reviewed: 2026-09-09
 audience: public
 license: MIT
 tags: [transitrix, guide, adr, adl]
@@ -18,9 +18,19 @@ tags: [transitrix, guide, adr, adl]
 - **Public repository, or otherwise readable by parties the reasoning isn't intended for:** do not create `operations/decisions/` here. The record's home is the central architecture repository from the start — go to Step 4 for its shape, and treat this repository's own `operations/decisions/` (or `docs/decisions/`, if one predates this rule) as retired: a pointer only, never a `Context → Decision → Consequences` body.
 - **Private repository whose readership is the reasoning's intended audience:** continue below.
 
-In each such repository, without waiting for the central layer:
+In each such repository, with Node.js ≥ 20 and a checkout of the methodology repository, run from the adopter repository's root:
 
-1. Create `operations/decisions/`.
+```sh
+node "<methodology-checkout>/packages/ingest-cli/ingest.mjs" adopt-adl . --repo "<org>/<repo>"
+```
+
+Replace the placeholders with the checkout path and the adopter's GitHub coordinate. This is **L0 — decisions** in the [four-level integration model](../method/09-releases-and-propagation.md#62-the-four-levels): no catalogue pin, `canon_id`, or other L1–L3 setup is required.
+
+The command creates `operations/decisions/.gitkeep`, vendors `scripts/check-adl.mjs`, and adds `.github/workflows/adl-check.yml`. It prints the source entry to add to the central repository's `architecture/decision-log/harvest.config.yaml` in Step 4; it does not write to that repository. Omit `--repo` to set up only the local half. Re-running preserves existing files. If a guard workflow already exists under another name, keep one workflow and remove the duplicate before committing.
+
+The setup creates no decision record. To start the log:
+
+1. Use the created `operations/decisions/` folder (or create it manually if you are following the manual setup).
 2. Write `ADR-YYYY-MM-DD-<slug>.md` (today's date + a short slug) — the first record is the decision to start keeping records here. No numbering to start at: the id is derived, not allocated.
 3. Give it the front-matter of [`07-decisions.md`](../method/07-decisions.md) §2 — the record shape plus `author` / `source`, and optionally `scope:` if you already know this record should be promoted once a central log exists.
 
@@ -49,6 +59,17 @@ The skill runs a Context → Decision → Consequences interview, derives the id
 3. **Routes living design docs away** from the log instead of forcing them in.
 
 ## Step 3 — the CI guard (per repo, recommended)
+
+The Step 1 command wires the guard into pull-request CI with full Git history and an explicit base ref. Commit the generated files with your first proposed record and open a pull request. To run the same check locally after fetching the base branch:
+
+```sh
+git fetch origin main
+node scripts/check-adl.mjs --base origin/main
+```
+
+Use your repository's base branch name if it differs from `main`. A clean empty folder validates the setup only; include a proposed record to exercise record validation. Confirm the **ADL guard** job passes on the pull request before considering the local adoption complete.
+
+For manual setup, copy the guard as described below and wire it into a workflow with full Git history (`fetch-depth: 0`) and the pull request's base ref.
 
 [`scripts/check-adl.mjs`](../scripts/check-adl.mjs) lints every pull request touching the decisions folder:
 
@@ -105,4 +126,4 @@ The Step 4 harvest was run end to end on 2026-07-27 against the `acme-corp` work
 
 ---
 
-**Last reviewed:** 2026-08-16. Moved here from `method/03-architecture-decision-log.md` §10.
+**Last reviewed:** 2026-09-09. Step 1 includes the L0 setup command; Step 3 covers local and pull-request validation. Moved here on 2026-08-16 from `method/03-architecture-decision-log.md` §10.
