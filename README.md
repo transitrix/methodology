@@ -2,7 +2,7 @@
 
 ![A Goals tree rendered from this repository's own worked example — three levels of strategy, from a top-level revenue goal down through EU and MENA market goals to their supporting project goals](https://raw.githubusercontent.com/transitrix/methodology/main/transitrix/examples/goals.svg)
 
-Real output, not a mockup — rendered from this repository's own worked example (`notations/examples/goals/`) by [`@transitrix/diagrams`](https://www.npmjs.com/package/@transitrix/diagrams), the same shared rendering library that draws every notation in Studio and in DSM. Regenerate with `node packages/plugin-examples/src/generate.mjs`; CI fails the build if the committed image drifts from its source by a single byte.
+A Goals tree rendered from the [worked example](notations/examples/goals/strategy-2026.goals.transitrix.yaml).
 
 > **Open methodology and tools to describe an enterprise as text — and let humans and machines run it together.**
 
@@ -52,7 +52,7 @@ Using the Claude Code plugin workflow instead? Same result, from the terminal `c
 /transitrix:onboard
 ```
 
-Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — same approach, illustrated against the worked [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
+Prefer to do it by hand, or not working with a coding agent? Follow the manual walkthrough in **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — create and validate a one-goal tree, then explore the worked [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) example. To validate as you go, install **Transitrix Studio** (VS Code) for live preview, or run `npx @transitrix/cli validate <file>` (on Windows PowerShell, use `npx.cmd` — see [Validation](#validation-in-one-paragraph)).
 
 New to the ideas behind it? Read **[`method/01-foundations.md`](method/01-foundations.md)** for the *why* — but you don't need it to start.
 
