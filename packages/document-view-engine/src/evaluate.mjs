@@ -28,6 +28,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createResolver } from './resolve-references.mjs';
 import { isValidId } from '../../document-renderer/src/ids.mjs';
+import { glossaryField } from './glossary-view.mjs';
 
 // ── Generic scalar field extraction ─────────────────────────────────────
 // A canon element's own content fields (name/description/level/kind/...)
@@ -214,5 +215,21 @@ export async function createEvaluator(canonRoot) {
     return { rows: [...rowSet].sort(), cols: [...colSet].sort(), covered };
   }
 
-  return { index, resolveReference, evaluateFieldPath, evaluateEach, evaluateTrace };
+  async function evaluateGlossary({ renderDate } = {}) {
+    const entries = [];
+    for (const [id, entry] of index) {
+      if (!entry.orgRelPath.startsWith('canon/elements/') || entry.orgRelPath.split('/').includes('unresolved')) continue;
+      if ((await resolveReference(id, { renderDate })).state !== 'ok') continue;
+      const text = await textOf(entry);
+      const name = glossaryField(text, 'name');
+      const description = glossaryField(text, 'description');
+      const aliases = glossaryField(text, 'aliases') ?? [];
+      if (typeof name !== 'string' || typeof description !== 'string') continue;
+      if (!Array.isArray(aliases) || aliases.some((alias) => typeof alias !== 'string')) throw new Error(`Invalid aliases on ${id}`);
+      entries.push({ id, type: typeOfId(id), name, description, aliases });
+    }
+    return entries;
+  }
+
+  return { index, resolveReference, evaluateFieldPath, evaluateEach, evaluateTrace, evaluateGlossary };
 }

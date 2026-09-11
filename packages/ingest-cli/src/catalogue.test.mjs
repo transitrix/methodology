@@ -4,7 +4,9 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -365,4 +367,23 @@ test('catalogueCheck: idempotent end-to-end — running twice against unchanged 
   const first = await catalogueCheck(root);
   const second = await catalogueCheck(root);
   assert.deepEqual(first, second);
+});
+
+test('catalogue-recognize CLI stages alias proposals without changing canon', (t) => {
+  const root = tmpOrgRoot();
+  writeManifest(root, 'catalogue:\n  source: acme/architecture\n  version: "1.0.0"\n  path: vendor/catalogue.yaml\n');
+  writeSlice(root, 'vendor/catalogue.yaml', ONE_ELEMENT_SLICE);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeCanonElement(root, '02_business/terms/TERM-9.yaml', { id: 'TERM-9', name: '  COMPETENCY  ' });
+  const element = join(root, 'canon/elements/02_business/terms/TERM-9.yaml');
+  const before = readFileSync(element, 'utf8');
+  const cli = fileURLToPath(new URL('../ingest.mjs', import.meta.url));
+  const output = execFileSync(process.execPath, [cli, 'catalogue-recognize', root], { encoding: 'utf8' });
+  assert.match(output, /1 proposed binding/);
+  const proposalPath = output.match(/catalogue-recognize\s+->\s+(.+)/)[1].trim();
+  assert.ok(proposalPath.startsWith(join(root, '_intake', 'processing')));
+  const proposal = readFileSync(proposalPath, 'utf8');
+  assert.match(proposal, /proposed_canon_id: "TERM-001"/);
+  assert.match(proposal, /admits_to_canon: false/);
+  assert.equal(readFileSync(element, 'utf8'), before);
 });

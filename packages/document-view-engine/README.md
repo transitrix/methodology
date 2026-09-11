@@ -8,8 +8,8 @@ their own repository.
 
 **Scope of this package today: syntax (§2), reference resolution (§3), derived-content
 evaluation, render profiles (§4) for `inline`/`each` content, `figure`/`figref`
-rendering, the `trace` coverage matrix, and `view` rendering for the `blocks`
-notation.** `parseRecipe()` turns a recipe file's text
+rendering, the `trace` coverage matrix, and `view` rendering for the `blocks` and `glossary`
+notations.** `parseRecipe()` turns a recipe file's text
 into a header object and a body AST. `resolveReference()` / `createResolver()`
 classify an id against canon into one of the four states below. `createEvaluator()`
 resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
@@ -17,7 +17,8 @@ resolves `{{ ID.field }}` traversal, `{{# each ... }}` selection, and
 through an evaluator and emits HTML in the `review` or `clean` profile, including
 numbered, bordered `figure` and `view` illustrations, the `figref` references that
 point at them, and the `trace` matrix as an HTML table. `view` renders a `blocks` notation
-(nested-form) source file as inline SVG at render time (`src/blocks-view.mjs`); any
+(nested-form) source file as inline SVG at render time (`src/blocks-view.mjs`);
+`glossary` projects admitted element definitions as HTML (`src/glossary-view.mjs`). Any
 other notation, or the `blocks` notation's `grid:` (matrix-subset) root, renders as a
 missing/failed illustration — those are later slices on this epic. Derivation share
 (§5), telemetry (§6) and PDF output (§7) are parked — see the epic's own thread for
@@ -245,3 +246,33 @@ node packages/document-view-engine/tests/test_evaluate.mjs
 node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
 ```
+
+## Glossary report
+
+A glossary view projects names, aliases, and definitions from admitted elements
+at the render date. TERM and other element types share the same entry shape;
+entries without definitions are omitted. Rendering never changes canon.
+
+```yaml
+notation: glossary
+id: GLOSSARY-FULL-1
+name: Full glossary
+view_config:
+  scope:
+    types: []
+  display:
+    group_by: first_letter
+    show_type_badge: true
+```
+
+Save the configuration as `views/glossary/full.glossary.transitrix.yaml` and
+include it in a recipe with `{{ view ../views/glossary/full.glossary.transitrix.yaml }}`
+(the path is relative to the recipe). Render with `createEvaluator()` and
+`renderDocument()` as above. Omitted configuration uses the defaults shown;
+`types: [TERM]` restricts entries, `group_by: none` removes letter headings, and
+`show_type_badge: false` hides type labels. Text is HTML-escaped.
+
+The notation reader accepts block mappings, inline or block scalar lists, quoted
+scalars, and literal/folded definitions. YAML anchors, tags, and flow mappings are
+outside this reader's subset. Invalid glossary configuration renders as a failed
+view and fails the clean profile, like an invalid blocks view.
