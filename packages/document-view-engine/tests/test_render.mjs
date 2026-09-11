@@ -5,6 +5,10 @@
 // Run: node packages/document-view-engine/tests/test_render.mjs
 // Exit: 0 = all pass; 1 = a check failed.
 
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
+import { parseGlossaryYaml, glossaryField } from '../src/glossary-view.mjs';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -312,3 +316,70 @@ if (_failures.length > 0) {
   process.exit(1);
 }
 console.log('test_render: all checks passed.');
+
+
+const minimal = 'notation: glossary\nid: GLOSSARY-FULL-1\nname: Full glossary\n';
+
+test('glossary config defaults, scoped lists, and invalid inputs', () => {
+  assert.deepEqual(parseGlossaryYaml(minimal), { ok: true, name: 'Full glossary', types: [], groupBy: 'first_letter', showTypeBadge: true });
+  const config = parseGlossaryYaml(minimal + 'view_config:\n  scope:\n    types:\n      - TERM\n      - BUSINESS_OBJECT\n  display:\n    group_by: none\n    show_type_badge: false\n');
+  assert.deepEqual(config.types, ['TERM', 'BUSINESS_OBJECT']);
+  assert.equal(config.groupBy, 'none');
+  assert.equal(config.showTypeBadge, false);
+  assert.equal(parseGlossaryYaml(minimal + 'view_config: {scope: {types: [TERM]}}').ok, false);
+  for (const invalid of [minimal.replace('GLOSSARY-FULL-1', 'GLOSSARY-01'), minimal.replace('glossary\n', 'blocks\n'), minimal.replace('Full glossary', ''), minimal + 'view_config:\n  scope:\n    types: TERM\n', minimal + 'view_config:\n  display:\n    group_by: type\n']) assert.equal(parseGlossaryYaml(invalid).ok, false);
+  assert.deepEqual(glossaryField('aliases: ["A, B", \'C # D\'] # comment', 'aliases'), ['A, B', 'C # D']);
+  assert.equal(glossaryField('description: |\n  First line.\n  Second line.\nname: X', 'description'), 'First line.\nSecond line.\n');
+  assert.equal(glossaryField('description: >-\n  First line.\n  Second line.\n', 'description'), 'First line. Second line.');
+  assert.equal(parseGlossaryYaml(minimal + 'description: |\n  view_config:\n    display:\n      group_by: none\n').groupBy, 'first_letter');
+});
+
+test('glossary recipe renders canon definitions without writing canon', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'glossary-view-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const canon = join(root, 'canon');
+  const elements = join(canon, 'elements', '02_business');
+  await mkdir(elements, { recursive: true });
+  const sources = new Map();
+  for (const [id, fields] of [
+    ['TERM-1', 'name: zebra\ndescription: |\n  A <script>definition</script>.\n  Second line.\naliases:\n  - "A, B"\n  - \'C # D\'\n'],
+    ['BUSINESS_OBJECT-1', 'name: Alpha\ndescription: A modelled object.\n'],
+    ['TERM-2', 'name: Proposed\ndescription: Not admitted.\nadmission_state: proposed\n'],
+    ['TERM-3', 'name: Expired\ndescription: No longer valid.\nvalid_from: "2010-01-01"\nvalid_to: "2020-01-01"\n'],
+    ['TERM-4', 'name: Undefined\n'],
+    ['TERM-5', 'name: Future\ndescription: Not yet valid.\nvalid_from: "2099-01-01"\n'],
+    ['TERM-7', 'name: Rejected\ndescription: Not admitted.\nadmission_state: rejected\n'],
+  ]) {
+    const path = join(elements, `${id}.yaml`);
+    const text = `id: ${id}\nzone: canon\n${fields}`;
+    sources.set(path, text);
+    await writeFile(path, text);
+  }
+  await mkdir(join(elements, 'unresolved'));
+  await writeFile(join(elements, 'unresolved', 'TERM-6.yaml'), 'id: TERM-6\nname: Unresolved\ndescription: Draft.\n');
+  await mkdir(join(canon, 'relations'));
+  await writeFile(join(canon, 'relations', 'REL-1.yaml'), 'id: REL-1\nname: Relation\ndescription: Not an element.\n');
+  const view = join(root, 'full.glossary.transitrix.yaml');
+  await writeFile(view, minimal);
+  const { ast, errors } = parseRecipe('---\ndocument: glossary\ncanon: canon\n---\n{{ view full.glossary.transitrix.yaml }}');
+  assert.deepEqual(errors, []);
+  const evaluator = await createEvaluator(canon);
+  const options = { recipeDir: root, renderDate: '2026-09-11', profile: 'clean' };
+  const result = await renderDocument(ast, evaluator, options);
+  assert.equal(result.failed, false);
+  assert.match(result.html, /<section class="dv-glossary">/);
+  assert.ok(result.html.indexOf('Alpha') < result.html.indexOf('zebra'));
+  assert.match(result.html, /<h3>A<\/h3>/);
+  assert.match(result.html, /<small>TERM<\/small>/);
+  assert.match(result.html, /Also known as: A, B, C # D/);
+  assert.match(result.html, /&lt;script&gt;definition&lt;\/script&gt;\.\nSecond line/);
+  assert.doesNotMatch(result.html, /Proposed|Rejected|Expired|Undefined|Future|Unresolved|Relation|<script>/i);
+  await writeFile(view, minimal + 'view_config:\n  scope:\n    types: [TERM]\n  display:\n    group_by: none\n    show_type_badge: false\n');
+  const filtered = await renderDocument(ast, evaluator, options);
+  assert.equal(filtered.failed, false);
+  assert.match(filtered.html, /zebra/);
+  assert.doesNotMatch(filtered.html, /Alpha|<small>|<h3>/);
+  await writeFile(view, minimal + 'view_config:\n  display:\n    group_by: invalid\n');
+  assert.equal((await renderDocument(ast, evaluator, options)).failed, true);
+  for (const [path, text] of sources) assert.equal(await readFile(path, 'utf8'), text);
+});

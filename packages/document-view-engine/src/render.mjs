@@ -16,9 +16,9 @@
 // the two derived-content forms evaluate.mjs resolves — `figure` / `figref`
 // (§2's "Illustrations", §4's manual/missing border classes), `trace`
 // (§2's "Trace matrix", built from evaluate.mjs's evaluateTrace()), and
-// `view` for the `blocks` notation (§2's "view renders a model view at
-// build time from its source", blocks-view.mjs). A `view` node for any
-// other notation, or the `blocks` notation's `grid:` (matrix-subset) root,
+// `view` for the `blocks` and `glossary` notations (§2's "view renders a model
+// view at build time from its source"). A `view` node for any other notation,
+// or the `blocks` notation's `grid:` (matrix-subset) root,
 // still renders as a missing/failed illustration rather than throwing — the
 // remaining notations are later slices on the same epic, same posture as
 // figure/figref and trace shipping ahead of `view` itself.
@@ -40,6 +40,7 @@
 import { access, readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { parseBlocksYaml, collectBlockIds, renderBlocksSvg } from './blocks-view.mjs';
+import { parseGlossaryYaml, renderGlossaryHtml } from './glossary-view.mjs';
 import { isValidId } from '../../document-renderer/src/ids.mjs';
 import { typeOfId } from './evaluate.mjs';
 
@@ -194,14 +195,14 @@ async function renderNode(node, evaluator, ctx, out) {
       const absPath = isAbsolute(node.path) ? node.path : join(ctx.recipeDir ?? '.', node.path);
       // eslint-disable-next-line no-await-in-loop -- order matters; this node's own illustration number must be assigned before the next one
       const exists = await fileExists(absPath);
-      let svg = null;
+      let viewHtml = null;
       let suspect = false;
       if (exists) {
         // eslint-disable-next-line no-await-in-loop -- must read this view before the next node, same as figure's existence check
         const text = await readFile(absPath, 'utf8').catch(() => null);
         const parsed = text === null ? { ok: false } : parseBlocksYaml(text);
         if (parsed.ok) {
-          svg = renderBlocksSvg(parsed.blocks);
+          viewHtml = renderBlocksSvg(parsed.blocks);
           for (const id of collectBlockIds(parsed.blocks)) {
             if (!isValidId(id)) continue;
             // eslint-disable-next-line no-await-in-loop -- one small tree per view; suspicion must be known before this node renders
@@ -209,18 +210,25 @@ async function renderNode(node, evaluator, ctx, out) {
             if (state.state === 'suspect') { suspect = true; break; }
           }
         }
+        if (!parsed.ok && text !== null) {
+          const glossary = parseGlossaryYaml(text);
+          if (glossary.ok) {
+            try { viewHtml = renderGlossaryHtml(await evaluator.evaluateGlossary(ctx), glossary); }
+            catch { viewHtml = null; }
+          }
+        }
       }
-      const failedToRender = !exists || svg === null;
+      const failedToRender = !exists || viewHtml === null;
       if (failedToRender) fail(out, 'unresolved');
       else if (suspect) fail(out, 'suspect');
       if (ctx.profile === 'clean') {
-        const body = svg ?? '';
+        const body = viewHtml ?? '';
         out.html.push(`<figure class="dv-clean ${fitClass}">${body}<figcaption>${label}</figcaption></figure>`);
         return;
       }
       const borderClass = failedToRender ? 'dv-illus-missing' : suspect ? 'dv-illus-suspect' : 'dv-illus-view';
       const flagHtml = failedToRender ? '<sup class="dv-flag">⚑U</sup>' : suspect ? '<sup class="dv-flag">⚑S</sup>' : '';
-      out.html.push(`<figure class="${borderClass} ${fitClass}">${flagHtml}${svg ?? ''}<figcaption>${label}</figcaption></figure>`);
+      out.html.push(`<figure class="${borderClass} ${fitClass}">${flagHtml}${viewHtml ?? ''}<figcaption>${label}</figcaption></figure>`);
       return;
     }
 
