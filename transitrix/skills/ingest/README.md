@@ -12,6 +12,15 @@ This directory is the **`ingest` skill** within the `transitrix` plugin (the plu
 
 **Propose, never write admitted canon.** The skill emits `field` artefacts and canon *candidates*, runs them through the existing validators, and produces a review queue. It never writes **admitted** canon (anything carrying an admission record). Admission stays a deliberate, auditable human gate (`admitted_by`). A hallucinated element or relation reaching canon unreviewed is the worst-case failure; every design choice here exists to prevent it. The `canon/unresolved/` holding area ([SKILL.md Step 7](SKILL.md)) is the one place the pipeline parks data under the `canon/` path — and the skill only ever writes `proposed` (non-admitted) entries there; promoting one to *admitted-but-untyped* (an accurate object whose only gap is its TYPE, [CONTRACT §13.1](../../../notations/CONTRACT.md)) is the human gate's act, so the rule holds.
 
+## Catalogue federation
+
+Use `/transitrix:ingest` with “join the decision-log network”, “pin this catalogue”,
+“recognise local elements”, or “promote TERM-9”. The
+[catalogue workflow](references/catalogue-federation.md) covers L0 adoption, L1
+pins, L2 recognition, and L3 promotion. It stages proposals for review and provides
+the binding command for a human to run after acceptance. Local IDs stay unchanged;
+central admission and catalogue publication remain the central maintainer's work.
+
 ## Two axes of trust, never merged
 
 - **`source_quality`** — trust in the *source* (signed policy → `authoritative`; meeting note → `single_source`). A closed ordinal label on the field artefact's admission record ([CONTRACT §11.2](../../../notations/CONTRACT.md)). The skill proposes it from document type; a human confirms.
