@@ -373,7 +373,7 @@ test('glossary recipe renders canon definitions without writing canon', async (t
   assert.match(result.html, /<small>TERM<\/small>/);
   assert.match(result.html, /Also known as: A, B, C # D/);
   assert.match(result.html, /&lt;script&gt;definition&lt;\/script&gt;\.\nSecond line/);
-  assert.doesNotMatch(result.html, /Proposed|Rejected|Expired|Undefined|Future|Unresolved|Relation|<script>/);
+  assert.doesNotMatch(result.html, /Proposed|Rejected|Expired|Undefined|Future|Unresolved|Relation|<script>/i);
   await writeFile(view, minimal + 'view_config:\n  scope:\n    types: [TERM]\n  display:\n    group_by: none\n    show_type_badge: false\n');
   const filtered = await renderDocument(ast, evaluator, options);
   assert.equal(filtered.failed, false);
