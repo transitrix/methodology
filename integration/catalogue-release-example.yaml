@@ -1,0 +1,74 @@
+# Copy to .github/workflows/catalogue-release.yaml in a central catalogue repo.
+# Commit a reviewed catalogue.yaml slice (method/09-releases-and-propagation.md
+# §6.4.1), then push its matching vX.Y.Z tag. Never move a published tag.
+name: Publish catalogue slice
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: transitrix/methodology
+          ref: v5.1.0
+          path: .methodology
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - name: Validate the reviewed release slice
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, yaml
+          from pathlib import Path
+          tag = os.environ['RELEASE_TAG']
+          assert re.fullmatch(r'v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)', tag), 'Expected vX.Y.Z'
+          doc = yaml.safe_load(Path('catalogue.yaml').read_text())
+          assert isinstance(doc, dict) and set(doc) == {'version', 'elements'}, 'Expected version and elements only'
+          assert doc['version'] == tag[1:], 'Slice version must match release tag'
+          assert isinstance(doc['elements'], list), 'Expected an elements list'
+          seen = set()
+          for element in doc['elements']:
+              assert isinstance(element, dict), 'Expected an element map'
+              assert {'id', 'type', 'name'} <= set(element) <= {'id', 'type', 'name', 'aliases', 'description'}, 'Only vocabulary fields may be published'
+              for key in ('id', 'type', 'name'):
+                  assert isinstance(element[key], str) and element[key].strip(), f'Missing {key}'
+              assert element['id'] not in seen, 'Duplicate element id'
+              seen.add(element['id'])
+              if 'aliases' in element:
+                  assert isinstance(element['aliases'], list) and all(isinstance(a, str) and a.strip() for a in element['aliases']), 'Invalid aliases'
+              if 'description' in element:
+                  assert isinstance(element['description'], str), 'Invalid description'
+              element.setdefault('aliases', [])
+              element.setdefault('description', None)
+          Path(os.environ['RUNNER_TEMP'], 'catalogue-expected.json').write_text(json.dumps(doc))
+          PY
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          import { parseCatalogueSlice } from './.methodology/packages/ingest-cli/src/catalogue.mjs';
+          const expected = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'catalogue-expected.json'), 'utf8'));
+          assert.deepEqual(parseCatalogueSlice(readFileSync('catalogue.yaml', 'utf8')), expected,
+            'Use the constrained slice format supported by the pin loader');
+          JS
+      - name: Publish versioned asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        # No --clobber: reruns cannot replace a published asset. A new slice
+        # requires a new version. Configure tag protection in the central repo.
+        run: |
+          cp catalogue.yaml "catalogue-${RELEASE_TAG}.yaml"
+          gh release create "$RELEASE_TAG" "catalogue-${RELEASE_TAG}.yaml" \
+            --verify-tag --title "$RELEASE_TAG" --notes "Versioned vocabulary catalogue slice."

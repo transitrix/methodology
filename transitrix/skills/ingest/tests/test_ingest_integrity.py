@@ -1769,6 +1769,14 @@ part_s_workflow_status()
 part_t_batch_naming()
 part_u_source_idempotency_after_move()
 
+# Exercise the shipped L1 publication and report steps in the existing CI gate.
+catalogue_workflows = subprocess.run(
+    [sys.executable, os.path.join(REPO_ROOT, "integration", "test_catalogue_workflows.py")],
+    capture_output=True, text=True,
+)
+check(catalogue_workflows.returncode == 0,
+      "L1 catalogue workflows: " + catalogue_workflows.stdout + catalogue_workflows.stderr)
+
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
     for f in _failures:

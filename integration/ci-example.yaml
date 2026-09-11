@@ -34,6 +34,7 @@ on:
       - 'canon/**'
       - 'views/**'
       - 'transitrix.yaml'
+      - 'vendor/**'
       - '.validators/**'
   push:
     branches: [main]
@@ -41,6 +42,7 @@ on:
       - 'canon/**'
       - 'views/**'
       - 'transitrix.yaml'
+      - 'vendor/**'
   workflow_dispatch:
 
 concurrency:
@@ -101,16 +103,42 @@ jobs:
           fi
           exit $status
 
+  vocabulary:
+    name: Pinned vocabulary (L1 report)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: transitrix/methodology
+          ref: v5.1.0
+          path: .methodology
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Report collisions and unbound matches
+        # Findings are advisory. A declared but unloadable pin is a hard error.
+        # No pin means L0: no vocabulary report. Nothing writes admitted canon.
+        run: |
+          node --input-type=module <<'JS'
+          import { catalogueCheck } from './.methodology/packages/ingest-cli/src/catalogue.mjs';
+          const report = await catalogueCheck(process.cwd());
+          if (report) console.log(JSON.stringify(report, null, 2));
+          JS
+
   validation-gate:
     name: Architecture validation passed
     runs-on: ubuntu-latest
-    needs: [model, views]
+    needs: [model, views, vocabulary]
     if: always()
     steps:
       - name: Require all validation jobs to pass
         run: |
           if [ "${{ needs.model.result }}" != "success" ] \
-             || [ "${{ needs.views.result }}" != "success" ]; then
+             || [ "${{ needs.views.result }}" != "success" ] \
+             || [ "${{ needs.vocabulary.result }}" != "success" ]; then
             echo "Architecture validation failed — merge blocked."
             exit 1
           fi
