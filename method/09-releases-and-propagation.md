@@ -106,6 +106,29 @@ This subsection is what §6.2's L1 row and [`notations/CONTRACT.md`](../notation
 
 The central repository publishes a versioned catalogue slice the same way this repository publishes a methodology release (§3): an immutable Git tag `vX.Y.Z` with a GitHub Release attached. No submodule, no subtree — the same rejection §3 already states applies here unchanged. The slice's content is a flat list of elements, each carrying exactly `id`, `type`, `name` (required) and `aliases`, `description` (optional) — no admission record, no lifecycle, no relations.
 
+A central maintainer can copy [`integration/catalogue-release-example.yaml`](../integration/catalogue-release-example.yaml)
+to `.github/workflows/catalogue-release.yaml`. Commit a reviewed `catalogue.yaml`
+slice at the repository root and push its matching `vX.Y.Z` tag. The workflow
+validates the vocabulary-only fields, checks that the version matches the tag and
+that the pin loader reads every value faithfully, then publishes
+`catalogue-vX.Y.Z.yaml` as a GitHub Release asset. It refuses to replace an existing
+release; corrections require a new version. Protect published tags against movement.
+The slice uses this constrained YAML shape (single-line strings and inline aliases):
+
+```yaml
+version: "1.0.0"
+elements:
+  - id: CAPABILITY-V1
+    type: CAPABILITY
+    name: "Payments"
+    aliases: ["Payment processing"]
+    description: "Ability to process payments."
+```
+
+Prepare this vocabulary projection from the central repository's admitted elements
+and review it before tagging; admission records, lifecycle and relations stay in
+that repository. Publication never modifies admitted canon.
+
 #### 6.4.2 The pin
 
 A consuming project repository pins the catalogue slice it reads via a `catalogue:` block in its own `transitrix.yaml` (`source`, `version`, `path` — all required within the map when present; documented in [`notations/MANIFEST.md`](../notations/MANIFEST.md) §3). A repository with no `catalogue:` field is L0/pre-L1 and unaffected by anything in this subsection. `path` is a location on disk the adopter has already vendored the slice to — no tool in this repository fetches it over the network at validation time.
@@ -122,6 +145,12 @@ Bumping `catalogue.version` is a decision, ratified the same way a `methodology_
 
 A CI step diffs a repository's own canon (`name` + `aliases[]` per element) against the pinned catalogue slice's elements and reports two findings: a **collision** (a local element already bound whose surface form also matches a *different* central element) and an **unbound match** (a local element carrying no `canon_id` whose surface form matches one or more central elements). Both findings are **report only** — the check never edits a file and never fails the build. Implementation: [`packages/ingest-cli/src/catalogue.mjs`](../packages/ingest-cli/src/catalogue.mjs); surfaced in `transitrix-ingest repo-check`'s report, present only when a `catalogue:` pin is declared.
 
+The [`integration/ci-example.yaml`](../integration/ci-example.yaml) workflow includes
+this read-only step. It prints local and central IDs for both findings, succeeds
+when terminology diverges, and fails if a declared pin cannot be loaded. Changes
+under `vendor/` trigger validation too. With no pin, the step emits no catalogue
+report and succeeds.
+
 ### 6.5 Constraints that hold at every level
 
 Additive and backwards-compatible (adopting none of this validates exactly as before); propose, never auto-merge, at every level; no two-way sync — the central repository never edits a project repository's records and vice versa; no agent writes across a repository boundary ([`08-governance.md`](08-governance.md) §2).
@@ -129,6 +158,22 @@ Additive and backwards-compatible (adopting none of this validates exactly as be
 ### 6.6 Setting it up
 
 L0 is one command (`transitrix-ingest adopt-adl`) — see [`guides/adl-adopter-setup.md`](../guides/adl-adopter-setup.md) Step 1. L1 is two commands (vendor the slice, then `catalogue-pin`) once a central repository publishes one. L2 (`catalogue-recognize` / `catalogue-bind`) and L3 (`catalogue-promote`) are commands run directly once L1 is pinned — full command reference: [`packages/ingest-cli/README.md`](../packages/ingest-cli/README.md).
+
+For example, after a central maintainer publishes `v1.0.0`, a consuming repository
+can vendor and pin it from its own root:
+
+```bash
+mkdir -p vendor/catalogue
+gh release download v1.0.0 --repo acme/architecture \
+  --pattern catalogue-v1.0.0.yaml --dir vendor/catalogue
+transitrix-ingest catalogue-pin acme/architecture 1.0.0 vendor/catalogue/catalogue-v1.0.0.yaml .
+```
+
+Replace the illustrative repository coordinate with the central repository's own
+coordinate. Commit the downloaded asset and manifest together, and copy the CI
+example into `.github/workflows/`. Downloads happen during adoption, never during
+validation. The workflow examples pin the methodology implementation to `v5.1.0`;
+change that pin deliberately when upgrading.
 
 ## 7. What this document does NOT define
 
