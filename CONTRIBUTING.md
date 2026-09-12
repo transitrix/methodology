@@ -74,6 +74,8 @@ Add supporting material only as the skill needs it, following existing precedent
 
 ## Review process
 
+To review the newcomer experience, use the [cold-read on-ramp review](guides/reviewing-the-on-ramp.md). It explains how to record a first session and propose or defend cuts without changing the specification.
+
 A maintainer will review pull requests within a reasonable time. Expect:
 
 - Comments on substance and structure first, then style.
