@@ -1777,6 +1777,15 @@ catalogue_workflows = subprocess.run(
 check(catalogue_workflows.returncode == 0,
       "L1 catalogue workflows: " + catalogue_workflows.stdout + catalogue_workflows.stderr)
 
+# Exercise recognition, promotion, and the returned binding in the same CI gate.
+for command in (
+    ["node", "--test", os.path.join(REPO_ROOT, "packages", "ingest-cli", "src", "binding.test.mjs")],
+    [sys.executable, os.path.join(REPO_ROOT, "packages", "ingest-cli", "tests", "test_catalogue_promotion.py")],
+):
+    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    check(result.returncode == 0,
+          "Catalogue binding workflow: " + result.stdout + result.stderr)
+
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
     for f in _failures:

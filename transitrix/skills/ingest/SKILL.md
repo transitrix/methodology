@@ -1,7 +1,7 @@
 ---
 name: Transitrix Ingest
-description: Turn raw organisational material (interviews, policies, org charts, spreadsheets, notes) into Transitrix field artefacts and typed canon candidates at scale, with source-quality scoring and a human review queue. Operates the field→canon derivation pipeline — convert a document, emit a field artefact with provenance and a proposed source_quality, extract typed elements and conservative relations that each cite their field source via derived_from, validate them against the canonical schemas and the adopter's coverage profile, and produce a review queue a human gates before anything is admitted to canon. Never writes canon directly.
-when_to_use: User says "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates. BA-facing shortcut — user says "extract requirements from this interview / project brief / SOP", "get REQUIREMENT / CONSTRAINT candidates out of this writeup", or "run the ingest pipeline motivation-only" — same pipeline, agent runs only `prompts/01_motivation.md` (see [BA quickstart](#ba-quickstart--requirements-from-an-interview)).
+description: Turn raw organisational material (interviews, policies, org charts, spreadsheets, notes) into Transitrix field artefacts and typed canon candidates at scale, with source-quality scoring and a human review queue. Also set up catalogue federation and prepare recognition or promotion proposals for human review. Never writes canon directly.
+when_to_use: User says "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates. BA-facing shortcut — user says "extract requirements from this interview / project brief / SOP", "get REQUIREMENT / CONSTRAINT candidates out of this writeup", or "run the ingest pipeline motivation-only" — same pipeline, agent runs only `prompts/01_motivation.md` (see [BA quickstart](#ba-quickstart--requirements-from-an-interview)). Also use for "join the decision-log network", "pin a shared catalogue", "recognise local elements", or "promote this element to the central catalogue".
 min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
@@ -35,9 +35,20 @@ npx @transitrix/ingest-cli --version    # equivalent — same binary
 - **Present** under either name → proceed. Use whichever form resolved; both invoke the same CLI, and the rest of this protocol shows the primary form. If only the `npx` form is reachable, substitute it for `transitrix-ingest` in the commands below — the subcommands and flags are identical.
 - **Absent** under both → the CLI is not installed in this environment. Stop and tell the user; do not hand-roll the pipeline, because hand-rolled extraction has no deterministic validator gate and risks the one rule above. Pre-1.0 the package is **not yet on npm**, so the expected install path is local: clone the methodology repo and `npm install -g ./packages/ingest-cli` (which provides the `transitrix-ingest` bin); the `npx @transitrix/ingest-cli` form starts to resolve once the CLI is published from its own tooling repo at the ~1.0 extraction.
 
-Also confirm you are operating inside a Transitrix adopter repository (a `transitrix.yaml` manifest at the repo root; see [MANIFEST](https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md)). If there is no repo yet, the user wants `/transitrix:onboard` first.
+Also confirm you are operating inside a Transitrix adopter repository (a `transitrix.yaml` manifest at the repo root; see [MANIFEST](https://raw.githubusercontent.com/transitrix/methodology/main/notations/MANIFEST.md)). If there is no repo yet, the user wants `/transitrix:onboard` first. For L0 decision-log adoption in an existing Git repository, a Transitrix manifest is not required; continue to the catalogue federation workflow after the CLI check.
 
 > **After a methodology upgrade** — reinstall the CLI before running the pipeline. A cached or globally-installed binary from a prior release does not auto-update; it may run against stale validators, a stale profile resolver, or stale `review-queue` logic. Re-run your install command and confirm the version above reflects the new release.
+
+---
+
+## Catalogue federation — L0 through L3
+
+For requests to join the decision-log network, pin a shared catalogue, recognise
+local terms, or promote a local element, run Step 0 and then read
+[`references/catalogue-federation.md`](references/catalogue-federation.md).
+These commands operate on existing elements; skip the document-extraction pipeline.
+The skill stages proposals and presents the accepted binding command for a human
+to run. Recognition and promotion never admit an element or rewrite its local ID.
 
 ---
 
