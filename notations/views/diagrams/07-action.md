@@ -1,8 +1,8 @@
 ---
 notation: "Action — Project Schedule"
-version: "2.2"
+version: "2.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-25"
+last_updated: "2026-09-14"
 status: "documented"
 file_extension: "*.action.transitrix.yaml"
 dsm_status: "partially implemented — Actions page; multi-value fields (predecessors, goals, tags) planned in 0.2.5; CPM analysis planned in 0.3.x; Gantt view planned in 0.4.x"
@@ -221,8 +221,14 @@ The `schedule` block anchors the view on a calendar for Gantt rendering. Absent 
 | `ACT-006` | error | `view_config.scope.type_filter` contains a value outside `{Initiative, Programme, Project, Task}` |
 | `ACT-007` | error | `view_config.schedule.calendar.working_days` values outside `{mon, tue, wed, thu, fri, sat, sun}` or duplicate |
 | `ACT-008` | error | `view_config.schedule.calendar.holidays` entries not valid ISO 8601 dates |
-| `ACT-009` | warn | `view_config.schedule.start_date` absent and no selected action has pinned dates → Gantt view will not render; the network view still does |
-| `ACT-020` | warn | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `type`. |
+| `ACT-009` | warning | `view_config.schedule.start_date` absent and no selected action has pinned dates → Gantt view will not render; the network view still does |
+| `ACT-011` | warning | An action has neither `duration` nor the legacy `duration_days`. Duration-based scheduling and critical-path analysis cannot use that action's duration; the network view remains valid. This is a scheduling limitation, not a requirement to schedule every action. |
+| `ACT-012` | warning | An action's explicit duration disagrees with its pinned date interval. The message identifies the action and the compared duration and interval; calendar-aware comparisons use the declared schedule calendar. |
+| `ACT-013` | warning | An action is structurally disconnected in a schedule containing more than one action: no predecessor, successor, parent, child, goal link, or delivered change connects it to the model. A valid `parent` or `delivers_changes` link counts as a connection; a redundant direct goal link MUST NOT be required. |
+| `ACT-017` | warning | An action referenced as a parent carries its own duration or dates. Its schedule should roll up from its children; the message identifies the parent whose authored timing needs review. |
+| `ACT-018` | warning | An action has no children, duration, start date, or end date and may be an empty phase. An intentionally unscheduled leaf is allowed; this advisory does not require creating children or timing data. |
+| `ACT-019` | warning | The inline `project.start_date` (or its projected schedule anchor) is absent and no action has both dates pinned. Gantt rendering is unavailable; the network view is unaffected. This is the inline/resolved schedule counterpart of `ACT-009`. |
+| `ACT-020` | warning | Deprecated alias detected: `notation: activities`, `activities:` root array, or field `activity_type`. Migrate to `action` / `actions:` / `type`. |
 | `ACT-021` | warning | `view_config.scope.root_action` is set and resolves, and an ACTION in the view's authored `actions[]` — or one the projection would otherwise select — is neither that root nor reachable from it by following `parent`. The message names the ACTION id and the `root_action`. |
 
 `ACT-021` is the scoped-view case only. It does not fire when `root_action` is absent. It does not make `parent` required on a true root (`ACTION-003` is unchanged). Reachability walks `parent` from the candidate toward its ancestors until it hits the root or runs out; a cycle in `parent` is not a substitute for this check. The ACTION that fails the walk is omitted from the render — the warning is what used to be a silent drop.
@@ -232,6 +238,18 @@ For the projection form, "would otherwise select" means the ACTION elements the 
 Worked fixture: [`examples/action/root-action-scope/`](../../examples/action/root-action-scope/).
 
 Element-level validation (predecessor cycles, duration non-negativity, date consistency, ID grammar) lives in the ACTION element rules applied when the canonical element files are validated; see [elements/24-action.md](../../elements/24-action.md) §6.
+
+The scheduling advisories above apply to inline actions and to the resolved
+selection of a projection. They do not make timing fields mandatory for the
+network view. Structural connectivity is checked against the available catalogue,
+including links through a parent or delivered change, rather than only the
+visible predecessor edges. A validator must retain and report these warnings
+even when the run has no errors ([CONTRACT.md](../../CONTRACT.md) §18).
+
+Code identity includes the rule and severity, not just its spelling. In
+particular, `ACT-009` is the warning above; a tool emitting it as a numeric-field
+error disagrees with this table. Such a collision requires a tooling correction
+or an explicit specification proposal, not silently repurposing the code.
 
 ---
 

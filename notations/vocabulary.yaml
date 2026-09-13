@@ -589,6 +589,30 @@ rule_codes:
   ACT-008:
     severity: error
     spec: notations/views/diagrams/07-action.md
+  ACT-009:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-011:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-012:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-013:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-017:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-018:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-019:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
+  ACT-020:
+    severity: warning
+    spec: notations/views/diagrams/07-action.md
   ACT-021:
     severity: warning
     spec: notations/views/diagrams/07-action.md
@@ -1243,6 +1267,9 @@ rule_codes:
   NOD-002:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
+  NOTATION-SKIP-001:
+    severity: warning
+    spec: notations/CONTRACT.md
   ORG-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md

@@ -1211,59 +1211,47 @@ A repository's own views always display its own `id` — a binding is metadata a
 
 ## 18. Validator behaviour and notation coverage
 
-Every notation in the methodology family carries a published specification and a set of validation rules. The validator is the tool that enforces these rules across a repository. This section defines which notations are validated, what codes the validator may emit, and the requirement that every validation code produced by the validator must be documented in the specification.
+Every notation in the methodology family carries a published specification and a set of validation rules. The validator is the tool that enforces these rules across a repository. This section defines how validation coverage is reported and requires every emitted diagnostic code to appear in a specification table.
 
-### 18.1 Validated notations
+### 18.1 Notation inventory and validation scope
 
-The following notations are **validated** — their files are read and checked against the specification's validation rules:
+The [notation catalogue](README.md) is the inventory of published view and
+element notations, including drafts. Implementation support belongs to a named
+tool version and execution scope; specification maturity does not imply support.
+A fixed list of supported notations in this contract cannot substitute for the
+validator's report of the files it actually read.
 
-**View notations (diagram, report, document):**
-- `dgca` (Strategy-to-Execution Chain, §2-dgca.md)
-- `goals` (Goals tree, §04-goals.md)
-- `action` (Action schedule, §07-action.md)
-- `action-card` (Action card narrative, §18-action-card.md)
-- `blocks` (Multi-level container layouts, §08-blocks.md)
+Repository validation MUST enumerate model files in the declared repository
+scope before dispatching by notation. This includes view files in both normative
+`views/` and legacy `canon/views/`, canonical primitives and relations, and
+structured codex and field primitives in their specified locations. Boundary
+and exclusion rules still apply ([MANIFEST.md](MANIFEST.md) §4); templates and
+nested independent catalogues are not silently counted as validated model files.
+An extension or missing/unknown `notation` value must not cause a model file
+already in scope to disappear from the report.
 
-**Element notations (zone primitives):**
-- `goal` (Goal element, §02-goal.md)
-- `codex` (Codex entry, §14-codex.md)
-- `requirement` (Requirement element, §15-requirement.md)
-- `assertion` (Assertion element, §16-assertion.md)
-- `relation` (Relation element, §17-relations.md)
-- `action` (Action element, §24-action.md)
-- `verification` (Verification element, §27-verification.md)
-- `validation` (Validation element, §28-validation.md)
+A file is **validated** only when it was read, parsed, and dispatched to its
+applicable checks. It may then be clean or have findings. A read or parse failure
+is an error; a file cannot receive a clean tick merely because dispatch produced
+no findings.
 
-### 18.2 Skipped notations
+### 18.2 Unvalidated notations
 
-The following published notations are **not currently validated** — their files are recognised but not checked:
+A model file for which the selected validator has no applicable checks is
+**unvalidated**, regardless of whether its notation is known, new, or unsupported
+in that execution scope. Reading its header or checking YAML syntax alone does
+not validate the notation. The validator MUST name the file and the notation
+(or state that the notation could not be determined), retain the file in its
+coverage accounting, and emit `NOTATION-SKIP-001`.
 
-**View notations:**
-- `bpmn` (BPMN process flow, §01-bpmn.md)
-- `capability-map` (Capability hierarchy with maturity, §05-capability-map.md)
-- `process-map` (Process catalogue, §06-process-map.md)
-- `applications` (Application inventory, §10-applications.md)
-- `integration-map` (Application integration graph, §12-integration-map.md)
-- `process-blueprint` (Value-chain blueprint, §13-process-blueprint.md)
-- `scenarios` (Scenarios report, §11-scenarios.md)
-- `compliance-impact` (Compliance matrix report, §21-compliance-impact.md)
-- `coverage-metric` (Coverage metric report, §22-coverage-metric.md)
-- `actions-tree` (Actions tree report, §23-actions-tree.md)
-- `rules-in-force` (Rules in force report, §24-rules-in-force.md)
-- `glossary` (Glossary report, §32-glossary.md)
-- `mrd` (Marketing Requirements Document, §29-mrd.md)
-- `srs` (Software Requirements Specification, §30-srs.md)
-- `sdd` (Software Design Description, §31-sdd.md)
+| Rule | Severity | Description |
+|---|---|---|
+| `NOTATION-SKIP-001` | warning | An in-scope model file has no applicable notation validator. Report its path and notation as unvalidated. Under `--strict`, this finding is promoted to an error and the run exits non-zero. |
 
-**Element notations:**
-- `actor` (Actor element, §19-actors.md)
-- `stakeholder` (Stakeholder element, §20-stakeholders.md)
-- `location` (Location element, §21-locations.md)
-- `amendment` (Amendment element, §22-amendment.md)
-- `segment` (Segment element, §23-segment.md)
-- `business-service` (Business Service element, §25-business-services.md)
-- `node` (Node element, §25-nodes.md)
-- `technology-service` (Technology Service element, §26-technology-services.md)
+Strict promotion is a documented severity override, not a second meaning for
+the code. Unknown and unsupported notations are not clean results. If a file
+cannot be read or parsed, report that failure rather than inferring its validity
+from the filename.
 
 ### 18.3 Validator code publication rule
 
@@ -1275,22 +1263,50 @@ Every code the validator may emit — error, warning, or info — **must appear 
 
 No code may be emitted by the validator that does not appear in a published table. When the validator is updated to emit a new code, the corresponding specification section must be updated in the same release.
 
-### 18.4 Skipped notation reporting
+### 18.4 Coverage accounting and reporting
 
-The validator **must report which notations it encountered but did not validate.** When a file of a skipped notation type is discovered:
+Every repository run MUST report counts of **discovered**, **read**, **validated**,
+**unvalidated**, and **failed** files. Counts refer to distinct file paths, not
+read operations or findings. The accounting is exhaustive and disjoint:
 
-- **In a validation run that reports counts:** the skipped notation's filename is listed in the output with a status of "SKIPPED" or "NOT VALIDATED" (exact wording is implementation-specific), distinguishing it from errors and warnings.
-- **In a validation run over a complete repository:** the count of files examined equals the count of files expected in the repository (i.e., a file of a skipped notation is counted as "examined" but reported as skipped, not silently omitted from the count).
+- `discovered = validated + unvalidated + failed`.
+- `read` counts files whose contents were successfully read, including files
+  that subsequently fail parsing. An I/O failure contributes to `failed` but not
+  `read`; a parse failure contributes to both `read` and `failed`.
+- `validated` includes files with rule errors or warnings; `failed` means reading,
+  parsing, or dispatch could not complete, not that a completed rule found an error.
+- With no I/O failures, `read = discovered`, even when some notations are
+  unvalidated. Excluded files and their exclusion reasons are reported separately.
 
-**Example output:**
+Human and machine output MUST retain every finding, including warnings when
+there are no errors. Unvalidated files MUST be listed individually; a summary
+count or a green tick alone is insufficient. A successful exit with warnings
+means only that no error-level finding blocked the run. `--strict` makes an
+unvalidated file blocking as specified above.
 
+**Example output** for a tool that does not support the Actions Tree:
+
+```text
+✓ views/action/launch.action.transitrix.yaml (validated, clean)
+⊘ views/actions-tree/portfolio.actions-tree.transitrix.yaml (NOTATION-SKIP-001: unvalidated)
+✓ canon/elements/01_motivation/goals/GOAL-REVENUE-1.yaml (validated, clean)
+
+Summary: 3 discovered, 3 read, 2 validated, 1 unvalidated, 0 failed; 0 errors, 1 warning.
 ```
-✓ DGCA file: views/dgca/strategy-2026.dgca.transitrix.yaml (clean)
-⊘ BPMN file: views/diagrams/order-flow.bpmn.transitrix.yaml (SKIPPED — validator not yet implemented)
-✓ Goal element: canon/elements/01_motivation/goals/GOAL-REVENUE-1.yaml (clean)
-✓ Requirement element: canon/elements/01_motivation/requirements/REQUIREMENT-DATA-ERASURE-1.yaml (clean)
 
-Summary: 7 files examined, 6 validated, 1 skipped, 0 errors, 0 warnings.
-```
+### 18.5 Conformance checks
 
-This way, a file of a currently-skipped notation is never silent — its presence is visible, and the output tells the reader why it was not checked.
+Run the named validator version and scope against a temporary repository with
+one instance of every notation in the catalogue, in each notation's published
+location. Derive the inventory from the catalogue so a new notation cannot be
+omitted from the test. Assert that every path is accounted for exactly once,
+`read = discovered` for readable inputs, and every emitted code resolves to its
+specification table at the documented severity (including explicit strict-mode
+overrides). Matching a code string with a different rule meaning is not agreement.
+
+Also run a clean supported file and require a clean result, then add a file whose
+notation is unsupported by that tool version. Require the latter's path and
+`NOTATION-SKIP-001` in both human and machine reports, with a non-zero strict run.
+Missing headers, parse failures, and read failures must remain visible in the
+accounting. These checks exercise the validator; a specification inventory alone
+is not evidence that the implementation conforms.
