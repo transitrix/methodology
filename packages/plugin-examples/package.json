@@ -16,6 +16,6 @@
   "repository": "https://github.com/transitrix/methodology",
   "dependencies": {
     "@transitrix/diagrams": "1.9.18",
-    "js-yaml": "4.3.1"
+    "js-yaml": "4.3.2"
   }
 }
