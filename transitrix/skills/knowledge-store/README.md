@@ -12,6 +12,8 @@ This directory is the **`knowledge-store` skill** within the `transitrix` plugin
 
 ---
 
+Re-curating a reissued source creates a new source record and a new knowledge object. After review, the new object and its predecessor receive reciprocal supersession pointers; the predecessor’s body and assertion metadata remain intact. See [Gate 2.1](../../../../patterns/knowledge-store.md#gate-21--supersession-not-rewriting).
+
 ## What it ships
 
 - [`SKILL.md`](SKILL.md) — the agent-facing protocol: five steps from document assessment through knowledge writing and canon PR.

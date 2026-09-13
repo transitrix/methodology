@@ -62,8 +62,8 @@ OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extens
 | `source:` | Transitrix extension | Repo path or URI of the originating document (provenance) |
 | `created_at:` | Transitrix extension | Date the object was curated (distinct from `timestamp:` which tracks modifications) |
 | `confidence:` | Transitrix extension | Curator's epistemic assessment: `observed` / `inferred` / `assumed` |
-| `supersedes:` | optional | Transitrix extension | ID or bundle-relative path of the knowledge object this one supersedes (re-curation; the old object is retained for history). Absent by default. |
-| `superseded_by:` | optional | Transitrix extension | ID or bundle-relative path of a newer knowledge object that supersedes this one. Absent by default. |
+| `supersedes:` | optional | Transitrix extension: ID or bundle-relative path of the knowledge object this one supersedes (re-curation; the old object is retained for history). Absent by default. |
+| `superseded_by:` | optional | Transitrix extension: ID or bundle-relative path of a newer knowledge object that supersedes this one. Absent by default. |
 
 OKF consumers must not reject bundles for unknown fields — Transitrix extensions are fully compatible.
 
@@ -96,7 +96,7 @@ Before an extracted knowledge object is written to `knowledge/`, it MUST be chec
 
 **Rule:** a knowledge object MUST NOT silently introduce a definition that conflicts with or duplicates an existing canon element. Mapping options:
 - **Confirms** — the object corroborates an existing element (link to it in the body; no new `canon/` entry needed).
-- **Extends** — the object adds detail to an existing element (update the knowledge object; open a PR to amend the existing canon element).
+- **Extends** — the object adds detail to an existing element (create a successor knowledge object under Gate 2.1; open a PR to amend the existing canon element).
 - **Proposes** — the object describes a genuinely new concept (create a new knowledge object; open a PR to add a new `canon/` element).
 - **Conflicts** — the object contradicts an existing element; this MUST be flagged explicitly and held for human review before admission.
 
@@ -106,7 +106,7 @@ Before an extracted knowledge object is written to `knowledge/`, it MUST be chec
 
 When a knowledge object needs updating due to changed understanding or new information — a curation refresh — it is **superseded rather than rewritten in place**. The old object is retained in the repository for history and auditability; a new object is created with the updated curation, and both objects record their relationship via `supersedes` and `superseded_by` fields.
 
-**Rule:** a curator who needs to update a knowledge object MUST NOT edit the original in place. Instead:
+**Rule:** a curator who needs to update a knowledge object MUST preserve the original body and assertion metadata (`source`, `description`, `confidence`, `created_at`, and any existing `supersedes`). As with [accepted decisions](../method/07-decisions.md#6-immutability-discipline), only lifecycle metadata changes on the predecessor: add `superseded_by` and advance `timestamp` to record that change. Instead of rewriting the assertion:
 
 1. Create a new knowledge object with the updated curation.
 2. On the new object, add `supersedes: <old-object-id>` (or bundle-relative path `/knowledge/old-name.md`).
@@ -114,12 +114,16 @@ When a knowledge object needs updating due to changed understanding or new infor
 4. The old object is retained and remains queryable; consumers following the `superseded_by` pointer are directed to the newer version.
 
 **Fields:**
-- `supersedes:` (optional) — ID or bundle-relative path of the knowledge object this one replaces. Only one object may supersede another (no chains beyond two objects). Absent by default.
+- `supersedes:` (optional) — ID or bundle-relative path of the knowledge object this one replaces. Each object has at most one predecessor. Linear chains of any length are allowed; self-links, cycles, and forks are invalid. Absent by default.
 - `superseded_by:` (optional) — ID or bundle-relative path of a newer knowledge object that supersedes this one. Only one object may be pointed to (no forks). Absent by default.
 
-The two fields form a bidirectional pair: when set, both MUST name each other. A linter will flag `KS-019` if the pair is incomplete (e.g., `supersedes` set but the target does not carry `superseded_by`, or vice versa).
+The two fields form a bidirectional pair: when set, both MUST name each other. The reference linter reports `KS-018` for a malformed, missing, ambiguous, or non-knowledge target, `KS-019` for a missing reciprocal pointer, and `KS-020` for a mismatched pointer, self-link, or cycle. These are errors on admitted objects. Each field, when present, is a single non-empty string: a bundle-relative path (with or without the leading `/`) or a unique explicit `id` of a knowledge object in the same store. IDs need not be added to existing objects.
 
-**Rationale:** re-curation produces new knowledge, not a replacement state machine. The full history — what was believed, when it changed, why — remains in the repository for audit, causal reasoning, and recovery. A repository that deletes old objects when they are superseded loses that history. Consumers reading `superseded_by` follow to the current version; queries over the store at a point in time can slice by `timestamp` to surface objects valid on a given date.
+A draft may propose `supersedes` pointing to the current admitted object without changing that object yet; its missing backlink is a `KS-019` warning until curator approval. Admission creates the successor at a fresh path and adds the reciprocal pointer in the same reviewed change. Admitted objects must never point into `_intake/`. The linter checks the current graph; review of the Git diff checks preservation of the old body and assertion metadata. Stores that omit both fields retain their existing behavior.
+
+**Rationale:** re-curation produces new knowledge, not a replacement state machine. The full history — what was believed, when it changed, why — remains in the repository for audit, causal reasoning, and recovery. A repository that deletes old objects when they are superseded loses that history. Consumers reading `superseded_by` follow to the current version; historical queries use the dated admission log and Git history, because `timestamp` also records lifecycle changes.
+
+**Regenerability:** when a source is reissued, archive it as a new source-document record, retaining the previous source and its hash. Re-curate into a new derived assertion citing that revision; link it to the previous assertion through supersession. A curated summary is regenerable from preserved evidence and curation decisions, not editable authoritative evidence itself. Regeneration does not promise byte-identical prose. Supersession alone never authorizes deletion or retargets canon citations; the compaction invariants below still apply.
 
 ### Gate 3 — Blast-radius-aware promotion
 
@@ -313,7 +317,7 @@ type: concept
 title: Multi-tenant isolation
 description: A security boundary between customer datasets; enforced at the row level via application logic.
 confidence: inferred
-source: /intake/processed/2025-03-15-architecture-audit.md
+source: /_intake/processed/2025-03-15-architecture-audit.md
 mapping: confirms
 created_at: 2025-03-15
 timestamp: 2025-03-15T10:30:00Z
@@ -336,7 +340,7 @@ type: concept
 title: Multi-tenant isolation (updated 2026)
 description: A security boundary between customer datasets; enforced via a combination of row-level application logic, database-level schema separation, and cryptographic key isolation depending on trust tier.
 confidence: observed
-source: /intake/processed/2026-09-02-multi-tenancy-security-audit.md
+source: /_intake/processed/2026-09-02-multi-tenancy-security-audit.md
 mapping: extends
 created_at: 2026-09-02
 supersedes: /knowledge/multi-tenant-isolation.md
@@ -366,12 +370,12 @@ The original 2025 assessment of row-level failures remains valid. Additionally, 
 [conflicts] multi-tenant-isolation: curated 2025 as row-level-only; newer audit (2026-09-02-multi-tenancy-security-audit.md) shows evolved approach (schema + crypto). New object replaces v1. Old object retained for history. Reference: multi-tenant-isolation-v2.md supersedes multi-tenant-isolation.md.
 ```
 
-After merge of the new knowledge object:
+In the same reviewed change that admits the new knowledge object:
 
-- **Old object** (`multi-tenant-isolation.md`) gains `superseded_by: /knowledge/multi-tenant-isolation-v2.md`
+- **Old object** (`multi-tenant-isolation.md`) gains `superseded_by: /knowledge/multi-tenant-isolation-v2.md` and advances `timestamp` to the admission time; its body and assertion metadata stay unchanged.
 - **New object** (`multi-tenant-isolation-v2.md`) already carries `supersedes: /knowledge/multi-tenant-isolation.md`
 
-Both objects remain queryable in the knowledge store. Consumers following the current state read the new object; historical queries (e.g., "what was known on 2025-03-15?") retrieve the original via `timestamp`.
+Both objects remain queryable in the knowledge store. Consumers following the current state read the new object; historical queries (e.g., "what was known on 2025-03-15?") retrieve the original through the admission log and Git history.
 
 ## Compaction: Design Frame
 
@@ -407,7 +411,7 @@ Four compaction variants are visible across typical enterprise knowledge stores.
 - Complexity: Low (check for presence of `superseded_by:` field)
 
 **Satisfies invariants:**
-1. ✓ Canon references cannot be to superseded objects (superseded = no longer current; canon cites current)
+1. Canon may still cite a superseded object. Check actual `derived_from` reachability before considering removal; a supersession pointer is not proof that the object is unreferenced.
 2. ✓ Pointers survive (in new objects and VCS); removal is provable from history
 3. ✓ Can be human-triggered per ADR; no algorithm runs automatically
 

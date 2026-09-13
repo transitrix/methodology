@@ -2,7 +2,7 @@
 """Deterministic integrity test for the Knowledge Store quality gates.
 
 Runs tools/knowledge_store_lint.py against fixture bundles and synthetic
-failure cases. Covers KS-001 through KS-017 — the reference implementation
+failure cases. Covers KS-001 through KS-020 — the reference implementation
 of Gates 1-6 from patterns/knowledge-store.md.
 
 Run:  python transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py
@@ -305,6 +305,13 @@ def main():
     part_d_warnings()
     part_e_gate5_consistency()
     part_f_gate6_assisted_ingest()
+    print("Part G — supersession integrity")
+    result = subprocess.run(
+        [sys.executable, os.path.join(REPO_ROOT, "tools", "tests", "test_knowledge_supersession.py")],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    check(result.returncode == 0, f"Supersession tests failed:\n{result.stdout}{result.stderr}")
+    print(result.stdout)
 
     if _failures:
         print("FAILED:")

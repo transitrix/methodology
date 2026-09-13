@@ -6,7 +6,7 @@ and detect identity mismatches. Verifies that re-curation follows the pattern:
 create new object + add `supersedes` field pointing to old, add `superseded_by`
 field to old object pointing to new.
 
-Per patterns/knowledge-store.md Gate 2.1 and task transitrix-hq#696.
+Per patterns/knowledge-store.md Gate 2.1.
 
 Run:  python tools/tests/test_knowledge_supersession.py
 Exit: 0 = all checks pass; 1 = a check failed.
@@ -17,6 +17,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
+
+import yaml
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LINTER = os.path.join(REPO_ROOT, "tools", "knowledge_store_lint.py")
@@ -426,7 +429,80 @@ New process."""
         shutil.rmtree(work, ignore_errors=True)
 
 
+def test_template_defaults():
+    """New objects copied from either template need no supersession cleanup."""
+    for name, zone in (("okf-knowledge-object.md", "knowledge"),
+                       ("okf-knowledge-object-draft.md", "_intake/drafts")):
+        template = Path(REPO_ROOT) / "patterns" / "knowledge-store-templates" / name
+        frontmatter = yaml.safe_load(template.read_text(encoding="utf-8").split("---", 2)[1])
+        check(not any(key in frontmatter for key in ("supersedes", "superseded_by")),
+              f"{name}: supersession fields must be absent by default")
+        frontmatter.update(type="concept", title="First assertion", confidence="observed",
+                           mapping="proposes", created_at="2026-09-13",
+                           timestamp="2026-09-13T00:00:00Z")
+        if zone == "_intake/drafts":
+            frontmatter["review_status"] = "ready"
+        with tempfile.TemporaryDirectory(prefix="knowledge-template-") as work:
+            _write(os.path.join(work, zone, "first.md"),
+                   "---\n" + yaml.safe_dump(frontmatter) + "---\nFirst assertion.\n")
+            code, out = _run_linter(work)
+            check(code == 0, f"{name}: populated first-object template must pass: {out}")
+
+
+def test_supersession_graph_contract():
+    """Exercise CLI disposition, including malformed YAML values and draft admission."""
+    def run(records, expected=None, success=False):
+        with tempfile.TemporaryDirectory(prefix="knowledge-history-") as work:
+            for path, extra in records.items():
+                fm = dict(type="concept", title=path, source="/source/revision.md",
+                          confidence="observed")
+                if path.startswith("_intake/drafts/"):
+                    fm["review_status"] = "ready"
+                if path.startswith("_intake/processed/"):
+                    fm["type"] = "source-document"
+                fm.update(extra)
+                _write(os.path.join(work, path), "---\n" + yaml.safe_dump(fm) + "---\nOriginal assertion.\n")
+            before = {p: (Path(work) / p).read_bytes() for p in records}
+            code, out = _run_linter(work)
+            check((code == 0) == success, f"Unexpected exit {code} for {records}: {out}")
+            if expected:
+                check(expected in out, f"Expected {expected} for {records}: {out}")
+            else:
+                check(not any(c in out for c in ("KS-018", "KS-019", "KS-020")), out)
+            after = {p: (Path(work) / p).read_bytes() for p in records}
+            check(before == after, "Validation must not rewrite knowledge or source records")
+
+    old, new, latest = (f"knowledge/{name}.md" for name in ("old", "new", "latest"))
+    run({old: {}}, success=True)
+    run({old: {"id": "old-id", "superseded_by": "new-id"},
+         new: {"id": "new-id", "supersedes": "/" + old, "superseded_by": latest},
+         latest: {"supersedes": "new-id"}}, success=True)
+    for key in ("supersedes", "superseded_by"):
+        for value in (None, "", "  ", False, 0, 42, [], [old], {"path": old}, "knowledge/missing.md"):
+            run({old: {key: value}}, "KS-018")
+        run({old: {key: new}, new: {}}, "KS-019")
+        run({old: {key: old}}, "KS-020")
+        for zone in ("_intake/drafts/proposal.md", "_intake/processed/source.md"):
+            run({old: {key: zone}, zone: {}}, "KS-018")
+    run({old: {"supersedes": new, "superseded_by": new},
+         new: {"supersedes": old, "superseded_by": old}}, "KS-020")
+    run({old: {"supersedes": latest, "superseded_by": new},
+         new: {"supersedes": old, "superseded_by": latest},
+         latest: {"supersedes": new, "superseded_by": old}}, "KS-020")
+    run({old: {"superseded_by": new}, new: {"supersedes": old},
+         latest: {"supersedes": old}}, "KS-020")
+    run({old: {"id": "duplicate"}, new: {"id": "duplicate"},
+         latest: {"supersedes": "duplicate"}}, "KS-018")
+    run({old: {"superseded_by": new}, new: {"supersedes": latest}, latest: {}}, "KS-020")
+    # Proposal passes without mutating the predecessor; admission requires its backlink.
+    run({old: {}, "_intake/drafts/new.md": {"supersedes": old}}, "KS-019", success=True)
+    run({old: {}, new: {"supersedes": old}}, "KS-019")
+    run({old: {"superseded_by": new}, new: {"supersedes": old}}, success=True)
+
+
 def main():
+    test_template_defaults()
+    test_supersession_graph_contract()
     test_valid_supersession_pair()
     test_ks018_unresolved_target()
     test_ks019_incomplete_pointer_from_new()
