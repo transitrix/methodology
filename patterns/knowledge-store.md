@@ -379,118 +379,80 @@ Both objects remain queryable in the knowledge store. Consumers following the cu
 
 ## Compaction: Design Frame
 
-Knowledge stores grow without bound. As object counts accumulate, storage and query performance degrade. **Compaction** is the process of selectively removing objects to keep the store bounded while preserving provenance and reversibility.
+**Compaction** selectively removes curated knowledge objects from the active store. An adopter first measures the problem: object counts alone do not establish a storage or retrieval bottleneck. Keeping the store unchanged is valid when maintenance would cost more than it saves.
 
-Compaction is **not automatic, not fast, and not a performance optimization alone.** It is an organizational decision — when and how an adopter chooses to retire old objects — recorded as an Architecture Decision Record in their own `operations/decisions/` folder, not a background cron job. This section documents the design frame: which variants exist, what each preserves and costs, and the invariants any algorithm must satisfy.
+This frame defines constraints and choices, not a deletion algorithm. It applies to curated `knowledge/`; it does not authorize pruning append-only `field/` evidence or original source records. [Gate 2.1](#gate-21--supersession-not-rewriting) is a prerequisite: re-curation creates a new assertion with reciprocal supersession pointers, preserving the old assertion. Regenerability does not mean a newer summary can reconstruct exact old content.
 
 ### Three invariants (non-negotiable)
 
-Any compaction algorithm MUST satisfy all three:
+Every variant MUST satisfy all three for every proposed removal:
 
-1. **Nothing reachable from canon by `derived_from` is ever compacted away.** Criterion is mechanical reachability — if a canon element carries `derived_from: /knowledge/object-name`, that object MUST remain in the store. Compaction never orphans a canon citation.
+1. **Nothing bound to canon is ever compacted away.** The base methodology defines no canon-to-knowledge reference: canonical `derived_from` accepts typed Field/Codex IDs, while knowledge objects use `source`, bundle links, and supersession pointers. A base/open-tier store therefore cannot establish canon reachability and MUST defer removal. An extension MAY define a canon-to-knowledge binding only when it specifies a contract-valid, mechanically resolvable reference and validates it. Such an extension protects the entire transitive closure: start at every canon binding in scope and follow every supported knowledge-to-knowledge reference. For example, an extension-defined `canon A → knowledge B` binding plus a supported `knowledge B → knowledge C` link protects both B and C, even if C is old, superseded, or considered low risk. A missing or ambiguous target, an unsupported edge, or an unexamined consuming catalogue prevents establishing eligibility. The result MUST be mechanical, not a curator's judgment of importance. Recheck it against the state being changed; a new binding invalidates an earlier removal proposal. Do not retarget references to make an object eligible.
 
-2. **Reversible, or provable.** Either the compacted objects are restorable from archival storage (cold store, version control, S3), or the fact and contents of removal are cryptographically attested (SHA-256 manifest, signed deletion record) so the history survives and can be audited. Silent deletion is not permissible; evidence of what was removed MUST be preserved.
+2. **Reversible, or hash-attested.** Before removal, either preserve exact content in a cold store with a verified restoration route, or retain a durable manifest binding each removed object's identity and revision to a cryptographic content hash (for example SHA-256), with the removal date and responsible person. The manifest MUST identify the hash algorithm and exact bytes covered, including assertion metadata. A hash attests which content existed; it cannot recover content or prove an assertion true. A successor, pointer, timestamp, or deletion log alone satisfies neither option. Git history qualifies as a cold store only with an explicit retention and recovery arrangement; deleting a working-tree file does not reduce repository history size.
 
-3. **Never automatic.** Compaction is human-triggered, deliberate, and recorded. No cron job, no background process, no "cleanup" that runs on schedule. The `knowledge/` zone's contract is provenance; the zone whose raison d'être is "nothing lost" does not get automatic pruning. An adopter makes the call, documents it in their ADR, and takes responsibility.
+3. **Never automatic.** A human MUST trigger each compaction operation and record its scope, choice, and outcome in an ADR in the adopter's `operations/decisions/`, following the [decision lifecycle](../method/07-decisions.md#6-immutability-discipline). A standing ADR does not authorize scheduled pruning. Tools may report candidates and verify constraints, but freshness warnings, elapsed time, supersession, and risk scores never trigger deletion.
+
+These are minimum conditions, not blanket permission to delete. Remaining references, including `source`, `supersedes`, and `superseded_by`, must still resolve under the store's contract. The current Gate 2.1 validator requires supersession targets in the same store; a cold archive or hash manifest is not a supported replacement target. Until an implementation can preserve that contract, retain the linked objects. This frame adds no archive resolver, tombstone schema, required object field, or validator exception; existing stores remain valid unchanged.
 
 ### Design variants
 
-Four compaction variants are visible across typical enterprise knowledge stores. Each is a different point in the trade-off space between recency (removing old objects) and reversibility (keeping evidence).
+The four variants select candidates only **after** applying the protection boundary. They may be combined, but none weakens an invariant. Storage gains refer to the active store, not total retained evidence or Git history.
 
-#### Variant 1: Supersession-based (immature objects only)
+#### Variant 1: Supersession-based
 
-**What it removes:** knowledge objects marked `superseded_by:` field (have been re-curated with a newer version).
+**Selection:** consider explicitly superseded assertions with a valid successor. Supersession explains replacement; it does not establish that canon no longer depends on an assertion.
 
-**Preservation:** The superseding object carries `supersedes:` pointing back; consumers know where to look. Audit trail is semantic (explicit pointers in remaining objects), not cryptographic.
+**Preservation and cost:** retain exact predecessor content in a recoverable archive or record its content hash. Keeping only the successor is insufficient. Selection effort is low in stores with regular re-curation, but gains depend on unreferenced predecessors. Current same-store reciprocal-pointer requirements prevent removing a linked predecessor merely because a backup exists.
 
-**Reversibility:** Complete if the new object is kept; the old object is recoverable from version control or backup without new infrastructure.
+**Decision fit:** adopters who want a narrow semantic selection rule and can preserve supersession resolution. Defer removal where the implementation cannot do so.
 
-**Costs:**
-- Storage: Medium (old objects are removed once a successor exists)
-- Reversibility: High (implicit in semantic links and VCS history)
-- Complexity: Low (check for presence of `superseded_by:` field)
+#### Variant 2: Date-based
 
-**Satisfies invariants:**
-1. Canon may still cite a superseded object. Check actual `derived_from` reachability before considering removal; a supersession pointer is not proof that the object is unreferenced.
-2. ✓ Pointers survive (in new objects and VCS); removal is provable from history
-3. ✓ Can be human-triggered per ADR; no algorithm runs automatically
+**Selection:** consider unprotected objects older than an adopter-chosen threshold, using a declared date field. `timestamp` may reflect a supersession metadata change rather than assertion age; the ADR must state what the chosen date measures. Age is a selection aid, not proof that content is dispensable or false.
 
-**When to use:** Organizations that re-curate regularly (stable knowledge objects with periodic updates); low-risk compaction since only explicitly-replaced objects are removed.
+**Preservation and cost:** archive exact objects and retain an inventory with hashes and retrieval locations, or explicitly choose hash-only attestation. Active-store savings may be large; archive retention and restoration add ongoing work. Recovery remains possible only while archived bytes are available.
 
-#### Variant 2: Date-based (tiered expiry)
+**Decision fit:** mature stores with measurable volume pressure and an archival maintenance owner. A freshness threshold stays advisory and never becomes automatic expiry.
 
-**What it removes:** knowledge objects whose `timestamp:` is older than a threshold (e.g., objects not modified in 2 years), EXCEPT those cited by canon.
+#### Variant 3: Risk-tier based
 
-**Preservation:** Objects are archived to cold storage (timestamped tarball, S3, version control tag) before removal. Manifest of removed objects (filename, hash, removal date, remover) is retained.
+**Selection:** rank only unprotected candidates by declared impact criteria, such as remaining knowledge dependencies or expected reuse. An object with even one canon path is ineligible regardless of tier; “few citations” is not an exemption. Preserve candidates whose impact cannot be established.
 
-**Reversibility:** Complete; cold store is consulted if an object is needed again; manifest proves what was removed and when.
+**Preservation and cost:** every selected object still needs recoverable content or hash attestation. A tier manifest alone is insufficient. Assessments add review effort and change with dependencies; ranking cannot substitute for reference integrity.
 
-**Costs:**
-- Storage: Low (old objects moved off primary store)
-- Reversibility: Medium (requires operational discipline: cold store must be managed, manifests must be queryable)
-- Complexity: Medium (date parsing, canon reachability check, archival process)
+**Decision fit:** adopters prioritizing limited review capacity. Savings vary with the unprotected population; a tier does not guarantee low risk.
 
-**Satisfies invariants:**
-1. ✓ Canon reachability is checked before removal
-2. ✓ Removal is recorded in manifest; cryptographic hashes ensure tamper evidence
-3. ✓ Manual trigger (per ADR) for archive-and-remove batches
+#### Variant 4: Consensus-based
 
-**When to use:** Organizations with large, mature knowledge stores and discipline around version control and archival. Requires external storage and lifecycle tooling.
+**Selection:** a curator or designated team proposes specific unprotected objects for retirement and records the rationale. Human agreement cannot override mechanical reachability or unresolved references.
 
-#### Variant 3: Risk-tier based (cascade from low-impact objects)
+**Preservation and cost:** preserve exact content or hash-attest it under invariant 2, linking the inventory from the ADR. A curation log may supplement that record but cannot replace the ADR, recovery evidence, or hashes. Selection tooling is simple; review effort grows with store size and depends on curator knowledge.
 
-**What it removes:** knowledge objects tiered by blast radius (inferred from dependent-object count in canon). Only Low-tier objects (few canon citations, none critical) are compacted; Medium and High tier are always preserved.
-
-**Preservation:** Removal is by tier; manifest records which objects belonged to which tier at removal time.
-
-**Reversibility:** Medium; depends on whether canon references still exist (if an object is removed and later needed, can canon point be re-resolved from history?).
-
-**Costs:**
-- Storage: Medium (some objects kept, risky ones always kept)
-- Reversibility: Medium (depends on tier assignments and canon stability)
-- Complexity: Medium-High (blast-radius computation, tier assignments, dependencies on canon)
-
-**Satisfies invariants:**
-1. ✓ Canon references are kept by default (only Low-tier removed)
-2. ⚠ Reversibility depends on tier assignments; manifest-only if blast-radius is recomputed
-3. ✓ Manual trigger per ADR
-
-**When to use:** Organizations with risk-averse governance (never lose cited objects) and smaller knowledge stores where Low-tier objects alone are sufficient compaction.
-
-#### Variant 4: Consensus-based (human curators pick what to remove)
-
-**What it removes:** A designated curator or curation team reviews objects using human judgment and explicitly selects which to remove (e.g., "this is stale, been superseded by three newer objects, nobody cites it, we're retiring it").
-
-**Preservation:** Removal decisions are recorded in `_intake/log.md` with `[compact]` entries: curator name, objects removed, date, justification.
-
-**Reversibility:** Complete from VCS; removal log provides audit trail and intent.
-
-**Costs:**
-- Storage: Variable (depends on curation judgement)
-- Reversibility: High (human decisions are recorded; VCS is immutable)
-- Complexity: Low (no algorithms; copy objects to archive, record in log, delete from store)
-
-**Satisfies invariants:**
-1. ✓ Can be done carefully (human checks canon references)
-2. ✓ Decisions are logged; removal is auditable
-3. ✓ Explicitly human-triggered
-
-**When to use:** Small knowledge stores where curators know the content intimately; organizations building compaction discipline (start here, move to date-based or tier-based as store grows).
+**Decision fit:** small stores or occasional maintenance where reviewing individual candidates is affordable.
 
 ### Trade-off summary
 
-| Variant | Storage gain | Reversibility | Complexity | Risk | Best for |
-|---|---|---|---|---|---|
-| Supersession-only | Low | High | Low | Low | Mature stores with regular re-curation |
-| Date-based (cold storage) | High | High | Medium | Medium | Large stores with archival infrastructure |
-| Risk-tier-based | Medium | Medium | Medium-High | Low | Risk-averse orgs with stable canon |
-| Consensus-based | Variable | High | Low | Variable | Small stores, building discipline |
+| Variant | Potential active-store gain | Selection effort | Principal trade-off | Preservation requirement |
+|---|---|---|---|---|
+| Supersession-based | Limited to eligible predecessors | Low | Explicit replacement history, but reciprocal references constrain removal | Exact archive or hash attestation; preserve pointer resolution |
+| Date-based | Potentially high | Medium | Simple cutoff can select useful knowledge; archive has ongoing cost | Exact archive or explicit hash-only choice |
+| Risk-tier based | Variable | High | Focuses review effort but assessments change with dependencies | Exact archive or hash attestation, regardless of tier |
+| Consensus-based | Variable | High per object | Contextual review costs curator time and is subjective | Exact archive or hash attestation, plus rationale |
 
-### Implementation: None yet (frame only)
+Reversibility is a separate choice for every row: exact archival content with verified recovery is restorable; hash-only attestation is not. No variant inherently guarantees recovery.
 
-This section documents the design space. Compaction algorithms are **not** implemented in this or any Transitrix version. Each adopter decides which variant matches their organization's risk tolerance, storage constraints, and operational capacity. The decision is recorded in their `operations/decisions/ADR-YYYY-MM-DD-knowledge-store-compaction.md` with full justification.
+### Adopter decision record
 
-Transitrix provides the frame (this section), the invariants (above), and reference tooling for manifest management and archival. The adopter chooses the variant and owns the implementation.
+The ADR should make the decision reviewable by recording:
+
+- The measured maintenance problem, expected benefit, and why retaining everything is or is not preferable.
+- The chosen variant or combination, alternatives, selection criteria, and exact object inventory and store revision covered by this operation.
+- The consuming catalogues examined and mechanical reachability result, including how remaining references stay valid. An unresolved boundary means defer removal.
+- The preservation choice: archive location, retention owner and recovery verification, or hash manifest and explicit acceptance that hashes cannot restore content.
+- The responsible human, trigger date, verification results, actual outcome, and recovery or attestation evidence. Record the outcome without rewriting an accepted decision's rationale.
+
+**Implementation boundary:** this specification supplies the decision frame only. It supplies no compaction command, manifest-management tool, archival implementation, or chosen algorithm. Adopters retain objects until their implementation can demonstrate all three invariants and existing reference integrity. Compaction is not required to adopt the knowledge-store pattern.
 
 ## Tooling
 
