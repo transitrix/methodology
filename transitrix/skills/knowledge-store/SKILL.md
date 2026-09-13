@@ -80,6 +80,8 @@ Fill in:
 
 Filename convention: `YYYY-MM-DD-<slug>.md` where slug is a 3–5 word kebab-case summary.
 
+For a reissued source, use a fresh processed-record and original-file path even when the date or filename matches an earlier revision. Preserve the earlier record, original, and hash.
+
 Move the source file from `_intake/inbox/` to `_intake/originals/` (gitignored, kept for traceability).
 
 ---
@@ -108,6 +110,8 @@ Each draft:
 - carries `review_status:` — `ready` (grounded, linter-clean candidate), `ambiguous` (needs human judgement; set non-empty `ambiguity_note:`), or `blocked` (too vague to review; skip by default)
 - carries `mapping:` / `conflicts_with:` when relating to existing knowledge (Gate 2)
 
+For re-curation, choose a fresh filename and set `supersedes` to the current admitted object. Leave that object unchanged during drafting; a missing-backlink `KS-019` warning is expected until admission (Gate 2.1).
+
 Do **not** write to `knowledge/` at this step.
 
 ### 4b — Verify drafts
@@ -121,6 +125,8 @@ Wait for the user to approve, reject, or revise each draft. Do not promote anyth
 ### 4d — Dispose approved drafts
 
 For each approved draft, copy to `knowledge/<slug>.md` using [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md). **Remove** `review_status` and `ambiguity_note` from frontmatter. Delete the corresponding file under `_intake/drafts/`.
+
+Never overwrite an existing knowledge-object path. For approved re-curation, create the successor and add `superseded_by` to its predecessor in the same change, updating only that predecessor’s lifecycle `timestamp` alongside the pointer. Preserve its body and all assertion metadata, including any earlier `supersedes`. Record the source revision and both object paths in the `[admit]` log entry; keep both index rows.
 
 Run `python3 tools/knowledge_store_lint.py .` again. Fix every **error** before proceeding. Surface **warnings** (KS-008, KS-010, KS-013) for explicit acknowledgment.
 
@@ -205,5 +211,5 @@ Or for rejected:
 - Does not merge PRs. The canon gate is always a human.
 - Does not write to `knowledge/` before user review of drafts (Gate 6 — drafts land in `_intake/drafts/` only).
 - Does not assign `extraction_confidence: high` to relations — relations are flagged `medium` or lower unless the source text is unambiguous.
-- Does not remove existing knowledge objects. Only add or update.
+- Does not remove or rewrite existing knowledge objects. Re-curation adds a successor and lifecycle metadata under Gate 2.1.
 - Does not process multiple documents in the same run unless explicitly asked — one source per run keeps the log clean.
