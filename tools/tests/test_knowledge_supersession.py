@@ -429,6 +429,26 @@ New process."""
         shutil.rmtree(work, ignore_errors=True)
 
 
+def test_template_defaults():
+    """New objects copied from either template need no supersession cleanup."""
+    for name, zone in (("okf-knowledge-object.md", "knowledge"),
+                       ("okf-knowledge-object-draft.md", "_intake/drafts")):
+        template = Path(REPO_ROOT) / "patterns" / "knowledge-store-templates" / name
+        frontmatter = yaml.safe_load(template.read_text(encoding="utf-8").split("---", 2)[1])
+        check(not any(key in frontmatter for key in ("supersedes", "superseded_by")),
+              f"{name}: supersession fields must be absent by default")
+        frontmatter.update(type="concept", title="First assertion", confidence="observed",
+                           mapping="proposes", created_at="2026-09-13",
+                           timestamp="2026-09-13T00:00:00Z")
+        if zone == "_intake/drafts":
+            frontmatter["review_status"] = "ready"
+        with tempfile.TemporaryDirectory(prefix="knowledge-template-") as work:
+            _write(os.path.join(work, zone, "first.md"),
+                   "---\n" + yaml.safe_dump(frontmatter) + "---\nFirst assertion.\n")
+            code, out = _run_linter(work)
+            check(code == 0, f"{name}: populated first-object template must pass: {out}")
+
+
 def test_supersession_graph_contract():
     """Exercise CLI disposition, including malformed YAML values and draft admission."""
     def run(records, expected=None, success=False):
@@ -481,6 +501,7 @@ def test_supersession_graph_contract():
 
 
 def main():
+    test_template_defaults()
     test_supersession_graph_contract()
     test_valid_supersession_pair()
     test_ks018_unresolved_target()
