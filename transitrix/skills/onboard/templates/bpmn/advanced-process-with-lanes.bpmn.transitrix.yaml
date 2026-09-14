@@ -12,6 +12,7 @@
 # QC (with a rework loop) → ship → deliver → confirm.
 
 notation: bpmn
+name: "Order Fulfilment — multi-lane projection"
 spec_version: "0.1"
 
 process:

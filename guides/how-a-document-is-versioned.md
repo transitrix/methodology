@@ -13,6 +13,10 @@ tags: [transitrix, guide, recipe, document, versioning]
 
 A **recipe** is the `.ttrs` source. A **model-backed document** is what a reader receives when that recipe is rendered against canon. A recipe is not a [template](../method/00-glossary.md) — that word is the copy-and-fill starter for a new element file.
 
+## Scope
+
+This guide describes recipe and render provenance. The optional experimental [documents package](../notations/packages/documents.md), introduced in methodology 5.1.0, also defines document identity, version, status and references to core elements. Those metadata do not implement approval, issue control or retention, and do not promise automatic export into a rendered document. Use the package only when that additional modelling scope is useful; the [issued-version recommendation](how-to-preserve-issued-document-versions.md) does not require it.
+
 ## Four things people call "the version"
 
 | What they mean | Where it actually lives | Automatic in the PDF? |
@@ -51,12 +55,12 @@ The PDF is **derived**. Do not treat it as the source of truth, and do not keep 
 
 When you hand a document to a reviewer, a customer, or a design-review gate:
 
-1. The recipe and the canon it reads are at one git commit.
-2. **Tag that commit.** The tag is the baseline — there is no separate baseline artefact to keep in sync ([`patterns/baseline-audit-trail.md`](../patterns/baseline-audit-trail.md)).
-3. Keep the **run record** of that render. It already carries `recipe_id`, `recipe_version`, and `repository_commit`. That is how a later reader tells which recipe, which edition of the recipe, and which commit produced the file they were given.
+1. Pin the recipe and canon to the exact committed state actually rendered. Check for uncommitted or otherwise different inputs; a commit from another checkout is not provenance for this render. Record any additional rendering inputs needed to explain the output.
+2. **Tag that commit** under the adopter's baseline policy and retain the commit identity. A tag name can move unless protected; the label alone does not freeze the input. The tag identifies the baseline — there is no separate baseline artefact to keep in sync ([`patterns/baseline-audit-trail.md`](../patterns/baseline-audit-trail.md)).
+3. Keep the **run record** of that render. It can carry `recipe_id`, `recipe_version`, and `repository_commit`, but the run-record builder trusts caller inputs and permits a missing commit. Verify and supply the actual origin; a populated field alone does not prove it.
 4. Preserve the exact issued document for the agreed retention period. It is evidence of the issue, not a second model. See [How to preserve issued versions of generated documents](how-to-preserve-issued-document-versions.md) for the adopter agreement.
 
-A later render of the same recipe against a later canon is a **new issue**, not an edit of the old PDF.
+A later render becomes a **new issue** when issued under the adopter agreement; it never edits the old issued PDF. Regeneration from the same source is not a guarantee of identical bytes, particularly when generated prose is involved. Preserve the original issued file instead of relying on regeneration.
 
 ## The revision table inside the document
 
@@ -93,7 +97,7 @@ Recipe `product.srs` · edition `1.0`
 
 The run record remains the place a process should read those fields from. Duplicating them in the body is for the human holding the PDF.
 
-Canon content (`{{ REQ-14 }}`, `{{ view … }}`) updates on the next render. That is the automatic part. Version *labels* are not.
+Canon content (`{{ REQUIREMENT-RETENTION-1 }}`, `{{ view … }}`) updates on the next render. That is the automatic part. Version *labels* are not.
 
 ## Requirement-object revisions are a different layer
 
@@ -120,4 +124,4 @@ Do not copy those numbers into the PDF table and call the two histories the same
 
 ---
 
-**Last reviewed:** 2026-08-25.
+**Last reviewed:** 2026-09-14.

@@ -1,26 +1,19 @@
 ---
 title: Modelling complex processes
 status: active
-last_reviewed: 2026-08-16
+last_reviewed: 2026-09-14
 audience: public
 license: MIT
-tags: [transitrix, guide, bpmn, processes]
 ---
 
 # Modelling complex processes
 
-> A BPMN process with lanes, stages, and KPIs, authored in Transitrix Studio. For the difference between a process diagram and a process landscape map: [`method/04-notations.md`](../method/04-notations.md) §4.
+Start with the behaviour the organisation needs to describe, then select a view that makes it readable.
 
-Use Transitrix Studio for BPMN authoring with lanes, stages, and KPIs.
+1. Admit the `PROCESS` and author its canonical `flow`, including the steps, transitions and participating roles or applications. Follow the [BPMN specification's canonical source contract](../notations/views/diagrams/01-bpmn.md); a BPMN view projects this behaviour and must not become an independently maintained process definition.
+2. Use pools and lanes to explain participants. Resolve role and application references against canon. The [advanced BPMN starter](../transitrix/skills/onboard/templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml) illustrates a multi-lane projection with branches and a rework loop; replace the example identities and align it with your canonical flow before use.
+3. For stage goals, results and the systems, actors, equipment or business objects involved, use the separate process-blueprint notation described in the [notation kit](../method/04-notations.md). Keep those statements in their owning notation. Do not invent `required_data`, `output_data` or KPI calculation fields on BPMN nodes: BPMN data inputs/outputs and data associations are outside the current projection schema.
+4. If performance measurement is needed, define the relevant canonical metrics and their evidence under [element primitives](../notations/ELEMENT_PRIMITIVES.md). A diagram label does not establish a measured KPI or its calculation.
+5. Review every branch, termination and rework route against the intended process. Split an unreadable view into overview and detail views without changing the underlying behaviour.
 
-1. Open `<org>/.templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml`.
-2. Define lanes (one per organisational role or actor).
-3. Decompose the process into stages.
-4. Describe steps with explicit data flow (`required_data`, `output_data`).
-5. Add quality gates and decision gateways.
-6. Define KPIs with calculation references to step ids.
-7. Render with Studio; export SVG / PNG for documentation.
-
----
-
-**Last reviewed:** 2026-08-16. Moved here from `method/01-methodology.md` §12.3.
+Completion means the canonical process and references validate, the projection agrees with them, and the intended reader can follow the paths. Rendering alone tests none of the business assumptions. Check the capabilities of the renderer you actually use; this guide does not certify an installed Studio version.

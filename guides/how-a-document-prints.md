@@ -1,7 +1,7 @@
 ---
 title: How a model-backed document prints
 status: active
-last_reviewed: 2026-08-25
+last_reviewed: 2026-09-14
 audience: public
 license: MIT
 tags: [transitrix, guide, recipe, document]
@@ -29,14 +29,15 @@ The **view is too large**. Split it in the model (overview and detail). A differ
 
 Which supplied pictures are legitimate is stated in [`DIRECTIVE_LANGUAGE.md`](../notations/views/documents/DIRECTIVE_LANGUAGE.md) §3.5. This guide does not restate the list.
 
-## Specified, not built
+## What the rendering paths support
 
-Print layout, landscape PDF, and embedded pictures are specified and **not built**.
+| Path | Available support | Boundary |
+| --- | --- | --- |
+| Basic PDF renderer | A4 text pages; explicit `[Figure: <caption>]` placeholders. | Does not embed figures or produce landscape pages. |
+| Paged-media preparation | `generatePagedMediaCss` and `wrapHtmlForPrintRendering` prepare HTML/CSS, including running footers and landscape page rules. | Preparation is implemented; it is not a PDF engine. |
+| Caller-supplied HTML-to-PDF engine | Consumes the prepared HTML/CSS. | Final pagination, image embedding and landscape output depend on that engine and must be tested on the resulting PDF. |
 
-- `fit` is a CSS class `dv-fit-<value>` in `@transitrix/document-view-engine` and a hook for print layout that is not built.
-- `@transitrix/document-renderer` PDF figures are text placeholders — `[Figure: <caption>]` — named, not silent. They are never rasterised.
-
-Those packages do not emit a landscape page, and they do not embed a picture in the PDF. A render that looks otherwise is not from them.
+See the [renderer documentation](../packages/document-renderer/README.md) for the supported entry points. A `dv-fit-<value>` CSS class is a layout hook, not proof of a correctly rendered page. Check the final page dimensions, orientation, figure presence and legibility with the chosen engine before issue. Passing CSS tests alone does not verify the PDF.
 
 ## Insert syntax
 
