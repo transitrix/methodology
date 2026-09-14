@@ -1,7 +1,7 @@
 ---
 title: Adopting the Architecture Decision Log
 status: active
-last_reviewed: 2026-09-09
+last_reviewed: 2026-09-14
 audience: public
 license: MIT
 tags: [transitrix, guide, adr, adl]
@@ -15,7 +15,7 @@ tags: [transitrix, guide, adr, adl]
 
 **First, check repository visibility** — it decides which path below applies ([`07-decisions.md`](../method/07-decisions.md) §1):
 
-- **Public repository, or otherwise readable by parties the reasoning isn't intended for:** do not create `operations/decisions/` here. The record's home is the central architecture repository from the start — go to Step 4 for its shape, and treat this repository's own `operations/decisions/` (or `docs/decisions/`, if one predates this rule) as retired: a pointer only, never a `Context → Decision → Consequences` body.
+- **Public repository, or otherwise readable by parties the reasoning isn't intended for:** do not create `operations/decisions/` here. The record's home is the central architecture repository from the start — follow the central-authoring route below, and treat this repository's own `operations/decisions/` (or `docs/decisions/`, if one predates this rule) as retired: a pointer only, never a `Context → Decision → Consequences` body.
 - **Private repository whose readership is the reasoning's intended audience:** continue below.
 
 In each such repository, with Node.js ≥ 20 and a checkout of the methodology repository, run from the adopter repository's root:
@@ -40,6 +40,12 @@ Body is `Context → Decision → Consequences`. Template: [`transitrix/skills/a
 
 - **Append-only.** An accepted record's body is immutable. A change of course is a **new** record plus a `superseded_by` / `supersedes` pointer flip on the old one — never a rewrite. The only mutable front-matter on an accepted record is its status pointers.
 - **A living design doc is not a decision.** A current-state spec that evolves as understanding improves carries `doc_type: living-design-doc` and evolves freely — it does not belong in an append-only log.
+
+## Central authoring for a public repository
+
+An author authorised to operate in the central repository performs this route; a project agent submits a proposal to that author instead of crossing the repository boundary (see the decision method §4). Run Steps 1–3 in the private central architecture repository, using its own repository coordinate for setup. Author originals in its `operations/decisions/` and validate them there. Identify the affected project in the record's context. The optional `source` field names the deciding forum, not a repository routing key. Follow the record-shape rules in [the decision method](../method/07-decisions.md).
+
+Include the central repository itself as a source in Step 4's harvest configuration, using its checkout slug and original-record path. Keep `architecture/decision-log/` as the derived output, separate from `operations/decisions/`. Never author or repair a decision in `promoted/` or `INDEX.md`; those outputs are regenerated. In the public project, retain only an audience-appropriate pointer or policy summary, without exposing private reasoning or an inaccessible private repository address.
 
 ## Step 2 — the authoring skill
 
@@ -103,7 +109,7 @@ node scripts/adl-harvest.mjs \
   --out architecture/decision-log
 ```
 
-The job clones nothing itself — CI (or a wrapper script) checks the source repos out into `--workspace`, one sub-directory per repo slug. A missing source is **warned and skipped**, not fatal: the index degrades rather than failing the run. Exit codes: `0` ok · `1` nothing harvested · `2` error.
+The job clones nothing itself — CI (or a wrapper script) checks the source repos out into `--workspace`, one sub-directory per repo slug. A missing source is **warned and skipped**, not fatal: the index degrades rather than failing the run. Exit codes: `0` means at least one configured source was processed, `1` means every configured source was skipped (also the result for an empty source list), and `2` means an error. An existing empty source can return `0` with no records; a partial harvest can also return `0`. Inspect record counts, skipped sources and expected source coverage before accepting the run.
 
 Output is a single Markdown table — namespaced id, title, date, status, author, source, and a backlink into the source repo — plus full copies of promoted records under `promoted/<repo-slug>/`. The run is **idempotent**: same inputs, byte-identical output. Status changes self-heal on the next harvest, because the index is rebuilt from front-matter every time.
 
