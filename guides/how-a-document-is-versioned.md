@@ -54,7 +54,7 @@ When you hand a document to a reviewer, a customer, or a design-review gate:
 1. The recipe and the canon it reads are at one git commit.
 2. **Tag that commit.** The tag is the baseline — there is no separate baseline artefact to keep in sync ([`patterns/baseline-audit-trail.md`](../patterns/baseline-audit-trail.md)).
 3. Keep the **run record** of that render. It already carries `recipe_id`, `recipe_version`, and `repository_commit`. That is how a later reader tells which recipe, which edition of the recipe, and which commit produced the file they were given.
-4. Keep the PDF if your process needs the bytes that were sent. It is evidence of the issue, not a second model.
+4. Preserve the exact issued document for the agreed retention period. It is evidence of the issue, not a second model. See [How to preserve issued versions of generated documents](how-to-preserve-issued-document-versions.md) for the adopter agreement.
 
 A later render of the same recipe against a later canon is a **new issue**, not an edit of the old PDF.
 
@@ -109,6 +109,8 @@ Do not copy those numbers into the PDF table and call the two histories the same
 - Do not put `methodology_version` in the document-history table. That pin is the method the whole repository conforms to, not an issue of this document.
 
 ## See also
+
+- [How to preserve issued versions of generated documents](how-to-preserve-issued-document-versions.md) — adopter recommendations for issuing, approving, retaining, and superseding fixed editions.
 
 - [`guides/how-a-document-prints.md`](how-a-document-prints.md) — page size, orientation, pictures.
 - [`notations/views/documents/DIRECTIVE_LANGUAGE.md`](../notations/views/documents/DIRECTIVE_LANGUAGE.md) — the language; no git transclusion.
