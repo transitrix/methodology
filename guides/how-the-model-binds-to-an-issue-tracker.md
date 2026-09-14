@@ -74,10 +74,7 @@ precisely at scale, and nothing stops someone deleting the line.
 Add a single-line text custom field on the issue types you use — call it `Transitrix Action` — and
 put the ID in it.
 
-**Choose this when you have grown into it**: when you want reliable JQL
-(`"Transitrix Action" ~ "ACTION-CUSTOMER-ONBOARDING-*"`), a column in a board or filter, or a
-required field so the binding cannot be forgotten at creation. It gives you exactly what the
-description line cannot: an unambiguous, queryable, validatable slot.
+Choose this when a dedicated field is useful for a board column, a filter or a creation rule. A text field provides a consistent location, but does not itself validate a canonical ID. Jira's `~` operator is text search, not exact identifier equality: check the configured searcher and compare retrieved values with the complete canonical ID before attributing work. Test queries in your instance; a wildcard example is not an exact-match contract.
 
 What it costs, stated plainly:
 
@@ -97,16 +94,14 @@ them into the field, and keep the line or drop it. Nothing in the model changes,
 rewritten. **Start with option 1 on the day you start; adopt option 2 when a query you actually
 need makes it worth an administrator's time.**
 
-## What you get once both pointers exist
+## Reconcile attribution and progress
 
-- **Progress is computed from the model, not assembled from the tracker.** Roll a status up through
-  `parent` and you have an initiative's state without any tool understanding your hierarchy.
-- **Unattributed work becomes visible.** Work items with no `Action:` tag are the delivery that no
-  decision asked for. That count is a finding, not an error — report it, do not distribute it
-  across initiatives to make the total agree.
-- **Elements with no work item are equally visible.** An `ACTION` in canon with no `link` and no
-  tagged item is a decision nobody has started. Both blind spots are the same query, run from
-  opposite ends.
+The pointers make reconciliation possible; they do not compute progress by themselves. Agree the accessible tracker projects, collection cadence, status mapping, treatment of cancellations and blocked work, and roll-up policy before reporting an initiative's state. Record the observation time and unreadable scope. A completed epic does not prove every child met its acceptance criteria; avoid double-counting parent and child work.
+
+- An item may be attributed directly or inherit attribution through the explicitly linked parent at the chosen modelling boundary. Inspect that chain before counting it as untagged work.
+- An item with neither direct nor inherited attribution has missing traceability. This does not prove that nobody authorised the work.
+- An ACTION with no link or matching item has no observed tracker binding. Work may exist elsewhere or be inaccessible; do not label it “not started” without evidence.
+- Report unknown tracker state separately from an observed “not started” status. Apply the agreed roll-up rule to observed states and show missing coverage alongside the result.
 
 ## When the ticket carries a requirement
 
@@ -131,13 +126,9 @@ So the ticket carries a tag and a working summary. The catalogued `REQUIREMENT` 
 obligation, its source through `derived_from`, and the need it serves through `serves`
 ([`elements/15-requirement.md`](../notations/elements/15-requirement.md)).
 
-**Acceptance criteria are evidence, and the model has a place for them.** Where a ticket's
-acceptance criteria are the check that an obligation is met, that check is a `VERIFICATION` against
-the requirement — method, result, pass or fail
-([`elements/27-verification.md`](../notations/elements/27-verification.md)) — and a claim that a
-product or process satisfies the requirement is an `ASSERTION`
-([`elements/16-assertion.md`](../notations/elements/16-assertion.md)). The ticket is where the work
-of checking happened; the outcome belongs where it can still be read in two years.
+**Acceptance criteria describe the intended check; evidence records what happened when it ran.** A [VERIFICATION](../notations/elements/27-verification.md) separates its protocol from result, outcome and supporting evidence. Keep an unexecuted check `not_yet_run`; an inconclusive check is not a pass. Record the applicable release through `verified_on` where required. Creating a ticket binding does not execute a check or establish compliance.
+
+A claim that a product or process satisfies an obligation is an [ASSERTION](../notations/elements/16-assertion.md). Preserve the actual verification outcome and evidence where they can be read after the ticket is archived.
 
 What the binding then gives you is the chain end to end, none of it dependent on the tracker
 surviving: **need → requirement → what realises it → what verified it → which release it was

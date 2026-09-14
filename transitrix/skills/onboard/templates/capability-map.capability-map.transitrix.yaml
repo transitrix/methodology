@@ -11,19 +11,19 @@ capability_map:
   id: CAPABILITY_MAP-FILL-ME-1
   name: "FILL-ME capability map"
   description: "FILL-ME — domain / scope"
-  assessment_date: "2026-05-26"
+  assessment_date: "2026-09-01"
 
   capabilities:
     - id: CAPABILITY-V1
       name: "FILL-ME top-level capability"
+      valid_from: "2026-09-01"     # replace with actual lifecycle start
+      valid_to: null
       type: domain                  # domain | supporting
-      current_maturity: 2           # CMM 1..5
-      target_maturity: 4
-      target_date: "2026-12-31"
-      owner_role: ROLE-1
       children:
         - id: CAPABILITY-V1.1
           name: "FILL-ME sub-capability"
+          valid_from: "2026-09-01"
+          valid_to: null
           type: domain
-          current_maturity: 2
-          target_maturity: 3
+# Keep maturity, owner_role and target_date in canonical capability .history.yaml
+# sidecars; see guides/modelling-capabilities.md. Replace all illustrative dates.
