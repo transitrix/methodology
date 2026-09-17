@@ -6,11 +6,13 @@ This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copi
 
 ---
 
-## Role split — choosing the right agent
+## Assistant modes — choosing the activity
 
-This repository ships with a **recommended set of specialised roles**. An assistant working inside this repo should pick the role that matches the task, because reading the model and writing the model need opposite context:
+This repository ships with **assistant operating modes**, historically called roles. Pick the activity that matches the task. These names are not enterprise identities or permission grants. Separate domain expertise, accessible model scope, operation permissions, and assignment to a change; see the [enterprise reference](https://github.com/transitrix/methodology/blob/main/guides/repository-mcp-enterprise.md#14-compatible-role-and-onboarding-migration).
 
-| Role | File | Use when… |
+Validator means expert review by a qualified domain specialist. The assistant supports that function with formal checks and evidence. Automated validation, expert review, and approval are separate outcomes. Read/propose/review/approve/policy rights must be granted for an explicit scope by the adopter's enforced controls, never inferred from a prompt or filename.
+
+| Mode | File | Use when… |
 |---|---|---|
 | **Ingest** | [`INGEST.md`](INGEST.md) | Turning raw material — interviews, policies, spreadsheets, notes — into `field` artefacts and canon candidates, at scale. Source in → candidate elements → through the human review gate; never writes admitted canon. |
 | **Modeler** | This file (`AGENTS.md`) | Authoring or editing model files *within this repo* — creating elements, views, relations; validating files. |
@@ -19,11 +21,11 @@ This repository ships with a **recommended set of specialised roles**. An assist
 
 **Routing rule:** if the request is turning raw material into candidate elements → use Ingest. If it's a question about the organisation → use the Analyst. If it involves writing or changing any file → use the Modeler (this guide). If it's reviewing a change before it merges → use the Validator. When in doubt, start with the Analyst; it will redirect you if the task requires writing.
 
-**Repo setup is a one-time step, not a role.** Scaffolding a brand-new adopter repository runs once, via `/transitrix:onboard`, before any of the roles above apply. A client-side adopter typically joins a repo that already exists (Orient/Contribute mode); the Modeler authors *within* that repo and does not scaffold new ones. Turning raw material into candidate elements is its own role — see `INGEST.md` where scaffolded.
+**Repo setup is a one-time step, not a role.** Scaffolding a brand-new adopter repository runs once, via `/transitrix:onboard`, before any of the modes above apply. A client-side adopter typically joins a repo that already exists (Orient/Contribute mode); the Modeler authors *within* that repo and does not scaffold new ones. Turning raw material into candidate elements is its own activity — see `INGEST.md` where scaffolded.
 
-The Analyst requires a one-time MCP setup — see `ANALYST.md` §6 and the `.mcp.json` file at the repo root. The Validator uses the same repo-wide file tools as the Modeler — no extra setup.
+Choose the retrieval boundary in `ANALYST.md` §6 before enabling MCP. Its local filesystem example is not an enforced read-only or enterprise access policy. Review and modeling tools may read the whole repository only for callers authorized for that scope. Never fall back to broader filesystem or Git access after a governed-service denial.
 
-**Cross-cutting, not a fifth role:** every role above can hit something outside its own lane while doing its actual job. [`FINDINGS.md`](FINDINGS.md) is the shared propose → route → scrub protocol for raising that as a finding instead of silently fixing or dropping it — see §14 below and the matching section in each other role guide.
+**Cross-cutting:** every mode above can hit something outside its own lane while doing its actual job. [`FINDINGS.md`](FINDINGS.md) is the shared propose → route → scrub protocol for raising that as a finding instead of silently fixing or dropping it — see §14 below and the matching section in each other role guide.
 
 ## Using this guide with your assistant
 

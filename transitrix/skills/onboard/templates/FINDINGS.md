@@ -2,6 +2,8 @@
 
 > **Shared across all four adopter role guides** — [`AGENTS.md`](AGENTS.md) (Modeler), [`ANALYST.md`](ANALYST.md), [`VALIDATOR.md`](VALIDATOR.md), [`INGEST.md`](INGEST.md). This is the single source for the propose → route → scrub rule; each role guide references this file rather than repeating it, and adds only its own one-line note on how a finding surfaces from that role's normal output (§4 below).
 
+The guide names denote assistant activities, not enterprise permission roles. Keep historical `raised_by` values; they record provenance and grant no authority. Apply the caller's access boundary to findings and their recipients, including referenced IDs and paths.
+
 This file tells **any AI coding assistant** operating inside a Transitrix adopter repository, in any of the four roles, what to do when it notices something outside the task it was actually asked to do.
 
 ---

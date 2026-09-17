@@ -70,6 +70,10 @@ Three groups: root scaffolding, view notations, and codex zone primitives.
 | Assistant-neutral agent guide | [`AGENTS.md`](templates/AGENTS.md) | `<repo-root>/AGENTS.md` |
 | GitHub Copilot pointer → `AGENTS.md` | [`copilot-instructions.md`](templates/copilot-instructions.md) | `<repo-root>/.github/copilot-instructions.md` |
 
+The scaffold also retains `ANALYST.md`, `VALIDATOR.md`, `INGEST.md`, and `FINDINGS.md` as compatible assistant-mode guides. They grant no enterprise permissions: expertise, scope, operation rights, and change assignments are independent. Validator supports a qualified expert reviewer; formal checks, expert review, and approval stay distinct. Existing adopters use the [in-place migration](https://github.com/transitrix/methodology/blob/main/guides/repository-mcp-enterprise.md#14-compatible-role-and-onboarding-migration) while preserving local rules and historical records.
+
+`analyst-mcp.json` is an optional local filesystem example. Enable it only after choosing and verifying the separate read-only/access controls described in `ANALYST.md` §6. It does not install Repository MCP or enforce enterprise authorization; existing MCP entries are preserved.
+
 ### View notations (dropped into `views/<notation-folder>/` in Step 3)
 
 One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 15 view templates are:
