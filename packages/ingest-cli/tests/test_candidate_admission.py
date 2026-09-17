@@ -84,7 +84,16 @@ class CandidateAdmissionTest(unittest.TestCase):
 
     def emit(self, elements, source=1, ok=True):
         field = self.root / f'field/interviews/INTERVIEW-{source}.yaml'
-        self.write(field, {'id': f'INTERVIEW-{source}', 'source_quality': 'single_source'})
+        self.write(field, {
+            'id': f'INTERVIEW-{source}', 'name': f'Synthetic interview {source}',
+            'type': 'INTERVIEW', 'zone': 'field', 'example': True,
+            'admitted_at': '2026-01-01', 'admitted_by': 'fixture-reviewer',
+            'reviewer_authority': 'ai_reviewed', 'gate_checks': {'provenance': 'pass'},
+            'source_quality': 'single_source',
+            'provenance': {'captured_by': 'fixture-reviewer', 'captured_on': '2026-01-01',
+                           'setting': 'Synthetic preservation fixture'},
+            'notes': 'Service users need reliable access; the launch includes a milestone.',
+        })
         result = self.processing / 'extraction.json'
         result.write_text(json.dumps({'elements': elements}))
         return self.cli(INGEST, 'emit-candidates', field, '--from', result, ok=ok)
