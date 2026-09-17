@@ -52,6 +52,35 @@ transitrix-ingest <command> [args]
 | `catalogue-bind <local-id> <canon-id> [org-root]` | ✅ | Apply an accepted L2/L3 binding — writes `canon_id` into the local element file, the one place a binding lands in canon. Fails closed against `BIND-001`..`004` (`CONTRACT.md` §17.2); idempotent against re-applying the same binding; refuses to overwrite a different one. |
 | `catalogue-promote <local-id> --repository <org>/<repo> [org-root]` | ✅ | L3 — emit a promotion proposal (candidate central element carrying `origin`) for the central repository's human admission gate; `promotions.proposed.yaml`. No agent writes across the repository boundary. `[--out <path>] [--scope <word>]`. |
 
+## Candidate field preservation
+
+`emit-candidates` preserves the common element payload (including aliases,
+description and lifecycle) and the complete STAKEHOLDER and ACTION field sets from
+their element specifications. Zero, `false`, null and empty collections survive
+serialization. Source-supplied admission, approval, provenance and validation
+metadata cannot replace the pipeline's pending envelope or field-source citation.
+
+Schema-undefined source data belongs in `extensions` (CONTRACT §12). The bag must
+be a map; its nested values pass through unchanged. Unsupported top-level
+extraction fields now fail explicitly before candidate files are written, instead
+of disappearing. This also applies to TYPE-specific fields the shaper does not
+yet support; a defined field must not be moved into `extensions` to bypass it.
+
+Corroboration unions trusted source citations, raises confidence, and fills absent
+fields. Existing values win conflicts, including nulls and whole nested extension
+values; new extension keys are added. Repeated input does not duplicate candidates
+or citations. Revising an existing value remains a reviewer action.
+
+The review queue references the serialized candidate JSON. Promotion to a proposed
+TYPE artefact remains manual: carry its domain fields, extensions and `derived_from`,
+remove candidate-only review metadata, and add the CONTRACT §6 proposed envelope
+after checking TYPE fields and references. The decisions CLI then applies the
+reviewer's decision; ingest JSON itself remains `not_admission_state_bearing`.
+
+Package maintainers can check this boundary with
+`python packages/ingest-cli/tests/test_candidate_admission.py`. It uses synthetic
+data and the actual CLIs, including an explicit manual-promotion fixture step.
+
 ## Multi-batch naming
 
 `review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Batch identity is explicit: pass `--run-id <id>` to refresh the same batch in place (matching run_id is required). Without a matching run_id, or if no prior batch exists, a run creates its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory.

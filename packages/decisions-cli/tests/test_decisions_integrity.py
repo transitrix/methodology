@@ -444,6 +444,14 @@ shutil.rmtree(_reg_intel_org, ignore_errors=True)
 part_f_review_non_tty()
 part_g_stop_resume()
 
+# The same preservation contract must run when the admission CLI changes.
+admission = subprocess.run(
+    [sys.executable, os.path.join(PKG_DIR, "..", "ingest-cli", "tests", "test_candidate_admission.py")],
+    capture_output=True, text=True, timeout=60,
+)
+check(admission.returncode == 0,
+      "Candidate admission regression: " + admission.stdout + admission.stderr)
+
 if _failures:
     print("FAIL - decisions-cli integrity:")
     for f in _failures:

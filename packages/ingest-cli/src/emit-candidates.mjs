@@ -30,6 +30,48 @@ function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : n
 const REL_THRESHOLD = 'high';
 const CONFIDENCE_RANK = { low: 0, medium: 1, high: 2 };
 
+// Extraction payload fields, separate from the pipeline-owned admission envelope.
+// TYPE-specific fields follow elements/20-stakeholders.md and 24-action.md.
+export const ELEMENT_FIELDS = new Set([
+  'id', 'name', 'element_type', 'notation', 'spec_version', 'aliases', 'former_ids',
+  'description', 'layer', 'type', 'valid_from', 'valid_to', 'origin', 'extensions',
+  'extraction_confidence', 'extraction_notes',
+]);
+export const TYPE_FIELDS = {
+  STAKEHOLDER: ['type', 'actor', 'concern', 'interest', 'influence'],
+  ACTION: ['type', 'activity_type', 'parent', 'goals', 'delivers_changes',
+    'duration', 'start_date', 'end_date', 'predecessors', 'owner', 'owner_role',
+    'scenario', 'stakeholders', 'labor_cost', 'resources_cost', 'effort',
+    'score', 'sort', 'tags', 'link'],
+};
+// These inputs were never authoritative. Ignore them rather than copying source
+// claims of approval, provenance, or validation onto a pending candidate.
+const PIPELINE_FIELDS = new Set([
+  'kind', 'derived_from', 'admitted_to', 'zone', 'admission_state', 'admitted_at',
+  'admitted_by', 'gate_checks', 'reviewer_authority', 'proposed_at', 'proposed_by',
+  'rejected_at', 'rejected_by', 'rejection_reason', 'owner_to_confirm',
+  'agreement', 'agreed_at', 'agreed_by', 'approval', 'approval_status',
+  'decision', 'source_quality', 'provenance', 'entity_match', 'coverage_flag',
+  'validation_flags', 'example',
+]);
+
+function elementPayload(el) {
+  const allowed = new Set([...ELEMENT_FIELDS, ...(TYPE_FIELDS[el.element_type] || [])]);
+  const entries = [];
+  for (const [key, value] of Object.entries(el)) {
+    if (PIPELINE_FIELDS.has(key)) continue;
+    if (!allowed.has(key)) {
+      throw new Error(`unsupported extraction field "${key}" on ${el.id}; ` +
+        'schema-undefined data belongs in extensions (CONTRACT §12)');
+    }
+    if (key === 'extensions' && (value === null || typeof value !== 'object' || Array.isArray(value))) {
+      throw new Error(`extensions must be a map on ${el.id} (CONTRACT §12)`);
+    }
+    entries.push([key, value]);
+  }
+  return Object.fromEntries(entries);
+}
+
 function safeName(s) {
   return String(s).replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');
 }
@@ -57,6 +99,7 @@ export function shapeCandidates(derivedFrom, result) {
 
   for (const el of result.elements || []) {
     const c = {
+      ...elementPayload(el),
       kind: 'element',
       id: el.id,
       name: el.name,
@@ -65,15 +108,6 @@ export function shapeCandidates(derivedFrom, result) {
       admitted_to: 'pending',
       extraction_confidence: el.extraction_confidence,
     };
-    if (el.extraction_notes) c.extraction_notes = el.extraction_notes;
-    if (el.valid_from !== undefined) c.valid_from = el.valid_from;
-    if (el.valid_to !== undefined) c.valid_to = el.valid_to;
-    if (el.origin !== undefined) c.origin = el.origin;
-    // Mechanism 1 (CONTRACT §12): source fields the schema does not define ride along
-    // in an open `extensions:` bag, candidate -> admitted entity, verbatim. Carried only
-    // when it is a non-empty map; the validator passes it through untouched (EXT-001).
-    if (el.extensions && typeof el.extensions === 'object' && !Array.isArray(el.extensions)
-        && Object.keys(el.extensions).length) c.extensions = el.extensions;
     candidates.push(c);
   }
 
@@ -161,11 +195,18 @@ export function mergeCandidates(existing, fresh) {
     rank(fresh.extraction_confidence) >= rank(existing.extraction_confidence)
       ? fresh.extraction_confidence : existing.extraction_confidence;
 
-  const merged = { ...existing, ...fresh, derived_from, extraction_confidence };
+  // Corroboration adds evidence, not authority to revise an existing value. Missing
+  // fields may be filled; explicit null, zero, false, lists and maps stay intact.
+  const merged = { ...fresh, ...existing, derived_from, extraction_confidence };
+  if (existing.extensions && fresh.extensions) {
+    merged.extensions = { ...fresh.extensions, ...existing.extensions };
+  }
 
   const notes = [];
   for (const n of [existing.extraction_notes, fresh.extraction_notes]) {
-    if (n && !notes.includes(n)) notes.push(n);
+    for (const part of n ? n.split(' | ') : []) {
+      if (!notes.includes(part)) notes.push(part);
+    }
   }
   if (notes.length) merged.extraction_notes = notes.join(' | ');
   else delete merged.extraction_notes;
