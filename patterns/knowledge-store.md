@@ -227,9 +227,9 @@ What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-fi
 | `KS-016` | error | 6 | Draft missing or with invalid `review_status:` (`ready` / `ambiguous` / `blocked`). |
 | `KS-017` | error | 6 | `review_status: ambiguous` without a non-empty `ambiguity_note:`. |
 
-| `KS-018` | error | — | `supersedes` present but the referenced object does not exist or does not resolve. |
-| `KS-019` | warning | — | `supersedes` and `superseded_by` point to each other but one is missing on the other side (bidirectional pointer inconsistency). |
-| `KS-020` | error | — | A knowledge object in `knowledge/` (non-draft) carries both `supersedes` (points backward) and is pointed to by a `superseded_by` with incorrect identity — the pointer target and actual pointer source do not match. |
+| `KS-018` | error | 2.1 | Either supersession field is malformed or does not resolve to exactly one admitted `knowledge/` object. |
+| `KS-019` | error (draft proposal: warning) | 2.1 | The target lacks the reciprocal pointer. Only a draft’s `supersedes` proposal receives a warning; admitted objects require both pointers in the same reviewed change. |
+| `KS-020` | error | 2.1 | A reciprocal pointer resolves to a different object, a pointer references itself, or the supersession history contains a cycle. |
 Integrity test harness: [`transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py`](../transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py) (CI job `knowledge-store-lint-test`).
 
 ---

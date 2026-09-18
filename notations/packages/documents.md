@@ -23,7 +23,7 @@ This is a package, not a core notation: nothing here changes `IDS_AND_REFERENCES
 
 ```yaml
 transitrix: 1
-methodology_version: "5.1.0"
+methodology_version: "6.0.0"
 packages: [documents]
 ```
 
@@ -508,7 +508,7 @@ document_provenance("doc-srs-v2-1")
   recipe_version: "1.0",
   baseline_commit: "a1b2c3d4…",
   baseline_tag: "release-2026-q3",
-  methodology_version: "5.1.0",
+  methodology_version: "6.0.0",
   elements_cited: ["CAPABILITY-V2", "REQUIREMENT-sched-auth-1"],
   run_record: { … }
 }
