@@ -69,7 +69,7 @@ class CatalogueWorkflows(unittest.TestCase):
 
     def test_ci_reports_both_findings_without_editing_canon_and_fails_on_broken_pin(self):
         manifest = self.root / 'transitrix.yaml'
-        manifest.write_text('methodology_version: "5.1.0"\n')
+        manifest.write_text('methodology_version: "6.0.0"\n')
         result = self.run_step('ci-example.yaml', 'vocabulary', 'Report collisions and unbound matches')
         self.assertEqual((result.returncode, result.stdout), (0, ''))
         (self.root / 'vendor').mkdir()

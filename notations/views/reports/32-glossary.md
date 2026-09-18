@@ -1,8 +1,8 @@
 ---
 notation: "Glossary"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-10"
+last_updated: "2026-09-18"
 status: "draft"
 file_extension: "*.glossary.transitrix.yaml"
 dsm_status: "planned"

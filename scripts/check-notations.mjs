@@ -128,6 +128,8 @@ const ID1_EXCLUDED_FILES = new Set([IDS_AND_REFERENCES_PATH, CONVENTIONS_PATH]);
 // Files that legitimately carry a non-SoT methodology_version (placeholders).
 const VERSION_PIN_ALLOWLIST = new Set([
   'transitrix/skills/onboard/templates/transitrix.yaml', // "pin a real release once the adopter chooses one"
+  'migrations/5.1-to-6.0/fixtures/before/transitrix.yaml', // fixed migration source version
+  'migrations/5.1-to-6.0/fixtures/after/transitrix.yaml', // fixed migration target version
   'migrations/0.6-to-0.7/README.md',                    // documents the target version, not the current pin
   'migrations/0.7-to-1.0/README.md',                    // documents the source version, not the current pin
   'migrations/0.7-to-1.0/fixtures/before/canon/views/compliance-impact/retail.compliance-impact.transitrix.yaml',  // pre-migration fixture

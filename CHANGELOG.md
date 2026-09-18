@@ -8,6 +8,71 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+## [6.0.0] — Unreleased
+
+Bump category: **MAJOR**. Knowledge supersession now enforces errors on admitted
+objects that the 5.1.0 linter accepted, including the published `KS-019`
+warning-to-error change. Follow the [5.1 → 6.0 migration recipe](migrations/5.1-to-6.0/)
+before upgrading. The manifest and ingest coverage presets both target 6.0.0;
+package versions retain their independent versioning.
+
+### Added
+
+- Repository MCP pattern and enterprise setup guidance, including responsibilities
+  for catalogue hosts and consumers. (#587, #603)
+- Catalogue-release and vocabulary CI examples, plus ingest guidance for
+  recognition, promotion, and review of returned bindings. (#592, #594)
+- HTML glossary reports derived from admitted canon through the document-view
+  engine's `view` directive. (#593)
+- Cold-read adoption review procedure and expanded knowledge freshness tests. (#588, #595)
+
+### Changed
+
+- **Breaking: knowledge supersession validation.** `KS-018` checks both pointers
+  for a unique admitted target; `KS-019` requires reciprocal admitted pointers;
+  `KS-020` rejects mismatches, self-links and cycles. A draft proposing
+  `supersedes` still receives only a missing-backlink warning. Linear chains
+  may grow beyond two objects. Re-curation preserves original assertions and
+  sources, admits a successor, and updates only predecessor lifecycle metadata.
+  The knowledge-store skill minimum version is 6.0.0. (#589, #597)
+- **Extraction compatibility:** unsupported top-level extraction fields now fail
+  explicitly instead of disappearing; schema-undefined data belongs in
+  `extensions`. Corroboration preserves existing values while filling missing
+  fields and adding provenance. Review custom extraction producers before
+  upgrading. (#602)
+- Validator coverage contract requires exhaustive file accounting, visible
+  unvalidated paths and warnings, and `NOTATION-SKIP-001` promotion under
+  `--strict`. Action scheduling advisories are documented at warning severity.
+  Downstream tool conformance must be checked separately. (#599)
+- Compaction guidance requires demonstrated reachability and preservation;
+  base/open-tier stores defer removal. No compaction algorithm ships. (#598)
+- Issued-document preservation and assembly-history guidance: each release records
+  its full environment, earlier assembly facts remain available, and RELEASE
+  subjects remain PRODUCT or APPLICATION. No new release-state schema is added. (#600)
+
+### Fixed
+
+- Candidate TYPE fields survive extraction and review without importing source
+  claims of admission authority. (#602)
+- The first Goals-tree session and one-command L0 adoption instructions are
+  shorter and directly executable. (#590, #591)
+- Plugin example dependency `js-yaml` updates from 4.3.1 to 4.3.2. (#596)
+- Knowledge-store rule tables now match enforced supersession severity and scope.
+
+### Removed
+
+- Obsolete documentation audit report. (#586)
+
+### Upgrade compatibility
+
+Stores without supersession pointers need no knowledge-object rewrite. Repair
+existing links through review; never auto-create a relationship or mutate an
+admitted assertion to satisfy validation. Refresh the knowledge-store linter
+and skill alongside the manifest, specs, and ingest CLI. `tools/lint.py` is
+unchanged. Coverage preset element and relation lists are unchanged. Independent
+notation revisions updated for this span are Action 2.3, Relations 0.4 and
+Glossary 0.2; other notation edits only refresh example methodology pins.
+
 ## [5.1.0] — 2026-09-04
 
 Bump category: **MINOR** — highest change since the 5.0.0 pin is additive: the `documents` package, knowledge-object supersession fields and freshness warnings, the issue-tracker binding guide, and document-renderer paged-media / landscape / caption work. No migration recipe: a repository that never declares `packages: [documents]` and never uses the new knowledge-store fields validates as it did on 5.0.0. New `error` codes (`DOCS-001..007`, `KS-018`, `KS-020`) fire only when those optional surfaces are in use.

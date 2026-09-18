@@ -313,6 +313,14 @@ def main():
     check(result.returncode == 0, f"Supersession tests failed:\n{result.stdout}{result.stderr}")
     print(result.stdout)
 
+    print("Part H — 6.0 migration compatibility")
+    result = subprocess.run(
+        ["node", "--test", os.path.join(REPO_ROOT, "migrations", "5.1-to-6.0", "migration.test.mjs")],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    check(result.returncode == 0, f"Migration tests failed:\n{result.stdout}{result.stderr}")
+    print(result.stdout)
+
     if _failures:
         print("FAILED:")
         for f in _failures:
