@@ -55,7 +55,7 @@ Full grammar, the exception, and the complete TYPE registry (element types, docu
 | **Adopter repository** | A repository following the Transitrix zoned layout (`canon/` + `field/` + `codex/` + optional `operations/`), pinned to a `methodology_version` in `transitrix.yaml`. |
 | **Multi-tenant** | An adopter repository convention that nests multiple organisations under `organizations/<org_slug>/`, each with its own zones — for a parent group plus subsidiaries, or multiple business units. Single-tenant repos put the zones at the repo root instead. |
 | **Template** | A copy-and-fill starter file for a new element, relation, or view — see `transitrix/skills/onboard/templates/`. |
-| **Validator** | The whole-repo model-integrity linter (`.validators/lint.py` in an adopter repo, `tools/lint.py` in this one) or the per-file `@transitrix/cli` validator. See the two-tool validation model in [`notations/README.md`](../notations/README.md). |
+| **Validator** | In tooling, the whole-repo model-integrity linter (`.validators/lint.py` in an adopter repo, `tools/lint.py` in this one) or the per-file `@transitrix/cli` validator. See the two-tool validation model in [`notations/README.md`](../notations/README.md). In adopter guidance, `VALIDATOR.md` selects assistant support for expert review; it is not an enterprise profession or permission grant. Automated checks, expert review, and approval are distinct ([reference](../guides/repository-mcp-enterprise.md)). |
 | **View** | A render-able, presentation-only document over the canon elements — carries no canonical content of its own (the reconstruction invariant, [`ELEMENT_PRIMITIVES.md`](../notations/ELEMENT_PRIMITIVES.md) §1.1). |
 
 ## File types

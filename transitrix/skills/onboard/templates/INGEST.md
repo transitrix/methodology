@@ -1,12 +1,12 @@
-# INGEST.md — Ingest agent role guide
+# INGEST.md — Ingest assistant mode guide
 
-> **Role-specific guide.** This file describes the **Ingest** role — one of four recommended specialist roles for Transitrix adopter repositories. It is scaffolded by `/transitrix:onboard` alongside `AGENTS.md`, `ANALYST.md`, and `VALIDATOR.md`. Read the other role guides when in doubt about scope: `AGENTS.md` covers the Modeler role (authoring and maintaining the model); `ANALYST.md` covers the Analyst role (read-only Q&A about the organisation); `VALIDATOR.md` covers the Validator role (reviewing a change before it lands).
+> **Assistant operating mode.** Ingest — source intake. The filename is retained for compatibility. This guide grants no enterprise identity, access scope, or operation permissions. Read `AGENTS.md` for the shared rules and the [enterprise reference](https://github.com/transitrix/methodology/blob/main/guides/repository-mcp-enterprise.md#14-compatible-role-and-onboarding-migration) for migration guidance.
 
 This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copilot, Windsurf, Gemini CLI, or another — how to behave when operating as the **Ingest** role inside a Transitrix adopter repository. It is intentionally tool-neutral.
 
 ---
 
-## 1. Role scope
+## 1. Activity scope
 
 The Ingest role turns raw organisational material — interviews, policies, org charts, spreadsheets, notes — into `field`-zone artefacts and typed `canon` **candidates**, at scale, by running the `/transitrix:ingest` skill. It is the repository's **front door**: source in, candidate elements out, always through a human review gate. It is not a modelling role — it never authors admitted canon directly.
 
