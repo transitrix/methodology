@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { isValidId, isValidType } from './ids.mjs';
 import { classifyCoverage } from './coverage.mjs';
 import { loadVocabulary, relationKinds, valueSet } from './vocabulary.mjs';
+import { ELEMENT_FIELDS, TYPE_FIELDS } from './emit-candidates.mjs';
 
 // Every closed set below is DERIVED from notations/vocabulary.yaml — this file holds
 // no literal enum. Derived at module init, so a missing or corrupt artefact throws
@@ -96,7 +97,8 @@ export function validateCandidate(cand, profile) {
       flags.push('extensions must be a map — an open key-value bag (CONTRACT §12.1)');
     } else {
       for (const k of Object.keys(cand.extensions)) {
-        if (DEFINED_FIELDS.has(k)) {
+        if (DEFINED_FIELDS.has(k) || ELEMENT_FIELDS.has(k) ||
+            (TYPE_FIELDS[cand.element_type] || []).includes(k)) {
           flags.push(`EXT-002 [warning]: extensions key "${k}" collides with a defined field — put it in its defined place, not the open bag (CONTRACT §12.1)`);
         }
       }

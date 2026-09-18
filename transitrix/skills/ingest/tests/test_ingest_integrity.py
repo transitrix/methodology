@@ -1786,6 +1786,14 @@ for command in (
     check(result.returncode == 0,
           "Catalogue binding workflow: " + result.stdout + result.stderr)
 
+# Maintain the serialized-candidate/manual-admission contract in this CI gate.
+admission = subprocess.run(
+    [sys.executable, os.path.join(REPO_ROOT, "packages", "ingest-cli", "tests", "test_candidate_admission.py")],
+    capture_output=True, text=True, timeout=60,
+)
+check(admission.returncode == 0,
+      "Candidate admission regression: " + admission.stdout + admission.stderr)
+
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
     for f in _failures:
