@@ -1,0 +1,21 @@
+# Synthetic teaching example; no operational claim.
+notation: requirement
+id: "REQUIREMENT-FAILOVER-1"
+name: "Maintain and exercise checkout failover"
+description: >-
+  Maintain an independent checkout route and exercise switchover monthly,
+  including detection failure and loss of the primary route.
+origin: process-product
+severity: high
+agreement: draft
+agreed_by: "example-author"
+example: true
+zone: canon
+admitted_at: "2026-09-20"
+admitted_by: "example-author"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-09-20"
+valid_to: null

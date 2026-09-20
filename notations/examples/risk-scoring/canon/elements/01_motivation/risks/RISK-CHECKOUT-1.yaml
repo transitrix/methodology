@@ -1,0 +1,59 @@
+# Synthetic teaching example; no operational claim.
+notation: risk
+id: "RISK-CHECKOUT-1"
+name: "Checkout interruption during a dependency outage"
+description: >-
+  A dependency outage may interrupt checkout. The residual estimate assumes
+  the failover obligation is in effect; the evidence and all dates are fictional.
+likelihood: high
+impact: high
+residual: medium
+owner_role: "ROLE-CHECKOUT-1"
+threatens: ["DRIVER-CHECKOUT-1"]
+treated_by: ["REQUIREMENT-FAILOVER-1"]
+extensions:
+  risk_scoring:
+    scheme: "checkout-ps"
+    version: "1.0"
+    definition: "../../../../../../../guides/numerical-risk-scoring.md"
+    formula: "probability_rating * severity_rating"
+    assessment_date: "2026-09-20"
+    assessor_role: "ROLE-CHECKOUT-1"
+    horizon: "2026-10-01/2027-09-30"
+    event: "At least one checkout interruption in the horizon"
+    before_treatment:
+      probability_estimate: 0.40
+      probability_rating: 4
+      interruption_hours: 6
+      severity_rating: 5
+      score: 20
+      evidence:
+        reference: "synthetic-baseline"
+        note: >-
+          Fictional planning estimate of 40 percent annual event probability;
+          a fictional recovery walkthrough estimates six hours of interruption.
+    after_treatment:
+      treatment_refs: ["REQUIREMENT-FAILOVER-1"]
+      basis: "conditional estimate assuming treatment is in effect"
+      probability_estimate: 0.08
+      probability_rating: 2
+      interruption_hours: 2
+      severity_rating: 4
+      score: 8
+      evidence:
+        reference: "synthetic-failover-review"
+        note: >-
+          A fictional exercise on 2026-09-19 restores checkout in two hours.
+          The owner assumes an 8 percent annual interruption probability with
+          independent failover, monitoring and monthly exercises. One exercise
+          does not measure that annual probability or prove effectiveness.
+example: true
+zone: canon
+admitted_at: "2026-09-20"
+admitted_by: "example-author"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-09-20"
+valid_to: null
