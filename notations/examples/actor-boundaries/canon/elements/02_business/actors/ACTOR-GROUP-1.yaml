@@ -1,0 +1,20 @@
+notation: actor
+id: "ACTOR-GROUP-1"
+name: Example Group
+type: business_unit
+description: Operational group perimeter; not a claim of legal personality.
+example: true
+zone: canon
+admitted_at: '2026-09-01'
+admitted_by: example-author
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
+extensions:
+  example_boundary:
+    scheme: operational-perimeter-v1
+    definition: The explicitly assessed operational perimeter of Example Group; no
+      transitive membership inference.
