@@ -16,6 +16,7 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 | [Preserve issued document versions](how-to-preserve-issued-document-versions.md) | Methodological recommendation for document owners and approvers | Agree issue identity, approval, retention and supersession; no mandated technology. |
 | [Version a document](how-a-document-is-versioned.md) | Procedure for recipe authors | Recipe/run-record concepts and verified source provenance; optional package scope is separate. |
 | [Print a document](how-a-document-prints.md) | Rendering guidance for document producers | Distinguishes basic PDF, paged-media preparation and caller-supplied engines. |
+| [Model actor legal identity](modelling-actor-legal-identity.md) | Current-model guidance for modellers | Separate legal assessments from operational boundaries using an optional local extension; no registry verification. |
 | [Model capabilities](modelling-capabilities.md) | Authoring procedure for modellers | Canonical identities, lifecycle and dated assessment sidecars. |
 | [Model complex processes](modelling-complex-processes.md) | Authoring procedure for modellers | Canonical PROCESS flow before diagram projection. |
 | [Record assembly systems](how-a-release-records-the-systems-it-was-assembled-on.md) | Authoring procedure for release modellers | Admitted releases of eligible subjects and assembly evidence. |
