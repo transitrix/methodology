@@ -419,9 +419,14 @@ The former `bpmn_file` pointer ("path to the detailed BPMN diagram") is **remove
 - `flow.steps` — list of nodes. Each step: `id`, `type` (one of the seven), `name` (required for tasks / gateways; optional for events), `performed_by` (a member of `participants` — `ROLE-…` or `ACTOR-…`), and optional `supported_by_application` (`APPLICATION-…`). Precedence and the "swimlane is a participant" default follow [views/01-bpmn.md](./views/diagrams/01-bpmn.md) §7.2; the BPMN projection derives lane grouping from `performed_by`.
 - `flow.sequence` — list of `{ from, to, condition?, default? }` sequence flows between step IDs (projects to the BPMN `flows` array).
 
-Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, an `ACTIVITY` realising a step, or an `ASSERTION` (`subject` / `realised_via`) can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record (the registered `STEP` TYPE, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; element-file shape and promotion mechanic in §7.20) only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
+Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §1), not the file-local BPMN labels of §3.3, so a step is **addressable**: a step-level `CHANGE` (§7.3, §6.1), a `RULE.applies_to`, or an `ASSERTION` (`subject` / `realised_via`) can reference it. Steps are canonical **by containment** — the PROCESS element carries the single admission record and lifecycle (§1, inline-element rule); a step is **promoted** to its own record (the registered `STEP` TYPE, [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.1; element-file shape and promotion mechanic in §7.20) only if a second document references it (§1 promotion rule). The file-local-label convention of [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §3.3 now applies only to a standalone `.bpmn` projection, not to a `flow` authored inside canon.
 
 Inline shape (as referenced from the map): [views/06-process-map.md](./views/diagrams/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
+
+**Recurring execution (proposal).** See [Recurring Activities in a running process](recurring-activities.md)
+for an optional recurrence shape on Activity steps, persistent instance lifecycle,
+and separate operational execution records. This is not a new standalone Activity
+TYPE or an implemented extension to the flow schema.
 
 ### 7.6 `PRODUCT` — `02_business/products/`
 
