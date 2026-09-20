@@ -21,5 +21,6 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 | [Record assembly systems](how-a-release-records-the-systems-it-was-assembled-on.md) | Authoring procedure for release modellers | Admitted releases of eligible subjects and assembly evidence. |
 | [Bind an issue tracker](how-the-model-binds-to-an-issue-tracker.md) | Integration convention for delivery leads | Tracker access and an agreed attribution/status reconciliation policy. |
 | [Adopt the decision log](adl-adopter-setup.md) | Setup procedure for repository owners | Intended readership, Node.js and source coverage; central originals stay separate from derived output. |
+| [Declare ADR applicability](adr-applicability-in-pull-requests.md) | Optional PR review convention for authors and reviewers | Separates applicability, record validity and authority; path hints and future controls need adopter decisions. |
 | [Review the on-ramp](reviewing-the-on-ramp.md) | Usability review procedure | Independent reader session and the guide's consent/evidence conditions. |
 | [Adoption health profile](adoption-health-profile.md) | Proposed review method for adopters | No complete shipped collector or certification; declare scope and unknowns. |
