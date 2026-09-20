@@ -1,0 +1,18 @@
+notation: relation
+id: "REL-EMPLOYMENT-APPROVER-1"
+name: Approver employment
+type: employment
+from: "ACTOR-APPROVER-1"
+to: "ACTOR-SERVICE-UNIT-1"
+roles:
+  - "ROLE-APPROVER-1"
+zone: canon
+example: true
+admitted_at: '2026-09-20'
+admitted_by: example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null

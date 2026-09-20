@@ -17,7 +17,7 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 | [Version a document](how-a-document-is-versioned.md) | Procedure for recipe authors | Recipe/run-record concepts and verified source provenance; optional package scope is separate. |
 | [Print a document](how-a-document-prints.md) | Rendering guidance for document producers | Distinguishes basic PDF, paged-media preparation and caller-supplied engines. |
 | [Model capabilities](modelling-capabilities.md) | Authoring procedure for modellers | Canonical identities, lifecycle and dated assessment sidecars. |
-| [Model complex processes](modelling-complex-processes.md) | Authoring procedure for modellers | Canonical PROCESS flow before diagram projection. |
+| [Model complex processes](modelling-complex-processes.md) | Authoring procedure for modellers | Canonical PROCESS flow before diagram projection; complete shared-process example and joint-performance boundaries. |
 | [Record assembly systems](how-a-release-records-the-systems-it-was-assembled-on.md) | Authoring procedure for release modellers | Admitted releases of eligible subjects and assembly evidence. |
 | [Bind an issue tracker](how-the-model-binds-to-an-issue-tracker.md) | Integration convention for delivery leads | Tracker access and an agreed attribution/status reconciliation policy. |
 | [Adopt the decision log](adl-adopter-setup.md) | Setup procedure for repository owners | Intended readership, Node.js and source coverage; central originals stay separate from derived output. |
