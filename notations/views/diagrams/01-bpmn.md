@@ -10,7 +10,7 @@ dsm_status: "not implemented in DSM — renders via Transitrix Studio"
 
 # BPMN Process YAML Notation — Reference
 
-**Version:** 1.3
+**Version:** 1.4
 **Date:** 2026-06-23
 **Scope:** Reference for the YAML notation used to describe BPMN 2.0 processes. Covers structure, allowed elements, sequence flows, identifiers, validation rules, examples, and glossary.
 
@@ -60,6 +60,11 @@ Two consequences:
 > **Inversion (this change).** Until now the BPMN file was the detailed flow representation that the `PROCESS` element pointed at via `bpmn_file`. That pointer is inverted: the element's `flow` is the source, the BPMN file is derived. The structural schema in §3–§8 below describes the **projected (serialised) form** the renderer emits and consumes.
 
 ---
+
+The [recurring Activities proposal](../../recurring-activities.md) describes a
+persistent-process case beyond this compiler subset. A recurring step completion
+is not process completion. The proposal does not change the start/end rules below
+or claim timer support; existing process-trigger patterns remain valid.
 
 ## 1. Overview
 
