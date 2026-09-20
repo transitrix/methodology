@@ -92,7 +92,7 @@ resolving sequence endpoints and a complete start-to-end path. Check role
 assignments and typed relation endpoints against the [relation contract](../../elements/17-relations.md).
 
 CLI 2.9.2 repository validation does not enforce all canonical PROCESS flow fields;
-a passing report alone is insufficient. In particular, check performer membership
+a passing report alone is insufficient. In particular, check performer membership,
 sequence endpoints and employment role references explicitly. Single-file diagram validation is not a
 substitute for checking the canonical PROCESS record. The admission values here
 are synthetic, not evidence of real operational performance or joint acceptance.
