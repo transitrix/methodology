@@ -1,0 +1,17 @@
+notation: node
+id: "NODE-CONTAINERS-1"
+name: "Container platform"
+type: container_platform
+description: "Infrastructure substrate hosting the container execution service."
+
+zone: canon
+example: true
+admitted_at: "2026-09-20"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null
