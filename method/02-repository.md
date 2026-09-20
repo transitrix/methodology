@@ -73,6 +73,10 @@ Full convention: [`method/06-team-operations.md`](06-team-operations.md). Worked
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
 
+### 1.2 Repository mechanics changelog
+
+An optional root `CHANGELOG.md`, outside the model zones, records methodology upgrades, notation/validation coverage changes, and tooling or layout conventions. See [Record repository changes](../guides/how-to-record-repository-changes.md) for a plain convention and complete synthetic example. This log is separate from model-data history, issued-document history and Methodology's own release changelog; it requires no repository-version field.
+
 ---
 
 **Next:** [`03-modelling.md`](03-modelling.md) — how to write elements and relations.
