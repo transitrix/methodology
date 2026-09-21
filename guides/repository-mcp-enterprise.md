@@ -12,6 +12,8 @@ The target model separates professional expertise, accessible model scope, permi
 
 All tool and field names below are **proposed contracts**, not existing APIs. Implementation and hosting are outside this guide's scope. Existing adopter files can transition without renaming: see [compatible migration](#14-compatible-role-and-onboarding-migration).
 
+For a consumer walkthrough, see [Set up a desktop model workplace](desktop-model-workplace.md): qualified client paths, read-only connection checks, first diagrams and evidence-based review prompts.
+
 ## 2. Purpose
 
 Repository MCP gives employees and their AI clients governed access to an enterprise model: retrieval, search, relationship analysis, automated checks, and reviewable change proposals. Users do not need Git access when the service provides access to their permitted data.
