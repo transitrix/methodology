@@ -1,0 +1,5 @@
+transitrix: 1
+methodology_version: "6.0.0"
+notations: [application, node, technology-service, relation]
+zones: [canon]
+coverage_profile: core
