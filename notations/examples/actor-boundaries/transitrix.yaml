@@ -1,0 +1,6 @@
+# Synthetic catalogue; see README.md.
+transitrix: 1
+methodology_version: "6.0.0"
+notations: [actor]
+zones: [canon]
+coverage_profile: core

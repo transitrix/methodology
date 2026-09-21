@@ -188,6 +188,9 @@ a `view`, never a pre-exported raster placed as a `figure`.
 Figures are numbered in document order. A `figref` naming no figure declared
 earlier in the document is a failure — forward references are not resolved.
 
+The number is the figure's ordinal, not the page containing it. This language
+defines no target-page reference or generated table-of-contents construct.
+
 Page size, orientation, and what to do when a view does not fit are in
 [`guides/how-a-document-prints.md`](../../../guides/how-a-document-prints.md)
 — this section does not restate them.

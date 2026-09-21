@@ -66,6 +66,11 @@ The skill runs a Context → Decision → Consequences interview, derives the id
 
 ## Step 3 — the CI guard (per repo, recommended)
 
+To make a PR's need for a decision explicit, use the optional
+[ADR applicability declaration](adr-applicability-in-pull-requests.md). It separates
+the author's impact assessment from record validity and accepted authority; the
+guard below does not decide whether a PR needs an ADR.
+
 The Step 1 command wires the guard into pull-request CI with full Git history and an explicit base ref. Commit the generated files with your first proposed record and open a pull request. To run the same check locally after fetching the base branch:
 
 ```sh
