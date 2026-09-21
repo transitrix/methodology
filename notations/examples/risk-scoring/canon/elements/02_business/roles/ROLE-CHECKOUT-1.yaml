@@ -1,0 +1,16 @@
+# Synthetic teaching example; no operational claim.
+notation: role
+id: "ROLE-CHECKOUT-1"
+name: "Checkout service owner"
+description: >-
+  Accountable for checkout continuity, treatment evidence and risk review.
+example: true
+zone: canon
+admitted_at: "2026-09-20"
+admitted_by: "example-author"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-09-20"
+valid_to: null
