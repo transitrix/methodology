@@ -1,0 +1,17 @@
+# Synthetic teaching example; no operational claim.
+notation: driver
+id: "DRIVER-CHECKOUT-1"
+name: "Checkout availability"
+type: internal
+description: >-
+  The ability to accept orders while checkout dependencies change or fail.
+example: true
+zone: canon
+admitted_at: "2026-09-20"
+admitted_by: "example-author"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-09-20"
+valid_to: null

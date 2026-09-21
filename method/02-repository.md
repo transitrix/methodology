@@ -55,6 +55,8 @@ Every canonical artefact carries an **admission record** and a **primitive lifec
 
 **Dependency:** views depend on elements and relations, never the reverse. Canon wins on conflict — if an element and a view disagree, the element is authoritative and the view is stale. Deleting the entire `views/` folder loses no model knowledge; all projections regenerate from elements + view configuration files (see [`notations/CONTRACT.md`](../notations/CONTRACT.md) §14.1 — the reconstruction invariant).
 
+**Preserving empty zones in Git.** Use a regular, exactly zero-byte `.gitkeep` in each directory that must survive checkout. It is repository metadata, not an admitted artefact. Any content (even a newline) removes that exemption; other hidden files remain subject to zone enumeration. See [CONTRACT §6.5](../notations/CONTRACT.md#65-zone-enumeration--every-file-is-validated-or-reported) and its [conformance examples](../notations/examples/zone-enumeration/README.md).
+
 ### 1.1a Legacy layout (`canon/views/` — deprecated)
 
 Repositories created before 2026-08-26 may carry views nested inside `canon/views/`. This layout is **legacy**. The new normative layout places `views/` as a sibling of `canon/` at the organization root, not nested inside `canon/`.
@@ -72,6 +74,10 @@ Team Operations Work Items record what the team itself is doing; a problem, risk
 Full convention: [`method/06-team-operations.md`](06-team-operations.md). Worked example: [`operations/`](https://github.com/transitrix/acme-corp/tree/main/operations/) in the acme-corp reference repo.
 
 Why multi-tenant: a single repository can hold an entire portfolio of organisations (parent group plus subsidiaries; advisory relationships; multiple business units). Each organisation has full structural isolation while sharing methodology and validators.
+
+### 1.2 Repository mechanics changelog
+
+An optional root `CHANGELOG.md`, outside the model zones, records methodology upgrades, notation/validation coverage changes, and tooling or layout conventions. See [Record repository changes](../guides/how-to-record-repository-changes.md) for a plain convention and complete synthetic example. This log is separate from model-data history, issued-document history and Methodology's own release changelog; it requires no repository-version field.
 
 ---
 
