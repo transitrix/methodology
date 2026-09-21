@@ -1,0 +1,35 @@
+notation: actor
+id: "ACTOR-SUBSIDIARY-1"
+name: Example Subsidiary
+type: business_unit
+description: Synthetic subsidiary identity with an independently recorded legal assessment.
+example: true
+zone: canon
+admitted_at: '2026-09-01'
+admitted_by: example-author
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
+extensions:
+  example_boundary:
+    scheme: operational-perimeter-v1
+    definition: The explicitly assessed operational perimeter of Example Subsidiary; no transitive
+      membership inference.
+  example_boundary_membership:
+    scheme: operational-perimeter-v1
+    assessments:
+      - boundary_ref: ACTOR-GROUP-1
+        classification: internal
+        from_date: '2026-01-01'
+        until_date: null
+        basis: Synthetic explicit group-perimeter assessment; not inferred from the subsidiary name
+          or legal status.
+  example_legal_identity:
+    scheme: legal-identity-assessment-v1
+    status: legal_entity
+    assessed_on: '2026-06-01'
+    basis: Synthetic founding record states that Example Subsidiary has separate legal personality,
+      independently of group membership.

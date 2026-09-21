@@ -1,0 +1,25 @@
+notation: actor
+id: "ACTOR-GROUP-1"
+name: Example Group
+type: business_unit
+description: Synthetic group identity, also used to name an operational perimeter.
+example: true
+zone: canon
+admitted_at: '2026-09-01'
+admitted_by: example-author
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
+extensions:
+  example_boundary:
+    scheme: operational-perimeter-v1
+    definition: The explicitly assessed operational perimeter of Example Group; no transitive membership
+      inference.
+  example_legal_identity:
+    scheme: legal-identity-assessment-v1
+    status: legal_entity
+    assessed_on: '2026-06-01'
+    basis: Synthetic founding record states that Example Group has separate legal personality.
