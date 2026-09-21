@@ -1,0 +1,34 @@
+notation: actor
+id: "ACTOR-SERVICES-1"
+name: Example Shared Services
+type: business_unit
+description: Internal service unit assigned to the group perimeter.
+example: true
+zone: canon
+admitted_at: '2026-09-01'
+admitted_by: example-author
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
+extensions:
+  example_boundary_membership:
+    scheme: operational-perimeter-v1
+    assessments:
+      - boundary_ref: ACTOR-GROUP-1
+        classification: internal
+        from_date: '2026-01-01'
+        until_date: null
+        basis: Synthetic assessment for this example; no real organizational evidence.
+      - boundary_ref: ACTOR-SUBSIDIARY-1
+        classification: external
+        from_date: '2026-01-01'
+        until_date: '2026-07-01'
+        basis: Synthetic assessment for this example; no real organizational evidence.
+      - boundary_ref: ACTOR-SUBSIDIARY-1
+        classification: unknown
+        from_date: '2026-07-01'
+        until_date: null
+        basis: Synthetic assessment for this example; no real organizational evidence.
