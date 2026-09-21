@@ -1,0 +1,18 @@
+notation: process
+id: "PROCESS-SERVICE-RENEWAL-1"
+name: Service renewal
+goal: Review a request to continue a service.
+result: Renewal disposition recorded.
+description: Overview process. The shared request-review phase is defined once and
+  linked through process_parent; this record does not define an executable parent
+  flow.
+zone: canon
+example: true
+admitted_at: '2026-09-20'
+admitted_by: example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null

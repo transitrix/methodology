@@ -1,0 +1,47 @@
+notation: process
+id: "PROCESS-REQUEST-REVIEW-1"
+name: Review service request
+owner_role: "ROLE-APPROVER-1"
+goal: Give each request a reviewed and accountable disposition.
+result: Recorded approval or rejection with a reviewer recommendation.
+participants:
+  - "ROLE-REVIEWER-1"
+  - "ROLE-APPROVER-1"
+flow:
+  steps:
+    - id: "STEP-REQUEST-REVIEW-START-1"
+      type: startEvent
+      name: Request ready
+      performed_by: "ROLE-REVIEWER-1"
+    - id: "STEP-REQUEST-REVIEW-CHECK-1"
+      type: userTask
+      name: Check request and record recommendation
+      performed_by: "ROLE-REVIEWER-1"
+    - id: "STEP-REQUEST-REVIEW-DECIDE-1"
+      type: userTask
+      name: Record approval or rejection
+      performed_by: "ROLE-APPROVER-1"
+    - id: "STEP-REQUEST-REVIEW-END-1"
+      type: endEvent
+      name: Disposition recorded
+      performed_by: "ROLE-APPROVER-1"
+  sequence:
+    - from: "STEP-REQUEST-REVIEW-START-1"
+      to: "STEP-REQUEST-REVIEW-CHECK-1"
+    - from: "STEP-REQUEST-REVIEW-CHECK-1"
+      to: "STEP-REQUEST-REVIEW-DECIDE-1"
+    - from: "STEP-REQUEST-REVIEW-DECIDE-1"
+      to: "STEP-REQUEST-REVIEW-END-1"
+description: Both responsibilities participate in one identified process. Review precedes
+  decision; approval and rejection both finish this bounded review phase. This is
+  sequential cooperation, not an indivisible jointly performed action.
+zone: canon
+example: true
+admitted_at: '2026-09-20'
+admitted_by: example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null

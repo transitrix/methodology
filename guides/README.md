@@ -20,7 +20,7 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 | [Model capabilities](modelling-capabilities.md) | Authoring procedure for modellers | Canonical identities, lifecycle and dated assessment sidecars. |
 | [Score risks numerically](numerical-risk-scoring.md) | Optional local convention for risk owners and report authors | Synthetic pre/post-treatment example; core qualitative fields remain required and extension arithmetic needs local checks. |
 | [Model application hosting and external exchange](modelling-application-hosting-and-exchange.md) | Authoring guidance and complete hosting example | First-class platform relations; external-actor exchange remains a semantic proposal. |
-| [Model complex processes](modelling-complex-processes.md) | Authoring procedure for modellers | Canonical PROCESS flow before diagram projection. |
+| [Model complex processes](modelling-complex-processes.md) | Authoring procedure for modellers | Canonical PROCESS flow before diagram projection; complete shared-process example and joint-performance boundaries. |
 | [Record assembly systems](how-a-release-records-the-systems-it-was-assembled-on.md) | Authoring procedure for release modellers | Admitted releases of eligible subjects and assembly evidence. |
 | [Bind an issue tracker](how-the-model-binds-to-an-issue-tracker.md) | Integration convention for delivery leads | Tracker access and an agreed attribution/status reconciliation policy. |
 | [Adopt the decision log](adl-adopter-setup.md) | Setup procedure for repository owners | Intended readership, Node.js and source coverage; central originals stay separate from derived output. |
