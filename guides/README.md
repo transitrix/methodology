@@ -1,7 +1,7 @@
 ---
 title: Adopter guides
 status: active
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-21
 audience: public
 license: MIT
 ---
@@ -12,6 +12,7 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 
 | Guide | Kind and audience | Prerequisite or boundary |
 | --- | --- | --- |
+| [Desktop model workplace](desktop-model-workplace.md) | Draft setup procedure for managers using ChatGPT Desktop or Claude Desktop | Dated vendor prerequisites; installed-client and viewer compatibility must be independently verified. |
 | [Repository MCP for enterprises](repository-mcp-enterprise.md) | Recommended architecture for model owners and implementation teams | Scoped identity and operation rights, deployment choices, and compatible assistant modes; no available server or supported API is implied. |
 | [Preserve issued document versions](how-to-preserve-issued-document-versions.md) | Methodological recommendation for document owners and approvers | Agree issue identity, approval, retention and supersession; no mandated technology. |
 | [Version a document](how-a-document-is-versioned.md) | Procedure for recipe authors | Recipe/run-record concepts and verified source provenance; optional package scope is separate. |

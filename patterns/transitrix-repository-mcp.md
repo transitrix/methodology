@@ -4,6 +4,8 @@
 
 **Status:** recommended architecture; no available server or supported Transitrix MCP API is implied.
 
+For a consumer walkthrough, see [Set up a desktop model workplace](../guides/desktop-model-workplace.md): qualified client paths, read-only connection checks, first diagrams and evidence-based review prompts.
+
 ## Problem
 
 AI clients need to retrieve and analyze an enterprise model without turning search results into another source of truth or bypassing its admission process. Different readers may need different parts of the same logical model. A prompt, repository folder, or assistant role name cannot enforce that boundary.
