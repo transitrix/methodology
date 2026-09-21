@@ -88,10 +88,10 @@ Two first-class relation kinds connect a technology service to its infrastructur
 
 | Relation `type` | From → To | What it records |
 |---|---|---|
-| `hosts` | `NODE` → `TECHNOLOGY_SERVICE` | A node hosts this technology service. Declared on the NODE side — the node file carries the `hosts` relations. Time-aware: use a `REL-…` file when a service migrates to a new node. The inline `node` field on the technology service is a back-reference for simple stable cases. |
-| `uses` | `APPLICATION` → `TECHNOLOGY_SERVICE` | An application consumes this technology service. Time-aware — use a `REL-…` file when an application starts or stops using a service (a dependency change after a migration or re-architecture). For stable, long-running dependencies, the inline `uses[]` field on the `APPLICATION` element ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.7) is sufficient. |
+| `hosts` | `NODE` → `TECHNOLOGY_SERVICE` | A node hosts this technology service. The NODE is the `from` endpoint of a separate file under `canon/relations/`; the relation is not nested inside the node file. Time-aware: use a `REL-…` file when a service migrates to a new node. The inline `node` field on the technology service is a back-reference for simple stable cases. |
+| `uses` | `APPLICATION` → `TECHNOLOGY_SERVICE` | An application consumes this technology service. Time-aware — use a `REL-…` file when an application starts or stops using a service (a dependency change after a migration or re-architecture). Stable dependencies also use a first-class REL; [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.7 defines no inline technology-service dependency field on APPLICATION. |
 
-**Inline vs first-class.** The inline `node` field on `TECHNOLOGY_SERVICE` and the inline `applications[]` field on `APPLICATION` are the right choice for stable links. Move to `REL-…` files when:
+**Inline vs first-class.** The `node` field on `TECHNOLOGY_SERVICE` supports a stable single-host link. APPLICATION has no inline `uses[]`, `applications[]`, or `technology_services[]` field for service consumption: use a `uses` REL even for a stable dependency. Both `hosts` and `uses` can be first-class REL files, as in the [complete application-hosting example](../examples/relations/application-hosting/README.md). Separate REL files also record changes when:
 
 - A technology service migrates to a new node (the `hosts` REL on the old NODE ends with `valid_to`; a new `hosts` REL is admitted on the new NODE).
 - An application starts consuming a new technology service mid-stream, or stops consuming one — the dependency change is a temporal event worth auditing.

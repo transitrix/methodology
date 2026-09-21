@@ -1,0 +1,16 @@
+notation: relation
+id: "REL-REVIEW-PARENT-NEW-SERVICE-1"
+name: Review phase of new service request
+type: process_parent
+from: "PROCESS-REQUEST-REVIEW-1"
+to: "PROCESS-NEW-SERVICE-1"
+zone: canon
+example: true
+admitted_at: '2026-09-20'
+admitted_by: example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
