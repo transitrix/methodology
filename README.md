@@ -58,6 +58,7 @@ New to the ideas behind it? Read **[`method/01-foundations.md`](method/01-founda
 
 ## Documentation
 
+- **[ArchiMate 3.2 cheat sheet](https://transitrix.com/library/archimate-cheat-sheet/?utm_source=methodology-readme)** — elements by layer and aspect, relationships, and a printable PDF.
 - **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — a first modelling session, step by step, illustrated against the `acme-corp` worked example.
 - **[`WALKTHROUGH.md`](WALKTHROUGH.md)** — a guided tour of the `acme-corp` worked example, read as one story.
 - **[`notations/CONVENTIONS.md`](notations/CONVENTIONS.md)** — ID grammar, naming, and best-practice checklist for authoring canon content.
