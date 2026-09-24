@@ -61,9 +61,9 @@ Two consequences:
 
 ---
 
-The [recurring Activities proposal](../../recurring-activities.md) describes a
+The [recurring Activities contract](../../recurring-activities.md) describes a
 persistent-process case beyond this compiler subset. A recurring step completion
-is not process completion. The proposal does not change the start/end rules below
+is not process completion. The specification does not change the start/end rules below
 or claim timer support; existing process-trigger patterns remain valid.
 
 ## 1. Overview

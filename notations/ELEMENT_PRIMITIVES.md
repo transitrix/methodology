@@ -423,7 +423,7 @@ Step IDs use the canonical ID grammar ([IDS_AND_REFERENCES.md](IDS_AND_REFERENCE
 
 Inline shape (as referenced from the map): [views/06-process-map.md](./views/diagrams/06-process-map.md) §5. The process-map view references `PROCESS-…` by `process_id`; the element file is the definition home.
 
-**Recurring execution (proposal).** See [Recurring Activities in a running process](recurring-activities.md)
+**Recurring execution (accepted specification).** See [Recurring Activities in a running process](recurring-activities.md)
 for an optional recurrence shape on Activity steps, persistent instance lifecycle,
 and separate operational execution records. This is not a new standalone Activity
 TYPE or an implemented extension to the flow schema.
