@@ -1,14 +1,14 @@
 ---
 title: "Relations — first-class time-aware links"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-18"
+last_updated: "2026-09-24"
 status: "draft"
 ---
 
 # Relations — Reference
 
-**Scope:** The `REL` element type — first-class **time-aware relations** between two canonical primitives. A relation file records that *primitive A is in relation X with primitive B during a defined window*. The shared header / zone / admission / lifecycle / sidecar contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
+**Scope:** The `REL` element type — first-class **time-aware relations** between two addressable artefacts. A relation file records that *primitive A is in relation X with primitive B during a defined window*. The shared header / zone / admission / lifecycle / sidecar contracts are defined in [CONTRACT.md](../CONTRACT.md); the TYPE registry sits in [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1.
 
 Relations are canon-zone artefacts that live in a **flat folder** at the canon-zone root: `canon/relations/`. Each relation is a single YAML file named by its canonical ID, carrying the admission record ([CONTRACT.md](../CONTRACT.md) §6, `zone: canon`), the primitive lifecycle ([CONTRACT.md](../CONTRACT.md) §7), and the relation-specific frontmatter below.
 
@@ -16,7 +16,7 @@ Relations are canon-zone artefacts that live in a **flat folder** at the canon-z
 
 ## 1. What a relation is
 
-A relation is a directed link from a `from` primitive to a `to` primitive, tagged with a `type` that names the kind of link. A relation has its **own lifecycle** (`valid_from` / `valid_to`): the link is in effect for the window the relation file declares, independently of the lifecycles of either endpoint.
+A relation is a directed link from a `from` primitive to a `to` artefact, tagged with a `type` that names the kind of link. A relation has its **own lifecycle** (`valid_from` / `valid_to`): the link is in effect for the window the relation file declares, independently of the lifecycles of either endpoint.
 
 This is the difference from inline cross-references: an inline reference field (`activity.goals: [GOAL-…]`) is timeless within its host file — it asserts the link exists for the host's entire lifetime. A first-class relation records *when the link itself took effect and when it ended*. A capability re-parented in 2026, an activity re-aimed at a different goal in mid-stream, a CRM application that started supporting a new capability — these are temporal events that lose information when inlined.
 
@@ -53,7 +53,7 @@ valid_to: null
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REL-[<middle>-]<INTEGER>`. |
 | `type` | yes | string | One of the closed enum values in §3. The enum is closed for a given methodology release; new kinds land as additive MINOR revisions (see §3). |
 | `from` | yes | string | Typed canonical ID of the relation's source / dependent / child primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
-| `to` | yes | string | Typed canonical ID of the relation's target / parent / destination primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
+| `to` | yes | string | Typed canonical ID of the relation's target / parent / destination primitive. Must resolve to an admitted primitive in canon, except the explicit Field targets of `source_trace` in §3 (`REL-002`). |
 | `zone` | yes | string | Always `canon` for REL — see [CONTRACT.md](../CONTRACT.md) §6. |
 | `admitted_at` | yes | string | Date admitted to canon — quoted ISO 8601 per [CONTRACT.md](../CONTRACT.md) §4. |
 | `admitted_by` | yes | string | Person handle or tool ID that ran the admission gate. |
@@ -65,9 +65,15 @@ valid_to: null
 
 ## 3. Relation `type` enum
 
+**Requirement-chain extension status:** the six kinds `requirement_parent`,
+`serves`, `source_trace`, `product_scope`, `project_scope` and `project_product`
+are specified for [requirement-chain 0.2](../views/reports/requirement-chain.md).
+Final review and consumer implementation are pending; this draft does not claim
+support in released validators. Existing records remain valid without them.
+
 The enum is **closed** in v1. Each value names a specific kind of link between two primitive types; the validator enforces both the enum membership and (when the catalogue is loaded) the endpoint TYPE constraints.
 
-**Not every connection is a REL.** Some links are inline fields on the host element instead — timeless, own-record cross-references (§1). `REQUIREMENT.parent` ([15-requirement.md](15-requirement.md) §2.4) is the clearest case: it connects two `REQUIREMENT`s the same way `depends_on` below does, but stays inline because the link carries no time-varying state of its own. [15-requirement.md](15-requirement.md) §2.4.1 is the decision guide for choosing between `parent`, `depends_on`, and `required_for`.
+**Not every connection is a REL.** Some links are inline fields on the host element instead — timeless, own-record cross-references (§1). `REQUIREMENT.parent` ([15-requirement.md](15-requirement.md) §2.4) is the clearest case: it connects two `REQUIREMENT`s the same way `depends_on` below does, but can stay inline when the link carries no time-varying state of its own; `requirement_parent` below is its M:N/time-aware counterpart. [15-requirement.md](15-requirement.md) §2.4.1 is the decision guide for choosing between `parent`, `depends_on`, and `required_for`.
 
 | `type` | Direction (from → to) | Endpoint TYPEs | Semantics |
 |---|---|---|---|
@@ -90,6 +96,12 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `hosts` | node → service | `NODE` → `TECHNOLOGY_SERVICE` | A node (or cluster of nodes) hosts a technology service. Time-aware — a service migrated to a new node produces a new REL file with `valid_to` on the old one. For a stable, single-host configuration, the inline `node` field on `TECHNOLOGY_SERVICE` is sufficient; the `hosts` REL kind records the change event. |
 | `uses` | application → service | `APPLICATION` → `TECHNOLOGY_SERVICE` | An application consumes a technology service (e.g. publishes to a Kafka topic, reads from an object store). Time-aware — use a REL file when an application starts or stops consuming a given service (a dependency change). For stable long-running dependencies a future inline `technology_services[]` field on `APPLICATION` may be specified. |
 | `depends_on` | dependent → presupposed | `REQUIREMENT` → `REQUIREMENT` | A conditional dependency between obligations: `from` presupposes `to` — the dependent obligation is not meaningful, or not satisfiable, unless the target holds. **Not** an order of work (implementation sequence stays with `ACTION` / `CHANGE`) and **not** decomposition (`parent` / the stated `requirement_parent` promotion path on [15-requirement.md](15-requirement.md) §2.4 stay separate). First-class rather than inline so the link carries `admitted_at` and content identity for the suspicion mechanism ([CONTRACT.md](../CONTRACT.md)). Endpoints stay narrow in v1 (`REQUIREMENT` only); the name is generic on purpose so a later widening (e.g. to `CONSTRAINT` / `NEED`) amends one kind instead of introducing a second. **M:N**: one requirement may depend on several others, and one may be depended on by several — each pair is its own REL file. |
+| `requirement_parent` | child → parent | `REQUIREMENT` → `REQUIREMENT` | M:N decomposition; additive union with inline `parent`, never conditional dependency or implementation order. |
+| `serves` | requirement → need | `REQUIREMENT` → `NEED` | M:N counterpart to inline `serves`; additive union, no inferred need. |
+| `source_trace` | citing node → source | `REQUIREMENT` or `NEED` or `DRIVER` → `DRIVER` or `INTERVIEW` or `SURVEY` or `OBSERVATION` or `DRAFT` (excluding DRIVER>DRIVER) | Explicit evidence/motivation citation; DRIVER may cite only Field, never DRIVER. This is the only kind here permitting a Field target; Field is not promoted to canon or codex authority. Source-document display uses the descriptor in [CONTRACT.md §5.1](../CONTRACT.md#51-field-source-document-descriptor). REQUIREMENT `derived_from` remains codex-only. |
+| `product_scope` | requirement → product | `REQUIREMENT` → `PRODUCT` | Independent M:N product membership, unrelated to release assignment. |
+| `project_scope` | requirement → project | `REQUIREMENT` → `ACTION(Project)` | Independent M:N project membership; never inherited from requirement or action ancestors. |
+| `project_product` | project → product | `ACTION(Project)` → `PRODUCT` | Explicit admissible project/product pair; does not assign requirements to either. |
 | `required_for` | obligation → state | `REQUIREMENT` → `RELEASE` | The obligation `from` must hold in the release `to` — a **scope statement**, naming *in which state of the subject* the obligation applies, and nothing else. Binds an obligation to one shipped state of a `PRODUCT`/`APPLICATION` ([ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §7.29) instead of to the subject as a whole, so an obligation introduced at one release does not read as retroactively binding on every earlier one. **The boundary is load-bearing — it says nothing about who does the work, in what order, or by when; see §3.1.** Time-aware because scope moves: an obligation withdrawn from a release ends with `valid_to` set rather than having its REL file deleted. **M:N**: one requirement may be required for several releases, and one release carries many obligations — each pair is its own REL file. Endpoints stay narrow in v1 (`REQUIREMENT` → `RELEASE` only); a `CONSTRAINT` or `NEED` source is a later widening of this kind, not a second kind. |
 
 | `introduced_in` | element → state | `INTEGRATION` \| `APPLICATION` → `RELEASE` | The element `from` is part of the subject's architecture **as of** the release `to`, and stays so in that release's successors until withdrawn — the descriptive counterpart to `required_for`'s obligation scope. It records the **attachment point**, never the whole set: "which elements are in release R" is derived by the same `predecessor` walk §3.2 uses for obligations (see §3.3). **It says nothing about whether the element is compliant, correct, or complete in that release** — that is an `ASSERTION`; see §3.3. Time-aware because architecture moves: an integration dropped from a line ends with `valid_to` set rather than having its REL file deleted. **M:N**: one element may be introduced in releases of more than one subject line, and one release carries many elements — each pair is its own REL file. Endpoints stay narrow in v1 (`INTEGRATION` / `APPLICATION` sources only); `TECHNOLOGY_SERVICE`, `NODE` and `CHANGE` sources are a later widening of this kind, not a second kind. |
@@ -134,7 +146,7 @@ The obligations in scope for a release are **derived**, never stored: nothing ac
 2. **Collect.** Take every admitted `required_for` REL whose `to` is any release in that list. An obligation attached to an ancestor is **inherited** by `R` — a requirement that entered scope at v1 is still in scope at v2 unless something ended it. This is the only sense in which release order is used anywhere, and it comes from `predecessor` links, never from comparing `version` strings.
 3. **Filter by window,** evaluated at the as-at date, dropping a candidate if either:
    - the **relation** is not in effect — `valid_from` is later than the as-at date, or `valid_to` is set and earlier than it; or
-   - the **`REQUIREMENT`** has retired — its own `valid_to` is set and earlier than the as-at date.
+   - the **`REQUIREMENT`** is not in effect — its own `valid_from` is later than the as-at date, or its `valid_to` is set and earlier than it.
 4. **Deduplicate by requirement.** One requirement required for both `R` and an ancestor appears once, attributed to the **nearest** attachment (lowest depth). The release the surviving relation actually points at is the attachment point; `depth > 0` means the obligation was inherited rather than introduced at `R`.
 
 A window is **inclusive at both ends**: in effect at date `d` iff `valid_from ≤ d` and (`valid_to` is null or `d ≤ valid_to`). This follows `LIFECYCLE-004`'s reading ([CONTRACT.md](../CONTRACT.md) §7.3), which treats a reference as dangling only when the referenced `valid_to` is *earlier than* the referrer's `valid_from` — so a `valid_to` equal to the date in question is still in effect on that date.
@@ -187,13 +199,23 @@ A typical naming convention encodes the endpoints and kind in the middle segment
 | Rule | Severity | Description |
 |---|---|---|
 | `REL-001` | error | `type` is missing or not one of the closed enum values in §3. |
-| `REL-002` | error | `from` or `to` is missing, malformed, or does not resolve to an admitted primitive in canon. If the validator has the catalogue loaded, the endpoint's resolved TYPE must also match the `type`-specific endpoint constraints in §3. |
+| `REL-002` | error | `from` or `to` is missing, malformed, or does not resolve to an admitted primitive in canon (or, only for `source_trace.to`, an admitted Field artefact of a permitted TYPE). If the validator has the catalogue loaded, the endpoint's resolved TYPE and, for project endpoints, ACTION `type: Project`, must also match the constraints in §3. |
 | `REL-003` | error | The relation's `[valid_from, valid_to]` window falls outside the lifecycle of either endpoint — i.e. `valid_from` predates the endpoint's `valid_from`, or `valid_to` postdates the endpoint's `valid_to`. A relation cannot be in effect before either of its endpoints existed or after either retired. |
 | `REL-004` | error | A relation kind declared time-aware in its host notation spec is used inline (as an inline cross-reference field) instead of as a first-class REL file. The host notation's spec is the source of truth for which kinds are time-aware. |
 | `REL-005` | error | A `depends_on` relation has `from` equal to `to` (self-reference). Single-file — no catalogue load required. |
 | `REL-006` | warning | A cycle exists in the `depends_on` graph among admitted REL files (A depends on B … depends on A). Cross-cutting — fires when the catalogue is loaded. Warning rather than error because genuine mutual conditionality between obligations is unusual but not always wrong. |
 | `REL-007` | error | A `process_parent` relation has `from` equal to `to` (self-reference). Single-file — no catalogue load required. Kind-specific, parallel to `REL-005`; that code is not widened. |
 | `REL-008` | warning | A cycle exists in the `process_parent` graph among admitted REL files (A is a child of B … is a child of A). Cross-cutting — fires when the catalogue is loaded. Warning rather than error because a genuine mutual embedding is unusual but not always a data error. Kind-specific, parallel to `REL-006`; that code is not widened. |
+| `REL-009` | error | A `requirement_parent` REL has identical `from` and `to`. Applies to the requirement-chain extension. |
+| `REL-010` | warning | A cycle exists in the active union of inline `REQUIREMENT.parent` and `requirement_parent` REL edges at the as-at date, including an inline self-parent. Cross-cutting; retain every incident cycle edge and terminate traversal. Applies to the requirement-chain extension; does not widen `REL-006` or `REL-008`. |
+
+For the requirement-chain extension, inline `parent`/`serves` and active matching
+REL records form an additive union. An identical pair is one logical edge with
+all authored identities. Closing a REL does not suppress an inline link; remove
+the inline field explicitly when migrating that pair. Missing product/project
+membership produces unresolved report scope, not an admission error on legacy
+records. See [the projection contract](../views/reports/requirement-chain.md)
+for source traversal, population diagnostics and evidence applicability.
 
 **`required_for` adds no rule code of its own.** Its endpoint constraint (`REQUIREMENT` → `RELEASE`, §3) is exactly what `REL-002` already checks once the catalogue is loaded — a `required_for` whose `from` is not a `REQUIREMENT`, or whose `to` is not an admitted `RELEASE`, is a `REL-002` error like any other endpoint-type mismatch. Its lifecycle containment is `REL-003`, and the `RELEASE` side's own structural rules (`RELEASE-001`…`-005`, [CONTRACT.md](../CONTRACT.md) §8) already cover the predecessor chain the §3.2 query walks. Adding a code here would duplicate a check that exists, and give two names to one failure.
 

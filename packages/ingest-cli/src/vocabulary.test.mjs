@@ -215,3 +215,28 @@ test('valueSet — positive: a known vocabulary returns its closed set', () => {
   const voc = loadVocabulary({ path, pinPath });
   assert.deepEqual(valueSet('REQUIREMENT.origin', voc), new Set(['legislative', 'process-product', 'project-product']));
 });
+
+test('requirement-chain registry preserves exact source pairs, Project narrowing and Field boundary', () => {
+  const voc = loadVocabulary();
+  const r = voc.relation_types.source_trace;
+  const pairs = r.from.flatMap(from => r.to.map(to => `${from}>${to}`))
+    .filter(pair => !r.excluded_pairs.includes(pair)).sort();
+  const expected = ['REQUIREMENT>DRIVER', 'NEED>DRIVER'];
+  for (const from of ['REQUIREMENT', 'NEED', 'DRIVER']) {
+    for (const to of ['INTERVIEW', 'SURVEY', 'OBSERVATION', 'DRAFT']) expected.push(`${from}>${to}`);
+  }
+  assert.deepEqual(pairs, expected.sort());
+  assert.deepEqual(voc.relation_types.project_scope.to_subtype, ['Project']);
+  assert.deepEqual(voc.relation_types.project_product.from_subtype, ['Project']);
+  for (const type of voc.field_types) assert.equal(voc.element_types[type], undefined);
+});
+
+test('Field endpoints are admitted only for source_trace targets; malformed pair exclusions fail closed', () => {
+  const fieldDoc = minimalDoc().replace('relation_types:\n', 'field_types: [OBSERVATION]\n\nrelation_types:\n');
+  const base = fieldDoc.replace('  goal_parent:\n    from: [GOAL]\n    to: [GOAL]',
+    '  source_trace:\n    from: [DRIVER]\n    to: [OBSERVATION]\n  goal_parent:\n    from: [GOAL]\n    to: [GOAL]');
+  assert.ok(loadVocabulary(writeTmp(base)).relation_types.source_trace);
+  assert.throws(() => loadVocabulary(writeTmp(base.replace('to: [GOAL]', 'to: [OBSERVATION]'))), /not a live element TYPE/);
+  assert.throws(() => loadVocabulary(writeTmp(base.replace('from: [DRIVER]', 'from: [OBSERVATION]'))), /not a live element TYPE/);
+  assert.throws(() => loadVocabulary(writeTmp(base.replace('to: [OBSERVATION]', 'to: [OBSERVATION]\n    excluded_pairs: [DRIVER>GOAL]'))), /excluded_pairs/);
+});

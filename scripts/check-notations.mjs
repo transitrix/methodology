@@ -780,10 +780,11 @@ export function parseVocabularyRelationTypes(text) {
       continue;
     }
     if (/^  #/.test(line) || /^\s*$/.test(line)) continue; // comment / blank
-    const fieldM = line.match(/^    (from|to|from_subtype|to_subtype):\s*\[([^\]]*)\]\s*$/);
+    const fieldM = line.match(/^    (from|to|from_subtype|to_subtype|excluded_pairs):\s*\[([^\]]*)\]\s*$/);
     if (fieldM && current) {
       const [, key, rawList] = fieldM;
       const values = rawList.split(',').map(v => v.trim()).filter(Boolean);
+      if (key === 'excluded_pairs') { current.excludedPairs = values; continue; }
       const camelKey = key === 'from' ? 'from' : key === 'to' ? 'to' : key === 'from_subtype' ? 'fromSubtype' : 'toSubtype';
       current[camelKey] = values;
       continue;
@@ -805,7 +806,10 @@ export function parseVocabularyRelationTypes(text) {
 function parseEndpointTypesCell(cell) {
   const sides = cell.split('→');
   if (sides.length !== 2) throw new Error(`unrecognised Endpoint TYPEs cell (no single "→"): "${cell}"`);
-  return { from: parseEndpointSide(sides[0]), to: parseEndpointSide(sides[1]) };
+  const result = { from: parseEndpointSide(sides[0]), to: parseEndpointSide(sides[1]) };
+  const excluded = cell.match(/\(excluding ([A-Z_> ,]+)\)/);
+  if (excluded) result.excludedPairs = excluded[1].split(',').map(pair => pair.trim());
+  return result;
 }
 
 function parseEndpointSide(raw) {
@@ -814,12 +818,12 @@ function parseEndpointSide(raw) {
   const types = [];
   let actorSubtype = null;
   for (const span of spans) {
-    const m = span.match(/^([A-Z][A-Z0-9_]*)(?:\(([a-z_]+(?:\|[a-z_]+)*)\))?$/);
+    const m = span.match(/^([A-Z][A-Z0-9_]*)(?:\(([A-Za-z_]+(?:\|[A-Za-z_]+)*)\))?$/);
     if (!m) throw new Error(`unrecognised endpoint type expression: "${span}"`);
     const [, typeName, subtypeList] = m;
     types.push(typeName);
     if (subtypeList) {
-      if (typeName !== 'ACTOR') throw new Error(`unexpected subtype qualifier on non-ACTOR type: "${span}"`);
+      if (!['ACTOR', 'ACTION'].includes(typeName)) throw new Error(`unexpected subtype qualifier on type: "${span}"`);
       actorSubtype = subtypeList.split('|');
     }
   }
@@ -901,6 +905,9 @@ async function checkVocabularyRelationTypes(failures) {
     if (!t) {
       failures.push({ check: 'VOC2', message: `${kind} is in notations/vocabulary.yaml relation_types but has no row in 17-relations.md §3.` });
       continue;
+    }
+    if (!sameSet(v.excludedPairs || [], t.excludedPairs || [])) {
+      failures.push({ check: 'VOC2', message: `${kind}.excluded_pairs differs between vocabulary.yaml and 17-relations.md §3.` });
     }
     if (!sameSet(v.from, t.from.types)) {
       failures.push({ check: 'VOC2', message: `${kind}.from: vocabulary.yaml says [${(v.from || []).join(', ')}], 17-relations.md §3 says [${t.from.types.join(', ')}].` });
