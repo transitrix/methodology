@@ -1,7 +1,7 @@
 # Requirement-chain worked example
 
 **Illustrative proposal, not an adopter catalogue.** This is the shared semantic
-oracle for the [proposed contract](../../views/reports/requirement-chain.md).
+oracle for [requirement-chain 0.2](../../views/reports/requirement-chain.md).
 Analysts can reproduce its lists; implementers must use the same cases for both
 views. Tables specify normalized source records, not a second storage notation.
 Materializing them requires the accepted schema and ordinary admission envelopes.
@@ -187,45 +187,50 @@ V99 and R11's records are available in the separate diagnostic inventory.
 
 ## 6. Independent control variants
 
-Each variant starts from example-1; mutations do not accumulate. Unmentioned
-lists remain as in §4. Use both full and pair modes against the same projection.
-These positive and negative cases are part of the oracle, not optional examples.
+Each variant starts from example-1; mutations do not accumulate. Rows assert the
+specific effects they name, not an exhaustive replacement for every population,
+stage, metric and graph list. Unmentioned lists must be recomputed from the
+contract; omission is not an assertion that they remain unchanged. Where a row
+says metrics are unchanged, that assertion covers all six §4 metric sets.
+Use both full and pair modes against the same projection. These positive and
+negative cases are part of the oracle, not optional examples.
 
 | Control / change | Expected effect |
 |---|---|
 | Valid scope vs select Alpha project + Beta product/B2 | Base resolves; changed pair is invalid (no project_product pair). Totals unavailable, not zero. |
 | Select Alpha product + B2 | Wrong release subject; no valid scope or fabricated empty counts. |
 | No project supplied | L has 13 IDs; project shows unselected; no inferred Alpha project. Product or release absent gives unselected scope, not repository-wide fallback. |
-| Remove R9 product_scope | R9 unresolved membership; known P drops to 15, total completeness unknown; unassigned total unknown, not 0. |
-| Break R13 project_scope target | No guessing from the action implementation path; L stays 13 known product members, project-filtered completeness is unresolved. |
+| Remove R9 product_scope | R9 unresolved membership; known P is the baseline P minus R9 (15), total completeness unknown. Known clean-unassigned set is empty, total unknown rather than 0; known S/stages and first five contributing sets stay unchanged, with affected scope completeness exposed. |
+| Break R13 project_scope target | No guessing from the action implementation path; P/L stay unchanged, known S stays 12 but project-filtered completeness is unresolved. R13 gains an out-of-scope defective project_scope slot; selected defective slots stay 4, complete inventory becomes 7. Do not display the known project-filtered metric cardinalities as complete totals. |
 | Delete Alpha project → Alpha project_product | Selected pair becomes unmodelled; no valid project-filtered total. |
-| Give R11 a valid A2 assignment as well | Invalid-assignment flag remains; R11 joins S and no-verification, not unassigned; broken-reference requirements gain R11. |
-| Repair R11's assignment target to A3 | Invalid assignment clears; other-release-only becomes {R10,R11}; no selected-scope metric change. |
-| Delete R10's A3 assignment | Clean unassigned becomes {R9,R10}; S unchanged. |
-| Close R1's A1 assignment on 2026-09-24 / on 2026-09-23 | Equal end remains active; earlier end excludes R1 from L/S but retains it as upstream context for R2/R3. No-verification loses R1; product-unassigned gains R1. |
+| Give R11 a valid A2 assignment as well | Invalid-assignment flag remains; L gains R11 (14), S gains R11 (13), selected System gains R11 (7). Broken becomes {R7,R11,R14,R15,R20} (5), selected defective slots 5; no-verification becomes {R1,R7,R8,R11,R14,R15} (6). Other four metric sets and P stay unchanged. Inventory stays 6: 5 selected and 1 unattributable; invalid assignment still contains R11. |
+| Repair R11's assignment target to A3 | Invalid assignment becomes empty; other-release-only becomes {R10,R11}; Alpha 3/Alpha project becomes {R10,R11}. All six metrics stay unchanged. Complete defective-reference inventory drops to 5 (4 selected, 1 unattributable). |
+| Delete R10's A3 assignment | Clean unassigned becomes {R9,R10} (2), other-release-only and Alpha 3 population become empty; S/stages and the first five metrics stay unchanged. |
+| Close R1's A1 assignment on 2026-09-24 / on 2026-09-23 | Equal end preserves §4. Earlier end removes R1 from L (12), S (11), selected Stakeholder (only R6), and Alpha 1 (only R18), retaining R1 as upstream context for R2/R3. No-verification becomes {R7,R8,R14,R15} (4), product-unassigned {R1,R9} (2). P and other four metric sets stay unchanged. |
 | Close only R18's A2 assignment on 2026-09-23 | R18 remains via A1 at depth 1; counts unchanged. |
-| Shift as-at to 2026-10-01 | R17 joins S, Software, no-verification. R17 is sourced via N1. Other baseline contributors stay. |
-| Shift as-at to 2026-08-31 | S gains R16 (13). Broken and no-source lists unchanged; no-verification gains R16 (6); no-result is {R2,R3,R4,R5,R6,R18,R20} (7); failed is empty; unassigned remains {R9}. All recorded executions are still future. On 2026-09-01 R16 drops and V181 becomes applicable. |
+| Shift as-at to 2026-10-01 | P gains R17 (17), L gains R17 (14), S gains R17 (13), Software gains R17 (4), inactive becomes {R16}. No-verification becomes {R1,R7,R8,R14,R15,R17} (6); other five metric sets stay unchanged. R17 is sourced via N1. |
+| Shift as-at to 2026-08-31 | P gains R16 (17), L gains R16 (14), S gains R16 (13), selected System gains R16 (7), inactive becomes {R17}. Broken and no-source lists unchanged; no-verification gains R16 (6); no-result is {R2,R3,R4,R5,R6,R18,R20} (7); failed is empty; unassigned remains {R9}. All recorded executions are still future. On 2026-09-01 populations/stages return to baseline; no-verification returns to baseline, no-result is {R2,R3,R4,R5,R6,R20} (6), failed is {R18} (1); other three metrics stay baseline. |
 | Duplicate R18's A2 assignment / duplicate N1 → M citation | Requirement and source counts unchanged; retain both authored relation identities; nearest remains depth 0. |
 | Make A1 predecessor A2 | Cycle visible, walk terminates; known obligations remain inspectable with incomplete release-chain status. |
 | Make A2 predecessor B1 / missing release | Invalid predecessor, no cross-product traversal or guessed missing ancestry; scope incomplete. |
 | Add REL parent R2 → R1 alongside inline parent | One logical decomposition edge, two record identities. Closing REL alone leaves inline trace intact. |
 | Remove R3 → R4 REL parent | R3 remains via R2; V32 upstream loses R4,N2,DE, with all other listed nodes retained. |
 | Add serves N1 to R14 | Both R14 and R15 gain an accepted source path; no-source becomes {R5,R8}; cycle remains a defect for both. |
-| Repair R7.parent to R1 and protocol to nonempty text | R7 leaves broken-reference and no-verification sets; enters no-result because its record is still not_yet_run. |
-| Put M in R5.derived_from | Forbidden endpoint, not a source path: R5 stays unsourced and joins broken-reference requirements. |
+| Repair R7.parent to R1 and protocol to nonempty text | Broken becomes {R14,R15,R20} (3), no-verification {R1,R8,R14,R15} (4), no-result {R2,R5,R7,R20} (4); other metrics stay unchanged. Selected defective slots drop to 3, complete inventory to 5. R7 remains not_yet_run. |
+| Put M in R5.derived_from | Forbidden endpoint, not a source path: broken becomes {R5,R7,R14,R15,R20} (5), selected defective slots 5, complete inventory 7. Other five metrics stay unchanged, including unsourced R5. |
 | Add an admitted POLICY with valid envelope and R5.derived_from pointing to it | Permitted codex source: no-source becomes {R8,R14,R15}; unlike the Field-target negative case, no broken-reference finding is added. |
 | Add valid R5 source_trace → M | No-source becomes {R8,R14,R15}; release/evidence metrics unchanged. |
-| Replace M descriptor with a URI only / delete M | Descriptor error / dangling source links stay visible. N1 and the drivers still provide accepted sources, so known no-source IDs do not gain their descendants. |
+| Replace M descriptor map with a URI string only | `SOURCE-DOC-001` scalar finding; M still resolves, so no defective-reference slot is added. All six metrics and all §4 populations/stages stay unchanged. M is inspectable as a malformed source document, not an accepted document terminal; N1 and the drivers remain accepted sources. |
+| Delete M, retaining all citations | Three new dangling source_trace slots: DI → M, DE → M, N1 → M. Broken becomes {R1,R2,R3,R4,R6,R7,R14,R15,R18,R20} (10); selected defective slots become 7, complete inventory 9 (7 selected, 1 attributable only outside S, 1 unattributable). All other metrics and §4 populations/stages stay unchanged; in particular no-source stays {R5,R8,R14,R15}. The real M node disappears and its incoming citations become diagnostic stubs. |
 | Change R8.level to an unknown string | Still unclassified for display; invalid-level finding; no invented stage or omission. |
 | Change V2 to inconclusive with a valid execution | No-result loses R2; no failed metric gained; optional absent result narrative alone does not block execution. |
 | Change V51.verified_on from A1 to A2 | No-result loses R5; V52 alone never qualifies. This is a fixture mutation, not an authoring shortcut for moving old evidence. |
 | Close V32 on 2026-09-23 | Failed metric becomes empty; V31 remains applicable. A later pass alone, without lifecycle withdrawal, has no such effect. |
 | Extend V181.valid_to to 2026-09-24 | Applicable failed set becomes {R3,R18}; inclusive end matters. |
-| Repair V20.evidence[0] to valid note / remove evidence | R20 leaves broken-reference and no-result lists in both variants; absent evidence leaves a warning. |
+| Repair V20.evidence[0] to valid note / remove evidence | Broken becomes {R7,R14,R15} (3), no-result {R2,R5} (2), selected defective slots 3, complete inventory 5; other four metrics stay unchanged in both variants. Absent evidence leaves a warning. |
 | Set V31 and V32 outcomes to invalid strings | Both definitions remain; R3 enters no-result and leaves failed metric; malformed outcomes remain visible. |
 | Give V6 performed_at tomorrow / malformed date | R6 enters no-result; a future or malformed execution cannot qualify. Absent date instead preserves execution with the absence warning. |
-| Repair V99.verifies to R8 | Unattributable reference clears; R8 leaves no-verification and joins failed; source absence remains. |
+| Repair V99.verifies to R8 | Unattributable reference clears; inventory becomes 5 (4 selected, 1 outside S). No-verification becomes {R1,R7,R14,R15} (4), failed {R3,R8} (2); other four metrics stay unchanged. Matrix gains V99.definition and V99.result (39 nodes); source absence remains. |
 | Add a second product_scope R9 → Beta and required_for R9 → B2 | Alpha unassigned stays {R9}; Beta population gains R9 with a valid assignment. This is not a wrong-product assignment because membership in both products is explicit. |
 | Duplicate a catalogue ID / corrupt an assignment window | Diagnostic and affected scope incomplete; never choose an arbitrary duplicate or assume an unbounded valid window. A well-formed inclusive window preserves the base result. |
 | Rewrite a name without changing an ID | Lists and graph identities unchanged; labels refresh. No name-based link appears. |

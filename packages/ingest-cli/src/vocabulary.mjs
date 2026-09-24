@@ -217,16 +217,27 @@ function validate(voc) {
     }
   }
 
+  const fieldTypes = voc.field_types === undefined ? [] : voc.field_types;
+  if (!Array.isArray(fieldTypes) || fieldTypes.some(t => typeof t !== 'string' || !/^[A-Z_]+$/.test(t) || elements[t])) {
+    throw new VocabularyError('field_types must be a list of Field TYPEs distinct from canonical element TYPEs');
+  }
+
   const relations = requireMap(voc.relation_types, 'relation_types');
   if (Object.keys(relations).length === 0) throw new VocabularyError('relation_types is empty');
   for (const [kind, r] of Object.entries(relations)) {
     requireMap(r, `relation_types.${kind}`);
+    if (r.excluded_pairs !== undefined && (!Array.isArray(r.excluded_pairs) ||
+        r.excluded_pairs.some(pair => typeof pair !== 'string' || pair.split('>').length !== 2 ||
+          !Array.isArray(r.from) || !Array.isArray(r.to) ||
+          !r.from.includes(pair.split('>')[0]) || !r.to.includes(pair.split('>')[1])))) {
+      throw new VocabularyError(`relation_types.${kind}.excluded_pairs must name pairs within from/to`);
+    }
     for (const side of ['from', 'to']) {
       if (!Array.isArray(r[side]) || r[side].length === 0) {
         throw new VocabularyError(`relation_types.${kind}.${side} must be a non-empty list of element TYPEs`);
       }
       for (const t of r[side]) {
-        if (!elements[t]) {
+        if (!elements[t] && !(kind === 'source_trace' && side === 'to' && fieldTypes.includes(t))) {
           throw new VocabularyError(`relation_types.${kind}.${side} names \`${t}\`, which is not a live element TYPE`);
         }
       }

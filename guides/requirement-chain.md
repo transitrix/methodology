@@ -1,9 +1,10 @@
 # Authoring a requirement chain
 
 The [requirement-chain contract](../notations/views/reports/requirement-chain.md)
-is a proposal. Existing validators do not yet implement its additional relation
-kinds or source-document descriptor. Use the proposal and its shared example for
-review; do not add its new fields to a production catalogue until your pinned
+is draft version 0.2. Its vocabulary and schema tables specify the additions;
+candidate intake recognizes the relation names, but full catalogue validation and
+report support still require consumer implementation. Use the proposal and its
+shared example for review; do not add its new fields to a production catalogue until your pinned
 methodology and consumer versions declare support.
 
 Start with the obligation, its existing stakeholder/system/software level when

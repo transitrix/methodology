@@ -1,6 +1,6 @@
 ---
 title: "Requirement-chain projection and release quality"
-version: "0.1"
+version: "0.2"
 last_updated: "2026-09-24"
 status: "proposal"
 ---
@@ -38,15 +38,18 @@ coverage warning while counting as executed in this report. An unqualified pass
 can close the existing repository-wide trace but cannot satisfy selected-release
 execution applicability. These are different questions, with different scopes.
 
-## 2. Proposed authoring additions
+## 2. Authoring contract
 
-All additions in this section require schema/validator acceptance together. Old
+The draft schema additions are defined in [Relations §3](../../elements/17-relations.md),
+[Field descriptors](../../CONTRACT.md#51-field-source-document-descriptor), and
+[REQUIREMENT §2.4](../../elements/15-requirement.md). Final contract review and
+consumer implementation remain required before declaring support. Old
 catalogues remain valid; absent new membership is unresolved scope, not an inferred
 membership or an empty product. New relation records use the existing REL envelope,
 one `from` and one `to`, admission and inclusive lifecycle windows. Nothing is
 stored in a view configuration as a substitute for these facts.
 
-| Proposed REL kind | Stored direction / admissible endpoints | Meaning |
+| REL kind | Stored direction / admissible endpoints | Meaning |
 |---|---|---|
 | `source_trace` | REQUIREMENT or NEED → DRIVER or Field INTERVIEW/SURVEY/OBSERVATION/DRAFT; DRIVER → those Field types | Explicit motivation/evidence citation. Field targets must carry the document descriptor below to appear as source documents. Does not assert that raw evidence is authoritative. |
 | `serves` | REQUIREMENT → NEED | Addressable M:N counterpart to inline `serves`; each pair is separate. |
@@ -73,7 +76,7 @@ alone without a captured, addressable Field artefact cannot become a graph edge.
 Package document `canon_refs` remain context-only citations; they cannot be
 reinterpreted as evidence that the cited obligation originated in that document.
 
-### Validation requirements for consumers of the proposal
+### Validation requirements for consumers
 
 Reuse existing endpoint/admission checks, REL endpoint and lifecycle checks, and
 requirement/verification/release verdicts. Extend the relation-kind registry for
@@ -86,10 +89,11 @@ malformed windows, and incomplete source loading distinctly.
 Detect cycles on the union of inline/REL decomposition edges, self-links and
 release-predecessor cycles. Preserve their records and diagnostic edges; do not
 hide them, loop indefinitely, or treat a cycle as a source. A cycle does not erase
-a separate valid path to a source. New diagnostic names below are report reason
-labels, not newly allocated validator codes. The consumer validator registry and
-schema tables must be updated with the accepted additions before advertising
-support; this proposal alone does not activate them in existing tooling.
+a separate valid path to a source. Scope and metric reason labels in §§3–8
+are distinct from the registered validation codes summarized in §9. The consumer validator registry and
+schema tables must agree with these additions before advertising support. The
+vocabulary now lets candidate intake recognize the relation names; that is not
+full endpoint, catalogue or report validation.
 
 ## 3. Projection input and completeness
 
@@ -102,8 +106,9 @@ historical content merely by filtering today's files by date.
 The matrix requires a selected project/product/release. A drill-down with no known
 project opens the same matrix with **Project: unselected** and the explicit
 product/release population preserved, inviting a project selection without
-inventing one. The release report permits no project filter; when a project is
-explicitly selected, the first five metrics and stage counts use that intersection.
+inventing one. The release report has an **optional project filter**: without it,
+the first five metrics and stage counts use `L`; with it, they use `S = L ∩
+project_scope(J)`.
 The sixth metric always uses the whole product population, labelled accordingly.
 
 Resolve IDs inside the manifest's catalogue boundary. Display names and IDs,
@@ -139,11 +144,9 @@ additional as-at filter. Neither version strings nor shipping order defines a
 predecessor. Invalid or dangling predecessor stops traversal with incomplete scope;
 never traverse into another product's release. A cycle terminates with a finding.
 
-**Temporal compatibility choice:** REQUIREMENT activity here checks both start
-and end, matching [the reference query](../../../scripts/release-obligations.mjs).
-Relations §3.2's current prose explicitly mentions only requirement retirement.
-Acceptance must reconcile that wording with this choice; do not leave two
-interpretations for consumers. This proposal does not silently change that page.
+REQUIREMENT activity checks both start and end, matching Relations §3.2 and
+[the reference query](../../../scripts/release-obligations.mjs). Both boundaries
+are inclusive; this adds no lifecycle filter on the release itself.
 
 For an explicitly selected project `J`, let `S = L ∩ project_scope(J)`; otherwise
 `S = L` with project unselected. A requirement can belong to multiple projects
@@ -322,10 +325,57 @@ membership/source facts. Legacy views and coverage warnings retain their existin
 meaning. Existing release-obligation, link-suspicion and admission checks remain
 at their current homes; none is removed or relocated by this proposal.
 
-Acceptance needs one agreed endpoint/membership contract, the temporal choice in
-§4, and a consumer comparison against this same worked example. Schema tables,
-validator implementation and consumer capability declarations must then agree
-before the proposed additions are used as a supported model contract. A merged
+Final acceptance requires review of this exact contract revision and its shared
+example. The schema and validation tables in this revision specify the additions;
+runtime validators and consumer capability declarations must implement them
+before they are used as a supported model contract. A merged
 document alone does not establish view implementation or installed UI acceptance.
 Expected-chain gaps, continuation percentages, aggregate success/conflict scoring
 and changed-after-verification reassessment are outside this contract.
+
+## 9. Consumer interface — requirement-chain 0.2
+
+Consumers bind to `requirement-chain/0.2` plus the exact source commit containing
+this contract and the shared example. This identifier versions the projection
+contract, not a methodology release or a supported application version. Until
+final review, it is a draft interface. A support declaration names the implemented
+contract version, methodology version, consumer version, and oracle evidence.
+Accepting unknown fields without validating them is not support.
+
+Use a pure projection seam: normalized catalogue records and diagnostics in,
+one immutable projection out. The same result feeds both views and exports.
+Adapters must retain the following data rather than discard it during intake:
+
+| Input | Required retained information |
+|---|---|
+| Envelope | Catalogue boundary, snapshot/content identity, `as_at`, loading/completeness findings, product/release and optional project selectors. |
+| Records | ID, TYPE, source path, admission, lifecycle, raw invalid values and verdicts; REQUIREMENT level/parent/serves/derived_from; ACTION type; Field descriptor and revision; DRIVER type. |
+| Links | Every REL ID/kind/from/to/window, inline field identity, release of/predecessor, verification verifies/verified_on, protocol, method, outcome, date, result and evidence entries. |
+
+The output is an immutable envelope containing the same scope and provenance,
+`P`, `L`, `S`, stage ID sets, assignment classes with nearest/all attachment
+provenance, all six metric ID sets, attributable and unattributable finding sets,
+and the graph specified in §§5–7. Each population/metric carries completeness
+and known contributing IDs; a total is nullable when incomplete. Nodes retain
+source navigation and contextual reasons; edges retain authored identities,
+stored/display direction and validity. Focus and pair-mode selection are derived
+from this graph, not independent catalogue scans. Exported counts use these same
+ID sets, sorted by stage then ID where applicable.
+
+| Consumer validation obligation | Rule / result |
+|---|---|
+| Exact REL endpoints, including Project subtype and the Field-only exception | `REL-001` / `REL-002`; invalid links stay diagnostic stubs. |
+| Relation window containment and dates | `REL-003`, shared lifecycle/date rules; malformed windows cannot become active by default. |
+| Self-parent and union decomposition cycles | `REL-009` / `REL-010`; preserve finding edges and terminate traversal. |
+| Field descriptor present but malformed | `SOURCE-DOC-001`; a scalar descriptor error is not a defective-reference slot. |
+| Inline parent endpoint | `REQ-PARENT-001`; invalid outgoing slot is attributable under §7. |
+| Missing/inconsistent membership or selectors, cross-product assignment, incomplete catalogue/predecessor | Scope diagnostics under §§3–4, with known IDs retained and affected totals unknown. No new admission error on old records merely lacking membership. |
+| Definition and execution validity | Existing `VERIF-*` and shared rules plus §6 applicability; preserve each verdict, optional absence and malformed-field distinction. |
+
+The repository-wide matrix, command names, CSV ordering and gap rows keep their
+existing meaning. For equivalent admitted requirement/verification scope,
+reconcile distinct requirement IDs, not matrix row counts. CONSTRAINT, ASSERTION
+and VALIDATION records do not enter these requirement metrics. Preserve legacy
+coverage verdict codes; do not rename them into release-scoped metrics. Runtime
+schema/validator work and view implementation are consumer deliverables; the
+Methodology documentation lint and release-query tests do not establish them.
