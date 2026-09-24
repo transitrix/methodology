@@ -316,6 +316,7 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 | `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
 | `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
 | `REQ-SERVES-001` | error | `serves` is present but does not resolve to an admitted `NEED` in canon ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28). |
+| `GAP-REQ-NO-ASSERT` | warning | In a gap report, a REQUIREMENT or CONSTRAINT has no targeting ASSERTION (`about` equals its ID) in the declared catalogue. Advisory absence of a recorded claim only: not missing VERIFICATION, not evidence of noncompliance. A targeting assertion suppresses this observation regardless of its claimed result; its own validity is checked separately. |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 | `REQ-VERIF-COVERAGE-001` | warning | A REQUIREMENT has no admitted `VERIFICATION` targeting it — no file under `canon/verifications/` carries `verifies: <this REQ id>` ([27-verification.md](27-verification.md) §2). The engineering verification analogue of `REQ-COVERAGE-001`: the ASSERTION and VERIFICATION catalogues are independent ([27-verification.md](27-verification.md) §4), so a REQUIREMENT may carry compliance coverage with no verification evidence, or vice versa. `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted REQUIREMENT legitimately has no verification yet, and a purely compliance-origin REQUIREMENT may never accrue one. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the verifications catalogue. |
 | `REQ-VERIF-COVERAGE-002` | warning | A REQUIREMENT has one or more admitted `VERIFICATION`s targeting it, but none has reached `outcome: pass` or `outcome: fail` — every verification against it is still `not_yet_run` or `inconclusive` ([27-verification.md](27-verification.md) §3). The trace link exists but has not closed. Distinct from, and mutually exclusive with, `REQ-VERIF-COVERAGE-001` by construction. Cross-cutting, same computation basis. |
@@ -324,6 +325,16 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 The shared lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3), header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2), and agreement-axis (`AGREE-001..003`, [CONTRACT.md](../CONTRACT.md) §6.3.1) rules apply to REQUIREMENT files in addition to the REQ-* rules above. The aggregated compliance-and-verification-domain rules table (covering REQUIREMENT, ASSERTION, and VERIFICATION) lives in [CONTRACT.md](../CONTRACT.md) §8.
 
 ---
+
+
+`GAP-REQ-NO-ASSERT` is a report observation, not an expansion of ASSERTION's
+permitted target types. CONSTRAINT coverage by ASSERTION remains unsupported
+in v1; the report must disclose that limitation rather than require an invalid
+assertion to silence the warning. REQUIREMENT assertion coverage and verification
+coverage are independent. A REQUIREMENT with only a VERIFICATION still receives
+this warning; one with a targeting ASSERTION does not. Preserve the existing
+`REQ-COVERAGE-001` history and report context; do not globally rename it.
+
 
 ## 5. Evolution
 

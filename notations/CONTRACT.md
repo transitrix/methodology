@@ -1325,3 +1325,32 @@ notation is unsupported by that tool version. Require the latter's path and
 Missing headers, parse failures, and read failures must remain visible in the
 accounting. These checks exercise the validator; a specification inventory alone
 is not evidence that the implementation conforms.
+
+
+### 18.6 Shared schema diagnostics
+
+| Rule | Severity | Description |
+|---|---|---|
+| `SCHEMA_INVALID` | error | A parsed value violates the selected notation and supported form's schema shape or type: for example, a mapping is expected but a list is supplied, a collection member has the wrong type, or a required schema field is missing without a more specific rule. Include file path, notation, form, field path (with array index where relevant), expected shape/type and actual shape/type. |
+
+Use a specific published code when one covers the same defect; do not emit a
+second generic finding for that defect. Independent findings remain visible.
+An invalid YAML document is a parse failure, not a successful schema validation.
+Select the document form before validating it: a projection does not inherit
+legacy inline collections or headers. An unsupported form is unvalidated under
+§18.2, with `NOTATION-SKIP-001`; it is never a clean result merely because the
+validator cannot check it. A missing implementation does not redefine the schema.
+
+For example, `predecessors: {id: ACTION-1}` in an ACTION fails with field
+`predecessors`, expected array, actual object; `predecessors: []` passes that
+shape check. Neither example establishes the result of unrelated rules.
+
+### 18.7 Versioned diagnostic identity
+
+A stored diagnostic retains its original code, meaning, severity, notation,
+form, methodology version and emitting tool version. A consumer may show a
+normalised successor alongside it, but MUST NOT rewrite the original history.
+An alias requires that complete scope: `ACT-005` alone is never an alias for
+`ACTION-007`, because the schedule-view `ACT-005` remains a goal-resolution
+error. See the [6.0 → 7.0 migration contract](../migrations/6.0-to-7.0/) for the
+canonical-element corrections and their compatibility boundary.

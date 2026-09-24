@@ -270,6 +270,7 @@ view_config:
 
 | Rule | Severity | Description |
 |---|---|---|
+| `PMAP-002` | error | In inline form, `products_catalogue` is absent or not an object, its required `id`, `name`, or `updated_at` is absent or empty, or `products_catalogue.products` is absent or not an array. An empty array is valid. In projection form, `products_catalogue` and its fields are not required; `view_config` must be an object and the projection rules below apply. |
 | `PROD-001` | error | `notation` missing or does not equal `products`. |
 | `PROD-002` | error | `id` missing or does not match `PROD-[<middle>-]<INTEGER>`. |
 | `PROD-003` | error | `name` missing or empty. |
@@ -307,3 +308,7 @@ Capabilities Map         →  what capabilities are required
 - Capabilities map: `notations/05-capability-map.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology, notation kit: `method/04-notations.md`
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

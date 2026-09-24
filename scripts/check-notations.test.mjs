@@ -854,3 +854,18 @@ test('derivePresetMembershipFindings — negative: a module preset with no spec 
   assert.equal(findings.length, 1);
   assert.match(findings[0], /no matching row/);
 });
+
+
+test('parseVocabularyRuleCodes — shared underscore diagnostic and advisory identity', () => {
+  const out = parseVocabularyRuleCodes(`rule_codes:
+  SCHEMA_INVALID:
+    severity: error
+    spec: notations/CONTRACT.md
+  GAP-REQ-NO-ASSERT:
+    severity: warning
+    spec: notations/elements/15-requirement.md
+`);
+  assert.equal(out.get('SCHEMA_INVALID').severity, 'error');
+  assert.equal(out.get('GAP-REQ-NO-ASSERT').severity, 'warning');
+  assert.throws(() => parseVocabularyRuleCodes('rule_codes:\n  schema_invalid:\n    severity: error\n'), /unrecognised/);
+});

@@ -205,6 +205,7 @@ A validator that cannot find the ID after exhausting both paths MUST raise `PC-0
 
 | Rule | Severity | Description |
 |---|---|---|
+| `AC-001` | error | The document root or `action_card` is not an object, or required `action_card.id` is absent or empty. Applies to the card form in §4.1; missing or unresolved `action_card.project` retains `PC-001`. |
 | `PC-001` | error | `action_card.project` is missing, malformed, or does not resolve to an admitted ACTION element after exhausting the canonical resolution scope (§6.1). The validator MUST search `canon/elements/**` recursively and then `views/actions/**` before raising this error. The diagnostic MUST disclose the paths searched (e.g. `canon/elements/`, `views/actions/`) and include an actionable hint naming the expected file pattern (`canon/elements/05_implementation/actions/ACTION-<DOMAIN>-<INTEGER>.yaml`). |
 | `PC-002` | error | The ACTION referenced by `action_card.project` carries an explicit non-project scale marker. In the element model all action scales share one ACTION TYPE (§1), so a missing/unmarked value is accepted; only an explicit non-project marker is flagged. The canonical project-identification rule is under revision (tracked separately). |
 | `PC-003` | error | A `milestone.delivers_changes[]` entry references a `CHANGE-…` that is not in the project Action's own `delivers_changes:`. The milestone cannot deliver a change the project isn't committed to. |
@@ -249,3 +250,7 @@ Pending design work (separate epics):
 - Schedule milestones — distinct from action-card milestones: [07-action.md](./07-action.md) §5.9.
 - Motivation chain the card pulls: [02-dgca.md](./02-dgca.md) (DGCA).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../../CONTRACT.md) §5–7.
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

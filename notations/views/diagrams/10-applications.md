@@ -260,3 +260,14 @@ ArchiMate                →  formal model of application layer elements and rel
 - ArchiMate vocabulary and ID grammar: `notations/IDS_AND_REFERENCES.md`
 - Products catalogue: `notations/09-products.md`
 - Methodology, notation kit: `method/04-notations.md`
+
+
+## Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `APP-002` | error | In the supported inline catalogue form, `applications_catalogue` is absent or not an object, its required `id`, `name`, or `updated_at` is absent or empty, or `applications_catalogue.applications` is absent or not an array. An empty array is valid; item type/shape failures use `SCHEMA_INVALID`. |
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

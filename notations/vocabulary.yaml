@@ -1648,3 +1648,43 @@ rule_codes:
   ZONE-003:
     severity: error
     spec: notations/CONTRACT.md
+
+  ACTION-007:
+    severity: warning
+    spec: notations/elements/24-action.md
+  ACTION-008:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-009:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-010:
+    severity: error
+    spec: notations/elements/24-action.md
+  ACTION-011:
+    severity: error
+    spec: notations/elements/24-action.md
+  AC-001:
+    severity: error
+    spec: notations/views/diagrams/18-action-card.md
+  APP-002:
+    severity: error
+    spec: notations/views/diagrams/10-applications.md
+  CMAP-002:
+    severity: error
+    spec: notations/views/diagrams/05-capability-map.md
+  FGCA-004:
+    severity: error
+    spec: notations/views/diagrams/02-dgca.md
+  PMAP-002:
+    severity: error
+    spec: notations/views/diagrams/09-products.md
+  SCN-002:
+    severity: error
+    spec: notations/views/reports/11-scenarios.md
+  SCHEMA_INVALID:
+    severity: error
+    spec: notations/CONTRACT.md
+  GAP-REQ-NO-ASSERT:
+    severity: warning
+    spec: notations/elements/15-requirement.md

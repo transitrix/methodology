@@ -195,3 +195,14 @@ The example files under [`../examples/scenarios/`](../../examples/scenarios) (`o
 - Reconstruction invariant (why view documents are not content homes): [ELEMENT_PRIMITIVES.md](../../ELEMENT_PRIMITIVES.md) §1.1.
 - Named view-config convention (where this view's saved configs live, how they're named, listed, and re-run): [REPORT_VIEW_CONFIG.md](../REPORT_VIEW_CONFIG.md).
 - Architecture decision — reports are rendered from declarative view-configs, with a thin skill on top.
+
+
+## Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `SCN-002` | error | In the supported projection form, `view` is absent or not an object, or required `view.id` or `view.name` is absent or empty. Inline scenario collections are not required; scenario content is resolved from canon. Other configuration type failures use `SCHEMA_INVALID`. |
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).
