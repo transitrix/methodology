@@ -1104,10 +1104,10 @@ Two terms in the methodology carry closely related names and must not be conflat
 
 **Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
 
-The [recurring Activities proposal](recurring-activities.md) distinguishes a
-running process instance from its recurring Activity executions. Its proposed
-fields and policies are not part of the released contract or current validator
-coverage.
+The [recurring Activities contract](recurring-activities.md) distinguishes a
+running process instance from its recurring Activity executions. Its fields and explicitly
+selectable policies are accepted as a specification, but are not part of the
+released contract or current validator coverage.
 
 **Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name was deprecated in favour of `ACTION` to enforce this distinction, and as of the 1.0 release (2026-07-05) is fully removed: the `ACTIVITY` TYPE prefix, `activity_type` field, `activities:` array name, and `*.activities.transitrix.yaml` extension are no longer accepted — validators emit `ACTION-005` as an **error**, not a warning. See [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.
 
