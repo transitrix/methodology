@@ -275,6 +275,13 @@ await writeFile(`${name}.run.json`, serializeRunRecord(record));
 `not-attempted`: a slot absent from the record would be indistinguishable from
 one that was never in the recipe at all.
 
+## Read-only provenance checks
+
+[`PROVENANCE.md`](PROVENANCE.md) defines the versioned `document-provenance/1`
+checker and authorized observer interface. It checks existing run records,
+recipe and output bytes without rendering or changing them, and keeps missing
+evidence distinct from matching recorded claims.
+
 ## PDF output
 
 The third artefact per run alongside Markdown and the run record — a

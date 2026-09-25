@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Document provenance result version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "status",
+    "incomplete",
+    "coverage",
+    "checks"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "document-provenance/1"
+    },
+    "status": {
+      "enum": [
+        "consistent",
+        "inconsistent",
+        "incomplete"
+      ]
+    },
+    "incomplete": {
+      "type": "boolean"
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consistent",
+        "inconsistent",
+        "unverifiable",
+        "not-applicable"
+      ],
+      "properties": {
+        "consistent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inconsistent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unverifiable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "not-applicable": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "scope",
+          "status",
+          "reason",
+          "expected",
+          "observed",
+          "evidence",
+          "basis"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "consistent",
+              "inconsistent",
+              "unverifiable",
+              "not-applicable"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected": {
+            "type": [
+              "string",
+              "boolean",
+              "null"
+            ]
+          },
+          "observed": {
+            "type": [
+              "string",
+              "boolean",
+              "null"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "run",
+                "recipe",
+                "output",
+                "claims",
+                "adapter"
+              ]
+            }
+          },
+          "basis": {
+            "enum": [
+              "byte-observation",
+              "adapter-observation",
+              "comparison",
+              "recorded-claim",
+              "none"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
