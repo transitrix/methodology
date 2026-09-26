@@ -201,7 +201,7 @@ The example files under [`../examples/scenarios/`](../../examples/scenarios) (`o
 
 | Rule | Severity | Description |
 |---|---|---|
-| `SCN-002` | error | In the supported projection form, `view` is absent or not an object, or required `view.id` or `view.name` is absent or empty. Inline scenario collections are not required; scenario content is resolved from canon. Other configuration type failures use `SCHEMA_INVALID`. |
+| `SCN-002` | error | In the historical inline v0.2 form, `scenario` is absent or not an object; `scenario.id` or `scenario.name` is absent, empty or not a string; or `scenario.status` is absent. An invalid present status has its own `SCN-003` diagnostic. This is not a projection `view.id`/`view.name` check. The current projection contract does not require inline scenario content; configuration shape/type failures use `SCHEMA_INVALID`, and an unimplemented projection must be reported as unsupported rather than tested as an inline document. |
 
 Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
 Positive/rejecting cases and version compatibility are in the

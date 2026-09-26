@@ -2,7 +2,7 @@
 title: "Verification — REQUIREMENT verification claim"
 version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-07"
+last_updated: "2026-09-24"
 status: "draft"
 ---
 
@@ -171,6 +171,13 @@ A `VERIFICATION` carries no `subject` field: the thing verified is the requireme
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to VERIFICATION files in addition to the `VERIF-*` rules above.
 
 **Reverse-trace completeness.** Whether every `REQUIREMENT` has at least one `VERIFICATION`, and whether every verification it has has actually closed (`pass` / `fail`, rather than stuck at `not_yet_run` / `inconclusive`) — is a cross-cutting check that requires scanning the full verifications catalogue against the full requirements catalogue. It is defined as `REQ-VERIF-COVERAGE-001` / `REQ-VERIF-COVERAGE-002` in [15-requirement.md](15-requirement.md) §4.
+
+The draft [requirement-chain 0.2 contract](../views/reports/requirement-chain.md)
+§6 separates definition validity from execution applicability without changing
+these existing verdict codes. Its selected-release metric treats inconclusive as
+executed, requires the exact `verified_on` release and retains every active record.
+Malformed execution fields do not erase a valid definition. This is a consumer
+projection requirement, not a claim that existing validators or views implement it.
 
 ---
 

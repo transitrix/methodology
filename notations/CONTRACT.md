@@ -99,6 +99,32 @@ A modelled organisation accumulates three kinds of knowledge with different trus
 
 **Packages are not a fourth zone.** An optional domain package ([`PACKAGES.md`](PACKAGES.md)) is a top-level folder sitting alongside `canon/`, `field/`, `codex/`, but it carries none of the zone trust contracts above — it is self-contained, removable, and may only reference into a zone, never be referenced from one.
 
+### 5.1 Field source-document descriptor
+
+The draft [requirement-chain 0.2 contract](views/reports/requirement-chain.md)
+adds the following optional map to Field INTERVIEW, SURVEY, OBSERVATION and DRAFT
+artefacts. Final review and consumer implementation are pending. A Field record
+retains its existing ID, admission envelope, zone and lifecycle; this descriptor
+does not make it a codex authority or introduce a DOCUMENT TYPE.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `source_document` | no | map | Addressable document metadata for an existing Field artefact. Absence is valid. |
+| `source_document.title` | when map present | nonempty string | Display title. |
+| `source_document.uri` | when map present | nonempty string | Source location; not a canonical ID or an automatically traversable edge. |
+| `source_document.revision` | when map present | nonempty string | Immutable version or content digest; a moving label such as `latest` is invalid. |
+
+| Rule | Severity | Description |
+|---|---|---|
+| `SOURCE-DOC-001` | error | A present descriptor is not a map, omits a required nonempty string, or uses a moving revision label. No finding for an absent descriptor. |
+
+A `source_trace` REL may explicitly cite these Field types under the narrow
+endpoint exception in [Relations §3](elements/17-relations.md). A present malformed
+descriptor remains a scalar finding; it does not make an existing endpoint a
+missing reference. A valid descriptor is required for the Field document to be
+an accepted source-document terminal in the requirement-chain projection.
+No package citation is reversed into source provenance.
+
 ---
 
 ## 6. Admission record
@@ -1104,10 +1130,10 @@ Two terms in the methodology carry closely related names and must not be conflat
 
 **Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
 
-The [recurring Activities proposal](recurring-activities.md) distinguishes a
-running process instance from its recurring Activity executions. Its proposed
-fields and policies are not part of the released contract or current validator
-coverage.
+The [recurring Activities contract](recurring-activities.md) distinguishes a
+running process instance from its recurring Activity executions. Its fields and explicitly
+selectable policies are accepted as a specification, but are not part of the
+released contract or current validator coverage.
 
 **Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name was deprecated in favour of `ACTION` to enforce this distinction, and as of the 1.0 release (2026-07-05) is fully removed: the `ACTIVITY` TYPE prefix, `activity_type` field, `activities:` array name, and `*.activities.transitrix.yaml` extension are no longer accepted — validators emit `ACTION-005` as an **error**, not a warning. See [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.
 

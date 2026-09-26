@@ -206,3 +206,15 @@ attribute_versions:
 Current-value resolution: pick the entry with the largest `valid_from <= today`. See [CONTRACT.md](../../CONTRACT.md) §9.2.
 
 Migration: adopters with existing inline values move each value into a single-entry sidecar with `valid_from = process.valid_from`. The `VERSIONED-001..005` rules apply ([CONTRACT.md](../../CONTRACT.md) §9.3).
+
+
+## Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `PMAP-002` | error | In the inline form, `process_map` is absent or not an object; `process_map.id` or `name` is absent, empty or not a string; `updated_at` is absent or not a string; or `groups` is absent or not an array. An empty groups array is valid for this shape check. Date-format and group-content diagnostics remain separate. This code belongs to process-map, never products. |
+
+This inline diagnostic does not make `process_map` mandatory in a projection.
+Unsupported forms must remain visibly unvalidated under
+[CONTRACT.md](../../CONTRACT.md) §18. Positive/rejecting examples and observed
+runtime limitations are in the [diagnostic migration contract](../../../migrations/6.0-to-7.0/).

@@ -24,7 +24,8 @@
 #
 # Changing a closed set: edit this file, then update the spec table that prints
 # it in the same commit. Adding an element TYPE or a relation kind here is all
-# the ingest CLI needs to place and validate it.
+# the ingest CLI needs to recognize its kind. Catalogue endpoint/subtype checks
+# and projection semantics require their own consumer implementation.
 
 # Must equal notations/CURRENT_VERSION.yaml (enforced by check V1).
 methodology_version: "6.0.0"
@@ -280,12 +281,17 @@ deprecated_element_types:
 #
 #   from / to        allowed endpoint element TYPEs
 #   from_subtype /
-#   to_subtype       ACTOR `type` values the endpoint is narrowed to, when the
+#   to_subtype       ACTOR or ACTION `type` values the endpoint is narrowed to, when the
 #                    spec narrows it; `null` when unrestricted
 #
-# 20 live kinds. Endpoint TYPE constraints are enforced once the catalogue is
+# `excluded_pairs` removes named FROM>TO pairs from the from/to cross product.
+# Only source_trace.to may use the Field TYPEs below; all other endpoints stay canon.
+# These are existing Field IDs, not additional canonical element TYPEs.
+# 28 live kinds. Endpoint TYPE constraints are enforced once the catalogue is
 # loaded (REL-002); the candidate stage checks enum membership and ID grammar.
 # ---------------------------------------------------------------------------
+field_types: [INTERVIEW, SURVEY, OBSERVATION, DRAFT]
+
 relation_types:
 
   parent:
@@ -359,6 +365,28 @@ relation_types:
   depends_on:
     from: [REQUIREMENT]
     to: [REQUIREMENT]
+  # Draft requirement-chain 0.2 additions; full consumer support is separately declared.
+  requirement_parent:
+    from: [REQUIREMENT]
+    to: [REQUIREMENT]
+  serves:
+    from: [REQUIREMENT]
+    to: [NEED]
+  source_trace:
+    from: [REQUIREMENT, NEED, DRIVER]
+    to: [DRIVER, INTERVIEW, SURVEY, OBSERVATION, DRAFT]
+    excluded_pairs: [DRIVER>DRIVER]
+  product_scope:
+    from: [REQUIREMENT]
+    to: [PRODUCT]
+  project_scope:
+    from: [REQUIREMENT]
+    to: [ACTION]
+    to_subtype: [Project]
+  project_product:
+    from: [ACTION]
+    from_subtype: [Project]
+    to: [PRODUCT]
   required_for:
     from: [REQUIREMENT]
     to: [RELEASE]
@@ -1357,6 +1385,18 @@ rule_codes:
   REL-008:
     severity: warning
     spec: notations/elements/17-relations.md
+  REL-009:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-010:
+    severity: warning
+    spec: notations/elements/17-relations.md
+  REQ-PARENT-001:
+    severity: error
+    spec: notations/elements/15-requirement.md
+  SOURCE-DOC-001:
+    severity: error
+    spec: notations/CONTRACT.md
   RELEASE-001:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
@@ -1667,6 +1707,9 @@ rule_codes:
   AC-001:
     severity: error
     spec: notations/views/diagrams/18-action-card.md
+  AC-002:
+    severity: error
+    spec: notations/views/diagrams/18-action-card.md
   APP-002:
     severity: error
     spec: notations/views/diagrams/10-applications.md
@@ -1678,7 +1721,7 @@ rule_codes:
     spec: notations/views/diagrams/02-dgca.md
   PMAP-002:
     severity: error
-    spec: notations/views/diagrams/09-products.md
+    spec: notations/views/diagrams/06-process-map.md
   SCN-002:
     severity: error
     spec: notations/views/reports/11-scenarios.md
