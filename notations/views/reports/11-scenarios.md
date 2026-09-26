@@ -1,8 +1,8 @@
 ---
 notation: "Scenarios"
-version: "0.5"
+version: "0.6"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-12"
+last_updated: "2026-09-26"
 status: "draft"
 file_extension: "*.scenarios.transitrix.yaml"
 dsm_status: "implemented — Scenarios page; selector reclassification (v0.3) planned for next cut"
@@ -45,7 +45,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "Human-readable title"    # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"      # optional per CONTRACT.md §4
-methodology_version: "6.0.0"
+methodology_version: "7.0.0"
 view:
   # ... see §3
 ```
@@ -95,7 +95,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "Optimistic vs Conservative — 2027 cut"   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"                       # optional per CONTRACT.md §4
-methodology_version: "6.0.0"
+methodology_version: "7.0.0"
 
 view:
   id: SCENARIOS-<NAME>-1
@@ -152,7 +152,7 @@ notation: scenarios
 spec_version: "0.3"
 name: "All scenarios"                   # required per CONTRACT.md §1.1
 generated_at: "YYYY-MM-DD"             # optional per CONTRACT.md §4
-methodology_version: "6.0.0"
+methodology_version: "7.0.0"
 view:
   id: SCENARIOS-ALL-1
   name: "All scenarios"

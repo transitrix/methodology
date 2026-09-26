@@ -1,8 +1,7 @@
 # Diagnostic compatibility — methodology 6.0 → 7.0
 
 This migration contract is for catalogue maintainers and validator implementers.
-The target **7.0.0** is unreleased; this document does not change the current
-release or any manifest pin. It defines the next-major boundary for the ACTION
+The target **7.0.0** introduces the release boundary. It defines the next-major boundary for the ACTION
 numeric restrictions in [24-action.md](../../notations/elements/24-action.md)
 §6–6.1. Adding diagnostic identities for already-invalid structures does not
 itself change their validity. Rejecting previously accepted numbers does.
@@ -135,3 +134,28 @@ they are not claims about a subsequently published or installed validator.
 
 These gaps require validator follow-through. The contract and examples do not
 claim runtime conformance, and a source merge alone does not close the gaps.
+
+
+## Executable migration
+
+Node.js 20+ is required. The read-only postcheck additionally uses Python 3 with
+PyYAML, as does the repository linter. The codemod changes only the root manifest
+pin from 6.0.0 to 7.0.0, preserving comments, newlines and all model bytes. It does
+not correct numbers or rewrite diagnostic history. Review the six fields above
+before applying the pin; if the postcheck reports a negative value, the author
+must correct it or defer the upgrade. A pin change alone is not model acceptance.
+
+```sh
+node migrations/6.0-to-7.0/codemod.mjs --dry-run /path/to/model
+node migrations/6.0-to-7.0/codemod.mjs /path/to/model
+node migrations/6.0-to-7.0/validate.mjs /path/to/model
+```
+
+The postcheck reads YAML in declared canon/field/codex zones and an existing
+root views directory. It checks canonical ACTIONs and inline action collections
+in action and DGCA-family views; malformed YAML and symlinks cannot pass silently.
+It is a numeric migration check, not complete schema, relation, admission or
+rendering validation. Historical copies within those roots are reported for
+review, never altered. Exit 1 reports model findings; exit 2 reports invocation,
+manifest or scan failures. Re-run the full validators against the release's tool
+versions before admitting the upgrade.

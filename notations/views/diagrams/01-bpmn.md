@@ -1,8 +1,8 @@
 ---
 notation: "BPMN Process Diagram"
-version: "1.4"
+version: "1.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-23"
+last_updated: "2026-09-26"
 status: "documented"
 file_extension: "*.bpmn.transitrix.yaml"
 dsm_status: "not implemented in DSM — renders via Transitrix Studio"

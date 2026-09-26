@@ -1,8 +1,8 @@
 ---
 notation: "Action Card"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-25"
+last_updated: "2026-09-26"
 status: "draft"
 file_extension: "*.action-card.transitrix.yaml"
 ---
