@@ -9,8 +9,7 @@ version 1.0 to 2.0. Format per [`notations/CONTRACT.md`](../../notations/CONTRAC
 
 ## What this recipe covers
 
-**Inline authoring is the default.** As of the 2026-07-14 inline-authoring ADR
-(`architecture/cross-project/2026-07-14-inline-authoring-until-promotion.md`),
+**Inline authoring is the default.**
 `*.goals.transitrix.yaml` files with inline `goals[]` and
 `*.action.transitrix.yaml` files with inline `actions[]` are valid and do not
 need migration. Inline is the self-contained default; the projection form is for
@@ -71,7 +70,7 @@ still carries its inline `goals[]` and `goal_types[]` — it remains self-contai
 and valid. Adopters who want to convert the view to a pure `view_config` projection
 (no inline data) may do so manually by removing `goal_types[]` and `goals[]` from
 the document root and adding the `view_config` block as shown in §4 of
-`notations/views/04-goals.md`.
+`notations/views/diagrams/04-goals.md`.
 
 ---
 
@@ -123,7 +122,7 @@ still carries its inline `actions[]` and `project:` block — it remains
 self-contained and valid. Adopters who want to convert the view to a pure
 `view_config` projection (no inline data) may do so manually by removing
 `project:` and `actions[]` from the document root and adding a `view_config`
-block as shown in §4 of `notations/views/07-action.md`.
+block as shown in §4 of `notations/views/diagrams/07-action.md`.
 
 ---
 
@@ -142,7 +141,11 @@ node migrations/1.0-to-2.0/codemod.mjs <adopter-root>
 node migrations/1.0-to-2.0/validate.mjs <adopter-root>
 ```
 
-The codemod requires Node ≥ 20. No external dependencies.
+The codemod requires Node ≥ 20 and has no external dependencies. The postcheck
+also requires `python3` with PyYAML, the YAML parser used by the repository's
+whole-model linter. Install it in your Python environment with
+`python3 -m pip install PyYAML`. An unavailable parser exits with status 2;
+validation errors exit with status 1. The postcheck never modifies adopter files.
 
 ---
 
@@ -170,8 +173,25 @@ transitrix-ingest validate <candidates-dir>
 node migrations/1.0-to-2.0/validate.mjs <adopter-root>
 ```
 
-A clean run confirms all promoted element files are well-formed and resolve
-their cross-references correctly.
+The recipe postcheck accepts preserved inline `goals[]` and `actions[]` without
+requiring standalone copies or `view_config`. It checks array and entry shapes,
+duplicate inline IDs, goal type/level fields, and parent/predecessor references
+against inline IDs or standalone elements. Missing durations or schedule dates
+do not make an inline action invalid.
+
+Projection references are read from `view_config.scope.root_goal`, `root_action`,
+and the Action Schedule's `goals[]` filter, rather than from comments or prose.
+They must resolve to correctly identified standalone elements in the canonical
+goal/action directories. Empty scope and unfiltered projections are supported.
+Inline arrays and `view_config` are mutually exclusive, as are an inline
+`project` and `view_config`. The deprecated `activities` array must be renamed
+before crossing the 2.0 boundary.
+
+This is a **recipe postcheck**, not full notation or whole-model validation.
+Continue to run the owning validators for header/schema rules, type vocabularies,
+hierarchy cycles, scheduling diagnostics, admission records, and references beyond
+the fields above. Passing this postcheck alone does not certify generated element
+files as admitted or fully well-formed.
 
 ---
 
@@ -184,5 +204,5 @@ migrations/1.0-to-2.0/
 ├── validate.mjs      # post-migration check; exits 0 on clean repo
 └── fixtures/
     ├── before/       # minimal adopter repo in v1 inline format
-    └── after/        # the same after codemod.mjs runs
+    └── after/        # illustrative manually converted projections
 ```
