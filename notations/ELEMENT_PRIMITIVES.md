@@ -861,13 +861,40 @@ There is no ArchiMate counterpart for `RISK`: ArchiMate 3.x has no risk element 
 | Field | Required | Type | Semantics |
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `risk`. |
-| `likelihood` | **yes** | string | `low` \| `medium` \| `high` — the projected probability of the event occurring. |
-| `impact` | **yes** | string | `low` \| `medium` \| `high` — the severity if the event occurs, before treatment. |
-| `residual` | **yes** | string | `low` \| `medium` \| `high` — the exposure judged to remain once the `treated_by` obligations (if any) are in effect. Distinct from `impact`: `impact` is the untreated severity; `residual` is the post-treatment judgement. A `residual` lower than `impact` with an empty `treated_by` is an unfounded claim, flagged by `RISK-COVERAGE-001` (§9). |
+| `likelihood` | **yes** | string or number | `low` \| `medium` \| `high` — the projected probability of the event occurring. |
+| `impact` | **yes** | string or number | `low` \| `medium` \| `high` — the severity if the event occurs, before treatment. |
+| `residual` | **yes** | string or number | `low` \| `medium` \| `high` — the exposure judged to remain once the `treated_by` obligations (if any) are in effect. Distinct from `impact`: `impact` is the untreated severity; `residual` is the post-treatment judgement. A `residual` lower than `impact` with an empty `treated_by` is an unfounded claim, flagged by `RISK-COVERAGE-001` (§9). |
+| `risk_scale` | for numeric degrees | mapping | Adopter-defined ordinal scale: nonempty `id`, finite `min` and `max` with `min < max`, and `direction: higher` or `lower` (which direction means more risk). Applies to all numeric degrees on this record. |
 | `owner_role` | **yes** | string | `ROLE-…` accountable for tracking and treating this risk. |
 | `threatens` | **yes** | list | Typed IDs of the elements this risk threatens — commonly `DRIVER-…`, but any core element the risk bears on. Non-empty. |
 | `treated_by` | no | list | `REQUIREMENT-…` / `CONSTRAINT-…` IDs — the treatment obligations that address this risk. Absent ⇒ untreated (`RISK-COVERAGE-001`). |
 | `description` | recommended | string | One-paragraph elaboration of the projected event itself — what would happen, not a finding about what already has. |
+
+**Numeric degrees.** Each of `likelihood`, `impact`, and `residual` accepts either
+its existing qualitative value or a finite number within the inclusive bounds of
+`risk_scale`. The adopter chooses the scale; integers and fractions are allowed.
+A number requires the scale above. Validate a supplied scale even when all degrees
+are qualitative. Booleans, numeric strings, null, nonfinite values and values
+outside the scale are not numeric degrees. Required values remain required;
+unknown is never replaced by zero. Zero is valid if included by the declared bounds.
+
+The scale ID identifies the adopter's documented meaning; a changed meaning,
+bounds or direction requires a new scale ID. No probability, money, factor formula,
+automatic qualitative mapping or arithmetic calculation is implied. A renderer
+shows the authored number and scale identity/bounds/direction. Do not compare or
+aggregate unlike scales, or infer a mapping between qualitative and numeric values.
+A lower residual number is not evidence that treatment was implemented.
+
+```yaml
+likelihood: 4
+impact: 5
+residual: 2
+risk_scale:
+  id: exposure-1-to-5-v1
+  min: 1
+  max: 5
+  direction: higher
+```
 
 **`threatens` and `treated_by` are inline, not first-class time-aware `REL`s** — consistent with `CHANGE.addresses` (§7.3) and the `REGISTRY` row references (§7.20). A risk re-scoped to threaten a different element, or re-treated by a different obligation, is captured by versioning the `RISK` element itself (`valid_to` the old, admit a new), not by relation re-binding.
 
@@ -1210,7 +1237,7 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `ORG-001` | error | A catalogue contains more than one valid `ORGANIZATION` element with overlapping validity windows (valid_from ≤ now ≤ valid_to across two or more records). At most one valid `ORGANIZATION` may exist at any given date; multiple simultaneous statementsof the organisation's identity are forbidden. |
 | `ORG-002` | error | An `ORGANIZATION` element carries neither a `mission` nor a `vision` field. At least one MUST be present. |
 | `RISK-001` | error | A `RISK` element is missing `id`, `name`, or any required envelope field; or `id` does not match `RISK-[<middle>-]<INTEGER>`; or a required per-TYPE field (`likelihood`, `impact`, `residual`, `owner_role`, `threatens`) is missing. |
-| `RISK-002` | error | `likelihood`, `impact`, or `residual` is not one of `low`, `medium`, `high`. |
+| `RISK-002` | error | `likelihood`, `impact`, or `residual` is neither `low`/`medium`/`high` nor a finite number within its declared `risk_scale`; or a required/supplied scale is malformed (§7.26). |
 | `RISK-003` | error | `threatens` is empty, or an entry does not resolve to an admitted element in canon. |
 | `RISK-004` | error | A `treated_by` entry does not resolve, or does not resolve to a `REQUIREMENT` or `CONSTRAINT` in canon. |
 | `RISK-COVERAGE-001` | warning | A `RISK` has an empty or absent `treated_by` — an untreated risk, the RISK-side analogue of `REQ-COVERAGE-001` ([CONTRACT.md](CONTRACT.md) §8). Unlike that cross-cutting rule, this check reads only the `RISK` element's own field — no catalogue scan required. |

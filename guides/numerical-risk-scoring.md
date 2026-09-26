@@ -8,7 +8,7 @@ license: MIT
 
 # Numerical risk scoring with an extension
 
-Keep the required qualitative `RISK` fields and store a local scoring scheme under `extensions.risk_scoring`. This guide demonstrates one optional convention using a [complete synthetic catalogue](../notations/examples/risk-scoring/README.md). It introduces no primitive fields, mandatory formula, or core arithmetic validator.
+For directly authored numeric risk degrees, use the core fields and an adopter-defined `risk_scale` in [RISK §7.26](../notations/ELEMENT_PRIMITIVES.md#726-risk--01_motivationrisks). No calculation is required. The optional worked scoring convention below instead keeps qualitative fields and stores its factors under `extensions.risk_scoring`. This guide demonstrates one optional convention using a [complete synthetic catalogue](../notations/examples/risk-scoring/README.md). It introduces no primitive fields, mandatory formula, or core arithmetic validator.
 
 [RISK](../notations/ELEMENT_PRIMITIVES.md#726-risk--01_motivationrisks) requires `likelihood`, `impact`, `residual`, `owner_role` and nonempty `threatens`. Treatment obligations belong in `treated_by`. The [open extensions contract](../notations/CONTRACT.md#12-extensions--open-attribute-bag) accepts arbitrary nested YAML values, while defined fields retain their normal positions and constraints. The extension shares its host's admission and lifecycle.
 
@@ -45,7 +45,7 @@ For a real assessment, record traceable evidence references, dates, assumptions,
 
 This example chooses a local mapping; core defines no numerical mapping. Map **before-treatment probability rating** to `likelihood` and **before-treatment severity rating** to `impact`: ratings 1–2 → `low`, 3 → `medium`, 4–5 → `high`. Map the **after-treatment score** to `residual`: 1–4 → `low`, 5–9 → `medium`, 10–25 → `high`.
 
-Thus the required fields stay `likelihood: high`, `impact: high`, `residual: medium`. `impact` is untreated severity, whereas `residual` is remaining exposure; they are different quantities. Adopters may keep independent qualitative judgements instead, provided they explain any difference from their numerical scheme. Never relocate these fields into the extension or replace their enum strings with numbers.
+Thus the required fields stay `likelihood: high`, `impact: high`, `residual: medium`. `impact` is untreated severity, whereas `residual` is remaining exposure; they are different quantities. Adopters may keep independent qualitative judgements instead, provided they explain any difference from their numerical scheme. Do not relocate these fields into the extension. Direct numeric authoring with `risk_scale` is a separate supported alternative; it does not require this example’s factors or formula.
 
 ## Validation, recomputation and reporting responsibilities
 
@@ -61,6 +61,6 @@ Treat stored scores as caches. Recompute on factor, scheme, horizon, evidence or
 
 ## Compatibility and limits
 
-The open bag is sufficient for this bounded example: it retains both assessments and evidence without changing RISK semantics. No new core field or normative scoring rule is proposed. Standardizing a shared scoring contract, changing qualitative requirements, or requiring arithmetic validation would need a separate methodology decision.
+The open bag is sufficient for this bounded example: it retains both assessments and evidence without changing RISK semantics. No new core field or normative scoring rule is proposed. A shared calculation contract or mandatory arithmetic validation is outside numeric authoring.
 
 The guide and catalogue are documentation/source examples. Their fictional admission and evidence records do not certify an operating system. Arithmetic checks, schema checks, implementation support and a published release are separate claims; passing one does not establish the others. See the [example's verification notes](../notations/examples/risk-scoring/README.md#verification) for the concrete evaluation.
