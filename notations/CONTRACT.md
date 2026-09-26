@@ -99,6 +99,32 @@ A modelled organisation accumulates three kinds of knowledge with different trus
 
 **Packages are not a fourth zone.** An optional domain package ([`PACKAGES.md`](PACKAGES.md)) is a top-level folder sitting alongside `canon/`, `field/`, `codex/`, but it carries none of the zone trust contracts above — it is self-contained, removable, and may only reference into a zone, never be referenced from one.
 
+### 5.1 Field source-document descriptor
+
+The draft [requirement-chain 0.2 contract](views/reports/requirement-chain.md)
+adds the following optional map to Field INTERVIEW, SURVEY, OBSERVATION and DRAFT
+artefacts. Final review and consumer implementation are pending. A Field record
+retains its existing ID, admission envelope, zone and lifecycle; this descriptor
+does not make it a codex authority or introduce a DOCUMENT TYPE.
+
+| Field | Required | Type | Semantics |
+|---|---|---|---|
+| `source_document` | no | map | Addressable document metadata for an existing Field artefact. Absence is valid. |
+| `source_document.title` | when map present | nonempty string | Display title. |
+| `source_document.uri` | when map present | nonempty string | Source location; not a canonical ID or an automatically traversable edge. |
+| `source_document.revision` | when map present | nonempty string | Immutable version or content digest; a moving label such as `latest` is invalid. |
+
+| Rule | Severity | Description |
+|---|---|---|
+| `SOURCE-DOC-001` | error | A present descriptor is not a map, omits a required nonempty string, or uses a moving revision label. No finding for an absent descriptor. |
+
+A `source_trace` REL may explicitly cite these Field types under the narrow
+endpoint exception in [Relations §3](elements/17-relations.md). A present malformed
+descriptor remains a scalar finding; it does not make an existing endpoint a
+missing reference. A valid descriptor is required for the Field document to be
+an accepted source-document terminal in the requirement-chain projection.
+No package citation is reversed into source provenance.
+
 ---
 
 ## 6. Admission record
@@ -292,22 +318,32 @@ example: true   # absent ⇒ real; only `true` is valid — ADMIT-010
 
 ### 6.5 Zone enumeration — every file is validated or reported
 
-The validator reports on zones as a whole, not only on the files it can parse. Every file under `canon/`, `field/`, and `codex/` (outside the special `sources/` subfolder in `codex/`, which holds cited copies) MUST be either:
-- **Validated:** A YAML artefact carrying a complete admission record (`zone`, `admitted_at`, `admitted_by`, `gate_checks`), or
-- **Reported as unvalidated:** A file in an unexpected format, carrying incomplete admission record, or falling outside the schema of any published notation.
+The validator reports on zones as a whole, not only on the files it can parse. Enumeration MUST include files directly at each zone root and recursively in its subdirectories, including hidden files and hidden directories. A filename, extension, or successful parse filter MUST NOT silently remove a file from coverage. Every file under `canon/`, `field/`, and `codex/` MUST be accounted for as one of:
 
-A file is a *finding* (error or warning) if it fails both criteria: an un-parseable file *with* an admission record (contradictory signal) is an error; a file with *no* admission record (neither validated nor reported) is an error in the canon and field zones, and a warning in the codex zone (where non-YAML external documents may legitimately exist).
+- **Validated:** A YAML artefact carrying a complete admission record (`zone`, `admitted_at`, `admitted_by`, `gate_checks`) and satisfying the applicable published schema.
+- **Narrowly exempted:** A zero-byte `.gitkeep` as defined below, or archival content under `codex/sources/` under the existing exception below.
+- **Reported as unvalidated:** Any other file in an unexpected format, carrying an incomplete admission record, or falling outside the schema of any published notation.
+
+A non-exempt file that cannot be validated produces a *finding* (error or warning): an un-parseable file *with* an admission record (contradictory signal) is an error; a file with *no* admission record (neither validated nor reported) is an error in the canon and field zones, and a warning in the codex zone (where non-YAML external documents may legitimately exist).
+
+**Empty directories and Git placeholders.** An existing empty zone directory contains no artefacts and causes no zone-enumeration finding. Git does not retain empty directories. To preserve one in a checkout, an adopter MAY commit a regular file whose basename is exactly `.gitkeep` and whose content is exactly zero bytes, at the zone root or in a nested directory. The validator MUST classify that file as repository metadata, exempt from admission and schema validation. It is not an admitted model artefact, has no ID, and contributes nothing to model counts, references, or derived views. Its presence remains harmless when model files are later added beside it.
+
+The exemption is a name **and** byte-content check, not a hidden-file rule. A newline, whitespace, byte-order mark, comment, or any other content makes `.gitkeep` nonempty and removes the exemption. A symlink named `.gitkeep` does not qualify as a regular placeholder file. Nonqualifying placeholders MUST be validated or reported under the existing rules: unadmitted metadata produces `ZONE-001` (error in `canon`/`field`, warning in `codex`); a purported admitted artefact in an unsupported format produces `ZONE-003`; malformed model YAML produces `ZONE-002`. Renaming model content to `.gitkeep` cannot make it exempt. `.gitignore`, `.keep`, hidden Markdown, and hidden YAML have no exemption by name, including when empty. Do not invent an admission record for directory metadata; keep repository instructions outside the model zones.
 
 **The `sources/` exception.** The `codex/sources/` folder holds cited external documents (PDFs, HTML, archived web pages) that are faithful to their sources and are not edited. Files in `sources/` are never validation-checked and are not enumerated as zone artefacts — they are purely archival. A `sources/` file carrying an admission record is a configuration error (the two intentions are contradictory) and is reported as an `ADMIT-012` error.
 
+The archival exception applies only to `codex/sources/` and its descendants, not to `canon/sources/`, `field/sources/`, or an arbitrary directory named `sources`. It does not waive `ADMIT-012`.
+
 **What this ensures:** A repository with `0` validation warnings and `0` unenumerated files means its entire zone contents are in one of two states: validated against a published notation, or formally documented as outside the scope of validation. A consumer can trust that no file was silently skipped.
+
+**Conformance examples:** [Zone enumeration](examples/zone-enumeration/README.md) includes exact placeholder bytes, root and nested paths, hidden-file controls, and archival boundaries. These expected outcomes do not assert support in any particular released validator.
 
 **Validation rules:**
 
 | Rule | Severity | Description |
 |---|---|---|
-| `ZONE-001` | error | File in `<zone>/` (outside `sources/`) has no admission record and does not match any published notation schema. (Error in `canon` and `field` zones; warning in `codex` — see §6.5 prose.) |
-| `ZONE-002` | error | File in `<zone>/` is not valid YAML (syntax error, not a mapping). |
+| `ZONE-001` | error | Non-exempt file in `<zone>/` has no admission record and does not match any published notation schema. (Error in `canon` and `field` zones; warning in `codex` — see §6.5 prose.) |
+| `ZONE-002` | error | Non-exempt file in `<zone>/` is not valid YAML (syntax error, not a mapping). |
 | `ZONE-003` | error | File in `<zone>/` has an admission record but the file format (extension or structure) does not match any published notation that admits records. |
 | `ADMIT-012` | error | File in `codex/sources/` carries an admission record (`zone`, `admitted_at`, etc.). The `sources/` folder is archival; files there are not validated or admitted. |
 
@@ -1094,10 +1130,10 @@ Two terms in the methodology carry closely related names and must not be conflat
 
 **Rule:** the word **Activity** MUST NOT be used to describe project-domain work items. The word **Action** MUST NOT be used to describe process-domain steps. Validators that detect `notation: activity` on a project-schedule document (distinct from `notation: bpmn` / PROCESS `flow` contexts) MUST emit `ACTION-005`.
 
-The [recurring Activities proposal](recurring-activities.md) distinguishes a
-running process instance from its recurring Activity executions. Its proposed
-fields and policies are not part of the released contract or current validator
-coverage.
+The [recurring Activities contract](recurring-activities.md) distinguishes a
+running process instance from its recurring Activity executions. Its fields and explicitly
+selectable policies are accepted as a specification, but are not part of the
+released contract or current validator coverage.
 
 **Historical note.** Prior to 2026-06-25 the project-domain primitive was called `ACTIVITY`. That name was deprecated in favour of `ACTION` to enforce this distinction, and as of the 1.0 release (2026-07-05) is fully removed: the `ACTIVITY` TYPE prefix, `activity_type` field, `activities:` array name, and `*.activities.transitrix.yaml` extension are no longer accepted — validators emit `ACTION-005` as an **error**, not a warning. See [IDS_AND_REFERENCES.md](IDS_AND_REFERENCES.md) §6 for the migration checklist.
 

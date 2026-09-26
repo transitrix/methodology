@@ -854,3 +854,25 @@ test('derivePresetMembershipFindings — negative: a module preset with no spec 
   assert.equal(findings.length, 1);
   assert.match(findings[0], /no matching row/);
 });
+
+test('relation endpoint tables retain Project subtype and exclude driver-to-driver citations', () => {
+  const text = `
+## 3. Relation \`type\` enum
+| \`type\` | Direction | Endpoint TYPEs | Semantics |
+|---|---|---|---|
+| \`project_scope\` | requirement → project | \`REQUIREMENT\` → \`ACTION(Project)\` | membership |
+| \`source_trace\` | citing → source | \`REQUIREMENT\` or \`DRIVER\` → \`DRIVER\` or \`OBSERVATION\` (excluding DRIVER>DRIVER) | citation |
+### 3.1 Boundary
+`;
+  const rows = parseRelationsEnumTable(text);
+  assert.deepEqual(rows.get('project_scope').to, { types: ['ACTION'], actorSubtype: ['Project'] });
+  assert.deepEqual(rows.get('source_trace').excludedPairs, ['DRIVER>DRIVER']);
+  const vocabulary = parseVocabularyRelationTypes(`relation_types:
+  source_trace:
+    from: [REQUIREMENT, DRIVER]
+    to: [DRIVER, OBSERVATION]
+    excluded_pairs: [DRIVER>DRIVER]
+`);
+  assert.deepEqual(vocabulary.get('source_trace').excludedPairs, rows.get('source_trace').excludedPairs);
+  assert.throws(() => parseRelationsEnumTable(text.replace('ACTION(Project)', 'PRODUCT(Project)')), /unexpected subtype/);
+});

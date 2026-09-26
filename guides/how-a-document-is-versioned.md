@@ -125,3 +125,7 @@ Do not copy those numbers into the PDF table and call the two histories the same
 ---
 
 **Last reviewed:** 2026-09-14.
+
+## Related repository guidance
+
+[Version a changing model repository](how-to-version-a-changing-model-repository.md) explains how frequently changing content, processing tools and issued baselines remain traceable without treating every edit as a software release.

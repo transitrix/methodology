@@ -90,3 +90,7 @@ Do not close Portal 1.0's links merely because Portal 1.1 shipped: what built 1.
 Check the RELEASE envelope, subject types, canonical IDs, resolved endpoints, lifecycle windows and provenance against [element primitives](../notations/ELEMENT_PRIMITIVES.md) and [relation semantics](../notations/elements/17-relations.md). Run the validator configured for the adopter repository and verify it covers those rules. A schema check cannot establish which compiler actually built a release; compare the recorded environment with the build evidence.
 
 Do not use `assembled_on` for a deployment target, a test result alone, or a list of included components. Requirement scope uses `required_for`; architectural attachment uses `introduced_in`; neither records the build environment.
+
+## Related repository guidance
+
+[Version a changing model repository](how-to-version-a-changing-model-repository.md) explains how frequently changing content, processing tools and issued baselines remain traceable without treating every edit as a software release.

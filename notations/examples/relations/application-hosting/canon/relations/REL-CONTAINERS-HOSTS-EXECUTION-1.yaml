@@ -1,0 +1,19 @@
+notation: relation
+id: "REL-CONTAINERS-HOSTS-EXECUTION-1"
+name: "Container platform hosts execution"
+type: hosts
+description: "Hosting of the compute service on its infrastructure substrate."
+from: "NODE-CONTAINERS-1"
+to: "TECHNOLOGY_SERVICE-EXECUTION-1"
+
+zone: canon
+example: true
+admitted_at: "2026-09-20"
+admitted_by: "example"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+
+valid_from: "2026-01-01"
+valid_to: null

@@ -23,6 +23,18 @@ Transitrix separates validation into two canonical axes (file scope and repo sco
 | `python3 tools/knowledge_store_lint.py <root>` | **Knowledge store** — `_intake/processed/` + `_intake/drafts/` + `knowledge/` | Quality Gates 1–6: quarantine, canonical-definition, blast-radius tiering, provenance/confidence, scoped consistency, assisted ingest — per `patterns/knowledge-store.md` | When proposing or promoting knowledge objects; when reviewing the store for drift | **Methodology-internal reference implementation.** Adopters may copy and adapt it; the methodology owns the rules, not this script. Documented in [`patterns/knowledge-store.md`](../patterns/knowledge-store.md) |
 | `python3 tools/check_views_compliance.py` | Methodology-repo only | Notation-specific rules on the methodology's own example files | Not for adopters | **Deprecated** — superseded by `@transitrix/cli`. Kept for migration reference only |
 
+### Requirement-chain consumer support
+
+[Requirement-chain 0.2](../notations/views/reports/requirement-chain.md) is a draft
+versioned projection contract with a [shared oracle](../notations/examples/requirement-chain/README.md).
+The schema and validation tables specify six REL additions and an optional Field
+descriptor; released CLI/schema support is not established by this specification.
+Consumers declare support only after implementing the §9 interface and checks,
+reconciling both views to the same oracle, and naming the exact contract revision
+and consumer version. Preserve existing repository-wide commands and verdicts.
+The documentation linter validates documentation; the release query implements
+obligation inheritance. Neither is a validator for the complete new contract.
+
 ### What to run when
 
 | Situation | Run |

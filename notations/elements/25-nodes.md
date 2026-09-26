@@ -18,7 +18,7 @@ Nodes are **zone primitives**: each is a single YAML file under `canon/elements/
 
 A `NODE` is an **infrastructure substrate** — the physical or virtual compute, network, or storage resource that hosts technology services. It is the *hardware or virtualisation layer*, not the software or service layer.
 
-> **ArchiMate note.** ArchiMate 3.2 §9.3.1 defines Node as "a computational resource upon which artefacts may be stored or deployed for execution." Transitrix maps this concept directly to `NODE`. Platform-level services (`TECHNOLOGY_SERVICE`) are *hosted* by a NODE; the `hosts` relation ([17-relations.md](17-relations.md) §3) expresses that link and is closed to `NODE` → `TECHNOLOGY_SERVICE` — it has no `APPLICATION` endpoint. An application deployed on a node is modelled by giving the node's application-hosting surface its own `TECHNOLOGY_SERVICE` (e.g. `type: compute` or `type: container_platform`), then `APPLICATION` –`uses`→ `TECHNOLOGY_SERVICE` ←`hosts`– `NODE`, the same intermediary shape the rest of the technology layer already uses.
+> **ArchiMate note.** ArchiMate 3.2 §9.3.1 defines Node as "a computational resource upon which artefacts may be stored or deployed for execution." Transitrix maps this concept directly to `NODE`. Platform-level services (`TECHNOLOGY_SERVICE`) are *hosted* by a NODE; the `hosts` relation ([17-relations.md](17-relations.md) §3) expresses that link and is closed to `NODE` → `TECHNOLOGY_SERVICE` — it has no `APPLICATION` endpoint. An application deployed on a node is modelled by giving the node's application-hosting surface its own `TECHNOLOGY_SERVICE` (`type: compute`; `container_platform` is a NODE type, not a TECHNOLOGY_SERVICE type), then `APPLICATION` –`uses`→ `TECHNOLOGY_SERVICE` ←`hosts`– `NODE`, the same intermediary shape the rest of the technology layer already uses.
 
 It is **not**:
 
@@ -81,6 +81,8 @@ valid_to: null
 ---
 
 ## 3. Relations — `hosts`
+
+See the [complete application-hosting example](../examples/relations/application-hosting/README.md) for both first-class REL files and their three endpoint elements.
 
 The primary relation from a node is `hosts`, linking the node to the platform-level services it exposes ([17-relations.md](17-relations.md) §3):
 

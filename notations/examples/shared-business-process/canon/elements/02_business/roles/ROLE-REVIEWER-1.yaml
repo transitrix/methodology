@@ -1,0 +1,15 @@
+notation: role
+id: "ROLE-REVIEWER-1"
+name: Request reviewer
+unit: "ACTOR-SERVICE-UNIT-1"
+description: Checks that a request is complete and records a recommendation.
+zone: canon
+example: true
+admitted_at: '2026-09-20'
+admitted_by: example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null

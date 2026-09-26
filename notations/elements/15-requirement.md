@@ -1,8 +1,8 @@
 ---
 title: "Requirement — motivation-layer positive obligation"
-version: "1.3"
+version: "1.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-25"
+last_updated: "2026-09-24"
 status: "draft"
 ---
 
@@ -220,11 +220,11 @@ The same convention applies symmetrically to **CONSTRAINT** ([`ELEMENT_PRIMITIVE
 A REQUIREMENT is a single obligation, but obligations naturally decompose: a broad "the organisation must protect personal data" is realised by narrower sub-obligations ("must obtain consent before processing", "must erase personal data on request within 30 days") that share the same source, subject set, or accountability chain. `parent` lets that decomposition be modelled explicitly on the requirement's own record, without inventing a new relation type.
 
 - **Same-TYPE.** `parent` names another admitted `REQUIREMENT` — the higher-scale obligation this one decomposes from. Cross-TYPE hierarchies (REQUIREMENT → CONSTRAINT and vice versa) are not supported: a REQUIREMENT (positive obligation) and a CONSTRAINT (restriction) are peer motivation-layer elements per §1, not decompositions of one another. Mirror-pairs authored per §1.2 do not use `parent`.
-- **Inline; not time-aware.** `parent` is a timeless cross-reference on the requirement's own record — the same shape as `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3) and `LOCATION.parent` (§7.22). It is v0.x transitional and does **not** live in a `REL-…` file. If a time-aware requirement hierarchy is ever needed, a first-class `requirement_parent` REL kind ([elements/17-relations.md](17-relations.md)) is the promotion path — the current inline field is chosen for parity with the existing multi-scale primitives.
+- **Inline; not time-aware.** `parent` is a timeless cross-reference on the requirement's own record — the same shape as `CHANGE.parent` ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.3) and `LOCATION.parent` (§7.22). It remains supported. The draft requirement-chain extension specifies `requirement_parent` ([17-relations.md](17-relations.md) §3) for time-aware or multiple-parent decomposition. Inline and active REL pairs form an additive union; duplicate pairs retain every authored identity. Final review and consumer support are required for the extension.
 - **Origin-agnostic.** The taxonomy in §2.1 does not restrict `parent`. Any two REQUIREMENTs may be linked regardless of their `origin` values — a broad `legislative` obligation may decompose into `legislative` sub-obligations, and a `project-product` deliverable-quality obligation may decompose into finer `project-product` sub-obligations. Cross-`origin` decomposition (e.g. a `legislative` parent with a `process-product` child) is permitted but should be authored deliberately: it typically signals an organisational choice to satisfy a legal duty through a process-quality obligation, and the reasoning belongs in the child's `description`.
 - **Stage-agnostic — MAY cross document-stage boundaries.** `parent` is not scoped to one ISO/IEC/IEEE 29148 specification document (StRS / SyRS / SRS, recorded by `level`, §2.5). Crossing tiers — a `system`-level child decomposing a `stakeholder`-level parent — is in fact the *typical* direction (§2.5's ladder is a decomposition guide, not a same-tier requirement); staying within one tier is equally valid. Not a validator constraint (§2.5). `parent` is independently silent on the endpoints' lifecycle/admission stage: the general rule that an inline reference must resolve to an *admitted* primitive applies exactly as it does to `derived_from` or `serves` (§6.1 of [CONTRACT.md](../CONTRACT.md)), with no further coupling between a parent's and a child's `admission_state`.
 - **Structure only, no traversal semantics.** `parent` records structure; it does **not** imply that satisfying the parent's obligation is realised by satisfying all children, or that a claim about the parent aggregates its children. Compliance claims remain per-REQUIREMENT via `ASSERTION` ([elements/16-assertion.md](16-assertion.md)); a hierarchy view over `parent` is a downstream tooling concern, not a validator concern. In particular, `REQ-COVERAGE-001` (§4) evaluates per-REQUIREMENT and is unaffected by parent linkage — a parent REQUIREMENT is not "covered" by an ASSERTION targeting its child.
-- **Optional.** Requirements without `parent` are top-level. Cycles in the `parent` chain are ill-formed (a REQUIREMENT is not its own transitive parent) but not currently a validator concern — same posture as `CHANGE.parent` and `LOCATION.parent`. Backfilling `parent` on existing admitted requirements is optional.
+- **Optional.** Requirements without either inline or active REL parents are top-level. Cycles are ill-formed (a REQUIREMENT is not its own transitive parent); the draft extension requires cycle-safe diagnostics on the union under `REL-009` / `REL-010`. This does not assert that released validators implement these checks. Backfilling `parent` on existing admitted requirements is optional.
 
 **Distinct from `depends_on`.** Structural decomposition (`parent` / the stated `requirement_parent` promotion path) is not the same as a conditional dependency between peer obligations. When obligation A is only meaningful or satisfiable if obligation B holds — without A being a narrower restatement of B — author a first-class `depends_on` REL (`from: A`, `to: B`) under [17-relations.md](17-relations.md) §3. Do **not** use `parent` for that reading, and do **not** use `depends_on` to encode implementation order (that stays with `ACTION` / `CHANGE`).
 
@@ -245,6 +245,13 @@ Three mechanisms exist for stating how one `REQUIREMENT` relates to another, or 
 The three never overlap: `parent` and `depends_on` both connect two `REQUIREMENT`s but disagree on whether one is a narrower form of the other; `required_for`'s `to` is always a `RELEASE`, never another `REQUIREMENT`, so it is never a candidate for a REQUIREMENT-to-REQUIREMENT question in the first place.
 
 Worked examples: [`examples/requirement-parent/`](../examples/requirement-parent/) (`parent`, crossing document-stage boundaries per §2.4's "Stage-agnostic" point), [`examples/relations/depends-on/`](../examples/relations/depends-on/), [`examples/relations/required-for/`](../examples/relations/required-for/).
+
+The draft [requirement-chain contract](../views/reports/requirement-chain.md)
+also specifies REL `serves` for multiple needs, additive with the existing inline
+`serves`; independent `product_scope` / `project_scope`; and `source_trace` for
+explicit DRIVER or Field citations. These additions do not widen `derived_from`,
+change requirement levels, or infer membership from `required_for`. Final review
+and consumer support remain required before production use.
 
 ### 2.5 `level` — specification tier (ISO/IEC/IEEE 29148 ladder)
 
@@ -315,6 +322,7 @@ A `REQUIREMENT` records *what the design must do*; a `NEED` ([`ELEMENT_PRIMITIVE
 | `REQ-004` | error | `origin` is present but its value is not one of `legislative \| process-product \| project-product`. |
 | `REQ-005` | error | `level` is present but its value is not one of `stakeholder \| system \| software` (§2.5). |
 | `REQ-006` | error | `kind` is present but its value is not one of `functional \| quality` (§2.6). |
+| `REQ-PARENT-001` | error | In the draft requirement-chain extension, a present inline `parent` does not resolve to an admitted REQUIREMENT. Union cycle diagnostics are specified by `REL-009` / `REL-010` in Relations §5. |
 | `REQ-SERVES-001` | error | `serves` is present but does not resolve to an admitted `NEED` in canon ([`ELEMENT_PRIMITIVES.md`](../ELEMENT_PRIMITIVES.md) §7.28). |
 | `REQ-COVERAGE-001` | warning | A REQUIREMENT has no ASSERTION targeting it — no file under `canon/assertions/` carries `about: <this REQ id>`. Surfaces a compliance gap: the obligation exists in the model but the organisation makes no recorded claim about whether any subject satisfies it. The rule is `warning` rather than `error` because a newly admitted REQUIREMENT legitimately has no assertion yet. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the assertions catalogue. |
 | `REQ-VERIF-COVERAGE-001` | warning | A REQUIREMENT has no admitted `VERIFICATION` targeting it — no file under `canon/verifications/` carries `verifies: <this REQ id>` ([27-verification.md](27-verification.md) §2). The engineering verification analogue of `REQ-COVERAGE-001`: the ASSERTION and VERIFICATION catalogues are independent ([27-verification.md](27-verification.md) §4), so a REQUIREMENT may carry compliance coverage with no verification evidence, or vice versa. `warning`, not `error`, for the same reason as `REQ-COVERAGE-001` — a newly admitted REQUIREMENT legitimately has no verification yet, and a purely compliance-origin REQUIREMENT may never accrue one. Cross-cutting — fires on the REQUIREMENT but is computed by scanning the verifications catalogue. |
@@ -381,6 +389,8 @@ A worked example yaml under `organizations/acme_corp/canon/elements/01_motivatio
 ---
 
 ## 6. References
+
+- Opt-in authored-text questions and exact evaluation scope: [Requirement-language advisories](../requirement-language-advisories.md) (draft; separate from structural validation).
 
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (entry), §1 (grammar), §4 (uniqueness scope).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
