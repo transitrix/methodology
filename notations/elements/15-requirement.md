@@ -390,6 +390,8 @@ A worked example yaml under `organizations/acme_corp/canon/elements/01_motivatio
 
 ## 6. References
 
+- Opt-in authored-text questions and exact evaluation scope: [Requirement-language advisories](../requirement-language-advisories.md) (draft; separate from structural validation).
+
 - TYPE registry and ID grammar: [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §3.1 (entry), §1 (grammar), §4 (uniqueness scope).
 - Zone model, admission record, primitive lifecycle: [CONTRACT.md](../CONTRACT.md) §5, §6, §7.
 - Codex source documents that requirements derive from: [14-codex.md](14-codex.md).
