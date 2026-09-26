@@ -6,17 +6,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
-## [Unreleased]
+## [7.0.0] — 2026-09-26
+
+Bump category: **MAJOR**. ACTION numeric lower bounds now apply to 7.0.0
+catalogues. Follow the [6.0 → 7.0 migration](migrations/6.0-to-7.0/);
+values and historical diagnostics are never silently rewritten. Methodology,
+CLI and editor packages keep independent release identities.
+
+### Added
+
+- Shared requirement-chain and release-report contracts, including evidence and
+  verification distinctions. (#617)
+- Authored numeric risk degrees on an adopter-defined scale; existing qualitative
+  inputs remain valid. No calculator or universal scoring formula is required. (#625)
+- Read-only document provenance checker and versioned result contract. (#621)
+- Bounded requirement-language advisories and recurring activity guidance. (#622, #619)
+- Examples for numerical risk scoring, shared business processes, actor boundaries,
+  legal identity and application hosting. (#609–#613)
+- Desktop model setup, repository change-history and ADR applicability guides.
+  (#608, #614–#616, #623)
 
 ### Changed
 
-- Define versioned diagnostic identities for canonical ACTIONs, schema shapes,
-  supported view forms and assertion-gap reports. Preserve schedule-view codes
-  and retired CODEX identities. The new ACTION numeric lower bounds target the
-  next major release, **7.0.0**, with a [compatibility and migration contract](migrations/6.0-to-7.0/);
-  current release pins are unchanged.
+- Versioned ACTION/schema diagnostic identities preserve schedule codes and retired
+  CODEX meanings. Negative duration, duration_days, labor_cost, resources_cost,
+  effort and score are errors from 7.0.0; zero remains valid. (#618)
+- Clarify frequent repository releases, empty-zone placeholders, pagination
+  reference boundaries and recurring activities. (#605–#607, #620)
+- Manifest pins and ingest coverage presets consistently target 7.0.0.
 
-## [6.0.0] — Unreleased
+### Fixed
+
+- The 1.0→2.0 migration postcheck accepts preserved inline goals/actions without
+  forcing optional promotion; Python 3 with PyYAML is required for that check. (#624)
+
+## [6.0.0] — 2026-09-18
 
 Bump category: **MAJOR**. Knowledge supersession now enforces errors on admitted
 objects that the 5.1.0 linter accepted, including the published `KS-019`

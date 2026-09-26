@@ -1,8 +1,8 @@
 ---
 title: "Codex — external & internal authority artefacts"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-08-27"
+last_updated: "2026-09-26"
 status: "draft"
 ---
 

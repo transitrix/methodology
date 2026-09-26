@@ -1,5 +1,4 @@
 transitrix: 1
 methodology_version: "7.0.0"
-notations: [relation]
 zones: [canon]
-coverage_profile: core
+notations: [action]

@@ -1,8 +1,8 @@
 ---
 title: "Verification — REQUIREMENT verification claim"
-version: "0.5"
+version: "0.6"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-24"
+last_updated: "2026-09-26"
 status: "draft"
 ---
 

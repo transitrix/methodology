@@ -1,8 +1,8 @@
 ---
 notation: "Applications Catalogue"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-08"
+last_updated: "2026-09-26"
 status: "draft"
 file_extension: "*.applications.transitrix.yaml"
 ---

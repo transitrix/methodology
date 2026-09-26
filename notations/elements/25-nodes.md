@@ -1,8 +1,8 @@
 ---
 title: "Nodes — infrastructure node primitive"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-28"
+last_updated: "2026-09-26"
 status: "draft"
 ---
 
