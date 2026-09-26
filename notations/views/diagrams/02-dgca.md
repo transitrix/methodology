@@ -436,6 +436,7 @@ If the selected goal set happens to be closed, the caption is omitted (no empty 
 
 | Rule | Severity | Description |
 |---|---|---|
+| `FGCA-004` | error | Inline DGCA collection shape failure: `factors`, `goals`, or `actions` is absent or not an array; likewise `changes` unless omitted with `view_config.layers.changes: off`. The retired `activities` key does not substitute for `actions`. Empty arrays do not trigger this historical shape diagnostic; the stronger published nonempty requirement remains `DGCA-004`, and missing runtime enforcement is a conformance gap. In projection form (only `view_config`, no element arrays), none of these arrays is required; validate the configuration object under `DGCA-004`. |
 | `DGCA-001` | error | document root is not an object, or `notation` field missing / does not equal `dgca`. |
 | `DGCA-002` | error | `id` missing or empty. |
 | `DGCA-003` | error | `name` missing or empty. |
@@ -487,3 +488,7 @@ The rules below apply when validating the **canonical element files** (`canon/el
 - Canonical ID grammar and TYPE registry: [`IDS_AND_REFERENCES.md`](../../IDS_AND_REFERENCES.md)
 - Family selection across DGCA / Goals / Actions: `notations/README.md` § Family selection
 - Methodology, notation kit §2 (DGCA): `method/04-notations.md`
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

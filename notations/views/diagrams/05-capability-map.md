@@ -346,3 +346,14 @@ Migration: adopters with existing inline values move each value into a single-en
 - Methodology, notation kit §3 (capabilities and maturity): `method/04-notations.md`
 - DSM: `docs/docs/concepts/bcm-explained.md` — BCM concept and addressing rules
 - DSM assignment: `assignments/06_0_1_capabilities.md` — detailed requirements (addressing, validation, sets)
+
+
+## Validation rules
+
+| Rule | Severity | Description |
+|---|---|---|
+| `CMAP-002` | error | In the supported inline map form, `capability_map` is absent or not an object, its required `id`, `name`, or `assessment_date` is absent or empty, or `capability_map.capabilities` is absent or not an array. An empty array is valid; item type/shape failures use `SCHEMA_INVALID`. |
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

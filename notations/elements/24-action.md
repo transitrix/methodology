@@ -1,8 +1,8 @@
 ---
 title: "Action — implementation-layer work package"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-06-25"
+last_updated: "2026-09-24"
 status: "draft"
 ---
 
@@ -179,8 +179,46 @@ One action per file, named by its canonical ID. Examples: `ACTION-PLATFORM-LAUNC
 | `ACTION-003` | warning | `parent` is present and both the parent and child have `type` values, but the child's level is not lower than the parent's (e.g. an `Initiative` whose `parent` is a `Project`). |
 | `ACTION-004` | error | `type` is not `Project` and the action is referenced as the project anchor in an Action Card ([views/18-action-card.md](../views/diagrams/18-action-card.md)) — action-card binding rule PC-002. |
 | `ACTION-005` | warning | Deprecated alias detected: `notation: activity`, `id` matching `ACTIVITY-…`, field `activity_type`, or path prefix `activities/`. Migrate to `action` / `ACTION-…` / `type` / `actions/`. |
+| `ACTION-007` | warning | A non-null `parent` or an entry in `predecessors` does not resolve to an ACTION in the declared catalogue. Identify the field and unresolved ID. An omitted parent on a root is valid. |
+| `ACTION-008` | error | The resolved ACTION predecessor graph contains a directed cycle. Report the participating IDs; do not treat an unresolved reference as a cycle. |
+| `ACTION-009` | error | An ACTION lists its own ID in `predecessors`. This is also a one-node cycle; report the specific self-reference. |
+| `ACTION-010` | error | A supplied, non-null `start_date` or `end_date` is not a valid calendar date in `YYYY-MM-DD` form, or `end_date` precedes `start_date`. Equal dates are valid. Lifecycle dates remain governed by the shared lifecycle rules. |
+| `ACTION-011` | error | From methodology **7.0.0**, a supplied numeric value in exactly `duration`, `duration_days`, `labor_cost`, `resources_cost`, `effort`, or `score` is negative. Zero is valid. See §6.1 for aliases, types and compatibility; `sort` and extension values are excluded. |
+
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to ACTION files in addition to the ACTION-* rules above.
+
+---
+
+## 6.1 Numeric compatibility and diagnostic identity
+
+The nonnegative restriction is effective at methodology **7.0.0**, selected by
+`transitrix.yaml`, not by this document's informational `spec_version`.
+Versions through 6.x described costs and effort as numbers and `score` as an
+integer without a lower bound. Rejecting an admitted negative value is therefore
+a **breaking change**, even if a validator previously rejected it. The new code
+is not permission to backport that restriction to a 6.x catalogue.
+
+- `duration`, `labor_cost`, `resources_cost`, and `effort` remain numbers; finite
+  fractions are allowed. Optional values may be absent. The documented
+  `duration: null` means unspecified, not zero.
+- `duration_days` remains the supported legacy alias for a duration in days.
+  It has the same number/null semantics. `duration` takes precedence for
+  scheduling when both exist; `duration_days` is not reinterpreted in another
+  unit. Validate both supplied values; a negative alias cannot be hidden by a
+  positive canonical field. Migration must reconcile differing values/units.
+- `score` remains an **integer**: `0` and `2` are valid, `2.5` is a type error
+  (`SCHEMA_INVALID`), and `-1` is `ACTION-011` from 7.0.0. `sort` remains an
+  integer with no new sign restriction. Cost, effort and score do not acquire
+  nullable semantics; a supplied null is a schema type error.
+- Numeric strings, booleans, collections and non-finite numbers are type errors
+  (`SCHEMA_INVALID`), not negative-number findings. No coercion is implied.
+
+These element diagnostics apply to canonical ACTIONs and the corresponding
+supported inline ACTION records. They never replace the schedule-view `ACT-*`
+rules. `ACTION-006` remains reserved for the proposed Initiative alias warning;
+this revision does not activate it. See the [diagnostic migration contract](../../migrations/6.0-to-7.0/)
+for scoped historical mappings and positive/rejecting examples.
 
 ---
 

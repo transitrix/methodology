@@ -8,6 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## [Unreleased]
 
+### Changed
+
+- Define versioned diagnostic identities for canonical ACTIONs, schema shapes,
+  supported view forms and assertion-gap reports. Preserve schedule-view codes
+  and retired CODEX identities. The new ACTION numeric lower bounds target the
+  next major release, **7.0.0**, with a [compatibility and migration contract](migrations/6.0-to-7.0/);
+  current release pins are unchanged.
+
 ## [6.0.0] — Unreleased
 
 Bump category: **MAJOR**. Knowledge supersession now enforces errors on admitted

@@ -307,3 +307,7 @@ Capabilities Map         →  what capabilities are required
 - Capabilities map: `notations/05-capability-map.md`
 - ID grammar and TYPE registry: `notations/IDS_AND_REFERENCES.md`
 - Methodology, notation kit: `method/04-notations.md`
+
+Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
+Positive/rejecting cases and version compatibility are in the
+[diagnostic migration contract](../../../migrations/6.0-to-7.0/).

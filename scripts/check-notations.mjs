@@ -1118,7 +1118,7 @@ async function checkVocabularyValueVocabularies(failures) {
 // An expired `review_by` is itself a VOC4 failure, so a deferred item cannot
 // sit forever unnoticed.
 
-const RULE_ROW_RE = /^\|\s*`([A-Z][A-Z0-9-]*)`\s*\|\s*(error|warning|info|deprecation)\s*\|/;
+const RULE_ROW_RE = /^\|\s*`([A-Z][A-Z0-9_-]*)`\s*\|\s*(error|warning|info|deprecation)\s*\|/;
 
 // Pure — no I/O. Parses the `rule_codes:` block of vocabulary.yaml into
 // Map<code, {severity, spec}>. Throws on a block that isn't found or doesn't
@@ -1133,7 +1133,7 @@ export function parseVocabularyRuleCodes(text) {
   for (let i = startIdx + 1; i < lines.length; i++) {
     const line = lines[i];
     if (/^\S/.test(line)) break; // dedent to column 0 — block ended
-    const codeM = line.match(/^  ([A-Z][A-Z0-9-]*):\s*$/);
+    const codeM = line.match(/^  ([A-Z][A-Z0-9_-]*):\s*$/);
     if (codeM) {
       current = { severity: null, spec: null };
       out.set(codeM[1], current);
@@ -1170,7 +1170,7 @@ export function parseVocabularyDeferredRuleCodes(text) {
     const line = lines[i];
     if (line.length > 0 && !/^\s/.test(line)) break; // dedent to column 0 — block ended
     if (/^  \S/.test(line)) break; // dedent to "deferred:"'s own key level — rule_codes sub-block ended
-    const codeM = line.match(/^    ([A-Z][A-Z0-9-]*):\s*$/);
+    const codeM = line.match(/^    ([A-Z][A-Z0-9_-]*):\s*$/);
     if (codeM) {
       current = { reviewBy: null };
       out.set(codeM[1], current);

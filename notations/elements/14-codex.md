@@ -379,7 +379,7 @@ One artefact per file, named by its canonical ID. Examples:
 | `CODEX-005` | info | A `type: REGULATION` artefact does not declare `monitoring_needed:`. The field SHOULD be explicit so downstream consumers (and scanner agents) know whether the source is static or live — see §3.4. Info severity, not warning, because some legacy artefacts predate the field; new REGULATION artefacts SHOULD set it. |
 | `CODEX-006` | info | A `type: PRINCIPLE` artefact does not declare `established_by` (§4.1). Info severity — a record without one is admissible; the absence is a review finding for whoever admits it, not a defect the validator blocks on. |
 
-Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved and is not reassigned.
+Rule code `CODEX-003` was retired alongside `applies_to`; the code is reserved and is not reassigned. Missing `jurisdiction` or `effective_date` where §6 requires them is always `CODEX-002` (error), never `CODEX-003`. For example, a REGULATION with both fields passes this required-field check; omitting either fails. A PRINCIPLE does not require either field.
 
 ---
 
