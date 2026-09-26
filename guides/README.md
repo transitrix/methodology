@@ -12,7 +12,7 @@ Choose the guide for the question you need to answer. Canonical schemas remain i
 
 | Guide | Kind and audience | Prerequisite or boundary |
 | --- | --- | --- |
-| [Desktop model workplace](desktop-model-workplace.md) | Draft setup procedure for managers using ChatGPT Desktop or Claude Desktop | Dated vendor prerequisites; installed-client and viewer compatibility must be independently verified. |
+| [Desktop model workplace](desktop-model-workplace.md) | Qualified setup procedure for managers using ChatGPT Desktop or Claude Code Desktop | Dated vendor prerequisites; installed-client and viewer compatibility must be independently verified. |
 | [Record repository changes](how-to-record-repository-changes.md) | Optional CHANGELOG convention for repository maintainers | Methodology upgrades, notation/validation coverage and tooling/layout; separate from model and issued-document histories. |
 | [Repository MCP for enterprises](repository-mcp-enterprise.md) | Recommended architecture for model owners and implementation teams | Scoped identity and operation rights, deployment choices, and compatible assistant modes; no available server or supported API is implied. |
 | [Preserve issued document versions](how-to-preserve-issued-document-versions.md) | Methodological recommendation for document owners and approvers | Agree issue identity, approval, retention and supersession; no mandated technology. |

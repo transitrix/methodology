@@ -1,7 +1,7 @@
 ---
 title: Set up a desktop model workplace
-status: draft
-last_reviewed: 2026-09-21
+status: qualified
+last_reviewed: 2026-09-26
 audience: public
 license: MIT
 ---
@@ -10,13 +10,15 @@ license: MIT
 
 Use this guide to prepare a read-only workplace for asking questions about an authorized model and viewing its diagrams. Start with one synthetic source, then connect real model data after the access checks pass.
 
-**Qualification, 21 September 2026:** the client instructions below are based on current official documentation, not an independently reproduced desktop installation. No client/package combination is certified as working by this guide. Exact installed versions and viewer package versions are **not yet verified**. A working setup requires the [independent walkthrough](#verify-the-installed-setup), including failures and recovery. Do not buy a plan on the assumption that this guide establishes compatibility.
+**Qualification, 26 September 2026:** the client instructions below are based on current official documentation, not an independently reproduced desktop installation. No client/package combination is certified as working by this guide. Exact installed versions and viewer package versions are **not yet verified**. A working setup requires the [independent walkthrough](#verify-the-installed-setup), including failures and recovery. Do not buy a plan on the assumption that this guide establishes compatibility.
+
+The two target surfaces are **ChatGPT Desktop** and **Claude Code Desktop (Code tab, Local session)**. The earlier Claude Desktop chat target is a different surface: neither its connector setup nor a successful chat diagram establishes Code-tab compatibility. Automated document and link checks qualify this guide; installed-client walkthroughs are post-delivery user acceptance testing (UAT), required before claiming a particular setup works.
 
 ## What you are connecting
 
 | Part | What it does | What it does not establish |
 | --- | --- | --- |
-| Desktop client | The installed ChatGPT or Claude app where you ask questions and inspect results | A browser session does not prove the same feature works here. |
+| Desktop client | ChatGPT Desktop or the Code tab in the Claude desktop app, where you ask questions and inspect results | A browser session does not prove the same feature works here. |
 | Authorized model repository | The model sources and revisions you are permitted to read | A full local clone is inappropriate if you may read only part of it. |
 | Instructions or skills | Tell the assistant how to cite evidence and prepare analysis | Prompts do not grant permissions or prevent writes. A coding-agent skill is not automatically installed in desktop chat. |
 | Repository MCP | A proposed governed interface for retrieving, searching and tracing model evidence | Methodology supplies the [pattern](../patterns/transitrix-repository-mcp.md), not a deployed server. Actual tool names come from your implementation. |
@@ -50,18 +52,19 @@ A package is ready for these steps only when that handoff is complete. This guid
 
 ## Client capability and prerequisite table
 
-The vendor facts in this table were checked on **2026-09-21**. They are prerequisites to a trial, not a supported Transitrix desktop combination.
+The vendor facts in this table were checked on **2026-09-26**. They are prerequisites to a trial, not a supported Transitrix desktop combination.
 
-| Dimension | ChatGPT Desktop | Claude Desktop |
+| Dimension | ChatGPT Desktop | Claude Code Desktop (Code tab, Local) |
 | --- | --- | --- |
-| Official installation / OS | Use the downloads linked from the [desktop page](https://learn.chatgpt.com/docs/app) for macOS, Windows or Linux; its Mac download is Apple Silicon. Check installer OS requirements; exact minimum OS for this walkthrough is unverified. | Use the [official installation guide](https://support.claude.com/en/articles/10065433-install-claude-desktop): macOS 11+, Windows 10+, or Linux beta on Ubuntu 22.04+/Debian 12+, x64/arm64. |
-| Account / plan | Sign in with an approved ChatGPT account. [Work is included](https://learn.chatgpt.com/docs/pricing) in Free, Go, Plus, Pro, Business, Edu and Enterprise; workspace controls and actual MCP access still need checking. | Approved Claude account. Chat is available on Free, Pro, Max, Team and Enterprise. [Remote custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) include those plans, with one custom connector on Free; organizational installation needs owner enablement. Local extension access is subject to administrator policy. |
-| Local transport | Official [desktop MCP settings](https://learn.chatgpt.com/docs/extend/mcp) list STDIO and Streamable HTTP. This is a desktop-specific source, not inferred from web support. | Local stdio configuration is documented by the [MCP project](https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-local-servers); packaged local servers use [desktop extensions](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop). |
-| Remote connection | Desktop HTTP supports OAuth/bearer authentication. Hosted ChatGPT plugin registration is a different path; do not treat its success as local desktop evidence. | Remote custom connectors originate in Anthropic's cloud, including when used in Desktop. Laptop-only or VPN-only reachability is insufficient. Confirm the service's supported HTTP transport; stdio is a separate local path. |
+| Official installation / OS | Use the downloads linked from the [desktop page](https://learn.chatgpt.com/docs/app) for macOS, Windows or Linux; its Mac download is Apple Silicon. Check installer OS requirements; exact minimum OS for this walkthrough is unverified. | Use the [Code desktop quickstart](https://code.claude.com/docs/en/desktop-quickstart): macOS, Windows, or Ubuntu/Debian Linux beta. Check current installer requirements; exact OS/build for this walkthrough is unverified. |
+| Account / plan | Sign in with an approved ChatGPT account. [Work is included](https://learn.chatgpt.com/docs/pricing) in Free, Go, Plus, Pro, Business, Edu and Enterprise; workspace controls and actual MCP access still need checking. | Approved Anthropic account with Pro, Max, Team or Enterprise for the Code tab, per the quickstart. Organization policy must permit Code and the selected tools; chat-plan access alone is insufficient. |
+| Local transport | Official [desktop MCP settings](https://learn.chatgpt.com/docs/extend/mcp) list STDIO and Streamable HTTP. This is a desktop-specific source, not inferred from web support. | [Claude Code MCP](https://code.claude.com/docs/en/mcp) documents stdio. The [desktop reference](https://code.claude.com/docs/en/desktop#shared-configuration) describes shared configuration; verify the effective definition in the Code session. |
+| Remote connection | Desktop HTTP supports OAuth/bearer authentication. Hosted ChatGPT plugin registration is a different path; do not treat its success as local desktop evidence. | Claude Code documents HTTP MCP configuration. A manually configured server and an account connector have different connection paths; obtain the actual origin, authentication and scope from the administrator. Do not infer laptop reachability from chat connector availability. |
 | Source-available status | Methodology pattern/instructions are available. A supplied adapter still needs a pinned build and compatibility review. | Same; a source prototype is not a published extension or a tested installation. |
 | Installed-and-tested versions/date | None recorded: app, OS, viewer package and runtime all unverified; no desktop test date. | None recorded: app, OS, viewer package and runtime all unverified; no desktop test date. |
+| Post-delivery evidence | Organization’s authorized tester records the exact ChatGPT combination and outcomes. | Adopter feedback must identify the Code tab, Local session and exact combination; feedback pending. |
 | Viewer embedding / interaction | Not yet verified: resource size, sandbox, labels, navigation, expansion and refresh. | Not yet verified: same checks. |
-| Unsupported in this walkthrough | Writes/approval; arbitrary files; undocumented renderer features; direct stdio through an HTTP-only connection. | Same. No Linux local-configuration parity is inferred from the macOS/Windows MCP tutorial. |
+| Unsupported in this walkthrough | Writes/approval; arbitrary files; undocumented renderer features; direct stdio through an HTTP-only connection. | Same. Chat, Cowork, CLI, cloud, SSH and WSL results do not establish this Local Code-tab combination. |
 
 **Source-available** means inspectable instructions or implementation, **installed-and-tested** means an independent reader reproduced the named build, **unsupported** means outside this procedure or an established incompatibility, and **not-yet-verified** means evidence is absent. Keep these states separate when recording your result.
 
@@ -74,14 +77,15 @@ The vendor facts in this table were checked on **2026-09-21**. They are prerequi
 
 For an administrator-provided **hosted** plugin, OpenAI documents **Settings → Security and login → Developer mode**, then **Plugins → plus** to register the connection and inspect discovered tools. Availability depends on policy. Follow the [official connection instructions](https://developers.openai.com/plugins/deploy/connect-chatgpt), then independently verify use inside the named installed desktop. This is optional and does not convert a local stdio executable into an HTTP service.
 
-## Claude Desktop path — unverified installation procedure
+## Claude Code Desktop path — unverified installation procedure
 
-1. Install from the official installation guide above, sign in and record the actual app/build, OS and plan. Obtain administrator approval for the specific local extension or remote connector if your organization requires it.
-2. If supplied a reviewed `.mcpb` bundle, use **Settings → Extensions → Advanced settings → Install Extension**. The [extension guide](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop) describes installation and organizational controls. Do not rename loose source or HTML to `.mcpb`.
-3. If supplied a local stdio command instead, the [MCP local-server tutorial](https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-local-servers) documents **desktop Settings → Developer → Edit Config** on macOS/Windows. Add the administrator's named `mcpServers` entry with its `command` and `args`, preserving other entries. Fully quit/restart Claude, then inspect the server under the composer's connector controls. Use the actual adapter configuration; the tutorial's filesystem server is not this read-only setup.
-4. Enable the intended tools for the conversation, apply the instructions below, and run the same readback/diagram checks as ChatGPT. A tool response without a displayed diagram establishes retrieval only.
+1. Follow the [official Code desktop quickstart](https://code.claude.com/docs/en/desktop-quickstart), sign in, open **Code**, choose **Local**, and select only the approved synthetic practice folder. Record the desktop build, embedded Claude Code version if exposed, OS and plan separately. The app includes Claude Code; the adapter may have its own runtime requirement.
+2. Have the administrator supply the reviewed server definition in the project `.mcp.json` or user `~/.claude.json`, following [Claude Code MCP configuration](https://code.claude.com/docs/en/mcp). Use its exact executable/arguments for stdio or approved HTTP URL/authentication. Preserve unrelated entries and keep secrets out of version control. No adapter command is supplied by this guide.
+3. Inspect the effective server and tools in this **Code** session. The [desktop reference](https://code.claude.com/docs/en/desktop#shared-configuration) currently documents loading chat-app `claude_desktop_config.json` servers into local Code sessions too, including precedence rules. Check for duplicate names; shared configuration does not establish shared viewer behavior.
+4. Confirm administrator-enforced read-only access across file, shell and MCP tools before continuing. A read-only adapter alone cannot constrain the coding client's other tools. Do not enable automatic edits or bypass permissions for this procedure; a prompt or permission-mode label is not an isolation boundary.
+5. Run the same connection, readback, diagram and recovery checks below. Record retrieval without an embedded diagram as retrieval only. Report unsupported rendering explicitly.
 
-For a separately supplied remote service, use **Customize → Connectors**; Pro/Max users can add a custom connector there, while Team/Enterprise owners first add it in organization settings and members then connect. Authenticate, review the requested scopes and enable it for the conversation. Free availability is documented, but the cited page's detailed individual setup steps name Pro/Max: verify the actual Free UI. The [remote-connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) also explains cloud-origin reachability. Do not open a firewall or deploy a tunnel merely to follow this consumer guide.
+For account integrations, the [desktop connector controls](https://code.claude.com/docs/en/desktop#connect-external-tools) are **+ → Connectors**, managed under **Settings → Connectors**. Treat that route separately from the manually configured adapter. Confirm connection origin and granted scope before using a remote source. No tunnel, new service or broader credentials are needed for this guide.
 
 ## Instructions and data flow
 
@@ -91,7 +95,7 @@ Paste this into the practice conversation, or place it in your organization's su
 
 These instructions guide behavior; access controls enforce it. Skills may package them for a compatible client, but do not assume `/transitrix:onboard` or coding-agent plugin commands work in desktop chat.
 
-**Local does not mean offline.** The adapter reads allowed local bytes and gives results to the client; model-visible tool content may be sent to the AI provider. Viewer resources and source content may also enter the host UI. A locally rendered diagram does not prove that its underlying data stayed on the workstation. For remote connections, requests and responses also pass through the service and its processing/logging boundary; Claude's remote path additionally originates in its cloud.
+**Local does not mean offline.** The adapter reads allowed local bytes and gives results to the client; model-visible tool content may be sent to the AI provider. Viewer resources and source content may also enter the host UI. A locally rendered diagram does not prove that its underlying data stayed on the workstation. For remote connections, requests and responses also pass through the service and its processing/logging boundary; account connectors can introduce a provider-hosted connection path distinct from a manually configured local MCP process. Record the actual path rather than assuming all Claude surfaces use the same origin.
 
 Before using real data, confirm with the administrator which fields/files leave the workstation, model processing and training settings, retention, logging, viewer network access and sharing controls. Grant only the required read scope. Local adapters run under an OS identity; remote OAuth authorizes particular service operations. Neither a client login nor a manager's job title confers model approval rights. Never paste credentials into a prompt or example configuration.
 
@@ -120,11 +124,11 @@ Once an actual Repository MCP implementation exposes the required authorized ope
 
 Use actual revision identities in place of A/B. Baseline access must be reauthorized under current policy. A fresh index or recent commit is not proof of recent observation. Missing evidence is **unknown**, stale evidence needs its date and limitation, and contradictions need both permitted sources rather than silent reconciliation. No findings does not mean no risk. Operational progress, spend and performance require their own authoritative data; model commitments are not live metrics.
 
-Chat output is neither the authoritative model nor a saved decision. Follow the existing [baseline/audit pattern](../patterns/baseline-audit-trail.md) and [decision guidance](../method/07-decisions.md) where applicable. A general review/proposal store and shared mutation interface are not specified by this setup; their owner and persistence behavior remain unresolved until explicitly supplied. Do not assign them to an index, chat history or an operational system by inference.
+Chat output is neither the authoritative model nor a saved decision. Follow the existing [baseline/audit pattern](../patterns/baseline-audit-trail.md) and [decision guidance](../method/07-decisions.md) where applicable. Canonical proposals, expert review and approval bind to Git branches/PRs and exact revisions. When DSM is used, its existing operational persistence owns durable pending edits and workspace review metadata, with DSM responsible for the API and PR adapter. Methodology supplies the host-independent contract and Studio the shared consumer interfaces. These responsibilities do not establish implemented endpoints or supported editing interfaces, and do not require every adopter to deploy DSM. Until a supported persistence interface is supplied, mark pending edits and review continuity as unsaved/unavailable; an index or chat history is not their authoritative store.
 
 ## Verify the installed setup
 
-An independent reader should reproduce the procedure without help from its author. Retain direct in-client evidence in the organization's access-controlled evidence location, not in public examples. Record date, OS/build, app/build, account/plan policy, adapter package/version or commit/build checksum, runtime, transport, protocol, fixture hashes and actual tool names. Record **not run** separately from failure.
+For post-delivery UAT, an authorized reader should reproduce the procedure without help from its author. Record ChatGPT Desktop results independently from adopter feedback for Claude Code Desktop; a pass in either does not establish the other. Pending feedback does not block delivery of these explicitly qualified instructions. Retain direct in-client evidence in the organization's access-controlled evidence location, not in public examples. Record date, OS/build, app/build, account/plan policy, adapter package/version or commit/build checksum, runtime, transport, protocol, fixture hashes and actual tool names. Record **not run** separately from failure.
 
 | Check | Required observable result |
 | --- | --- |
