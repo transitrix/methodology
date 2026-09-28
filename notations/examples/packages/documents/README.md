@@ -11,3 +11,8 @@ Used by the removal-integrity test (`packages/documents-cli/tests/test_documents
 
 1. Removal (delete both folders, drop from `packages:` list) leaves no trace in the repository.
 2. Absence of the package is truly silent: a repository that never declared it is byte-identical to one where it was used then removed.
+
+[RP-17: one document, two editions, independent reviews](../rp17.md) shows a
+synthetic recovery-arrangements document, its release binding, and use of the
+read-only provenance checker. It separates current package metadata from
+proposed identity/edition semantics and annual recurrence support.
