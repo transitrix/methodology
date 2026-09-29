@@ -131,7 +131,7 @@ canon_refs:
 | `kind` | yes | Fixed value `document`. |
 | `id` | yes | `doc-…` per §2.2. |
 | `type` | yes | A `doct-…` id of the document-type this instance instantiates. |
-| `version` | yes | A full SemVer string (including valid prerelease/build forms), or the two-component numeric compatibility form (e.g. "1.0", "2.0"). Each numeric component is zero or a nonzero digit followed by digits; the compatibility form has no suffix. Preserve the supplied string without normalization. |
+| `version` | yes | A full SemVer string (including valid prerelease/build forms), or the two-component numeric compatibility form (e.g. "1.0", "2.0"). In the compatibility form, each component is zero or a nonzero digit followed by digits, with no suffix. Preserve the supplied string without normalization. |
 | `status` | yes | One of: `draft`, `issued`, `superseded`, `archived`. |
 | `issued_at` | yes | ISO 8601 timestamp (UTC second-precision); the instant this version was released. |
 | `values` | yes | A map keyed by field names defined in the document-type's `fields`; every `required: true` field must have an entry. |
