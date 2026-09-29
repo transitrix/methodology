@@ -155,6 +155,8 @@ def main():
         print("PASS malformed YAML/schema: actionable input failure through dispatch")
         write(docpath, doc)
 
+        print(success("node", PACKAGE / "tests/test_events.mjs", root))
+
         canon_before = snapshot(root / "canon")
         shutil.rmtree(root / "documents")
         (root / "transitrix.yaml").write_text(manifest)
@@ -172,6 +174,7 @@ def main():
         silent = temp / "never-declared"
         shutil.copytree(root, silent)
         write(silent / "documents/documents/doc-invalid-1.yaml", {"package": "documents", "kind": "document", "id": "invalid"})
+        write(silent / "documents/events/issue-invalid-1.yaml", {"package": "documents", "kind": "issuance-event", "id": "invalid"})
         before = snapshot(silent)
         core_validate(silent)
         output = success("node", INGEST, "check-packages", silent)
