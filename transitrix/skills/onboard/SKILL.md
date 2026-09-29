@@ -96,17 +96,17 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   ├── lint.py
 │   └── requirements.txt
 ├── canon/                          # validated model — the authoritative zone
-│   ├── elements/
-│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
-│   │   │   └── constraints/        # CONSTRAINT-…-N.yaml (one per file)
-│   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
-│   │   │   └── rules/              # RULE-…-N.yaml (one per file)
-│   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
-│   │   └── 04_technology/          # NODE, ARTIFACT, …
-│   └── views/                      # one subfolder per notation
-│       ├── bpmn/   dgca/   goals/   capabilities/   processmap/
-│       ├── actions/   blocks/   scenarios/
-│       └── applications/   products/   process-blueprint/
+│   └── elements/
+│       ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
+│       │   └── constraints/        # CONSTRAINT-…-N.yaml (one per file)
+│       ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
+│       │   └── rules/              # RULE-…-N.yaml (one per file)
+│       ├── 03_application/         # APPLICATION, INTEGRATION, …
+│       └── 04_technology/          # NODE, ARTIFACT, …
+├── views/                          # one subfolder per notation, beside canon/
+│   ├── bpmn/   dgca/   goals/   capabilities/   processmap/
+│   ├── actions/   blocks/   scenarios/
+│   └── applications/   products/   process-blueprint/
 ├── field/                          # raw inputs — not authoritative; provenance is the point
 │   └── interviews/   surveys/   observations/   drafts/
 └── codex/                          # constraints given to the org, faithful to source
@@ -242,8 +242,9 @@ For any of the 15 view notations (DGCA / Goals / Capability map / Process map / 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
 - Point at the placeholder values they need to fill in — they all carry `FILL-ME` markers.
-- The template carries the canonical `notation:` and `spec_version:` headers plus the canonical root shape for the notation (a `view_config` block for pure-projection view notations — Goals tree, Action schedule, Actions tree, Action Card, Compliance Impact, Coverage Metric — and a canonical root key + one minimal placeholder entry per layer for the inline-shape notations — DGCA, BPMN, Capability map, Process map, Nested blocks, Scenarios, Applications, Products, Process Blueprint). **Do not strip the headers** — the canonical header is required by `notations/CONTRACT.md`.
-- For a pure-projection view (Goals tree, Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree. Ask the user only for the element's own content — the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION) — then compute the admission record and lifecycle yourself per "Admission record and lifecycle" above; don't hand the user a blank `admitted_by` or `valid_from` to fill in. The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
+- The template carries the canonical `notation:` and `spec_version:` headers plus the canonical root shape for the notation (a `view_config` block for pure-projection view notations — Action schedule, Actions tree, Action Card, Compliance Impact, Coverage Metric — and a canonical root key + one minimal placeholder entry per layer for the inline-shape notations — Goals tree, DGCA, BPMN, Capability map, Process map, Nested blocks, Scenarios, Applications, Products, Process Blueprint). **Do not strip the headers** — the canonical header is required by `notations/CONTRACT.md`.
+- For a Goals tree, start with inline `goal_types[]` and `goals[]` in the template: the first self-contained result needs no companion element or admission record. Promote a goal when a second document references it, or when the user explicitly chooses projection; use the [Goals projection form](../../../notations/views/diagrams/04-goals.md#source-of-truth) and the standalone-element guidance below.
+- For an explicitly chosen Goals projection or a pure-projection view (Action schedule, Actions tree, Action Card), the view document by itself will not render anything until at least one companion element file exists. Author the standalone element file inline (no separate template): create `canon/elements/01_motivation/goals/<GOAL-…>.yaml` for a Goals tree, `canon/elements/05_implementation/actions/<ACTION-…>.yaml` for an Action schedule or Actions tree. Ask the user only for the element's own content — the per-TYPE fields in the matching `notations/elements/…md` spec (`ELEMENT_PRIMITIVES.md` §7.2 for GOAL, `notations/elements/24-action.md` for ACTION) — then compute the admission record and lifecycle yourself per "Admission record and lifecycle" above; don't hand the user a blank `admitted_by` or `valid_from` to fill in. The worked example under `transitrix/acme-corp` shows the shape of these companion files end-to-end (its `views/goals/eu-strategy.goals.transitrix.yaml` + the sibling GOAL element files, and `views/action/gdpr-remediation.action.transitrix.yaml` + its ACTION element files).
 
 ### Codex artefacts (codex zone)
 

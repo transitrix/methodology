@@ -27,16 +27,13 @@ install / file-tree work and PyYAML the parsing. No other dependency.
 The acceptance criterion asks that authored files "parse cleanly under
 `@transitrix/diagrams/<notation>/validateXxx`". That package ships separately and is
 **not vendored into this repo**, so `test_skill_integrity.py` implements `validate_goals()`
-— a structural check of the invariants the canonical `validateGoals` enforces for the
-v2.0 pure-projection shape (`notations/views/diagrams/04-goals.md` §6): the `notation`/`id`/`name`
-header (`GOALS-001..003`), the `methodology_version` pin required from v2.0, the
-absence of inline `goals[]` at document root (`GOALS-008` hard error), and the
-`view_config.goal_types[]` shape + contiguous levels + `scope.type_filter` closure
-(`GOALS-004`/`005`/`007`). Element-level checks (parent cycles, type↔level agreement,
-per-goal ID grammar) live on the standalone `GOAL-*` element files and are covered
-by the ELEMENT_PRIMITIVES §7.2 element validator, not the single-file view validator.
-When `@transitrix/diagrams` is available in CI, swap `validate_goals()` for the real
-parser; the call site and assertions stay the same.
+— a structural smoke check for both current authoring forms: inline `goal_types[]`
+and `goals[]`, or projection through `view_config`. It checks the header, type levels
+and filters, and the inline starter's goal ID, name and type/level agreement.
+The clean scaffold uses root-level `views/goals/` and requires a visible inline goal.
+This is not a replacement for the published CLI validator: validate changed starters
+with `npx @transitrix/cli validate` as well. Projection element resolution and full
+relationship semantics remain outside this structural smoke check.
 
 Per the epic's "one representative path" scope, only the **Goals** notation is driven
 here (the simplest); the other notations are covered by `@transitrix/diagrams`' own
