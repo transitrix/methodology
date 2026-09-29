@@ -131,7 +131,7 @@ canon_refs:
 | `kind` | yes | Fixed value `document`. |
 | `id` | yes | `doc-…` per §2.2. |
 | `type` | yes | A `doct-…` id of the document-type this instance instantiates. |
-| `version` | yes | A SemVer-shaped version string (e.g. "1.0", "2.1.3"). |
+| `version` | yes | A full SemVer string (including valid prerelease/build forms), or the two-component numeric compatibility form (e.g. "1.0", "2.0"). Each numeric component is zero or a nonzero digit followed by digits; the compatibility form has no suffix. Preserve the supplied string without normalization. |
 | `status` | yes | One of: `draft`, `issued`, `superseded`, `archived`. |
 | `issued_at` | yes | ISO 8601 timestamp (UTC second-precision); the instant this version was released. |
 | `values` | yes | A map keyed by field names defined in the document-type's `fields`; every `required: true` field must have an entry. |
@@ -167,7 +167,7 @@ Run by `@transitrix/documents-cli validate <documents-folder>` (the reference im
 | `DOCS-003` | error | A `document.type` does not resolve to a `document-type` id present in the package. |
 | `DOCS-004` | error | A `document` carries a `values` entry not defined in its `document-type`'s `fields`, or is missing a required field. |
 | `DOCS-005` | error | A `canon_refs` entry is present but is not a grammar-valid core id (syntax per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1). |
-| `DOCS-006` | error | A `document.issued_at` is not a valid ISO 8601 timestamp, or `document.version` is not a valid SemVer string. |
+| `DOCS-006` | error | A `document.issued_at` is not a valid ISO 8601 timestamp, or `document.version` is neither a full SemVer string nor the two-component numeric compatibility form in §2.5. |
 | `DOCS-007` | error | A `document.status` is not one of: `draft`, `issued`, `superseded`, `archived`. |
 
 No rule here reaches into `canon/`, `field/`, or `codex/` — package-internal integrity only, per [`PACKAGES.md`](../PACKAGES.md) §4.2.

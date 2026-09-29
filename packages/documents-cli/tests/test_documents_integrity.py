@@ -128,6 +128,26 @@ def main():
             write(docpath, valid)
             success("node", INGEST, "check-packages", root)
         print("PASS DOCS-001–007 positive: distinct valid IDs, resolved type, required entries, optional omission, grammar-only citations, dates/versions/statuses")
+        # Both published compatibility versions and full SemVer remain literal
+        # data; no normalization or migration is a validation side effect.
+        for version in ("1.0", "2.0", "0.0", "2.1.3", "1.2.3-0", "1.2.3-rc.1+build.2", "1.2.3+001"):
+            valid = copy.deepcopy(doc)
+            valid["version"] = version
+            write(docpath, valid)
+            before_version = docpath.read_bytes()
+            success("node", INGEST, "check-packages", root)
+            assert docpath.read_bytes() == before_version
+        for version in ("1", "1.2.3.4", "01.0", "1.00", "01.2.3", "1.02.3", "1.2.03",
+                        "1.0-rc.1", "1.0+build", "1.2.3-01", "1.2.3-", "1.2.3+", "1.2.3-rc..1",
+                        "1.2.3+build..1", "1.2.3-rc_1", " 1.2.3", "1.2.3 ", 1.0, None):
+            bad = copy.deepcopy(doc)
+            bad["version"] = version
+            write(docpath, bad)
+            code, output = run("node", INGEST, "check-packages", root)
+            assert code == 1 and "DOCS-006 error documents/doc-srs-v2-1.yaml" in output, output
+            assert set(re.findall(r"DOCS-\d{3}", output)) == {"DOCS-006"}, output
+        print("PASS DOCS-006 versions: 7 valid preserved strings; 19 invalid counts, components, suffixes and scalar types rejected")
+
         for bad in ("package: [", "package: documents\npackage: documents\n", "[]\n"):
             docpath.write_text(bad)
             code, output = run("node", INGEST, "check-packages", root)
