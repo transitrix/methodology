@@ -1,16 +1,22 @@
 # Documents Package — Worked Example
 
-A minimal example of the `documents` package in use:
+A minimal synthetic example of the `documents` package in use:
 
 - **document-types/**: Templates for documents (requirements, specifications, etc.)
 - **documents/**: Issued instances, with various statuses (issued, superseded, archived)
 
 Each document is bound to core capabilities and requirements by reference ID.
 
-Used by the removal-integrity test (`packages/documents-cli/tests/test_documents_integrity.py`) to validate that:
+Copy `document-types/` and `documents/` into the adopter's top-level
+`documents/` folder, declare `packages: [documents]`, and install the
+[validator](../../../../packages/documents-cli/README.md). Run
+`transitrix-ingest check-packages <adopter-root>` to validate the records.
 
-1. Removal (delete both folders, drop from `packages:` list) leaves no trace in the repository.
-2. Absence of the package is truly silent: a repository that never declared it is byte-identical to one where it was used then removed.
+The integration test combines these records with synthetic core goals, validates
+through generic package dispatch, then deletes the enclosing `documents/` folder
+and removes the declaration. Core validation still passes and core bytes remain
+unchanged. A separate never-declared repository is byte-identical before and
+after real validation, even with invalid document records on disk.
 
 [RP-17: one document, two editions, independent reviews](../rp17.md) shows a
 synthetic recovery-arrangements document, its release binding, and use of the

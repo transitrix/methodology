@@ -183,7 +183,7 @@ Per [`PACKAGES.md`](../PACKAGES.md) §4.3, removal is the baseline two-step proc
 
 Nothing else changes. No `canon/`, `field/`, or `codex/` file is touched by either step, because per §2.6 no core element ever references a package object — there is nothing in `canon/` for the two steps above to leave dangling.
 
-Demonstrated as a test, not asserted in prose ([`PACKAGES.md`](../PACKAGES.md) §4.3): run `python packages/documents-cli/tests/test_documents_integrity.py` (also wired into CI). The test copies a worked example, performs both removal steps against the copy, and asserts that no `canon/` file still references a document id and that every `canon/` file still parses.
+Demonstrated as a test, not asserted in prose ([`PACKAGES.md`](../PACKAGES.md) §4.3): run `python packages/documents-cli/tests/test_documents_integrity.py` (also wired into CI). The test installs the packed validator into a synthetic adopter with two admitted, linked core goals and three worked package records. It runs `check-packages`, `repo-check` and the core linter before and after both removal steps, checks that core bytes are retained, and runs real validation between byte snapshots of a never-declared repository. Install the validator's test dependencies with `npm ci --prefix packages/documents-cli` first; see its [usage guide](../../packages/documents-cli/README.md).
 
 ---
 

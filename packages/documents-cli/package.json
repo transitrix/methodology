@@ -1,0 +1,24 @@
+{
+  "name": "@transitrix/documents-cli",
+  "version": "0.1.0",
+  "description": "Standalone validator for the optional Transitrix documents package.",
+  "type": "module",
+  "bin": {
+    "transitrix-documents": "./documents.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "documents.mjs",
+    "src/"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Transitrix"
+  },
+  "repository": "https://github.com/transitrix/methodology",
+  "dependencies": {
+    "yaml": "2.9.1"
+  }
+}

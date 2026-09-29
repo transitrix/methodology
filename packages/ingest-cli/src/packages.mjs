@@ -33,6 +33,11 @@ const execFileAsync = promisify(execFile);
 // @transitrix/ingest-cli (§4.2) — discovery only checks whether that npm
 // package happens to be installed in the adopter repo's node_modules/.
 export const SHIPPED_PACKAGES = {
+  documents: {
+    npmPackage: '@transitrix/documents-cli',
+    bin: 'documents.mjs',
+    validatorArgs: (folder) => ['validate', folder],
+  },
   reqif: {
     npmPackage: '@transitrix/reqif-cli',
     bin: 'reqif.mjs',
