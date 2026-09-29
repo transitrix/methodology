@@ -138,6 +138,8 @@ def validate_goals(doc):
         errs.append(f"document id {gid!r} violates the canonical ID grammar (GOALS-002)")
     if not doc.get("name"):
         errs.append("document `name` is missing or empty (GOALS-003)")
+    if "goals" not in doc and "methodology_version" not in doc:
+        errs.append("`methodology_version` is required from v2.0 (04-goals.md §5)")
     vc = doc.get("view_config")
     if vc is not None and not isinstance(vc, dict):
         return errs + ["view_config is present but is not a YAML mapping"]
@@ -247,9 +249,16 @@ def check_clean_install_goals_path():
 def check_goals_forms():
     doc = _load_yaml(os.path.join(SKILL_DIR, "templates", "goals.goals.transitrix.yaml"))
     check(not validate_goals(doc), "inline starter must pass structural checks")
+    inline_without_version = {key: value for key, value in doc.items() if key != "methodology_version"}
+    check(not validate_goals(inline_without_version),
+          "inline starter must not require a projection methodology_version header")
     projection = {key: value for key, value in doc.items() if key not in ("goals", "goal_types")}
     projection["view_config"] = {"goal_types": doc["goal_types"], "scope": {"type_filter": ["Strategy"]}}
     check(not validate_goals(projection), "explicit projection must remain supported")
+    projection_without_version = {key: value for key, value in projection.items() if key != "methodology_version"}
+    check(validate_goals(projection_without_version) == [
+        "`methodology_version` is required from v2.0 (04-goals.md §5)"
+    ], "projection without methodology_version must fail with the required-version error")
     projection["view_config"]["scope"]["type_filter"] = ["Unknown"]
     check(bool(validate_goals(projection)), "undeclared projection type filter must fail")
     doc["goals"][0]["level"] = 1
