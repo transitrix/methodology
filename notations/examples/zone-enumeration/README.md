@@ -46,7 +46,7 @@ The byte strings below describe file content, not YAML fields to add to a model.
 | `codex/sources/external-document.pdf` or `codex/sources/archived-page.html` | Archival content, no admission | Archival exemption; no schema findings |
 | `codex/sources/.gitkeep` | Zero bytes | No findings; no admitted model artefact |
 | `codex/sources/admitted.yaml` | YAML mapping containing `zone: codex`, `admitted_at`, `admitted_by`, and `gate_checks` | ADMIT-012 error; archival placement cannot admit an artefact |
-| `canon/sources/notes.md`, `field/sources/notes.md`, or `codex/internal/sources/notes.md` | `Unadmitted note.` followed by LF | No archival exemption; ZONE-001 error in canon/field, warning in codex |
+| `canon/sources/notes.md` or `field/sources/notes.md` | `Unadmitted note.` followed by LF | No archival exemption; ZONE-001 error in canon/field |
 
 A symlink named `.gitkeep` is not the regular zero-byte file defined by the
 convention and must not receive its exemption. A directory named `.gitkeep`
@@ -92,3 +92,14 @@ Example group: zone-enumeration
 Version: 1.1
 
 Last updated: 2026-09-20
+
+Co-located Codex snapshots follow the same archival boundary as root snapshots:
+
+| Path | Content | Expected |
+|---|---|---|
+| `codex/internal/sources/policy.txt` | Raw source text | Archival exemption |
+| `codex/external/ge/sources/law.txt` | Raw source text | Archival exemption |
+| `codex/internal/sources/admitted.yaml` | Admission envelope | ADMIT-012 error |
+| `canon/sources/notes.md`, `field/sources/notes.md` | Raw notes | No exemption; ZONE-001 error |
+
+The exception does not cross a nested `transitrix.yaml` catalogue boundary.

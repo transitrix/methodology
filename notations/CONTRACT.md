@@ -330,9 +330,9 @@ A non-exempt file that cannot be validated produces a *finding* (error or warnin
 
 The exemption is a name **and** byte-content check, not a hidden-file rule. A newline, whitespace, byte-order mark, comment, or any other content makes `.gitkeep` nonempty and removes the exemption. A symlink named `.gitkeep` does not qualify as a regular placeholder file. Nonqualifying placeholders MUST be validated or reported under the existing rules: unadmitted metadata produces `ZONE-001` (error in `canon`/`field`, warning in `codex`); a purported admitted artefact in an unsupported format produces `ZONE-003`; malformed model YAML produces `ZONE-002`. Renaming model content to `.gitkeep` cannot make it exempt. `.gitignore`, `.keep`, hidden Markdown, and hidden YAML have no exemption by name, including when empty. Do not invent an admission record for directory metadata; keep repository instructions outside the model zones.
 
-**The `sources/` exception.** The `codex/sources/` folder holds cited external documents (PDFs, HTML, archived web pages) that are faithful to their sources and are not edited. Files in `sources/` are never validation-checked and are not enumerated as zone artefacts — they are purely archival. A `sources/` file carrying an admission record is a configuration error (the two intentions are contradictory) and is reported as an `ADMIT-012` error.
+**The `sources/` exception.** The `sources/` folders within `codex/` hold cited external documents (PDFs, HTML, archived web pages) that are faithful to their sources and are not edited. Files in `sources/` are never validation-checked and are not enumerated as zone artefacts — they are purely archival. A `sources/` file carrying an admission record is a configuration error (the two intentions are contradictory) and is reported as an `ADMIT-012` error.
 
-The archival exception applies only to `codex/sources/` and its descendants, not to `canon/sources/`, `field/sources/`, or an arbitrary directory named `sources`. It does not waive `ADMIT-012`.
+The archival exception applies to `codex/sources/` and to co-located snapshot folders such as `codex/internal/sources/` and `codex/external/ge/sources/`, including their descendants. This matches [Codex section 3.1](elements/14-codex.md#31-snapshots): a snapshot may live beside its referring YAML and `snapshot_file` remains relative to that YAML. It does not apply outside `codex/`, including `canon/sources/`, `field/sources/`, or another zone's directory named `sources`. It does not waive `ADMIT-012` or the independent-catalogue boundary. Existing snapshot bytes and relative references need no migration.
 
 **What this ensures:** A repository with `0` validation warnings and `0` unenumerated files means its entire zone contents are in one of two states: validated against a published notation, or formally documented as outside the scope of validation. A consumer can trust that no file was silently skipped.
 
@@ -345,7 +345,7 @@ The archival exception applies only to `codex/sources/` and its descendants, not
 | `ZONE-001` | error | Non-exempt file in `<zone>/` has no admission record and does not match any published notation schema. (Error in `canon` and `field` zones; warning in `codex` — see §6.5 prose.) |
 | `ZONE-002` | error | Non-exempt file in `<zone>/` is not valid YAML (syntax error, not a mapping). |
 | `ZONE-003` | error | File in `<zone>/` has an admission record but the file format (extension or structure) does not match any published notation that admits records. |
-| `ADMIT-012` | error | File in `codex/sources/` carries an admission record (`zone`, `admitted_at`, etc.). The `sources/` folder is archival; files there are not validated or admitted. |
+| `ADMIT-012` | error | File in a `sources/` archive within `codex/` carries an admission record (`zone`, `admitted_at`, etc.). The `sources/` folder is archival; files there are not validated or admitted. |
 
 ---
 
