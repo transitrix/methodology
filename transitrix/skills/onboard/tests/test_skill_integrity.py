@@ -124,15 +124,8 @@ def check_bundle_integrity():
             check(isinstance(doc, dict) and key in doc, f"templates/transitrix.yaml missing key: {key}")
 
 
-# ── Goals structural validation — stand-in for @transitrix/diagrams validateGoals ─
-# @transitrix/diagrams is not vendored into this repo (it ships separately), so we
-# assert the structural invariants the canonical validateGoals enforces for the
-# v2.0 pure-projection shape (notations/views/04-goals.md §6): the view document
-# carries only a view_config over standalone GOAL element files; inline `goals[]`
-# at document root is a hard error (GOALS-008). Element-level checks (parent
-# cycles, type↔level consistency, ID grammar per goal) live on the standalone
-# element files and are out of scope for a single-file view validator. When the
-# package is available in CI, swap for the real parser (see tests/README.md).
+# ── Goals structural smoke check (inline and projection forms) ──────────────
+# This guard checks the starter shape, not the full published CLI semantics.
 
 def validate_goals(doc):
     errs = []
@@ -145,31 +138,25 @@ def validate_goals(doc):
         errs.append(f"document id {gid!r} violates the canonical ID grammar (GOALS-002)")
     if not doc.get("name"):
         errs.append("document `name` is missing or empty (GOALS-003)")
-    if "methodology_version" not in doc:
-        errs.append("`methodology_version` is required from v2.0 (04-goals.md §5)")
-    if "goals" in doc:
-        errs.append("inline `goals[]` at document root — not accepted from v2.0 (GOALS-008); "
-                    "GOAL elements are standalone files under canon/elements/01_motivation/goals/")
-
     vc = doc.get("view_config")
     if vc is not None and not isinstance(vc, dict):
         return errs + ["view_config is present but is not a YAML mapping"]
 
-    goal_types = (vc or {}).get("goal_types")
+    goal_types = doc.get("goal_types") if "goals" in doc else (vc or {}).get("goal_types")
     type_levels = {}
     if goal_types is not None:
         if not isinstance(goal_types, list) or not goal_types:
-            errs.append("view_config.goal_types[] is present but empty (GOALS-004)")
+            errs.append("goal_types[] is present but empty (GOALS-004)")
         else:
             for i, t in enumerate(goal_types):
                 if not (isinstance(t, dict) and t.get("name") and isinstance(t.get("level"), int)):
-                    errs.append(f"view_config.goal_types[{i}] missing `name` or non-integer `level` (GOALS-004)")
+                    errs.append(f"goal_types[{i}] missing `name` or non-integer `level` (GOALS-004)")
                 else:
                     type_levels[t["name"]] = t["level"]
             levels = sorted(t["level"] for t in goal_types
                             if isinstance(t, dict) and isinstance(t.get("level"), int))
             if levels and levels != list(range(len(levels))):
-                errs.append(f"view_config.goal_types[].level values {levels} are not contiguous starting at 0 (GOALS-005)")
+                errs.append(f"goal_types[].level values {levels} are not contiguous starting at 0 (GOALS-005)")
 
     scope = (vc or {}).get("scope") or {}
     type_filter = scope.get("type_filter")
@@ -177,6 +164,22 @@ def validate_goals(doc):
         for name in type_filter:
             if name not in type_levels:
                 errs.append(f"view_config.scope.type_filter value {name!r} is not declared in goal_types[] (GOALS-007)")
+
+    if "goals" in doc:
+        goals = doc["goals"]
+        if not isinstance(goals, list) or not goals:
+            errs.append("inline goals must be a non-empty list")
+        else:
+            for goal in goals:
+                if not isinstance(goal, dict):
+                    errs.append("inline goal must be a mapping")
+                    continue
+                if not ID_RE.fullmatch(str(goal.get("id", ""))):
+                    errs.append("inline goal needs a canonical id")
+                if not goal.get("name"):
+                    errs.append("inline goal needs a name")
+                if goal.get("type") not in type_levels or type_levels.get(goal.get("type")) != goal.get("level"):
+                    errs.append("inline goal type and level must match goal_types")
 
     return errs
 
@@ -186,7 +189,7 @@ def validate_goals(doc):
 ZONE_SKELETON = [
     "canon/elements/01_motivation", "canon/elements/02_business",
     "canon/elements/03_application", "canon/elements/04_technology",
-    "canon/views/goals", "field/interviews", "codex/external", "codex/internal",
+    "views/goals", "field/interviews", "codex/external", "codex/internal",
 ]
 
 
@@ -215,7 +218,7 @@ def check_clean_install_goals_path():
             dest = os.path.join(repo, ".github") if f == "copilot-instructions.md" else repo
             os.makedirs(dest, exist_ok=True)
             shutil.copyfile(os.path.join(tdir, f), os.path.join(dest, f))
-        goals_dest = os.path.join(repo, "canon/views/goals/strategy-2026.goals.transitrix.yaml")
+        goals_dest = os.path.join(repo, "views/goals/strategy-2026.goals.transitrix.yaml")
         shutil.copyfile(os.path.join(tdir, "goals.goals.transitrix.yaml"), goals_dest)
 
         # 4. Assertions.
@@ -225,21 +228,40 @@ def check_clean_install_goals_path():
               "skeleton missing AGENTS.md at repo root")
         check(os.path.isfile(os.path.join(repo, ".github/copilot-instructions.md")),
               "skeleton missing .github/copilot-instructions.md")
-        for d in ("canon", "field", "codex"):
+        for d in ("canon", "views", "field", "codex"):
             check(os.path.isdir(os.path.join(repo, d)), f"skeleton missing {d}/ zone")
         check(os.path.isfile(goals_dest), "starter Goals file was not authored")
 
         if os.path.isfile(goals_dest):
-            errs = validate_goals(_load_yaml(goals_dest))
+            doc = _load_yaml(goals_dest)
+            check(bool(doc.get("goals")), "starter must contain a visible inline goal")
+            check(not os.path.exists(os.path.join(repo, "canon/views")),
+                  "new scaffold must not create legacy canon/views")
+            errs = validate_goals(doc)
             for e in errs:
                 check(False, f"authored Goals file fails validation: {e}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
 
+def check_goals_forms():
+    doc = _load_yaml(os.path.join(SKILL_DIR, "templates", "goals.goals.transitrix.yaml"))
+    check(not validate_goals(doc), "inline starter must pass structural checks")
+    projection = {key: value for key, value in doc.items() if key not in ("goals", "goal_types")}
+    projection["view_config"] = {"goal_types": doc["goal_types"], "scope": {"type_filter": ["Strategy"]}}
+    check(not validate_goals(projection), "explicit projection must remain supported")
+    projection["view_config"]["scope"]["type_filter"] = ["Unknown"]
+    check(bool(validate_goals(projection)), "undeclared projection type filter must fail")
+    doc["goals"][0]["level"] = 1
+    check(bool(validate_goals(doc)), "inline goal with mismatched type/level must fail")
+    doc["goals"] = []
+    check(bool(validate_goals(doc)), "empty inline starter must fail")
+
+
 def main():
     check_bundle_integrity()
     check_clean_install_goals_path()
+    check_goals_forms()
     if _failures:
         print(f"FAIL — {len(_failures)} check(s) failed:\n")
         for f in _failures:
