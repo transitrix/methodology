@@ -135,6 +135,17 @@ try {
   assert.equal(loaded, false);
   assert.deepEqual(await snapshot(root), before, 'queries must preserve Git, records and all retained bytes');
   assert.deepEqual(structuredClone(bundle), originalBundle, 'adapter input must not mutate');
+  const blob = git('rev-parse', `${base}:canon/elements/REQ-14.yaml`);
+  const objectPath = join(root, '.git/objects', blob.slice(0, 2), blob.slice(2));
+  const objectBytes = await readFile(objectPath);
+  await rm(objectPath);
+  result = await query({ kind: 'review', id: 'REQ-14', target: base });
+  assert(result.records.every(r => r.review === 'unknown' && r.findings.some(f => f.reason === 'history-unavailable')));
+  await writeFile(objectPath, objectBytes);
+  const membership = structuredClone(bundle);
+  membership.observed.closure.input_ids.push('path:canon/elements');
+  result = await query({ kind: 'review', id: 'REQ-14', target: unrelated }, { observe: async () => membership });
+  assert(result.records.every(r => r.review === 'review-needed'), 'dynamic membership changes remain relevant');
   // Retained A is selected by its own identity; later actual reviews of A or B
   // remain independent external evidence and never select or mint an edition.
   const outputA = Buffer.from('Synthetic retained RP-17 A; original content');

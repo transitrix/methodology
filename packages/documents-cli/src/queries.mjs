@@ -11,10 +11,11 @@ const oid = v => typeof v === 'string' && /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test
 const hash = bytes => hashBytes(bytes).slice(7);
 const unknown = reason => ({ status: 'incomplete', reason, matches: [], records: [] });
 const json = bytes => JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
-function git(root, ...args) {
+function gitInput(root, args, input) {
   return execFileSync('git', ['--no-optional-locks', '-C', root, ...args],
-    { env: { ...process.env, GIT_NO_LAZY_FETCH: '1', GIT_NO_REPLACE_OBJECTS: '1' }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 32 * 1024 * 1024 });
+    { input, env: { ...process.env, GIT_NO_LAZY_FETCH: '1', GIT_NO_REPLACE_OBJECTS: '1' }, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 32 * 1024 * 1024 });
 }
+const git = (root, ...args) => gitInput(root, args);
 function commit(root, value) {
   if (!oid(value) || git(root, 'rev-parse', '--verify', `${value}^{commit}`).trim() !== value) throw new Error('history unavailable');
   return value;
@@ -27,6 +28,13 @@ function tree(root, revision) {
     const [mode, kind, object] = meta.split(' ');
     if (!path || kind !== 'blob' || !['100644', '100755'].includes(mode)) throw new Error('unsupported tree entry');
     result.set(path, object);
+  }
+  if (result.size) {
+    const objects = [...new Set(result.values())];
+    const available = gitInput(root, ['cat-file', '--batch-check=%(objectname) %(objecttype)'], `${objects.join('\n')}\n`).trim().split('\n');
+    if (available.length !== objects.length || available.some((line, i) => line !== `${objects[i]} blob`)) {
+      throw new Error('retained blobs unavailable');
+    }
   }
   return result;
 }
