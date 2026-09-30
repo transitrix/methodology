@@ -43,3 +43,9 @@ snapshot. Unclassified, unassigned, invalid and unresolved are different states.
 The six categories overlap. Neither cardinality nor a child's passing test proves
 a parent's completion. See the [worked example](../notations/examples/requirement-chain/README.md)
 for the exact expected populations and drill-downs.
+
+For review of application membership, separate subject identities and physical
+products, see the [proposed subject-scope extension](../notations/views/reports/requirement-subject-scope.md)
+and its [synthetic subject cases](../notations/examples/requirement-subject-scope/README.md).
+The extension is provisional; it does not replace requirement-chain/0.2 or declare
+new relation kinds supported by existing tools.
