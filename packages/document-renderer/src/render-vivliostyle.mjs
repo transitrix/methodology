@@ -31,7 +31,8 @@ function escapeHtml(text) {
  *
  * @param {object} metadata - Document metadata
  * @param {string} metadata.issuer - Who created the document
- * @param {string} metadata.issued_at - ISO 8601 timestamp
+ * @param {string} metadata.issued_at - Issue timestamp with explicit offset; formatted in UTC.
+ *   When present, retains the footer on every page, including the first.
  * @param {string} metadata.document_identity - Recipe ID or document identifier
  * @param {string} [metadata.repository_commit] - Git commit hash
  * @param {array} [metadata.views] - View specifications with width/height
@@ -52,6 +53,7 @@ export function generatePagedMediaCss(metadata = {}) {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
+        timeZone: 'UTC',
       });
     } catch {
       // ignore invalid date
@@ -98,11 +100,11 @@ export function generatePagedMediaCss(metadata = {}) {
   }
 }
 
-@page :first {
+${metadata.issued_at ? '' : `@page :first {
   @bottom-center {
     content: "";
   }
-}
+}`}
 
 @page :left {
   margin-right: 20mm;
@@ -238,7 +240,8 @@ ${wideViewsCss}
 /**
  * Format figure captions to include snapshot build dates.
  * Finds all <figure> elements with data-snapshot-id attributes and appends
- * the snapshot's generated_at timestamp to the caption.
+ * the snapshot's captured-at generated_at timestamp to the caption, formatted in UTC.
+ * Supply timestamps with explicit offsets; renderDate (valid-at) is not a fallback.
  *
  * @param {string} html - HTML content with figure elements
  * @param {object} snapshots - Map of snapshot IDs to snapshot objects with generated_at
@@ -265,6 +268,7 @@ export function formatFigureCaptions(html, snapshots = {}) {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
+            timeZone: 'UTC',
           });
         }
       } catch {
