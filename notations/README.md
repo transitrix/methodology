@@ -2,6 +2,10 @@
 
 Transitrix is a text-native methodology: every architecture artefact lives in a YAML (or Svgbob) file whose syntax is governed by one of the notations below. The folder splits the notations by kind: **view notations** describe render-able diagrams (`*.transitrix.yaml` files that a tool can lay out into a picture); **element notations** describe canon-zone primitives (standalone elements that other notations reference). This index lists both, what each is for, and how the strategy-chain family fits together.
 
+For the shared envelope and GOAL, ACTION, REQUIREMENT and VERIFICATION fields,
+see [Reading fields by purpose](field-purpose.md): source data, provenance,
+admission history and derived diagnostics, with worked readings.
+
 ## Views
 
 The view notations live under [`views/`](views/), split by class into a folder per class — [`diagrams/`](views/diagrams/), [`reports/`](views/reports/), and [`documents/`](views/documents/) — so a spec's class is a filesystem fact, not a table position. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
