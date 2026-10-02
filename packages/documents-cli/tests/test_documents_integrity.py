@@ -61,10 +61,12 @@ def main():
         temp = Path(temp)
         # Verify the distributable, not a fake validator or source-tree symlink.
         packed = json.loads(success("npm", "pack", "--json", "--pack-destination", temp, cwd=PACKAGE))
+        renderer = json.loads(success("npm", "pack", "--json", "--pack-destination", temp,
+                                      cwd=ROOT / "packages/document-renderer"))
         root = temp / "adopter"
         root.mkdir()
         success("npm", "install", "--ignore-scripts", "--no-audit", "--no-fund",
-                "--prefix", root, temp / packed[0]["filename"])
+                "--prefix", root, temp / packed[0]["filename"], temp / renderer[0]["filename"])
         manifest = f'transitrix: 1\nmethodology_version: "{VERSION}"\ncoverage_profile: core\n'
         (root / "transitrix.yaml").write_text(manifest + "packages: [documents]\n")
         # Two admitted synthetic goals, including an actual core-to-core reference.
@@ -156,6 +158,7 @@ def main():
         write(docpath, doc)
 
         print(success("node", PACKAGE / "tests/test_events.mjs", root))
+        print(success("node", PACKAGE / "tests/test_queries.mjs", root))
 
         canon_before = snapshot(root / "canon")
         shutil.rmtree(root / "documents")
