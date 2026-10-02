@@ -405,196 +405,81 @@ automatic submission, signing or timestamp-provider integration.
 
 ## 10. Traceability queries — bidirectional document-model linkage
 
-The DMS integration produces three derived queries that enable computable traceability between issued documents and the model elements they cite. These queries run on demand against run records and snapshot manifests, with no persistent storage or index beyond what those two artefacts provide (§10.5).
+The optional documents package exposes `queryIssuedDocuments` from
+`@transitrix/documents-cli/src/queries.mjs`. It enumerates retained issuance events
+(§8), loads their exact flat run records (§9.4), checks explicit baseline bindings
+and reads historical Git objects. It reuses the renderer's
+[`checkDocumentProvenance`](../../packages/document-renderer/PROVENANCE.md).
+See the [query interface and adapter contract](../../packages/documents-cli/README.md#querying-retained-issuance-events)
+for installation, baseline JSON, authorization and complete arguments.
 
-### 10.1 Query 1: Documents citing an element
+### 10.1 Element → issued documents
 
-**Purpose:** Given a model state (git commit) and an element ID, find all issued documents that cite that element.
+`query: { kind: 'element', id: elementId }` examines every retained event in the
+selected register. Matching events name their exact document and edition, run
+and baseline pointers, recipe and observed input closure. Multiple handoffs are
+returned separately. It does not infer issuance from a render or choose the latest
+edition by date. Run `slots[].attributions` are reported separately from complete
+input closure: a matching input need not be quoted verbatim in the output.
 
-**Signature:**
-```
-documents_citing_element(commit: string, element_id: string) 
-  -> List[{document_id, document_version, rendered_at, recipe_id}]
-```
+### 10.2 Changed element → review of issued documents
 
-**Inputs:**
-- `commit`: Git commit hash at which to query the model state (e.g. `a1b2c3d4…`).
-- `element_id`: A core element ID in grammar-valid form per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1 (e.g. `CAPABILITY-V2`, `REQUIREMENT-sched-auth-1`).
+`query: { kind: 'review', id: elementId, target: exactCommit }` compares each
+issued baseline with an explicit full target commit. Changes include **content
+modifications**, additions, deletions and moves; changed element IDs are read from
+both Git trees. Path dependencies include directory membership, so a retained
+observer can account for dynamic selections. Moves conservatively require review.
 
-**Output:** An array of document records, each carrying:
-- `document_id`: The document's package id (`doc-…` per §2.2).
-- `document_version`: SemVer version of that document instance.
-- `rendered_at`: ISO 8601 UTC timestamp when the document was issued.
-- `recipe_id`: The recipe that rendered this document.
-- `recipe_version`: Version of the recipe.
+Within a complete independently observed closure, intersection yields
+`review-needed`; nonintersection yields `no-relevant-change`. The selected element
+must itself have changed for the event to appear in `matches`; the per-event review
+result considers every input in its closure. Missing history, closure, retained
+bytes or binding yields `unknown`. No dates, wall-clock stale-since value or
+persistent stale flag is computed. A review result describes Git evidence, not
+proof that an edition is invalid or permission to regenerate it.
 
-**Evaluation:**
-1. Enumerate all run records where `repository.commit` is `commit` or an ancestor thereof (within the canonical rendering workflow's lookback window; see §10.5).
-2. For each run record, inspect its `slots[].attributions[]` to identify which elements are cited.
-3. For each document rendered by that run, check its snapshot manifest: if `elements_cited` contains `element_id`, include the document in the result.
+### 10.3 Issued document → model and elements
 
-**Example:**
-```
-documents_citing_element(
-  commit="release-2026-q3", 
-  element_id="CAPABILITY-V2"
-) 
--> [
-  {
-    document_id: "doc-srs-v2-1",
-    document_version: "2.0",
-    rendered_at: "2026-09-02T14:30:00Z",
-    recipe_id: "product.srs",
-    recipe_version: "1.0"
-  }
-]
-```
+`query: { kind: 'document', id: documentId }` returns **all** retained handoffs for
+that document, preserving the explicitly recorded edition and release association.
+It reports the repository identity, exact baseline commit, run attributions and
+observed input closure. The generated-prose `model_id` is not the model repository
+identity. No current checkout, latest review, edition label or timestamp substitutes
+for a historical binding. A/B retention, independent unchanged reviews without C,
+and explicit release/B association remain as illustrated by
+[RP-17](../examples/packages/rp17.md); proposed semantic validators remain proposed.
 
-**Called from:** Adopter dashboards, internal audit tools, downstream DMS traceability queries (e.g. "which documents cite this capability?").
+### 10.4 Unknown and conflict semantics
 
-### 10.2 Query 2: Documents affected by a model change
+Results contain `status`, `matches`, per-event `records` and enumeration `failures`.
+Malformed/unreadable rows cannot silently become nonmatches. A missing register,
+unknown document, unavailable baseline/history or absent closure returns
+`incomplete`, never an empty successful result. Contradictory document, run,
+baseline, output or release bindings remain `inconsistent` even if an individual
+hash or review check passes. `match` and `review` retain explicit unknown states.
+Matching hashes and associations never establish actual generation, so a known
+review result can coexist with incomplete overall provenance.
 
-**Purpose:** Given an element ID that was deleted or moved, find all issued documents that are now potentially stale because they cited the old element state.
+### 10.5 Retention and execution boundary
 
-**Signature:**
-```
-stale_documents_for_change(element_id: string, change_type: enum["deleted", "moved"]) 
-  -> List[{document_id, document_version, last_rendered_at, stale_since}]
-```
+Queries read an adopter-selected immutable register snapshot, retained evidence
+and explicit committed Git states. They do not write source files, event rows,
+run records, outputs, indexes, element inventories, stale flags or audit logs.
+They enumerate the complete selected register without an implicit lookback window.
+The adopter owns retention and authorization; no result claims completeness for
+records outside that selected retained scope. Reads and tree comparisons occur
+on demand; no performance promise or persistent cache is part of the contract.
 
-**Inputs:**
-- `element_id`: The core element ID that changed (e.g. `REQUIREMENT-auth-1`).
-- `change_type`: The nature of the change — `"deleted"` if the element no longer exists in `canon/`, or `"moved"` if it was renamed or reclassified.
+### 10.6 Supported surface
 
-**Output:** An array of stale-document records, each carrying:
-- `document_id`: The document's package id.
-- `document_version`: SemVer version of the document instance.
-- `last_rendered_at`: ISO 8601 UTC timestamp when the document was last issued.
-- `stale_since`: ISO 8601 UTC timestamp of the commit that deleted/moved the element.
-- `recommendation`: One of `"re-render"`, `"retire"`, or `"review"` (based on time elapsed since render, per DMS policy).
-
-**Evaluation:**
-1. Query git history to find the commit where `element_id` was deleted or moved.
-2. Enumerate all run records where `repository.commit` is before that deletion commit.
-3. For each run record, check all documents it rendered: if the snapshot manifest's `elements_cited` contains `element_id`, the document is stale.
-4. Return all stale documents, sorted by `last_rendered_at` (oldest first).
-
-**Example:**
-```
-stale_documents_for_change(
-  element_id="REQUIREMENT-auth-1",
-  change_type="deleted"
-)
--> [
-  {
-    document_id: "doc-srs-v2-1",
-    document_version: "2.0",
-    last_rendered_at: "2026-09-01T10:00:00Z",
-    stale_since: "2026-09-02T08:45:00Z",
-    recommendation: "re-render"
-  }
-]
-```
-
-**Called from:** Adopter DMS on model change events, CI/CD workflows that flag stale documents, change-impact dashboards.
-
-### 10.3 Query 3: Document provenance and elements
-
-**Purpose:** Given an issued document ID, retrieve the model state it was rendered from, its render metadata, and the complete list of elements it cites.
-
-**Signature:**
-```
-document_provenance(document_id: string) 
-  -> {
-    document_version, 
-    rendered_at, 
-    recipe_id, 
-    recipe_version, 
-    baseline_commit, 
-    methodology_version, 
-    elements_cited: List[string], 
-    run_record: object
-  }
-```
-
-**Inputs:**
-- `document_id`: The document's package id (`doc-…` per §2.2).
-
-**Output:** A single document-provenance record carrying:
-- `document_version`: SemVer version of the document.
-- `rendered_at`: ISO 8601 UTC timestamp when rendered.
-- `recipe_id`: The recipe that produced this document.
-- `recipe_version`: Version of the recipe.
-- `baseline_commit`: Git commit hash of the model state that was rendered.
-- `baseline_tag`: Git tag or reference name if the render was tagged (e.g. `release-2026-q3`).
-- `methodology_version`: The Transitrix methodology version the render used.
-- `elements_cited`: Array of core element IDs in `elements_cited` from the snapshot manifest.
-- `run_record`: The full run record JSON (for audit trails and detailed inspection).
-
-**Evaluation:**
-1. Look up the snapshot manifest for `document_id` in the DMS metadata store.
-2. Retrieve the corresponding run record from the same store.
-3. Return the full provenance object.
-
-**Example:**
-```
-document_provenance("doc-srs-v2-1")
--> {
-  document_version: "2.0",
-  rendered_at: "2026-09-02T14:30:00Z",
-  recipe_id: "product.srs",
-  recipe_version: "1.0",
-  baseline_commit: "a1b2c3d4…",
-  baseline_tag: "release-2026-q3",
-  methodology_version: "7.0.0",
-  elements_cited: ["CAPABILITY-V2", "REQUIREMENT-sched-auth-1"],
-  run_record: { … }
-}
-```
-
-**Called from:** DMS UI (document details pane), adopter integration tools, audit and compliance workflows, document versioning dashboards.
-
-### 10.4 Calling convention and error handling
-
-All three queries are **stateless and demand-computed**. They run synchronously on invocation, with no caching or warming phase.
-
-| Error case | Behavior |
-|---|---|
-| `element_id` not found in any run record | Return empty list (Query 1, 2) or `null` (Query 3). |
-| `commit` not in git history | Return empty list (Query 1). |
-| `document_id` not found in DMS | Return `null` (Query 3). |
-| Run record or snapshot manifest corrupted | Raise `DataIntegrityError` with the affected document id. |
-| Git history unavailable | Raise `GitHistoryError` — queries are offline and fail gracefully if the repository is not accessible. |
-
-### 10.5 Implementation location and performance
-
-**Where they run:**
-- **Primary:** Studio's document-render workflow, after rendering completes and before metadata is handed to the DMS.
-- **Secondary:** The adopter's own integration layer or DMS plugin, querying via a REST API the module exposes (see §10.6).
-- **Offline:** An adopter's internal dashboard or audit tool that has read access to run records and git history but not the DMS.
-
-**Performance characteristics:**
-- Query 1 (documents citing element): O(R × S), where R = number of run records in the lookback window, S = average snapshot size. Typical: < 500ms for 10 years of renders.
-- Query 2 (stale documents): O(R × S × G), where G = git-history depth (worst case: full repo walk to find the deletion commit). Typical: < 2s for 10 years of renders. Mitigation: cache the deletion commit once found.
-- Query 3 (document provenance): O(1) — direct lookup in DMS metadata store.
-
-**No persistent index.** Queries derive results from run records and git history on demand. This trades latency for simplicity: no index to keep in sync, no storage beyond what the DMS already holds, and every result is guaranteed current (never stale cached data).
-
-**Lookback window:** Queries enumerate run records back to the earliest document still in-scope under the adopter's retention policy (see §9.6). The module does not enforce a limit; it is the adopter DMS's responsibility to bound the window (e.g. "only documents from the last 7 years" or "only documents marked 'active'").
-
-### 10.6 API surface — how callers invoke the queries
-
-Each query is a callable function in the module's integration layer, exposed as:
-- **Studio plugin:** `@transitrix/documents-dms-queries` package, imported as `{ documentsForElement, staleDocuments, documentProvenance } from '@transitrix/documents-dms-queries'`.
-- **REST API:** `POST /query/<query-name>` on the adopter's integration endpoint, with JSON body carrying the query inputs.
-- **Python CLI:** `@transitrix/documents-cli query <query-name> <args>` (reference implementation).
-
-Each invocation logs (to the DMS audit trail):
-- Query name
-- Inputs (commit, element id, or document id)
-- Timestamp
-- Caller identity (if available from the calling context)
-- Result count
+The shipped surface is the asynchronous Node.js API in `@transitrix/documents-cli`,
+with `@transitrix/document-renderer` installed as its optional query peer. The
+record/read/validate CLI remains available (§8). There is no shipped query REST
+endpoint, Studio DMS plugin, Python query command or automatic audit logging.
+Adapters own authorized external byte access and independent observer evidence;
+missing adapters produce unknown results, not fabricated observations. Storage,
+workflow, approval, signing, scheduling and provider integration remain outside
+this package.
 
 ---
 
