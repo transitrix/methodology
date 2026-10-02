@@ -18,9 +18,9 @@ The proposed `source_trace` records the deliberate citation. Keep permitted code
 citations in `derived_from`; do not put a driver, raw research ID or documents
 package ID in REQUIREMENT `derived_from`.
 
-Model the product and the project (an ACTION with `type: Project`) before scoping
-requirements. The proposed product/project membership relations name where a
-requirement belongs even before any release exists. `required_for` still answers
+For 0.2 product reports, model the product and the project (an ACTION with
+`type: Project`) before scoping requirements. The proposed product/project
+membership relations name where a requirement belongs even before any release exists. `required_for` still answers
 which release must carry the obligation. A requirement assigned to another release
 is not unassigned; a broken release link needs repair, not a clean unassigned label.
 No script can safely recover membership from matching names or folder placement.
@@ -44,8 +44,9 @@ The six categories overlap. Neither cardinality nor a child's passing test prove
 a parent's completion. See the [worked example](../notations/examples/requirement-chain/README.md)
 for the exact expected populations and drill-downs.
 
-For review of application membership, separate subject identities and physical
-products, see the [proposed subject-scope extension](../notations/views/reports/requirement-subject-scope.md)
+For application membership, separate subject identities and physical
+products, see the [accepted requirement-chain/0.3 subject-scope contract](../notations/views/reports/requirement-subject-scope.md)
 and its [synthetic subject cases](../notations/examples/requirement-subject-scope/README.md).
-The extension is provisional; it does not replace requirement-chain/0.2 or declare
-new relation kinds supported by existing tools.
+The 0.2 contract remains unchanged; 0.3 consumers preserve product calls through an
+explicit compatibility adapter. Use the added relation kinds and PRODUCT value
+only with methodology and consumer versions that declare support.

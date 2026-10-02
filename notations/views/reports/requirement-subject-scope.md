@@ -1,21 +1,22 @@
 ---
 title: "PRODUCT and APPLICATION requirements scope"
-version: "0.1"
-last_updated: "2026-09-30"
-status: "proposal"
+version: "0.3"
+last_updated: "2026-10-02"
+status: "accepted"
 ---
 
 # PRODUCT and APPLICATION requirements scope
 
-**Provisional extension; not an implemented or accepted interface.** This document
-lets analysts review application scope without manufacturing a PRODUCT. It extends
+**Accepted consumer contract: `requirement-chain/0.3`.** This document defines
+application scope without manufacturing a PRODUCT. It extends
 [requirement-chain/0.2](requirement-chain.md), whose contract and
 [worked oracle](../../examples/requirement-chain/README.md) remain unchanged.
 The [subject cases](../../examples/requirement-subject-scope/README.md) specify
-expected IDs conditional on acceptance of the proposals below. No new authoring
-kind or enum is installed by this document.
+the exact expected IDs for this contract. Contract acceptance does not establish
+support in a tool version: author the added kinds and values only when the pinned
+methodology vocabulary, schema and consumer versions declare support.
 
-## Compatibility and decisions
+## Compatibility and accepted extensions
 
 The source baseline is Methodology commit
 `f2f1cfba08b1377ae5c770a56e92aba702afdcdb`. The retained requirement-chain/0.2
@@ -23,19 +24,19 @@ contract and oracle originate at `97c9d41819011ead8fe192c266cba32707eae82f`.
 Source support, projection implementation, contract acceptance and publication
 are separate claims.
 
-| Concern | Existing source contract | Proposed extension / support boundary |
+| Concern | Source contract at the baseline | Accepted extension / support boundary |
 |---|---|---|
 | Subject identity | [Primitives §§7.6–7.7](../../ELEMENT_PRIMITIVES.md) define distinct PRODUCT and APPLICATION. Neither has an internal/external usage discriminator. | Select either TYPE explicitly. Internal use, sale and software/physical form do not choose the subject TYPE. No usage field is needed. |
-| Physical product | PRODUCT `type` is required: `digital_product`, `service`, `platform`, `bundle`; [Products §5](../diagrams/09-products.md) repeats it. | A standalone physical product has no general type value. Proposal P3 below needs a decision; do not disguise it as software or a bundle. |
+| Physical product | PRODUCT `type` is required: `digital_product`, `service`, `platform`, `bundle`; [Products §5](../diagrams/09-products.md) repeats it. | A standalone physical product has no general type value. P3 below supplies the additive value; do not disguise it as software or a bundle. |
 | Release ownership | Primitives §7.29 already admits PRODUCT or APPLICATION in `RELEASE.of`; predecessor must have the same owner. | No endpoint widening needed. Validate exact owner identity, not merely TYPE. |
-| Requirement membership | [Relations §3](../../elements/17-relations.md) admits `product_scope`: REQUIREMENT → PRODUCT. `required_for` points to RELEASE. | Independent application membership is missing. P1 proposes `application_scope`: REQUIREMENT → APPLICATION. Never infer membership from release assignment. |
-| Project selection | `project_scope`: REQUIREMENT → ACTION(Project); `project_product`: ACTION(Project) → PRODUCT. | Keep `project_scope`; P2 proposes `project_application`: ACTION(Project) → APPLICATION. No inferred project from implementation links. |
+| Requirement membership | [Relations §3](../../elements/17-relations.md) admits `product_scope`: REQUIREMENT → PRODUCT. `required_for` points to RELEASE. | Independent application membership is missing. P1 adds `application_scope`: REQUIREMENT → APPLICATION. Never infer membership from release assignment. |
+| Project selection | `project_scope`: REQUIREMENT → ACTION(Project); `project_product`: ACTION(Project) → PRODUCT. | Keep `project_scope`; P2 adds `project_application`: ACTION(Project) → APPLICATION. No inferred project from implementation links. |
 | Product/application connection | PRODUCT `supporting_apps` and APPLICATION `products` describe support. | Context only; neither conveys requirement membership, assignment nor verification. |
 | Trace graph and metrics | requirement-chain/0.2 §§5–7 define trace direction, direct verification and six metrics. | Reuse unchanged, substituting explicit subject membership for product membership. Cross-subject trace context never changes counts. |
 | Obligation inheritance | Relations §3.2 and [reference query](../../../scripts/release-obligations.mjs) retain active requirements and nearest predecessor attachment. | Same-owner validation and completeness must surround the query; its scalar loader and cycle-safe walk are not a complete report validator. |
-| Validation | [Contract §8](../../CONTRACT.md) specifies RELEASE-001–005 and REL endpoint/window rules; requirement-chain/0.2 §9 adds consumer obligations. | Tables are not proof of runtime support. New kinds require coordinated vocabulary, schema, endpoint validation and consumer capability changes after acceptance. |
+| Validation | [Contract §8](../../CONTRACT.md) specifies RELEASE-001–005 and REL endpoint/window rules; requirement-chain/0.2 §9 adds consumer obligations. | Tables are not proof of runtime support. New kinds require coordinated vocabulary, schema, endpoint validation and consumer capability changes before a consumer declares support. |
 
-Concrete proposals requiring explicit acceptance:
+The accepted extensions are:
 
 - **P1:** add only `application_scope`, REQUIREMENT → APPLICATION, using the
   ordinary admitted REL envelope, one endpoint pair per record, inclusive window,
@@ -46,23 +47,22 @@ Concrete proposals requiring explicit acceptance:
   selection; it does not confer requirement membership on either endpoint.
 - **P3:** add `physical_product` to the PRODUCT `type` vocabulary in the primitive,
   product view and corresponding consumer schemas. It classifies a product form,
-  not its audience. This is a proposed additive value, unusable until accepted;
-  no new physical TYPE or internal/external enum is proposed.
-- **P4:** version the expanded consumer interface as `requirement-chain/0.3` only
-  after acceptance. Accept an explicit `{subject: {id, type}, release, project?,
+  not its audience. This is an additive value; it introduces no new physical TYPE
+  or internal/external enum.
+- **P4:** version the expanded consumer interface as `requirement-chain/0.3`.
+  Accept an explicit `{subject: {id, type}, release, project?,
   as_at, catalogue_boundary, snapshot}`. Preserve 0.2 product calls through an
   explicit adapter and reject conflicting product/subject selectors. Do not
   silently advertise 0.3 from a picker change or unknown-field tolerance.
 
 These choices minimize changes to existing product consumers. Generalizing
 `product_scope` to accept APPLICATION would contradict its published endpoint
-and require a different compatibility decision. Rejecting P1 or P2 requires an
-explicit replacement membership/pair contract before application behavior.
+and require a different compatibility contract.
 
 ## Population contract
 
 Let `P` be the selected subject's active requirements with an active valid explicit
-membership: `product_scope` for PRODUCT, proposed `application_scope` for
+membership: `product_scope` for PRODUCT, `application_scope` for
 APPLICATION. Keep the existing `P` output name for compatibility; label it
 **subject population**. A requirement may explicitly belong to both subjects,
 but the subjects remain distinct. Missing, malformed or unreadable membership
@@ -151,5 +151,6 @@ that graph and never recalculate populations. Cache keys include explicit subjec
 TYPE/ID, release, optional project, date, catalogue and content provenance. Refresh
 publishes one new projection atomically; failed reads retain an explicitly stale
 snapshot or unavailable state. Consumer support requires exact contract/oracle
-revision binding and automated positive/negative evidence; this proposal supplies
-neither implementation support nor acceptance by itself.
+revision binding and automated positive/negative evidence against all four subject
+cases and their independent controls. A consumer must declare its supported
+contract version separately from the version of this document.

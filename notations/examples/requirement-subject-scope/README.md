@@ -1,11 +1,12 @@
 # Requirements subject scope — synthetic oracle
 
-**Illustrative, provisional normalized records.** These cases accompany the
-[subject-scope proposal](../../views/reports/requirement-subject-scope.md).
+**Normalized records for the accepted `requirement-chain/0.3` contract.** These
+cases accompany the [subject-scope contract](../../views/reports/requirement-subject-scope.md).
 They extend the [unchanged 0.2 oracle](../requirement-chain/README.md) by explicit
 substitution, not by reconstructing its records or introducing a storage format.
-Analysts use the exact lists to interpret report scope. Proposed kinds and values
-are conditional on acceptance; these are not catalogues accepted by current tools.
+Analysts use the exact lists to interpret report scope. These normalized examples
+specify consumer behavior; they are not directly loadable catalogue files. Tool
+support for the added kinds and values must be declared by the pinned versions.
 
 ## Four independent cases
 
@@ -18,9 +19,9 @@ simultaneously to every record and expected result, including controls:
 
 | Case / snapshot | Alpha subject replacing PRODUCT-ALPHA-1 | Beta subject replacing PRODUCT-BETA-1 | Membership and pair kinds |
 |---|---|---|---|
-| Internal application / subject-app-1 | APPLICATION-ALPHA-1, `type: application`, name Internal planning application | APPLICATION-BETA-1, `type: application` | Replace `product_scope` with proposed `application_scope`; `project_product` with proposed `project_application`. |
+| Internal application / subject-app-1 | APPLICATION-ALPHA-1, `type: application`, name Internal planning application | APPLICATION-BETA-1, `type: application` | Replace `product_scope` with `application_scope`; `project_product` with `project_application`. |
 | Internal product / subject-internal-1 | PRODUCT-ALPHA-1, `type: service`, name Internal records service | PRODUCT-BETA-1, `type: service` | Keep both existing kinds. |
-| Physical product / subject-physical-1 | PRODUCT-ALPHA-1, proposed `type: physical_product`, name Sample sensor | PRODUCT-BETA-1, proposed `type: physical_product` | Keep both existing kinds; subject admission awaits P3. |
+| Physical product / subject-physical-1 | PRODUCT-ALPHA-1, `type: physical_product`, name Sample sensor | PRODUCT-BETA-1, `type: physical_product` | Keep both existing kinds; use the additive PRODUCT value from P3. |
 | SaaS / subject-saas-1 | PRODUCT-ALPHA-1, `type: digital_product`, name Sample hosted planning product | PRODUCT-BETA-1, `type: digital_product` | Keep both existing kinds. |
 
 Names describe use, not additional authored fields. Release IDs A1–A3/B1–B2,
@@ -39,9 +40,9 @@ mapping in provenance. Tuple shorthand never becomes an authored field or TYPE.
 
 ## Exact baseline results for each case
 
-These expected sets apply separately to all four cases after their proposals are
-accepted. Prior to acceptance an unsupported subject/kind yields unsupported
-scope, not these numbers. Physical-product admission must remain visibly pending.
+These expected sets apply separately to all four cases for a consumer implementing
+0.3. A consumer that does not support a subject, kind or value must expose unsupported
+scope rather than return these numbers or silently reinterpret the records.
 
 | Population | Exhaustive IDs |
 |---|---|
