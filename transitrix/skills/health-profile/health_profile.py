@@ -1,334 +1,300 @@
 #!/usr/bin/env python3
-"""
-Transitrix Adoption Health Profile Scanner
-
-Measures how effectively a Transitrix adoption is working by computing five
-instrumental indicators from two independent records each. Produces a markdown
-report showing the denominator (file classification), all indicators with both
-readings (precision and diagnosis), and actionable findings.
-
-Usage:
-  python health_profile.py [--repo <path>] [--out <file.md>]
-"""
-
-import os
-import sys
-import json
-import yaml
+"""Informational, evidence-bound subset of the six-indicator health profile."""
 import argparse
-import subprocess
+from collections import Counter, defaultdict
+from datetime import date, datetime, timezone
+import hashlib
+import importlib.util
+import json
+import math
+import os
 from pathlib import Path
-from datetime import datetime, timedelta
-from collections import defaultdict
 import re
+import subprocess
+import sys
 
-def find_repo_root(start_path="."):
-    """Find the root of a Transitrix repository (has transitrix.yaml)."""
-    current = Path(start_path).resolve()
-    for _ in range(10):  # Limit depth
-        if (current / "transitrix.yaml").exists():
-            return current
-        parent = current.parent
-        if parent == current:
-            return None  # Reached filesystem root
-        current = parent
-    return None
+import yaml
 
-def load_yaml(path):
-    """Load a YAML file, returning None if not found or invalid."""
+RULES = "health-profile/2"
+REFERENCE_FIELDS = ("parent", "goals", "delivers_changes", "predecessors", "owner_role")
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def iso_date(value):
+    # CONTRACT dates are quoted ISO calendar dates; do not silently coerce YAML dates.
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError("expected a quoted YYYY-MM-DD date")
+    return date.fromisoformat(value)
+
+
+def result(status, population, numerator=None, denominator=None, **details):
+    return dict(status=status, population=population, numerator=numerator,
+                denominator=denominator, **details)
+
+
+def git_read(root, *args):
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
-    except:
+        p = subprocess.run(["git", "-C", str(root), *args], capture_output=True,
+                           text=True, timeout=5, check=False)
+        return p.stdout.strip() if p.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
         return None
 
-def get_file_mtime_days(path):
-    """Get days since file was last modified."""
-    try:
-        mtime = os.path.getmtime(path)
-        age_seconds = time.time() - mtime
-        return age_seconds / (24 * 3600)
-    except:
-        return None
-
-def get_git_log_date(repo_path, file_path):
-    """Get the date of the last git commit that touched this file."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%aI", file_path],
-            cwd=repo_path,
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            # Parse ISO format date
-            date_str = result.stdout.strip()
-            dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-            age = datetime.now(dt.tzinfo) - dt
-            return age.days
-    except:
-        pass
-    return None
 
 class HealthProfileScanner:
-    """Scans a Transitrix repository and computes adoption-health indicators."""
+    def __init__(self, repo_path, effective_date=None, scope=None):
+        self.root = Path(repo_path).resolve()
+        self.effective_date = iso_date(effective_date or datetime.now(timezone.utc).date().isoformat())
+        self.scope = Path(scope).resolve() if scope else None
+        self.files = {k: [] for k in ("read", "out_of_scope", "unread_marker", "foreign")}
+        self.failures = []
+        self.records = []
+        self.hashes = {}
+        self.skipped = []
 
-    # Transitrix notations and their file patterns
-    NOTATIONS = {
-        'goals': r'\.goals\.transitrix\.yaml$',
-        'dgca': r'\.dgca\.transitrix\.yaml$',
-        'process': r'\.process\.transitrix\.yaml$|\.bpmn\.transitrix\.yaml$',
-        'capability': r'\.capability-map\.transitrix\.yaml$',
-        'scenario': r'\.scenario\.transitrix\.yaml$',
-        'action': r'\.action\.transitrix\.yaml$',
-        'blocks': r'\.blocks\.transitrix\.yaml$',
-        'application': r'\.application-catalogue\.transitrix\.yaml$',
-        'product': r'\.product-catalogue\.transitrix\.yaml$',
-        'compliance': r'\.compliance-impact\.transitrix\.yaml$|\.coverage-metric\.transitrix\.yaml$',
-        'elements': r'^([^/]*/)*(canon|field)/[^/]+\.(process|goal|driver|assessment|requirement|term|principle|law|regulation|internal_standard|standard|policy|application|product|release|business_object|actor|role|stakeholder)\.(yaml|yml)$',
-        'relations': r'^([^/]*/)*(canon|field)/(internal/)?relations/[^/]+\.yaml$',
-    }
-
-    def __init__(self, repo_path):
-        """Initialize scanner for a repository."""
-        self.repo_path = Path(repo_path).resolve()
-        self.results = {
-            'read': [],
-            'out_of_scope': [],
-            'unread_marker': [],
-            'foreign': [],
-        }
-        self.indicators = {}
-        self.scope_config = None
+    def read_yaml(self, path):
+        if path.is_symlink():
+            raise ValueError("configuration or input must not be a symbolic link")
+        raw = path.read_bytes()
+        self.hashes[path.relative_to(self.root).as_posix()] = digest(raw)
+        return yaml.safe_load(raw.decode("utf-8"))
 
     def scan(self):
-        """Scan the repository and classify all files."""
-        # Load scope configuration if it exists
-        scope_files = list(self.repo_path.rglob("organisations/*/SCOPE.yaml"))
-        if scope_files:
-            self.scope_config = load_yaml(scope_files[0])
+        if not (self.root / "transitrix.yaml").is_file():
+            raise ValueError("--repo must name a catalogue root containing transitrix.yaml")
+        manifest = self.read_yaml(self.root / "transitrix.yaml")
+        if not isinstance(manifest, dict):
+            raise ValueError("transitrix.yaml must contain a mapping")
+        # Multiple scope files cannot be silently collapsed into one organisation.
+        scopes = sorted(self.root.glob("organisations/*/SCOPE.yaml"))
+        if self.scope is None and len(scopes) > 1:
+            raise ValueError("multiple SCOPE.yaml files; select one with --scope")
+        if self.scope is None and scopes:
+            self.scope = scopes[0]
+        exclusions = []
+        if self.scope:
+            if not self.scope.is_relative_to(self.root):
+                raise ValueError("--scope must be inside --repo")
+            config = self.read_yaml(self.scope)
+            if not isinstance(config, dict) or not isinstance(config.get("exclude", []), list):
+                raise ValueError("SCOPE.yaml must be a mapping with an optional exclude list")
+            if not all(isinstance(p, str) for p in config.get("exclude", [])):
+                raise ValueError("SCOPE exclude entries must be regular-expression strings")
+            exclusions = [re.compile(p) for p in config.get("exclude", [])]
 
-        # Scan all YAML files
-        for yaml_file in self.repo_path.rglob("*.yaml"):
-            if yaml_file.name.startswith('.'):
-                continue
-            if any(x in str(yaml_file) for x in ['node_modules', '.git', '__pycache__']):
-                continue
+        def walk_error(error):
+            self.failures.append({"path": Path(error.filename).relative_to(self.root).as_posix(),
+                                  "reason": "directory unreadable"})
 
-            rel_path = yaml_file.relative_to(self.repo_path)
-            self._classify_file(yaml_file, rel_path)
-
-        # Compute indicators
-        self._compute_indicators()
-
-    def _classify_file(self, file_path, rel_path):
-        """Classify a file as read/out-of-scope/unread-marker/foreign."""
-        try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
-        except:
-            return
-
-        # Check if it carries Transitrix markers
-        has_notation_header = 'notation:' in content
-        has_transitrix_markers = any(
-            re.search(pattern, str(rel_path))
-            for pattern in self.NOTATIONS.values()
-        ) or has_notation_header or 'element_type:' in content
-
-        # Check if it's in scope
-        if self.scope_config and 'exclude' in self.scope_config:
-            exclude_patterns = self.scope_config['exclude']
-            if any(re.match(pattern, str(rel_path)) for pattern in exclude_patterns):
-                self.results['out_of_scope'].append(str(rel_path))
-                return
-
-        # Classify
-        if has_notation_header and has_transitrix_markers:
-            self.results['read'].append(str(rel_path))
-        elif has_transitrix_markers:
-            self.results['unread_marker'].append(str(rel_path))
-        elif not has_notation_header:
-            self.results['foreign'].append(str(rel_path))
-        else:
-            self.results['read'].append(str(rel_path))
-
-    def _compute_indicators(self):
-        """Compute the five adoption-health indicators."""
-        # 1. Denominator (already done in classify_file)
-        # 2. Validity — linter pass rate
-        self._compute_validity()
-        # 3. Coverage — files per notation
-        self._compute_coverage()
-        # 4. Freshness — age distribution
-        self._compute_freshness()
-        # 5. Assertion Queue — age and drain rate
-        self._compute_queue()
-        # 6. Connectedness — orphan age and reachability
-        self._compute_connectedness()
-
-    def _compute_validity(self):
-        """Compute validity indicator (linter pass rate)."""
-        # This would require running the actual linter
-        # For now, report that it needs the lint.py run
-        self.indicators['validity'] = {
-            'precision': 'Requires lint.py run against canon/',
-            'diagnosis': 'No linter invoked in this run'
-        }
-
-    def _compute_coverage(self):
-        """Compute coverage indicator (files per notation)."""
-        notation_counts = defaultdict(int)
-        for file_path in self.results['read']:
-            for notation_name, pattern in self.NOTATIONS.items():
-                if re.search(pattern, file_path):
-                    notation_counts[notation_name] += 1
-                    break
-
-        self.indicators['coverage'] = {
-            'precision': f'{len(notation_counts)} notations in use: ' +
-                        ', '.join(f'{k}:{v}' for k,v in sorted(notation_counts.items(), key=lambda x: -x[1])[:5]),
-            'diagnosis': 'Notation distribution uneven; see detailed list for coverage by role/scope'
-        }
-
-    def _compute_freshness(self):
-        """Compute freshness indicator (age distribution)."""
-        import time
-
-        today = datetime.now()
-        age_bins = {'<1m': 0, '1-6m': 0, '6-12m': 0, '>12m': 0}
-        oldest_file = None
-        oldest_days = 0
-
-        for file_path in self.results['read']:
-            full_path = self.repo_path / file_path
-            try:
-                mtime = os.path.getmtime(full_path)
-                file_date = datetime.fromtimestamp(mtime)
-                days_old = (today - file_date).days
-
-                if days_old > oldest_days:
-                    oldest_days = days_old
-                    oldest_file = file_path
-
-                if days_old <= 30:
-                    age_bins['<1m'] += 1
-                elif days_old <= 180:
-                    age_bins['1-6m'] += 1
-                elif days_old <= 365:
-                    age_bins['6-12m'] += 1
+        for directory, dirs, names in os.walk(self.root, followlinks=False, onerror=walk_error):
+            base = Path(directory)
+            keep = []
+            for name in sorted(dirs):
+                p = base / name
+                if (name.startswith(".") or name in ("node_modules", "__pycache__")
+                        or p.is_symlink() or (p / "transitrix.yaml").exists()):
+                    self.skipped.append(p.relative_to(self.root).as_posix())
                 else:
-                    age_bins['>12m'] += 1
-            except:
-                pass
-
-        total = sum(age_bins.values())
-        if total > 0:
-            pct = {k: int(100*v/total) for k,v in age_bins.items()}
-            precision = f"{pct['<1m']}% current (<1mo), {pct['1-6m']}% 1-6m, {pct['6-12m']}% 6-12m, {pct['>12m']}% >12m"
-        else:
-            precision = "No read files to measure"
-
-        diagnosis = f"Oldest file: {oldest_file} ({oldest_days} days)" if oldest_file else "No files"
-
-        self.indicators['freshness'] = {
-            'precision': precision,
-            'diagnosis': diagnosis
+                    keep.append(name)
+            dirs[:] = keep
+            for name in sorted(names):
+                p = base / name
+                if p.suffix not in (".yaml", ".yml") or name.startswith("."):
+                    continue
+                rel = p.relative_to(self.root).as_posix()
+                if p.is_symlink():
+                    self.files["out_of_scope"].append(rel)
+                    self.skipped.append(rel)
+                    continue
+                if any(pattern.match(rel) for pattern in exclusions):
+                    self.files["out_of_scope"].append(rel)
+                    continue
+                marker = (rel.startswith(("canon/elements/", "canon/relations/", "field/"))
+                          or ".transitrix." in name or ".ttrs." in name)
+                try:
+                    data = self.read_yaml(p)
+                except (OSError, UnicodeError, yaml.YAMLError) as error:
+                    self.files["unread_marker"].append(rel)
+                    self.failures.append({"path": rel, "reason": type(error).__name__})
+                    continue
+                marker = marker or (isinstance(data, dict) and
+                                    any(k in data for k in ("notation", "element_type")))
+                kind = ("element" if rel.startswith("canon/elements/") else
+                        "relation" if rel.startswith("canon/relations/") else None)
+                if (kind and isinstance(data, dict) and isinstance(data.get("id"), str)
+                        and data["id"].strip() and isinstance(data.get("notation"), str)
+                        and data["notation"].strip()):
+                    self.files["read"].append(rel)
+                    self.records.append({"path": rel, "kind": kind, "data": data})
+                else:
+                    self.files["unread_marker" if marker else "foreign"].append(rel)
+        for paths in self.files.values():
+            paths.sort()
+        grouped = defaultdict(list)
+        for record in self.records:
+            grouped[record["data"]["id"]].append(record)
+        duplicates = {key: [r["path"] for r in rows] for key, rows in grouped.items() if len(rows) > 1}
+        unique = [rows[0] for rows in grouped.values() if len(rows) == 1]
+        inventory = result("supported", "parsed canonical IDs (elements and relations), all lifecycle states",
+                           len(grouped), len(self.records), duplicates=duplicates,
+                           files=self.files, discovered=sum(map(len, self.files.values())),
+                           collection_failures=self.failures, skipped_trees=self.skipped,
+                           notation_distribution=dict(sorted(Counter(r["data"]["notation"] for r in self.records).items())))
+        if not self.records:
+            inventory["status"] = "not_applicable"
+        if duplicates or self.failures or self.files["unread_marker"]:
+            inventory["status"] = "partial"
+        validity, connectedness, validator = self.validate(unique, duplicates)
+        revision = git_read(self.root, "rev-parse", "HEAD")
+        dirty = git_read(self.root, "status", "--porcelain", "--untracked-files=normal")
+        self.report_data = {
+            "context": {"rules": RULES, "collector_sha256": digest(Path(__file__).read_bytes()),
+                        "python_version": sys.version.split()[0], "pyyaml_version": yaml.__version__,
+                        "effective_date": self.effective_date.isoformat(),
+                        "observed_at": datetime.now(timezone.utc).isoformat(),
+                        "revision": revision, "working_tree_dirty": None if dirty is None else bool(dirty),
+                        "scope": "single catalogue; canon/elements and canon/relations; all lifecycle states",
+                        "scope_file": self.scope.relative_to(self.root).as_posix() if self.scope else None,
+                        "exclusion_patterns": [p.pattern for p in exclusions],
+                        "input_sha256": dict(sorted(self.hashes.items())), "validator": validator},
+            "indicators": {
+                "denominator": inventory,
+                "validity": validity,
+                "coverage": result("unavailable", "adopter-declared subjects and required relations",
+                                   reason="No business-scope collector; notation distribution is inventory only"),
+                "freshness": self.freshness(unique, duplicates, manifest),
+                "assertion_queue": result("unavailable", "assertions with real opening/review/outcome timestamps",
+                                          reason="No workflow collector or review targets supplied; no invented SLA"),
+                "connectedness": connectedness,
+            },
         }
+        return self.report_data
 
-    def _compute_queue(self):
-        """Compute assertion queue indicator (age and drain rate)."""
-        # Look for issues in the model or in operations/
-        self.indicators['queue'] = {
-            'precision': 'Requires scanning operations/work-items/ for open items',
-            'diagnosis': 'No queue scan implemented in this run'
-        }
+    def validate(self, records, duplicates):
+        # Reuse shipped rules over the explicit parsed cohort; do not run adopter code.
+        validator_path = Path(__file__).resolve().parents[3] / "tools" / "lint.py"
+        pop = "one batch of unique parsed canonical elements and relations"
+        unavailable = lambda why: result("unavailable", pop, reason=why)
+        if duplicates:
+            return unavailable("duplicate IDs make the batch ambiguous"), unavailable("duplicate IDs make resolution ambiguous"), None
+        if not validator_path.is_file():
+            return unavailable("shipped tools/lint.py is absent"), unavailable("shipped tools/lint.py is absent"), None
+        spec = importlib.util.spec_from_file_location("health_profile_lint", validator_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        engine = module.TransitrixLinter(str(self.root))
+        engine.elements = {r["data"]["id"]: r["data"] for r in records if r["kind"] == "element"}
+        engine.relations = {r["data"]["id"]: r["data"] for r in records if r["kind"] == "relation"}
+        binding = {"version": module.__version__, "sha256": digest(validator_path.read_bytes()),
+                   "checks": ["_check_atomicity", "_check_referential_integrity"]}
+        def run_check(method, applicable, limit):
+            engine.errors = []
+            if not applicable:
+                return result("not_applicable", pop, None, 0, limit=limit)
+            method()
+            errors = [{"path": e.file, "message": e.message} for e in engine.errors]
+            return result("findings" if errors else "supported", pop, int(not errors), 1,
+                          unit="batch without findings / checked batch (not record pass rate)",
+                          findings=errors, limit=limit,
+                          unchecked_files=self.files["unread_marker"],
+                          excluded_files=self.files["out_of_scope"])
+        validity = run_check(engine._check_atomicity, bool(engine.elements),
+                             "Parsed YAML plus existing atomicity only; no schema/admission/full-validator pass claimed")
+        ref_inputs = bool(engine.relations) or any(any(d.get(k) for k in REFERENCE_FIELDS) for d in engine.elements.values())
+        connectedness = run_check(engine._check_referential_integrity, ref_inputs,
+                                  "Existing from/to and parent/goals/delivers_changes/predecessors/owner_role checks only; "
+                                  "no reachability, relation-opportunity ratio or requirement-verification coverage")
+        # Existing linter skips non-list/non-string inline values; surface that blind spot.
+        connectedness["unsupported_inline_shapes"] = [
+            {"id": key, "field": field} for key, data in engine.elements.items()
+            for field in REFERENCE_FIELDS if field in data and not isinstance(data[field], (str, list))]
+        if connectedness["unsupported_inline_shapes"] and connectedness["status"] in ("supported", "not_applicable"):
+            connectedness.update(status="partial", numerator=None)
+        return validity, connectedness, binding
 
-    def _compute_connectedness(self):
-        """Compute connectedness indicator (orphan age and reachability)."""
-        self.indicators['connectedness'] = {
-            'precision': 'Requires graph traversal of canon/ elements',
-            'diagnosis': 'No graph scan implemented in this run'
-        }
+    def freshness(self, records, duplicates, manifest):
+        policy = manifest.get("confidence_decay")
+        rows = []
+        excluded = []
+        for record in records:
+            data = record["data"]
+            if record["kind"] != "element" or data.get("admission_state", "active") != "active":
+                excluded.append({"id": data["id"], "reason": "not an admitted canonical element"})
+                continue
+            row = {"id": data["id"], "path": record["path"], "anchor": data.get("admitted_at"), "status": "unknown"}
+            try:
+                checks = data.get("gate_checks")
+                if (data.get("zone") != "canon" or not isinstance(data.get("admitted_by"), str)
+                        or not data["admitted_by"].strip() or not isinstance(checks, dict)
+                        or not {"uniqueness", "consistency", "completeness"}.issubset(checks)
+                        or any(v != "pass" for v in checks.values())):
+                    raise ValueError("missing or incomplete admission evidence")
+                anchor = iso_date(data.get("admitted_at"))
+                age = (self.effective_date - anchor).days
+                if age < 0:
+                    raise ValueError("admission postdates effective date")
+                if not isinstance(policy, dict):
+                    raise ValueError("no explicit confidence_decay policy")
+                defaults = policy.get("defaults", {})
+                types = policy.get("by_type", {})
+                override = types.get(data["notation"].upper(), {}) if isinstance(types, dict) else None
+                if not isinstance(defaults, dict) or not isinstance(override, dict):
+                    raise ValueError("invalid confidence_decay policy")
+                rules = {**defaults, **override}
+                fresh, stale, floor = (rules.get(k) for k in ("fresh_days", "stale_days", "floor"))
+                if not all(type(v) in (int, float) and math.isfinite(v) for v in (fresh, stale, floor)):
+                    raise ValueError("incomplete or nonnumeric confidence_decay policy")
+                if not (0 <= fresh < stale and 0 <= floor <= 1):
+                    raise ValueError("invalid confidence_decay bounds")
+                value = 1.0 if age <= fresh else floor if age >= stale else 1 - (1 - floor) * (age - fresh) / (stale - fresh)
+                row.update(status="fresh" if age <= fresh else "stale" if age >= stale else "aging",
+                           age_days=age, freshness=value, policy=rules)
+            except ValueError as error:
+                row["reason"] = str(error)
+            rows.append(row)
+        rows.extend({"id": key, "paths": paths, "status": "unknown",
+                     "reason": "duplicate ID prevents admission evidence binding"}
+                    for key, paths in duplicates.items())
+        known = [r for r in rows if r["status"] != "unknown"]
+        return result("not_applicable" if not rows else "unavailable" if not known else "partial" if len(known) < len(rows) else "supported",
+                      "unique parsed admitted canonical elements, all lifecycle states",
+                      sum(r["status"] == "fresh" for r in known) if known else None, len(known),
+                      unit="within declared fresh_days / elements with qualified date and explicit policy",
+                      unknown=len(rows) - len(known), exclusions=excluded, evidence=rows,
+                      limit="Admission metadata is recorded evidence, not independent proof the review occurred; "
+                            "duplicate IDs stay unknown; knowledge objects and workflow reviews unsupported")
 
     def report(self):
-        """Generate a markdown report."""
-        report = []
-        report.append("# Transitrix Adoption Health Profile\n")
-        report.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
-        report.append(f"**Repository:** {self.repo_path}\n\n")
+        return "# Transitrix Adoption Health Profile\n\nInformational snapshot; no adoption score or build gate. " \
+               "Unavailable and unknown are not success. Read means parsed, never validated.\n\n" + \
+               "```json\n" + json.dumps(self.report_data, indent=2, default=str, ensure_ascii=False) + "\n```\n"
 
-        # Denominator
-        report.append("## Denominator: File Classification\n")
-        total = sum(len(v) for v in self.results.values())
-        report.append(f"**Total files scanned:** {total}\n\n")
-        report.append("| Classification | Count | Status |\n")
-        report.append("|---|---|---|\n")
-        report.append(f"| Read (Transitrix markers, validated) | {len(self.results['read'])} | ✓ |\n")
-        report.append(f"| Out of scope (declared masked) | {len(self.results['out_of_scope'])} | — |\n")
-        report.append(f"| Unread marker (carrying markers but not validated) | {len(self.results['unread_marker'])} | ⚠ ACTIONABLE |\n")
-        report.append(f"| Foreign (no Transitrix markers) | {len(self.results['foreign'])} | ~ |\n\n")
-
-        if self.results['unread_marker']:
-            report.append("**Unread marker files (actionable):**\n")
-            for f in sorted(self.results['unread_marker'])[:10]:
-                report.append(f"- `{f}`\n")
-            if len(self.results['unread_marker']) > 10:
-                report.append(f"- ... and {len(self.results['unread_marker']) - 10} more\n")
-            report.append("\n")
-
-        # Indicators
-        report.append("## Indicators\n\n")
-        report.append("| Indicator | Precision | Diagnosis |\n")
-        report.append("|---|---|---|\n")
-        for indicator_name in ['validity', 'coverage', 'freshness', 'queue', 'connectedness']:
-            if indicator_name in self.indicators:
-                ind = self.indicators[indicator_name]
-                precision = ind.get('precision', 'N/A')
-                diagnosis = ind.get('diagnosis', 'N/A')
-                report.append(f"| {indicator_name.title()} | {precision} | {diagnosis} |\n")
-
-        report.append("\n")
-        report.append("## Acknowledgments\n\n")
-        report.append("This report was generated by the Transitrix Health Profile Skill. ")
-        report.append("Indicators were computed from the repository's model files and are ")
-        report.append("private to this adopter — they are not collected or benchmarked by Transitrix. ")
-        report.append("The report does not fail the build; it is for informational purposes only.\n")
-
-        return ''.join(report)
 
 def main():
-    """Command-line interface for the health profile scanner."""
-    parser = argparse.ArgumentParser(
-        description="Measure Transitrix adoption health in a repository"
-    )
-    parser.add_argument('--repo', default='.', help='Repository path (default: current directory)')
-    parser.add_argument('--out', help='Write report to file instead of stdout')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", default=".")
+    parser.add_argument("--out")
+    parser.add_argument("--scope", help="select an existing SCOPE.yaml within the catalogue")
+    parser.add_argument("--effective-date", help="YYYY-MM-DD; defaults to today's date")
+    parser.add_argument("--format", choices=("markdown", "json"), default="markdown")
     args = parser.parse_args()
+    try:
+        scanner = HealthProfileScanner(args.repo, args.effective_date, args.scope)
+        data = scanner.scan()
+        report = json.dumps(data, indent=2, default=str, ensure_ascii=False) + "\n" if args.format == "json" else scanner.report()
+        if args.out:
+            Path(args.out).write_text(report, encoding="utf-8")
+        else:
+            print(report, end="")
+        return 0  # Health findings do not gate builds; invocation/collection errors do.
+    except (OSError, ValueError, yaml.YAMLError, re.error) as error:
+        print(f"Cannot collect health profile: {error}", file=sys.stderr)
+        return 2
 
-    # Find the repo root
-    repo_root = find_repo_root(args.repo)
-    if not repo_root:
-        print("Error: Not a Transitrix repository (no transitrix.yaml found)", file=sys.stderr)
-        sys.exit(1)
 
-    print(f"Scanning repository: {repo_root}", file=sys.stderr)
-
-    # Run the scan
-    scanner = HealthProfileScanner(repo_root)
-    scanner.scan()
-
-    # Generate report
-    report_text = scanner.report()
-
-    # Output report
-    if args.out:
-        with open(args.out, 'w', encoding='utf-8') as f:
-            f.write(report_text)
-        print(f"Report written to: {args.out}", file=sys.stderr)
-    else:
-        print(report_text)
-
-if __name__ == '__main__':
-    import time
-    main()
+if __name__ == "__main__":
+    sys.exit(main())
