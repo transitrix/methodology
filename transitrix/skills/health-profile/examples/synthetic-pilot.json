@@ -1,0 +1,796 @@
+{
+  "kind": "synthetic-only",
+  "effective_date": "2026-04-01",
+  "profile": "health-profile/2",
+  "base_files": {
+    "transitrix.yaml": {
+      "confidence_decay": {
+        "defaults": {"fresh_days": 30, "stale_days": 90, "floor": 0.3}
+      }
+    },
+    "canon/elements/GOAL-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "GOAL-PILOT-1",
+      "notation": "goal",
+      "name": "Synthetic response goal",
+      "level": 1
+    },
+    "canon/elements/ACTION-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "ACTION-PILOT-1",
+      "notation": "action",
+      "name": "Synthetic response work",
+      "type": "Initiative",
+      "goals": [
+        "GOAL-PILOT-1"
+      ]
+    },
+    "canon/elements/REQUIREMENT-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "REQUIREMENT-PILOT-1",
+      "notation": "requirement",
+      "name": "Synthetic response obligation",
+      "statement": "Respond within one second",
+      "acceptance_criteria": [
+        "Response time is at most one second"
+      ]
+    },
+    "canon/elements/APPLICATION-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "APPLICATION-PILOT-1",
+      "notation": "application",
+      "name": "Synthetic service"
+    },
+    "canon/elements/RELEASE-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "RELEASE-PILOT-1",
+      "notation": "release",
+      "name": "Synthetic service v1",
+      "of": "APPLICATION-PILOT-1",
+      "version": "1.0.0"
+    },
+    "canon/elements/VERIFICATION-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "VERIFICATION-PILOT-1",
+      "notation": "verification",
+      "verifies": "REQUIREMENT-PILOT-1",
+      "verified_on": "RELEASE-PILOT-1",
+      "method": "test",
+      "protocol": "Measure synthetic response time against the one-second criterion",
+      "outcome": "pass",
+      "performed_at": "2026-03-31",
+      "evidence": [
+        {"kind": "note", "text": "Synthetic receipt: REQUIREMENT-PILOT-1 statement Respond within one second; RELEASE-PILOT-1; observed 0.5 seconds."}
+      ]
+    },
+    "canon/relations/REL-PILOT-1.yaml": {
+      "zone": "canon",
+      "admitted_at": "2026-03-31",
+      "admitted_by": "synthetic-reviewer",
+      "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+      "valid_from": "2026-03-01",
+      "valid_to": null,
+      "id": "REL-PILOT-1",
+      "notation": "relation",
+      "type": "action_goal",
+      "from": "ACTION-PILOT-1",
+      "to": "GOAL-PILOT-1"
+    }
+  },
+  "cases": [
+    {
+      "id": "paired-edge",
+      "purpose": "The inline and REL representations describe one semantic edge, REL taking precedence.",
+      "replace_files": {},
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "inline-only",
+      "purpose": "Inline fallback without a REL.",
+      "replace_files": {},
+      "remove_files": [
+        "canon/relations/REL-PILOT-1.yaml"
+      ],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 6, "denominator": 6},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": []
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "rel-precedence",
+      "purpose": "REL governs the semantic graph; the bounded linter still checks the obsolete inline reference.",
+      "replace_files": {
+        "canon/elements/ACTION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "ACTION-PILOT-1",
+          "notation": "action",
+          "name": "Synthetic response work",
+          "type": "Initiative",
+          "goals": [
+            "GOAL-ABSENT-1"
+          ]
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "findings", "numerator": 0, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "valid-root",
+      "purpose": "A root GOAL has no parent and no reference opportunity.",
+      "replace_files": {},
+      "remove_files": [
+        "canon/elements/ACTION-PILOT-1.yaml",
+        "canon/elements/REQUIREMENT-PILOT-1.yaml",
+        "canon/elements/VERIFICATION-PILOT-1.yaml",
+        "canon/relations/REL-PILOT-1.yaml",
+        "canon/elements/APPLICATION-PILOT-1.yaml",
+        "canon/elements/RELEASE-PILOT-1.yaml"
+      ],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 1, "denominator": 1},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "not_applicable", "numerator": null, "denominator": 0},
+          "freshness": {"status": "supported", "numerator": 1, "denominator": 1, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": []
+      },
+      "manual_semantics": {"active_action_goal_edges": 0, "qualified_passing_requirements": null, "requirement_population": 0}
+    },
+    {
+      "id": "broken-target",
+      "purpose": "The GOAL file is absent in a completely readable synthetic catalogue.",
+      "replace_files": {},
+      "remove_files": [
+        "canon/elements/GOAL-PILOT-1.yaml"
+      ],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 6, "denominator": 6},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "findings", "numerator": 0, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 5, "denominator": 5, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 0, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "excluded-target",
+      "purpose": "The GOAL exists but is inaccessible to the selected scope; not globally absent.",
+      "replace_files": {
+        "organisations/pilot/SCOPE.yaml": {"exclude": ["^canon/elements/GOAL-PILOT-1.yaml$"]}
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 6, "denominator": 6},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "findings", "numerator": 0, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 5, "denominator": 5, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [
+          "canon/elements/GOAL-PILOT-1.yaml"
+        ],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": null, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "expired-relation",
+      "purpose": "No inline fallback; REL ended before the effective date. Inventory still includes it.",
+      "replace_files": {
+        "canon/elements/ACTION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "ACTION-PILOT-1",
+          "notation": "action",
+          "name": "Synthetic response work",
+          "type": "Initiative"
+        },
+        "canon/relations/REL-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": "2026-03-30",
+          "id": "REL-PILOT-1",
+          "notation": "relation",
+          "type": "action_goal",
+          "from": "ACTION-PILOT-1",
+          "to": "GOAL-PILOT-1"
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 0, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "atomicity-finding",
+      "purpose": "An embedded relations field violates the existing atomicity check.",
+      "replace_files": {
+        "canon/elements/GOAL-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "GOAL-PILOT-1",
+          "notation": "goal",
+          "name": "Synthetic response goal",
+          "level": 1,
+          "relations": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "findings", "numerator": 0, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "verification-fail",
+      "purpose": "Outcome does not qualify as passing coverage; trace closure is a separate predicate.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "fail",
+          "performed_at": "2026-03-31",
+          "evidence": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 0, "requirement_population": 1}
+    },
+    {
+      "id": "verification-inconclusive",
+      "purpose": "Outcome does not qualify as passing coverage; trace closure is a separate predicate.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "inconclusive",
+          "performed_at": "2026-03-31",
+          "evidence": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "verification-not_yet_run",
+      "purpose": "Outcome does not qualify as passing coverage; trace closure is a separate predicate.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "not_yet_run",
+          "performed_at": "2026-03-31",
+          "evidence": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "verification-missing",
+      "purpose": "No targeting verification exists.",
+      "replace_files": {},
+      "remove_files": [
+        "canon/elements/VERIFICATION-PILOT-1.yaml"
+      ],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 6, "denominator": 6},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 5, "denominator": 5, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "verification-conflict",
+      "purpose": "Pass and fail target the same requirement and release; no resolution policy exists.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-2.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-2",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "fail",
+          "performed_at": "2026-03-31",
+          "evidence": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 8, "denominator": 8},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 7, "denominator": 7, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "pass-without-evidence",
+      "purpose": "A pass edge alone does not establish evidence-qualified coverage.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "pass",
+          "performed_at": "2026-03-31",
+          "evidence": []
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "pass-without-release",
+      "purpose": "An unqualified historical pass does not establish the selected release result.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "REQUIREMENT-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "pass",
+          "performed_at": "2026-03-31",
+          "evidence": [
+            {"kind": "note", "text": "Synthetic receipt: REQUIREMENT-PILOT-1 statement Respond within one second; RELEASE-PILOT-1; observed 0.5 seconds."}
+          ]
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "changed-requirement",
+      "purpose": "Evidence names the original requirement text, not this revised criterion.",
+      "replace_files": {
+        "canon/elements/REQUIREMENT-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "REQUIREMENT-PILOT-1",
+          "notation": "requirement",
+          "name": "Synthetic response obligation",
+          "statement": "Respond within half a second",
+          "acceptance_criteria": [
+            "Response time is at most half a second"
+          ]
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "wrong-verification-type",
+      "purpose": "verifies targets GOAL instead of REQUIREMENT; the bounded collector does not validate this field.",
+      "replace_files": {
+        "canon/elements/VERIFICATION-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pass", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "VERIFICATION-PILOT-1",
+          "notation": "verification",
+          "verifies": "GOAL-PILOT-1",
+          "verified_on": "RELEASE-PILOT-1",
+          "method": "test",
+          "protocol": "Measure synthetic response time against the one-second criterion",
+          "outcome": "pass",
+          "performed_at": "2026-03-31",
+          "evidence": [
+            {"kind": "note", "text": "Synthetic receipt: REQUIREMENT-PILOT-1 statement Respond within one second; RELEASE-PILOT-1; observed 0.5 seconds."}
+          ]
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "supported", "numerator": 6, "denominator": 6, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": null, "requirement_population": 1}
+    },
+    {
+      "id": "missing-policy",
+      "purpose": "No decay policy or workflow review policy: freshness unknown and queue unavailable.",
+      "replace_files": {
+        "transitrix.yaml": {}
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "unavailable", "numerator": null, "denominator": 0, "unknown": 6},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "incomplete-admission",
+      "purpose": "A pending admission check is not evidence of current freshness.",
+      "replace_files": {
+        "canon/elements/GOAL-PILOT-1.yaml": {
+          "zone": "canon",
+          "admitted_at": "2026-03-31",
+          "admitted_by": "synthetic-reviewer",
+          "gate_checks": {"uniqueness": "pass", "consistency": "pending_review", "completeness": "pass"},
+          "valid_from": "2026-03-01",
+          "valid_to": null,
+          "id": "GOAL-PILOT-1",
+          "notation": "goal",
+          "name": "Synthetic response goal",
+          "level": 1
+        }
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "supported", "numerator": 7, "denominator": 7},
+          "validity": {"status": "supported", "numerator": 1, "denominator": 1},
+          "connectedness": {"status": "supported", "numerator": 1, "denominator": 1},
+          "freshness": {"status": "partial", "numerator": 5, "denominator": 5, "unknown": 1},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": [
+          "REL-PILOT-1"
+        ]
+      },
+      "manual_semantics": {"active_action_goal_edges": 1, "qualified_passing_requirements": 1, "requirement_population": 1}
+    },
+    {
+      "id": "empty-scope",
+      "purpose": "All canonical records excluded; zero denominator is not applicable.",
+      "replace_files": {
+        "organisations/pilot/SCOPE.yaml": {"exclude": ["^canon/"]}
+      },
+      "remove_files": [],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "not_applicable", "numerator": 0, "denominator": 0},
+          "validity": {"status": "not_applicable", "numerator": null, "denominator": 0},
+          "connectedness": {"status": "not_applicable", "numerator": null, "denominator": 0},
+          "freshness": {"status": "not_applicable", "numerator": null, "denominator": 0, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [
+          "canon/elements/ACTION-PILOT-1.yaml",
+          "canon/elements/APPLICATION-PILOT-1.yaml",
+          "canon/elements/GOAL-PILOT-1.yaml",
+          "canon/elements/RELEASE-PILOT-1.yaml",
+          "canon/elements/REQUIREMENT-PILOT-1.yaml",
+          "canon/elements/VERIFICATION-PILOT-1.yaml",
+          "canon/relations/REL-PILOT-1.yaml"
+        ],
+        "freshness_excluded_ids": []
+      },
+      "manual_semantics": {"active_action_goal_edges": null, "qualified_passing_requirements": null, "requirement_population": 0}
+    },
+    {
+      "id": "empty-catalogue",
+      "purpose": "No records and no exclusions; zero denominator is not applicable.",
+      "replace_files": {},
+      "remove_files": [
+        "canon/elements/GOAL-PILOT-1.yaml",
+        "canon/elements/ACTION-PILOT-1.yaml",
+        "canon/elements/REQUIREMENT-PILOT-1.yaml",
+        "canon/elements/VERIFICATION-PILOT-1.yaml",
+        "canon/relations/REL-PILOT-1.yaml",
+        "canon/elements/APPLICATION-PILOT-1.yaml",
+        "canon/elements/RELEASE-PILOT-1.yaml"
+      ],
+      "expected": {
+        "indicators": {
+          "denominator": {"status": "not_applicable", "numerator": 0, "denominator": 0},
+          "validity": {"status": "not_applicable", "numerator": null, "denominator": 0},
+          "connectedness": {"status": "not_applicable", "numerator": null, "denominator": 0},
+          "freshness": {"status": "not_applicable", "numerator": null, "denominator": 0, "unknown": 0},
+          "coverage": {"status": "unavailable", "numerator": null, "denominator": null},
+          "assertion_queue": {"status": "unavailable", "numerator": null, "denominator": null}
+        },
+        "out_of_scope": [],
+        "freshness_excluded_ids": []
+      },
+      "manual_semantics": {"active_action_goal_edges": 0, "qualified_passing_requirements": null, "requirement_population": 0}
+    }
+  ]
+}

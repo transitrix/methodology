@@ -53,6 +53,8 @@ The existing manifest's `confidence_decay.defaults` and `confidence_decay.by_typ
 
 ## Reproducible synthetic pilot
 
+The [declared synthetic examples](examples/README.md) provide 21 case populations, independent expected results and commands to inspect both entry points. They distinguish scanner output from manual edge and verification semantics.
+
 The shipped tests build temporary, synthetic catalogues and run both real entry points. They demonstrate stale evidence surviving timestamp changes, qualified reaffirmation refreshing it, and missing policy/evidence staying unknown. They also exercise scope, duplicates, empty populations, parse failures and positive/negative existing linter checks:
 
 ```sh
