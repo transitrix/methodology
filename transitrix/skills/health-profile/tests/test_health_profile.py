@@ -243,5 +243,54 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(run.returncode, 2)
 
 
+class DeclaredPilotTests(unittest.TestCase):
+    """Compare consumer-authored expectations with both existing CLI entry points."""
+
+    def test_declared_synthetic_cases(self):
+        fixture = json.loads((SKILL / "examples" / "synthetic-pilot.json").read_text())
+        self.assertEqual(fixture["kind"], "synthetic-only")
+        for case in fixture["cases"]:
+            with self.subTest(case=case["id"]), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                files = {**fixture["base_files"], **case["replace_files"]}
+                for name in case["remove_files"]:
+                    del files[name]
+                for name, data in files.items():
+                    path = root / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(yaml.safe_dump(data, sort_keys=True), encoding="utf-8")
+                reports = []
+                for command in ([sys.executable, str(SKILL / "health_profile.py")],
+                                ["node", str(SKILL / "scan.mjs")]):
+                    run = subprocess.run([*command, "--repo", str(root), "--effective-date",
+                                          fixture["effective_date"], "--format", "json"],
+                                         capture_output=True, text=True,
+                                         env={**os.environ, "PYTHON": sys.executable})
+                    self.assertEqual(run.returncode, 0, run.stderr)
+                    report = json.loads(run.stdout)
+                    for indicator, fields in case["expected"]["indicators"].items():
+                        for field, value in fields.items():
+                            self.assertEqual(report["indicators"][indicator][field], value,
+                                             f"{case['id']}: {indicator}.{field}")
+                    inventory = report["indicators"]["denominator"]
+                    self.assertEqual(inventory["files"]["out_of_scope"],
+                                     case["expected"]["out_of_scope"])
+                    self.assertEqual(inventory["collection_failures"], [])
+                    self.assertEqual(inventory["files"]["unread_marker"], [])
+                    self.assertEqual(sorted(row["id"] for row in
+                                            report["indicators"]["freshness"]["exclusions"]),
+                                     case["expected"]["freshness_excluded_ids"])
+                    context = report["context"]
+                    self.assertEqual(context["rules"], fixture["profile"])
+                    self.assertEqual(context["effective_date"], fixture["effective_date"])
+                    self.assertTrue(context["observed_at"])
+                    self.assertTrue(context["input_sha256"])
+                    self.assertTrue(context["collector_sha256"])
+                    self.assertTrue(context["validator"]["sha256"])
+                    del context["observed_at"]
+                    reports.append(report)
+                self.assertEqual(reports[0], reports[1])
+
+
 if __name__ == "__main__":
     unittest.main()
