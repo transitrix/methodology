@@ -14,7 +14,7 @@
 //       Catches `.bpmn.yaml`-style drift and misfiled examples.
 //   E2  header — each example carries a top-level `notation: <short>` whose
 //       value matches its file extension.
-//   L1  links — every relative Markdown link in notations/**/*.md resolves to
+//   L1  links — relative Markdown links in notations/, method/ and skills/ resolve to
 //       an existing file (anchors and external URLs are skipped).
 //   T1  document sources — every `.ttrs` file is named <basename>.<kind>.ttrs,
 //       and no file ends `.trs` (the near-miss: one keystroke away, a different
@@ -56,8 +56,8 @@
 //   ID1  example-ID grammar — every ID-shaped token (a candidate whose TYPE
 //       prefix is registered in IDS_AND_REFERENCES.md §3) found in a fenced
 //       code block or a backtick span under method/**/*.md and
-//       notations/**/*.md satisfies §1's grammar (CAPABILITY's V/H address
-//       excepted, §2). A token that is itself a known rule code
+//       notations/**/*.md and transitrix/skills/**/*.md satisfies §1's
+//       grammar (CAPABILITY's V/H address excepted, §2). A token that is itself a known rule code
 //       (vocabulary.yaml rule_codes / deferred.rule_codes — several rule-code
 //       prefixes collide with a registered TYPE, e.g. ACTION-005, TERM-002)
 //       is not an element ID and is excluded. IDS_AND_REFERENCES.md and
@@ -65,7 +65,7 @@
 //       ✓/✗ comparison table documenting invalid forms as negative examples.
 //   LAYER1 layer enumeration (extends VOC1's reach) — a contiguous group of
 //       three or more distinct `NN_<word>/` layer-folder tokens under
-//       method/**/*.md or notations/**/*.md (a directory tree, a table) is
+//       method/, notations/ or transitrix/skills/ Markdown (a directory tree) is
 //       read as an attempt to enumerate the full layer set and must equal it
 //       exactly — no fewer, no extra. A single incidental folder citation
 //       (one element spec naming its own home folder) is not a "list" and is
@@ -344,35 +344,67 @@ async function checkCatalogueBoundary(failures, warnings) {
   }
 }
 
-// L1: relative markdown links in notations/**/*.md and method/**/*.md must resolve.
-async function checkLinks(failures) {
-  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
-  // Inline links only: no newline in the link text or the target, so we never
-  // splice an unrelated `[` and `](…)` across prose into a phantom link.
-  const linkRe = /\[[^\]\n]*\]\(([^)\n]+)\)/g;
-  for (const abs of files) {
-    const rel = relPosix(abs);
-    const text = await readFile(abs, 'utf8');
-    let m;
-    while ((m = linkRe.exec(text)) !== null) {
-      let target = m[1].trim();
-      // Skip external, anchor-only, mailto, and template placeholders.
-      if (/^(https?:|mailto:|#|<)/.test(target)) continue;
-      target = target.split('#')[0]; // drop anchor
-      if (!target) continue; // was anchor-only
-      if (target.includes('<') || target.includes('>')) continue; // placeholder like <id>.yaml
-      // Only validate things that look like a local file/dir reference — a path
-      // segment (`/`) or a file extension. Bare words in parenthetical prose
-      // (`(factor)`, `(set_name)`) are not links.
-      if (!target.includes('/') && !/\.[a-z0-9]+$/i.test(target)) continue;
-      const resolved = resolve(dirname(abs), target);
-      if (!existsSync(resolved)) {
-        failures.push({
-          check: 'L1',
-          message: `${rel}: broken relative link → \`${m[1]}\` (resolves to ${relPosix(resolved)}, not found).`,
-        });
-      }
+// Shared instruction inventory: include supporting prompts, templates and fixture docs.
+export async function collectInstructionMarkdown(root = REPO_ROOT) {
+  return (await walk(join(root, 'notations'), '.md')).concat(
+    await walk(join(root, 'method'), '.md'),
+    await walk(join(root, 'transitrix', 'skills'), '.md'));
+}
+
+// These guides are copied to the adopter root; Copilot is installed below .github.
+// Resolve in that destination namespace, then require the backing source to exist.
+// Other templates keep their source-relative links; no template directory is exempt.
+const ONBOARD_GUIDES = new Map([
+  ['AGENTS.md', 'AGENTS.md'], ['ANALYST.md', 'ANALYST.md'],
+  ['VALIDATOR.md', 'VALIDATOR.md'], ['INGEST.md', 'INGEST.md'],
+  ['FINDINGS.md', 'FINDINGS.md'],
+  ['copilot-instructions.md', '.github/copilot-instructions.md'],
+]);
+
+export function resolveInstructionLink(abs, target, root = REPO_ROOT) {
+  const rel = relative(root, abs).split('\\').join('/');
+  const prefix = 'transitrix/skills/onboard/templates/';
+  const source = rel.startsWith(prefix) ? rel.slice(prefix.length) : null;
+  if (ONBOARD_GUIDES.has(source)) {
+    const installed = posix.normalize(posix.join(posix.dirname(ONBOARD_GUIDES.get(source)), target));
+    for (const [file, destination] of ONBOARD_GUIDES) {
+      if (destination === installed) return join(root, prefix, file);
     }
+    return null; // not an installed guide, even if a same-named source file exists
+  }
+  // Knowledge fixtures use site-root /knowledge links. Bind to the fixture's
+  // own root, never the machine root or a different fixture's knowledge tree.
+  const fixture = rel.match(/^(transitrix\/skills\/knowledge-store\/tests\/fixtures\/[^/]+)\//);
+  if (fixture && target.startsWith('/')) {
+    if (target.split('/').includes('..')) return null;
+    const fixtureRoot = resolve(root, fixture[1]);
+    const resolved = resolve(fixtureRoot, '.' + target);
+    return resolved.startsWith(fixtureRoot + '/') ? resolved : null;
+  }
+  return resolve(dirname(abs), target);
+}
+
+export function findInstructionLinkFailures(text, abs, root = REPO_ROOT) {
+  const failures = [];
+  const rel = relative(root, abs).split('\\').join('/');
+  const linkRe = /\[[^\]\n]*\]\(([^)\n]+)\)/g;
+  for (const m of text.matchAll(linkRe)) {
+    let target = m[1].trim();
+    if (/^(https?:|mailto:|#|<)/.test(target)) continue;
+    target = target.split('#')[0];
+    if (!target || target.includes('<') || target.includes('>')) continue;
+    if (!target.includes('/') && !/\.[a-z0-9]+$/i.test(target)) continue;
+    const resolved = resolveInstructionLink(abs, target, root);
+    if (!resolved || !existsSync(resolved)) {
+      failures.push({ check: 'L1', message: `${rel}: broken relative link → \`${m[1]}\` (destination not found).` });
+    }
+  }
+  return failures;
+}
+
+async function checkLinks(failures) {
+  for (const abs of await collectInstructionMarkdown()) {
+    failures.push(...findInstructionLinkFailures(await readFile(abs, 'utf8'), abs));
   }
 }
 
@@ -1398,7 +1430,7 @@ const ID_TOKEN_RE = /\b[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9_]+(?:\.[0-9]+)*)+\b/g;
 // "table cell" — this repo backtick-quotes every ID it documents). Skips a
 // match that is itself a placeholder by this repo's own conventions: wrapped
 // in `<…>` (`<STEP-id>`, `<REQUIREMENT-HINT>`) or immediately followed by the
-// `-…` family-prefix ellipsis (`NEED-VALIDATION-COVERAGE-…`). Returns
+// `-…` / `-...` family-prefix ellipsis or a shell `-*` prefix pattern. Returns
 // [{ token, line }] with 1-based line numbers.
 export function findIdCandidates(text) {
   const out = [];
@@ -1410,8 +1442,13 @@ export function findIdCandidates(text) {
       const afterIdx = m.index + m[0].length;
       const after = segment[afterIdx];
       if (before === '<' && after === '>') continue; // <STEP-id>-style placeholder
-      if (after === '…' || segment.slice(afterIdx, afterIdx + 2) === '-…') continue; // family-prefix marker
-      out.push({ token: m[0], line });
+      if (after === '…' || /^(?:-…|-\.\.\.|-\*)/.test(segment.slice(afterIdx))) continue; // family-prefix marker
+      // Operational snapshots append a fetch date to a codex ID. Check the
+      // source ID, not the filename's date, only in the declared snapshot path.
+      const snapshot = segment.slice(0, m.index).endsWith('_intake/snapshots/')
+        && /^\.(?:html|pdf|json|xml)\b/.test(segment.slice(afterIdx))
+        && m[0].match(/^((?:REGULATION|STANDARD|POLICY|INTERNAL_STANDARD)-.+)-\d{4}-\d{2}-\d{2}$/);
+      out.push({ token: snapshot ? snapshot[1] : m[0], line });
     }
   };
   for (let i = 0; i < lines.length; i++) {
@@ -1431,7 +1468,7 @@ export function findIdCandidates(text) {
   return out;
 }
 
-async function checkIdGrammar(failures) {
+export async function checkIdGrammar(failures, files = null) {
   let registryText;
   try {
     registryText = await readFile(IDS_AND_REFERENCES_PATH, 'utf8');
@@ -1457,7 +1494,7 @@ async function checkIdGrammar(failures) {
     // "no rule-code exclusions" rather than duplicating that failure here.
   }
 
-  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
+  files ??= await collectInstructionMarkdown();
   const seen = new Set();
   for (const abs of files) {
     if (ID1_EXCLUDED_FILES.has(abs)) continue; // documents invalid forms on purpose
@@ -1534,9 +1571,9 @@ export function findLayerEnumerationGroups(text) {
   return groups.filter(g => g.folders.size >= 3);
 }
 
-async function checkLayerEnumeration(failures) {
+export async function checkLayerEnumeration(failures, files = null) {
   const canonical = new Set(Object.values(LAYER_WORD_TO_FOLDER));
-  const files = (await walk(NOTATIONS_DIR, '.md')).concat(await walk(METHOD_DIR, '.md'));
+  files ??= await collectInstructionMarkdown();
   for (const abs of files) {
     const rel = relPosix(abs);
     const text = await readFile(abs, 'utf8');

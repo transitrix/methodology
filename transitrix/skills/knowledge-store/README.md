@@ -12,7 +12,7 @@ This directory is the **`knowledge-store` skill** within the `transitrix` plugin
 
 ---
 
-Re-curating a reissued source creates a new source record and a new knowledge object. After review, the new object and its predecessor receive reciprocal supersession pointers; the predecessor’s body and assertion metadata remain intact. See [Gate 2.1](../../../../patterns/knowledge-store.md#gate-21--supersession-not-rewriting).
+Re-curating a reissued source creates a new source record and a new knowledge object. After review, the new object and its predecessor receive reciprocal supersession pointers; the predecessor’s body and assertion metadata remain intact. See [Gate 2.1](../../../patterns/knowledge-store.md#gate-21--supersession-not-rewriting).
 
 ## What it ships
 
@@ -22,8 +22,8 @@ Re-curating a reissued source creates a new source record and a new knowledge ob
 - [`tests/test_knowledge_store_integrity.py`](tests/test_knowledge_store_integrity.py) — deterministic CI guard for `tools/knowledge_store_lint.py` (KS-001..017).
 
 The skill reads its OKF templates from the methodology patterns directory:
-- [`patterns/knowledge-store-templates/okf-source-document.md`](../../../../patterns/knowledge-store-templates/okf-source-document.md)
-- [`patterns/knowledge-store-templates/okf-knowledge-object.md`](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md)
+- [`patterns/knowledge-store-templates/okf-source-document.md`](../../../patterns/knowledge-store-templates/okf-source-document.md)
+- [`patterns/knowledge-store-templates/okf-knowledge-object.md`](../../../patterns/knowledge-store-templates/okf-knowledge-object.md)
 
 ---
 

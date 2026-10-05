@@ -66,7 +66,7 @@ Add supporting material only as the skill needs it, following existing precedent
 
 | Touching | Run |
 |---|---|
-| Any skill's `SKILL.md`/`README.md` prose | No dedicated linter for this tree — `node scripts/check-notations.mjs`'s link check is scoped to `notations/**/*.md` only, so check relative links by hand. |
+| Any skill's `SKILL.md`/`README.md` prose | `node scripts/check-notations.mjs` and `node --test scripts/check-notations.test.mjs` — shared links, example IDs and layer trees, including installed onboarding guide paths and fixture-root links. |
 | `onboard`'s family-selection matrix or `templates/` | `node scripts/check-skill-cheatsheet.mjs` |
 | `onboard`'s scaffold logic | `python transitrix/skills/onboard/tests/test_skill_integrity.py` |
 | `knowledge-store`'s linter or pattern doc | the test(s) under `transitrix/skills/knowledge-store/tests/` |

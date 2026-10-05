@@ -18,7 +18,7 @@ One file per fetch, named by the codex source ID and the fetch date:
 
 ```
 _intake/snapshots/<CODEX-ID>-<YYYY-MM-DD>.<ext>
-# e.g. REGULATION-GDPR-2016-1-2026-06-08.html
+# e.g. _intake/snapshots/REGULATION-GDPR-2016-1-2026-06-08.html
 ```
 
 `<ext>` follows the source format (`.html`, `.pdf`, `.json`, `.xml`). The bytes are the source body the agent fetched; `fetch-snapshot` fingerprints them as `source_hash: sha256:<hex>` and records that hash in the committed operations cache (`operations/state/reg-intel/signal-cache.json`), so a later run can tell whether the source moved even in a fresh clone / CI checkout.

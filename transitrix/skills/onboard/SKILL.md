@@ -102,7 +102,8 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │       ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
 │       │   └── rules/              # RULE-…-N.yaml (one per file)
 │       ├── 03_application/         # APPLICATION, INTEGRATION, …
-│       └── 04_technology/          # NODE, ARTIFACT, …
+│       ├── 04_technology/          # NODE, ARTIFACT, …
+│       └── 05_implementation/      # ACTION, CHANGE
 ├── views/                          # one subfolder per notation, beside canon/
 │   ├── bpmn/   dgca/   goals/   capabilities/   processmap/
 │   ├── actions/   blocks/   scenarios/
@@ -118,6 +119,8 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 Use the org name from step 1 (or ask: "What's the organisation name? — lowercase, hyphens for spaces"). If the directory already exists and isn't empty, **don't overwrite** — confirm with the user before proceeding.
 
 The `views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
+
+For existing repositories, `canon/views/` remains accepted as a deprecated layout; coexistence with root `views/` produces `MIX-001` (CONTRACT §14.5). The `activities` notation/extension alias remains explicitly listed with `ACT-020` in the Action spec; author new views as `action`. The `issues` notation is retired and absent from the current catalogue; use an issue tracker or the `operations/` work register. Preserve existing data and agree a migration before changing legacy forms.
 
 ### Drop in the canonical root files
 
