@@ -287,12 +287,12 @@ cross_layer_hints:
   - layer: 01_motivation
     fragment: |
       Source mentions "we need to triple revenue in three years" — the
-      corresponding GOAL-level extraction belongs to 01_motivation.
+      corresponding GOAL level extraction belongs to 01_motivation.
     derived_from: [INTERVIEW-cfo-strategy-2026-04-15-1]
   - layer: 03_application
     fragment: |
       Source mentions "the new CRM rollout is underway" — the
-      APPLICATION-level extraction belongs to 03_application.
+      APPLICATION level extraction belongs to 03_application.
     derived_from: [INTERVIEW-cfo-strategy-2026-04-15-1]
 ```
 

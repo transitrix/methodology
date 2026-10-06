@@ -22,7 +22,7 @@ Processes raw source material through the OKF single-repo MVP knowledge store. A
 python3 tools/knowledge_store_lint.py .
 ```
 
-The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gates](../../../../patterns/knowledge-store.md). Errors block promotion; warnings require explicit human acknowledgment in `_intake/log.md`. See [tests/README.md](tests/README.md) for the KS-001..017 code reference.
+The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gates](../../../patterns/knowledge-store.md). Errors block promotion; warnings require explicit human acknowledgment in `_intake/log.md`. See [tests/README.md](tests/README.md) for the KS-001..017 code reference.
 
 ---
 
@@ -43,7 +43,7 @@ knowledge/
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs).
+If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs).
 
 ---
 
@@ -66,7 +66,7 @@ State your assessment to the user before proceeding.
 
 ## Step 2 — Archive to processed/
 
-Copy the source file reference to `_intake/processed/` as an OKF source-document record using the template at [patterns/knowledge-store-templates/okf-source-document.md](../../../../patterns/knowledge-store-templates/okf-source-document.md).
+Copy the source file reference to `_intake/processed/` as an OKF source-document record using the template at [patterns/knowledge-store-templates/okf-source-document.md](../../../patterns/knowledge-store-templates/okf-source-document.md).
 
 Fill in:
 - `title:` — document filename or stated title
@@ -102,7 +102,7 @@ Append to `_intake/log.md`:
 
 ### 4a — Propose drafts (Gate 6)
 
-Read the source document from `_intake/originals/` (or the processed record). Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects and **write each to `_intake/drafts/<slug>.md`** using the template at [patterns/knowledge-store-templates/okf-knowledge-object-draft.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object-draft.md).
+Read the source document from `_intake/originals/` (or the processed record). Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects and **write each to `_intake/drafts/<slug>.md`** using the template at [patterns/knowledge-store-templates/okf-knowledge-object-draft.md](../../../patterns/knowledge-store-templates/okf-knowledge-object-draft.md).
 
 Each draft:
 - has a clear, discrete idea (one concept per file)
@@ -124,7 +124,7 @@ Wait for the user to approve, reject, or revise each draft. Do not promote anyth
 
 ### 4d — Dispose approved drafts
 
-For each approved draft, copy to `knowledge/<slug>.md` using [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../../patterns/knowledge-store-templates/okf-knowledge-object.md). **Remove** `review_status` and `ambiguity_note` from frontmatter. Delete the corresponding file under `_intake/drafts/`.
+For each approved draft, copy to `knowledge/<slug>.md` using [patterns/knowledge-store-templates/okf-knowledge-object.md](../../../patterns/knowledge-store-templates/okf-knowledge-object.md). **Remove** `review_status` and `ambiguity_note` from frontmatter. Delete the corresponding file under `_intake/drafts/`.
 
 Never overwrite an existing knowledge-object path. For approved re-curation, create the successor and add `superseded_by` to its predecessor in the same change, updating only that predecessor’s lifecycle `timestamp` alongside the pointer. Preserve its body and all assertion metadata, including any earlier `supersedes`. Record the source revision and both object paths in the `[admit]` log entry; keep both index rows.
 
@@ -195,7 +195,7 @@ PR body must include:
 Once the user reports the PR outcome, append to `_intake/log.md`:
 
 ```markdown
-- [assert] PR #<number> merged | admitted: [DRIV-NNN, GOAL-NNN, ...] | source: <processed-filename>
+- [assert] PR #<number> merged | admitted: [<DRIVER-NNN>, <GOAL-NNN>, ...] | source: <processed-filename>
 ```
 
 Or for rejected:

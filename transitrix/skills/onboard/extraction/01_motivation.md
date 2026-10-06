@@ -256,13 +256,13 @@ cross_layer_hints:
   - layer: 02_business
     fragment: |
       Source mentions "the customer-support intake process is being
-      overhauled" — the corresponding PROCESS-level extraction belongs
+      overhauled" — the corresponding PROCESS level extraction belongs
       to 02_business.
     derived_from: [INTERVIEW-cfo-strategy-2026-04-15-1]
   - layer: 03_application
     fragment: |
       Source mentions "we are migrating from SAP CRM to Salesforce" —
-      the APPLICATION-level extraction belongs to 03_application.
+      the APPLICATION level extraction belongs to 03_application.
     derived_from: [INTERVIEW-cfo-strategy-2026-04-15-1]
 ```
 

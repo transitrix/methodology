@@ -1,13 +1,20 @@
 // Unit tests for the C1 class-derivation logic in check-notations.mjs.
 // Run: node --test scripts/check-notations.test.mjs
 //
-// Exercises the pure functions only (no filesystem, no subprocess) — the
+// Exercises pure functions and isolated instruction-path fixtures — the
 // integration-level guarantee (the real repo's counts match its README) is
 // covered by running scripts/check-notations.mjs itself in CI.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import {
+  collectInstructionMarkdown,
+  findInstructionLinkFailures,
+  checkIdGrammar,
+  checkLayerEnumeration,
   deriveClassCounts,
   parseStatedViewCounts,
   findStandardIdentifierEmissions,
@@ -890,4 +897,123 @@ test('relation endpoint tables retain Project subtype and exclude driver-to-driv
 `);
   assert.deepEqual(vocabulary.get('source_trace').excludedPairs, rows.get('source_trace').excludedPairs);
   assert.throws(() => parseRelationsEnumTable(text.replace('ACTION(Project)', 'PRODUCT(Project)')), /unexpected subtype/);
+});
+
+
+// Maintainers exercise the same checker against installed instruction namespaces.
+// Fixtures stay ephemeral; the published skill files are checked in place in CI.
+test('skill instruction inventory includes protocols, prompts, templates and fixture docs', async () => {
+  const files = await collectInstructionMarkdown();
+  for (const name of [
+    'feedback/SKILL.md', 'knowledge-store/README.md',
+    'onboard/extraction/01_motivation.md', 'onboard/templates/AGENTS.md',
+    'knowledge-store/tests/fixtures/valid/knowledge/warehouse-finance-handoff.md',
+  ]) assert.ok(files.includes(resolve('transitrix/skills', name)), name);
+});
+
+test('instruction links resolve source, installed and fixture roots and reject missing targets', () => {
+  const root = mkdtempSync(join(tmpdir(), 'instruction-links-'));
+  const put = (name, text = '') => {
+    const path = join(root, name);
+    mkdirSync(join(path, '..'), { recursive: true });
+    writeFileSync(path, text);
+    return path;
+  };
+  try {
+    const skill = put('transitrix/skills/knowledge-store/SKILL.md');
+    put('patterns/knowledge-store.md');
+    assert.equal(findInstructionLinkFailures('[gate](../../../patterns/knowledge-store.md#gate)', skill, root).length, 0);
+    assert.equal(findInstructionLinkFailures('[gate](../../../../patterns/knowledge-store.md)', skill, root).length, 1);
+    const agent = put('transitrix/skills/onboard/templates/AGENTS.md');
+    const copilot = put('transitrix/skills/onboard/templates/copilot-instructions.md');
+    assert.equal(findInstructionLinkFailures('[pointer](.github/copilot-instructions.md)', agent, root).length, 0);
+    assert.equal(findInstructionLinkFailures('[guide](../AGENTS.md)', copilot, root).length, 0);
+    assert.equal(findInstructionLinkFailures('[guide](../AGENT.md)', copilot, root).length, 1);
+    assert.equal(findInstructionLinkFailures('[pointer](copilot-instructions.md)', agent, root).length, 1);
+    rmSync(copilot);
+    assert.equal(findInstructionLinkFailures('[pointer](.github/copilot-instructions.md)', agent, root).length, 1);
+    const fixture = put('transitrix/skills/knowledge-store/tests/fixtures/valid/knowledge/a.md');
+    put('transitrix/skills/knowledge-store/tests/fixtures/valid/knowledge/b.md');
+    assert.equal(findInstructionLinkFailures('[object](/knowledge/b.md)', fixture, root).length, 0);
+    assert.equal(findInstructionLinkFailures('[object](/knowledge/missing.md)', fixture, root).length, 1);
+    const other = put('transitrix/skills/knowledge-store/tests/fixtures/other/knowledge/a.md');
+    assert.equal(findInstructionLinkFailures('[object](/knowledge/b.md)', other, root).length, 1);
+    assert.equal(findInstructionLinkFailures('[escape](/../valid/knowledge/b.md)', fixture, root).length, 1);
+    const raw = put('transitrix/skills/ingest/tests/README.md');
+    put('transitrix/skills/ingest/tests/fixtures/raw/INTERVIEW-sample.md');
+    assert.equal(findInstructionLinkFailures('[raw](fixtures/raw/INTERVIEW-sample.md)', raw, root).length, 0);
+    assert.equal(findInstructionLinkFailures('[raw](fixtures/raw/INTERVIEW-missing.md)', raw, root).length, 1);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('instruction IDs distinguish explicit placeholders, prose and snapshot source IDs', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'instruction-ids-'));
+  const file = join(root, 'SKILL.md');
+  try {
+    writeFileSync(file, [
+      '`<GOAL-NNN>`', '`REGULATION-CFR-*`', '`INTERVIEW-cfo-...`',
+      '```yaml', 'description: PROCESS level extraction',
+      'id: CAPABILITY-V3.2', 'goal: GOAL-EXAMPLE-1', '```',
+      '`_intake/snapshots/REGULATION-GDPR-2016-1-2026-06-08.html`',
+    ].join('\n'));
+    const good = [];
+    await checkIdGrammar(good, [file]);
+    assert.deepEqual(good, []);
+    writeFileSync(file, [
+      '`GOAL-NNN`', '`PROCESS-level`', '`CAPABILITY-ORDER_FULFIL-3`',
+      '`GOAL-EXAMPLE-01`',
+      '`_intake/snapshots/REGULATION-BAD-01-2026-06-08.html`',
+    ].join('\n'));
+    const bad = [];
+    await checkIdGrammar(bad, [file]);
+    assert.equal(bad.length, 5);
+    assert.ok(bad.some(f => f.message.includes('REGULATION-BAD-01')));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('a broken real instruction and incomplete template tree still fail shared checks', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'instruction-regression-'));
+  try {
+    const feedback = join(root, 'SKILL.md');
+    writeFileSync(feedback, readFileSync('transitrix/skills/feedback/SKILL.md', 'utf8')
+      .replaceAll('CAPABILITY-V3', 'CAPABILITY-ORDER_FULFIL-3'));
+    const ids = [];
+    await checkIdGrammar(ids, [feedback]);
+    assert.equal(ids.length, 1);
+    const knowledge = resolve('transitrix/skills/knowledge-store/SKILL.md');
+    const links = findInstructionLinkFailures(readFileSync(knowledge, 'utf8')
+      .replaceAll('../../../patterns/', '../../../../patterns/'), knowledge);
+    assert.equal(links.length, 5);
+    const template = join(root, 'AGENTS.md');
+    const text = readFileSync('transitrix/skills/onboard/templates/AGENTS.md', 'utf8');
+    writeFileSync(template, text);
+    const good = [];
+    await checkLayerEnumeration(good, [template]);
+    assert.deepEqual(good, []);
+    writeFileSync(template, text.split('\n').filter(l => !l.includes('└── 05_implementation/')).join('\n'));
+    const bad = [];
+    await checkLayerEnumeration(bad, [template]);
+    assert.equal(bad.length, 1);
+    assert.match(bad[0].message, /05_implementation/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+
+test('actual onboarding guides resolve after copying to their documented destinations', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'installed-guides-'));
+  const files = ['AGENTS.md', 'ANALYST.md', 'VALIDATOR.md', 'INGEST.md', 'FINDINGS.md', 'copilot-instructions.md'];
+  try {
+    mkdirSync(join(root, '.github'));
+    for (const file of files) {
+      const destination = file === 'copilot-instructions.md' ? '.github/' + file : file;
+      writeFileSync(join(root, destination), readFileSync('transitrix/skills/onboard/templates/' + file));
+    }
+    for (const file of files) {
+      const destination = join(root, file === 'copilot-instructions.md' ? '.github/' + file : file);
+      assert.deepEqual(findInstructionLinkFailures(readFileSync(destination, 'utf8'), destination, root), []);
+    }
+    rmSync(join(root, 'FINDINGS.md'));
+    const guide = join(root, 'AGENTS.md');
+    assert.ok(findInstructionLinkFailures(readFileSync(guide, 'utf8'), guide, root).length > 0);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

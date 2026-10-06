@@ -191,7 +191,7 @@ def validate_goals(doc):
 ZONE_SKELETON = [
     "canon/elements/01_motivation", "canon/elements/02_business",
     "canon/elements/03_application", "canon/elements/04_technology",
-    "views/goals", "field/interviews", "codex/external", "codex/internal",
+    "canon/elements/05_implementation", "views/goals", "field/interviews", "codex/external", "codex/internal",
 ]
 
 

@@ -43,7 +43,7 @@ This repository is a **text-native enterprise architecture model** authored in t
 
 What lives here:
 
-- `canon/` — the **validated model** (the authoritative zone): `views/<notation>/` (model files in the canonical Transitrix notations) and `elements/` (reusable architecture elements by ArchiMate layer `01_motivation/` … `04_technology/`).
+- `canon/` — the **validated model** (the authoritative zone): `elements/` (reusable architecture elements by ArchiMate layer `01_motivation/` … `05_implementation/`). Views live separately at `views/<notation>/`.
 - `field/` — **raw, unprocessed inputs**: interviews, surveys, observations, drafts.
 - `codex/` — **external constraints** (laws, regulations) and **internal authority documents** (policies, standards).
 - `transitrix.yaml` — the adopter manifest: which methodology version, notations, and zones this repo uses.
@@ -109,15 +109,16 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
 │   └── copilot-instructions.md     # pointer → AGENTS.md (GitHub Copilot)
 ├── README.md
 ├── canon/                          # validated model — the authoritative zone
-│   ├── elements/                   # elements by ArchiMate layer
-│   │   ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
-│   │   ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
-│   │   ├── 03_application/         # APPLICATION, INTEGRATION, …
-│   │   └── 04_technology/          # NODE, ARTIFACT, …
-│   └── views/                      # one subfolder per notation
-│       ├── bpmn/   dgca/   goals/   capabilities/   processmap/
-│       ├── activities/   blocks/   scenarios/
-│       └── applications/   products/   issues/   process-blueprint/
+│   └── elements/                   # elements by ArchiMate layer
+│       ├── 01_motivation/          # GOAL, CONSTRAINT, DRIVER, …
+│       ├── 02_business/            # ROLE, PROCESS, CAPABILITY, RULE, …
+│       ├── 03_application/         # APPLICATION, INTEGRATION, …
+│       ├── 04_technology/          # NODE, ARTIFACT, …
+│       └── 05_implementation/      # ACTION, CHANGE
+├── views/                          # projections beside canon/
+│   ├── bpmn/   dgca/   goals/   capabilities/   processmap/
+│   ├── actions/   blocks/   scenarios/
+│   └── applications/   products/   process-blueprint/
 ├── field/                          # raw inputs — interviews, surveys, observations, drafts
 │   ├── interviews/   surveys/   observations/   drafts/
 └── codex/                          # external laws/regulations + internal policies/standards
@@ -127,13 +128,15 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
 
 The `views/` folder names are intentionally shorter than the canonical short names in places (`capabilities/`, `processmap/`) — this is the adopter-side convention.
 
+For existing repositories, `canon/views/` remains accepted as a deprecated layout; coexistence with root `views/` produces `MIX-001` (CONTRACT §14.5). The `activities` notation/extension alias remains explicitly listed with `ACT-020` in the Action spec; author new views as `action`. The `issues` notation is retired and absent from the current catalogue; use an issue tracker or the `operations/` work register. Preserve existing data and agree a migration before changing legacy forms.
+
 The agent does **not** change this layout without a deliberate decision recorded in the adopter's PR. Adopter-specific top-level additions (e.g. a `decisions/` ADR folder, a `glossary/` directory) are fine; renaming or removing the canonical folders is not.
 
 ### 3.1 Zones
 
 This repo separates three kinds of knowledge, each with its own trust contract (defined in the canon, `notations/CONTRACT.md` §5):
 
-- **`canon/`** — validated truth the organisation asserts about itself. Internally consistent and unique; the authoritative model. `elements/` and `views/` live here.
+- **`canon/`** — validated truth the organisation asserts about itself. Internally consistent and unique; the authoritative model. `elements/` lives here; `views/` is a sibling projection directory.
 - **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point; **not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, never a migration.
 - **`codex/`** — external constraints (laws, regulations, under `external/<jurisdiction>/`) and internal authority documents (policies, standards, under `internal/`), *given to* the organisation rather than authored by it.
 
@@ -161,7 +164,7 @@ The root `transitrix.yaml` pins which methodology release this repo conforms to 
 ```yaml
 transitrix: 1
 methodology_version: "7.0.0"
-notations: [dgca, goals, activities, issues, capability-map, codex]
+notations: [dgca, goals, action, capability-map, codex]
 zones: [canon, field, codex]
 ```
 
@@ -249,7 +252,7 @@ The agent does **not** publish externally-visible artefacts (PR descriptions, pu
 
 - **GitHub Issues on this repo.** Tasks live as issues on the adopter's repo; the agent reads them via `gh issue list -R <owner>/<repo>` and reports back via `gh issue comment`.
 - **Linear / Jira / Asana.** Tasks live in a project management tool; the agent reads tickets via the tool's API or pasted-in URLs; PRs link back via the tool's convention.
-- **Self-hosted issues register.** Tasks live in this repo as a `.issues.transitrix.yaml` file under `views/issues/` per `notations/views/12-issues.md`. The agent reads and updates the YAML directly.
+- **Repository work register.** Use `operations/` work items per `method/06-team-operations.md`. The retired `issues` notation and `notations/views/12-issues.md` are not current contracts; migrate an existing register deliberately rather than generating that format.
 
 ---
 

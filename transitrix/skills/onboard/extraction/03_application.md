@@ -202,8 +202,8 @@ If the source is ambiguous (Application vs Platform, Application vs Integration)
 confidence: low
 extraction_notes: |
   The source mentions "we run everything on our internal data hub".
-  This could be APPLICATION-type: platform (a general-purpose hosting
-  platform) or APPLICATION-type: data_store (a primary data
+  This could be APPLICATION type: platform (a general-purpose hosting
+  platform) or APPLICATION type: data_store (a primary data
   repository). Emitted as platform because "run everything on"
   suggests hosting, but flagged for human review.
 ```
@@ -223,7 +223,7 @@ cross_layer_hints:
   - layer: 02_business
     fragment: |
       Source mentions "the payment-processing PROCESS handles this end
-      to end" — the corresponding PROCESS-level extraction belongs to
+      to end" — the corresponding PROCESS level extraction belongs to
       02_business.
     derived_from: [INTERVIEW-cto-strategy-2026-03-22-1]
 ```

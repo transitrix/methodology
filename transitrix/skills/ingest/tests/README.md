@@ -20,5 +20,5 @@ The integrity test needs **PyYAML** (to parse the emitted YAML) and **Node** (th
 
 ## Fixtures
 
-- `fixtures/raw/INTERVIEW-sample.md` — a generic fake interview (a role, not a named person), `.md` so the integrity test needs no Markitdown.
+- [fixtures/raw/INTERVIEW-sample.md](fixtures/raw/INTERVIEW-sample.md) — a generic fake interview (a role, not a named person), `.md` so the integrity test needs no Markitdown.
 - `fixtures/extraction-result.json` — a canned stand-in for the agent's extraction result, so `emit-candidates` has an input without an LLM. It mixes a high-confidence relation (→ candidate) and a medium one (→ held-back suggestion).

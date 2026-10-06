@@ -148,8 +148,8 @@ correctly.
 3. **Refuse to write** (state why, then return to Step 2 to rephrase) if the composed
    text contains any of:
    - a token matching the canonical ID grammar, `<TYPE>-[<middle>-]<INTEGER>`
-     (`notations/IDS_AND_REFERENCES.md` §1) — e.g. `GOAL-RETENTION-12`,
-     `CAPABILITY-ORDER_FULFIL-3` — this is an element ID, not a generic description;
+     (`notations/IDS_AND_REFERENCES.md` §1, with the capability V/H form in §2) — e.g. `GOAL-RETENTION-12`,
+     `CAPABILITY-V3` — this is an element ID, not a generic description;
    - a path under `canon/`, `field/`, or `codex/`;
    - an organisation name, a real person's name, or any other organisation-identifying
      detail (the same real-names / "publish pattern, not client instance" rule applied
@@ -158,7 +158,7 @@ correctly.
    cannot be stated without one of the above, ask the user to rephrase it more
    generically. Loop until the text is clean or the user abandons the entry.
 
-**Worked negative example** — an observation stated as *"our `CAPABILITY-ORDER_FULFIL-3`
+**Worked negative example** — an observation stated as *"our `CAPABILITY-V3`
 element has no relation kind to link it to `GOAL-RETENTION-12` at Acme Corp"* is
 refused on all three grounds (two element IDs, one organisation name) and rewritten,
 with the user, as *"no relation kind connects a CAPABILITY element to a GOAL
