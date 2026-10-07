@@ -76,6 +76,13 @@ export async function checkIntakeProfile(orgRoot, profile) {
   const other = profile === 'ingest' ? 'knowledge-store' : 'ingest';
   if (evidence[other].length) fail(`${profile} requested; ${other} evidence at ${evidence[other].join(', ')}`);
 
+  // Both profiles require a marker that survives a normal commit and clone.
+  const markerVisibility = spawnSync('git', ['-C', root, 'check-ignore', '--no-index', '--', MARKER], {
+    encoding: 'utf8',
+  });
+  if (markerVisibility.status === 0) fail(`profile marker would be ignored: ${MARKER}`);
+  if (markerVisibility.status !== 1) fail('cannot verify profile marker visibility; use a Git workspace and retry the check');
+
   if (profile === 'knowledge-store') {
     // Git evaluates nested/global ignores and negations, including tracked files.
     const paths = ['_intake/processed/profile-check.md', ...processed.map(p => relative(root, p))];

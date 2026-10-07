@@ -37,8 +37,9 @@ run_extraction() { :; }   # e.g. claude -p "/transitrix:reg-intel segment+classi
 # -----------------------------------------------------------------------------
 
 echo "reg-intel daily — ${RUN_ID} — org ${ORG_ROOT}"
-# Refuse incompatible intake before hooks, network requests or state writes.
-transitrix-intake-profile check "$ORG_ROOT" --profile ingest
+# Check compatibility and record selection before hooks, network or scan-state writes.
+# A matching marker is left unchanged; commit a new marker with the workspace setup.
+transitrix-intake-profile select "$ORG_ROOT" --profile ingest
 due_json="$($CLI list-due "$ORG_ROOT" --as-of "$TODAY" --json)"
 
 # Iterate the due CODEX-IDs (jq optional; falls back to grep if jq is absent).

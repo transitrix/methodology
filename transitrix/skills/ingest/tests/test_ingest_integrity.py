@@ -155,6 +155,13 @@ def run_cli(*args):
     return subprocess.run(["node", CLI, *args], capture_output=True, text=True)
 
 
+def scaffold_fixture(org):
+    # Profile selection verifies that its marker can be committed by the adopter.
+    subprocess.run(["git", "init", "-q", org], check=True, capture_output=True)
+    subprocess.run(["git", "-C", org, "config", "core.excludesFile", os.devnull], check=True)
+    return run_cli("scaffold-intake", org)
+
+
 def part_b_pipeline():
     if not shutil.which("node"):
         print("SKIP Part B: `node` not found on PATH (the CLI is Node).")
@@ -167,7 +174,7 @@ def part_b_pipeline():
         org = os.path.join(work, "org")
         os.makedirs(org)
 
-        r = run_cli("scaffold-intake", org)
+        r = scaffold_fixture(org)
         check(r.returncode == 0, f"scaffold-intake failed: {r.stderr.strip()}")
 
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
@@ -273,7 +280,7 @@ def part_c_ig5():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -342,7 +349,7 @@ def part_d_ig1():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -402,7 +409,7 @@ def part_e_ig2():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -494,7 +501,7 @@ def part_f_ig3():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
         inbox = os.path.join(org, "_intake", "inbox")
@@ -548,7 +555,7 @@ def _coverage_org(manifest_body):
     work = tempfile.mkdtemp(prefix="ingest-cp-")
     org = os.path.join(work, "org")
     os.makedirs(org)
-    run_cli("scaffold-intake", org)
+    scaffold_fixture(org)
     with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
         fh.write(manifest_body)
     cdir = os.path.join(org, "_intake", "processing", "candidates")
@@ -639,7 +646,7 @@ def part_h_idempotent():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -737,7 +744,7 @@ def part_i_placement():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
         cdir = os.path.join(org, "_intake", "processing", "candidates")
@@ -805,7 +812,7 @@ def part_j_duplicate_source():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -883,7 +890,7 @@ def part_k_suggest_profile():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: core\n')
 
@@ -914,7 +921,7 @@ def part_k_suggest_profile():
         # Under `full`, nothing is out of profile → no delta proposed.
         org2 = os.path.join(work, "org2")
         os.makedirs(org2)
-        run_cli("scaffold-intake", org2)
+        scaffold_fixture(org2)
         with open(os.path.join(org2, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
         cdir2 = os.path.join(org2, "_intake", "processing", "candidates")
@@ -990,7 +997,7 @@ def part_m_id_grammar():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
         fdir = os.path.join(org, "field", "interviews")
@@ -1042,7 +1049,7 @@ def part_n_entity_resolution():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -1127,7 +1134,7 @@ def part_o_unresolved_extensions():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.6.0"\ncoverage_profile: full\n')
 
@@ -1227,7 +1234,7 @@ def part_p_preset_version_currency():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "%s"\ncoverage_profile: core\n' % PRESETS_VERSION)
 
@@ -1262,7 +1269,7 @@ def part_q_origin_classification():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.7.0"\ncoverage_profile: full\n')
 
@@ -1344,7 +1351,7 @@ def part_r_privacy_gate():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
         inbox = os.path.join(org, "_intake", "inbox")
@@ -1420,7 +1427,7 @@ def part_r_privacy_gate():
         # privacy-report.yaml records it and never leaks a fragment verbatim.
         org2 = os.path.join(work, "org2")
         os.makedirs(org2)
-        run_cli("scaffold-intake", org2)
+        scaffold_fixture(org2)
         with open(os.path.join(org2, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
                      'ingest:\n  privacy_gate:\n    enabled: true\n    on_detection: reject\n')
@@ -1449,7 +1456,7 @@ def part_r_privacy_gate():
         # with NO privacy-scan record at all.
         org3 = os.path.join(work, "org3")
         os.makedirs(org3)
-        run_cli("scaffold-intake", org3)
+        scaffold_fixture(org3)
         with open(os.path.join(org3, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n'
                      'ingest:\n  privacy_gate:\n    enabled: false\n')
@@ -1596,7 +1603,7 @@ def part_t_batch_naming():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 
@@ -1670,7 +1677,7 @@ def part_u_source_idempotency_after_move():
     try:
         org = os.path.join(work, "org")
         os.makedirs(org)
-        run_cli("scaffold-intake", org)
+        scaffold_fixture(org)
         with open(os.path.join(org, "transitrix.yaml"), "w", encoding="utf-8") as fh:
             fh.write('transitrix: 1\nmethodology_version: "0.5.0"\ncoverage_profile: full\n')
 

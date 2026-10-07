@@ -133,12 +133,35 @@ test('invalid marker, unknown selection, and symlink fail closed', async t => {
   assert.deepEqual(await readdir(join(root, 'elsewhere')), []);
 });
 
-test('OKF selection requires Git visibility verification', async t => {
-  const root = await workspace(t);
-  await rm(join(root, '.git'), { recursive: true });
-  await assert.rejects(selectIntakeProfile(root, 'knowledge-store'), /Git workspace/);
-  assert.deepEqual(await readdir(root), []);
-});
+for (const profile of ['ingest', 'knowledge-store']) {
+  for (const tracked of [false, true]) test(`${profile} refuses an ignored ${tracked ? 'tracked' : 'new'} marker without writes`, async t => {
+    const root = await workspace(t);
+    await put(root, '_intake/inbox/source.txt', 'retain these bytes');
+    if (tracked) {
+      await selectIntakeProfile(root, profile);
+      assert.equal(git(root, 'add', '_intake/profile.json').status, 0);
+    }
+    await put(root, '.gitignore', '_intake/profile.json\n');
+    const before = await snapshot(root);
+    await assert.rejects(checkIntakeProfile(root, profile), /profile marker would be ignored/);
+    await assert.rejects(selectIntakeProfile(root, profile), /profile marker would be ignored/);
+    assert.deepEqual(await snapshot(root), before);
+  });
+
+  test(`${profile} permits an explicitly unignored marker`, async t => {
+    const root = await workspace(t);
+    await put(root, '.gitignore', '_intake/*.json\n!_intake/profile.json\n');
+    await selectIntakeProfile(root, profile);
+    assert.equal(JSON.parse(await readFile(join(root, '_intake/profile.json'))).profile, profile);
+  });
+
+  test(`${profile} selection requires Git visibility verification`, async t => {
+    const root = await workspace(t);
+    await rm(join(root, '.git'), { recursive: true });
+    await assert.rejects(selectIntakeProfile(root, profile), /Git workspace/);
+    assert.deepEqual(await readdir(root), []);
+  });
+}
 
 test('reg-intel daily driver refuses OKF before invoking hooks or its CLI', async t => {
   const root = await workspace(t);
@@ -157,6 +180,49 @@ test('reg-intel daily driver refuses OKF before invoking hooks or its CLI', asyn
   assert.match(run.stderr, /profile conflict/);
   assert.deepEqual(await snapshot(root), before);
 });
+
+for (const conflict of [null, 'ignored-marker', 'OKF-record']) {
+  test(`legacy daily driver selects before its CLI or refuses unchanged: ${conflict || 'compatible'}`, async t => {
+    const root = await workspace(t);
+    await put(root, 'operations/config/scan-sources.yaml', 'sources: []\n');
+    await put(root, '_intake/inbox/raw.txt', 'retained input');
+    if (conflict === 'ignored-marker') await put(root, '.gitignore', '_intake/profile.json\n');
+    if (conflict === 'OKF-record') await put(root, '_intake/processed/source.md', okf);
+    const bin = join(root, 'bin');
+    const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
+    await put(root, 'bin/transitrix-intake-profile', `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(profileCli)} "$@"\n`);
+    // Replace npx so the real driver is exercised without network access. Every
+    // downstream command must observe the selection, including the first read.
+    await put(root, 'bin/npx', `#!/bin/sh
+set -eu
+cd ${quote(root)}
+${quote(process.execPath)} -e 'const p = require("./_intake/profile.json"); if (p.version !== 1 || p.profile !== "ingest") process.exit(91)'
+echo "$2" >> cli-calls
+if [ "$2" = list-due ]; then echo '[{"id":"REGULATION-1","monitoring_needed":false}]'; fi
+if [ "$2" = check-signal ]; then echo '{"proceed":false}'; fi
+`);
+    for (const name of ['npx', 'transitrix-intake-profile']) await chmod(join(bin, name), 0o755);
+    const before = await snapshot(root);
+    const run = () => spawnSync('bash', [join(repo, 'transitrix/skills/reg-intel/templates/reg-intel-daily.sh'), root], {
+      encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+    });
+    const first = run();
+    if (conflict) {
+      assert.equal(first.status, 2, first.stderr);
+      assert.match(first.stderr, /profile conflict/);
+      assert.deepEqual(await snapshot(root), before);
+    } else {
+      assert.equal(first.status, 0, first.stderr);
+      assert.match(await readFile(join(root, 'cli-calls'), 'utf8'), /^list-due\n/);
+      // Preserve even noncanonical formatting on an existing matching marker.
+      const marker = '{ "version": 1, "profile": "ingest" }\n';
+      await put(root, '_intake/profile.json', marker);
+      assert.equal(run().status, 0);
+      assert.equal(await readFile(join(root, '_intake/profile.json'), 'utf8'), marker);
+      assert.equal(await readFile(join(root, '_intake/inbox/raw.txt'), 'utf8'), 'retained input');
+    }
+  });
+}
 
 test('packed preflight works without a methodology checkout or vocabulary', async t => {
   const root = await workspace(t);
