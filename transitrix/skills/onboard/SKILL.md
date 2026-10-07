@@ -48,6 +48,7 @@ Do not assume. If the user picks a notation outside the family-selection table, 
 
 **1 — Read the repo silently.** Before speaking to the user:
 
+- Before intake setup or ingestion, run the profile check in Step 2, even in an existing repo. Reading or editing model files alone does not select an intake profile.
 - Read `transitrix.yaml` — note `methodology_version`, `notations:`, `zones:`.
 - List `views/` — note which notation sub-folders exist and which are non-empty.
 - List `canon/elements/` — note which ArchiMate layers have content.
@@ -79,6 +80,22 @@ After the first change is authored and validated, continue to **Step 6** (sugges
 ---
 
 ## Step 2 — Scaffold the repo
+
+**Before any setup write**, choose the intake profile with the adopter using the
+[deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility).
+Use `ingest` for raw documents → field/canon candidates and regulatory watching;
+use `knowledge-store` for OKF curation. For model-only setup, leave intake
+unconfigured and omit all intake ignore rules below. Existing intake evidence
+must be inspected before changing setup; never silently switch profiles.
+
+For either intake profile, run
+`transitrix-intake-profile check <repo-root> --profile <chosen-profile>`
+before changing files. Once the target directory is confirmed, run
+`transitrix-intake-profile select` with the same arguments before scaffolding to record the
+selection. Model-only setup runs neither command. Stop if the CLI is unavailable or the check refuses.
+For `knowledge-store`, hand off to `/transitrix:knowledge-store` Step 0 for intake
+setup; do not add the ingest ignore block or scaffold ingest directories. Model
+zones may still be added separately after that profile check succeeds.
 
 Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen target directory. The shape mirrors the worked example in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo and is defined for adopters in [`AGENTS.md`](https://github.com/transitrix/acme-corp/blob/main/AGENTS.md) §3.
 
@@ -192,7 +209,9 @@ State back to the user exactly which values you filled — the same transparency
 
 ### .gitignore — and the private `_intake/` workspace
 
-Initialise `.gitignore`:
+Initialise `.gitignore` without replacing existing rules. The intake block below
+applies **only to the `ingest` profile** selected above; model-only and OKF setup
+omit it. The knowledge-store skill owns OKF ignore rules.
 
 ```
 node_modules/
@@ -214,7 +233,7 @@ _intake/processed/*
 !_intake/**/.gitkeep
 ```
 
-**Why `_intake/` is private and `canon/` is shared.** `_intake/` holds raw dropped files and in-flight extraction candidates — a private scratch space, not version-of-record. Model content is the opposite: it is committed and shared. This includes `canon/unresolved/` — the holding area for objects ingestion could not yet TYPE ([`notations/CONTRACT.md`](https://github.com/transitrix/methodology/blob/main/notations/CONTRACT.md) §13). An unresolved object is still real model knowledge (it may even be admitted-accurate, only its TYPE is open), so it must be committed to shared `canon/unresolved/`, **never** left in the private `_intake/`. When the ingest skill scaffolds `_intake/`, it drops the `.gitkeep` files; if a user creates the folders by hand, add an empty `.gitkeep` to each of `inbox/`, `processing/`, `processed/`.
+**In the ingest profile, `_intake/` working content is private and `canon/` is shared.** `_intake/` holds raw dropped files and in-flight extraction candidates — a private scratch space, not version-of-record. Model content is the opposite: it is committed and shared. This includes `canon/unresolved/` — the holding area for objects ingestion could not yet TYPE ([`notations/CONTRACT.md`](https://github.com/transitrix/methodology/blob/main/notations/CONTRACT.md) §13). An unresolved object is still real model knowledge (it may even be admitted-accurate, only its TYPE is open), so it must be committed to shared `canon/unresolved/`, **never** left in the private `_intake/`. When the ingest skill scaffolds `_intake/`, it drops the `.gitkeep` files; if a user creates the folders by hand, add an empty `.gitkeep` to each of `inbox/`, `processing/`, `processed/`.
 
 Don't run `git init` unless the user asked for it.
 
@@ -240,7 +259,7 @@ Take the user's chosen notation from step 1. Copy the matching template from `${
 
 ### View notations (canon zone)
 
-For any of the 15 view notations (DGCA / Goals / Capability map / Process map / BPMN / Action schedule / Actions tree / Nested blocks / Scenarios / Applications / Products / Process Blueprint / Action Card / Compliance Impact / Coverage Metric), the destination is `views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
+For any view notation in the [maintained catalogue](../../../notations/README.md), the destination is `views/<notation-folder>/`. Naming convention: `<DOMAIN>.<short-name>.transitrix.yaml`. Ask the user for a short domain code (e.g. `strategy-2026`, `ORDER_FULFILMENT`, `CUSTOMER_ONBOARDING`). If they give a long name, suggest a kebab-case form.
 
 After the copy:
 - Open the file and read it to the user (or summarise its structure).
@@ -352,7 +371,7 @@ Use the matrix below to pick a notation. Full specs at `notations/<NN>-<name>.md
 | Design-facing document listing which application/technology elements realise which requirements | **SDD** | `*.sdd.transitrix.yaml` |
 | One flat, alphabetised name → definition lookup across the whole catalogue (TERM entries and every other TYPE's name/aliases/description alike) | **Glossary** | `*.glossary.transitrix.yaml` |
 
-**Family rule:** the strategy-chain notations split by shape. **DGCA** uses the **flat form** — top-level arrays at the document root (`factors[]` / `goals[]` / `changes[]` / `actions[]`), cross-references upstream inside the flat arrays. **Goals tree** and **Action schedule** (both since v2.0) are **pure projections** — the view document carries only `view_config`, and each `GOAL-…` / `ACTION-…` lives as a standalone element file under `canon/elements/…`; the parent link (Goals) and predecessor / duration / cross-refs (Action) live on the element files, not in the view. In all three, hierarchy uses `parent: <SAME-TYPE>-…` on the child; no nested wrapper keys.
+**Family rule:** **DGCA** uses flat root arrays (`factors[]` / `goals[]` / `changes[]` / `actions[]`). **Goals tree** supports inline `goal_types[]` / `goals[]` for a self-contained document and `view_config` projection after cross-document sharing; follow the [Goals source-of-truth rule](../../../notations/views/diagrams/04-goals.md#source-of-truth). **Action schedule** uses `view_config` to project standalone ACTION elements. Hierarchy uses `parent: <SAME-TYPE>-…` on the child; no nested wrapper keys.
 
 ### Zone primitives — not view documents
 
@@ -370,7 +389,7 @@ Schema: `notations/elements/14-codex.md` for codex; `notations/CONTRACT.md` §5�
 
 - **BPMN** — `notation: bpmn`. One root `process:` with `pools[].lanes[].elements[]` and `flows[]`. Elements typed (`startEvent`, `task`, `exclusiveGateway`, …); flows directed. Compiles to BPMN 2.0 XML.
 - **DGCA** — `notation: dgca`. Flat root arrays: `factors[]`, `goals[]`, `changes[]`, `actions[]`. Typed string IDs (`DRIVER-1`, `GOAL-RET-1`, `CHANGE-1`, `ACTION-ONBOARD-1`). Cross-refs in the upstream direction: `goal.factors: [DRIVER-…]`, `change.goals: [GOAL-…]`, `action.changes: [CHANGE-…]`. Optional `driver.references_constraint: [CONSTRAINT-…]`. DGA mode (no Changes): add `view_config.layers.changes: off` — `changes[]` becomes optional, actions link via `action.goals: [GOAL-…]`.
-- **Goals tree** — `notation: goals` (v2.0 pure projection). The view document carries a required `methodology_version: "3.0.0"`, a document `id: GOALS-…`, and a `view_config` (with `scope`, `goal_types[]` display vocabulary, and `display`). Element data is **not** inline — each `GOAL-…` is a standalone file at `canon/elements/01_motivation/goals/<GOAL-…>.yaml` (with its own `notation: goal` envelope, `type`, `level`, optional `parent: GOAL-…`, and admission / lifecycle fields per `ELEMENT_PRIMITIVES.md` §7.2). Root goals omit `parent`. Inline `goals[]` at document root is a `GOALS-008` error.
+- **Goals tree** — `notation: goals`. Both authoring forms are valid: inline `goal_types[]` / `goals[]` for a self-contained hierarchy (the starter), or `view_config` selecting standalone GOAL elements after promotion. Promote a goal when a second document references it, retaining its ID; the canonical destination is `canon/elements/01_motivation/goals/<GOAL-…>.yaml`. Root goals omit `parent`; children reference a parent GOAL ID. See the [Goals specification](../../../notations/views/diagrams/04-goals.md#source-of-truth) for the envelope and fields; inline goals are not an error.
 - **Capability map** — `notation: capability-map`. Root key `capability_map:`. Capabilities use a V/H sub-grammar (`CAPABILITY-V1.2`, `CAPABILITY-H1`); each capability carries `type: domain | supporting` and lifecycle fields. Store `current_maturity`, `target_maturity`, `target_date` and `owner_role` in sidecars beside canonical capability records, never inline in the map (see `guides/modelling-capabilities.md`).
 - **Process landscape map** — `notation: process-map`. Top-level catalogue of `PROCESS-…` IDs grouped into `operating`, `supporting`, `management`.
 - **Action schedule** — `notation: action` (v2.0 pure projection). The view document carries a required `methodology_version: "3.0.0"`, a document `id: ACTION_SCHED-…`, and a `view_config` (with `scope`, `schedule.start_date` + optional working `calendar`, and `display.view: network | gantt | both`). Element data is **not** inline — each `ACTION-…` is a standalone file at `canon/elements/05_implementation/actions/<ACTION-…>.yaml` with its own `notation: action` envelope, `type` (`Initiative | Programme | Project | Task`), `duration` (renamed from the v1 `duration_days`), optional `predecessors: [ACTION-…]`, `goals: [GOAL-…]`, `delivers_changes: [CHANGE-…]`, `parent: ACTION-…`, and admission / lifecycle fields (see `elements/24-action.md`). Renders as a PSND network with critical path plus a Gantt projection. Inline `actions[]` / `activities[]` at document root is an `ACT-010` error.

@@ -1,8 +1,17 @@
 # Transitrix Knowledge Store Skill
 
-The **OKF ingestion skill** for a Transitrix knowledge store. Processes raw source material through the OKF single-repo MVP pattern: assess → archive → route → extract → human review → write. All steps are performed by the agent with standard file tools — no external CLI required.
+The **OKF ingestion skill** for a Transitrix knowledge store. Processes raw source material through the OKF single-repo MVP pattern: assess → archive → route → extract → human review → write. The agent extracts and curates with standard file tools. Setup first runs the shared intake-profile preflight from `@transitrix/ingest-cli`.
 
 This directory is the **`knowledge-store` skill** within the `transitrix` plugin. Invoked as `/transitrix:knowledge-store`.
+
+## Intake profile selection
+
+Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
+files), or `knowledge-store` for OKF curation (committed source-document records,
+private originals). They require separate workspaces. Setup and subsequent intake
+runs must pass the shared CLI preflight; incompatible or ambiguous existing
+content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
+for selection, installation and retention rules.
 
 ---
 

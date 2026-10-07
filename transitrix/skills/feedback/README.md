@@ -2,8 +2,8 @@
 
 Helps a user go from "the methodology can't express this" (or "this tool made that
 harder than it should be") to a scrubbed, committed entry in the repo's own
-`operations/feedback.md` register — the entry point to the upstream feedback channel
-[`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.3 specifies
+`operations/feedback/feedback.md` journal (or preserved legacy `operations/feedback.md`) — the entry point to the upstream feedback channel
+[`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.2 specifies
 but ships no workflow for.
 
 This directory is the **`feedback` skill** within the `transitrix` plugin (the plugin
@@ -13,9 +13,9 @@ root is [`transitrix/`](../../), which carries the shared
 
 ## Why it exists
 
-`FINDINGS.md`'s propose → route → scrub protocol names `operations/feedback.md` as the
-landing place for a methodology-directed finding (`escalate-methodology`), and
-`method/06-team-operations.md` §3.3 defines the record's shape and status
+`FINDINGS.md`'s propose → route → scrub protocol uses the journal selected by
+[`SKILL.md` Step 0](SKILL.md#step-0--locate-or-scaffold-operationsfeedbackfeedbackmd) as the landing place for a methodology-directed finding (`escalate-methodology`), and
+`method/06-team-operations.md` §3.2 defines the record's shape and status
 vocabularies — but neither ships a workflow for actually *authoring* an entry. A user
 (or an autonomous agent resolving a `FINDINGS.md` routing decision) still had to
 hand-write the field set, allocate the next `FB-NNNN`, and remember the anonymisation
@@ -28,7 +28,9 @@ discipline themselves. This skill is that workflow.
   writing them here.
 - Not a submission mechanism — exporting an entry (on request only) renders
   ready-to-send text addressed to `hello@transitrix.com`; the skill never sends it,
-  never opens a PR or issue elsewhere, and never calls a network endpoint.
+  never opens a PR or issue elsewhere, and never calls an upstream submission
+  endpoint. An authorised push and PR in the adopter's repository deliver the
+  locally confirmed entry (Step 6).
 - Not an editor of past entries' substance — a later invocation updates `status` and
   `upstream` only; the original `observation`/`proposed`/`type`/`methodology_version`
   stay fixed once authored.

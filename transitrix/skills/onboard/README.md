@@ -6,11 +6,20 @@ The skill itself runs in Claude Code. What it **scaffolds** for the adopter is a
 
 This directory is the **`onboard` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest — name, version, license, keywords — consumed by Claude Code at install time, with one `skills/<name>/` directory per skill). This skill ships:
 
-- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the 14 view notations + codex zone primitives).
+- [`SKILL.md`](SKILL.md) — the agent-facing protocol (frontmatter + the six-step flow + an embedded cheat sheet for the [notation catalogue](../../../notations/README.md) + codex zone primitives).
 - [`templates/`](templates/) — starter files in three groups: **root scaffolding** (`transitrix.yaml` manifest + assistant-neutral `AGENTS.md` + GitHub Copilot pointer), **view notations** (one `.transitrix.yaml` per view notation), and **codex zone primitives** (external + internal).
 - [`extraction/`](extraction/) — per-layer extraction prompts for initial Canon population from Field artefacts (motivation / business / application).
 
 The plugin is **read-only** against the methodology canon. It does not ship the canon — when the user goes deeper than the embedded cheat sheet, the plugin fetches the full spec from `github.com/transitrix/methodology` via `WebFetch`.
+
+## Intake profile selection
+
+Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
+files), or `knowledge-store` for OKF curation (committed source-document records,
+private originals). They require separate workspaces. Setup and subsequent intake
+runs must pass the shared CLI preflight; incompatible or ambiguous existing
+content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
+for selection, installation and retention rules.
 
 ---
 
@@ -76,7 +85,7 @@ The scaffold also retains `ANALYST.md`, `VALIDATOR.md`, `INGEST.md`, and `FINDIN
 
 ### View notations (dropped into `views/<notation-folder>/` in Step 3)
 
-One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The 15 view templates are:
+One starter YAML per view notation, named `<notation>.<short-name>.transitrix.yaml` so the file extension already matches the canonical Studio recogniser. The starter templates below cover common choices; the complete maintained list is in [`SKILL.md` §Templates](SKILL.md#templates).
 
 | Notation | Template |
 |---|---|

@@ -69,6 +69,13 @@ to run. Recognition and promotion never admit an element or rewrite its local ID
 transitrix-ingest scaffold-intake <org-root>
 ```
 
+The scaffold first checks compatibility and records `ingest` in
+`_intake/profile.json`; a knowledge-store workspace or mixed evidence is refused
+before any write. Commit the marker with setup. On subsequent runs (including
+shortcuts that skip scaffolding), run
+`transitrix-intake-profile check <org-root> --profile ingest` before intake
+writes. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility).
+
 Idempotent — it never overwrites existing intake content. A source file flows `inbox/ → processing/ → processed/`. `_intake/` is a **per-user, private workspace** — its contents are git-ignored and not shared with other modellers, so nothing that participates in the model lives here (an untyped object goes to the shared `canon/unresolved/`, Step 7, never to `_intake/`). `scaffold-intake` drops a `.gitkeep` in each of `inbox/` / `processing/` / `processed/` so the folder skeleton stays in version control while the working files are ignored — the adopter's `.gitignore` carries `_intake/inbox/*`, `_intake/processing/*`, `_intake/processed/*` and `!_intake/**/.gitkeep` (the onboarding skill seeds these). In v0 the `_intake/` convention is **skill-local**: it is documented here and in [`templates/_intake.README.md`](templates/_intake.README.md), not yet reserved in the methodology MANIFEST/CONTRACT. (Promotion to a reserved org-structure convention is a separate proposal once the skill stabilises.)
 
 ---

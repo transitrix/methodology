@@ -62,4 +62,4 @@ List all candidate elements, grouped by type. Then list all candidate relations.
 - Total elements and relations proposed
 - Elements or passages skipped and why (out of scope, too vague, existing canon ID known)
 
-The agent will commit the candidates to a branch and open a PR — no canon file is written directly.
+Save these proposals in a YAML review file under `_intake/drafts/` (for example `canon-candidates.yaml`), outside `canon/`. Follow SKILL Step 5b: the reviewer assigns unique canonical IDs and resolves relation endpoints before canonical placement and validation. Unresolved placeholders block the canon PR and can never become admitted IDs. Relations remain `medium` or lower. Human admission is still required; extraction does not write admitted canon.

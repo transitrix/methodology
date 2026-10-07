@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 
 # Transitrix Knowledge Store Skill
 
-Processes raw source material through the OKF single-repo MVP knowledge store. All work is done by the agent using Read/Write/Edit tools — no external CLI required. A human reviews and approves before anything lands in `knowledge/` or `canon/`.
+Processes raw source material through the OKF single-repo MVP knowledge store. Extraction and curation use the agent's Read/Write/Edit tools; setup requires the shared intake-profile preflight from `@transitrix/ingest-cli`. A human reviews and approves before anything lands in `knowledge/` or `canon/`.
 
 ---
 
@@ -28,6 +28,20 @@ The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gate
 
 ## Step 0 — Check the MVP structure
 
+Before any write, select the **knowledge-store** deployment profile using the
+[compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility).
+Run the shared CLI preflight (see that contract for local installation):
+
+```bash
+transitrix-intake-profile check <repo-root> --profile knowledge-store
+transitrix-intake-profile select <repo-root> --profile knowledge-store
+```
+
+Stop if unavailable or refused; do not scaffold, move sources or change ignore
+rules to bypass a conflict. Ordinary ingest/reg-intel belongs in a separate
+workspace. Commit `_intake/profile.json` with setup. On later runs repeat the
+read-only check before any write, including when the marker already exists.
+
 Verify the repo has the expected layout:
 
 ```
@@ -43,7 +57,7 @@ knowledge/
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs).
+If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs). Never ignore `_intake/processed/`. Re-run the profile check after setup and before committing; explicitly verify each new source-record path is not ignored before writing it.
 
 ---
 
@@ -168,11 +182,11 @@ For each object held because it **conflicts** with existing knowledge (not admit
 
 Using the extraction prompt at [prompts/extract-canon.md](prompts/extract-canon.md), identify candidate Transitrix elements (DRIVER, GOAL, CHANGE, CAPABILITY, ACTOR, ROLE, PROCESS, APPLICATION, PRODUCT, etc.) and typed relations. Be conservative on relations — only propose a relation when the source explicitly states the connection.
 
-For each candidate, draft a YAML block in the format expected by `canon/elements/<type>/`:
+Draft candidate YAML blocks in a YAML review file under `_intake/drafts/` (for example `canon-candidates.yaml`), outside `canon/`. These are extraction proposals, not valid canonical elements yet:
 
 ```yaml
 type: DRIVER
-id: DRIV-NNN        # assign the next available integer
+id: <TYPE>-TBD     # review placeholder, never an admitted ID
 name: ""
 description: ""
 derived_from: [<processed-source-document-path>]
@@ -180,15 +194,31 @@ admitted_to: pending
 extraction_confidence: high | medium | low
 ```
 
-### 5b — Open PR
+### 5b — Review IDs, validate, then open PR
 
-Create a branch `knowledge-store/ingest-<YYYY-MM-DD>-<slug>` and commit the candidate YAML files. Open a PR titled `[Knowledge Store] Ingest: <source-document-title>`.
+1. Present the draft candidates to the human reviewer. Keep `admitted_to: pending`;
+   no admission record is invented. Resolve duplicate candidates against existing
+   canon before reserving IDs.
+2. During review, replace every `*-TBD` placeholder with a unique ID under
+   [IDS_AND_REFERENCES §§1–2](../../../notations/IDS_AND_REFERENCES.md), including
+   the CAPABILITY V/H exception. Resolve every relation endpoint to a reviewed ID.
+   A placeholder is never a canonical ID, filename or admitted reference.
+3. Prepare reviewed candidates at the TYPE's canonical placement from
+   [ELEMENT_PRIMITIVES §4](../../../notations/ELEMENT_PRIMITIVES.md), not a generic
+   per-type path. Apply the required envelope and TYPE fields; retain provenance
+   and pending status until human admission under [CONTRACT §6](../../../notations/CONTRACT.md).
+4. Run the adopter's canonical validators for ID uniqueness, reference consistency,
+   required fields and placement. Unresolved placeholders or failed checks block
+   the canon PR; keep those proposals in the draft YAML review file. Review flags
+   such as `extraction_confidence` never become admitted canon fields.
+
+Create a branch `knowledge-store/ingest-<YYYY-MM-DD>-<slug>` and commit only the reviewed, validated candidate files for human admission. Open a PR titled `[Knowledge Store] Ingest: <source-document-title>`.
 
 PR body must include:
 - Link to the processed source-document record
 - Table of proposed elements with type, name, and extraction_confidence
 - Note on any relations proposed
-- Instruction: "Review, revise IDs to avoid conflicts, and merge when satisfied."
+- Instruction: "Review the assigned IDs, resolved references, provenance and validation results; complete admission only when satisfied. Never merge unresolved placeholders or pending proposals as admitted canon."
 
 ### 5c — Log assertion outcome (after PR is merged or closed)
 
@@ -210,6 +240,6 @@ Or for rejected:
 
 - Does not merge PRs. The canon gate is always a human.
 - Does not write to `knowledge/` before user review of drafts (Gate 6 — drafts land in `_intake/drafts/` only).
-- Does not assign `extraction_confidence: high` to relations — relations are flagged `medium` or lower unless the source text is unambiguous.
+- Does not assign `extraction_confidence: high` to relations — relations are always flagged `medium` or lower and require human validation.
 - Does not remove or rewrite existing knowledge objects. Re-curation adds a successor and lifecycle metadata under Gate 2.1.
 - Does not process multiple documents in the same run unless explicitly asked — one source per run keeps the log clean.

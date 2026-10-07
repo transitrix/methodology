@@ -39,6 +39,22 @@ Also confirm you are operating inside a Transitrix adopter repository (a `transi
 
 ---
 
+### Intake compatibility preflight
+
+Before setup or any run, use the shared `@transitrix/ingest-cli` preflight:
+
+```bash
+transitrix-intake-profile check <org-root> --profile ingest
+transitrix-intake-profile select <org-root> --profile ingest
+```
+
+Use the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
+for local installation and detection details. Stop if unavailable or refused;
+never run hooks, write snapshots or update scan state after refusal. Ingest and
+reg-intel may share this profile. OKF knowledge-store requires a separate
+workspace. Commit the profile marker on first setup; subsequent checks are
+read-only when using `transitrix-intake-profile check`.
+
 ## Step 1 — Read the source registry
 
 The "source registry" is the centralised watch-list at **`operations/config/scan-sources.yaml`** (see [`14-codex.md`](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md) §3.7), not a walk of the `codex/` directory. `list-due` reads this file to determine which sources to scan; it does not discover sources by walking the disk. For each entry in the watch-list, the scheduler then reads the codex artefact's `scan` block (`scan.last_scanned_at`, `scan.next_scan_due`, `scan_frequency`) to get the runtime state — exactly the operating state defined in §3.4–3.5. Keeping the scan history embedded in each codex YAML makes it auditable via git; the separate watch-list makes discovery explicit and allows future non-codex connector types (APIs, Confluence, etc.) to be added without requiring codex artefacts.
