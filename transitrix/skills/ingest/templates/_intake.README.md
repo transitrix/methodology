@@ -40,3 +40,9 @@ _intake/processed/*
 ## Status
 
 In the current methodology version the `_intake/` convention is defined by the ingest skill (skill-local). It is not yet a reserved org-structure convention in the methodology `MANIFEST.md` / `CONTRACT.md`; that promotion is a separate decision taken once the skill stabilises.
+
+This workspace uses the `ingest` deployment profile: processed raw files remain
+private/gitignored. OKF knowledge-store uses a separate workspace with committed
+source records at the same relative path; co-installation is unsupported. Run
+`transitrix-intake-profile check <org-root> --profile ingest` before writes.
+The committed `profile.json` records setup selection and does not override conflicts.

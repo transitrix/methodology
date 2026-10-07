@@ -1,6 +1,6 @@
 ---
 name: Transitrix Feedback
-description: Author an upstream methodology-directed finding as a gated, anonymised entry in the repo's own operations/feedback.md register — the input door to the upstream feedback channel method/06-team-operations.md §3.2 specifies but ships no workflow for. Routes non-methodology observations away first, runs an interview, composes and shows the scrubbed wording for confirmation before writing, allocates the next FB-NNNN, and (on request only) renders a ready-to-send message for hello@transitrix.com without ever transmitting it itself.
+description: Author an upstream methodology-directed finding as a gated, anonymised entry in the repo's own feedback journal (operations/feedback/feedback.md, or preserved legacy operations/feedback.md) — the input door to the upstream feedback channel method/06-team-operations.md §3.2 specifies but ships no workflow for. Routes non-methodology observations away first, runs an interview, composes and shows the scrubbed wording for confirmation before writing, allocates the next FB-NNNN, and (on request only) renders a ready-to-send message for hello@transitrix.com without ever transmitting it upstream itself.
 when_to_use: User says "log this as feedback for the methodology", "this is a gap in the notation, write it up", "raise a finding upstream", "update FB-0002 to triaged", "what feedback have we filed", or an agent operating under FINDINGS.md's propose → route → scrub protocol resolves an incidental finding's routing to escalate-methodology and needs to write the resulting entry.
 min_version: "2.1.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
@@ -22,8 +22,7 @@ root is [`transitrix/`](../../), which carries the shared
 [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, one
 `skills/<name>/` directory per skill). Invoked as `/transitrix:feedback`. Written for
 any coding agent that can read/write files and run shell commands, not only Claude
-Code — same portability discipline as the `adr` skill
-([`transitrix/skills/adr`](../adr/)) — check its structure before changing this one.
+Code.
 
 Mechanism this skill sequences (read before or during first use):
 [`method/06-team-operations.md`](../../../method/06-team-operations.md) §3.2 (the
@@ -45,12 +44,11 @@ This `SKILL.md` does not restate the mechanism — it sequences it.
    confirmation. It refuses to write an entry carrying a canonical-grammar element ID,
    a `canon/`/`field/` path, or organisation-identifying detail — this is a hard
    refusal, not a suggestion the user can wave through. See Step 3.
-3. **No network, ever, from this skill.** Writing an entry is a local commit to the
-   adopter's own repo (Step 5, PR — same as `adr`). Exporting an entry (Step 7) only
-   renders text for the user to paste into an email themselves — it never sends,
-   never opens an issue or PR on any other repo, and never calls a network endpoint.
-   The worst this skill can do unattended is leave a `proposed`-shaped local entry
-   sitting in a PR.
+3. **Adopter-repository delivery only; no automatic upstream export.** Step 6
+   permits an authorised push and PR in the adopter's own repository after the
+   scrub and confirmation gates. Step 7 only renders text for the user to send;
+   it never transmits the entry upstream, opens an issue or PR in another
+   repository, or calls an external submission endpoint.
 
 ---
 
@@ -274,8 +272,8 @@ never as part of Steps 4–6):
 - Does **not** skip or soften the scrub gate — an entry carrying an element ID, a
   canon path, or organisation-identifying detail is refused, not flagged as a
   warning the user can override (Step 3).
-- Does **not** send, transmit, or push an entry anywhere on its own, at any step —
-  export (Step 7) only renders text; the human sends it, if they choose to at all.
+- Does **not** export entries upstream — Step 7 only renders text for the human
+  to send. Authorised adopter-repository push/PR delivery belongs to Step 6.
 - Does **not** invent a second feedback location — the journal is either a single file
   (`operations/feedback.md`) or a directory-based journal (`operations/feedback/feedback.md`),
   never both, per `method/06-team-operations.md` §3.2. If both layouts exist (migration conflict),

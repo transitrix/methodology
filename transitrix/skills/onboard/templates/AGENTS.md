@@ -70,7 +70,7 @@ The canonical Transitrix methodology lives at [github.com/transitrix/methodology
 
 1. The canon wins. Always.
 2. Update the local file to conform, or open a PR proposing the change.
-3. If the canon itself appears wrong or incomplete (a genuine gap, not a typo), raise an issue against `transitrix/methodology` rather than diverging silently.
+3. If the canon itself appears wrong or incomplete (a genuine gap, not a typo), follow [`FINDINGS.md`](FINDINGS.md) §2: route and scrub a local feedback record. Upstream export is a separate opt-in step; do not open an upstream issue automatically.
 
 The agent reads the canon as **read-only**. It never edits methodology files from this repo, and it never copies methodology content into this repo wholesale (link to it instead).
 

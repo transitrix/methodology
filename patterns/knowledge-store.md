@@ -11,6 +11,50 @@
 
 Transitrix includes an optional knowledge store component for organisations that need a structured curation layer between raw source material and the canonical model. The knowledge store is part of the methodology — not a separate or competing system. It uses [Google Cloud Open Knowledge Format (OKF) v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) as its storage format, which provides interoperability with OKF-compatible tooling while keeping knowledge objects fully within the Transitrix lifecycle.
 
+## Deployment profiles and intake compatibility
+
+Choose one intake profile per repository/workspace before setup:
+
+| Profile | Consumer | `_intake/processed/` ownership and retention |
+|---|---|---|
+| `ingest` | Ordinary ingest and reg-intel, together | Completed raw source files, private/gitignored |
+| `knowledge-store` | OKF curation | Committed OKF `source-document` records; raw originals stay in gitignored `_intake/originals/` |
+
+These profiles are **not supported together in one workspace**. Use separate
+workspaces if both are needed. This is a deployment boundary, not a migration or
+co-installation contract. Leave existing files and retention rules untouched.
+
+Before setup or an ingestion run, use the shared preflight in `@transitrix/ingest-cli`
+(Node 20+). Pre-1.0, install it from a methodology checkout with
+`npm install -g ./packages/ingest-cli`; this package is not yet published to npm.
+The `transitrix-intake-profile` binary is independent of document conversion,
+extraction and vocabulary loading:
+
+```bash
+transitrix-intake-profile check <repo-root> --profile knowledge-store
+transitrix-intake-profile select <repo-root> --profile knowledge-store
+```
+
+Use `--profile ingest` for the ordinary ingest/reg-intel profile. `check` is
+read-only; `select` repeats the check and records the explicit selection in
+`_intake/profile.json` (version 1), without overwriting an existing selection.
+Commit that marker with setup. It is skill-local operational metadata, not a
+manifest field, coverage profile or permission grant. Re-run the check before
+subsequent intake writes; the marker does not override conflicting evidence.
+
+Detection checks the marker, profile-specific directories, the regulatory watch
+list, and processed content (OKF source-document frontmatter versus raw files).
+Mixed evidence, unknown intake entries, symlinks or unreadable evidence stop setup
+for adopter inspection. The OKF check also uses Git's effective ignore rules,
+including nested/global rules and tracked files, to refuse hidden source records.
+It requires an existing Git workspace; if absent, request authorised Git setup
+before retrying. New or empty intake directories and shared `inbox/` alone do not
+choose a profile. Explicit selection is required. No tool silently renames paths,
+changes ignore rules, force-adds records, migrates data, or combines profiles.
+A conflict is resolved by selecting a separate compatible workspace, not by
+removing evidence or changing the marker. If the preflight is unavailable, stop
+setup instead of reimplementing or skipping it.
+
 ## Problem
 
 Raw source material — interview notes, meeting summaries, research documents — accumulates faster than it can be curated into the canonical model. Authors dump directly into `canon/` and quality degrades, or they leave everything in `field/` and canon never grows. There is no structured hand-off between "collected" and "validated".

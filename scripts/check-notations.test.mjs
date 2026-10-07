@@ -981,9 +981,12 @@ test('a broken real instruction and incomplete template tree still fail shared c
     await checkIdGrammar(ids, [feedback]);
     assert.equal(ids.length, 1);
     const knowledge = resolve('transitrix/skills/knowledge-store/SKILL.md');
-    const links = findInstructionLinkFailures(readFileSync(knowledge, 'utf8')
+    const knowledgeText = readFileSync(knowledge, 'utf8');
+    const links = findInstructionLinkFailures(knowledgeText
       .replaceAll('../../../patterns/', '../../../../patterns/'), knowledge);
-    assert.equal(links.length, 5);
+    const patternLinks = [...knowledgeText.matchAll(/\]\(\.\.\/\.\.\/\.\.\/patterns\//g)].length;
+    assert.ok(patternLinks >= 5);
+    assert.equal(links.length, patternLinks);
     const template = join(root, 'AGENTS.md');
     const text = readFileSync('transitrix/skills/onboard/templates/AGENTS.md', 'utf8');
     writeFileSync(template, text);
@@ -1015,5 +1018,24 @@ test('actual onboarding guides resolve after copying to their documented destina
     rmSync(join(root, 'FINDINGS.md'));
     const guide = join(root, 'AGENTS.md');
     assert.ok(findInstructionLinkFailures(readFileSync(guide, 'utf8'), guide, root).length > 0);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('knowledge-store placeholders cannot pass the canonical repository ID check', async () => {
+  const { repoCheck } = await import('../packages/ingest-cli/src/repo-check.mjs');
+  const root = mkdtempSync(join(tmpdir(), 'canon-review-'));
+  try {
+    const dir = join(root, 'canon/elements/01_motivation/drivers');
+    mkdirSync(dir, { recursive: true });
+    const file = join(dir, 'candidate.yaml');
+    const draft = 'id: DRIVER-TBD\nname: Draft pressure\nadmitted_to: pending\n';
+    writeFileSync(file, draft);
+    const pending = await repoCheck(root);
+    assert.ok(pending.integrity.red_flags.some(f => f.includes('canonical grammar')));
+    writeFileSync(file, draft.replace('DRIVER-TBD', 'DRIVER-1'));
+    const reviewed = await repoCheck(root);
+    assert.ok(!reviewed.integrity.red_flags.some(f => f.includes('canonical grammar')));
+    // A valid ID alone is not evidence of completed admission.
+    assert.match(readFileSync(file, 'utf8'), /admitted_to: pending/);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });

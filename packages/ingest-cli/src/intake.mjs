@@ -5,6 +5,8 @@
 import { mkdir, rename, access, readFile, writeFile } from 'node:fs/promises';
 import { join, dirname, resolve, basename } from 'node:path';
 
+import { selectIntakeProfile } from './intake-profile.mjs';
+
 export const INTAKE = '_intake';
 export const STAGES = ['inbox', 'processing', 'processed'];
 
@@ -22,6 +24,7 @@ async function exists(p) {
 // .gitignore pairs `_intake/<stage>/*` with `!_intake/**/.gitkeep`.
 export async function scaffoldIntake(orgRoot) {
   const root = resolve(orgRoot);
+  await selectIntakeProfile(root, 'ingest');
   const created = [];
   const existing = [];
   for (const stage of STAGES) {

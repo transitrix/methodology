@@ -6,6 +6,15 @@ This directory is the **`ingest` skill** within the `transitrix` plugin (the plu
 
 > **Status — operational.** Beyond the agent-facing protocol ([`SKILL.md`](SKILL.md)), JSON schemas ([`schemas/`](schemas/)), and the `_intake/` convention ([`templates/_intake.README.md`](templates/_intake.README.md)), the deterministic CLI ([`@transitrix/ingest-cli`](../../../packages/ingest-cli/)) implements all subcommands and is covered by a no-API-key integrity test (see [Roadmap](#roadmap)). The skill's Step 0 pre-check still stops cleanly if the CLI is not installed in a given environment.
 
+## Intake profile selection
+
+Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
+files), or `knowledge-store` for OKF curation (committed source-document records,
+private originals). They require separate workspaces. Setup and subsequent intake
+runs must pass the shared CLI preflight; incompatible or ambiguous existing
+content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
+for selection, installation and retention rules.
+
 ---
 
 ## The one rule

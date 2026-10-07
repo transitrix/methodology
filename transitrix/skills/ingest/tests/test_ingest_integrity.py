@@ -1794,6 +1794,14 @@ admission = subprocess.run(
 check(admission.returncode == 0,
       "Candidate admission regression: " + admission.stdout + admission.stderr)
 
+# Exercise profile refusal, data preservation and packaged setup in this CI gate.
+profiles = subprocess.run(
+    ["node", "--test", os.path.join(REPO_ROOT, "packages", "ingest-cli", "src", "intake-profile.test.mjs")],
+    capture_output=True, text=True, timeout=60,
+)
+check(profiles.returncode == 0,
+      "Intake profile compatibility: " + profiles.stdout + profiles.stderr)
+
 if _failures:
     print("FAIL - Transitrix Ingest skill integrity:")
     for f in _failures:

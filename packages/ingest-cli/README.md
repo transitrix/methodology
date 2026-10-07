@@ -119,3 +119,13 @@ packages/ingest-cli/
 ```
 
 The agent-facing extraction prompts that produce the `--from <result.json>` input live with the skill, at `transitrix/skills/ingest/prompts/`.
+
+## Intake compatibility
+
+`transitrix-intake-profile check <org-root> --profile ingest|knowledge-store` is a read-only
+preflight for separate ingestion workspaces. `transitrix-intake-profile select` accepts the
+same arguments and records the checked selection in `_intake/profile.json`.
+`scaffold-intake` enforces and records `ingest` before creating any directories.
+Neither command changes existing content or ignore rules. OKF checks require Git
+so ignored source records cannot be silently hidden. See the
+[deployment contract](../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility).

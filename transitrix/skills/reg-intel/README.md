@@ -6,6 +6,15 @@ This directory is the **`reg-intel` skill** within the `transitrix` plugin (the 
 
 > **Status — design v0.** The agent-facing protocol ([`SKILL.md`](SKILL.md)) is published; the deterministic CLI (`@transitrix/reg-intel-cli`) is the next increment. Until the CLI ships, Step 0 of the skill stops cleanly in any environment without it.
 
+## Intake profile selection
+
+Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
+files), or `knowledge-store` for OKF curation (committed source-document records,
+private originals). They require separate workspaces. Setup and subsequent intake
+runs must pass the shared CLI preflight; incompatible or ambiguous existing
+content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
+for selection, installation and retention rules.
+
 ---
 
 ## The two rules
