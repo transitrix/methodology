@@ -61,11 +61,47 @@ function check(condition, message) {
   check(!hasUnescapedAmpersand, 'No unescaped ampersands in content string');
 }
 
-// Test 5: First page omits footer
+// Test 5: Issued identity survives on every page, including a one-page document.
 {
+  const metadata = {
+    issuer: 'Test Corp',
+    issued_at: '2026-09-02T00:30:00Z',
+    document_identity: 'SPEC-v2.0',
+    repository_commit: 'a1b2c3d4e5f6',
+  };
+  for (const content of ['<p>One page</p>', '<figure class="diagram-wide">Wide view</figure>']) {
+    const html = wrapHtmlForPrintRendering(content, metadata);
+    const css = html.match(/<style>([\s\S]*?)<\/style>/)[1];
+    check(!/@page[^{}]*:first/.test(css), 'Issued document has no first-page override');
+    check(!/content:\s*(?:""|none)/.test(css), 'Issued footer is never suppressed');
+    for (const selector of ['@page', '@page landscape']) {
+      const rule = css.slice(css.indexOf(`${selector} {`)).match(/^[\s\S]*?@bottom-center\s*\{([^}]+)\}/)?.[1] || '';
+      for (const text of ['Test Corp', 'Sep 2, 2026', 'SPEC-v2.0', 'a1b2c3d', 'counter(page)', 'counter(pages)']) {
+        check(rule.includes(text), `${selector} footer retains ${text}`);
+      }
+    }
+  }
   const css = generatePagedMediaCss({ issuer: 'Test' });
-  check(css.includes('@page :first'), 'CSS includes :first pseudo-page');
-  check(css.includes('@page :first') && css.includes('content: ""'), 'First page footer is empty');
+  check(/@page :first\s*\{\s*@bottom-center\s*\{\s*content: "";/.test(css),
+    'Non-issued title page retains footer suppression');
+}
+
+// Issue dates must not change when the host timezone changes.
+{
+  const originalTZ = process.env.TZ;
+  try {
+    for (const issued_at of ['2026-09-02T00:30:00Z', '2026-09-02', '2026-09-01T17:30:00-07:00']) {
+      const outputs = ['UTC', 'America/Los_Angeles'].map(timeZone => {
+        process.env.TZ = timeZone;
+        return generatePagedMediaCss({ issuer: 'Test', issued_at, document_identity: 'DOC' });
+      });
+      check(outputs[0] === outputs[1], `Issue date is host-independent: ${issued_at}`);
+      check(outputs[0].includes('Sep 2, 2026'), `Issue date uses UTC: ${issued_at}`);
+    }
+  } finally {
+    if (originalTZ === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTZ;
+  }
 }
 
 // Test 6: Landscape pages included

@@ -182,24 +182,49 @@ function check(condition, message) {
   check(result === html, 'Figures without figcaption are skipped');
 }
 
-// Test 13: formatFigureCaptions date formatting for various dates
+// Test 13: Exact UTC dates, including midnight and year boundaries.
 {
-  const tests = [
-    { generated_at: '2026-01-15T10:00:00Z', shouldContain: 'Jan' },
-    { generated_at: '2026-12-31T23:59:00Z', shouldContain: '', isYearEdge: true }, // Timezone-dependent edge case
-    { generated_at: '2025-06-01T00:00:00Z', shouldContain: 'Jun' },
-  ];
-
-  for (const test of tests) {
-    const html = `<figure data-snapshot-id="snap"><figcaption>Test</figcaption></figure>`;
-    const snapshots = { 'snap': { generated_at: test.generated_at } };
-    const result = formatFigureCaptions(html, snapshots);
-    const hasDate = /Test \([A-Za-z]+ \d+, \d{4}\)/.test(result);
-    if (test.isYearEdge) {
-      check(hasDate, `Date formats correctly (edge case): ${test.generated_at}`);
-    } else {
-      check(result.includes('Test (') && result.includes(test.shouldContain), `Date formats correctly: ${test.generated_at}`);
+  const originalTZ = process.env.TZ;
+  const html = '<figure data-snapshot-id="snap"><figcaption>Test</figcaption></figure>';
+  try {
+    for (const [generated_at, expected] of [
+      ['2026-01-15T10:00:00Z', 'Jan 15, 2026'],
+      ['2026-12-31T23:59:00Z', 'Dec 31, 2026'],
+      ['2025-06-01T00:00:00Z', 'Jun 1, 2025'],
+      ['2026-09-02T00:30:00Z', 'Sep 2, 2026'],
+      ['2026-09-01T17:30:00-07:00', 'Sep 2, 2026'],
+      ['2026-09-02', 'Sep 2, 2026'],
+    ]) {
+      const outputs = ['UTC', 'America/Los_Angeles'].map(timeZone => {
+        process.env.TZ = timeZone;
+        return formatFigureCaptions(html, { snap: { generated_at } });
+      });
+      check(outputs[0] === outputs[1], `Snapshot date is host-independent: ${generated_at}`);
+      check(outputs[0].includes(`Test (${expected})`), `Snapshot date uses UTC: ${generated_at}`);
     }
+  } finally {
+    if (originalTZ === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTZ;
+  }
+}
+
+// Captured-at is distinct from valid-at and issue time; no wall-clock fallback.
+{
+  const html = '<figure data-snapshot-id="snap"><figcaption>Snapshot</figcaption></figure>';
+  for (const renderDate of ['2020-01-01', '2030-12-31']) {
+    const metadata = {
+      renderDate,
+      issued_at: '2026-10-01T12:00:00Z',
+      snapshots: { snap: { generated_at: '2026-09-02T00:30:00Z', renderDate } },
+    };
+    check(wrapHtmlForPrintRendering(html, metadata).includes('Snapshot (Sep 2, 2026)'),
+      'Wrapper uses captured-at regardless of valid-at or issue date');
+    delete metadata.snapshots.snap.generated_at;
+    check(wrapHtmlForPrintRendering(html, metadata).includes(html),
+      'Missing captured-at has no valid-at, issue-date or wall-clock fallback');
+    metadata.snapshots.snap.generated_at = 'invalid';
+    check(wrapHtmlForPrintRendering(html, metadata).includes('Snapshot (Unknown date)'),
+      'Invalid captured-at has no valid-at, issue-date or wall-clock fallback');
   }
 }
 

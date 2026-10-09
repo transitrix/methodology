@@ -497,7 +497,8 @@ The package has two PDF rendering paths:
 - Running footers (issuer, date, identity, page number)
 - Landscape pages for wide diagrams
 - Page breaks and typography rules
-- First-page suppression (no footer on title page)
+- Every-page identity for issued documents, including the first portrait or landscape page
+- First-page suppression retained for non-issued content (no `issued_at`)
 
 **Usage:**
 
@@ -513,6 +514,24 @@ const html = wrapHtmlForPrintRendering('<h1>Title</h1><p>Content...</p>', {
 
 // Pass html to Vivliostyle or another CSS Paged Media renderer
 ```
+
+Supplying `issued_at` selects the issued-document footer behavior; a one-page
+issued document receives the same issuer, issue date, identity, optional commit
+and page counters as subsequent pages. Callers supply the existing identity
+fields; this helper does not create or validate an issue identity.
+
+Issue dates (`issued_at`) and snapshot caption dates (`generated_at`) use the
+`en-US` locale and **UTC**, independent of the host timezone. Supply ISO 8601
+timestamps with `Z` or an explicit numeric offset (or a date-only `YYYY-MM-DD`);
+timezone-less date-time strings are not stable inputs across hosts.
+Snapshot captions use only captured-at `generated_at`, never valid-at
+`renderDate`, the issue date, or the wall clock. `renderDate` remains the separate
+pass-1 input that selects model validity. Missing snapshot dates leave captions
+unchanged; invalid dates produce `Unknown date`. Callers remain responsible for
+snapshot binding before issuing a document.
+
+These helpers prepare HTML/CSS; their tests do not establish footer visibility,
+landscape geometry, diagram embedding or reproducibility in a final PDF.
 
 **Specification:** [`PDF_RENDERING_ENGINE.md`](./PDF_RENDERING_ENGINE.md)  
 **Engine reference:** Vivliostyle (option 2), caller-supplied supported (option 3)  

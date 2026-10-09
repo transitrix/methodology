@@ -67,3 +67,9 @@ jobs:
 
       - name: Run full-run end-to-end test
         run: node packages/document-renderer/tests/test_full_run.mjs
+
+      - name: Run paged-media CSS tests
+        run: node packages/document-renderer/tests/test_paged_media_css.mjs
+
+      - name: Run snapshot caption tests
+        run: node packages/document-renderer/tests/test_render_vivliostyle.mjs
