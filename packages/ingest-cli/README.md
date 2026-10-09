@@ -81,6 +81,24 @@ Package maintainers can check this boundary with
 `python packages/ingest-cli/tests/test_candidate_admission.py`. It uses synthetic
 data and the actual CLIs, including an explicit manual-promotion fixture step.
 
+### Alias list input
+
+Canon alias indexing and catalogue matching accept `aliases:` followed by a block
+sequence of single-line strings. The `-` markers may be flush-left or consistently
+space-indented. Blank lines, comments and CRLF are supported; the next top-level
+key ends the list. Plain strings, single-quoted strings (with doubled apostrophes),
+and JSON-compatible double-quoted strings are accepted. Quote numbers and other
+values that YAML would interpret as non-string scalars. Use `aliases: []` for an
+empty list, or omit the key.
+
+Non-empty inline lists, nested collections, multiline values, anchors, tags,
+inconsistent indentation, duplicate alias keys and malformed values are rejected.
+Use the literal unquoted `aliases:` key. This small reader does not validate the
+rest of the YAML document. Unsupported alias input stops commands such as
+`repo-check` with exit code 2 instead of producing a partial successful report.
+Alias collisions retain the existing report-only behavior: `repo-check` reports
+`integrity.alias_collisions` and exits 0 after completing the report.
+
 ## Multi-batch naming
 
 `review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Batch identity is explicit: pass `--run-id <id>` to refresh the same batch in place (matching run_id is required). Without a matching run_id, or if no prior batch exists, a run creates its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory.
