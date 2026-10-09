@@ -249,11 +249,27 @@ async function walkYaml(dir) {
   return out;
 }
 
-// A block-map key's presence, independent of its value shape (`origin` is a map,
-// never a scalar, so readTopScalar — which requires a same-line value — cannot see
-// it at all: absent and present-as-a-block are otherwise indistinguishable to it).
-function hasTopKey(text, key) {
-  return typeof text === 'string' && new RegExp(`^${key}:`, 'm').test(text);
+// REQUIREMENT taxonomy is a scalar; central-admission origin is a map.
+const REQUIREMENT_ORIGINS = new Set(['legislative', 'process-product', 'project-product']);
+
+// Retain the legacy presence marker for every unrecognised shape. Only a single,
+// unambiguous, one-line scalar earns the taxonomy exception; duplicate keys or
+// indented continuations must not hide a central-origin map or malformed value.
+function readLocalOrigin(text) {
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const entries = lines.flatMap((line, i) => /^(?:origin|'origin'|"origin")[ \t]*:/.test(line) ? [i] : []);
+  if (entries.length === 0) return false;
+  if (entries.length !== 1) return true;
+  const i = entries[0];
+  const match = lines[i].match(/^origin:[ \t]+(?:([a-z-]+)|"([a-z-]+)"|'([a-z-]+)')[ \t]*(?:[ \t]#.*)?$/);
+  const value = match && (match[1] || match[2] || match[3]);
+  if (!REQUIREMENT_ORIGINS.has(value)) return true;
+  for (const line of lines.slice(i + 1)) {
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    if (/^\s/.test(line) || /^-/.test(line)) return true;
+    break;
+  }
+  return value;
 }
 
 // Read { id, type, name, aliases, description, canon_id, origin } off every admitted
@@ -261,9 +277,9 @@ function hasTopKey(text, key) {
 // the BIND-001..005 envelope rules (CONTRACT.md §17.2) need. `type` is the catalogue
 // TYPE (the id's own prefix, IDS_AND_REFERENCES §1 — repo-check.mjs's
 // elementTypesOnDisk derives it the same way), NOT a per-TYPE subtype field some
-// element schemas separately carry under their own `type:` key. `origin` is read as
-// presence-only (BIND-005 only needs to know whether it is there, never its content —
-// a project repository's own element should never carry it at all). `description` is
+// element schemas separately carry under their own `type:` key. `origin` retains a
+// recognised taxonomy scalar, false when absent, or true for any other present
+// shape (including central metadata and ambiguous values). `description` is
 // read as a single-line scalar only — a multi-line block-scalar description reads
 // back as null here, same tiny-parser posture as everywhere else in this file.
 // canon/unresolved/ is excluded (CONTRACT.md §13 — a holding area, not admitted typed
@@ -287,7 +303,7 @@ export async function collectLocalElements(orgRoot) {
       aliases: readTopList(text, 'aliases'),
       description: readTopScalar(text, 'description'),
       canon_id: readTopScalar(text, 'canon_id'),
-      origin: hasTopKey(text, 'origin'),
+      origin: readLocalOrigin(text),
     });
   }
   return out;
@@ -371,12 +387,10 @@ export function findVocabularyDivergence(localElements, catalogueElements) {
 //                       null — no pin declared (or a declared pin that failed to
 //                       load; a binding cannot be validated without a working
 //                       catalogue either way).
-//   origin_present     — BIND-005: `origin` is present on a local element. Every
-//                       element this function sees is, by construction, a
-//                       *project* repository's own canon — `origin` records
-//                       provenance for a *central* repository's admitted element,
-//                       so its presence here is always a violation, regardless of
-//                       pin state.
+//   origin_present     — BIND-005: a local origin is central-admission metadata or
+//                       cannot be distinguished from it. Only REQUIREMENT's three
+//                       recognised taxonomy scalars are exempt, regardless of pin
+//                       state. Legacy boolean presence markers remain supported.
 // Data-free posture matches findVocabularyDivergence: findings name ids (the
 // minimum needed to act), never a surface-form string.
 export function checkBindings(localElements, catalogueSlice) {
@@ -390,7 +404,8 @@ export function checkBindings(localElements, catalogueSlice) {
   const byCanonId = new Map(); // canon_id -> [local_id...] (bound + resolved + type-matched only)
 
   for (const le of localElements || []) {
-    if (le.origin) origin_present.push({ local_id: le.id });
+    const requirementProvenance = le.type === 'REQUIREMENT' && REQUIREMENT_ORIGINS.has(le.origin);
+    if (le.origin && !requirementProvenance) origin_present.push({ local_id: le.id });
     if (!le.canon_id) continue;
 
     if (!catalogueSlice) { missing_pin.push({ local_id: le.id }); continue; }
