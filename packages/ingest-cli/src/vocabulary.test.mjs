@@ -8,7 +8,9 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFileSync, mkdtempSync } from 'node:fs';
+import { writeFileSync, mkdtempSync, mkdirSync, copyFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -19,6 +21,21 @@ import {
   valueSet,
   VocabularyError,
 } from './vocabulary.mjs';
+
+const INGEST_CLI = fileURLToPath(new URL('../ingest.mjs', import.meta.url));
+const REAL_VOCABULARY = fileURLToPath(new URL('../../../notations/vocabulary.yaml', import.meta.url));
+const REAL_PIN = fileURLToPath(new URL('../../../notations/CURRENT_VERSION.yaml', import.meta.url));
+
+function runCli(args, { cwd, notationsDir } = {}) {
+  const env = { ...process.env };
+  if (notationsDir === undefined) delete env.TRANSITRIX_NOTATIONS_DIR;
+  else env.TRANSITRIX_NOTATIONS_DIR = notationsDir;
+  return spawnSync(process.execPath, [INGEST_CLI, ...args], {
+    cwd: cwd || process.cwd(),
+    env,
+    encoding: 'utf8',
+  });
+}
 
 // A minimal but shape-valid document — small enough to hand-edit per test,
 // exercising every block loadVocabulary()'s validate() requires.
@@ -176,6 +193,60 @@ test('loadVocabulary — negative: a missing artefact file fails, never falls ba
     () => loadVocabulary({ path: '/does/not/exist/vocabulary.yaml', pinPath: '/does/not/exist/CURRENT_VERSION.yaml' }),
     VocabularyError
   );
+});
+
+// --- Executable bootstrap and consumer location contract -------------------
+
+test('ingest executable: source default is module-relative, not cwd-relative', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'vocab-cli-cwd-'));
+  const result = runCli(['--help'], { cwd });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^transitrix-ingest /);
+  assert.equal(result.stderr, '');
+});
+
+test('ingest executable: a relative notations directory is resolved from the command cwd', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'vocab-cli-relative-'));
+  const notations = join(cwd, 'release-notations');
+  mkdirSync(notations);
+  copyFileSync(REAL_VOCABULARY, join(notations, 'vocabulary.yaml'));
+  copyFileSync(REAL_PIN, join(notations, 'CURRENT_VERSION.yaml'));
+  const result = runCli(['--help'], { cwd, notationsDir: 'release-notations' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^transitrix-ingest /);
+});
+
+test('ingest executable: --version remains available without vocabulary files', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'vocab-cli-version-'));
+  const result = runCli(['--version'], { cwd, notationsDir: join(cwd, 'missing') });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), '0.0.1');
+  assert.equal(result.stderr, '');
+});
+
+test('ingest executable: missing vocabulary makes repo-check explicitly incomplete', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'vocab-cli-missing-'));
+  const result = runCli(['repo-check', cwd], { cwd, notationsDir: join(cwd, 'missing') });
+  assert.equal(result.status, 2);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /repo-check: incomplete — all health checks unavailable; no checks ran\./);
+  assert.match(result.stderr, /artefact not found/);
+  assert.match(result.stderr, /Set TRANSITRIX_NOTATIONS_DIR/);
+  assert.doesNotMatch(result.stderr, /\n\s+at /);
+});
+
+test('ingest executable: missing pin also fails closed with recovery guidance', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'vocab-cli-pin-'));
+  const notations = join(cwd, 'notations');
+  mkdirSync(notations);
+  copyFileSync(REAL_VOCABULARY, join(notations, 'vocabulary.yaml'));
+  const result = runCli(['repo-check', cwd], { cwd, notationsDir: notations });
+  assert.equal(result.status, 2);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /repo-check: incomplete — all health checks unavailable; no checks ran\./);
+  assert.match(result.stderr, /version pin not readable/);
+  assert.match(result.stderr, /Set TRANSITRIX_NOTATIONS_DIR/);
+  assert.doesNotMatch(result.stderr, /\n\s+at /);
 });
 
 // --- Derived views — what placement.mjs / validate.mjs actually consume ------
