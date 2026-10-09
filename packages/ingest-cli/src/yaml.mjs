@@ -66,30 +66,63 @@ export function dump(obj) {
   return dumpMap(obj, 0).join('\n') + '\n';
 }
 
-// Read a single top-level scalar key from manifest-style YAML text (e.g.
-// `coverage_profile: full`). Returns the unquoted string, or null if the key is
-// absent or its value is a block/map (not a top-level scalar). Intentionally tiny.
-// Read a top-level list key from YAML text. Returns [] if absent or not a list.
-// Understands the minimal block-list shapes this CLI emits and that adopter canon
-// files carry — `key:\n  - item\n  - item`. Does NOT handle inline lists (`[a, b]`).
+// Read a top-level list of single-line strings. Accept block sequences with a
+// consistent space indent (including zero), plain/quoted items, and empty [].
+// Missing keys return []; malformed or unsupported values throw so consumers
+// cannot mistake a partial alias index for a complete one. This is not a YAML
+// document validator: unrelated keys are outside this reader's scope.
 export function readTopList(text, key) {
-  if (typeof text !== 'string') return [];
-  // Normalise CRLF so the regex works on both Windows and Unix line endings.
-  const norm = text.replace(/\r\n/g, '\n');
-  const re = new RegExp(`^${key}:[ \\t]*\\n((?:[ \\t]+-[^\\n]*\\n?)*)`, 'm');
-  const m = norm.match(re);
-  if (!m) return [];
-  return m[1].replace(/\r/g, '').split('\n')
-    .map(l => l.replace(/^\s*-\s*/, '').trim())
-    .filter(Boolean)
-    .map(v => {
-      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-        return v.slice(1, -1);
-      }
-      return v;
-    });
+  if (typeof text !== 'string') throw new TypeError('readTopList expects YAML text');
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const fail = () => { throw new Error(`Unsupported YAML list for ${key}; use a block sequence of single-line strings or []`); };
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const keyPattern = new RegExp(`^(?:${escapedKey}|"${escapedKey}"|'${escapedKey}')[ \\t]*:`);
+  const headers = lines.flatMap((line, i) => keyPattern.test(line) ? [i] : []);
+  if (headers.length === 0) return [];
+  if (headers.length !== 1) return fail();
+  const start = headers[0];
+  if (!lines[start].startsWith(`${key}:`)) return fail();
+  const header = lines[start].slice(key.length + 1).trim().replace(/(^|\s+)#.*$/, '').trim();
+  if (header !== '' && header !== '[]') return fail();
+  const values = [];
+  let indent;
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^ *($|#)/.test(line)) continue;
+    // Only a new top-level mapping key terminates this list. In particular, a
+    // flush-left sequence item belongs to the current key, not the next one.
+    if (/^[^\s:#][^:]*:(?:\s|$)/.test(line) && !line.startsWith('-')) break;
+    const item = /^( *)- +(.*)$/.exec(line);
+    if (header === '[]' || !item) return fail();
+    if (indent === undefined) indent = item[1].length;
+    if (item[1].length !== indent) return fail();
+    const raw = item[2].trim();
+    let value;
+    if (raw.startsWith('"')) {
+      const quoted = /^"(?:[^"\\]|\\.)*"(?=\s+#|$)/.exec(raw);
+      if (!quoted) return fail();
+      try { value = JSON.parse(quoted[0]); } catch { return fail(); }
+    } else if (raw.startsWith("'")) {
+      const quoted = /^'((?:[^']|'')*)'(?=\s+#|$)/.exec(raw);
+      if (!quoted) return fail();
+      value = quoted[1].replace(/''/g, "'");
+    } else {
+      value = raw.replace(/\s+#.*$/, '').trim();
+      // Reject collections, block scalars, aliases, anchors, tags and implicit
+      // non-string scalars rather than indexing their YAML syntax as a name.
+      if (!value || /^[\[\]{}&*!|>@`#%"']/.test(value) ||
+          /^[-?:](?:\s|$)/.test(value) || /:(?:\s|$)/.test(value) ||
+          /^(?:null|~|true|false)$/i.test(value) ||
+          /^[-+]?(?:0x[0-9a-f]+|0o[0-7]+|[0-9]+(?:\.[0-9]*)?(?:e[-+]?[0-9]+)?|\.[0-9]+(?:e[-+]?[0-9]+)?|\.(?:inf|nan))$/i.test(value)) return fail();
+    }
+    values.push(value);
+  }
+  if (header === '' && values.length === 0) return fail();
+  return values;
 }
 
+// Read a single top-level scalar key from manifest-style YAML text. Returns the
+// unquoted string, or null if absent. Intentionally tiny.
 export function readTopScalar(text, key) {
   if (typeof text !== 'string') return null;
   const re = new RegExp(`^${key}:[ \\t]*(.+?)[ \\t]*$`, 'm');
