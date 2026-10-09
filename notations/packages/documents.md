@@ -31,14 +31,15 @@ packages: [documents]
 
 ## 2. Object types and ID grammar
 
-### 2.1 The two object kinds
+### 2.1 Object kinds
 
-The package's object model has exactly two kinds:
+The package carries document definitions and instances, plus stored handoff events:
 
 | Kind | What it holds |
 |---|---|
 | `document-type` | A template: a name, a list of required fields (key + datatype), and versioning constraints. |
 | `document` | An issued instance: an id, the type it instantiates, a version, a status, a timestamp, and a `values` map keyed by field name. |
+| `issuance-event` | A retained handoff act with issuer, recipient and pointers to evidence (§8). |
 
 ### 2.2 ID grammar — disjoint from core
 
@@ -52,13 +53,14 @@ Per [`PACKAGES.md`](../PACKAGES.md) §4.1, a package identifier must never be sh
 |---|---|
 | `doct` | `document-type` |
 | `doc` | `document` |
+| `issue` | `issuance-event` |
 
-- `<kind>` is one of the two literal tokens above, followed immediately by a hyphen (so `doc-…` and `doct-…` never collide — the token match is exact, not a prefix test).
+- `<kind>` is one of the literal tokens above, followed immediately by a hyphen (so `doc-…` and `doct-…` never collide — the token match is exact, not a prefix test).
 - `<slug>` is one or more lowercase alphanumeric segments separated by hyphens.
 - `<INTEGER>` is a terminal positive integer ≥ 1, no leading zeros — same terminal-integer rule as the core grammar ([`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1).
 
 ```
-^(doct|doc)-[a-z0-9]+(?:-[a-z0-9]+)*-[1-9][0-9]*$
+^(doct|doc|issue)-[a-z0-9]+(?:-[a-z0-9]+)*-[1-9][0-9]*$
 ```
 
 **Examples:** `doct-requirements-1`, `doc-srs-v2-1`, `doct-architecture-decision-1`, `doc-meeting-notes-2`.
@@ -69,9 +71,11 @@ Per [`PACKAGES.md`](../PACKAGES.md) §4.1, a package identifier must never be sh
 documents/
   document-types/<id>.yaml
   documents/<id>.yaml
+  events/<id>.yaml              # retained handoff acts
+  evidence/                    # optional retained run/baseline/token bytes
 ```
 
-One object per file, named by its id. Every file carries `package: documents` and `kind: <one of the two kinds above>` — this pair is how the package's own tooling recognises its files; core tooling never reads them (§4.2 of the mechanism doc).
+One object per file, named by its id. Every file carries `package: documents` and `kind: <one of the kinds above>` — this pair is how the package's own tooling recognises its files; core tooling never reads them (§4.2 of the mechanism doc).
 
 ### 2.4 `document-type` schema
 
@@ -150,6 +154,7 @@ The package validator checks that a `canon_refs` value is grammar-valid (DOCS-00
 ```
 <adopter-repo-root>/documents/document-types/<id>.yaml
 <adopter-repo-root>/documents/documents/<id>.yaml
+<adopter-repo-root>/documents/events/<id>.yaml
 ```
 
 One artefact per file, named by its canonical package id (§2.2).
@@ -169,6 +174,8 @@ Run by `@transitrix/documents-cli validate <documents-folder>` (the reference im
 | `DOCS-005` | error | A `canon_refs` entry is present but is not a grammar-valid core id (syntax per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1). |
 | `DOCS-006` | error | A `document.issued_at` is not a valid ISO 8601 timestamp, or `document.version` is neither a full SemVer string nor the two-component numeric compatibility form in §2.5. |
 | `DOCS-007` | error | A `document.status` is not one of: `draft`, `issued`, `superseded`, `archived`. |
+
+Event-specific structural and evidence diagnostics are defined in §8.
 
 No rule here reaches into `canon/`, `field/`, or `codex/` — package-internal integrity only, per [`PACKAGES.md`](../PACKAGES.md) §4.2.
 
@@ -205,28 +212,103 @@ This package carries document identity and traceability metadata: versioning, st
 
 ---
 
+## 8. Issuance-event register
+
+An `issuance-event` records an asserted handoff: **what, when, by whom, to whom**.
+It does not prove that software submitted, approved or signed anything. Store one
+row per act in `documents/events/<id>.yaml`. A later handoff gets a new ID;
+`transitrix-documents record` refuses to overwrite an existing row. Retain the
+referenced bytes separately; the command never creates or replaces evidence.
+Git history and adopter storage controls remain responsible for retention.
+
+| Field | Contract |
+|---|---|
+| `package`, `kind` | Exactly `documents`, `issuance-event`. |
+| `id` | `issue-<lowercase-slug>-<positive-integer>`, unique in the package. |
+| `document` | Document ID using the existing `doc-…` grammar. A citation, not a new stable-identity schema. The current local document need not exist. |
+| `edition` | Nonblank adopter-supplied edition label, e.g. `B`. Independent of the existing document's numeric `version`; no automatic conversion or latest-edition inference. |
+| `issued_at` | Real UTC timestamp, second precision (`YYYY-MM-DDTHH:mm:ssZ`), of the asserted act. |
+| `issuer`, `recipient` | Nonblank strings supplied by the recorder. No directory, signature or identity verification. |
+| `run_record`, `baseline` | Pointers with exactly `uri` and `sha256`. URI is absolute, or a package-relative retained file path. |
+| `resource` | Pointer with `uri` and `sha256` to the externally stored output bytes. Absolute URI required, e.g. `resource://documents/rp17/b.pdf`. |
+| `issue_hash` | SHA-256 of the canonical act and pointers, as specified below. Computed by `record` if absent; a supplied mismatch fails. |
+| `synthetic` | Optional boolean; use `true` for synthetic acts. |
+| `timestamp` | Optional external evidence; absent by default. See below. |
+
+Every pointer hash is `sha256:` followed by 64 lowercase hexadecimal digits,
+computed over the exact referenced bytes. A baseline pointer names retained
+baseline evidence in the adopter's format; it does not copy the commit into the
+row or imply the renderer created a snapshot. Absolute URIs must be parseable,
+nonempty and contain no whitespace, backslash or credentials. Relative pointers
+use slash-separated ASCII letters, digits, dots, underscores and hyphens; empty,
+`.` and `..` segments are forbidden. The CLI reads relative files inside the
+package only, refusing symlink escapes. It does not fetch absolute URIs, even
+`file:` URIs. An authorized integration can supply bytes using the `inspectEvent`
+loader API; URI resolvability outside the package belongs to that integration.
+
+Unknown event fields are errors: inventories, recipe editions and stale flags
+belong in referenced evidence or derived answers, never copied into the act.
+Existing `document-type` and `document` records retain their previous validation
+and require no event, timestamp, migration or conversion. The event edition label
+does not adopt the proposed RP-17 document/form identity or edition schema.
+
+**Hash contract.** Remove `issue_hash` and `timestamp`; recursively serialize the
+remaining JSON value with object keys sorted by JavaScript string order, array
+order retained and `JSON.stringify` scalar escaping, with no whitespace or final
+newline. Hash those UTF-8 bytes. This is an integrity binding for recorded claims,
+not proof of generation, submission or trusted time. `issueHash` in the CLI's
+`src/events.mjs` exports the same algorithm. Retain original record and evidence
+bytes; validation and reading never rewrite them.
+
+**Optional RFC 3161 seam.** `timestamp` contains `format: rfc3161`, `issue_hash`
+(equal to the row hash), and `token_base64` and/or `reference` (a URI/hash pointer).
+The token must be nonempty canonical base64. When both forms are present, its
+bytes must match the reference hash. Supplied values are preserved. The validator
+accepts only the envelope and association structurally: it does not parse a token's
+DER, verify its message imprint, signature, certificate chain or trust policy.
+An external RFC 3161 verifier must do those checks before calling it a trusted
+timestamp. A synthetic token is test evidence only. No provider is contacted and
+no token is minted. Output says `not-verified`, or `not-supplied` when absent.
+
+**Validation and evidence states.** `DOCS-EVENT`, `DOCS-POINTER`, `DOCS-HASH` and
+`DOCS-TIMESTAMP` are structural errors. Duplicate IDs still fail DOCS-002.
+`DOCS-EVIDENCE` is an error for conflicting bytes or contradictory run fields,
+and a warning for unavailable evidence or unknown run format. Missing evidence
+never becomes an invented successful observation. The read/API result is
+`invalid`, `conflict`, `incomplete` or `consistent`; conflict takes precedence over
+unavailable evidence. A structurally valid row may be created with unavailable
+references, visibly `incomplete`. Matching hashes mean only matching supplied
+bytes. The baseline format and its semantic agreement with a run are not inferred;
+use the provenance checker with independently observed evidence for that comparison.
+Register-wide queries are a separate interface (§10).
+
+Commands and a synthetic authoring example: [documents CLI](../../packages/documents-cli/README.md).
+
+---
+
 ## 9. DMS integration contract
 
 This package is upstream of document management. An adopter who keeps issued documents in a document management system (DMS) — whether commercial, open-source, or internal — integrates with this package at a defined seam. This section specifies what the module produces, what the adopter DMS provides, and what deliberate non-scope boundaries protect both sides.
 
 ### 9.1 What the module produces — the contract's goods
 
-A rendered document run produces three artefacts:
+The supported renderer emits a flat run record alongside rendered output. The
+following distinguishes that output from adopter-supplied integration evidence:
 
 | Artefact | What it holds | Audience |
 |---|---|---|
 | **Run record** | Recipe identity (id, version), repository commit, model id, render timestamp, per-slot instructions and their verdicts. | DMS, integration layer, audit trails. |
-| **Snapshot manifest** | The model state the render captured: list of element IDs cited in the document, rendered date, methodology version. | Traceability queries, freshness checks, retirement detection. |
-| **Document identity** | Issuer, issue timestamp, document hash (content fingerprint), source reference (URI), baseline tag (git reference). | DMS registration, integrity checking, auditability. |
+| **Snapshot/baseline evidence** | Supplied and retained by the adopter; not automatically emitted by the renderer. | Traceability and provenance checks. |
+| **Issuance event** | Explicitly recorded act and hashed pointers (§8); not automatically emitted on render. | DMS integration and audit trails. |
 
-**Format:** each is emitted as JSON by the reference implementation. A non-reference renderer may emit another format provided it carries the same semantic content and is documented per §9.6.
+**Format:** the renderer serializes its run record as JSON. The optional register stores YAML (the creation command writes JSON, a YAML subset). No automatic snapshot or identity envelope is required or claimed.
 
 ### 9.2 What the adopter DMS provides — the contract's consumers
 
 | Consumer layer | Role |
 |---|---|
 | **Document store** | URI-addressable storage for the PDF (or other output format) — e.g. `resource://documents/srs-2026-q3/issue-1`. The URI is a reference, never dictated by the module. |
-| **Metadata intake** | An endpoint or queue where the module deposits run record, snapshot manifest, and document identity on every render. |
+| **Metadata intake** | Adopter-owned ingestion of retained run records, baseline evidence and explicit handoff events. The module has no delivery endpoint or webhook. |
 | **Query surface** | An API exposing facts the adopter needs — e.g. "which documents cite this capability", "which documents may be stale because an element changed". These queries are application-specific; the module provides the data, not the queries. |
 | **Retention and lifecycle** | Retention schedules, approval workflows, signature capture, records classifications, any regulatory regime the adopter runs. None of this is the module's concern. |
 
@@ -247,107 +329,63 @@ The module carries document **identity and traceability**. It does not carry doc
 
 The module answers the question "what model was rendered into this document?" — not "who may see it" or "when must it be deleted."
 
-### 9.4 Data exchange format — run record schema
+### 9.4 Data exchange format — actual run record
 
-The run record is the primary interchange artefact. Its structure is governed by [`document-renderer/README.md`](../../packages/document-renderer/README.md), emitted as JSON following this schema:
-
-```json
-{
-  "recipe": {
-    "id": "product.srs",
-    "version": "1.0"
-  },
-  "repository": {
-    "commit": "a1b2c3d4…",
-    "baseline_tag": "release-2026-q3"
-  },
-  "model": {
-    "id": null,
-    "methodology_version": "5.1.0"
-  },
-  "rendered_at": "2026-09-02T14:30:00Z",
-  "profile": "strict",
-  "slots": [
-    {
-      "slot_id": "market-size",
-      "question": "How large is the addressable market?",
-      "inputs": ["CAP-1", "REQ-14"],
-      "sufficient": true,
-      "verdict": "sufficient",
-      "produced_text": "The addressable market is $5B growing at 15% CAGR.",
-      "attributions": ["CAP-1"]
-    }
-  ],
-  "suspicion": {
-    "computed": false,
-    "reason": "not-computed-by-this-pass"
-  }
-}
-```
-
-**Snapshot manifest** (extracted from the run record and document, for efficiency in queries):
+[`buildRunRecord`](../../packages/document-renderer/src/run-record.mjs) emits flat
+fields, not the formerly illustrated nested `recipe` / `repository` / `model`
+envelope. A synthetic output with no instruction slots is:
 
 ```json
 {
-  "document_id": "doc-srs-v2-1",
-  "document_hash": "sha256:a1b2c3…",
-  "rendered_at": "2026-09-02T14:30:00Z",
-  "recipe_id": "product.srs",
+  "recipe_id": "rp17",
   "recipe_version": "1.0",
-  "baseline_commit": "a1b2c3d4…",
-  "methodology_version": "5.1.0",
-  "elements_cited": [
-    "CAPABILITY-V2",
-    "REQUIREMENT-sched-auth-1",
-    "CONSTRAINT-4"
-  ]
+  "repository_commit": "synthetic-base-b",
+  "model_id": null,
+  "run_timestamp": "2026-07-10T09:00:00Z",
+  "render_date": "2026-07-10",
+  "profile": "strict",
+  "slots": []
 }
 ```
 
-**Document identity** (metadata bound to the issued artefact):
+Each slot carries `slot_id`, `question`, `inputs`, `sufficient`, `verdict`,
+`reason`, `produced_text`, and `attributions`. `repository_commit` and `model_id`
+may be null; the builder defaults `run_timestamp` to an ISO timestamp with
+milliseconds. Do not confuse that render time with the event's second-precision
+handoff time. The renderer does not emit `baseline_tag`, `methodology_version`,
+`elements_cited`, `suspicion` or document identity. A run's recorded attribution
+is not proof of complete input closure or actual generation from a baseline.
 
-```json
-{
-  "id": "doc-srs-v2-1",
-  "type": "doct-requirements-1",
-  "version": "2.0",
-  "status": "issued",
-  "issued_at": "2026-09-02T14:30:00Z",
-  "issuer": "release-automation@example.com",
-  "content_hash": "sha256:a1b2c3…",
-  "source_uri": "resource://documents/srs-2026-q3/issue-1",
-  "baseline_tag": "release-2026-q3"
-}
-```
+The event points at the exact run bytes; it copies none of those fields. The
+reader recognizes a flat run by string `recipe_id`, `recipe_version` and array
+`slots`. For retained compatibility it also recognizes the old illustrative
+nested `recipe.id`, `recipe.version` and `slots`; no conversion is performed.
+When both representations exist, disagreeing recipe identity/version or
+`repository_commit` versus `repository.commit` is a conflict. Other legacy or
+partial formats remain unknown/unavailable, even if their byte hash matches.
+Unknown fields in run evidence are preserved; they are not inferred as supported
+claims. This compatibility does not promise that a legacy renderer emitted the
+old illustrative snapshot/identity objects.
 
-All timestamps are ISO 8601 UTC, second-precision. Hashes use SHA256. A non-reference renderer must emit JSON carrying these fields; schema variations are acceptable if approved by the consuming DMS.
+### 9.5 Integration example — explicit handoff
 
-### 9.5 Integration example — how a DMS consumes the data
+1. Render the recipe; retain output and the actual flat run record.
+2. Retain baseline evidence through the adopter's existing process, and keep the
+   output at its external URI. Compute the pointer hashes from retained bytes.
+3. Record the asserted act with issuer, recipient, edition and time using §8.
+   Rendering alone creates no issuance event.
+4. Read and validate the event. An unavailable external store remains unavailable;
+   an authorized adapter may supply its bytes for comparison. Subsequent handoffs
+   create new rows and do not rewrite the historical act or referenced evidence.
 
-**Scenario:** The adopter runs Studio to render a recipe, capturing the run record and snapshot manifest. A webhook delivers them to the DMS integration layer.
-
-```
-1. Studio renders recipe -> PDF + run record + document identity
-2. Metadata integration layer receives all three
-3. DMS:
-   - Stores the PDF at the URI named in document identity
-   - Ingests snapshot manifest for traceability queries
-   - Logs the run record for audit trail
-   - Marks the document as "ready for review" (its own workflow)
-4. On later model change (element modified/deleted):
-   - Snapshot query: "which documents cite this element?"
-   - Result: [doc-srs-v2-1]
-   - DMS flags document as "stale, re-render recommended"
-   - Adopter decides: re-render, or retire the document
-```
-
-The module provides the data. The adopter DMS provides the **decision**, the **action**, and the **workflow**.
+The adopter DMS supplies storage, decisions and workflow. The package has no
+automatic submission, signing or timestamp-provider integration.
 
 ### 9.6 Out-of-scope list — what the adopter DMS must guarantee
 
 - **The adopter is responsible for:**
   - Storing the document bytes at the URI the module names
-  - Verifying the content hash matches what the module emitted
+  - Verifying the retained bytes match their recorded hashes
   - Implementing access control (who may read/download)
   - Enforcing retention schedules and lifecycle
   - Capturing and verifying signatures if regulations require them
@@ -367,196 +405,81 @@ The module provides the data. The adopter DMS provides the **decision**, the **a
 
 ## 10. Traceability queries — bidirectional document-model linkage
 
-The DMS integration produces three derived queries that enable computable traceability between issued documents and the model elements they cite. These queries run on demand against run records and snapshot manifests, with no persistent storage or index beyond what those two artefacts provide (§10.5).
+The optional documents package exposes `queryIssuedDocuments` from
+`@transitrix/documents-cli/src/queries.mjs`. It enumerates retained issuance events
+(§8), loads their exact flat run records (§9.4), checks explicit baseline bindings
+and reads historical Git objects. It reuses the renderer's
+[`checkDocumentProvenance`](../../packages/document-renderer/PROVENANCE.md).
+See the [query interface and adapter contract](../../packages/documents-cli/README.md#querying-retained-issuance-events)
+for installation, baseline JSON, authorization and complete arguments.
 
-### 10.1 Query 1: Documents citing an element
+### 10.1 Element → issued documents
 
-**Purpose:** Given a model state (git commit) and an element ID, find all issued documents that cite that element.
+`query: { kind: 'element', id: elementId }` examines every retained event in the
+selected register. Matching events name their exact document and edition, run
+and baseline pointers, recipe and observed input closure. Multiple handoffs are
+returned separately. It does not infer issuance from a render or choose the latest
+edition by date. Run `slots[].attributions` are reported separately from complete
+input closure: a matching input need not be quoted verbatim in the output.
 
-**Signature:**
-```
-documents_citing_element(commit: string, element_id: string) 
-  -> List[{document_id, document_version, rendered_at, recipe_id}]
-```
+### 10.2 Changed element → review of issued documents
 
-**Inputs:**
-- `commit`: Git commit hash at which to query the model state (e.g. `a1b2c3d4…`).
-- `element_id`: A core element ID in grammar-valid form per [`IDS_AND_REFERENCES.md`](../IDS_AND_REFERENCES.md) §1 (e.g. `CAPABILITY-V2`, `REQUIREMENT-sched-auth-1`).
+`query: { kind: 'review', id: elementId, target: exactCommit }` compares each
+issued baseline with an explicit full target commit. Changes include **content
+modifications**, additions, deletions and moves; changed element IDs are read from
+both Git trees. Path dependencies include directory membership, so a retained
+observer can account for dynamic selections. Moves conservatively require review.
 
-**Output:** An array of document records, each carrying:
-- `document_id`: The document's package id (`doc-…` per §2.2).
-- `document_version`: SemVer version of that document instance.
-- `rendered_at`: ISO 8601 UTC timestamp when the document was issued.
-- `recipe_id`: The recipe that rendered this document.
-- `recipe_version`: Version of the recipe.
+Within a complete independently observed closure, intersection yields
+`review-needed`; nonintersection yields `no-relevant-change`. The selected element
+must itself have changed for the event to appear in `matches`; the per-event review
+result considers every input in its closure. Missing history, closure, retained
+bytes or binding yields `unknown`. No dates, wall-clock stale-since value or
+persistent stale flag is computed. A review result describes Git evidence, not
+proof that an edition is invalid or permission to regenerate it.
 
-**Evaluation:**
-1. Enumerate all run records where `repository.commit` is `commit` or an ancestor thereof (within the canonical rendering workflow's lookback window; see §10.5).
-2. For each run record, inspect its `slots[].attributions[]` to identify which elements are cited.
-3. For each document rendered by that run, check its snapshot manifest: if `elements_cited` contains `element_id`, include the document in the result.
+### 10.3 Issued document → model and elements
 
-**Example:**
-```
-documents_citing_element(
-  commit="release-2026-q3", 
-  element_id="CAPABILITY-V2"
-) 
--> [
-  {
-    document_id: "doc-srs-v2-1",
-    document_version: "2.0",
-    rendered_at: "2026-09-02T14:30:00Z",
-    recipe_id: "product.srs",
-    recipe_version: "1.0"
-  }
-]
-```
+`query: { kind: 'document', id: documentId }` returns **all** retained handoffs for
+that document, preserving the explicitly recorded edition and release association.
+It reports the repository identity, exact baseline commit, run attributions and
+observed input closure. The generated-prose `model_id` is not the model repository
+identity. No current checkout, latest review, edition label or timestamp substitutes
+for a historical binding. A/B retention, independent unchanged reviews without C,
+and explicit release/B association remain as illustrated by
+[RP-17](../examples/packages/rp17.md); proposed semantic validators remain proposed.
 
-**Called from:** Adopter dashboards, internal audit tools, downstream DMS traceability queries (e.g. "which documents cite this capability?").
+### 10.4 Unknown and conflict semantics
 
-### 10.2 Query 2: Documents affected by a model change
+Results contain `status`, `matches`, per-event `records` and enumeration `failures`.
+Malformed/unreadable rows cannot silently become nonmatches. A missing register,
+unknown document, unavailable baseline/history or absent closure returns
+`incomplete`, never an empty successful result. Contradictory document, run,
+baseline, output or release bindings remain `inconsistent` even if an individual
+hash or review check passes. `match` and `review` retain explicit unknown states.
+Matching hashes and associations never establish actual generation, so a known
+review result can coexist with incomplete overall provenance.
 
-**Purpose:** Given an element ID that was deleted or moved, find all issued documents that are now potentially stale because they cited the old element state.
+### 10.5 Retention and execution boundary
 
-**Signature:**
-```
-stale_documents_for_change(element_id: string, change_type: enum["deleted", "moved"]) 
-  -> List[{document_id, document_version, last_rendered_at, stale_since}]
-```
+Queries read an adopter-selected immutable register snapshot, retained evidence
+and explicit committed Git states. They do not write source files, event rows,
+run records, outputs, indexes, element inventories, stale flags or audit logs.
+They enumerate the complete selected register without an implicit lookback window.
+The adopter owns retention and authorization; no result claims completeness for
+records outside that selected retained scope. Reads and tree comparisons occur
+on demand; no performance promise or persistent cache is part of the contract.
 
-**Inputs:**
-- `element_id`: The core element ID that changed (e.g. `REQUIREMENT-auth-1`).
-- `change_type`: The nature of the change — `"deleted"` if the element no longer exists in `canon/`, or `"moved"` if it was renamed or reclassified.
+### 10.6 Supported surface
 
-**Output:** An array of stale-document records, each carrying:
-- `document_id`: The document's package id.
-- `document_version`: SemVer version of the document instance.
-- `last_rendered_at`: ISO 8601 UTC timestamp when the document was last issued.
-- `stale_since`: ISO 8601 UTC timestamp of the commit that deleted/moved the element.
-- `recommendation`: One of `"re-render"`, `"retire"`, or `"review"` (based on time elapsed since render, per DMS policy).
-
-**Evaluation:**
-1. Query git history to find the commit where `element_id` was deleted or moved.
-2. Enumerate all run records where `repository.commit` is before that deletion commit.
-3. For each run record, check all documents it rendered: if the snapshot manifest's `elements_cited` contains `element_id`, the document is stale.
-4. Return all stale documents, sorted by `last_rendered_at` (oldest first).
-
-**Example:**
-```
-stale_documents_for_change(
-  element_id="REQUIREMENT-auth-1",
-  change_type="deleted"
-)
--> [
-  {
-    document_id: "doc-srs-v2-1",
-    document_version: "2.0",
-    last_rendered_at: "2026-09-01T10:00:00Z",
-    stale_since: "2026-09-02T08:45:00Z",
-    recommendation: "re-render"
-  }
-]
-```
-
-**Called from:** Adopter DMS on model change events, CI/CD workflows that flag stale documents, change-impact dashboards.
-
-### 10.3 Query 3: Document provenance and elements
-
-**Purpose:** Given an issued document ID, retrieve the model state it was rendered from, its render metadata, and the complete list of elements it cites.
-
-**Signature:**
-```
-document_provenance(document_id: string) 
-  -> {
-    document_version, 
-    rendered_at, 
-    recipe_id, 
-    recipe_version, 
-    baseline_commit, 
-    methodology_version, 
-    elements_cited: List[string], 
-    run_record: object
-  }
-```
-
-**Inputs:**
-- `document_id`: The document's package id (`doc-…` per §2.2).
-
-**Output:** A single document-provenance record carrying:
-- `document_version`: SemVer version of the document.
-- `rendered_at`: ISO 8601 UTC timestamp when rendered.
-- `recipe_id`: The recipe that produced this document.
-- `recipe_version`: Version of the recipe.
-- `baseline_commit`: Git commit hash of the model state that was rendered.
-- `baseline_tag`: Git tag or reference name if the render was tagged (e.g. `release-2026-q3`).
-- `methodology_version`: The Transitrix methodology version the render used.
-- `elements_cited`: Array of core element IDs in `elements_cited` from the snapshot manifest.
-- `run_record`: The full run record JSON (for audit trails and detailed inspection).
-
-**Evaluation:**
-1. Look up the snapshot manifest for `document_id` in the DMS metadata store.
-2. Retrieve the corresponding run record from the same store.
-3. Return the full provenance object.
-
-**Example:**
-```
-document_provenance("doc-srs-v2-1")
--> {
-  document_version: "2.0",
-  rendered_at: "2026-09-02T14:30:00Z",
-  recipe_id: "product.srs",
-  recipe_version: "1.0",
-  baseline_commit: "a1b2c3d4…",
-  baseline_tag: "release-2026-q3",
-  methodology_version: "7.0.0",
-  elements_cited: ["CAPABILITY-V2", "REQUIREMENT-sched-auth-1"],
-  run_record: { … }
-}
-```
-
-**Called from:** DMS UI (document details pane), adopter integration tools, audit and compliance workflows, document versioning dashboards.
-
-### 10.4 Calling convention and error handling
-
-All three queries are **stateless and demand-computed**. They run synchronously on invocation, with no caching or warming phase.
-
-| Error case | Behavior |
-|---|---|
-| `element_id` not found in any run record | Return empty list (Query 1, 2) or `null` (Query 3). |
-| `commit` not in git history | Return empty list (Query 1). |
-| `document_id` not found in DMS | Return `null` (Query 3). |
-| Run record or snapshot manifest corrupted | Raise `DataIntegrityError` with the affected document id. |
-| Git history unavailable | Raise `GitHistoryError` — queries are offline and fail gracefully if the repository is not accessible. |
-
-### 10.5 Implementation location and performance
-
-**Where they run:**
-- **Primary:** Studio's document-render workflow, after rendering completes and before metadata is handed to the DMS.
-- **Secondary:** The adopter's own integration layer or DMS plugin, querying via a REST API the module exposes (see §10.6).
-- **Offline:** An adopter's internal dashboard or audit tool that has read access to run records and git history but not the DMS.
-
-**Performance characteristics:**
-- Query 1 (documents citing element): O(R × S), where R = number of run records in the lookback window, S = average snapshot size. Typical: < 500ms for 10 years of renders.
-- Query 2 (stale documents): O(R × S × G), where G = git-history depth (worst case: full repo walk to find the deletion commit). Typical: < 2s for 10 years of renders. Mitigation: cache the deletion commit once found.
-- Query 3 (document provenance): O(1) — direct lookup in DMS metadata store.
-
-**No persistent index.** Queries derive results from run records and git history on demand. This trades latency for simplicity: no index to keep in sync, no storage beyond what the DMS already holds, and every result is guaranteed current (never stale cached data).
-
-**Lookback window:** Queries enumerate run records back to the earliest document still in-scope under the adopter's retention policy (see §9.6). The module does not enforce a limit; it is the adopter DMS's responsibility to bound the window (e.g. "only documents from the last 7 years" or "only documents marked 'active'").
-
-### 10.6 API surface — how callers invoke the queries
-
-Each query is a callable function in the module's integration layer, exposed as:
-- **Studio plugin:** `@transitrix/documents-dms-queries` package, imported as `{ documentsForElement, staleDocuments, documentProvenance } from '@transitrix/documents-dms-queries'`.
-- **REST API:** `POST /query/<query-name>` on the adopter's integration endpoint, with JSON body carrying the query inputs.
-- **Python CLI:** `@transitrix/documents-cli query <query-name> <args>` (reference implementation).
-
-Each invocation logs (to the DMS audit trail):
-- Query name
-- Inputs (commit, element id, or document id)
-- Timestamp
-- Caller identity (if available from the calling context)
-- Result count
+The shipped surface is the asynchronous Node.js API in `@transitrix/documents-cli`,
+with `@transitrix/document-renderer` installed as its optional query peer. The
+record/read/validate CLI remains available (§8). There is no shipped query REST
+endpoint, Studio DMS plugin, Python query command or automatic audit logging.
+Adapters own authorized external byte access and independent observer evidence;
+missing adapters produce unknown results, not fabricated observations. Storage,
+workflow, approval, signing, scheduling and provider integration remain outside
+this package.
 
 ---
 

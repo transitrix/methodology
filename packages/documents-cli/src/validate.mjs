@@ -1,6 +1,8 @@
 // Package-internal checks from notations/packages/documents.md §4.
 // Citations are checked for syntax only; no core files are read.
-const PREFIX = { 'document-type': 'doct', document: 'doc' };
+import { validateEvent } from './events.mjs';
+
+const PREFIX = { 'document-type': 'doct', document: 'doc', 'issuance-event': 'issue' };
 const CORE_ID = /^[A-Z][A-Z0-9_]*(?:-[A-Za-z0-9]+)*-[1-9][0-9]*$/;
 const CAPABILITY_ID = /^CAPABILITY-[VH][1-9][0-9]*(?:\.[1-9][0-9]*){0,2}$/;
 const VERSION = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)?$/;
@@ -24,7 +26,7 @@ export function validateRecords(records) {
   const types = new Map();
   for (const { file, value: obj } of records) {
     if (!map(obj) || obj.package !== 'documents' || !Object.hasOwn(PREFIX, obj.kind)) {
-      flag('INPUT', file, 'Expected a mapping with package: documents and kind: document-type or document.');
+      flag('INPUT', file, 'Expected a mapping with package: documents and kind: document-type, document or issuance-event.');
       continue;
     }
     if (!text(obj.id) || !new RegExp(`^${PREFIX[obj.kind]}-[a-z0-9]+(?:-[a-z0-9]+)*-[1-9][0-9]*$`).test(obj.id)) {
@@ -32,6 +34,7 @@ export function validateRecords(records) {
     }
     if (ids.has(obj.id)) flag('DOCS-002', file, `id ${JSON.stringify(obj.id)} is also used in ${ids.get(obj.id)}.`);
     else ids.set(obj.id, file);
+    if (obj.kind === 'issuance-event') findings.push(...validateEvent(obj, file));
     if (obj.kind === 'document-type') {
       const fieldsValid = Array.isArray(obj.fields) && obj.fields.length > 0 && obj.fields.every(f =>
         map(f) && text(f.key) && DATATYPES.has(f.datatype) && typeof f.required === 'boolean');

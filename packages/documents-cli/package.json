@@ -20,5 +20,13 @@
   "repository": "https://github.com/transitrix/methodology",
   "dependencies": {
     "yaml": "2.9.1"
+  },
+  "peerDependencies": {
+    "@transitrix/document-renderer": "0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@transitrix/document-renderer": {
+      "optional": true
+    }
   }
 }
