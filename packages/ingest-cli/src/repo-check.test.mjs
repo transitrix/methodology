@@ -225,6 +225,22 @@ test('repoCheck: BIND-005 — an `origin` field on a project repository\'s own e
   assert.ok(report.integrity.red_flags.some((f) => f.includes('BIND-005')));
 });
 
+test('repoCheck: REQUIREMENT taxonomy origin is not confused with central-admission provenance', async () => {
+  const root = tmpOrgRoot();
+  writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');
+  const requirementsDir = join(root, 'canon', 'elements', '01_motivation', 'requirements');
+  mkdirSync(requirementsDir, { recursive: true });
+  writeFileSync(
+    join(requirementsDir, 'REQUIREMENT-1.yaml'),
+    'id: REQUIREMENT-1\nname: Test Requirement\norigin: legislative\n',
+    'utf8'
+  );
+
+  const report = await repoCheck(root);
+  assert.equal(Object.prototype.hasOwnProperty.call(report, 'bindings'), false);
+  assert.equal(report.integrity.red_flags.some((finding) => finding.includes('BIND-005')), false);
+});
+
 test('repoCheck: BIND-004 — a canon_id present with no catalogue pin configured is flagged', async () => {
   const root = tmpOrgRoot();
   writeFileSync(join(root, 'transitrix.yaml'), MANIFEST, 'utf8');

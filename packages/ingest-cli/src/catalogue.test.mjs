@@ -308,6 +308,58 @@ test('checkBindings: BIND-005 — origin present on a project repository\'s own 
   assert.deepEqual(result.origin_present, [{ local_id: 'TERM-9' }]);
 });
 
+test('collectLocalElements: recognised REQUIREMENT taxonomy origins retain their scalar identity', async (t) => {
+  const root = tmpOrgRoot();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const dir = join(root, 'canon', 'elements', '01_motivation', 'requirements');
+  mkdirSync(dir, { recursive: true });
+  const fixtures = [
+    ['REQUIREMENT-1', 'origin: legislative\n', 'legislative'],
+    ['REQUIREMENT-2', 'origin: "process-product" # taxonomy\n', 'process-product'],
+    ['REQUIREMENT-3', "origin: 'project-product'\n", 'project-product'],
+  ];
+  for (const [id, origin, expected] of fixtures) {
+    writeFileSync(join(dir, `${id}.yaml`), `id: ${id}\nname: Requirement\n${origin}`, 'utf8');
+    const element = (await collectLocalElements(root)).find((entry) => entry.id === id);
+    assert.equal(element.origin, expected);
+    assert.deepEqual(checkBindings([element], null).origin_present, []);
+  }
+});
+
+test('collectLocalElements: ambiguous, central and wrong-TYPE origins remain BIND-005 findings', async (t) => {
+  const root = tmpOrgRoot();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const requirements = join(root, 'canon', 'elements', '01_motivation', 'requirements');
+  const goals = join(root, 'canon', 'elements', '01_motivation', 'goals');
+  mkdirSync(requirements, { recursive: true });
+  mkdirSync(goals, { recursive: true });
+  const fixtures = [
+    [requirements, 'REQUIREMENT-4', 'origin:\n  repository: acme/model\n  id: REQUIREMENT-9\n'],
+    [requirements, 'REQUIREMENT-5', 'origin: unknown\n'],
+    [requirements, 'REQUIREMENT-6', 'origin: legislative\norigin: process-product\n'],
+    [requirements, 'REQUIREMENT-7', 'origin: legislative\n  nested: ambiguous\n'],
+    [goals, 'GOAL-1', 'origin: legislative\n'],
+  ];
+  for (const [dir, id, origin] of fixtures) {
+    writeFileSync(join(dir, `${id}.yaml`), `id: ${id}\nname: Element\n${origin}`, 'utf8');
+  }
+  const elements = await collectLocalElements(root);
+  assert.deepEqual(elements.map((entry) => [entry.id, entry.origin]).sort((a, b) => a[0].localeCompare(b[0])), [
+    ['GOAL-1', 'legislative'],
+    ['REQUIREMENT-4', true],
+    ['REQUIREMENT-5', true],
+    ['REQUIREMENT-6', true],
+    ['REQUIREMENT-7', true],
+  ]);
+  assert.deepEqual(checkBindings(elements, null).origin_present, [
+    { local_id: 'GOAL-1' },
+    { local_id: 'REQUIREMENT-4' },
+    { local_id: 'REQUIREMENT-5' },
+    { local_id: 'REQUIREMENT-6' },
+    { local_id: 'REQUIREMENT-7' },
+  ]);
+});
+
 test('checkBindings: an unbound element (no canon_id) with no origin reports nothing', () => {
   const local = [{ id: 'TERM-9', type: 'TERM', canon_id: null, origin: false }];
   const result = checkBindings(local, null);
