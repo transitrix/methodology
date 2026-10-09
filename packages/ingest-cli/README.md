@@ -16,6 +16,35 @@ npm link
 
 The local install resolves the `transitrix-ingest` invocations used throughout the ingest and repo-check skills. Once the package ships to npm the equivalent shorthand becomes `npm install -g @transitrix/ingest-cli` (or `npx @transitrix/ingest-cli <command>`) — the two forms invoke the same binary, with identical subcommands and flags.
 
+### Vocabulary location and failed health checks
+
+Source-checkout and `npm link` installs default to the checkout's
+`notations/vocabulary.yaml` and `notations/CURRENT_VERSION.yaml`, resolved from
+the CLI module location, independently of the working directory. For a copied
+package or an unpacked `npm pack` archive, set `TRANSITRIX_NOTATIONS_DIR` to an
+explicit notations directory from the compatible methodology release. The package
+archive does not bundle these files. The same setting works for source installs:
+
+```sh
+TRANSITRIX_NOTATIONS_DIR=/path/to/methodology/notations transitrix-ingest repo-check /path/to/model
+```
+
+In PowerShell, set `$env:TRANSITRIX_NOTATIONS_DIR = 'C:\path\to\methodology\notations'`
+before running `transitrix-ingest repo-check C:\path\to\model`.
+A relative directory is resolved against the command's working directory. An unset
+or empty variable keeps the source-checkout default. The directory selects both
+files together; it is not the adopter's `transitrix.yaml` pin. Use vocabulary and
+pin from the same compatible release as the CLI source. Matching pins establish
+artifact version consistency, not support for arbitrary future vocabulary syntax.
+
+Missing or invalid vocabulary, an unreadable version pin, and version mismatches
+stop the command with an explained diagnostic and exit code **2**. `repo-check`
+reports **incomplete**, with **all health checks unavailable**: no partial health
+report or successful dependent checks are emitted. Restore the release files or
+correct the directory and rerun. There is no built-in vocabulary fallback and no
+pin bypass. `--version` remains available to identify the package when vocabulary
+cannot load; its package version alone does not identify a source revision.
+
 ## The one rule
 
 The CLI **proposes**. It writes field artefacts, candidates, and a review queue into `_intake/` and `field/`. It **never** writes into `canon/`. Admission to canon stays a human gate.

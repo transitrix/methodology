@@ -30,8 +30,13 @@ import { dirname, join, resolve } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 // packages/ingest-cli/src → repo root
 const REPO_ROOT = resolve(HERE, '..', '..', '..');
-export const VOCABULARY_PATH = join(REPO_ROOT, 'notations', 'vocabulary.yaml');
-export const VERSION_PIN_PATH = join(REPO_ROOT, 'notations', 'CURRENT_VERSION.yaml');
+// One location selects the artefact and its release pin together. Relative paths
+// are resolved against the caller's working directory, never the adopter root.
+const NOTATIONS_DIR = process.env.TRANSITRIX_NOTATIONS_DIR
+  ? resolve(process.env.TRANSITRIX_NOTATIONS_DIR)
+  : join(REPO_ROOT, 'notations');
+export const VOCABULARY_PATH = join(NOTATIONS_DIR, 'vocabulary.yaml');
+export const VERSION_PIN_PATH = join(NOTATIONS_DIR, 'CURRENT_VERSION.yaml');
 
 class VocabularyError extends Error {
   constructor(message) {
