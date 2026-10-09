@@ -12,6 +12,7 @@
   },
   "files": [
     "ingest.mjs",
+    "cli.mjs",
     "intake-profile.mjs",
     "src/",
     "assets/"
