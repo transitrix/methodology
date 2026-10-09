@@ -1230,6 +1230,14 @@ A project repository's element and a central repository's element are related by
 
 Both fields are facts recorded *alongside* an element's own envelope (§3) — neither is a required field on any TYPE, and neither substitutes for `id`. **No tool ever rewrites a local `id`** in order to add or remove a binding.
 
+**Requirement taxonomy is distinct.** The scalar `REQUIREMENT.origin` values
+`legislative`, `process-product`, and `project-product` retain their meaning in
+[elements/15-requirement.md](elements/15-requirement.md) §2.1 and are valid on local
+requirements. They are not the central-admission map above. No field rename,
+migration, or change to either authored shape is required. This distinction does
+not permit central-admission maps on local REQUIREMENTs or taxonomy scalars on
+other TYPEs; it does not define a combined scalar/map representation.
+
 ### 17.2 Validation rules
 
 | Rule | Severity | Description |
@@ -1238,7 +1246,13 @@ Both fields are facts recorded *alongside* an element's own envelope (§3) — n
 | `BIND-002` | error | `canon_id` resolves, but the resolved central element's TYPE differs from this element's own TYPE. |
 | `BIND-003` | error | Two or more elements in the same catalogue carry the same `canon_id` — a central element cannot be the binding target of more than one local element. A **cross-catalogue** gate, requiring a full catalogue scan. |
 | `BIND-004` | error | `canon_id` is present but the repository has no catalogue pin configured — a binding without a pin. |
-| `BIND-005` | error | `origin` is present on an element that is not itself admitted in the central repository — `origin` records provenance for a central element, it is not a project-repository field. |
+| `BIND-005` | error | Central-admission `origin` metadata is present on a local element. A recognised REQUIREMENT taxonomy scalar (§17.1) is exempt; other TYPEs and central-origin maps on REQUIREMENTs are not. The ingest checker retains this error for unrecognised or ambiguous local origins rather than assuming they are valid provenance. |
+
+The ingest checker's bounded reader recognises the three taxonomy values as
+single-line plain, single-quoted, or double-quoted scalars, with optional trailing
+comments. Duplicate keys, nested content, and unsupported YAML forms remain
+ambiguous and are reported, not silently accepted. This check does not replace
+`REQ-004` taxonomy validation.
 
 ### 17.3 Rendering rule
 

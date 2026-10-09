@@ -210,7 +210,7 @@ export async function repoCheck(orgRoot) {
   if (bindings.type_mismatch.length > 0) red_flags.push(`${bindings.type_mismatch.length} local element(s) bound to a central element of a different TYPE (BIND-002)`);
   if (bindings.duplicate_target.length > 0) red_flags.push(`${bindings.duplicate_target.length} central element(s) claimed as \`canon_id\` by more than one local element (BIND-003)`);
   if (bindings.missing_pin.length > 0) red_flags.push(`${bindings.missing_pin.length} local element(s) carry a \`canon_id\` but no catalogue pin is configured or loadable (BIND-004)`);
-  if (bindings.origin_present.length > 0) red_flags.push(`${bindings.origin_present.length} local element(s) carry an \`origin\` field — origin belongs only to a central repository's admitted elements (BIND-005)`);
+  if (bindings.origin_present.length > 0) red_flags.push(`${bindings.origin_present.length} local element(s) carry central-admission or unrecognised/ambiguous \`origin\` metadata — only REQUIREMENT taxonomy scalars are valid local origins (BIND-005)`);
   // Diagnostics (transitrix-hq#104 item 5): a per-file read failure is counted, never
   // silently absorbed into a lower zone/scanned count with no trace. Data-free — a
   // count, not the file path; `check-placement` / `check-stale` name the file for an
