@@ -565,6 +565,7 @@ The active-structure identity primitive — *who or what exists and performs wor
 | `external_ref` | no | string | External identifier or URL — e.g. a `system`'s integration endpoint, or an external organisation's reference. |
 
 - **Identity only.** A `person` actor is *who someone is*, independent of engagement. Employment, candidacy, alumni status, community membership, and contracting are **first-class time-aware `REL` records** ([elements/17-relations.md](elements/17-relations.md) §3), not fields here — a person can exist in the org's scope (candidate, alumnus, contractor, community member) without being an employee.
+- **Person reporting.** `reports_to` is a first-class time-aware REL from subordinate `ACTOR(person)` to manager `ACTOR(person)`, never an inline manager field. Concurrent unranked managers are valid with a repository-health warning; employment, membership and unit hierarchy imply no reporting link. See [the reporting contract and oracle](elements/17-relations.md#34-reports_to--direct-person-reporting).
 - **Org hierarchy.** A `business_unit` actor's parent unit is a time-aware `REL` of `type: unit_parent` (`ACTOR(business_unit) → ACTOR(business_unit)`), not an inline field.
 - **Role assignment.** Which `ROLE` an actor fills is carried on the relevant engagement `REL` (e.g. `employment` carries role assignments), not inline on the actor.
 

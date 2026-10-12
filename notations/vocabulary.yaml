@@ -317,6 +317,11 @@ relation_types:
     from_subtype: [business_unit]
     to: [ACTOR]
     to_subtype: [business_unit]
+  reports_to:
+    from: [ACTOR]
+    from_subtype: [person]
+    to: [ACTOR]
+    to_subtype: [person]
   employment:
     from: [ACTOR]
     from_subtype: [person]
@@ -1389,6 +1394,15 @@ rule_codes:
     severity: error
     spec: notations/elements/17-relations.md
   REL-010:
+    severity: warning
+    spec: notations/elements/17-relations.md
+  REL-011:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-012:
+    severity: error
+    spec: notations/elements/17-relations.md
+  REL-013:
     severity: warning
     spec: notations/elements/17-relations.md
   REQ-PARENT-001:

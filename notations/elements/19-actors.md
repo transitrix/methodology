@@ -1,8 +1,8 @@
 ---
 title: "Actors — active-structure identity primitive"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
-last_updated: "2026-05-29"
+last_updated: "2026-10-12"
 status: "draft"
 ---
 
@@ -102,11 +102,16 @@ All of an actor's links are first-class, time-aware `REL` records ([17-relations
 | Relation `type` | From → To | What it records |
 |---|---|---|
 | `unit_parent` | `ACTOR(business_unit)` → `ACTOR(business_unit)` | Org hierarchy — a unit's parent unit. Re-parenting = one ended relation + one new. |
+| `reports_to` | `ACTOR(person)` → `ACTOR(person)` | Direct subordinate → manager; concurrent unranked managers are valid with a health warning. See [reporting contract](17-relations.md#34-reports_to--direct-person-reporting). |
 | `employment` | `ACTOR(person)` → `ACTOR(business_unit)` | Employment window; carries `contract_type` and role assignments (`roles: [ROLE-…]`). |
 | `candidacy` | `ACTOR(person)` → `ACTOR(business_unit)` | Pre-hire evaluation; carries `stage`, `source`. |
 | `alumni_membership` | `ACTOR(person)` → `ACTOR(business_unit)` | Former-employee relationship; may reference the prior `employment`. |
 | `community_membership` | `ACTOR(person)` → `ACTOR(business_unit)` | Membership of a community modelled as a `business_unit` actor. |
 | `contracting` | `ACTOR(person\|business_unit)` → `ACTOR(business_unit)` | Contracting relationship; carries `contract_terms`. |
+
+Reporting is independent of employment and unit hierarchy; neither implies a manager.
+Use a separate REL for each pair/window, preserving recurrence. Do not interpret
+free-form `extensions:` as canonical reporting fields or reject their pass-through.
 
 Action ownership references an actor by ID: an action's `owner: ACTOR-…` ([07-action.md](../views/diagrams/07-action.md) §5.6). The Stakeholders notation references an actor for identity (`STAKEHOLDER.actor: ACTOR-…`, REQUIRED) — a stakeholder carries the stake, never the identity.
 
@@ -130,7 +135,7 @@ A flat catalogue listing (`*.actors.transitrix.yaml`) is an optional **view** ov
 |---|---|---|
 | `ACTOR-001` | error | `id` missing or not matching `ACTOR-[<middle>-]<INTEGER>` ([IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1); or a required field (`notation`, `name`, `type`, `zone`, `admitted_at`, `admitted_by`, `gate_checks`, `valid_from`, `valid_to`) is missing. |
 | `ACTOR-002` | error | `type` is not one of `person`, `business_unit`, `system`. |
-| `ACTOR-003` | error | An engagement / hierarchy field (`employment`, `unit_parent`, `roles`, `owner`, …) is present inline on the actor file — these belong in `REL-…` files (`REL-004`), not on the identity primitive. |
+| `ACTOR-003` | error | An engagement / hierarchy field (`employment`, `unit_parent`, `reports_to`, `manager`, `roles`, `owner`, …) is present inline on the actor file — these belong in `REL-…` files (`REL-004`), not on the identity primitive. |
 
 The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primitive-lifecycle (`LIFECYCLE-001..004`, [CONTRACT.md](../CONTRACT.md) §7.3) rules apply to ACTOR files in addition to the ACTOR-* rules above.
 
