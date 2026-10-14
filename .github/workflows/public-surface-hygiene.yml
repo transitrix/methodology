@@ -53,6 +53,7 @@ name: Public-surface hygiene
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
@@ -228,7 +229,7 @@ jobs:
           fi
 
           if [ "$fail" -ne 0 ]; then
-            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. Note that PR metadata is read on push - editing a title or body does not re-run this check, so an empty commit is needed to re-trigger it. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
+            echo "Neutralize the matched content (use neutral wording such as 'the maintainer' / 'internal automation') and re-push. Editing a PR title or body automatically re-runs this check against the updated metadata. The matched terms are deliberately not printed; refer to the file path above and grep your local diff against the blocklist."
             exit 1
           fi
           echo "OK - no internal-vocabulary matches on the diff, PR metadata, or a commit message."
@@ -539,3 +540,29 @@ jobs:
             exit 1
           fi
           echo "OK - work-item reference guard self-test passed (4 positive, 3 negative)."
+
+      - name: Record scanned pull request subject
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          python3 - <<'PYTHON'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          # Bind this execution to the event metadata used by the scans above.
+          # A later metadata edit needs a new matching successful execution.
+          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          pull = event['pull_request']
+          subject = {
+              'schema': 'public-hygiene-subject/v1',
+              'number': pull['number'],
+              'head': pull['head']['sha'],
+              'base': pull['base']['sha'],
+              'title': pull['title'],
+              'body': pull.get('body') or '',
+          }
+          encoded = json.dumps(subject, sort_keys=True, separators=(',', ':')).encode()
+          print('HYGIENE_SUBJECT_SHA256=' + hashlib.sha256(encoded).hexdigest())
+          PYTHON
