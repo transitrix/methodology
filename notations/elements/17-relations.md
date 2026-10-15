@@ -1,8 +1,8 @@
 ---
 title: "Relations — first-class time-aware links"
-version: "0.5"
+version: "0.6"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-24"
+last_updated: "2026-10-12"
 status: "draft"
 ---
 
@@ -84,6 +84,7 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `assessment_influences_goal` | assessment → goal | `ASSESSMENT` → `GOAL` | An assessment (a dated finding about a `DRIVER`) influences a goal — the polarity edge of the ArchiMate motivation chain *Driver → Assessment → influences(±) → Goal*. **All polarity in the motivation model lives here**, not on the assessment node (the assessment records *what is*, this REL records *how it bears on this specific intent*). **M:N**: one assessment may bear on several goals, with opposite signs (one finding can support goal A and threaten goal B — SWOT is goal-relative), and one goal is influenced by many assessments. Required `sign` attribute on the REL file: closed vocabulary `positive` \| `negative` — the direction of the influence (DSM's up/down arrows on goals). Optional `magnitude` attribute: closed vocabulary `low` \| `medium` \| `high` — the strength of the influence; omit when unknown. Each (assessment, goal) pair is its own REL file; same shared REL machinery as `goal_parent`'s multi-parent form and `target_state_satisfies_goal`, not a one-off mechanism. A finding that ceases to bear on a goal (the goal retires, or re-measurement reverses the sign) ends with `valid_to` set; a new REL file carries the new sign. |
 | `action_goal` | action → goal | `ACTION` → `GOAL` | An action serves a goal. An action re-aimed mid-stream produces a new relation. **Deprecated alias:** `activity_goal` (accepted with `ACTION-005` warning). |
 | `unit_parent` | child → parent | `ACTOR(business_unit)` → `ACTOR(business_unit)` | Organisational re-parenting — a business-unit actor moved under a different parent unit. (Was `UNIT → UNIT` before the 2026-05-29 Actors decision folded `UNIT` into `ACTOR`.) |
+| `reports_to` | subordinate → manager | `ACTOR(person)` → `ACTOR(person)` | Direct person reporting, with concurrent unranked managers permitted. Each pair/window is a separate REL; reverse retrieval uses the same records. See §3.4. |
 | `employment` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | Employment of a person by a unit / organisation. Time-aware (the employment window); carries the most attributes of the engagement kinds — `contract_type`, role assignments (`roles: [ROLE-…]`). |
 | `candidacy` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A person under evaluation (pre-hire). Carries `stage`, `source`. |
 | `alumni_membership` | person → org | `ACTOR(person)` → `ACTOR(business_unit)` | A former employee's continuing relationship; may reference the prior `employment`. |
@@ -176,6 +177,76 @@ What it says, and what it refuses to say:
 
 ---
 
+### 3.4 `reports_to` — direct person reporting
+
+A `reports_to` REL states that the subordinate person (`from`) reports directly
+to the manager person (`to`). Both endpoints MUST resolve to independently
+admitted `ACTOR` records with `type: person`. Employment, unit membership,
+role assignment and `unit_parent` retain their existing meanings and never
+imply a reporting edge. There is no same-unit or shared-employer prerequisite.
+The relationship is binary and M:N: concurrent managers are unranked, with no
+primary/functional distinction or allocation percentage. Store no inverse kind
+and no canonical inline manager field on ACTOR; free-form `extensions:` remain
+pass-through and do not establish reporting authority.
+
+**Time and admission.** Each REL has its own admission record and required
+`valid_from` and `valid_to`. Dates are quoted ISO days; the window is inclusive
+at both ends, and null end means unbounded, not already active. Equal dates
+form a valid one-day window. The entire window MUST fit inside both endpoint
+lifecycles (`REL-003`); a null relation end cannot fit a finite endpoint end.
+Do not silently clip invalid windows. A draft REL does not become admitted
+because its actors are admitted, nor does admitting a REL admit its actors.
+
+**Identity and graph.** Resolve supported identity aliases before comparing
+endpoints or counting people. A resolved self-link is `REL-011` (error).
+`REL-012` (error) rejects a cycle, including a cycle of three or more persons,
+whose admitted, resolved reporting edges are simultaneously effective on any
+date. Validate all history by interval change points or by a nonempty common
+intersection of the cycle's edge windows and endpoint lifecycles. A union of
+historical edges is insufficient: A→B ending June 30 and B→A starting July 1
+is valid; starting the second on June 30 creates a cycle on that date. Retain
+the ordered actor path, all incident REL IDs and a witness date/overlap interval
+in the diagnostic. Traversals must terminate with a visited set; invalid data
+must not produce a fabricated hierarchy.
+
+**Direct queries at date D.** Resolve identities, require admission and valid
+contained windows, and select edges for which both endpoints and the REL are
+in effect at D. `managers(A, D)` groups matching `from=A` edges by resolved `to`;
+`directReports(B, D)` groups matching `to=B` edges by resolved `from`. Return
+deterministically ordered distinct identities with **all contributing REL IDs**
+for each pair. Listing and trace must use the same population. No transitive
+management inference is required. Zero edges means “no reporting relationship
+recorded”, not proof that the person has no manager. An unresolved/unadmitted
+endpoint produces `REL-002`; an incomplete or unreadable catalogue produces an
+explicit incomplete result, never a clean empty answer or health success.
+
+**Matrix warning and evidence.** A repository-health scan emits `REL-013`
+(warning) when a person has more than one distinct concurrently effective
+manager. Include the person, manager identities, contributing REL IDs and
+witness date/overlap window. A dated scan evaluates D; an all-history scan
+checks interval change points. This warning does not invalidate the otherwise
+valid matrix relationship. Multiple records for one resolved manager do not
+trigger it. Preserve authored evidence IDs and windows, including disjoint
+recurrence of the same pair; ingest deduplication must not discard recurrence
+merely because kind/from/to already appeared.
+
+**Specification and compatibility boundary.** The [synthetic consumer example
+and acceptance oracle](../examples/relations/reports-to/) specify expected
+results and positive/negative vectors. This is an additive MINOR contract
+change (relation spec 0.6); it allocates `REL-011`–`REL-013` under
+[diagnostic identity rules](../CONTRACT.md#187-versioned-diagnostic-identity).
+The new errors apply only to the newly introduced kind. Existing codes, meanings
+and severities are unchanged. Existing records need
+no migration. Older pinned vocabularies/validators can reject `reports_to`
+as an unknown kind; a current vocabulary loader recognizing the token is not
+proof of subtype, temporal, graph or query enforcement. The methodology release
+pin remains unchanged until release preparation; no package is released here.
+Dependent validators, ingest and query consumers must bind conformance evidence
+to the delivered specification revision and diagnostic allocation. These rules
+and example are not a claim of released or installed runtime support.
+
+---
+
 ## 4. File location and naming
 
 ```
@@ -208,6 +279,9 @@ A typical naming convention encodes the endpoints and kind in the middle segment
 | `REL-008` | warning | A cycle exists in the `process_parent` graph among admitted REL files (A is a child of B … is a child of A). Cross-cutting — fires when the catalogue is loaded. Warning rather than error because a genuine mutual embedding is unusual but not always a data error. Kind-specific, parallel to `REL-006`; that code is not widened. |
 | `REL-009` | error | A `requirement_parent` REL has identical `from` and `to`. Applies to the requirement-chain extension. |
 | `REL-010` | warning | A cycle exists in the active union of inline `REQUIREMENT.parent` and `requirement_parent` REL edges at the as-at date, including an inline self-parent. Cross-cutting; retain every incident cycle edge and terminate traversal. Applies to the requirement-chain extension; does not widen `REL-006` or `REL-008`. |
+| `REL-011` | error | A `reports_to` REL resolves both endpoints to the same person, including supported identity aliases. Report the REL ID and resolved person ID. |
+| `REL-012` | error | A cycle of admitted `reports_to` edges is simultaneously effective on some date, including 3+ person cycles. Report the ordered actor path, incident REL IDs and witness date/overlap interval (§3.4). |
+| `REL-013` | warning | A repository-health scan finds more than one distinct concurrently effective manager for a person. Report identities, contributing REL IDs and witness date/window; duplicate evidence for one manager does not trigger this warning (§3.4). |
 
 For the requirement-chain extension, inline `parent`/`serves` and active matching
 REL records form an additive union. An identical pair is one logical edge with

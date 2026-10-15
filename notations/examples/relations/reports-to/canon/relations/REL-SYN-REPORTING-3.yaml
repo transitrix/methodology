@@ -1,0 +1,15 @@
+notation: relation
+id: REL-SYN-REPORTING-3
+type: reports_to
+from: ACTOR-SYN-A-1
+to: ACTOR-SYN-B-1
+zone: canon
+example: true
+admitted_at: "2026-01-01"
+admitted_by: synthetic-example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-08-01"
+valid_to: null

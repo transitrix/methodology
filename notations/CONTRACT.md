@@ -397,12 +397,13 @@ The lifecycle fields are required on every canonical primitive once a notation s
 
 `ELEM-FORMER-ID-001` ([ELEMENT_PRIMITIVES.md](../notations/ELEMENT_PRIMITIVES.md) §9) flags any `former_id` that collides with a live element `id` or another element's `former_ids` — such a collision means Phase 2 was not completed cleanly.
 
+**First-class time-aware relations.** Kinds declared in [the REL specification](elements/17-relations.md) are lifecycle-bearing files in `canon/relations/`, with independent admission and inclusive day windows contained in both endpoint lifecycles. Each host notation declares which links remain inline; there is no blanket inline-only phase. Person reporting uses `reports_to` (REL §3.4).
+
 ### 7.5 Out of scope (v1)
 
 - **Bitemporality.** No separate `transaction_time` vs `valid_time`. v1 records what is true *now* about what was true *then*; back-dating corrections rewrite the file via git, and the git history is the audit trail.
 - **Branching timelines.** Alternative futures are the concern of the Scenarios notation (`notations/views/reports/11-scenarios.md`), not of the primitive lifecycle.
 - **Sub-day precision.** ISO 8601 date precision only; no timestamps, no timezones in canon. "Today" is the date of the query or render.
-- **First-class time-aware relations.** Promoting relations like `parent` / `applies_to` / activity→goal to first-class lifecycle-bearing files is planned for Wave 3 of the temporal model. In v1 such relations remain inline and timeless on their host primitive.
 
 ---
 

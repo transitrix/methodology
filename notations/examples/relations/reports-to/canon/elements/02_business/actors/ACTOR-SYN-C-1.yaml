@@ -1,0 +1,14 @@
+notation: actor
+id: ACTOR-SYN-C-1
+name: "Synthetic Person C"
+type: person
+zone: canon
+example: true
+admitted_at: "2026-01-01"
+admitted_by: synthetic-example
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-01-01"
+valid_to: null
