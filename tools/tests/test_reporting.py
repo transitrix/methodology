@@ -1,7 +1,9 @@
 """Consumer oracle and negative controls for the reporting command."""
 import copy
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -248,6 +250,48 @@ class ReportingTests(unittest.TestCase):
         self.setUp()
         self.records[B]['former_ids'] = [A]
         self.assert_code('ELEM-FORMER-ID-001')
+
+    def test_symlinked_catalogue_boundaries_are_incomplete(self):
+        for relative in ('.', 'transitrix.yaml', 'canon', 'canon/elements',
+                         'canon/relations', 'canon/relations/' + R1 + '.yaml'):
+            with self.subTest(path=relative), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / 'catalogue'
+                shutil.copytree(EXAMPLE, root)
+                path = root / relative
+                target = Path(directory) / 'target'
+                path.rename(target)
+                path.symlink_to(target, target_is_directory=target.is_dir())
+                result = analyse(load_catalogue(root), '2026-06-15', A)
+                self.assertFalse(result['complete'], result)
+                self.assertEqual(result['pairs'], [])
+                self.assertTrue(any(f['code'] == 'CATALOGUE_INCOMPLETE'
+                                    for f in result['findings']))
+
+    def test_metadata_errors_are_incomplete(self):
+        original = Path.lstat
+        for relative in ('transitrix.yaml', 'canon/relations/' + R1 + '.yaml'):
+            with self.subTest(path=relative):
+                def unreadable(path, *args, **kwargs):
+                    if path == EXAMPLE / relative:
+                        raise PermissionError('Cannot inspect file')
+                    return original(path, *args, **kwargs)
+                with patch.object(Path, 'lstat', unreadable):
+                    result = analyse(load_catalogue(EXAMPLE), '2026-06-15', A)
+                self.assertFalse(result['complete'])
+                self.assertEqual(result['pairs'], [])
+                self.assertTrue(any(f.get('path') == relative for f in result['findings']))
+
+    @unittest.skipUnless(hasattr(os, 'mkfifo'), 'Named pipes require POSIX')
+    def test_nonregular_yaml_is_rejected_without_reading(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'catalogue'
+            shutil.copytree(EXAMPLE, root)
+            os.mkfifo(root / 'canon/relations/stream.yaml')
+            result = analyse(load_catalogue(root), '2026-06-15', A)
+            self.assertFalse(result['complete'])
+            self.assertEqual(result['pairs'], [])
+            self.assertTrue(any(f.get('path') == 'canon/relations/stream.yaml'
+                                for f in result['findings']))
 
     def test_deterministic_order_and_cli_error_status(self):
         expected = self.result()

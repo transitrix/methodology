@@ -5,6 +5,7 @@ from datetime import date, timedelta
 import json
 from pathlib import Path
 import re
+import stat
 
 import yaml
 
@@ -46,7 +47,7 @@ def finding(code, message, record=None, field=None, severity='error', **context)
 
 def load_catalogue(root):
     """One explicit root, whole-file YAML in canon/elements and canon/relations."""
-    root = Path(root).resolve()
+    root = Path(root).absolute()
     records, findings = [], []
     complete = True
 
@@ -65,16 +66,51 @@ def load_catalogue(root):
             incomplete('Unreadable or malformed YAML mapping', path.relative_to(root))
             return None
 
-    if not (root / 'transitrix.yaml').is_file():
-        incomplete('No declared catalogue manifest at root', 'transitrix.yaml', 'CAT-001')
-    else:
-        read(root / 'transitrix.yaml')
+    def inspect(path, missing_code='CATALOGUE_INCOMPLETE'):
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            incomplete('Required catalogue input is missing', path.relative_to(root), missing_code)
+            return None
+        except OSError:
+            incomplete('Cannot inspect catalogue input', path.relative_to(root))
+            return None
+        if stat.S_ISLNK(info.st_mode):
+            incomplete('Symlinks are outside the supported catalogue scope', path.relative_to(root))
+            return None
+        return info
+
+    def directory(path):
+        info = inspect(path)
+        if info is None:
+            return False
+        if not stat.S_ISDIR(info.st_mode):
+            incomplete('Expected a catalogue directory', path.relative_to(root))
+            return False
+        return True
+
+    if not directory(root):
+        return dict(records=records, findings=findings, complete=complete)
+    manifest = root / 'transitrix.yaml'
+    info = inspect(manifest, missing_code='CAT-001')
+    if info is not None:
+        if stat.S_ISREG(info.st_mode):
+            read(manifest)
+        else:
+            incomplete('Expected a regular YAML manifest', 'transitrix.yaml')
     for ancestor in root.parents:
-        if (ancestor / 'transitrix.yaml').exists():
+        try:
+            nested = (ancestor / 'transitrix.yaml').exists()
+        except OSError:
+            incomplete('Cannot inspect enclosing catalogue boundary', 'transitrix.yaml')
+            break
+        if nested:
             incomplete('Root is inside another declared catalogue', 'transitrix.yaml', 'CAT-002')
             break
 
     def walk(folder):
+        if not directory(folder):
+            return
         try:
             entries = sorted(folder.iterdir())
         except OSError:
@@ -82,23 +118,27 @@ def load_catalogue(root):
             return
         for path in entries:
             rel = path.relative_to(root)
-            if path.is_symlink():
-                incomplete('Symlinks are outside the supported catalogue scope', rel)
-            elif path.name == 'transitrix.yaml':
+            info = inspect(path)
+            if info is None:
+                continue
+            if path.name == 'transitrix.yaml':
                 incomplete('Nested catalogue manifest', rel, 'CAT-002')
-            elif path.is_dir():
+            elif stat.S_ISDIR(info.st_mode):
                 walk(path)
+            elif not stat.S_ISREG(info.st_mode):
+                incomplete('Expected a regular catalogue file', rel)
             elif path.suffix in ('.yaml', '.yml'):
                 value = read(path)
                 if value is not None:
                     value['_path'] = str(rel)
                     records.append(value)
-            elif path.name != '.gitkeep' or path.stat().st_size != 0:
+            elif path.name != '.gitkeep' or info.st_size != 0:
                 incomplete('Unsupported file in catalogue input', rel)
 
     # Both directories are required: absence cannot establish an empty population.
-    for name in ('elements', 'relations'):
-        walk(root / 'canon' / name)
+    if directory(root / 'canon'):
+        for name in ('elements', 'relations'):
+            walk(root / 'canon' / name)
     return dict(records=records, findings=findings, complete=complete)
 
 
