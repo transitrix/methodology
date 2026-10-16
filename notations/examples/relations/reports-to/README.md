@@ -4,12 +4,96 @@ This catalogue illustrates [`reports_to`](../../../elements/17-relations.md#34-r
 Every person, admission and relationship is synthetic. Consumers can load the
 six YAML records under `canon/` without reconstructing a model from prose.
 The oracle below is also the expected-result contract for consumer tests.
-It specifies behavior; it does **not** claim an available reporting query CLI,
-released validator support, or that the current generic listing and trace
-implementations enforce this contract. The existing `7.0.0` manifest pin is
-unchanged; use the vocabulary at the specification revision containing this
-example. An older artifact at that pin can reject the added kind. Record the
-exact specification revision and consumer version when testing conformance.
+The source-checkout command below implements the reporting oracle. This does
+not claim released or installed support in other validators, generic listing,
+or trace consumers. The existing `7.0.0` manifest pin is unchanged; older
+artifacts at that pin can reject the added kind. Record the exact source
+revision and consumer version when testing conformance.
+
+## Run the reporting check and direct queries
+
+From a source checkout, use Python 3.12 with PyYAML 6.0.1 (the same dependency
+used by the repository's Python validation tools):
+
+```sh
+python3 -m pip install PyYAML==6.0.1
+python3 tools/reporting.py --root notations/examples/relations/reports-to
+python3 tools/reporting.py --root notations/examples/relations/reports-to --as-at 2026-06-15 --actor ACTOR-SYN-A-1
+python3 tools/reporting.py --root notations/examples/relations/reports-to --as-at 2026-06-15 --actor ACTOR-SYN-B-1 --direction reports
+python3 tools/tests/test_reporting.py
+```
+
+`--root` must identify one declared catalogue with `transitrix.yaml` and both
+`canon/elements/` and `canon/relations/` directories (an existing empty directory
+is valid). The command recursively reads whole-file YAML mappings (`.yaml` or
+`.yml`) in those two directories, including full admission and lifecycle data.
+It supports single-catalogue local inputs, not holding-wide aggregation,
+remote imports, Markdown front matter, or view-defined elements. Symlinks,
+unreadable directories/files, malformed YAML, duplicate YAML keys, unsupported
+files, and nested manifests in the scanned input are explicit incomplete
+results. Only empty regular `.gitkeep` files are exempt. Other zones and view
+files are outside this command's population; keep the repository linter for
+their integrity checks. Consumers must supply the complete local population,
+not an export of selected relations.
+
+Every invocation checks file shapes, admission, lifecycle, resolved endpoints,
+and **all-history** reporting cycles. With no date it also scans all-history
+multi-manager health intervals. `--as-at` limits health warnings and returned
+pairs to that explicit date; it does not hide a historical validation error.
+`--actor` requires a date. `--direction managers` (default) selects outgoing
+pairs; `--direction reports` selects incoming pairs. Without an actor, a dated
+invocation returns every direct pair. No inferred or transitive edges are added.
+
+Output is JSON: `complete`, `valid`, `as_at`, resolved `actor`, `direction`,
+`pairs`, and `findings`. Each pair contains `from_actor`, `to_actor`, and every
+active contributing REL ID in `relations`. Identities and evidence are sorted.
+A valid empty `pairs` array means no relationship recorded at that date; it is
+only definitive within the declared input scope. Any error or incomplete input
+suppresses **all** pairs. Warnings alone preserve valid matrix results. Exit 0
+means complete and valid (possibly with warnings), 1 means validation errors,
+and 2 means incomplete input; argument-usage errors also exit 2.
+
+Identity lookup uses live IDs then `former_ids` migration bridges; collisions
+are errors. Human-readable `aliases` are matching hints and never endpoint IDs.
+The command checks endpoint TYPE and subtype for `reports_to`, `employment`, and
+`unit_parent`, preserving their different meanings. Other known REL kinds are
+recognized but their kind-specific semantics remain with their existing
+validators. They never produce reporting edges. `extensions` pass through
+without reporting authority. This is a bounded reporting checker, not full
+schema certification of every notation or a replacement for `tools/lint.py`.
+The separate `scripts/release-obligations.mjs` interface is unchanged.
+
+### Diagnostic ownership
+
+`tools/reporting.py` enforces the following rules for this supported input;
+repository graph checks require its complete catalogue load. Existing linter
+checks remain in place. Findings carry record/field context where applicable;
+cycle findings include an ordered actor path, incident edges with REL IDs,
+all contributing evidence, and an inclusive interval/witness date. Health
+findings carry the actor, distinct manager identities, evidence and interval.
+Intervals are split whenever active evidence changes.
+
+| Code | Severity | Meaning / enforcement layer |
+|---|---|---|
+| `SCHEMA_INVALID` | error | File field/identity/notation shape, duplicate ID, missing `valid_to`, or invalid query argument. Duplicate IDs also make the population incomplete. |
+| `ADMIT-001`–`ADMIT-004` | error | Unknown state, inconsistent proposal metadata, incomplete active admission, or missing rejection metadata; file admission checks. Valid drafts are excluded. |
+| `LIFECYCLE-001` | error | Missing/invalid quoted start date; file check. |
+| `LIFECYCLE-002` | error | Non-null end is not a valid quoted calendar date; file check. |
+| `LIFECYCLE-003` | error | End before start; file check. |
+| `REL-001` | error | Missing/unknown relation kind; file check using the shipped vocabulary. |
+| `REL-002` | error | Missing/malformed, unresolved/unadmitted or wrong TYPE/subtype endpoint; catalogue check. An endpoint with invalid lifecycle cannot contribute. Also used for an invalid query person. |
+| `REL-003` | error | Relation window not contained in either resolved endpoint; catalogue check, never clipping. |
+| `REL-004` | error | Canonical inline `manager`/`reports_to` field on ACTOR; author a REL instead. |
+| `ELEM-FORMER-ID-001` | error | Migration identity collision; catalogue incomplete. |
+| `REL-011` | error | Resolved reporting self-link; catalogue identity check. |
+| `REL-012` | error | Simultaneously effective reporting cycle; repository graph check. |
+| `REL-013` | warning | Multiple distinct effective managers; repository health check. |
+| `CAT-001` | warning | No declared catalogue manifest; result is incomplete and exits 2. |
+| `CAT-002` | error | Nested catalogue boundary; result is incomplete. |
+
+`CATALOGUE_INCOMPLETE` is an error status for command input/load failures,
+including unsupported files; the result is incomplete. It is command status,
+not a new normative validator rule.
 
 ## Records and dated oracle
 
@@ -55,7 +139,7 @@ Apply each mutation independently to the base catalogue, retaining full
 admission and lifecycle records unless the vector explicitly changes them.
 Diagnostics retain field/endpoint context; graph failures retain incident
 records. These are normative expectations for dependent mechanical tests,
-not results from a runtime validator supplied by this example.
+exercised by the source-checkout command and its mechanical tests.
 
 | Vector | Expected result |
 |---|---|
