@@ -128,6 +128,25 @@ rest of the YAML document. Unsupported alias input stops commands such as
 Alias collisions retain the existing report-only behavior: `repo-check` reports
 `integrity.alias_collisions` and exits 0 after completing the report.
 
+### Reporting relation candidates
+
+`reports_to` is recognized from the checkout's version-matched
+`notations/vocabulary.yaml` (currently methodology 7.0.0). Extraction results must
+supply a `REL` ID, `ACTOR` endpoints, `valid_from` and explicit `valid_to` (a day or
+`null`). Emission and review preserve the authored ID, inclusive window, evidence
+and extensions. Only an identical ID/pair/window matches an admitted reporting
+record; a distinct ID or window remains for review. Replaying an extraction is
+idempotent. Other relation kinds retain their existing kind/from/to matching.
+
+Full coverage (`ALL`) and explicit custom profiles can include reporting; core
+coverage is unchanged. Candidate validation checks shape, not admission, person
+subtypes, endpoint containment or temporal cycles. Apply the
+[reporting checker](../../notations/examples/relations/reports-to/README.md)
+to the complete admitted catalogue for dated direct/reverse queries and health
+warnings. Multiple managers remain valid data; no manager is inferred from
+employment or unit membership. This source interface does not install or publish
+a CLI release.
+
 ## Multi-batch naming
 
 `review-queue.yaml` (and the reg-intel CLI's `review-digest.yaml`) is a **stable package filename**. The first batch for an org lands at the flat legacy path `_intake/processing/review-queue.yaml`. Batch identity is explicit: pass `--run-id <id>` to refresh the same batch in place (matching run_id is required). Without a matching run_id, or if no prior batch exists, a run creates its own dated **batch directory** instead — `_intake/processing/review-queue-<scope>-YYYYMMDD-<seq>/review-queue.yaml`, where `<scope>` is `--scope <word>` (a generic word, never an org-identifying string) or defaults to `batch`. `workflow-status` discovers both the flat path and every dated directory.

@@ -14,6 +14,7 @@ import { isValidId, isValidType } from './ids.mjs';
 import { classifyCoverage } from './coverage.mjs';
 import { loadVocabulary, relationKinds, valueSet } from './vocabulary.mjs';
 import { ELEMENT_FIELDS, TYPE_FIELDS } from './emit-candidates.mjs';
+import { reportingKey } from './canon.mjs';
 
 // Every closed set below is DERIVED from notations/vocabulary.yaml — this file holds
 // no literal enum. Derived at module init, so a missing or corrupt artefact throws
@@ -138,6 +139,9 @@ export function validateCandidate(cand, profile) {
     else if (!CLOSED_REL_KINDS.has(cand.rel_kind)) flags.push(`rel_kind is not a closed REL kind (17-relations.md §3): ${cand.rel_kind}`);
     if (!isValidId(cand.from)) flags.push(`relation "from" violates the ID grammar: ${cand.from}`);
     if (!isValidId(cand.to)) flags.push(`relation "to" violates the ID grammar: ${cand.to}`);
+    if (cand.rel_kind === 'reports_to' && !reportingKey(cand)) {
+      flags.push('reports_to requires a REL id, ACTOR endpoints, valid_from day and explicit valid_to (null or an inclusive day on/after valid_from)');
+    }
     type = cand.rel_kind;
   } else if (cand.kind === 'assertion') {
     if (!isValidId(cand.id)) flags.push(`assertion id violates the ID grammar: ${cand.id}`);
