@@ -142,12 +142,16 @@ const { state, flag } = await resolveReference('REQ-014', { renderDate: '2026-08
 | `'ok'` | `null` | Resolves, admitted, in effect. |
 | `'unresolved'` | `⚑U` | The id does not exist anywhere in canon. |
 | `'not-admitted'` | `⚑A` | The object exists but `admission_state` isn't `active`. |
-| `'out-of-validity'` | `⚑V` | `[valid_from, valid_to]` does not cover `renderDate`. |
+| `'out-of-validity'` | `⚑V` | Required lifecycle bounds are missing/invalid, or `[valid_from, valid_to]` does not cover `renderDate`. |
 | `'suspect'` | `⚑S` | Only for a `REL`/`ASSERTION`/`VERIFICATION`/`VALIDATION` record: one of its own endpoints changed since the record last looked at it (CONTRACT.md §16.2's link-suspicion computation, anchored on the record's own last commit — not a per-field anchor). A plain element's own reference fields (e.g. `REQUIREMENT.parent`) never carry `⚑S` directly (CONTRACT.md §16.2). |
 
-An unresolvable endpoint on a `REL`/claim record is silent, not suspicious — the
-same posture `scripts/check-link-suspicion.mjs` takes (a validator's concern, e.g.
-`REL-002`, not this module's).
+A REL also requires both endpoints to resolve, be admitted and be effective at
+the render date. An unresolved endpoint gives `⚑U`; an unadmitted or inactive
+endpoint gives `⚑A` or `⚑V`. These checks precede suspicion. Claim records retain
+their existing suspicion behavior; trace still requires both matrix endpoints.
+Identity resolution accepts live IDs and unambiguous `former_ids` migration
+bridges (block or inline lists), never human-readable `aliases`. Duplicate IDs
+and identity collisions throw input errors rather than silently replacing records.
 
 ## Evaluation and render profiles (§4)
 
@@ -178,6 +182,65 @@ or a claim record's single named endpoint field (`verifies` / `about` / `validat
 oriented `endpoints[via]` → the record's own id — the direction the epic's own
 example, `from = REQUIREMENT to = VERIFICATION via = verifies`, exercises). A `via`
 matching neither produces an all-empty matrix, not an error.
+
+Every contributing REL or claim must itself resolve `ok`, including its own
+admission and inclusive date window. Missing lifecycle fields do not mean an
+unbounded window: only an explicit `valid_to: null` does. Multiple REL records
+for a pair remain separate listing rows; the trace coverage set contains that
+resolved pair once. Expired evidence never contributes to a later recurrence.
+
+### Reporting views and upstream validation
+
+`reports_to` uses the same scalar selection and generic trace mechanisms. The
+ACTOR × ACTOR matrix is **not a person-subtype or graph validator**. Before
+presenting it as valid reporting, run the complete-catalogue
+[`tools/reporting.py` interface](../../notations/examples/relations/reports-to/README.md)
+against the same unchanged catalogue and date. Require exit 0 and both
+`complete: true` and `valid: true`. Preserve findings; warnings such as REL-013
+do not invalidate a matrix. Errors or incomplete inputs stop rendering, not
+produce a definitive empty report. Do not validate an actor-filtered subset
+and then treat it as the full population.
+
+```js
+import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
+import { createEvaluator } from './src/evaluate.mjs';
+
+// methodologyRoot is the pinned source checkout; catalogueRoot is one declared
+// local catalogue. Keep that catalogue unchanged through validation and render.
+const renderDate = '2026-06-15';
+const reporting = JSON.parse(execFileSync('python3', [
+  join(methodologyRoot, 'tools/reporting.py'),
+  '--root', catalogueRoot, '--as-at', renderDate,
+], { encoding: 'utf8' })); // nonzero exit throws; do not suppress it
+if (!reporting.complete || !reporting.valid) throw new Error('Reporting input is not valid and complete');
+const evaluator = await createEvaluator(join(catalogueRoot, 'canon'));
+const rows = await evaluator.evaluateEach({
+  entityType: 'REL', where: [{ field: 'type', op: '=', value: 'reports_to' }],
+  orderBy: 'id',
+}, { renderDate });
+const matrix = await evaluator.evaluateTrace({
+  from: 'ACTOR', to: 'ACTOR', via: 'reports_to',
+}, { renderDate });
+```
+
+The upstream checker owns full admission metadata, YAML/schema completeness,
+person subtypes, endpoint containment, resolved self-links and temporal cycles.
+This engine only projects the validated population; calling it directly is not
+a substitute for that gate. Its local date/admission/endpoint checks prevent
+invalid link selection but do not certify all input semantics. Read failures
+and missing catalogue roots throw; callers must not convert them to valid
+empty reports. The supported reporting input is the checker's single local
+catalogue of whole-file YAML records, including `.yaml` and `.yml` files.
+
+Source compatibility is bound to the contract/example revision
+`54e6709ff016ec694f30630038eaf9d33a973cd9` and query/validation revision
+`dec496f5561bfc9ba7d0f5fcfbf27b894bc64c33`, plus this engine correction.
+Record the exact checkout commit when consuming it. The package metadata
+version `0.0.1` and methodology manifest pin `7.0.0` alone do not identify this
+capability; this is source-checkout support, not a package release or installation.
+The two JavaScript packages must retain their sibling directory layout because
+the engine imports the renderer's shared grammar by relative path.
 
 `renderDocument(ast, evaluator, { profile, renderDate, failOn })` walks the AST and
 emits HTML:
@@ -239,12 +302,17 @@ change) — not built in this package.
 
 ## Tests
 
+Use Node.js 20 or later. The reporting integration tests additionally use
+Python 3.12 and PyYAML 6.0.1 to compare the shipped forward/reverse reporting
+oracle with listing IDs and trace pairs. All fixtures are synthetic.
+
 ```
 node packages/document-view-engine/tests/test_parse_recipe.mjs
 node packages/document-view-engine/tests/test_resolve_references.mjs
 node packages/document-view-engine/tests/test_evaluate.mjs
 node packages/document-view-engine/tests/test_blocks_view.mjs
 node packages/document-view-engine/tests/test_render.mjs
+node packages/document-view-engine/tests/test_reporting.mjs
 ```
 
 ## Glossary report

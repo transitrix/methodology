@@ -73,14 +73,14 @@ export function typeOfId(id) {
 // ── Evaluator ────────────────────────────────────────────────────────────
 
 export async function createEvaluator(canonRoot) {
-  const { index, resolveReference } = await createResolver(canonRoot);
+  const { index, resolveReference, canonicalId } = await createResolver(canonRoot);
   const orgRoot = join(canonRoot, '..');
   const textCache = new Map();
 
   async function textOf(entry) {
     const abs = join(orgRoot, ...entry.orgRelPath.split('/'));
     if (!textCache.has(abs)) {
-      textCache.set(abs, await readFile(abs, 'utf8').catch(() => ''));
+      textCache.set(abs, await readFile(abs, 'utf8'));
     }
     return textCache.get(abs);
   }
@@ -103,7 +103,7 @@ export async function createEvaluator(canonRoot) {
     if (current.state !== 'ok') return { id, state: current.state, flag: current.flag, content: null };
     if (fields.length === 0) return { id, state: 'ok', flag: null, content: id };
 
-    let entry = index.get(id);
+    let entry = index.get(current.id);
     for (let i = 0; i < fields.length - 1; i++) {
       const text = await textOf(entry);
       const raw = extractField(text, fields[i]);
@@ -112,7 +112,7 @@ export async function createEvaluator(canonRoot) {
       }
       current = await resolveReference(raw, { renderDate });
       if (current.state !== 'ok') return { id: raw, state: current.state, flag: current.flag, content: null };
-      entry = index.get(raw);
+      entry = index.get(current.id);
     }
 
     const text = await textOf(entry);
@@ -194,6 +194,7 @@ export async function createEvaluator(canonRoot) {
     const covered = new Set();
     for (const [id, entry] of index) {
       if (!entry.endpoints) continue;
+      if ((await resolveReference(id, { renderDate })).state !== 'ok') continue;
       const keys = Object.keys(entry.endpoints);
       let a;
       let b;
@@ -209,6 +210,8 @@ export async function createEvaluator(canonRoot) {
       } else {
         continue;
       }
+      a = canonicalId(a);
+      b = canonicalId(b);
       if (rowSet.has(a) && colSet.has(b)) covered.add(`${a}|${b}`);
     }
 
