@@ -351,7 +351,8 @@ test('glossary recipe renders canon definitions without writing canon', async (t
     ['TERM-7', 'name: Rejected\ndescription: Not admitted.\nadmission_state: rejected\n'],
   ]) {
     const path = join(elements, `${id}.yaml`);
-    const text = `id: ${id}\nzone: canon\n${fields}`;
+    const lifecycle = `${fields.includes('valid_from:') ? '' : 'valid_from: "2020-01-01"\n'}${fields.includes('valid_to:') ? '' : 'valid_to: null\n'}`;
+    const text = `id: ${id}\nzone: canon\n${lifecycle}${fields}`;
     sources.set(path, text);
     await writeFile(path, text);
   }

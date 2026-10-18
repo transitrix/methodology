@@ -34,6 +34,8 @@ import { execFileSync } from 'node:child_process';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join, resolve as resolvePath, relative, sep } from 'node:path';
+import { glossaryField } from './glossary-view.mjs';
+import { isValidId } from '../../document-renderer/src/ids.mjs';
 
 // ── Content identity (CONTRACT.md §16.1) ────────────────────────────────
 
@@ -235,13 +237,14 @@ async function walkYaml(dir) {
   let entries;
   try {
     entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return out;
+  } catch (error) {
+    if (error.code === 'ENOENT') return out;
+    throw error;
   }
   for (const entry of entries) {
     const p = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...(await walkYaml(p)));
-    else if (entry.isFile() && entry.name.endsWith('.yaml')) out.push(p);
+    else if (entry.isFile() && /\.ya?ml$/.test(entry.name)) out.push(p);
   }
   return out;
 }
@@ -249,13 +252,12 @@ async function walkYaml(dir) {
 // Targeted top-level scalar extraction — same convention as
 // scripts/baseline-manifest.mjs's `field()` / scripts/check-link-suspicion.mjs.
 function field(text, name) {
-  const m = text.match(new RegExp(`^${name}:\\s*"?([^"\\n#]*?)"?\\s*(?:#.*)?$`, 'm'));
-  return m ? m[1].trim() : undefined;
+  const value = glossaryField(text, name);
+  return typeof value === 'string' || value === null ? value : undefined;
 }
 
 function dateField(text, name) {
   const raw = field(text, name);
-  if (raw === undefined || raw === 'null') return null;
   return raw;
 }
 
@@ -266,7 +268,12 @@ function toOrgRelPath(canonRoot, absPath) {
 async function indexFile(canonRoot, absPath, index, endpointFields) {
   const text = await readFile(absPath, 'utf8');
   const id = field(text, 'id');
-  if (!id) return;
+  if (!id || !isValidId(id)) throw new Error('Invalid catalogue identity');
+  if (index.has(id)) throw new Error(`Duplicate catalogue identity: ${id}`);
+  const formerIds = glossaryField(text, 'former_ids') ?? [];
+  if (!Array.isArray(formerIds) || formerIds.some((old) => typeof old !== 'string' || !isValidId(old))) {
+    throw new Error(`Invalid former_ids: ${id}`);
+  }
   const endpoints = endpointFields
     ? Object.fromEntries(endpointFields.map((f) => [f, field(text, f)]).filter(([, v]) => v !== undefined))
     : null;
@@ -276,6 +283,8 @@ async function indexFile(canonRoot, absPath, index, endpointFields) {
     validFrom: dateField(text, 'valid_from'),
     validTo: dateField(text, 'valid_to'),
     endpoints,
+    formerIds,
+    relation: endpointFields?.includes('from') ?? false,
   });
 }
 
@@ -284,6 +293,8 @@ async function indexFile(canonRoot, absPath, index, endpointFields) {
 // drafts are indexed too (not skipped) — §3's ⚑U/⚑A distinction depends on
 // telling "doesn't exist" apart from "exists, not admitted".
 export async function buildCanonIndex(canonRoot) {
+  // A missing root is an incomplete input, not an empty model.
+  await readdir(canonRoot);
   const index = new Map();
   for (const file of await walkYaml(join(canonRoot, 'elements'))) {
     await indexFile(canonRoot, file, index, null);
@@ -293,7 +304,22 @@ export async function buildCanonIndex(canonRoot) {
       await indexFile(canonRoot, file, index, endpointFields);
     }
   }
+  const retired = new Set();
+  for (const entry of index.values()) {
+    for (const old of entry.formerIds) {
+      if (index.has(old) || retired.has(old)) throw new Error(`Ambiguous former identity: ${old}`);
+      retired.add(old);
+    }
+  }
   return index;
+}
+
+export function canonicalId(id, index) {
+  if (index.has(id)) return id;
+  for (const [current, entry] of index) {
+    if (entry.formerIds?.includes(id)) return current;
+  }
+  return id;
 }
 
 function todayIso() {
@@ -301,7 +327,10 @@ function todayIso() {
 }
 
 function coversDate(validFrom, validTo, renderDate) {
-  if (validFrom === null) return true; // nothing to check against
+  const day = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+  if (!day(renderDate) || !day(validFrom) || (validTo !== null && !day(validTo))) return false;
+  if (validTo !== null && validTo < validFrom) return false;
   if (renderDate < validFrom) return false;
   if (validTo !== null && renderDate > validTo) return false;
   return true;
@@ -311,7 +340,7 @@ async function endpointsSuspicious(entry, index, orgRoot, manifests) {
   if (!entry.endpoints) return false;
   const anchor = lastCommitTouching(orgRoot, entry.orgRelPath);
   for (const targetId of Object.values(entry.endpoints)) {
-    const targetEntry = index.get(targetId);
+    const targetEntry = index.get(canonicalId(targetId, index));
     if (!targetEntry) continue; // unresolved endpoint — a validator's concern (REL-002 etc.), not §3's
     const result = await checkSuspicion({
       orgRoot,
@@ -327,6 +356,7 @@ async function endpointsSuspicious(entry, index, orgRoot, manifests) {
 // Resolves one id against an index already built by buildCanonIndex(),
 // returning `{ id, state, flag }` — flag is null when state is 'ok'.
 export async function resolveReference(id, index, { canonRoot, renderDate, manifests } = {}) {
+  id = canonicalId(id, index);
   const entry = index.get(id);
   if (!entry) return { id, state: 'unresolved', flag: '⚑U' };
 
@@ -335,6 +365,17 @@ export async function resolveReference(id, index, { canonRoot, renderDate, manif
   const date = renderDate ?? todayIso();
   if (!coversDate(entry.validFrom, entry.validTo, date)) {
     return { id, state: 'out-of-validity', flag: '⚑V' };
+  }
+
+  // REL selection and trace share endpoint activity checks. Do not recursively
+  // traverse links here: graph/subtype validation belongs to the catalogue validator.
+  if (entry.relation) {
+    for (const side of ['from', 'to']) {
+      const target = index.get(canonicalId(entry.endpoints[side], index));
+      if (!target) return { id, state: 'unresolved', flag: '⚑U' };
+      if (target.admissionState !== 'active') return { id, state: 'not-admitted', flag: '⚑A' };
+      if (!coversDate(target.validFrom, target.validTo, date)) return { id, state: 'out-of-validity', flag: '⚑V' };
+    }
   }
 
   if (entry.endpoints) {
@@ -359,6 +400,7 @@ export async function createResolver(canonRoot) {
   ]);
   return {
     index,
+    canonicalId: (id) => canonicalId(id, index),
     resolveReference: (id, opts = {}) => resolveReference(id, index, { canonRoot, manifests, ...opts }),
   };
 }

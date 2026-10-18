@@ -56,6 +56,10 @@ async function run() {
 
   const reqDir = join(canonRoot, 'elements', '01_motivation', 'requirements');
   const relDir = join(canonRoot, 'relations');
+  writeYaml(reqDir, 'CAPABILITY-X-1.yaml', [
+    'id: CAPABILITY-X-1', 'zone: canon',
+    'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
 
   // Plain elements: one clean, one out-of-validity, one not-admitted (proposed).
   writeYaml(reqDir, 'REQUIREMENT-OK-1.yaml', [
@@ -147,7 +151,7 @@ async function run() {
   checkEqual((await resolve('REL-SUSPECT-1', { renderDate: '2026-08-06' })).flag, '⚑S', 'a REL whose target changed after the REL was last touched is suspect');
   checkEqual((await resolve('REL-CLEAN-1', { renderDate: '2026-08-06' })).flag, null, 'a REL whose target was only reformatted is not suspect');
   checkEqual((await resolve('REL-HATCHED-1', { renderDate: '2026-08-06' })).flag, null, 'a REL whose target change is fully explained by a migration manifest is not suspect');
-  checkEqual((await resolve('REL-UNRESOLVED-TARGET-1', { renderDate: '2026-08-06' })).flag, null, 'a REL with an unresolvable endpoint is silent here, not suspicious');
+  checkEqual((await resolve('REL-UNRESOLVED-TARGET-1', { renderDate: '2026-08-06' })).flag, '⚑U', 'a REL with an unresolvable endpoint is unresolved, not valid evidence');
 
   // Precomputed index/manifests are reused across calls, not re-scanned per id.
   const direct = await resolveReference('REQUIREMENT-OK-1', index, { canonRoot, renderDate: '2026-08-06' });
