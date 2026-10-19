@@ -66,6 +66,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check declared repository paths
+        run: |
+          node scripts/check-publish-manifest.mjs
+          node --test scripts/check-publish-manifest.test.mjs
+
       - name: Scan diff and PR metadata for blocklisted vocabulary
         shell: bash
         env:
