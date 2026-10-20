@@ -13,12 +13,13 @@
 // subject TYPE, closed status enum), and the human gate adjudicates every one.
 //
 // Corroboration: when the SAME candidate (same element id / same REL triple / same
-// assertion id) is emitted again from a different field source, derived_from is MERGED
-// (union), not overwritten — a fact confirmed across two sources must accumulate its
+// assertion id; reports_to uses ID/pair/window) is emitted again from a different
+// field source, derived_from is MERGED (union), not overwritten — a fact confirmed across two sources must accumulate its
 // citations.
 
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { readTopScalar } from './yaml.mjs';
 import { isValidId } from './ids.mjs';
 import { buildCanonIndex } from './canon.mjs';
@@ -123,9 +124,17 @@ export function shapeCandidates(derivedFrom, result) {
         extraction_confidence: rel.extraction_confidence,
       };
       if (rel.extraction_notes) c.extraction_notes = rel.extraction_notes;
+      if (rel.rel_kind === 'reports_to') {
+        for (const key of ['id', 'valid_from', 'valid_to', 'evidence', 'extensions']) {
+          if (Object.hasOwn(rel, key)) c[key] = rel[key];
+        }
+      }
       candidates.push(c);
     } else {
       suggestions.push({
+        ...(rel.rel_kind === 'reports_to' ? Object.fromEntries(
+          ['id', 'valid_from', 'valid_to', 'evidence', 'extensions']
+            .filter(key => Object.hasOwn(rel, key)).map(key => [key, rel[key]])) : {}),
         rel_kind: rel.rel_kind,
         from: rel.from,
         to: rel.to,
@@ -176,6 +185,11 @@ export function collectIdWarnings(candidates) {
 }
 
 function candidateFilename(c, index) {
+  if (c.kind === 'relation' && c.rel_kind === 'reports_to') {
+    const key = JSON.stringify([c.id, c.from, c.to, c.valid_from, c.valid_to,
+      Object.hasOwn(c, 'valid_to')]);
+    return `REL_reports_to__${createHash('sha256').update(key).digest('hex')}.json`;
+  }
   if ((c.kind === 'element' || c.kind === 'assertion') && c.id) return `${safeName(c.id)}.json`;
   if (c.kind === 'relation') return `REL_${safeName(c.rel_kind)}__${safeName(c.from)}__${safeName(c.to)}.json`;
   return `candidate-${index}.json`;

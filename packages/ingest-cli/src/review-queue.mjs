@@ -91,16 +91,21 @@ export async function buildReviewQueue({ orgRoot, candidatesDir, profile, sugges
         coverage_flag: 'out_of_profile', validation_flags: [`does not parse: ${parseError || 'null'}`] });
       continue;
     }
-    const already = admittedMatch(candidate, canon);
-    if (already) { excluded_admitted.push({ ref, matched: already }); continue; }
     const v = validateCandidate(candidate, profile);
-    for (const d of candidate.derived_from || []) fieldIds.add(d);
+    const already = candidate.rel_kind === 'reports_to' && v.validation_flags.length
+      ? null : admittedMatch(candidate, canon);
+    if (already) { excluded_admitted.push({ ref, matched: already }); continue; }
+    for (const d of Array.isArray(candidate.derived_from) ? candidate.derived_from : []) fieldIds.add(d);
     // Surface the deterministic §4 placement (mode + layer + folder) for an element
     // candidate, so the human gate places it consistently instead of by judgement.
     const place = candidate.kind === 'element' ? resolvePlacement(candidate.element_type) : null;
     candidates.push({
       ref,
       kind: candidate.kind,
+      ...(candidate.kind === 'relation' && candidate.rel_kind === 'reports_to'
+        ? Object.fromEntries(['id', 'rel_kind', 'from', 'to', 'valid_from', 'valid_to',
+          'evidence', 'extensions', 'derived_from'].filter(key => Object.hasOwn(candidate, key))
+          .map(key => [key, candidate[key]])) : {}),
       extraction_confidence: candidate.extraction_confidence ?? null,
       coverage_flag: v.coverage_flag,
       ...(v.coverage_reason ? { coverage_reason: v.coverage_reason } : {}),

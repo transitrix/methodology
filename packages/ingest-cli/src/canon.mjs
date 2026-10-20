@@ -6,7 +6,7 @@
 //   - element / assertion: the canonical `id` (1:1 with the candidate's `id`).
 //   - relation: the (kind, from, to) triple. Note the field rename across zones --
 //     a candidate carries `rel_kind`, an admitted REL file carries `type`
-//     (17-relations.md A2) -- so we normalise both to the same triple key.
+//     (17-relations.md A2). reports_to instead matches ID, pair and window.
 //
 // Entity-match map (F8):
 //   - nameMap: normalised(name|alias) -> { id, matched_on: 'name'|'alias' }
@@ -30,6 +30,7 @@ import { readdir, readFile, access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { readTopScalar, readTopList } from './yaml.mjs';
 import { isUnresolvedPath } from './unresolved.mjs';
+import { isValidId } from './ids.mjs';
 
 async function exists(p) { try { await access(p); return true; } catch { return false; } }
 
@@ -37,6 +38,22 @@ async function exists(p) { try { await access(p); return true; } catch { return 
 // closed REL kind (both are [A-Za-z0-9_-] only), so the key is unambiguous.
 const SEP = ' ';
 export function relKey(kind, from, to) { return `${kind}${SEP}${from}${SEP}${to}`; }
+
+function isReportingDay(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !value.startsWith('0000-') &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+}
+
+// Reporting records are evidence identities, not just logical pairs. Invalid or
+// incomplete identities stay visible for review rather than matching canon.
+export function reportingKey(c) {
+  if (!isValidId(c.id) || !c.id.startsWith('REL-') ||
+      !isValidId(c.from) || !c.from.startsWith('ACTOR-') ||
+      !isValidId(c.to) || !c.to.startsWith('ACTOR-') ||
+      !isReportingDay(c.valid_from) ||
+      !(c.valid_to === null || (isReportingDay(c.valid_to) && c.valid_to >= c.valid_from))) return null;
+  return JSON.stringify([c.id, c.from, c.to, c.valid_from, c.valid_to]);
+}
 
 // Recursively collect every *.yaml file path under dir.
 async function walkYaml(dir) {
@@ -59,9 +76,10 @@ function normName(s) { return typeof s === 'string' ? s.trim().toLowerCase() : n
 function isTermId(id) { return typeof id === 'string' && id.startsWith('TERM-'); }
 
 // Build a read-only index of canon/ for one org root.
-// Returns { ids: Set, rels: Set, nameMap: Map, collisions: [], unreadable: [] }.
+// Returns { ids: Set, rels: Set, reporting: Set, nameMap: Map, collisions: [], unreadable: [] }.
 //   ids        -- admitted element/assertion IDs (for review-queue idempotency).
-//   rels       -- admitted relation triple keys (for review-queue idempotency).
+//   rels       -- admitted non-reporting relation triple keys.
+//   reporting  -- admitted reports_to identity/pair/window keys.
 //   nameMap    -- normalised(name|alias) -> { id, matched_on: 'name'|'alias' }.
 //                 Used by emit-candidates for cross-source entity-match proposals (F8).
 //   collisions -- [{ value, a, b }] for the ELEM-ALIAS-001 uniqueness gate (§9):
@@ -74,11 +92,12 @@ function isTermId(id) { return typeof id === 'string' && id.startsWith('TERM-');
 export async function buildCanonIndex(orgRoot) {
   const ids = new Set();
   const rels = new Set();
+  const reporting = new Set();
   const nameMap = new Map();
   const collisions = [];
   const unreadable = [];
   const canonDir = join(resolve(orgRoot), 'canon');
-  if (!(await exists(canonDir))) return { ids, rels, nameMap, collisions, unreadable };
+  if (!(await exists(canonDir))) return { ids, rels, reporting, nameMap, collisions, unreadable };
 
   // Record one surface form for `id`. First writer wins the nameMap slot (F8 match
   // target). ELEM-ALIAS-001 fires when a DIFFERENT id claims the same value AND an
@@ -114,14 +133,19 @@ export async function buildCanonIndex(orgRoot) {
       for (const alias of readTopList(text, 'aliases')) claim(alias, id, 'alias');
     }
 
-    // A first-class relation is identified by its endpoints + kind, not its id --
-    // re-admitting the same triple under a new REL id must still be recognised.
+    // Legacy relations match their triple; reporting preserves evidence identities.
     const from = readTopScalar(text, 'from');
     const to = readTopScalar(text, 'to');
     const kind = readTopScalar(text, 'type');
-    if (from && to && kind) rels.add(relKey(kind, from, to));
+    if (kind === 'reports_to') {
+      const end = readTopScalar(text, 'valid_to');
+      const key = reportingKey({ id, from, to,
+        valid_from: readTopScalar(text, 'valid_from'),
+        valid_to: end === 'null' || end === '~' ? null : end ?? undefined });
+      if (key) reporting.add(key);
+    } else if (from && to && kind) rels.add(relKey(kind, from, to));
   }
-  return { ids, rels, nameMap, collisions, unreadable };
+  return { ids, rels, reporting, nameMap, collisions, unreadable };
 }
 
 // Is this candidate already admitted to canon, per the index? Returns the matched
@@ -134,6 +158,10 @@ export function admittedMatch(cand, index) {
     return typeof cand.id === 'string' && index.ids.has(cand.id) ? cand.id : null;
   }
   if (cand.kind === 'relation') {
+    if (cand.rel_kind === 'reports_to') {
+      const key = reportingKey(cand);
+      return key && index.reporting?.has(key) ? cand.id : null;
+    }
     if (typeof cand.rel_kind !== 'string' || typeof cand.from !== 'string' || typeof cand.to !== 'string') return null;
     const key = relKey(cand.rel_kind, cand.from, cand.to);
     return index.rels.has(key) ? `${cand.rel_kind} ${cand.from} -> ${cand.to}` : null;
