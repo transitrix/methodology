@@ -58,7 +58,7 @@ New to the ideas behind it? Read **[`method/01-foundations.md`](method/01-founda
 
 ## Documentation
 
-- **[Semantic and architecture standards review](docs/standards-review/README.md)** — evidence, mapping limits and proposed interoperability profiles; includes the detailed ArchiMate differences register. The review is non-normative.
+- **[Semantic Standards Profile](method/semantic-standards-profile.md)** — scopes, identities, provenance, validation claims and compatibility for semantic interoperability; links the [ArchiMate differences register](docs/standards-review/archimate-differences.md) and [non-normative review](docs/standards-review/README.md).
 - **[ArchiMate 3.2 cheat sheet](https://transitrix.com/library/archimate-cheat-sheet/?utm_source=methodology-readme)** — elements by layer and aspect, relationships, and a printable PDF.
 - **[`GETTING_STARTED.md`](GETTING_STARTED.md)** — a first modelling session, step by step, illustrated against the `acme-corp` worked example.
 - **[`WALKTHROUGH.md`](WALKTHROUGH.md)** — a guided tour of the `acme-corp` worked example, read as one story.

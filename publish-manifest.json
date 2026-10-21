@@ -88,6 +88,7 @@
     "method/07-decisions.md",
     "method/08-governance.md",
     "method/09-releases-and-propagation.md",
+    "method/semantic-standards-profile.md",
     "migrations/0.5-to-0.6/README.md",
     "migrations/0.5-to-0.6/codemod.mjs",
     "migrations/0.5-to-0.6/fixtures/after/canon/elements/02_business/roles/ROLE-OPS-1.yaml",

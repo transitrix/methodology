@@ -6,6 +6,11 @@ For the shared envelope and GOAL, ACTION, REQUIREMENT and VERIFICATION fields,
 see [Reading fields by purpose](field-purpose.md): source data, provenance,
 admission history and derived diagnostics, with worked readings.
 
+For semantic roles, persistent identity, mapping losses, provenance and truthful
+tool-support claims, read the [Semantic Standards Profile](../method/semantic-standards-profile.md).
+Its [ArchiMate differences register](../docs/standards-review/archimate-differences.md)
+records comparison limits; it does not replace the element/relation contracts here.
+
 ## Views
 
 The view notations live under [`views/`](views/), split by class into a folder per class — [`diagrams/`](views/diagrams/), [`reports/`](views/reports/), and [`documents/`](views/documents/) — so a spec's class is a filesystem fact, not a table position. Studio also renders **PlantUML** (`.puml`/`.plantuml`) natively — no separate Transitrix notation is needed for it.
