@@ -17,6 +17,17 @@ Two file shapes do most of the work: **elements** (objects) and **relations** (c
 
 ### 1.1 Element template
 
+The simplified examples in §1.1–1.2 illustrate objects and edges; they are
+**not canonical authoring templates**. Canonical primitives use `notation`, the
+per-TYPE subtype vocabulary and the shared admission/lifecycle envelope; canonical
+REL files use `from` / `to` and the local kind enum. Copy the
+[primitive contract](../notations/ELEMENT_PRIMITIVES.md) or
+[canonical REL schema](../notations/elements/17-relations.md)
+when authoring. `ApplicationComponent`, `source` / `target` and `Access` below
+are conceptual illustration labels, not newly admitted canonical values.
+No parser conversion is implied. For comparisons and exchange claims use the
+[Semantic Standards Profile](semantic-standards-profile.md) and its linked register.
+
 ```yaml
 id: "APPLICATION-ORDERS-1"          # TYPE-DOMAIN-INTEGER, uppercase, hyphens only, no leading zeros
 name: "Order API"                   # Human-readable name

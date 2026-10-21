@@ -7,6 +7,22 @@ modeling, precise meaning, clear authoring and verifiable behavior.
 
 ## Comparison basis and status
 
+This is the authoritative detailed differences register for the
+[Semantic Standards Profile](../../method/semantic-standards-profile.md).
+SSP-10 requires an accepted change affecting a difference to update its stable
+entry in the same delivery: edition/concept, source/revision, exact difference,
+benefit/tradeoff, status, direction/loss, compatibility/consumers and decision
+reference or explicit unknown. Retired IDs remain with successor notes.
+The original comparison below remains a non-normative observation at its stated
+baseline; assigning this register its home does not accept every proposed change.
+
+Profile integration resolves AM-012/013's wording concerns in
+[modelling guidance](../../method/03-modelling.md), the
+[glossary](../../method/00-glossary.md#archimate-32-alignment) and the
+[stakeholder specification](../../notations/elements/20-stakeholders.md).
+Their historical findings remain for traceability; no parser, TYPE or relation
+semantics is changed by those qualifications.
+
 All Transitrix citations refer to
 [`8ca4eabf7666946ffb7a76eb579c31cb0ae3f327`](https://github.com/transitrix/methodology/tree/8ca4eabf7666946ffb7a76eb579c31cb0ae3f327),
 observed on 2026-10-10 and rechecked against main on 2026-10-11 without a delta.
@@ -367,6 +383,11 @@ the actual forms and qualifying equivalence claims. A diagram that looks closer
 to ArchiMate but drops those facts is not an improvement on these cases.
 
 ## Proposed maintenance rule
+
+This section preserves the original review recommendation at the comparison
+baseline. The current maintenance obligation is now specified by SSP-10 in the
+[Semantic Standards Profile](../../method/semantic-standards-profile.md);
+the historical candidate wording below is not a second normative authority.
 
 Recommend **`docs/standards-review/archimate-differences.md` as the authoritative
 detailed register**, with the glossary and cheat sheet linking to it after that

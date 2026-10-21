@@ -111,7 +111,7 @@ The shared header (`HDR-001..004`, [CONTRACT.md](../CONTRACT.md) §2) and primit
 
 ## 6. Evolution
 
-- **Concern as a separate primitive.** ArchiMate models a stakeholder's *concern* as its own element. v0.1 inlines `concern` as free text; a `CONCERN` primitive is deferred until needed.
+- **Concern as a separate primitive.** Transitrix currently uses free-text `concern`; no canonical `CONCERN` TYPE is established here. ISO/IEC/IEEE 42010:2022's Concern is a separate comparison from ArchiMate's Stakeholder; a shared label does not prove equivalent first-class elements. See [ARC-005](../../docs/standards-review/architecture-evidence.md#nine-architecture-concepts) and [AM-013](../../docs/standards-review/archimate-differences.md) for evidence and limits. A new structured concern model requires its own decision and compatibility review.
 - **External-organisation reference.** An external stakeholder often *is* an organisation; v0.1 models it as an `ACTOR(business_unit)` with `external_ref`. A dedicated external-org entity is out of scope.
 - **Action Card stakeholders block.** Once this notation lands, Action Card v0.2 (#97 follow-up) renders a stakeholders panel from the `stakeholding` relations whose target is the action.
 - DSM formalisation (the `stakeholder.type` enum + `action_stakeholder` join, legacy alias `activity_stakeholder`) is a `proj:transitrix-dsm` track; this spec defines only the methodology side.

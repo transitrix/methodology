@@ -2,7 +2,7 @@
 
 **Purpose:** Plain-language definitions of Transitrix terms and abbreviations, for readers who don't yet know the vocabulary. For anything that changes as the methodology evolves — the full TYPE registry, relation kinds, field names — this glossary links to the authoritative spec rather than repeating it, so it can't drift out of sync the way a duplicated list does.
 **Format:** English
-**Last updated:** 2026-07-04
+**Last updated:** 2026-10-21
 
 ---
 
@@ -12,7 +12,7 @@
 |---|---|
 | **Transitrix** | Text-native methodology for managing enterprise architecture as code: models, processes, and capabilities stored as YAML files in a Git repository. |
 | **Architecture-as-Code (AaC)** | Approach to defining and managing architecture through version-controlled text files rather than a GUI-only modelling tool. |
-| **ArchiMate** | The Open Group's open standard for enterprise architecture modelling (current version: 3.2). Transitrix's element and relation vocabulary is grounded in it — see [ArchiMate alignment](#archimate-32-alignment) below. |
+| **ArchiMate** | The Open Group's standard for enterprise architecture modelling. This methodology compares against edition 3.2; its element and relation vocabulary is grounded in that foundation — see [ArchiMate alignment](#archimate-32-alignment) below. |
 | **Element** | An architectural primitive — the atomic unit of modelling (a goal, a role, a process, an application component). One element = one file. |
 | **Relation (`REL`)** | A first-class, time-aware, typed link between two canonical primitives (`valid_from` / `valid_to`), stored as its own file under `canon/relations/`. See [`elements/17-relations.md`](../notations/elements/17-relations.md) for the closed enum of relation kinds (e.g. `parent`, `action_goal`, `depends_on`, `offers`, `realizes`, `hosts`, `uses`). |
 | **Atomicity** | Principle by which an element's description and its relations are stored in separate files — an element file never inlines a first-class relation. |
@@ -96,7 +96,13 @@ Full grammar, the exception, and the complete TYPE registry (element types, docu
 
 ## ArchiMate 3.2 alignment
 
-Transitrix is grounded in ArchiMate 3.2 but uses deliberately simplified or domain-friendly names in a few places. This table records only the **intentional divergences** — for the full TYPE list see [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §3.
+ArchiMate 3.2 is Transitrix's starting foundation. Model representation quality,
+precision and useful validation take precedence over strict fidelity. Similar
+names do not establish equivalent semantics. The authoritative detailed
+[ArchiMate differences register](../docs/standards-review/archimate-differences.md)
+records exact differences, rationale, status, direction, loss and compatibility;
+the table below is only a terminology introduction, not a second mapping registry.
+For the full TYPE list see [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §3.
 
 | Transitrix TYPE | ArchiMate 3.2 term | Note |
 |---|---|---|
@@ -108,7 +114,11 @@ Transitrix is grounded in ArchiMate 3.2 but uses deliberately simplified or doma
 | `ACTOR` | Business Actor | A single active-structure identity type (`person` \| `business_unit` \| `system`) replacing the former separate `UNIT` / `EMPLOYEE` TYPEs. |
 | `TERM` | Meaning | "Term" is more accessible than ArchiMate's "Meaning" for a business-vocabulary entry (name + definition, no modelled behaviour). |
 
-Everything else in the registry (`GOAL`, `DRIVER`, `CONSTRAINT`, `REQUIREMENT`, `STAKEHOLDER`, `ASSESSMENT`, `EQUIPMENT`, `ROLE`, `PROCESS`, `CAPABILITY`, `APPLICATION`, `NODE`, `TECHNOLOGY_SERVICE`, `BUSINESS_SERVICE`, `LOCATION`, …) uses the ArchiMate term directly or a name aligned with it — no divergence to record.
+Other names can align with ArchiMate while their structure, lifecycle, endpoints
+or interpretation still differ. Consult the detailed register before asserting
+equivalence; unmapped or lossy cases remain explicit. The
+[Semantic Standards Profile](semantic-standards-profile.md) distinguishes concept,
+class and instance and specifies identity, evidence and mapping-claim boundaries.
 
 ---
 

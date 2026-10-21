@@ -6,6 +6,11 @@ interchange profiles. It is **non-normative**. Recommendations below do not adop
 standards, change authoring rules, provide an exporter or establish conformance
 or certification. YAML/Git authoring remains unchanged.
 
+For the bounded normative documentation contract and actual candidate dispositions,
+see the [Semantic Standards Profile](../../method/semantic-standards-profile.md).
+The findings and proposals below retain their reviewed baseline and are not
+retroactively relabeled as implemented capabilities or adopted ontology choices.
+
 Read the [semantic evidence](semantic-evidence.md) for terminology, identity,
 representation, validation and provenance; the [architecture evidence](architecture-evidence.md)
 for architecture concepts and optional ontology/registry comparisons; and the
