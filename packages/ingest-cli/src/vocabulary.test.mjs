@@ -8,11 +8,11 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFileSync, mkdtempSync, mkdirSync, copyFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdtempSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   parseVocabulary,
   loadVocabulary,
@@ -248,6 +248,66 @@ test('ingest executable: missing pin also fails closed with recovery guidance', 
   assert.match(result.stderr, /Set TRANSITRIX_NOTATIONS_DIR/);
   assert.doesNotMatch(result.stderr, /\n\s+at /);
 });
+
+// --- Optional constructs, invalid values and version compatibility ---------
+
+test('optional vocabulary metadata distinguishes unsupported syntax from invalid values', () => {
+  const cases = [
+    { suffix: '\ncompatibility_note:\n  purpose: synthetic\n' },
+    { suffix: '\ncompatibility_note: {purpose: synthetic}\n', error: /unsupported YAML construct/ },
+    { suffix: '', invalid: true, error: /rule_codes\.ACT-001\.severity `catastrophic` is not in/ },
+  ];
+  for (const { suffix, invalid, error } of cases) {
+    const text = (invalid ? minimalDoc().replace('severity: error', 'severity: catastrophic') : minimalDoc()) + suffix;
+    const paths = writeTmp(text);
+    try {
+      if (error) assert.throws(() => loadVocabulary(paths), error);
+      else assert.equal(loadVocabulary(paths).compatibility_note.purpose, 'synthetic');
+    } finally {
+      rmSync(dirname(paths.path), { recursive: true, force: true });
+    }
+  }
+});
+
+// These cases describe this consumer build only, not compatibility of an older
+// build with an unavailable artefact. Keep the release bytes and pin paired;
+// mutate one independent cause at a time through the actual executable.
+for (const [name, mutate, error] of [
+  ['unchanged release', text => text, null],
+  ['supported optional map', text => text + '\ncompatibility_note:\n  purpose: synthetic\n', null],
+  ['unsupported optional flow map', text => text + '\ncompatibility_note: {purpose: synthetic}\n', /unsupported YAML construct `\{purpose: synthetic\}`/],
+  ['invalid vocabulary value', text => text.replace(/severity: error/, 'severity: catastrophic'), /severity `catastrophic` is not in value_vocabularies/],
+  ['mismatched release pin', text => text, /methodology_version .* ≠ pin "0\.0\.0"/],
+]) {
+  test(`repo-check vocabulary compatibility: ${name}`, () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'vocab-compatibility-'));
+    try {
+      const notations = join(cwd, 'notations');
+      const model = join(cwd, 'model');
+      mkdirSync(notations);
+      mkdirSync(model);
+      writeFileSync(join(notations, 'vocabulary.yaml'), mutate(readFileSync(REAL_VOCABULARY, 'utf8')));
+      writeFileSync(join(notations, 'CURRENT_VERSION.yaml'), name === 'mismatched release pin'
+        ? 'methodology_version: "0.0.0"\n' : readFileSync(REAL_PIN, 'utf8'));
+      const result = runCli(['repo-check', model], { cwd, notationsDir: notations });
+      if (error) {
+        assert.equal(result.status, 2);
+        assert.equal(result.stdout, '');
+        assert.match(result.stderr, error);
+        assert.match(result.stderr, /repo-check: incomplete — all health checks unavailable; no checks ran\./);
+        assert.match(result.stderr, /Set TRANSITRIX_NOTATIONS_DIR/);
+        assert.doesNotMatch(result.stderr, /\n\s+at /);
+      } else {
+        // Completion on an empty synthetic model is not model conformance.
+        assert.equal(result.status, 0, result.stderr);
+        assert.match(result.stdout, /generated_by: "@transitrix\/ingest-cli"/);
+        assert.equal(result.stderr, '');
+      }
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+}
 
 // --- Derived views — what placement.mjs / validate.mjs actually consume ------
 
