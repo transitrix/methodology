@@ -1,0 +1,432 @@
+{
+  "title": "Synthetic capability landscape",
+  "organisation": "Fictional service company — demonstration only",
+  "model_revision": "synthetic-demo-3",
+  "states": [
+    {
+      "id": "current",
+      "label": "Current State",
+      "kind": "current",
+      "as_of": "2026-10-20",
+      "capabilities": [
+        {
+          "id": "sales",
+          "name": "Customer & Sales",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 3
+            }
+          ],
+          "property": "Execution"
+        },
+        {
+          "id": "acquire",
+          "name": "Customer acquisition",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 2
+            }
+          ],
+          "property": "Planning"
+        },
+        {
+          "id": "lead",
+          "name": "Lead qualification",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 1
+            }
+          ],
+          "property": "Execution"
+        },
+        {
+          "id": "deliver",
+          "name": "Service Delivery",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 4
+            }
+          ],
+          "property": "Execution"
+        },
+        {
+          "id": "fulfil",
+          "name": "Order fulfilment",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 3
+            }
+          ],
+          "property": "Planning"
+        },
+        {
+          "id": "schedule",
+          "name": "Schedule delivery",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 2
+            }
+          ],
+          "property": "Execution"
+        },
+        {
+          "id": "backlog",
+          "name": "Backlog",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0
+        },
+        {
+          "id": "idea",
+          "name": "Unassigned improvement",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0
+        },
+        {
+          "id": "risk",
+          "name": "Risk Management",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 2
+            }
+          ],
+          "property": "Strategic"
+        },
+        {
+          "id": "customer-risk",
+          "name": "Customer risk assessment",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 2
+            }
+          ],
+          "property": "Learning"
+        },
+        {
+          "id": "checks",
+          "name": "Eligibility checks",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 1
+            }
+          ],
+          "property": "Execution"
+        },
+        {
+          "id": "delivery-risk",
+          "name": "Delivery risk control",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 3
+            }
+          ],
+          "property": "Planning"
+        },
+        {
+          "id": "unknown-risk",
+          "name": "Unplaced risk capability",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Support"
+        },
+        {
+          "id": "data",
+          "name": "Data Management",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "property": "MDM"
+        },
+        {
+          "id": "quality",
+          "name": "Delivery data quality",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 2,
+          "maturity": [
+            {
+              "change_date": "2026-01-01",
+              "level": 0
+            }
+          ],
+          "property": "ESG"
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "app-crm",
+          "name": "CRM",
+          "capabilities": [
+            "acquire",
+            "lead"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "app-erp",
+          "name": "ERP",
+          "capabilities": [
+            "fulfil",
+            "quality"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "app-unknown",
+          "name": "Service portal"
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "label": "Target State",
+      "kind": "target",
+      "horizon_label": "end of 2027",
+      "capabilities": [
+        {
+          "id": "sales",
+          "name": "Customer & Sales",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Execution"
+        },
+        {
+          "id": "acquire",
+          "name": "Customer acquisition",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Planning"
+        },
+        {
+          "id": "lead",
+          "name": "Lead qualification",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "property": "Execution"
+        },
+        {
+          "id": "deliver",
+          "name": "Service Delivery",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Execution"
+        },
+        {
+          "id": "fulfil",
+          "name": "Order fulfilment",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Planning"
+        },
+        {
+          "id": "schedule",
+          "name": "Schedule delivery",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "property": "Execution"
+        },
+        {
+          "id": "backlog",
+          "name": "Backlog",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0
+        },
+        {
+          "id": "idea",
+          "name": "Unassigned improvement",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0
+        },
+        {
+          "id": "risk",
+          "name": "Risk Management",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Strategic"
+        },
+        {
+          "id": "customer-risk",
+          "name": "Customer risk assessment",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "property": "Learning"
+        },
+        {
+          "id": "checks",
+          "name": "Eligibility checks",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "property": "Execution"
+        },
+        {
+          "id": "delivery-risk",
+          "name": "Delivery risk control",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "property": "Planning"
+        },
+        {
+          "id": "unknown-risk",
+          "name": "Unplaced risk capability",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 0,
+          "property": "Support"
+        },
+        {
+          "id": "data",
+          "name": "Data Management",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "property": "MDM"
+        },
+        {
+          "id": "quality",
+          "name": "Delivery data quality",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 2,
+          "property": "ESG"
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "app-crm",
+          "name": "CRM",
+          "capabilities": [
+            "acquire",
+            "lead",
+            "customer-risk"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "app-erp",
+          "name": "ERP",
+          "capabilities": [
+            "fulfil",
+            "quality",
+            "schedule"
+          ]
+        }
+      ]
+    }
+  ]
+}

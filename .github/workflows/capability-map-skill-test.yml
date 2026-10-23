@@ -1,0 +1,21 @@
+name: Capability-map skill
+on:
+  pull_request:
+    paths:
+      - 'transitrix/skills/render-dsm-capabilities-html/**'
+      - '.github/workflows/capability-map-skill-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  renderer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run renderer regression checks
+        run: python3 transitrix/skills/render-dsm-capabilities-html/scripts/test_render.py
+      - name: Check portable package
+        run: python3 transitrix/skills/render-dsm-capabilities-html/scripts/test_package.py

@@ -1,0 +1,522 @@
+{
+  "created_on": "2026-10-23",
+  "source_core_revision": "e331590b13935d1d0922063acbf1f6a0cb3cdba2",
+  "notice": "Illustrative teaching overlay, not Acme source canon or a promised future architecture.",
+  "source_core_capability_ids": [
+    "CAPABILITY-V1",
+    "CAPABILITY-V1.1",
+    "CAPABILITY-V1.2",
+    "CAPABILITY-V2",
+    "CAPABILITY-H1"
+  ],
+  "added_capability_ids": [
+    "DEMO-CAPABILITY-V3",
+    "DEMO-CAPABILITY-V2.1",
+    "DEMO-CAPABILITY-V2.2",
+    "DEMO-CAPABILITY-V1.3",
+    "DEMO-CAPABILITY-V3.1",
+    "DEMO-CAPABILITY-V1.1.1",
+    "DEMO-CAPABILITY-V1.2.1",
+    "DEMO-CAPABILITY-V3.1.1",
+    "DEMO-CAPABILITY-V3.2",
+    "DEMO-CAPABILITY-H2",
+    "DEMO-CAPABILITY-H2.1",
+    "DEMO-CAPABILITY-H2.2",
+    "DEMO-CAPABILITY-H2.1.1",
+    "DEMO-CAPABILITY-H3",
+    "DEMO-CAPABILITY-H3.1",
+    "DEMO-CAPABILITY-H3.2",
+    "DEMO-CAPABILITY-H3.3",
+    "DEMO-CAPABILITY-H3.2.1",
+    "DEMO-CAPABILITY-H1.1",
+    "DEMO-CAPABILITY-H1.1.1",
+    "DEMO-CAPABILITY-H1.2",
+    "DEMO-CAPABILITY-H1.2.1",
+    "DEMO-CAPABILITY-H1.3",
+    "DEMO-CAPABILITY-V0",
+    "DEMO-CAPABILITY-V0.1",
+    "DEMO-CAPABILITY-H1.4",
+    "DEMO-CAPABILITY-H1.4.1"
+  ],
+  "source_application_mapping_extensions": {
+    "APPLICATION-OMS-1": [
+      "DEMO-CAPABILITY-V1.1.1",
+      "DEMO-CAPABILITY-V1.2.1",
+      "DEMO-CAPABILITY-H1.1.1"
+    ],
+    "APPLICATION-CRM-1": [
+      "DEMO-CAPABILITY-V2.2",
+      "DEMO-CAPABILITY-H1.2"
+    ]
+  },
+  "added_application_ids": [
+    "DEMO-APPLICATION-WAREHOUSE",
+    "DEMO-APPLICATION-DATA",
+    "DEMO-APPLICATION-GOVERNANCE",
+    "DEMO-APPLICATION-ESG"
+  ],
+  "target_mapping_status": "All target APPLICATION mappings in this extended example are illustrative.",
+  "previous_property_overlay": {
+    "CAPABILITY-V1": "Execution",
+    "CAPABILITY-V1.1": "Execution",
+    "CAPABILITY-V1.2": "Execution",
+    "CAPABILITY-V2": "Strategic",
+    "CAPABILITY-H1": "Support"
+  },
+  "classification_model": "Five cycle layers plus independent ESG/MDM/Support tags; illustrative, not source canon.",
+  "classification_overlays": {
+    "current": {
+      "CAPABILITY-V1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V1.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V1.2": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V2": {
+        "layer": "Strategic",
+        "tags": []
+      },
+      "CAPABILITY-H1": {
+        "layer": null,
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-V3": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V2.1": {
+        "layer": "Strategic",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V2.2": {
+        "layer": "Learning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.3": {
+        "layer": "Planning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V3.1": {
+        "layer": "Planning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.1.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.2.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V3.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-V3.2": {
+        "layer": null,
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2": {
+        "layer": null,
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.1": {
+        "layer": "Planning",
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.2": {
+        "layer": "Execution",
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "ESG",
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H3": {
+        "layer": null,
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.1": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.2": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.3": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.2.1": {
+        "layer": "Assurance",
+        "tags": [
+          "MDM",
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.1": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.2": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.2.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.3": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-V0": {
+        "layer": null,
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V0.1": {
+        "layer": null,
+        "tags": []
+      },
+      "DEMO-CAPABILITY-H1.4": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.4.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      }
+    },
+    "target": {
+      "CAPABILITY-V1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V1.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V1.2": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "CAPABILITY-V2": {
+        "layer": "Strategic",
+        "tags": []
+      },
+      "CAPABILITY-H1": {
+        "layer": null,
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-V3": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V2.1": {
+        "layer": "Strategic",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V2.2": {
+        "layer": "Learning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.3": {
+        "layer": "Planning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V3.1": {
+        "layer": "Planning",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.1.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V1.2.1": {
+        "layer": "Execution",
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V3.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-V3.2": {
+        "layer": null,
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2": {
+        "layer": null,
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.1": {
+        "layer": "Planning",
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.2": {
+        "layer": "Execution",
+        "tags": [
+          "ESG"
+        ]
+      },
+      "DEMO-CAPABILITY-H2.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "ESG",
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H3": {
+        "layer": null,
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.1": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.2": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.3": {
+        "layer": "Execution",
+        "tags": [
+          "MDM"
+        ]
+      },
+      "DEMO-CAPABILITY-H3.2.1": {
+        "layer": "Assurance",
+        "tags": [
+          "MDM",
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.1": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.1.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.2": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.2.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.3": {
+        "layer": "Execution",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-V0": {
+        "layer": null,
+        "tags": []
+      },
+      "DEMO-CAPABILITY-V0.1": {
+        "layer": null,
+        "tags": []
+      },
+      "DEMO-CAPABILITY-H1.4": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      },
+      "DEMO-CAPABILITY-H1.4.1": {
+        "layer": "Assurance",
+        "tags": [
+          "Support"
+        ]
+      }
+    }
+  },
+  "classification_rationale": "Broad H roots have no single stage; their children span stages. Stock reconciliation, audit, evidence and customer data quality checks illustrate Assurance. Additional cross-domain tags are deliberate teaching assignments, not inferred by the renderer.",
+  "revised_demo_names": {
+    "DEMO-CAPABILITY-H3.2.1": {
+      "previous": "Customer deduplication (demo)",
+      "current": "Customer data quality checks (demo)",
+      "reason": "Use an explicit Check ability for the Assurance demonstration; active deduplication itself is execution."
+    },
+    "DEMO-CAPABILITY-H2.1": {
+      "previous": "Packaging impact (demo)",
+      "current": "Packaging impact planning (demo)",
+      "reason": "Make the intended tactical planning ability explicit."
+    }
+  },
+  "coverage_pilot": {
+    "system_id": "DEMO-APPLICATION-DATA",
+    "technical_capabilities": {
+      "current": [
+        {
+          "id": "DEMO-TECH-DATA-REFERENCE",
+          "name": "Reference data services (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.2"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        },
+        {
+          "id": "DEMO-TECH-DATA-QUALITY",
+          "name": "Data quality checks (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.2.1"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        }
+      ],
+      "target": [
+        {
+          "id": "DEMO-TECH-DATA-REFERENCE",
+          "name": "Reference data services (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.2",
+            "DEMO-CAPABILITY-H3.3"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        },
+        {
+          "id": "DEMO-TECH-DATA-QUALITY",
+          "name": "Data quality checks (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.2.1"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        }
+      ]
+    },
+    "notice": "Illustrative technical inventory and mappings for one-system coverage visualization, not Acme source facts or methodology schema adoption."
+  },
+  "multi_system_coverage": {
+    "notice": "Illustrative technical mappings in both states, not source facts. Direct APPLICATION mappings are unchanged. Data Hub, Governance Portal and Warehouse System share product references and customer data quality checks; Data Hub and Governance Portal also share customer references. Empty Sustainability current mappings intentionally show no polygon.",
+    "technical_capabilities_by_application": {
+      "DEMO-APPLICATION-GOVERNANCE": [
+        {
+          "id": "DEMO-TECH-GOVERNANCE-DATA",
+          "name": "Reference-data controls and quality evidence (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.2",
+            "DEMO-CAPABILITY-H3.2.1"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        }
+      ],
+      "DEMO-APPLICATION-WAREHOUSE": [
+        {
+          "id": "DEMO-TECH-WAREHOUSE-DATA",
+          "name": "Warehouse reference-data synchronization and checks (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.3",
+            "DEMO-CAPABILITY-H3.2.1"
+          ],
+          "example_origin": "illustrative_technical_mapping"
+        }
+      ]
+    }
+  },
+  "date_timeline": {
+    "notice": "Illustrative temporal adapter snapshots, not recovered historical Acme facts or actual future commitments. Source-only Acme input is unchanged. State periods have inclusive effective_from and exclusive effective_to.",
+    "default_view_date": "2026-10-23",
+    "periods": [
+      {
+        "state": "historical",
+        "effective_from": "2026-06-01",
+        "effective_to": "2026-10-01",
+        "changes": "31 capabilities, lower demo maturity, Data Hub maps only product references; no shared technical coverage."
+      },
+      {
+        "state": "current",
+        "effective_from": "2026-10-01",
+        "effective_to": "2027-01-01",
+        "changes": "Customer data quality checks starts 2026-10-22; governance technical controls also start then. Existing current maturity changes remain explicit."
+      },
+      {
+        "state": "target",
+        "effective_from": "2027-01-01",
+        "effective_to": "2028-01-01",
+        "changes": "2027 planned snapshot; Data Hub inventory mappings and Sustainability coverage enabled; target demo maturity dated 2027-01-01."
+      }
+    ],
+    "no_data_before": "2026-06-01",
+    "no_data_from": "2028-01-01"
+  }
+}

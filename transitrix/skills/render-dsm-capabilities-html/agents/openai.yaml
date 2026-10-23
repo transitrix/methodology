@@ -1,0 +1,14 @@
+interface:
+  display_name: DSM Capability Map HTML
+  short_description: Capability grids, system support and exact-view SVG export
+  default_prompt: Use $render-dsm-capabilities-html to render this capability model
+    as a standalone DSM-style HTML grid.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
