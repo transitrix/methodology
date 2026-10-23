@@ -451,6 +451,11 @@ deprecated_rule_codes:
 # ---------------------------------------------------------------------------
 value_vocabularies:
 
+  CAPABILITY.management_cycle_stage:
+    values: [Strategic, Learning, Planning, Execution, Assurance]
+    spec: notations/views/diagrams/05-capability-map.md
+    rule: null
+
   # REQUIREMENT — elements/15-requirement.md
   REQUIREMENT.origin:
     values: [legislative, process-product, project-product]

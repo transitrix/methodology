@@ -450,6 +450,7 @@ Inline shape (catalogue entry): [views/09-products.md](./views/diagrams/09-produ
 | `type` | yes | string | `application` \| `integration` \| `platform` \| `data_store`. |
 | `domain` | no | string | Business domain. |
 | `capabilities` | no | list | `CAPABILITY-…` IDs supported. |
+| `technical_capabilities` | no | list | Application-owned technical abilities and explicit business-capability mappings; field shape and containment boundary in [applications catalogue §6a](views/diagrams/10-applications.md#6a-technical-capabilities-and-business-coverage). |
 | `products` | no | list | `PRODUCT-…` IDs supported. |
 | `description` | recommended | string | Short description. |
 | `owner_role` | no | string | `ROLE-…`. **Time-varying** — sidecar ([CONTRACT.md](CONTRACT.md) §9), not inline. |

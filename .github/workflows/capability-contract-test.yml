@@ -1,0 +1,28 @@
+name: Capability core contract
+on:
+  pull_request:
+    paths:
+      - 'tools/lint.py'
+      - 'tools/tests/test_capability_contract.py'
+      - 'notations/schemas/**'
+      - 'notations/vocabulary.yaml'
+      - 'notations/views/diagrams/05-capability-map.md'
+      - 'notations/views/diagrams/10-applications.md'
+      - 'notations/examples/capability-map/**'
+      - 'tests/fixtures/capability-management-cycle/**'
+      - '.github/workflows/capability-contract-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - name: Check positive, negative and compatibility cases
+        run: python -m unittest discover -s tools/tests -p test_capability_contract.py

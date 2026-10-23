@@ -1,8 +1,8 @@
 ---
 notation: "Applications Catalogue"
-version: "0.2"
+version: "0.3"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-26"
+last_updated: "2026-10-23"
 status: "draft"
 file_extension: "*.applications.transitrix.yaml"
 ---
@@ -152,6 +152,7 @@ applications_catalogue:
 | `applications[].maturity` | No | CMM level ([CONTRACT.md](../../CONTRACT.md) §9.4 shared CMMI V2.0 scale). **Time-varying** — sidecar, not inline. |
 | `applications[].description` | No | Short description of the application's purpose. |
 | `applications[].capabilities` | No | List of capability IDs this application enables. Stays inline in v1 (relations are Wave 3 territory). |
+| `applications[].technical_capabilities` | No | Application-owned technical inventory with explicit business-capability mappings (§6a). Canonical by containment; not an extensions entry or a new global TYPE. |
 | `applications[].products` | No | List of Product element IDs this application supports. Stays inline in v1 (relations are Wave 3 territory). |
 | `applications[].integrations` | No | List of outbound integration descriptors. Stays inline (a relation list scoped to the parent application). |
 | `integrations[].target` | No | Target application element ID |
@@ -250,6 +251,67 @@ BPMN / Mermaid           →  how systems interact in a process or sequence
         ↓
 ArchiMate                →  formal model of application layer elements and relations
 ```
+
+---
+
+## 6a. Technical capabilities and business coverage
+
+An APPLICATION MAY contain `technical_capabilities`, the named technical
+abilities it supplies to support business capabilities. The inventory belongs
+on the canonical application element. Its evidence and admission are owned by
+the application, not authored only inside a capability-map view.
+
+Each entry is canonical by containment, with an application-local identity.
+It is not a new standalone TYPE or REL kind and must not masquerade as an
+independently admitted global element. Identify an entry in its owning application projection by application ID
+and local key together. This does not grant independent cross-model reference
+semantics or bypass the common promotion rule. Separate technical systems do not share a local key's
+identity, even if the text matches.
+
+| Entry field | Required | Meaning |
+| --- | --- | --- |
+| `key` | yes | Nonempty string unique within the application |
+| `name` | yes | Source-evidenced technical ability |
+| `capabilities` | no | Distinct canonical business CAPABILITY references; default empty means not specified |
+| `valid_from`, `valid_to` | no | Optional explicit lifetime using the shared primitive lifecycle boundary semantics; omitted bounds are open within the owning application's lifecycle |
+
+```yaml
+# Fragment of an APPLICATION element; common envelope omitted.
+id: APPLICATION-CRM-1
+capabilities: [CAPABILITY-V2]
+technical_capabilities:
+  - key: customer-data-validation
+    name: Customer data validation
+    capabilities: [CAPABILITY-H1.2.1]
+    valid_from: "2026-10-01"
+    valid_to: null
+```
+
+Direct application mappings and technical-entry mappings retain their separate
+provenance. Their union is the application's business target set for a coverage
+view; no parent/child inheritance is implied. All references must resolve before
+view filtering. Duplicate keys, duplicate targets, missing required names/keys
+and unknown targets are invalid. Missing inventory or an empty mapping does not
+prove absent technical ability or unsupported business capability.
+
+An entry's effective lifetime is the intersection of its open/explicit bounds
+and the application's lifecycle. Explicit bounds outside the owner lifetime or
+an end before its start are invalid; a missing bound does not require inventing
+an earlier history.
+
+A dated coverage view includes only explicitly active applications and inventory
+entries. It does not recover mapping histories from today's lists. Source
+snapshot/scenario intent and missing history must be disclosed as required by
+[capability-map §16](05-capability-map.md#16-system-coverage-dated-views-and-presentation-defaults).
+Changes to existing direct-list history remain subject to the existing relation
+migration contract; this field does not silently create a new temporal REL kind.
+The standalone JSON renderer maps each local key to technical entry `id`; source
+`valid_from`/`valid_to` require an explicit endpoint conversion to its inclusive
+`start_date`/`end_date`. The defined source field is not an `extensions` field.
+
+The additive schema and whole-model reference checks ship with the methodology
+([capability-map §16.4](05-capability-map.md#164-compatibility-and-implementation-status)).
+Released CLI/DSM/Studio adoption must still be verified independently.
 
 ---
 

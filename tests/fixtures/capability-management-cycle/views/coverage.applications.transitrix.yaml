@@ -1,0 +1,47 @@
+notation: applications
+spec_version: '0.3'
+name: System coverage inventory
+applications_catalogue:
+  id: APP-CAT-COVERAGE-1
+  name: System coverage inventory
+  updated_at: '2026-10-23'
+  applications:
+  - app_id: APPLICATION-OMS-1
+    name: Order Management System
+    type: application
+    status: Active
+    capabilities:
+    - CAPABILITY-V1.3.1
+    technical_capabilities:
+    - key: controls
+      name: Evidence and control workflow
+      capabilities:
+      - CAPABILITY-V1.3.1
+      - CAPABILITY-H1
+      valid_from: '2026-01-01'
+      valid_to: null
+    - key: forecast
+      name: Planned forecasting
+      capabilities:
+      - CAPABILITY-V1.3
+      valid_from: '2027-01-01'
+      valid_to: null
+  - app_id: APPLICATION-GOVERNANCE-1
+    name: Governance Portal
+    type: application
+    status: Active
+    capabilities:
+    - CAPABILITY-H1
+    technical_capabilities:
+    - key: controls
+      name: Evidence and control workflow
+      capabilities:
+      - CAPABILITY-H1
+      valid_from: '2026-01-01'
+      valid_to: null
+    - key: forecast
+      name: Planned forecasting
+      capabilities:
+      - CAPABILITY-V1.3
+      valid_from: '2027-01-01'
+      valid_to: null

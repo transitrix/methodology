@@ -32,7 +32,7 @@ For each issue, include the file path or section reference, what you observed, a
 4. **Run the relevant validators locally, before opening the PR.** This repo's own gate is not a single command — `.validators/lint.py` is what an *adopter* repo runs against its `canon/`; this repo has no `canon/` of its own to validate. What CI actually runs here, by what you touched:
    - Any `notations/**` spec or example, or `transitrix/skills/onboard/templates/**` — `node scripts/check-notations.mjs` (mechanical invariants: example extensions, `notation:` headers, internal link resolution, version-pin consistency).
    - A single view notation file (`*.transitrix.yaml`) — `npx @transitrix/cli validate <file>` (`npx.cmd` on Windows PowerShell with a restricted execution policy).
-   - `tools/lint.py` itself — the encoding regression test in `.github/workflows/lint-encoding-test.yml`.
+   - `tools/lint.py` itself — the encoding regression test in `.github/workflows/lint-encoding-test.yml`; for capability-map contracts also run `python -m unittest discover -s tools/tests -p test_capability_contract.py` (schema/vocabulary parity, native fixtures and negative controls).
    - A Claude Code Skill under `transitrix/skills/<name>/` — see "Adding or changing a Skill" below.
    - Anything else — check `.github/workflows/` for a job whose `paths:` trigger matches the files you touched; most packages and skills carry their own targeted test workflow.
 5. **Update related docs.** If your change affects naming, layout, or rules, update the relevant file(s) under `method/` (naming: `method/03-modelling.md`; layout: `method/02-repository.md`), `method/00-glossary.md`, and `README.md` as needed.
