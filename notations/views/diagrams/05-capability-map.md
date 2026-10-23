@@ -524,9 +524,21 @@ selection and direct-SVG backlog/all-system defaults must be overridden when
 projecting the canonical defaults above. Its bounded ESG/MDM/Support tag menu
 is a subset of the common free-form tags, which must remain in the source.
 
-This specification change does not prove validator, CLI, DSM or Studio adoption.
-Native consumer/schema updates, migrations and a methodology release must be
-verified separately before claiming product support. Until that adoption, a
+The machine-readable [additive field schema](../../schemas/capability-map-contract.schema.json)
+exposes `capabilityFields`, `applicationFields` and `viewConfig` definitions;
+it does not replace the full element/view envelope. `tools/lint.py` implements
+these structural checks without a new runtime dependency, application-local key
+uniqueness, technical mapping references/lifetimes and view selection references.
+It checks canonical elements and native files under `views/`, preserving the
+single-file onboarding installation. It does not resolve assessments/history,
+render coverage geometry or prove evidence truth. Existing direct APPLICATION
+mapping checks remain the consuming validator's responsibility; the new
+technical inventory cannot use that legacy boundary to skip its own references.
+
+Released CLI, DSM and Studio adoption and a methodology release must still be
+verified separately before claiming product support. The [compatibility check](../../../guides/capability-map-compatibility.md) records
+which fields the released CLI actually checks; acceptance with skipped checks
+is not evidence of adoption. Until that adoption, a
 consumer must report unsupported fields/settings rather than silently dropping
 them. Existing `extensions.management_cycle_stage` proposals migrate explicitly
 to the defined field; conflicting values require reconciliation, and history is

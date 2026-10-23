@@ -273,7 +273,7 @@ identity, even if the text matches.
 | `key` | yes | Nonempty string unique within the application |
 | `name` | yes | Source-evidenced technical ability |
 | `capabilities` | no | Distinct canonical business CAPABILITY references; default empty means not specified |
-| `valid_from`, `valid_to` | no | Optional explicit lifetime using the shared primitive lifecycle boundary semantics; omitted bounds are open |
+| `valid_from`, `valid_to` | no | Optional explicit lifetime using the shared primitive lifecycle boundary semantics; omitted bounds are open within the owning application's lifecycle |
 
 ```yaml
 # Fragment of an APPLICATION element; common envelope omitted.
@@ -294,6 +294,11 @@ view filtering. Duplicate keys, duplicate targets, missing required names/keys
 and unknown targets are invalid. Missing inventory or an empty mapping does not
 prove absent technical ability or unsupported business capability.
 
+An entry's effective lifetime is the intersection of its open/explicit bounds
+and the application's lifecycle. Explicit bounds outside the owner lifetime or
+an end before its start are invalid; a missing bound does not require inventing
+an earlier history.
+
 A dated coverage view includes only explicitly active applications and inventory
 entries. It does not recover mapping histories from today's lists. Source
 snapshot/scenario intent and missing history must be disclosed as required by
@@ -304,9 +309,9 @@ The standalone JSON renderer maps each local key to technical entry `id`; source
 `valid_from`/`valid_to` require an explicit endpoint conversion to its inclusive
 `start_date`/`end_date`. The defined source field is not an `extensions` field.
 
-This is a prepared core-contract correction. Validator/CLI/DSM/Studio support
-must be verified independently; a documentation change alone is not release or
-runtime adoption.
+The additive schema and whole-model reference checks ship with the methodology
+([capability-map §16.4](05-capability-map.md#164-compatibility-and-implementation-status)).
+Released CLI/DSM/Studio adoption must still be verified independently.
 
 ---
 

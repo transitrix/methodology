@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Capability-map core additive field contracts",
+  "$comment": "Additive field contracts, not a complete model schema. Select a $defs entry. Referential integrity, local-key uniqueness and lifetime checks require tools/lint.py. Other fields retain their existing specifications.",
+  "$defs": {
+    "capabilityFields": {
+      "type": "object",
+      "properties": {
+        "management_cycle_stage": {
+          "enum": [
+            null,
+            "Strategic",
+            "Learning",
+            "Planning",
+            "Execution",
+            "Assurance"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "applicationFields": {
+      "type": "object",
+      "properties": {
+        "technical_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "uniqueItems": true
+              },
+              "valid_from": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              },
+              "valid_to": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "name"
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "viewConfig": {
+      "type": "object",
+      "properties": {
+        "valid_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "default": null
+        },
+        "scenario": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "default": null
+        },
+        "management_cycle": {
+          "type": "object",
+          "properties": {
+            "group": {
+              "type": "boolean",
+              "default": false
+            },
+            "order": {
+              "const": [
+                "Strategic",
+                "Learning",
+                "Planning",
+                "Execution",
+                "Assurance"
+              ],
+              "default": [
+                "Strategic",
+                "Learning",
+                "Planning",
+                "Execution",
+                "Assurance"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "tags": {
+          "type": "object",
+          "properties": {
+            "filter": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "uniqueItems": true,
+              "default": []
+            },
+            "show": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "display": {
+          "type": "object",
+          "properties": {
+            "depth": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "default": 3
+            },
+            "backlog": {
+              "type": "boolean",
+              "default": false
+            },
+            "maturity": {
+              "type": "boolean",
+              "default": false
+            },
+            "legend": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "systems": {
+          "type": "object",
+          "properties": {
+            "highlight": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "default": null
+            },
+            "selected": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "uniqueItems": true,
+              "default": []
+            },
+            "shape": {
+              "enum": [
+                "angled",
+                "rectangular"
+              ],
+              "default": "angled"
+            },
+            "labels": {
+              "type": "boolean",
+              "default": false
+            },
+            "coverage": {
+              "type": "boolean",
+              "default": false
+            },
+            "rounded": {
+              "type": "boolean",
+              "default": false
+            },
+            "overlap": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

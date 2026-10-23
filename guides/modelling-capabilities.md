@@ -58,3 +58,7 @@ that conclusion.
 These core-contract corrections are prepared for review. Current standalone
 rendering uses a documented JSON projection; this is not proof of native CLI,
 DSM or Studio adoption. Verify consumer support before migrating source files.
+
+The core additive schemas and whole-model checks are described in the
+[capability-map compatibility guide](capability-map-compatibility.md). They ship
+with the methodology source; released consumers require separate adoption.

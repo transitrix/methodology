@@ -1,0 +1,81 @@
+notation: capability-map
+spec_version: '0.5'
+name: Management cycle and system coverage
+capability_map:
+  id: CAPABILITY_MAP-CYCLE-1
+  name: Management cycle and system coverage
+  assessment_date: '2026-10-23'
+  capabilities:
+  - id: CAPABILITY-V1
+    name: Order Management
+    type: domain
+    valid_from: '2026-01-01'
+    valid_to: null
+    children:
+    - id: CAPABILITY-V1.1
+      name: Order strategy
+      type: domain
+      valid_from: '2026-01-01'
+      valid_to: null
+      management_cycle_stage: Strategic
+    - id: CAPABILITY-V1.2
+      name: Order improvement learning
+      type: domain
+      valid_from: '2026-01-01'
+      valid_to: null
+      management_cycle_stage: Learning
+    - id: CAPABILITY-V1.3
+      name: Fulfilment planning
+      type: domain
+      valid_from: '2026-01-01'
+      valid_to: null
+      management_cycle_stage: Planning
+      children:
+      - id: CAPABILITY-V1.3.1
+        name: Pick and pack
+        type: domain
+        valid_from: '2026-01-01'
+        valid_to: null
+        management_cycle_stage: Execution
+  - id: CAPABILITY-H1
+    name: Order assurance
+    type: supporting
+    valid_from: '2026-01-01'
+    valid_to: null
+    management_cycle_stage: Assurance
+    tags:
+    - ESG
+    - MDM
+    - Support
+view_config:
+  valid_at: null
+  scenario: null
+  management_cycle:
+    group: true
+    order:
+    - Strategic
+    - Learning
+    - Planning
+    - Execution
+    - Assurance
+  tags:
+    filter:
+    - ESG
+    - MDM
+    - Support
+    show: true
+  display:
+    depth: 3
+    backlog: false
+    maturity: false
+    legend: true
+  systems:
+    labels: false
+    coverage: true
+    selected:
+    - APPLICATION-OMS-1
+    - APPLICATION-GOVERNANCE-1
+    highlight: null
+    shape: angled
+    rounded: false
+    overlap: true

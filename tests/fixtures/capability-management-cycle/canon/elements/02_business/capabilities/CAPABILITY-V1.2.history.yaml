@@ -1,0 +1,5 @@
+target: CAPABILITY-V1.2
+attribute_versions:
+  current_maturity:
+  - valid_from: '2026-01-01'
+    value: 3

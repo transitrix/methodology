@@ -1,0 +1,19 @@
+notation: capability
+id: CAPABILITY-H1
+name: Order assurance
+type: supporting
+layer: business
+zone: canon
+admitted_at: '2026-10-23'
+admitted_by: example-architect
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: '2026-01-01'
+valid_to: null
+management_cycle_stage: Assurance
+tags:
+- ESG
+- MDM
+- Support

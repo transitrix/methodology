@@ -45,6 +45,168 @@ def _ensure_utf8_stdio() -> None:
 _ensure_utf8_stdio()
 
 
+
+# Additive core contracts. Kept in this single-file linter so existing onboarding
+# installations can still vendor tools/lint.py without a new runtime dependency.
+# The published JSON Schema is checked against this value by regression tests.
+CAPABILITY_MAP_CONTRACT = {'$schema': 'http://json-schema.org/draft-07/schema#',
+ 'title': 'Capability-map core additive field contracts',
+ '$comment': 'Additive field contracts, not a complete model schema. Select a $defs entry. '
+             'Referential integrity, local-key uniqueness and lifetime checks require '
+             'tools/lint.py. Other fields retain their existing specifications.',
+ '$defs': {'capabilityFields': {'type': 'object',
+                                'properties': {'management_cycle_stage': {'enum': [None,
+                                                                                   'Strategic',
+                                                                                   'Learning',
+                                                                                   'Planning',
+                                                                                   'Execution',
+                                                                                   'Assurance']},
+                                               'tags': {'type': 'array',
+                                                        'items': {'type': 'string',
+                                                                  'minLength': 1,
+                                                                  'pattern': '\\S'}}},
+                                'additionalProperties': True},
+           'applicationFields': {'type': 'object',
+                                 'properties': {'technical_capabilities': {'type': 'array',
+                                                                           'items': {'type': 'object',
+                                                                                     'properties': {'key': {'type': 'string',
+                                                                                                            'minLength': 1,
+                                                                                                            'pattern': '\\S'},
+                                                                                                    'name': {'type': 'string',
+                                                                                                             'minLength': 1,
+                                                                                                             'pattern': '\\S'},
+                                                                                                    'capabilities': {'type': 'array',
+                                                                                                                     'items': {'type': 'string',
+                                                                                                                               'minLength': 1,
+                                                                                                                               'pattern': '\\S'},
+                                                                                                                     'uniqueItems': True},
+                                                                                                    'valid_from': {'type': ['string',
+                                                                                                                            'null'],
+                                                                                                                   'format': 'date'},
+                                                                                                    'valid_to': {'type': ['string',
+                                                                                                                          'null'],
+                                                                                                                 'format': 'date'}},
+                                                                                     'additionalProperties': False,
+                                                                                     'required': ['key',
+                                                                                                  'name']}}},
+                                 'additionalProperties': True},
+           'viewConfig': {'type': 'object',
+                          'properties': {'valid_at': {'type': ['string', 'null'],
+                                                      'format': 'date',
+                                                      'default': None},
+                                         'scenario': {'type': ['string', 'null'],
+                                                      'minLength': 1,
+                                                      'default': None},
+                                         'management_cycle': {'type': 'object',
+                                                              'properties': {'group': {'type': 'boolean',
+                                                                                       'default': False},
+                                                                             'order': {'const': ['Strategic',
+                                                                                                 'Learning',
+                                                                                                 'Planning',
+                                                                                                 'Execution',
+                                                                                                 'Assurance'],
+                                                                                       'default': ['Strategic',
+                                                                                                   'Learning',
+                                                                                                   'Planning',
+                                                                                                   'Execution',
+                                                                                                   'Assurance']}},
+                                                              'additionalProperties': False},
+                                         'tags': {'type': 'object',
+                                                  'properties': {'filter': {'type': 'array',
+                                                                            'items': {'type': 'string',
+                                                                                      'minLength': 1,
+                                                                                      'pattern': '\\S'},
+                                                                            'uniqueItems': True,
+                                                                            'default': []},
+                                                                 'show': {'type': 'boolean',
+                                                                          'default': True}},
+                                                  'additionalProperties': False},
+                                         'display': {'type': 'object',
+                                                     'properties': {'depth': {'type': 'integer',
+                                                                              'enum': [1, 2, 3],
+                                                                              'default': 3},
+                                                                    'backlog': {'type': 'boolean',
+                                                                                'default': False},
+                                                                    'maturity': {'type': 'boolean',
+                                                                                 'default': False},
+                                                                    'legend': {'type': 'boolean',
+                                                                               'default': True}},
+                                                     'additionalProperties': False},
+                                         'systems': {'type': 'object',
+                                                     'properties': {'highlight': {'type': ['string',
+                                                                                           'null'],
+                                                                                  'minLength': 1,
+                                                                                  'default': None},
+                                                                    'selected': {'type': 'array',
+                                                                                 'items': {'type': 'string',
+                                                                                           'minLength': 1,
+                                                                                           'pattern': '\\S'},
+                                                                                 'uniqueItems': True,
+                                                                                 'default': []},
+                                                                    'shape': {'enum': ['angled',
+                                                                                       'rectangular'],
+                                                                              'default': 'angled'},
+                                                                    'labels': {'type': 'boolean',
+                                                                               'default': False},
+                                                                    'coverage': {'type': 'boolean',
+                                                                                 'default': False},
+                                                                    'rounded': {'type': 'boolean',
+                                                                                'default': False},
+                                                                    'overlap': {'type': 'boolean',
+                                                                                'default': False}},
+                                                     'additionalProperties': False}},
+                          'additionalProperties': False}}}
+
+
+def _contract_errors(value, schema, path=""):
+    """Evaluate the bounded keywords used by CAPABILITY_MAP_CONTRACT.
+
+    This is not a general JSON Schema engine. The published schema also works
+    with ordinary draft-07 validators; semantic references are checked below.
+    """
+    from datetime import date
+    import re
+    errors = []
+    types = {"object": dict, "array": list, "string": str,
+             "boolean": bool, "integer": int, "null": type(None)}
+    expected = schema.get("type")
+    if expected:
+        expected = [expected] if isinstance(expected, str) else expected
+        if not any(type(value) is types[t] for t in expected):
+            return [f"{path}: expected {' or '.join(expected)}"]
+    if "enum" in schema and not any(type(value) is type(v) and value == v for v in schema['enum']):
+        errors.append(f"{path}: unsupported value {value!r}")
+    if 'const' in schema and value != schema['const']:
+        errors.append(f"{path}: must equal {schema['const']!r}")
+    if isinstance(value, str):
+        if len(value) < schema.get('minLength', 0) or ('pattern' in schema and not re.search(schema['pattern'], value)):
+            errors.append(f"{path}: expected a nonempty string")
+        if schema.get('format') == 'date':
+            try:
+                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                    raise ValueError()
+                date.fromisoformat(value)
+            except ValueError:
+                errors.append(f"{path}: expected a quoted YYYY-MM-DD calendar date")
+    if isinstance(value, dict):
+        props = schema.get('properties', {})
+        for key in schema.get('required', []):
+            if key not in value:
+                errors.append(f"{path}.{key}: required")
+        for key, item in value.items():
+            if key in props:
+                errors.extend(_contract_errors(item, props[key], f"{path}.{key}"))
+            elif schema.get('additionalProperties') is False:
+                errors.append(f"{path}.{key}: unknown field")
+    if isinstance(value, list):
+        if schema.get('uniqueItems') and any(item in value[:i] for i, item in enumerate(value)):
+            errors.append(f"{path}: duplicate values")
+        if 'items' in schema:
+            for i, item in enumerate(value):
+                errors.extend(_contract_errors(item, schema['items'], f"{path}[{i}]"))
+    return errors
+
+
 @dataclass
 class LintError:
     file: str
@@ -92,6 +254,9 @@ class TransitrixLinter:
         # Phase 4: Referential integrity
         print("Phase 4: Validating referential integrity...")
         self._check_referential_integrity()
+
+        # Optional capability-map contracts and view selections.
+        self._check_capability_contracts()
 
         # Phase 5: Policy compliance
         print("Phase 5: Checking compliance policies...")
@@ -253,6 +418,100 @@ class TransitrixLinter:
                             message=f"Referential integrity: Element '{element_id}' field '{field}' references non-existent element '{ref_id}'",
                             severity="error"
                         ))
+
+    def _check_capability_contracts(self):
+        """Check native additive fields and capability-map view settings."""
+        definitions = CAPABILITY_MAP_CONTRACT['$defs']
+
+        def report(file, messages):
+            for message in messages:
+                self.errors.append(LintError(str(file), 0, "Capability contract: " + message, "error"))
+
+        def resolve(ref, prefix, path):
+            if not isinstance(ref, str):
+                return []  # structural diagnostic already emitted
+            if not ref.startswith(prefix + '-') or ref not in self.elements:
+                return [f"{path}: unresolved or wrong-type {prefix} reference {ref!r}"]
+            return []
+
+        def application(data, path):
+            errors = _contract_errors(data, definitions['applicationFields'], path)
+            inventory = data.get('technical_capabilities', [])
+            if not isinstance(inventory, list):
+                return errors
+            keys = []
+            for i, ability in enumerate(inventory):
+                where = f"{path}.technical_capabilities[{i}]"
+                if not isinstance(ability, dict):
+                    continue
+                key = ability.get('key')
+                if isinstance(key, str):
+                    if key in keys:
+                        errors.append(f"{where}.key: duplicate application-local key {key!r}")
+                    keys.append(key)
+                targets = ability.get('capabilities', [])
+                if isinstance(targets, list):
+                    for ref in targets:
+                        errors.extend(resolve(ref, 'CAPABILITY', where + '.capabilities'))
+                start, end = ability.get('valid_from'), ability.get('valid_to')
+                # Structural errors above exclude malformed endpoints from comparisons.
+                bounds = {'type': ['string', 'null'], 'format': 'date'}
+                if not _contract_errors(start, bounds) and not _contract_errors(end, bounds):
+                    if start and end and start > end:
+                        errors.append(f"{where}: valid_to precedes valid_from")
+                    for field, bound, before in [('valid_from', start, True), ('valid_to', end, False)]:
+                        owner = data.get(field)
+                        if isinstance(owner, str) and bound is not None and (bound < owner if before else bound > owner):
+                            errors.append(f"{where}.{field}: lifetime must be contained in APPLICATION lifetime")
+            return errors
+
+        for element_id, data in self.elements.items():
+            path = f"canon/elements/*/{element_id}.yaml"
+            if element_id.startswith('CAPABILITY-'):
+                report(path, _contract_errors(data, definitions['capabilityFields'], element_id))
+            elif element_id.startswith('APPLICATION-'):
+                report(path, application(data, element_id))
+
+        def capability_tree(nodes, file):
+            if not isinstance(nodes, list):
+                return
+            for data in nodes:
+                if isinstance(data, dict):
+                    report(file, _contract_errors(data, definitions['capabilityFields'], str(data.get('id', 'capability'))))
+                    capability_tree(data.get('children', []), file)
+
+        for file in sorted((self.repo_root / 'views').rglob('*.transitrix.yaml')):
+            try:
+                data = yaml.safe_load(file.read_text(encoding='utf-8'))
+            except (OSError, yaml.YAMLError) as error:
+                report(file, [f"cannot read YAML: {error}"])
+                continue
+            if not isinstance(data, dict):
+                continue
+            if data.get('notation') == 'capability-map':
+                body = data.get('capability_map', {})
+                if isinstance(body, dict):
+                    capability_tree(body.get('capabilities', []), file)
+                if 'view_config' not in data:
+                    continue
+                config = data['view_config']
+                report(file, _contract_errors(config, definitions['viewConfig'], 'view_config'))
+                if not isinstance(config, dict):
+                    continue
+                report(file, resolve(config.get('scenario'), 'TARGET_STATE', 'view_config.scenario'))
+                systems = config.get('systems', {})
+                if isinstance(systems, dict):
+                    report(file, resolve(systems.get('highlight'), 'APPLICATION', 'view_config.systems.highlight'))
+                    selected = systems.get('selected', [])
+                    if isinstance(selected, list):
+                        for ref in selected:
+                            report(file, resolve(ref, 'APPLICATION', 'view_config.systems.selected'))
+            elif data.get('notation') == 'applications':
+                body = data.get('applications_catalogue', {})
+                if isinstance(body, dict) and isinstance(body.get('applications', []), list):
+                    for app in body.get('applications', []):
+                        if isinstance(app, dict):
+                            report(file, application(app, str(app.get('app_id', 'application'))))
 
     def _check_policies(self):
         """Check organizational policies (e.g., Active elements must have owner)."""
