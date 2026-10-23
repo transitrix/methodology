@@ -5,17 +5,17 @@ author: "Valerii Korobeinikov"
 last_updated: "2026-10-23"
 status: "documented"
 file_extension: "*.capability-map.transitrix.yaml"
-dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
+dsm_status: "core grid implemented; management-cycle and coverage changes not verified in consumers"
 ---
 
 # Capabilities Map Notation — Reference
 
 **Version:** 0.5
 **Date:** 2026-10-23
-**Status:** Implemented in Transitrix DSM
+**Status:** Core notation documented; management-cycle and coverage correction prepared for review (§16.4)
 **File extension:** `*.capability-map.transitrix.yaml`
 **Scope:** Capability hierarchy with CMMI V2.0 maturity assessment, addressing system, V/H orientation, lifecycle. Aligned to roles, processes, and applications.
-**Renderer:** Transitrix DSM — Capabilities table, Editor (C), BCM tab; Transitrix Studio (planned)
+**Renderer:** Existing core grid: Transitrix DSM — Capabilities table, Editor (C), BCM tab. The added stage, coverage and view-config contracts have no verified native consumer support; see §16.4.
 
 ---
 
