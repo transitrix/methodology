@@ -1,8 +1,8 @@
 ---
 notation: "Capabilities Map"
-version: "0.4"
+version: "0.5"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-26"
+last_updated: "2026-10-23"
 status: "documented"
 file_extension: "*.capability-map.transitrix.yaml"
 dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
@@ -10,8 +10,8 @@ dsm_status: "implemented — Capabilities page, Editor (C), BCM tab"
 
 # Capabilities Map Notation — Reference
 
-**Version:** 0.3
-**Date:** 2026-05-19
+**Version:** 0.5
+**Date:** 2026-10-23
 **Status:** Implemented in Transitrix DSM
 **File extension:** `*.capability-map.transitrix.yaml`
 **Scope:** Capability hierarchy with CMMI V2.0 maturity assessment, addressing system, V/H orientation, lifecycle. Aligned to roles, processes, and applications.
@@ -160,6 +160,59 @@ set_name . b . o . L1 . L2 . L3
 
 ---
 
+## 6a. Management-cycle stage and tags
+
+A capability MAY carry `management_cycle_stage`, an optional classification
+independent of architectural `layer`, decomposition, V/H orientation, maturity
+and application mappings. It belongs on the canonical capability element, not
+inside view configuration or an `extensions` bag. Canonical `layer` remains
+`business`. Omitted or null means not classified; it does not imply an absent
+ability or an incomplete domain.
+
+The controlled values and display order are:
+
+| Value | PDCA + Learn correspondence | Capability contribution |
+| --- | --- | --- |
+| `Strategic` | Act and strategic Plan | Choose direction, strategic goals, priorities and significant organisational improvements; strategic planning |
+| `Learning` | Learn, the explicit addition to PDCA | Research, reflection, knowledge capture and sharing, learning and competence development |
+| `Planning` | Tactical and operational Plan | Budgets, capacity, resources, scheduling and executable operational plans |
+| `Execution` | Do | Perform the domain's work, including operational master-data maintenance |
+| `Assurance` | Check | Monitor outcomes, quality, deviations, controls and compliance |
+
+Strategic planning belongs to Strategic; tactical/operational planning belongs
+to Planning. Classify by decision scope and represented ability, not the word
+"planning" or a time horizon alone. The order is a layout convention, not a
+process sequence. Local improvement can occur in every domain. A composite L1
+can remain unclassified while its children occupy several stages.
+
+Stages MUST NOT inherit from parents, tags, names, maturity or orientation.
+Changing a stage requires an explicit source-model change. Dated views must not
+apply a later classification retroactively when no historical source is supplied.
+This field does not by itself introduce a new sidecar series.
+
+`tags` remains the common free-form classifier array. ESG, MDM and Support are
+tag values, never management stages. ESG/MDM describe subject affiliation;
+Support describes a supporting role and does not automatically change the
+capability's `type`. A tag does not create, remove or imply an H capability or
+intersection. Actual horizontal capabilities retain their identity, hierarchy,
+maturity and explicit application mappings. Tags MUST NOT inherit.
+
+```yaml
+# Fragment of a capability element; admission/lifecycle omitted.
+notation: capability
+id: CAPABILITY-H1.2.1
+name: Customer data quality control
+layer: business
+management_cycle_stage: Assurance
+tags: [MDM, Support]
+```
+
+A layer or tag is a source fact; whether/how to show it is view configuration
+(§16). Missing classification remains visible as Not specified when grouping;
+it is not silently assigned a stage. Unknown authored stage values are invalid.
+
+---
+
 ## 7. Lifecycle states
 
 Each capability has **Start Date** and **End Date** attributes reflecting the period during which it is valid:
@@ -264,6 +317,8 @@ capability_map:
 | `owner_role` | No | Reference to BusinessRole element ID. **Time-varying** — sidecar, not inline. |
 | `business_process` | No | Reference to BusinessProcess element ID. Stays inline in v1 (relations are Wave 3 territory). |
 | `applications` | No | List of ApplicationComponent element IDs. Stays inline in v1 (relations are Wave 3 territory). |
+| `management_cycle_stage` | No | One of the five values in §6a, or null; canonical capability attribute, no inheritance. |
+| `tags` | No | Common element tags; ESG/MDM/Support are independent classifier values, not stages (§6a). |
 | `children` | No | List of child capabilities. |
 
 ---
@@ -357,3 +412,126 @@ Migration: adopters with existing inline values move each value into a single-en
 Schema shape/type failures follow [CONTRACT.md](../../CONTRACT.md) §18.6.
 Positive/rejecting cases and version compatibility are in the
 [diagnostic migration contract](../../../migrations/6.0-to-7.0/).
+
+---
+
+## 16. System coverage, dated views and presentation defaults
+
+### 16.1 Explicit coverage
+
+An application's direct `capabilities` list and its technical inventory's
+explicit capability lists ([applications catalogue §6a](10-applications.md#6a-technical-capabilities-and-business-coverage))
+are separate evidence paths to business capabilities. A projection MUST declare
+its direct-link source and retain both paths in provenance. Conflicting inverse
+lists require reconciliation, not union by assumption. Parent/child, tag and
+stage classifications do not imply support. Missing mappings mean not specified,
+not unsupported, absent or zero coverage. Several links from one application
+count once when collecting that application's target set.
+
+A system polygon encloses its selected visible targets. Connecting empty space,
+shape and area do not add mappings or express a coverage percentage. Colored
+polygons may mask unrelated boxes. Shape is either an axis-aligned bounding
+rectangle or an angled enclosing hull; rounding is independent. Small margins
+must not create decorative overlap between neighboring domains.
+
+Red overlap outlines the boundary of the region inside **at least two selected
+outer system polygons**: `R = union over i < j of (P_i intersection P_j)`.
+Use the selected rounded/rectangular/angled shape. Ignore box cut-out masks for
+this boundary; they must not introduce steps around nested capability boxes.
+A triple overlap has no internal pairwise seams; disjoint components have
+separate closed contours. Point/edge contact with zero area is not a region.
+This is a geometric diagnostic, not proof of equivalent functions, unnecessary
+duplication, measured adequacy or a recommendation to retire a system.
+
+### 16.2 State on a date
+
+Keep selected model-validity date, evidence/snapshot date, source revision and
+observed-versus-planned intent distinct. Resolve capability/parent lifetimes and
+current/target maturity from the canonical lifecycle, relation and sidecar
+contracts; do not replace them with a renderer's date conventions. A target
+state is planned composition, never an observed outcome because its date passed.
+
+A renderer using full snapshot inputs must identify them as projections and
+preserve source revision and evidence date. Dated snapshot windows must have
+explicit boundaries; overlapping alternatives require separate scenario
+selection. Gaps mean unknown/no supplied state and must not retain a stale map
+for export. Missing history cannot be reconstructed by interpolation or copying
+current support into a future target. If a source has no dated coverage history,
+disclose snapshot-based coverage instead of asserting historical accuracy.
+
+The standalone HTML adapter uses exclusive snapshot-period ends and inclusive
+record lifetime ends. An adapter MUST state and test its conversion from the
+source contract; no universal reinterpretation of canonical `valid_to` is made.
+Future targets, snapshot projections and date gaps must remain visible in the
+rendered context. A descriptive horizon is never parsed into a calendar date.
+
+### 16.3 view_config defaults
+
+These keys are declared by this notation under the shared view-config contract.
+They contain presentation choices only; all stages, tags, mappings and dated
+assessments stay in source elements/relations/sidecars.
+
+```yaml
+view_config:
+  valid_at: null                 # use capability_map.assessment_date
+  scenario: null                 # optional explicit TARGET_STATE reference; null is no target selection
+  management_cycle:
+    group: false
+    order: [Strategic, Learning, Planning, Execution, Assurance]
+  tags:
+    filter: []                   # all tags; nonempty values select direct matches (OR)
+    show: true
+  display:
+    depth: 3                     # 1, 2 or 3
+    backlog: false
+    maturity: false
+    legend: true
+  systems:
+    highlight: null              # optional APPLICATION reference
+    labels: false
+    coverage: false
+    selected: []                 # explicit APPLICATION references; empty means no polygons
+    shape: angled                # angled or rectangular
+    rounded: false
+    overlap: false               # effective only with coverage and two selected systems
+```
+
+Stage order is fixed to §6a. Tag filters retain direct matches and the muted
+parent/domain/lane context required to read them; context does not inherit tags.
+Grouping creates only occupied stage zones behind elements, plus missing-value
+diagnostics. It must preserve L1/L2/L3 containment and explicit H/V intersections.
+Visibility of a layer never depends on the existence of an H capability.
+
+The maturity legend uses samples matching actual rendered box styles and the
+canonical 1–5 scale in CONTRACT §9.4. A legacy adapter may additionally show an
+explicit 0 No capability absence diagnostic, clearly distinguished from the
+canonical scale; missing maturity is not 0. Hiding Maturity or Legend removes
+that key and its reserved space. A general legend explains only enabled modes.
+SVG exports the exact selected view, its legend and provenance. Zoom and hiding
+controls affect the HTML viewport, not the model or native SVG coordinates.
+Display filters are not access controls or redaction.
+
+### 16.4 Compatibility and implementation status
+
+The §6a/§16 additions and APPLICATION technical inventory are a core-methodology
+correction prepared for review, not an optional extension profile. Existing
+architectural layer, common tags, lifecycle and maturity contracts are retained.
+No new globally addressable technical-capability TYPE is introduced.
+
+The standalone renderer currently consumes adapter JSON, not canonical YAML.
+It maps management_cycle_stage to its legacy JSON layer field. Its HTML pilot
+selection and direct-SVG backlog/all-system defaults must be overridden when
+projecting the canonical defaults above. Its bounded ESG/MDM/Support tag menu
+is a subset of the common free-form tags, which must remain in the source.
+
+This specification change does not prove validator, CLI, DSM or Studio adoption.
+Native consumer/schema updates, migrations and a methodology release must be
+verified separately before claiming product support. Until that adoption, a
+consumer must report unsupported fields/settings rather than silently dropping
+them. Existing `extensions.management_cycle_stage` proposals migrate explicitly
+to the defined field; conflicting values require reconciliation, and history is
+preserved. Core view keys are no longer to be documented as arbitrary extension
+keys. The methodology version pin changes only through the release procedure.
+
+---
+

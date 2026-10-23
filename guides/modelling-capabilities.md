@@ -1,7 +1,7 @@
 ---
 title: Modelling capabilities
 status: active
-last_reviewed: 2026-09-14
+last_reviewed: 2026-10-23
 audience: public
 license: MIT
 ---
@@ -31,3 +31,30 @@ attribute_versions:
 ```
 
 Before accepting the map, check IDs and references, admission and lifecycle, sidecar placement, and the evidence behind each assessment. Confirm the view displays the selected date's values. A rendered diagram alone does not establish model validity. Full sidecar rules and migration guidance are in the specification's attribute-history section.
+
+## Management cycle, tags and system coverage
+
+Use the capability element's optional `management_cycle_stage` to state its
+management role. The five definitions and order live in
+[capability-map §6a](../notations/views/diagrams/05-capability-map.md#6a-management-cycle-stage-and-tags).
+Strategic includes strategic planning; Planning is tactical/operational. Keep
+architectural `layer: business`. ESG, MDM and Support are ordinary tags, not stages
+or automatic horizontal capabilities. Classify explicitly and never inherit.
+
+Record a system's direct `capabilities` on its APPLICATION element. Where the
+source identifies technical abilities, record them as the application's native
+`technical_capabilities` inventory, with unique local keys and explicit targets,
+per [the applications contract](../notations/views/diagrams/10-applications.md#6a-technical-capabilities-and-business-coverage).
+Neither field belongs in an `extensions` bag or solely inside a view. Missing
+mapping means not specified. Do not infer mappings from containment or names.
+
+Choose stage grouping, tag filters, selected systems and date in the map's
+[declared view_config](../notations/views/diagrams/05-capability-map.md#163-view_config-defaults).
+Retain observation date, model-validity date, revision and target intent when
+comparing snapshots. A red geometric intersection is an investigation aid, not
+a finding of redundant functionality. Confirm source evidence before drawing
+that conclusion.
+
+These core-contract corrections are prepared for review. Current standalone
+rendering uses a documented JSON projection; this is not proof of native CLI,
+DSM or Studio adoption. Verify consumer support before migrating source files.
