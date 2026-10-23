@@ -12,6 +12,9 @@ on:
       - 'tests/fixtures/capability-management-cycle/**'
       - '.github/workflows/capability-contract-test.yml'
   workflow_dispatch:
+permissions:
+  contents: read
+
 jobs:
   contract:
     runs-on: ubuntu-latest
