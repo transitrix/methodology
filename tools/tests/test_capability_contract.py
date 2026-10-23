@@ -133,6 +133,16 @@ class CapabilityContractTest(unittest.TestCase):
         self.mutate('APPLICATION-OMS-1.yaml', lambda d: d.update(technical_capabilities=[None]))
         self.assertIn('expected object', self.check(False))
 
+    def test_explicit_bounds_on_opposite_sides_of_owner_window(self):
+        self.mutate('APPLICATION-OMS-1.yaml', lambda d: d.update(valid_to='2028-01-01'))
+        for bounds in [{'valid_from': '2029-01-01', 'valid_to': None},
+                       {'valid_from': None, 'valid_to': '2025-12-31'}]:
+            with self.subTest(bounds=bounds):
+                self.mutate('APPLICATION-OMS-1.yaml', lambda d: d['technical_capabilities'][0].update(bounds))
+                self.assertIn('lifetime must be contained', self.check(False))
+        self.mutate('APPLICATION-OMS-1.yaml', lambda d: d['technical_capabilities'][0].update(valid_from=None, valid_to=None))
+        self.check(True)
+
     def test_canonical_tag_type(self):
         self.mutate('CAPABILITY-H1.yaml', lambda d: d.update(tags='Support'))
         self.assertIn('tags', self.check(False))

@@ -459,9 +459,13 @@ class TransitrixLinter:
                 if not _contract_errors(start, bounds) and not _contract_errors(end, bounds):
                     if start and end and start > end:
                         errors.append(f"{where}: valid_to precedes valid_from")
-                    for field, bound, before in [('valid_from', start, True), ('valid_to', end, False)]:
-                        owner = data.get(field)
-                        if isinstance(owner, str) and bound is not None and (bound < owner if before else bound > owner):
+                    owner_start, owner_end = data.get('valid_from'), data.get('valid_to')
+                    for field, bound in [('valid_from', start), ('valid_to', end)]:
+                        if bound is None:
+                            continue
+                        outside = (isinstance(owner_start, str) and bound < owner_start
+                                   or isinstance(owner_end, str) and bound > owner_end)
+                        if outside:
                             errors.append(f"{where}.{field}: lifetime must be contained in APPLICATION lifetime")
             return errors
 
