@@ -674,6 +674,8 @@
     "scripts/discovery-propose.mjs",
     "scripts/discovery.mjs",
     "scripts/generate-plugin-manifests.mjs",
+    "scripts/release-drift.cjs",
+    "scripts/release-drift.test.cjs",
     "scripts/release-obligations.mjs",
     "scripts/release-obligations.test.mjs",
     "tests/fixtures/capability-management-cycle/README.md",
