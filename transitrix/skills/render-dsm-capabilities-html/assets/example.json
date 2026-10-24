@@ -1,0 +1,2218 @@
+{
+  "title": "Acme Corp — Expanded Demonstration",
+  "organisation": "Source-backed core + illustrative layers, intersections and applications",
+  "model_revision": "transitrix/acme-corp@e331590b13935d1d0922063acbf1f6a0cb3cdba2+demo-extension-2026-10-23; management-cycle/tag teaching overlay 2026-10-23; multi-system coverage demo; dated history/current/plan demo",
+  "source_repository": "https://github.com/transitrix/acme-corp",
+  "source_revision": "e331590b13935d1d0922063acbf1f6a0cb3cdba2",
+  "states": [
+    {
+      "id": "current",
+      "label": "Current State — extended demo",
+      "kind": "current",
+      "as_of": "2026-10-22",
+      "capabilities": [
+        {
+          "id": "CAPABILITY-V1",
+          "name": "Order Management",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 1
+            },
+            {
+              "change_date": "2025-06-01",
+              "level": 2
+            },
+            {
+              "change_date": "2026-09-15",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.1",
+          "name": "Order Intake",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.2",
+          "name": "Order Fulfilment",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ],
+          "source_target_date": "2026-09-30",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V2",
+          "name": "Customer Relationship Management",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-H1",
+          "name": "Compliance & Data Protection",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 1
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3",
+          "name": "Inventory & Warehousing (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.1",
+          "name": "Customer strategy (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 3
+            }
+          ],
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.2",
+          "name": "Customer insights (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Learning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.3",
+          "name": "Fulfilment planning (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 3
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1",
+          "name": "Warehouse planning (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.1.1",
+          "name": "Order validation (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 4
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.2.1",
+          "name": "Pick and pack (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1.1",
+          "name": "Stock reconciliation (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.2",
+          "name": "Returns improvement (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2",
+          "name": "Sustainability (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1",
+          "name": "Packaging impact planning (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Planning",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.2",
+          "name": "Warehouse energy (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1.1",
+          "name": "Packaging evidence (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 0
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "ESG",
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3",
+          "name": "Master Data Management (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 3
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.1",
+          "name": "Product reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.2",
+          "name": "Customer reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.3",
+          "name": "Inventory master data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.2.1",
+          "name": "Customer data quality checks (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 4
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "MDM",
+            "Support"
+          ],
+          "start_date": "2026-10-22"
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1",
+          "name": "Order data protection (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1.1",
+          "name": "Order erasure controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2",
+          "name": "Customer consent controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2.1",
+          "name": "Consent audit (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 5
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.3",
+          "name": "Warehouse privacy (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0",
+          "name": "Improvement backlog (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0.1",
+          "name": "Unassigned automation (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 0
+            }
+          ],
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4",
+          "name": "Unassigned compliance review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4.1",
+          "name": "Unplaced identity review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-10-22",
+              "level": 1
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-CRM-1",
+          "name": "CRM System",
+          "capabilities": [
+            "CAPABILITY-V2",
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-OMS-1",
+          "name": "Order Management System",
+          "capabilities": [
+            "CAPABILITY-V1",
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-WAREHOUSE",
+          "name": "Warehouse System (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-V3.1.1",
+            "DEMO-CAPABILITY-H3.3"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-WAREHOUSE-DATA",
+              "name": "Warehouse reference-data synchronization and checks (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.3",
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-DATA",
+          "name": "Data Hub (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.2",
+            "DEMO-CAPABILITY-H3.2.1"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-DATA-REFERENCE",
+              "name": "Reference data services (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.2"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            },
+            {
+              "id": "DEMO-TECH-DATA-QUALITY",
+              "name": "Data quality checks (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-GOVERNANCE",
+          "name": "Governance Portal (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H1.1",
+            "DEMO-CAPABILITY-H1.2.1",
+            "DEMO-CAPABILITY-H1.4.1"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-GOVERNANCE-DATA",
+              "name": "Reference-data controls and quality evidence (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.2",
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping",
+              "start_date": "2026-10-22"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-ESG",
+          "name": "Sustainability Reporting (demo)",
+          "capabilities": [],
+          "example_origin": "illustrative_extension"
+        }
+      ],
+      "effective_from": "2026-10-01",
+      "effective_to": "2027-01-01"
+    },
+    {
+      "id": "target",
+      "label": "Target State — illustrative scenario",
+      "kind": "target",
+      "as_of": "2027-01-01",
+      "horizon_label": "Planned demo for 2027; not Acme commitments",
+      "capabilities": [
+        {
+          "id": "CAPABILITY-V1",
+          "name": "Order Management",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.1",
+          "name": "Order Intake",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 4
+            },
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.2",
+          "name": "Order Fulfilment",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-09-30",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V2",
+          "name": "Customer Relationship Management",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 4
+            },
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-H1",
+          "name": "Compliance & Data Protection",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3",
+          "name": "Inventory & Warehousing (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.1",
+          "name": "Customer strategy (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 4
+            }
+          ],
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.2",
+          "name": "Customer insights (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Learning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.3",
+          "name": "Fulfilment planning (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 4
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1",
+          "name": "Warehouse planning (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.1.1",
+          "name": "Order validation (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 5
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.2.1",
+          "name": "Pick and pack (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 4
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1.1",
+          "name": "Stock reconciliation (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.2",
+          "name": "Returns improvement (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2",
+          "name": "Sustainability (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1",
+          "name": "Packaging impact planning (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Planning",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.2",
+          "name": "Warehouse energy (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1.1",
+          "name": "Packaging evidence (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 1
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "ESG",
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3",
+          "name": "Master Data Management (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 4
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.1",
+          "name": "Product reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 4
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.2",
+          "name": "Customer reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.3",
+          "name": "Inventory master data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.2.1",
+          "name": "Customer data quality checks (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 5
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "MDM",
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1",
+          "name": "Order data protection (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1.1",
+          "name": "Order erasure controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2",
+          "name": "Customer consent controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2.1",
+          "name": "Consent audit (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 5
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.3",
+          "name": "Warehouse privacy (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0",
+          "name": "Improvement backlog (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0.1",
+          "name": "Unassigned automation (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 1
+            }
+          ],
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4",
+          "name": "Unassigned compliance review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4.1",
+          "name": "Unplaced identity review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2027-01-01",
+              "level": 2
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-CRM-1",
+          "name": "CRM System",
+          "capabilities": [
+            "CAPABILITY-V2",
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ],
+          "example_origin": "illustrative_target_mapping"
+        },
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-OMS-1",
+          "name": "Order Management System",
+          "capabilities": [
+            "CAPABILITY-V1",
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ],
+          "example_origin": "illustrative_target_mapping"
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-WAREHOUSE",
+          "name": "Warehouse System (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-V3.1.1",
+            "DEMO-CAPABILITY-H3.3",
+            "DEMO-CAPABILITY-H1.3"
+          ],
+          "example_origin": "illustrative_target_mapping",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-WAREHOUSE-DATA",
+              "name": "Warehouse reference-data synchronization and checks (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.3",
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-DATA",
+          "name": "Data Hub (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1",
+            "DEMO-CAPABILITY-H3.2",
+            "DEMO-CAPABILITY-H3.2.1",
+            "DEMO-CAPABILITY-H3.3"
+          ],
+          "example_origin": "illustrative_target_mapping",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-DATA-REFERENCE",
+              "name": "Reference data services (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.2",
+                "DEMO-CAPABILITY-H3.3"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            },
+            {
+              "id": "DEMO-TECH-DATA-QUALITY",
+              "name": "Data quality checks (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-GOVERNANCE",
+          "name": "Governance Portal (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H1.1",
+            "DEMO-CAPABILITY-H1.2.1",
+            "DEMO-CAPABILITY-H1.4.1"
+          ],
+          "example_origin": "illustrative_target_mapping",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-GOVERNANCE-DATA",
+              "name": "Reference-data controls and quality evidence (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1",
+                "DEMO-CAPABILITY-H3.2",
+                "DEMO-CAPABILITY-H3.2.1"
+              ],
+              "example_origin": "illustrative_technical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-ESG",
+          "name": "Sustainability Reporting (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H2.1",
+            "DEMO-CAPABILITY-H2.2",
+            "DEMO-CAPABILITY-H2.1.1"
+          ],
+          "example_origin": "illustrative_target_mapping"
+        }
+      ],
+      "effective_from": "2027-01-01",
+      "effective_to": "2028-01-01"
+    },
+    {
+      "id": "historical",
+      "label": "Historical State — illustrative June 2026",
+      "kind": "historical",
+      "as_of": "2026-06-01",
+      "capabilities": [
+        {
+          "id": "CAPABILITY-V1",
+          "name": "Order Management",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 1
+            },
+            {
+              "change_date": "2025-06-01",
+              "level": 2
+            },
+            {
+              "change_date": "2026-09-15",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.1",
+          "name": "Order Intake",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V1.2",
+          "name": "Order Fulfilment",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ],
+          "source_target_date": "2026-09-30",
+          "property_origin": "illustrative_extension",
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-V2",
+          "name": "Customer Relationship Management",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ],
+          "property_origin": "illustrative_extension",
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "CAPABILITY-H1",
+          "name": "Compliance & Data Protection",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 1
+            }
+          ],
+          "source_target_date": "2026-12-31",
+          "property_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3",
+          "name": "Inventory & Warehousing (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.1",
+          "name": "Customer strategy (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 2
+            }
+          ],
+          "layer": "Strategic",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V2.2",
+          "name": "Customer insights (demo)",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Learning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.3",
+          "name": "Fulfilment planning (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 2
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1",
+          "name": "Warehouse planning (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Planning",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.1.1",
+          "name": "Order validation (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 3
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V1.2.1",
+          "name": "Pick and pack (demo)",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.1.1",
+          "name": "Stock reconciliation (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V3.2",
+          "name": "Returns improvement (demo)",
+          "layout": "vertical",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2",
+          "name": "Sustainability (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1",
+          "name": "Packaging impact planning (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Planning",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.2",
+          "name": "Warehouse energy (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "ESG"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H2.1.1",
+          "name": "Packaging evidence (demo)",
+          "layout": "horizontal",
+          "first_level": 2,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "ESG",
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3",
+          "name": "Master Data Management (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 2
+            }
+          ],
+          "layer": null,
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.1",
+          "name": "Product reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 2
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.2",
+          "name": "Customer reference data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H3.3",
+          "name": "Inventory master data (demo)",
+          "layout": "horizontal",
+          "first_level": 3,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "MDM"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1",
+          "name": "Order data protection (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.1.1",
+          "name": "Order erasure controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 1,
+          "lane": 1,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2",
+          "name": "Customer consent controls (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 1
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.2.1",
+          "name": "Consent audit (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 1,
+          "lane": 2,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 4
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.3",
+          "name": "Warehouse privacy (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 3,
+          "third_level": 0,
+          "lane": 3,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Execution",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0",
+          "name": "Improvement backlog (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-V0.1",
+          "name": "Unassigned automation (demo)",
+          "layout": "vertical",
+          "first_level": 0,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": null,
+          "tags": []
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4",
+          "name": "Unassigned compliance review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 0,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        },
+        {
+          "id": "DEMO-CAPABILITY-H1.4.1",
+          "name": "Unplaced identity review (demo)",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 4,
+          "third_level": 1,
+          "lane": 0,
+          "example_origin": "illustrative_extension",
+          "maturity": [
+            {
+              "change_date": "2026-06-01",
+              "level": 0
+            }
+          ],
+          "layer": "Assurance",
+          "tags": [
+            "Support"
+          ]
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-CRM-1",
+          "name": "CRM System",
+          "capabilities": [
+            "CAPABILITY-V2",
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V2.2",
+            "DEMO-CAPABILITY-H1.2"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-OMS-1",
+          "name": "Order Management System",
+          "capabilities": [
+            "CAPABILITY-V1",
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ],
+          "illustrative_mapping_extensions": [
+            "DEMO-CAPABILITY-V1.1.1",
+            "DEMO-CAPABILITY-V1.2.1",
+            "DEMO-CAPABILITY-H1.1.1"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-WAREHOUSE",
+          "name": "Warehouse System (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-V3.1.1",
+            "DEMO-CAPABILITY-H3.3"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": []
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-DATA",
+          "name": "Data Hub (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H3.1"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": [
+            {
+              "id": "DEMO-TECH-DATA-REFERENCE",
+              "name": "Reference data services (demo)",
+              "capabilities": [
+                "DEMO-CAPABILITY-H3.1"
+              ],
+              "example_origin": "illustrative_historical_mapping"
+            }
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-GOVERNANCE",
+          "name": "Governance Portal (demo)",
+          "capabilities": [
+            "DEMO-CAPABILITY-H1.1",
+            "DEMO-CAPABILITY-H1.2.1",
+            "DEMO-CAPABILITY-H1.4.1"
+          ],
+          "example_origin": "illustrative_extension",
+          "technical_capabilities": []
+        },
+        {
+          "type": "APPLICATION",
+          "id": "DEMO-APPLICATION-ESG",
+          "name": "Sustainability Reporting (demo)",
+          "capabilities": [],
+          "example_origin": "illustrative_extension"
+        }
+      ],
+      "effective_from": "2026-06-01",
+      "effective_to": "2026-10-01"
+    }
+  ],
+  "example_kind": "illustrative_extension",
+  "source_core_asset": "acme-corp-source-example.json",
+  "coverage_system_id": "DEMO-APPLICATION-DATA",
+  "view_date": "2026-10-23"
+}

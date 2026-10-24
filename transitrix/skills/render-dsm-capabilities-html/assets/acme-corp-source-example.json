@@ -1,0 +1,237 @@
+{
+  "title": "Acme Corp — Business Capability Map",
+  "organisation": "Acme Corp — repository example",
+  "model_revision": "transitrix/acme-corp@e331590b13935d1d0922063acbf1f6a0cb3cdba2",
+  "source_repository": "https://github.com/transitrix/acme-corp",
+  "source_revision": "e331590b13935d1d0922063acbf1f6a0cb3cdba2",
+  "states": [
+    {
+      "id": "current",
+      "label": "Current State",
+      "kind": "current",
+      "as_of": "2026-10-22",
+      "capabilities": [
+        {
+          "id": "CAPABILITY-V1",
+          "name": "Order Management",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 1
+            },
+            {
+              "change_date": "2025-06-01",
+              "level": 2
+            },
+            {
+              "change_date": "2026-09-15",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31"
+        },
+        {
+          "id": "CAPABILITY-V1.1",
+          "name": "Order Intake",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "id": "CAPABILITY-V1.2",
+          "name": "Order Fulfilment",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ],
+          "source_target_date": "2026-09-30"
+        },
+        {
+          "id": "CAPABILITY-V2",
+          "name": "Customer Relationship Management",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 2
+            }
+          ]
+        },
+        {
+          "id": "CAPABILITY-H1",
+          "name": "Compliance & Data Protection",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 1
+            }
+          ],
+          "source_target_date": "2026-12-31"
+        }
+      ],
+      "applications": [
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-CRM-1",
+          "name": "CRM System",
+          "capabilities": [
+            "CAPABILITY-V2"
+          ]
+        },
+        {
+          "type": "APPLICATION",
+          "id": "APPLICATION-OMS-1",
+          "name": "Order Management System",
+          "capabilities": [
+            "CAPABILITY-V1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "label": "Declared Target Maturity",
+      "kind": "target",
+      "as_of": "2026-10-22",
+      "horizon_label": "Recorded intentions; per-capability deadlines",
+      "capabilities": [
+        {
+          "id": "CAPABILITY-V1",
+          "name": "Order Management",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31"
+        },
+        {
+          "id": "CAPABILITY-V1.1",
+          "name": "Order Intake",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 1,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 4
+            },
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "id": "CAPABILITY-V1.2",
+          "name": "Order Fulfilment",
+          "layout": "vertical",
+          "first_level": 1,
+          "second_level": 2,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-09-30"
+        },
+        {
+          "id": "CAPABILITY-V2",
+          "name": "Customer Relationship Management",
+          "layout": "vertical",
+          "first_level": 2,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2024-01-01",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2024-01-01",
+              "level": 4
+            },
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ]
+        },
+        {
+          "id": "CAPABILITY-H1",
+          "name": "Compliance & Data Protection",
+          "layout": "horizontal",
+          "first_level": 1,
+          "second_level": 0,
+          "third_level": 0,
+          "lane": 0,
+          "start_date": "2026-05-26",
+          "end_date": null,
+          "maturity": [
+            {
+              "change_date": "2026-05-26",
+              "level": 3
+            }
+          ],
+          "source_target_date": "2026-12-31"
+        }
+      ],
+      "applications": []
+    }
+  ]
+}

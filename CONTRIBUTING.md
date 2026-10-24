@@ -49,6 +49,10 @@ A Skill is a packaged Claude Code capability under `transitrix/skills/<name>/`, 
 
 Add supporting material only as the skill needs it, following existing precedent: `templates/` for scaffolded files (`onboard/templates/`), `prompts/` for multi-step prompt sequences (`ingest/prompts/`, `reg-intel/prompts/`), `schemas/` for JSON Schema the skill validates against, `tests/` for a deterministic integrity test (`onboard/tests/`, `knowledge-store/tests/`).
 
+Portable Agent Skills may nest runtime-specific trigger/version fields under
+`metadata` when their host rejects unknown top-level fields. Their README must
+state the input/runtime compatibility rather than implying a released contract.
+
 **Changing an existing skill:**
 
 1. Read the skill's `SKILL.md` and `README.md` in full before editing — the two must stay consistent with each other and with the skill's actual behaviour.
