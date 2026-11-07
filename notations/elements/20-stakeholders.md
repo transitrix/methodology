@@ -1,6 +1,6 @@
 ---
 title: "Stakeholders — motivation-layer interest primitive"
-version: "0.1"
+version: "0.2"
 author: "Valerii Korobeinikov"
 last_updated: "2026-05-29"
 status: "draft"

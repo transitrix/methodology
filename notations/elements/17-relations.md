@@ -1,6 +1,6 @@
 ---
 title: "Relations — first-class time-aware links"
-version: "0.6"
+version: "0.7"
 author: "Valerii Korobeinikov"
 last_updated: "2026-10-12"
 status: "draft"
@@ -51,7 +51,7 @@ valid_to: null
 |---|---|---|---|
 | `notation` | yes | string | Fixed value `relation`. |
 | `id` | yes | string | Canonical ID per [IDS_AND_REFERENCES.md](../IDS_AND_REFERENCES.md) §1: `REL-[<middle>-]<INTEGER>`. |
-| `type` | yes | string | One of the closed enum values in §3. The enum is closed for a given methodology release; new kinds land as additive MINOR revisions (see §3). |
+| `type` | yes | string | One of the closed enum values in §3. The enum is closed for a given methodology release; new kinds require MAJOR revisions under CONTRACT §10.2 (see §3). |
 | `from` | yes | string | Typed canonical ID of the relation's source / dependent / child primitive. Must resolve to an admitted primitive in canon (`REL-002`). |
 | `to` | yes | string | Typed canonical ID of the relation's target / parent / destination primitive. Must resolve to an admitted primitive in canon, except the explicit Field targets of `source_trace` in §3 (`REL-002`). |
 | `zone` | yes | string | Always `canon` for REL — see [CONTRACT.md](../CONTRACT.md) §6. |
@@ -108,7 +108,12 @@ The enum is **closed** in v1. Each value names a specific kind of link between t
 | `introduced_in` | element → state | `INTEGRATION` \| `APPLICATION` → `RELEASE` | The element `from` is part of the subject's architecture **as of** the release `to`, and stays so in that release's successors until withdrawn — the descriptive counterpart to `required_for`'s obligation scope. It records the **attachment point**, never the whole set: "which elements are in release R" is derived by the same `predecessor` walk §3.2 uses for obligations (see §3.3). **It says nothing about whether the element is compliant, correct, or complete in that release** — that is an `ASSERTION`; see §3.3. Time-aware because architecture moves: an integration dropped from a line ends with `valid_to` set rather than having its REL file deleted. **M:N**: one element may be introduced in releases of more than one subject line, and one release carries many elements — each pair is its own REL file. Endpoints stay narrow in v1 (`INTEGRATION` / `APPLICATION` sources only); `TECHNOLOGY_SERVICE`, `NODE` and `CHANGE` sources are a later widening of this kind, not a second kind. |
 | `assembled_on` | product → system | `RELEASE` → `RELEASE` | This release was assembled on (built with, compiled against) the identified system release. The `from` endpoint is a `PRODUCT` or `APPLICATION` release; the `to` endpoint is a `PRODUCT` or `APPLICATION` release (the subject restriction of every `RELEASE` applies here too) — the systems that were present at assembly time. **Crosses subjects:** a product release may be assembled on releases of multiple different systems, and each system release is an endpoint in one `assembled_on` link per product release that used it. **This is a fact, not an order or a claim.** It records *what was* in the environment when the release was built; it says nothing about whether the toolchain is approved, compliant, tested, or still supported. Time-aware: a product release frozen at a point in time carries a fixed assembly environment; the snapshot does not update. A successor release records its complete assembly environment in new links, including unchanged systems. Shipping a successor does not end the predecessor's historical assembly facts; do not set their `valid_to` merely to mark that transition. Lifecycle closure records withdrawal of the relation, not replacement of the built release. Historical retrieval must include the original release's records, including withdrawn records where applicable, rather than relying only on the currently active graph. **Not a list on the RELEASE element:** every system-release pair is its own REL file. **Not inherited along `predecessor`:** each release's freeze is its own — a v3.3 release does not inherit v3.2's assembly environment as a default. **M:N**: one release may be assembled on many systems (typical), and one system release may be referenced by many product releases. Each (product_release, system_release) pair is its own REL file. |
 
-Adding a new `type` value is an **additive** methodology revision (MINOR). A repository that uses none of the new kind validates unchanged. The incompatibility an adopter can hit is a *pinned* older validator meeting a kind it has never heard of — answered by the vendored tagged release, not by treating every enum extension as a breaking change.
+Adding a new `type` value changes membership of a closed enum and requires a
+**MAJOR** methodology release under [CONTRACT §10.2](../CONTRACT.md#102-semver-with-explicit-semantics)
+and [RELEASING](../../RELEASING.md). This applies even when records using only
+existing kinds need no field rewrite. Update the vocabulary, validators and
+release pin together through the migration recipe; do not infer runtime support
+from token recognition alone.
 
 **Engagement relations (`employment` / `candidacy` / `alumni_membership` / `community_membership` / `contracting`).** Decided 2026-05-29 (Actors): a `person` actor records *identity only*; every kind of engagement with the organisation is its own first-class, time-aware relation, so the same person can be a candidate, then an employee, then an alumnus over time without losing history, and can hold several engagements at once. Each engagement kind carries only the attributes that kind needs; the relation's own `valid_from`/`valid_to` is the engagement window.
 
@@ -232,15 +237,14 @@ merely because kind/from/to already appeared.
 
 **Specification and compatibility boundary.** The [synthetic consumer example
 and acceptance oracle](../examples/relations/reports-to/) specify expected
-results and positive/negative vectors. This is an additive MINOR contract
-change (relation spec 0.6); it allocates `REL-011`–`REL-013` under
+results and positive/negative vectors. This expands the closed relation enum and is included in the Methodology 8.0.0
+MAJOR migration (relation spec 0.7); it allocates `REL-011`–`REL-013` under
 [diagnostic identity rules](../CONTRACT.md#187-versioned-diagnostic-identity).
 The new errors apply only to the newly introduced kind. Existing codes, meanings
-and severities are unchanged. Existing records need
-no migration. Older pinned vocabularies/validators can reject `reports_to`
+and severities are unchanged. Existing records using previously admitted kinds need no field rewrite; the
+release pin and tooling still move through the [7.0 → 8.0 recipe](../../migrations/7.0-to-8.0/). Older pinned vocabularies/validators can reject `reports_to`
 as an unknown kind; a current vocabulary loader recognizing the token is not
-proof of subtype, temporal, graph or query enforcement. The methodology release
-pin remains unchanged until release preparation; no package is released here.
+proof of subtype, temporal, graph or query enforcement. The 8.0.0 pin is a release-preparation proposal; no package is released here.
 Dependent validators, ingest and query consumers must bind conformance evidence
 to the delivered specification revision and diagnostic allocation. These rules
 and example are not a claim of released or installed runtime support.

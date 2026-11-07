@@ -6,6 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [8.0.0] — Unreleased preparation
+
+Bump category: **MAJOR**. Closed relation enum expansion and newly restrictive
+adopter tooling require the [7.0 → 8.0 migration](migrations/7.0-to-8.0/).
+This is a source proposal, not a released or installed package.
+
+### Added
+
+- PRODUCT/APPLICATION requirement-scope 0.3 contract and distributed requirements-analysis skill; explicit 0.2 compatibility retained. (#633, #636)
+- Person reporting relations, dated query/health contracts and retained historical evidence. (#649, #651, #652)
+- Capability-map optional management-cycle, tag and technical-capability contracts and portable rendering guidance. (#658, #660)
+- Document package/provenance and source-handoff guidance within its existing scope.
+
+### Changed
+
+- Reconcile relation-spec enum language with CONTRACT §10 and RELEASING: new closed-enum kinds require MAJOR, even without an existing-record rewrite.
+- Align current methodology pins and ingest PRESETS_VERSION at 8.0.0; preserve historical migration fixtures and preset membership/defaults.
+- Skill bundle 0.2.0 requires an exact CLI 2.13.0 candidate map and matching artifact qualification; requirements-analysis minimum becomes 8.0.0. The earlier accepted 2.12.0 evidence remains revision-bound.
+- New capability-field/view restrictions and intake profile preflight require explicit owner review, preserving absent optional fields, originals and unknown content. No automatic store split or semantic conversion.
+
+### Fixed
+
+- Reporting recurrence, aliases, temporal behavior and listing corrections retain their accepted bounded evidence. Full candidate qualification and the reference-adopter companion remain separately reviewable.
+
 ## [7.0.0] — 2026-09-26
 
 Bump category: **MAJOR**. ACTION numeric lower bounds now apply to 7.0.0

@@ -171,7 +171,7 @@ exercised by the source-checkout command and its mechanical tests.
 (multi-manager warning) are newly allocated identities. Existing diagnostics
 keep their meanings/severities and stored history under
 [CONTRACT §18.7](../../../CONTRACT.md#187-versioned-diagnostic-identity).
-The additive vocabulary/specification change requires a MINOR release when
-packaged; this example does not release, install or certify a consumer. Older
+The closed-enum vocabulary/specification change requires a MAJOR release when
+packaged under CONTRACT §10.2; this example does not release, install or certify a consumer. Older
 pinned validators may reject `reports_to`; token recognition alone does not
 satisfy these acceptance vectors. Core ingestion coverage is unchanged.
