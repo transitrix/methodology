@@ -861,6 +861,8 @@
     "transitrix/skills/report/README.md",
     "transitrix/skills/report/SKILL.md",
     "transitrix/skills/report/scripts/report.py",
+    "transitrix/skills/requirements-analysis/README.md",
+    "transitrix/skills/requirements-analysis/SKILL.md",
     "transitrix/skills/status/README.md",
     "transitrix/skills/status/SKILL.md"
   ]
