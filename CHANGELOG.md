@@ -23,7 +23,7 @@ This is a source proposal, not a released or installed package.
 
 - Reconcile relation-spec enum language with CONTRACT §10 and RELEASING: new closed-enum kinds require MAJOR, even without an existing-record rewrite.
 - Align current methodology pins and ingest PRESETS_VERSION at 8.0.0; preserve historical migration fixtures and preset membership/defaults.
-- Skill bundle 0.2.0 requires an exact CLI 2.13.0 candidate map and matching artifact qualification; requirements-analysis minimum becomes 8.0.0. The earlier accepted 2.12.0 evidence remains revision-bound.
+- Skill bundle 0.2.0 binds the exact CLI 2.13.0 tarball and isolated consumer qualification receipt; requirements-analysis minimum becomes 8.0.0. Hosted UI parity retains its separate artifact identity. The earlier accepted 2.12.0 evidence remains revision-bound.
 - New capability-field/view restrictions and intake profile preflight require explicit owner review, preserving absent optional fields, originals and unknown content. No automatic store split or semantic conversion.
 
 ### Fixed

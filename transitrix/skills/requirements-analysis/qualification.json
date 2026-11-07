@@ -1,0 +1,66 @@
+{
+  "schema": "requirements-analysis-candidate-qualification/1",
+  "status": "ISOLATED_CLI_CONSUMER_QUALIFIED_NOT_RELEASED",
+  "package": "@transitrix/cli",
+  "version": "2.13.0",
+  "diagramsVersion": "1.17.0",
+  "sourceRevision": "f1d5f1e68df5f3df54ffc4a528e77b327dc60859",
+  "sourceTree": "ba35bc45d33e61279dad576e8585f8cf419e77c9",
+  "artifactFile": "transitrix-cli-2.13.0.tgz",
+  "artifactSha256": "91470eb32fd83a5a6a0a601e890a17944066cab9cf69604299a499f021fcc5ff",
+  "npmIntegrity": "sha512-0FXvxnasbuP7w9fr78QMvz/gxO+WXtLOUcNwlCDpXt0IslhjMywQd0l6SPp38bzKauZb5LH1QVMh2tQ+rdsCqw==",
+  "transport": "requirements-report/1",
+  "projection": "requirement-chain/0.3",
+  "retainedAdapter": "requirement-chain/0.2",
+  "contractRevision": "a131b1862d86f34be8feb729e1cc6ebc994c3891",
+  "checks": {
+    "isolatedInstalledFileCount": 54,
+    "allInstalledFilesEqualArchive": true,
+    "subjectCases": [
+      "application",
+      "internal product",
+      "physical product",
+      "SaaS product"
+    ],
+    "exactIdsAndCounts": true,
+    "actualCliInvocations": 11,
+    "controls": [
+      "receipt replay",
+      "no-project default",
+      "invalid subject",
+      "invalid release",
+      "wrong release owner",
+      "wrong subject type",
+      "unresolved membership with null totals",
+      "missing-tool refusal without invoking CLI",
+      "absent/incomplete/failed verification distinctions"
+    ],
+    "unchangedSyntheticModelBytes": true,
+    "runtimeAuditVulnerabilities": 0
+  },
+  "harnessSha256": "ba65b83b8e7188fbc9d84a02e503b5fa4e2dea31058aff1c9e80e8301e6cd122",
+  "environment": {
+    "node": "25.9.0",
+    "npm": "11.12.1",
+    "platform": "Darwin",
+    "machine": "arm64",
+    "lifecycleScripts": "disabled during dependency and isolated consumer installation"
+  },
+  "uiCorrelation": {
+    "run": "https://github.com/transitrix/transitrix-studio/actions/runs/42419064679",
+    "result": "success",
+    "packagedTestsPassed": 45,
+    "vsixSha256": "9fa60bc4ab604dd11ea1d47e01e9440486205f83a4a9825179ad512c65dcb567",
+    "hostedCliSourceRevision": "df85b60a0383c8bc2c7870c1ae954ec9adb29cae",
+    "hostedCliArtifactSha256": "600eb7e16b5fe57e5b1c38fbe5a88b44b86102667e7c1ffeea55ef51325ba2c8",
+    "sameTrackedTree": true,
+    "hostedUsedThisLocalTarball": false,
+    "localHeadVsLocalMergePackageComparison": "All package file bytes match except requirements-build.json sourceRevision; locally rebuilt merge archive does not reproduce hosted archive hash."
+  },
+  "limits": [
+    "This receipt qualifies the named isolated CLI artifact and deterministic caller controls only.",
+    "Hosted UI parity belongs to its recorded VSIX/CLI identities; equal source trees do not mean hosted use of this local archive.",
+    "No final merge/rebuild qualification, whole-product acceptance, publication or installed-user acceptance.",
+    "No new assistant-driven behavioral skill evaluation; previous accepted skill semantics are retained."
+  ]
+}

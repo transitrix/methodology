@@ -32,9 +32,12 @@ or date. Omitted project means no project filter.
 Bundle 0.2.0 / methodology floor 8.0.0 prepares CLI 2.13.0 from exact Studio
 source `f1d5f1e68df5f3df54ffc4a528e77b327dc60859`, with diagrams 1.17.0,
 Node >=20 and `requirements-report/1` / `requirement-chain/0.3`.
-See [caller-candidate.json](caller-candidate.json). It is NOT_BUILT /
-NOT_QUALIFIED; invocation stops until a matching artifact receipt supplies
-integrity and qualification. No npm delivery is claimed. Historical accepted
+See [caller-candidate.json](caller-candidate.json) and the
+[isolated CLI qualification receipt](qualification.json). Verify the exact
+archive integrity and installed source identity before invocation; missing or
+mismatching evidence remains unavailable. Hosted UI parity has its own archive
+identity at the same tracked tree, not this local tarball. No release or final
+whole-product qualification is claimed. Historical accepted
 CLI 2.12.0 evidence stays bound to its original source. See
 [the invocation and support checks](SKILL.md#1-resolve-scope-and-support).
 

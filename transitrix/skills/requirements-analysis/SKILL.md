@@ -44,14 +44,20 @@ Contract semantics remain bound to the [accepted scope revision](https://github.
 
 The previous qualified CLI 2.12.0 handoff at
 `bfc60f81bd0b7fe01dd9fac41ba4b1d4bc447730` remains historical evidence.
-It does not qualify 2.13.0. This new binding is **NOT_BUILT / NOT_QUALIFIED**:
-until an exact-source artifact receipt supplies SHA-256/npm integrity and
-candidate checks, stop with “requirements analysis unavailable: candidate not
-qualified”. Compare installed tool version/source revision and artifact receipt
-with the map before execution. Null hashes are missing evidence, never wildcards.
-A later merge commit or rebuild needs a new map and qualification receipt.
-The methodology floor reflects this new required caller boundary; it does not
-claim that a version number supplies execution evidence.
+It does not qualify 2.13.0. The [exact candidate receipt](qualification.json)
+now qualifies the named 2.13.0 tarball for isolated CLI consumer use: four
+subjects, retained positive/negative controls, replay and unchanged model bytes.
+Verify the archive SHA-256/npm integrity and installed tool version/source
+revision against the map before execution. An absent or mismatching archive,
+receipt, identity or unsupported envelope means unavailable; hashes are not
+wildcards and a package version alone is insufficient.
+
+Hosted UI parity is separately recorded for the same tracked source tree at a
+synthetic merge revision and a different CLI archive. Do not describe it as a
+UI run using this local tarball. This is no release, whole-product acceptance or
+claim of a new assistant-host evaluation. A later merge/rebuild needs a refreshed
+map and qualification receipt. The methodology floor reflects this new required
+caller boundary; it does not supply execution evidence by itself.
 
 Locate the installed executable and inspect its package documentation. If absent,
 stop with “requirements analysis unavailable: supported CLI missing”. A supplied
