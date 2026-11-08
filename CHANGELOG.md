@@ -6,6 +6,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [8.0.0] — 2026-11-08
+
+Bump category: **MAJOR**. Closed relation enum expansion and newly restrictive
+adopter tooling require the [7.0 → 8.0 migration](migrations/7.0-to-8.0/).
+This release remains an unpublished draft until separately approved.
+
+Known diagnostic limitation: COMPIMP-010 retains its two historical warning/error
+meanings under the explicitly renewed exemption through 2026-11-16. No renumbering,
+severity change or validator weakening is included. Historical diagnostics remain
+unchanged; resolve the code allocation separately before that review date.
+
+### Added
+
+- PRODUCT/APPLICATION requirement-scope 0.3 contract and distributed requirements-analysis skill; explicit 0.2 compatibility retained. (#633, #636)
+- Person reporting relations, dated query/health contracts and retained historical evidence. (#649, #651, #652)
+- Capability-map optional management-cycle, tag and technical-capability contracts and portable rendering guidance. (#658, #660)
+- Document package/provenance and source-handoff guidance within its existing scope.
+
+### Changed
+
+- Reconcile relation-spec enum language with CONTRACT §10 and RELEASING: new closed-enum kinds require MAJOR, even without an existing-record rewrite.
+- Align current methodology pins and ingest PRESETS_VERSION at 8.0.0; preserve historical migration fixtures and preset membership/defaults.
+- Skill bundle 0.2.0 binds the exact CLI 2.13.0 tarball and isolated consumer qualification receipt; requirements-analysis minimum becomes 8.0.0. The exact same CLI archive is retained from packaged UI verification and bound to the Studio release commit. The earlier accepted 2.12.0 evidence remains revision-bound.
+- New capability-field/view restrictions and intake profile preflight require explicit owner review, preserving absent optional fields, originals and unknown content. No automatic store split or semantic conversion.
+
+### Fixed
+
+- Ingest test portability: freeze the batch-date clock and assert the existing null no-redaction contract while retaining positive PII stripping controls. The two historical baseline failures remain recorded; runtime privacy behavior is unchanged.
+- Reporting recurrence, aliases, temporal behavior and listing corrections retain their accepted bounded evidence. The reference-adopter companion remains proposed until separate ratification.
+
 ## [7.0.0] — 2026-09-26
 
 Bump category: **MAJOR**. ACTION numeric lower bounds now apply to 7.0.0

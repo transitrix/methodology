@@ -1,0 +1,70 @@
+{
+  "schema": "requirements-analysis-candidate-qualification/1",
+  "status": "FINAL_DRAFT_ARTIFACT_QUALIFIED_NOT_PUBLISHED",
+  "package": "@transitrix/cli",
+  "version": "2.13.0",
+  "diagramsVersion": "1.17.0",
+  "sourceRevision": "e1a4994679a6012cbf88931076b07d8c03da2b00",
+  "sourceTree": "1acd8074fb2fd394d91407b1b186ab337b4a8d06",
+  "artifactFile": "transitrix-cli-2.13.0.tgz",
+  "artifactSha256": "597d3b68f9cc67a337d850883f4e706ebb21aa355b64113e006d538ed238722e",
+  "npmIntegrity": "sha512-a454Od1ZRDqqp6fDyIm6J27c4wNGghb4oanNQ/leDatjUMvXLdE2LHZKmiCNJROcE8zczeQesf+UloHC3kO5Bg==",
+  "transport": "requirements-report/1",
+  "projection": "requirement-chain/0.3",
+  "retainedAdapter": "requirement-chain/0.2",
+  "contractRevision": "a131b1862d86f34be8feb729e1cc6ebc994c3891",
+  "checks": {
+    "isolatedInstalledFileCount": 54,
+    "allInstalledFilesEqualArchive": true,
+    "subjectCases": [
+      "application",
+      "internal product",
+      "physical product",
+      "SaaS product"
+    ],
+    "exactIdsAndCounts": true,
+    "actualCliInvocations": 12,
+    "controls": [
+      "receipt replay",
+      "no-project default",
+      "invalid subject",
+      "invalid release",
+      "wrong release owner",
+      "wrong subject type",
+      "unresolved membership with null totals",
+      "missing-tool refusal without invoking CLI",
+      "absent/incomplete/failed verification distinctions"
+    ],
+    "unchangedSyntheticModelBytes": true,
+    "runtimeAuditVulnerabilities": 0,
+    "syntheticMethodology8ManifestContext": "PASS; same exact IDs/counts; not an adopter upgrade"
+  },
+  "harnessSha256": "c469a313b7149e99f813366ca7709524364c00f6314d2aebe2a63c2eb0efdfa7",
+  "environment": {
+    "node": "25.9.0",
+    "npm": "11.12.1",
+    "platform": "Darwin",
+    "machine": "arm64",
+    "lifecycleScripts": "disabled during dependency and isolated consumer installation",
+    "uiAndRetainedArchive": "Hosted Node20/Linux at actual release commit; separate downloaded-archive controls on Node25.9.0/macOS"
+  },
+  "uiCorrelation": {
+    "run": "https://github.com/transitrix/transitrix-studio/actions/runs/42456231703",
+    "result": "success",
+    "packagedTestsPassed": 45,
+    "vsixSha256": "ca0d21fe809050718899ecf989ddfdad5faf2dc52e045072f61f9fc588b13408",
+    "hostedCliSourceRevision": "e1a4994679a6012cbf88931076b07d8c03da2b00",
+    "hostedCliArtifactSha256": "597d3b68f9cc67a337d850883f4e706ebb21aa355b64113e006d538ed238722e",
+    "hostedUsedThisExactTarball": true,
+    "sourceIsActualReleaseCommit": true,
+    "releaseDraft": "https://github.com/transitrix/transitrix-studio/releases/tag/untagged-41e27a0514a1451006b7",
+    "draftAssetBytesAndApiDigestsVerified": true
+  },
+  "limits": [
+    "No publication, installed-user acceptance or post-release UAT acceptance is claimed.",
+    "No new assistant-driven behavioral skill evaluation; accepted analysis semantics are retained over the exact supported caller.",
+    "Methodology COMPIMP-010 and the same22Studio vocabulary-drift exceptions are owner-renewed to2026-11-16; Studio does not claim complete Methodology8 vocabulary conformance.",
+    "Any changed source or rebuilt bytes require a new matching qualification receipt; older2.13.0 preparation archives are not substitutes."
+  ],
+  "previousHarnessSha256": "ba65b83b8e7188fbc9d84a02e503b5fa4e2dea31058aff1c9e80e8301e6cd122"
+}

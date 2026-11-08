@@ -2,7 +2,7 @@
 name: requirements-analysis
 description: "Analyse PRODUCT or APPLICATION requirements for an explicit release and date using the supported Transitrix scan-plus-report CLI. Return exact computed IDs, counts and diagnostics separately from interpretation and proposed actions."
 when_to_use: 'User asks "analyse requirements for this application", "which product requirements lack verification", or "show release requirements gaps". For regulatory obligation matrices or compliance coverage, use the report skill instead.'
-min_version: "7.0.0"
+min_version: "8.0.0"
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -34,18 +34,36 @@ and mixed use are independent of subject TYPE. A physical PRODUCT is valid;
 an APPLICATION does not require creating a PRODUCT. This analysis never authors
 membership, releases, vocabulary or model records.
 
-**Support boundary:** the caller handoff is `@transitrix/cli` **2.12.0 source
-candidate**, source revision `bfc60f81bd0b7fe01dd9fac41ba4b1d4bc447730`, Node >=20,
-transport `requirements-report/1`, projection `requirement-chain/0.3`, bound to
-contract revision `a131b1862d86f34be8feb729e1cc6ebc994c3891`. See the
-[versioned caller documentation](https://github.com/transitrix/transitrix-studio/blob/bfc60f81bd0b7fe01dd9fac41ba4b1d4bc447730/packages/cli/README.md#requirements-reports)
-and [accepted scope contract](https://github.com/transitrix/methodology/blob/a131b1862d86f34be8feb729e1cc6ebc994c3891/notations/views/reports/requirement-subject-scope.md).
-The methodology floor above is not a claim that 7.0.0 tools implement 0.3.
+**Support boundary:** this bundle prepares `@transitrix/cli` **2.13.0**, exact
+Studio source `e1a4994679a6012cbf88931076b07d8c03da2b00`, bundled diagrams
+1.17.0, Node >=20, transport `requirements-report/1`, projection
+`requirement-chain/0.3`. The explicit 0.2 adapter remains available to other
+callers; this skill uses 0.3. See the [candidate caller map](caller-candidate.json)
+and [versioned caller documentation](https://github.com/transitrix/transitrix-studio/blob/e1a4994679a6012cbf88931076b07d8c03da2b00/packages/cli/README.md#requirements-reports).
+Contract semantics remain bound to the [accepted scope revision](https://github.com/transitrix/methodology/blob/a131b1862d86f34be8feb729e1cc6ebc994c3891/notations/views/reports/requirement-subject-scope.md).
+
+The previous qualified CLI 2.12.0 handoff at
+`bfc60f81bd0b7fe01dd9fac41ba4b1d4bc447730` remains historical evidence.
+It does not qualify 2.13.0. The [exact candidate receipt](qualification.json)
+now qualifies the named 2.13.0 tarball for isolated CLI consumer use: four
+subjects, retained positive/negative controls, replay and unchanged model bytes.
+Verify the archive SHA-256/npm integrity and installed tool version/source
+revision against the map before execution. An absent or mismatching archive,
+receipt, identity or unsupported envelope means unavailable; hashes are not
+wildcards and a package version alone is insufficient.
+
+The [final draft receipt](qualification.json) binds the same CLI archive used
+by the packaged UI checks to the actual Studio release commit and attached
+VSIX. Downloaded draft assets were byte-verified; older preparation archives
+with the same package version are not substitutes. Publication remains separately gated, with no installed-user acceptance or
+new assistant-host evaluation claimed. Changed Studio source or rebuilt
+artifact bytes need a refreshed map and qualification receipt. The methodology floor reflects this new required
+caller boundary; it does not supply execution evidence by itself.
 
 Locate the installed executable and inspect its package documentation. If absent,
 stop with “requirements analysis unavailable: supported CLI missing”. A supplied
 candidate tarball can be installed in an isolated tooling directory using
-`npm install --ignore-scripts /path/to/transitrix-cli-2.12.0.tgz`. Do not silently
+`npm install --ignore-scripts /path/to/transitrix-cli-2.13.0.tgz`. Do not silently
 install, upgrade or use an unpinned `npx` download. The earlier CLI 2.11.0 does not
 support this command. A usage error is not evidence of interface support.
 Candidate availability and npm publication are separate; do not describe the

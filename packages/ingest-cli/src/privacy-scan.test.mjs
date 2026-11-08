@@ -25,10 +25,14 @@ test('PII-004: phone-shaped tokens are still flagged', () => {
 test('PII-004: quoted ISO date in paragraph is not redacted', () => {
   const result = scanText('The policy effective date is 2026-06-07 and supersedes all prior versions.');
   strictEqual(result.outcome, 'CLEAN', 'ISO date in longer paragraph should not be redacted');
-  strictEqual(result.redactedText, undefined, 'No redaction should occur');
+  strictEqual(result.redactedText, null, 'CLEAN returns no redacted replacement');
+  deepStrictEqual(result.blockedFragments, [], 'ISO date leaves no privacy findings');
 });
 
 test('PII-004: mixed content with email and ISO date', () => {
   const result = scanText('Email me at test@example.com by 2026-06-07.');
   strictEqual(result.outcome, 'STRIPPED', 'Email should be detected; date should not');
+  strictEqual(typeof result.redactedText, 'string');
+  strictEqual(result.redactedText.includes('test@example.com'), false, 'Detected PII must be removed');
+  strictEqual(result.redactedText.includes('2026-06-07'), true, 'The ISO date must survive redaction');
 });

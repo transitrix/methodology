@@ -29,11 +29,17 @@ or date. Omitted project means no project filter.
 
 ## Tool and output
 
-The supported handoff is the built `@transitrix/cli` 2.12.0 candidate at
-`bfc60f81bd0b7fe01dd9fac41ba4b1d4bc447730`, Node >=20,
-`requirements-report/1` / `requirement-chain/0.3`. This is not an npm-publication
-claim. CLI 2.11.0 is unsupported. See [the invocation and support checks](SKILL.md#1-resolve-scope-and-support)
-before use. Missing tools or unsupported versions produce an unavailable result.
+Bundle 0.2.0 / methodology floor 8.0.0 prepares CLI 2.13.0 from exact Studio
+source `e1a4994679a6012cbf88931076b07d8c03da2b00`, with diagrams 1.17.0,
+Node >=20 and `requirements-report/1` / `requirement-chain/0.3`.
+See [caller-candidate.json](caller-candidate.json) and the
+[isolated CLI qualification receipt](qualification.json). Verify the exact
+archive integrity and installed source identity before invocation; missing or
+mismatching evidence remains unavailable. The exact same archive was used by the packaged UI checks and attached to
+the Studio draft at its actual release commit. Older preparation archives
+are not substitutes. No publication or installed-user acceptance is claimed. Historical accepted
+CLI 2.12.0 evidence stays bound to its original source. See
+[the invocation and support checks](SKILL.md#1-resolve-scope-and-support).
 
 The skill retains the exact CLI response, normalized request, invocation and
 provenance as a report receipt, then separates computed facts, interpretation

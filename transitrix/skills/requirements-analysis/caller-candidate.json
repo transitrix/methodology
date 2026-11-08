@@ -1,0 +1,18 @@
+{
+  "schema": "requirements-analysis-caller-candidate/1",
+  "status": "FINAL_DRAFT_ARTIFACT_QUALIFIED_NOT_PUBLISHED",
+  "methodologyVersion": "8.0.0",
+  "bundleVersion": "0.2.0",
+  "package": "@transitrix/cli",
+  "version": "2.13.0",
+  "sourceRepository": "https://github.com/transitrix/transitrix-studio",
+  "sourceRevision": "e1a4994679a6012cbf88931076b07d8c03da2b00",
+  "diagramsVersion": "1.17.0",
+  "transport": "requirements-report/1",
+  "projection": "requirement-chain/0.3",
+  "retainedAdapter": "requirement-chain/0.2",
+  "contractRevision": "a131b1862d86f34be8feb729e1cc6ebc994c3891",
+  "artifactSha256": "597d3b68f9cc67a337d850883f4e706ebb21aa355b64113e006d538ed238722e",
+  "npmIntegrity": "sha512-a454Od1ZRDqqp6fDyIm6J27c4wNGghb4oanNQ/leDatjUMvXLdE2LHZKmiCNJROcE8zczeQesf+UloHC3kO5Bg==",
+  "qualificationReceipt": "qualification.json"
+}

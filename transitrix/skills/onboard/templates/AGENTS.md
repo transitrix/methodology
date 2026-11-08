@@ -163,7 +163,7 @@ The root `transitrix.yaml` pins which methodology release this repo conforms to 
 
 ```yaml
 transitrix: 1
-methodology_version: "7.0.0"
+methodology_version: "8.0.0"
 notations: [dgca, goals, action, capability-map, codex]
 zones: [canon, field, codex]
 ```

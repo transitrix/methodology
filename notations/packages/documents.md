@@ -1,6 +1,6 @@
 ---
 title: "Issued documents — identity and traceability package"
-version: "1.0"
+version: "1.1"
 author: "Valerii Korobeinikov"
 last_updated: "2026-09-02"
 status: "draft"
@@ -23,7 +23,7 @@ This is a package, not a core notation: nothing here changes `IDS_AND_REFERENCES
 
 ```yaml
 transitrix: 1
-methodology_version: "7.0.0"
+methodology_version: "8.0.0"
 packages: [documents]
 ```
 
