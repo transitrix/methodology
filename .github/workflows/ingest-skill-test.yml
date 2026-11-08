@@ -41,6 +41,9 @@ jobs:
       - name: Install PyYAML
         run: pip install pyyaml
 
+      - name: Guard dated batch paths and privacy result contracts
+        run: node --test packages/ingest-cli/src/batch-path.test.mjs packages/ingest-cli/src/privacy-scan.test.mjs
+
       - name: Run vocabulary loader unit tests
         run: node --test packages/ingest-cli/src/vocabulary.test.mjs
 

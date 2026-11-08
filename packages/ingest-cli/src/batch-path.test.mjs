@@ -120,7 +120,7 @@ test('resolveBatchPath: existing file with no runId parameter returns dated path
 });
 
 test('resolveBatchPath: multiple dated directories increment sequence number', async (t) => {
-  t.mock.timers.enable({ apis: ['Date'], now: new Date('2031-02-03T12:00:00Z') });
+  t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2031, 1, 3, 12) });
   await setup();
   try {
     const dir1 = join(testDir, 'test-batch-20310203-1');

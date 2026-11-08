@@ -35,11 +35,11 @@ an APPLICATION does not require creating a PRODUCT. This analysis never authors
 membership, releases, vocabulary or model records.
 
 **Support boundary:** this bundle prepares `@transitrix/cli` **2.13.0**, exact
-Studio source `f1d5f1e68df5f3df54ffc4a528e77b327dc60859`, bundled diagrams
+Studio source `e1a4994679a6012cbf88931076b07d8c03da2b00`, bundled diagrams
 1.17.0, Node >=20, transport `requirements-report/1`, projection
 `requirement-chain/0.3`. The explicit 0.2 adapter remains available to other
 callers; this skill uses 0.3. See the [candidate caller map](caller-candidate.json)
-and [versioned caller documentation](https://github.com/transitrix/transitrix-studio/blob/f1d5f1e68df5f3df54ffc4a528e77b327dc60859/packages/cli/README.md#requirements-reports).
+and [versioned caller documentation](https://github.com/transitrix/transitrix-studio/blob/e1a4994679a6012cbf88931076b07d8c03da2b00/packages/cli/README.md#requirements-reports).
 Contract semantics remain bound to the [accepted scope revision](https://github.com/transitrix/methodology/blob/a131b1862d86f34be8feb729e1cc6ebc994c3891/notations/views/reports/requirement-subject-scope.md).
 
 The previous qualified CLI 2.12.0 handoff at
@@ -52,11 +52,12 @@ revision against the map before execution. An absent or mismatching archive,
 receipt, identity or unsupported envelope means unavailable; hashes are not
 wildcards and a package version alone is insufficient.
 
-Hosted UI parity is separately recorded for the same tracked source tree at a
-synthetic merge revision and a different CLI archive. Do not describe it as a
-UI run using this local tarball. This is no release, whole-product acceptance or
-claim of a new assistant-host evaluation. A later merge/rebuild needs a refreshed
-map and qualification receipt. The methodology floor reflects this new required
+The [final draft receipt](qualification.json) binds the same CLI archive used
+by the packaged UI checks to the actual Studio release commit and attached
+VSIX. Downloaded draft assets were byte-verified; older preparation archives
+with the same package version are not substitutes. Publication remains separately gated, with no installed-user acceptance or
+new assistant-host evaluation claimed. Changed Studio source or rebuilt
+artifact bytes need a refreshed map and qualification receipt. The methodology floor reflects this new required
 caller boundary; it does not supply execution evidence by itself.
 
 Locate the installed executable and inspect its package documentation. If absent,
