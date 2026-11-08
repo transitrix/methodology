@@ -61,7 +61,7 @@
     "draftAssetBytesAndApiDigestsVerified": true
   },
   "limits": [
-    "Both releases remain unpublished drafts; no installed-user or post-release UAT acceptance.",
+    "No publication, installed-user acceptance or post-release UAT acceptance is claimed.",
     "No new assistant-driven behavioral skill evaluation; accepted analysis semantics are retained over the exact supported caller.",
     "Methodology COMPIMP-010 and the same22Studio vocabulary-drift exceptions are owner-renewed to2026-11-16; Studio does not claim complete Methodology8 vocabulary conformance.",
     "Any changed source or rebuilt bytes require a new matching qualification receipt; older2.13.0 preparation archives are not substitutes."
