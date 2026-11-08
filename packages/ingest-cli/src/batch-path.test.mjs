@@ -119,11 +119,12 @@ test('resolveBatchPath: existing file with no runId parameter returns dated path
   }
 });
 
-test('resolveBatchPath: multiple dated directories increment sequence number', async () => {
+test('resolveBatchPath: multiple dated directories increment sequence number', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2031-02-03T12:00:00Z') });
   await setup();
   try {
-    const dir1 = join(testDir, 'test-batch-20260827-1');
-    const dir2 = join(testDir, 'test-batch-20260827-2');
+    const dir1 = join(testDir, 'test-batch-20310203-1');
+    const dir2 = join(testDir, 'test-batch-20310203-2');
     await mkdir(dir1, { recursive: true });
     await mkdir(dir2, { recursive: true });
 
@@ -139,7 +140,7 @@ test('resolveBatchPath: multiple dated directories increment sequence number', a
       content: 'run_id: new456\ndata: new\n',
     });
 
-    assert.ok(result.includes('test-batch-20260827-3'), `should use next sequence number: ${result}`);
+    assert.ok(result.includes('test-batch-20310203-3'), `should use next sequence number: ${result}`);
   } finally {
     await cleanup();
   }

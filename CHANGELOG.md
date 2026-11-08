@@ -6,11 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
-## [8.0.0] — Unreleased preparation
+## [8.0.0] — 2026-11-08
 
 Bump category: **MAJOR**. Closed relation enum expansion and newly restrictive
 adopter tooling require the [7.0 → 8.0 migration](migrations/7.0-to-8.0/).
-This is a source proposal, not a released or installed package.
+This release remains an unpublished draft until separately approved.
+
+Known diagnostic limitation: COMPIMP-010 retains its two historical warning/error
+meanings under the explicitly renewed exemption through 2026-11-16. No renumbering,
+severity change or validator weakening is included. Historical diagnostics remain
+unchanged; resolve the code allocation separately before that review date.
 
 ### Added
 
@@ -28,7 +33,8 @@ This is a source proposal, not a released or installed package.
 
 ### Fixed
 
-- Reporting recurrence, aliases, temporal behavior and listing corrections retain their accepted bounded evidence. Full candidate qualification and the reference-adopter companion remain separately reviewable.
+- Ingest test portability: freeze the batch-date clock and assert the existing null no-redaction contract while retaining positive PII stripping controls. The two historical baseline failures remain recorded; runtime privacy behavior is unchanged.
+- Reporting recurrence, aliases, temporal behavior and listing corrections retain their accepted bounded evidence. The reference-adopter companion remains proposed until separate ratification.
 
 ## [7.0.0] — 2026-09-26
 

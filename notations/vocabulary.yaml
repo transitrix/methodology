@@ -549,8 +549,10 @@ value_vocabularies:
 deferred:
   rule_codes:
     COMPIMP-010:
-      review_by: "2026-11-07"
+      review_by: "2026-11-16"
       reason: >-
+        Release review 2026-11-08 renewed this existing exemption through
+        2026-11-16 only. No code, severity or runtime control changes.
         views/reports/21-compliance-impact.md numbers two distinct rules
         COMPIMP-010 — one `warning` (a legacy empty-cell label) and one `error`
         (a subject-type column-header mismatch). The artefact cannot carry one
