@@ -57,8 +57,11 @@
     "hostedCliArtifactSha256": "597d3b68f9cc67a337d850883f4e706ebb21aa355b64113e006d538ed238722e",
     "hostedUsedThisExactTarball": true,
     "sourceIsActualReleaseCommit": true,
-    "releaseDraft": "https://github.com/transitrix/transitrix-studio/releases/tag/untagged-41e27a0514a1451006b7",
-    "draftAssetBytesAndApiDigestsVerified": true
+    "releaseDraft": "https://github.com/transitrix/transitrix-studio/releases",
+    "draftAssetBytesAndApiDigestsVerified": true,
+    "releaseId": 438082176,
+    "releaseTag": "v3.10.0",
+    "releaseApi": "https://api.github.com/repos/transitrix/transitrix-studio/releases/438082176"
   },
   "limits": [
     "No publication, installed-user acceptance or post-release UAT acceptance is claimed.",
