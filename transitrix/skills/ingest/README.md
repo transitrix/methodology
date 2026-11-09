@@ -1,10 +1,16 @@
 # Transitrix Ingest Skill
 
-The **front door** of a Transitrix repository: it turns raw organisational material — interviews, policies, org charts, spreadsheets, notes — into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the onboarding skill's per-layer extraction prompts: the part that converts documents, scores source trust, runs the validators, and stages a review queue.
+The **front door** of a Transitrix repository: it turns raw organisational material — interviews, policies, org charts, spreadsheets, notes — into `field`-zone artefacts and prepares typed `canon` *candidates* for human review. It is the operational counterpart to the onboarding skill's per-layer extraction prompts: the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
 This directory is the **`ingest` skill** within the `transitrix` plugin (the plugin root is [`transitrix/`](../../), which carries the shared [`.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) manifest, with one `skills/<name>/` directory per skill). Invoked as `/transitrix:ingest`.
 
 > **Status — operational.** Beyond the agent-facing protocol ([`SKILL.md`](SKILL.md)), JSON schemas ([`schemas/`](schemas/)), and the `_intake/` convention ([`templates/_intake.README.md`](templates/_intake.README.md)), the deterministic CLI ([`@transitrix/ingest-cli`](../../../packages/ingest-cli/)) implements all subcommands and is covered by a no-API-key integrity test (see [Roadmap](#roadmap)). The skill's Step 0 pre-check still stops cleanly if the CLI is not installed in a given environment.
+
+## Add a Field record
+
+Use Ingest for new records in `field/`. Supply a file or tell the assistant to add your notes and paste them in chat. Include who recorded the evidence, when, and in what context. Before publication, Ingest checks provenance and verifies that the intended team can access the evidence independently of your workspace. If the Field record contains the evidence itself, its shared copy provides that access. A separate original requires a reference to a specific revision in organisation-managed storage.
+
+An authorised contributor's explicit request to add their own notes is sufficient approval once the checks pass and the substance is preserved. See the [Field admission steps](SKILL.md#step-3--emit-the-field-artefact-with-proposed-source_quality).
 
 ## Intake profile selection
 
@@ -32,7 +38,7 @@ central admission and catalogue publication remain the central maintainer's work
 
 ## Two axes of trust, never merged
 
-- **`source_quality`** — trust in the *source* (signed policy → `authoritative`; meeting note → `single_source`). A closed ordinal label on the field artefact's admission record ([CONTRACT §11.2](../../../notations/CONTRACT.md)). The skill proposes it from document type; a human confirms.
+- **`source_quality`** — trust in the *source* (signed policy → `authoritative`; meeting note → `single_source`). A closed ordinal label on the field artefact's admission record ([CONTRACT §11.2](../../../notations/CONTRACT.md)). The skill proposes it from document type and provenance. An explicit submission of firsthand notes supports `single_source`. A stronger rating requires evidence and human confirmation.
 - **`extraction_confidence`** — "did the model read the document correctly". A separate review flag on each candidate. It surfaces in the review queue and is **never** folded into `source_quality`, and **never** persisted into canon ([CONTRACT §11.8](../../../notations/CONTRACT.md)).
 
 ## What it ships

@@ -8,11 +8,11 @@ This file tells **any AI coding assistant** — Claude Code, Cursor, GitHub Copi
 
 ## 1. Activity scope
 
-The Ingest role turns raw organisational material — interviews, policies, org charts, spreadsheets, notes — into `field`-zone artefacts and typed `canon` **candidates**, at scale, by running the `/transitrix:ingest` skill. It is the repository's **front door**: source in, candidate elements out, always through a human review gate. It is not a modelling role — it never authors admitted canon directly.
+The Ingest role turns raw organisational material — interviews, policies, org charts, spreadsheets, notes — into `field`-zone artefacts and typed `canon` **candidates**, at scale, by running the `/transitrix:ingest` skill. It is the repository's **front door**: source in, Field evidence recorded, canon candidates prepared for human review. It is not a modelling role — it never authors admitted canon directly.
 
 | In scope | Out of scope |
 |---|---|
-| Converting raw documents dropped in `_intake/inbox/` into `field` artefacts with a provenance record | Authoring or editing admitted `canon/` files directly — that's the Modeler (`AGENTS.md`) |
+| Preparing `field` artefacts from files or notes supplied in chat, with provenance and a team-accessible source | Authoring or editing admitted `canon/` files directly — that's the Modeler (`AGENTS.md`) |
 | Running the privacy pre-admission scan before any document is admitted | Answering questions about the organisation — that's the Analyst (`ANALYST.md`) |
 | Extracting typed candidate elements and conservative relations, each citing its field source | Reviewing a change before it merges — that's the Validator (`VALIDATOR.md`) |
 | Running the coverage-profile-aware validator pass on candidates | Deciding a candidate's business-value correctness — the human reviewer's call |
@@ -32,12 +32,12 @@ The one documented exception: the role MAY write **`proposed`** (non-admitted) e
 
 ## 3. The pipeline — source in → candidate elements → through the gates
 
-Run the `/transitrix:ingest` skill, which sequences the deterministic `@transitrix/ingest-cli`:
+Run the `/transitrix:ingest` skill for new `field/` records. It accepts a source file or notes supplied in chat. An authorised contributor's explicit request to add their own notes is sufficient approval when the checks pass and the substance is preserved. The skill stages chat notes as Markdown and sequences the deterministic `@transitrix/ingest-cli`:
 
 1. **`scaffold-intake`** — set up the private, per-user `_intake/inbox/ → processing/ → processed/` workspace (git-ignored; not shared with other modellers).
 2. **`convert`** — Office documents to Markdown via MS Markitdown; `.md` / `.txt` pass through unchanged.
 3. **`privacy-scan`** — fail-closed PII/medical detection gate. A document must exit `CLEAN` or `STRIPPED` before it can be admitted; `REJECTED` / `ERROR` halts the pipeline.
-4. **`admit-source`** — emit the `field` artefact (or, for laws/regulations/policies/standards, the `codex` artefact) with a full provenance record and a **proposed** `source_quality`, which a human confirms.
+4. **`admit-source`** — emit the `field` artefact (or, for laws/regulations/policies/standards, the `codex` artefact) with a full provenance record. Before Field admission, verify that the evidence will be accessible to the intended team independently of the submitter's workspace. An explicit submission of firsthand notes supports `single_source`. A stronger rating requires evidence and human confirmation. Stop here for a Field-only request.
 5. **Extract typed candidates** — run the per-layer extraction prompts (`transitrix/skills/ingest/prompts/`) over the field artefact; `emit-candidates` turns the result into typed canon candidates, each carrying `derived_from`, `admitted_to: pending`, and an `extraction_confidence` flag. Entity extraction runs normally; relation extraction is conservative — only high-confidence relations become candidates, everything else is a review-queue suggestion.
 6. **`validate`** — run candidates through the canonical validators and the adopter's coverage profile; out-of-profile or invalid candidates are flagged, never silently emitted or dropped.
 7. **`review-queue`** — stage everything (field artefacts, candidates, relation suggestions, flags) for the human gate. Nothing in this list writes to `canon/` except the `canon/unresolved/` exception in §4.

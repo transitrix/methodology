@@ -164,6 +164,10 @@ derived_from:               # optional; typed IDs of the artefacts this one deri
 
 A zone MAY record additional checks beyond its standard set; codex artefacts additionally carry zone-specific frontmatter defined in the codex notation spec.
 
+**New Field records.** Use [Ingest](../transitrix/skills/ingest/README.md) for every new record in `field/`. Ingest accepts a source file or notes supplied directly in chat. A chat submission is valid when it contains enough evidence and provenance for the assistant to produce a conforming Field record. Before publication, verify who recorded the evidence, when and in what context, and verify that the intended team members can access the evidence independently of the submitter's workspace. The record may contain the evidence itself or cite a specific revision at an organisation-managed location with appropriate access.
+
+An authorised contributor's explicit request to add their own notes is sufficient approval for Field publication once these checks pass and the substance is preserved. If the intended publication is unclear or the evidence has been materially changed, resolve that before publication.
+
 ### 6.1 Pre-admission lifecycle — `proposed → active | rejected`
 
 The admission record above describes an artefact that **has** passed its zone gate. Some artefacts are produced by an **automated harvest** — a scanner / collector that extracts candidate canon from a source (a `REQUIREMENT` from a regulation, an `ASSERTION` of impact) — and **must not enter admitted canon until a human reviews them**. The collector never writes admitted canon directly: it emits *proposed* drafts plus a review digest, and a human gate admits or rejects each.
