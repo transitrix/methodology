@@ -1,14 +1,14 @@
 ---
 name: Transitrix Ingest
 description: Turn raw organisational material (interviews, policies, org charts, spreadsheets, notes) into Transitrix field artefacts and typed canon candidates at scale, with source-quality scoring and a human review queue. Also set up catalogue federation and prepare recognition or promotion proposals for human review. Never writes canon directly.
-when_to_use: User says "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates. BA-facing shortcut — user says "extract requirements from this interview / project brief / SOP", "get REQUIREMENT / CONSTRAINT candidates out of this writeup", or "run the ingest pipeline motivation-only" — same pipeline, agent runs only `prompts/01_motivation.md` (see [BA quickstart](#ba-quickstart--requirements-from-an-interview)). Also use for "join the decision-log network", "pin a shared catalogue", "recognise local elements", or "promote this element to the central catalogue".
+when_to_use: User says "add these interview notes to field", "ingest these documents", "extract a model from this interview / policy / spreadsheet", "fill the field zone from raw material", "turn these notes into canon candidates", "set up the intake pipeline", or drops raw files into an adopter repo's `_intake/inbox/` and wants them processed into field artefacts + reviewable canon candidates. BA-facing shortcut — user says "extract requirements from this interview / project brief / SOP", "get REQUIREMENT / CONSTRAINT candidates out of this writeup", or "run the ingest pipeline motivation-only" — same pipeline, agent runs only `prompts/01_motivation.md` (see [BA quickstart](#ba-quickstart--requirements-from-an-interview)). Also use for "join the decision-log network", "pin a shared catalogue", "recognise local elements", or "promote this element to the central catalogue".
 min_version: "1.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 ---
 
 # Transitrix Ingest Skill
 
-The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and typed `canon` *candidates*, at scale, and routes everything through a human review gate. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
+The **front door** to a Transitrix repository: it turns raw material into `field`-zone artefacts and prepares typed `canon` *candidates* for human review. It is the operational counterpart to the per-layer extraction prompts — the part that converts documents, scores source trust, runs the validators, and stages a review queue.
 
 > **Status — operational.** The deterministic CLI (`@transitrix/ingest-cli`, see [§ The CLI](#the-cli)) implements every subcommand below — `scaffold-intake`, `convert`, `privacy-scan`, `admit-source` (field + codex routes), `emit-candidates`, `validate`, `review-queue`, `suggest-profile`, `check-placement`, `resolve-placement` — and is exercised end-to-end by the bundle's integrity test. Run the **CLI-presence pre-check** (Step 0) first; if the CLI is not on PATH in this install, install it before proceeding.
 
@@ -81,6 +81,8 @@ Idempotent — it never overwrites existing intake content. A source file flows 
 ---
 
 ## Step 2 — Convert the source to Markdown
+
+For an explicit request to add notes supplied in chat, stage the supplied text as a Markdown file in the private `_intake/inbox/` after Step 1. Preserve the substance and collect any missing provenance from the contributor. Treat chat notes as a complete submission once the evidence and provenance are sufficient to produce a conforming record. The assistant handles the working file. Continue with the same conversion, privacy scan, and Field admission steps used for file uploads.
 
 Office documents are converted to Markdown with **MS Markitdown** before extraction (per project convention), unless illustrations must be preserved. The CLI shells out to Markitdown; `.md` / `.txt` inputs pass through unchanged.
 
@@ -172,7 +174,11 @@ The report lists every document scanned with its outcome. For `STRIPPED` and `RE
 
 ## Step 3 — Emit the field artefact (with proposed source_quality)
 
-Each converted document becomes one `field` artefact carrying a complete **admission record** — provenance (who / when / in what setting) and a **proposed** `source_quality`. The field artefact is what lives in `field/`; the original raw bytes stay in `_intake/processed/` so the artefact is traceable to its source.
+Each converted document becomes one `field` artefact carrying a complete **admission record** — provenance (who / when / in what setting) and a **proposed** `source_quality`. The field artefact lives in `field/`. The local input stays in `_intake/processed/` for traceability on that workstation.
+
+Before invoking `admit-source --zone field`, check provenance and verify that the intended team members will have access to the evidence independently of this workspace. If the Field record will contain the full evidence used, verify that it can be published in the shared repository. If a separate source is needed, verify that the team can open its specific revision at an organisation-managed location and record that reference on the Field record before publication. A local `raw_source` path alone cannot satisfy this check.
+
+An authorised contributor's explicit request to add their own notes authorises publication of those notes after the checks pass. Proceed without a second approval for formatting or faithful transcription. Clarify ambiguous publication intent and confirm substantive changes to the evidence, including redactions that change its meaning. For a Field-only request, stop after preparing the Field record for the requested publication.
 
 ```
 transitrix-ingest admit-source --zone field <processing/file.md> \
@@ -192,7 +198,7 @@ The same `source_hash` deduplicates: if the identical content was already admitt
 | One uncorroborated informant or observation | `single_source` | 0.5 |
 | Draft, assumption, inference, hearsay | `unverified` | 0.25 |
 
-The skill **proposes**; a human **confirms**. Never silently bake a higher trust than the source warrants.
+The skill proposes a rating for human confirmation. For a contributor explicitly submitting their own firsthand notes, their account supports `single_source` without a separate approval prompt. Use `unverified` for hearsay or assumptions. A stronger rating requires supporting evidence and human confirmation.
 
 **Codex sources — laws, regulations, externally issued standards, policies, internal standards — take the parallel `codex` route:** `transitrix-ingest admit-source --zone codex <processing/file.md> --type LAW|REGULATION|STANDARD|POLICY|INTERNAL_STANDARD|PRINCIPLE --effective-date YYYY-MM-DD [--jurisdiction <code>] [--source-authority <who>] [--issuing-authority <body>]`. A codex artefact is *authoritative by construction* — it carries **no** `source_quality`, records a snapshot of the source + a `source_hash`, and lands in `codex/external/<jurisdiction>/` (LAW/REGULATION/STANDARD) or `codex/internal/` (POLICY/INTERNAL_STANDARD/PRINCIPLE) per [14-codex.md](https://raw.githubusercontent.com/transitrix/methodology/main/notations/elements/14-codex.md). Its obligations are derived in Step 4 as `REQUIREMENT` + `ASSERTION` candidates that cite it via `derived_from`. STANDARD requires `--jurisdiction` and `--issuing-authority` (the issuing body).
 
