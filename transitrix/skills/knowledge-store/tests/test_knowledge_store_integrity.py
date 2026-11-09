@@ -9,6 +9,7 @@ Run:  python transitrix/skills/knowledge-store/tests/test_knowledge_store_integr
 Exit: 0 = all pass; 1 = a check failed.
 """
 
+import hashlib
 import os
 import shutil
 import subprocess
@@ -108,6 +109,54 @@ def part_source_card_compatibility():
 
     code, out = _with_copy(restore_legacy_card)
     check(code == 0, f"A store with only original legacy cards must still pass.\n{out}")
+
+
+def part_uploaded_and_linked_sources():
+    print("Uploaded originals and external references")
+    original_name = "interview.original.md"
+    original_bytes = b"# Interview notes\r\n\r\nOriginal wording.\r\n"
+    checksum = hashlib.sha256(original_bytes).hexdigest()
+
+    def add_sources(root):
+        sources = os.path.join(root, "sources")
+        with open(os.path.join(sources, original_name), "wb") as handle:
+            handle.write(original_bytes)
+        with open(os.path.join(sources, "interview.md"), "w", encoding="utf-8") as handle:
+            handle.write(f"""---
+type: source-document
+source: /sources/{original_name}
+source_hash: sha256:{checksum}
+confidence: observed
+---
+
+[Read the original](/sources/{original_name})
+""")
+        for name, uri in (
+            ("web-page.md", "https://example.org/handbook"),
+            ("company-file.md", "https://storage.example.org/policy?version=4"),
+        ):
+            with open(os.path.join(sources, name), "w", encoding="utf-8") as handle:
+                handle.write(f"---\ntype: source-document\nsource: {uri}\nconfidence: observed\n---\n")
+
+    code, out = _with_copy(add_sources)
+    check(code == 0, f"Markdown uploads and external links must coexist with legacy citations.\n{out}")
+
+    def remove_original(root):
+        add_sources(root)
+        os.remove(os.path.join(root, "sources", original_name))
+
+    code, out = _with_copy(remove_original)
+    check(code != 0 and "[KS-007]" in out and "Uploaded original is missing" in out,
+          f"A missing uploaded original must fail validation.\n{out}")
+
+    def change_original(root):
+        add_sources(root)
+        with open(os.path.join(root, "sources", original_name), "wb") as handle:
+            handle.write(original_bytes.replace(b"\r\n", b"\n"))
+
+    code, out = _with_copy(change_original)
+    check(code != 0 and "[KS-004]" in out and "SHA-256" in out,
+          f"A byte-level change to an uploaded original must fail validation.\n{out}")
 
 
 def part_c_gate_violations():
@@ -343,6 +392,7 @@ def main():
     part_a_bundle_integrity()
     part_b_valid_fixture()
     part_source_card_compatibility()
+    part_uploaded_and_linked_sources()
     part_c_gate_violations()
     part_d_warnings()
     part_e_gate5_consistency()

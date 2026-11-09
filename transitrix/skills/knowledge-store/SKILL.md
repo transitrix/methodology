@@ -1,7 +1,7 @@
 ---
 name: Transitrix Knowledge Store
 description: Ingest raw source material into the OKF single-repo MVP knowledge store — assess, archive, route to the OKF track (extract drafts → verify → human review → promote to knowledge/) and/or the Canon track (extract Transitrix primitives → PR to canon/), and log every decision.
-when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", "locate the original for this knowledge item", or drops a file into `_intake/inbox/` and wants it processed.
+when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", "locate the original for this knowledge item", "add this web page or corporate document", or drops a file into `_intake/inbox/` and wants it processed.
 min_version: "6.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -28,7 +28,7 @@ The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gate
 
 ## Locate an original
 
-Start with the knowledge object's `source:` citation or the source card the user names. Follow a legacy redirect if present, then read the card's `source:` path or URI. For an uploaded original, a path under `_intake/originals/` refers to the workspace that retained it. Report the location and whether you can access it from the current workspace. A source-location request is read-only and can skip intake setup.
+Start with the knowledge object's `source:` citation or the source card the user names. Follow a legacy redirect if present, then read the card's `source:` path or URI. New uploaded originals are beside their cards in `sources/`. A legacy path under `_intake/originals/` refers to the workspace that retained it. Report the location and whether you can access it from the current workspace. A source-location request is read-only and can skip intake setup.
 
 ## Step 0 — Check the MVP structure
 
@@ -51,24 +51,23 @@ Verify the repo has the expected layout:
 ```
 _intake/
   inbox/        ← source files waiting for processing
-  originals/    ← raw source files (gitignored)
   drafts/       ← proposer output (Gate 6 — not cited; not promoted)
   log.md        ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
 
-sources/        ← OKF source-document records (committed)
+sources/        ← committed cards and their uploaded originals
 
 knowledge/
   index.md      ← bundle index (auto-maintained)
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-Scaffold any missing `_intake/`, `sources/`, and `knowledge/` directories. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs). Keep `sources/` and any existing legacy cards or redirects visible to Git. See [moving existing cards](../../../patterns/knowledge-store.md#move-existing-source-cards). Re-run the profile check after setup and before committing; explicitly verify each new source-record path is not ignored before writing it.
+Scaffold any missing `_intake/`, `sources/`, and `knowledge/` directories. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Keep `_intake/inbox/*` and any legacy `_intake/originals/*` ignored (drafts MAY be committed for audit or gitignored for ephemeral runs). Keep `sources/` and any existing legacy cards or redirects visible to Git. Apply the [upload attributes](../../../patterns/knowledge-store.md#preserve-uploaded-originals) from the single-repo layout to preserve original bytes. See [moving existing cards](../../../patterns/knowledge-store.md#move-existing-source-cards). Re-run the profile check after setup and before committing; explicitly verify each new card and original path is not ignored before writing it.
 
 ---
 
 ## Step 1 — Assess the document
 
-Read the source document from `_intake/inbox/`. Determine:
+Read the uploaded file from `_intake/inbox/` or use the supplied web or corporate-storage reference. Determine:
 
 - **`confidence:`** — curator's epistemic assessment of the signal quality:
   - `observed` — first-hand account, direct evidence, system output
@@ -90,8 +89,8 @@ Record the source file reference in `sources/` as an OKF source-document record 
 Fill in:
 - `title:` — document filename or stated title
 - `description:` — one-sentence summary from Step 1
-- `source:` — retained original path or URI, such as `_intake/originals/filename.md` for an uploaded file or a stable URI for an existing shared source
-- `source_hash:` — SHA-256 of the source file (`sha256sum` / `Get-FileHash`)
+- `source:` — bundle-root path to an uploaded original, such as `/sources/interview.original.pdf`, or the URI of an external source. Use the specific revision when available
+- `source_hash:` — SHA-256 of the exact uploaded bytes (`sha256sum` / `Get-FileHash`). For an external reference, include a hash when the exact content was available to hash
 - `created_at:` — today's date
 - `confidence:` — from Step 1
 - `tags:` — inferred topic tags
@@ -99,9 +98,11 @@ Fill in:
 
 Filename convention: `YYYY-MM-DD-<slug>.md` where slug is a 3–5 word kebab-case summary.
 
-For a reissued source, use a fresh card and original-file path even when the date or filename matches an earlier revision. Preserve the earlier record, original, and hash.
+For a reissued source, use a fresh card even when the date or filename matches an earlier revision. Use a fresh original-file path for uploads and a revision-specific URI for external sources when available. Preserve the earlier record, original, and hash.
 
-Move an uploaded source file from `_intake/inbox/` to the final `_intake/originals/` path (gitignored, kept for traceability). Use that final path in the card.
+For an upload, verify that the file is intended for the repository's readers. Keep its extension and copy it byte-for-byte beside its card using `<card-stem>.original.<extension>` or `<card-stem>.original` when it has no extension. Check both paths before writing and choose a fresh stem for a new revision. If a retry finds a partial pair, verify the existing bytes and citation before completing it. Stop on a conflicting path. Commit the original and card together and keep the staging copy until the pair has been verified.
+
+For a web page or corporate-storage file, write the card with the URI and keep the original at its existing location. Use the card's `source:` reference when locating the document.
 
 ---
 

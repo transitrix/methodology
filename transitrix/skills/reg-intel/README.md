@@ -9,8 +9,8 @@ This directory is the **`reg-intel` skill** within the `transitrix` plugin (the 
 ## Intake profile selection
 
 Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
-files), or `knowledge-store` for OKF curation (committed source-document records,
-private originals). They require separate workspaces. Setup and subsequent intake
+files), or `knowledge-store` for OKF curation (committed source cards and
+uploaded originals). They require separate workspaces. Setup and subsequent intake
 runs must pass the shared CLI preflight; incompatible or ambiguous existing
 content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
 for selection, installation and retention rules.

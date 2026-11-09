@@ -71,10 +71,10 @@ export async function checkIntakeProfile(orgRoot, profile) {
   const sourceDir = join(root, 'sources');
   const sourceDirStat = await inspect(sourceDir);
   if (profile === 'knowledge-store' && sourceDirStat && !sourceDirStat.isDirectory()) fail('sources is not a directory');
-  const sourceFiles = sourceDirStat?.isDirectory()
-    ? (await files(sourceDir)).filter(path => path.endsWith('.md') && !['index.md', 'log.md'].includes(basename(path)))
-    : [];
-  for (const path of sourceFiles) {
+  const sourceFiles = sourceDirStat?.isDirectory() ? await files(sourceDir) : [];
+  const sourceMarkdown = sourceFiles.filter(path => path.endsWith('.md') && !['index.md', 'log.md'].includes(basename(path)));
+  const uploadedOriginals = sourceFiles.filter(path => /\.original(?:\.[^.]+)*$/.test(basename(path)));
+  for (const path of sourceMarkdown) {
     if (await sourceRecordType(path) === 'source-document') {
       evidence['knowledge-store'].push(relative(root, path));
     }
@@ -103,11 +103,12 @@ export async function checkIntakeProfile(orgRoot, profile) {
 
   if (profile === 'knowledge-store') {
     // Git evaluates nested/global ignores and negations, including tracked files.
-    const paths = ['sources/profile-check.md', ...[...sourceFiles, ...processed].map(p => relative(root, p))];
+    const sourcePaths = new Set([...sourceMarkdown, ...uploadedOriginals, ...processed]);
+    const paths = ['sources/profile-check.md', ...Array.from(sourcePaths, path => relative(root, path))];
     const result = spawnSync('git', ['-C', root, 'check-ignore', '--no-index', '--stdin'], {
       input: paths.join('\n') + '\n', encoding: 'utf8',
     });
-    if (result.status === 0) fail(`OKF source records would be ignored: ${result.stdout.trim()}`);
+    if (result.status === 0) fail(`OKF source records or uploaded originals would be ignored: ${result.stdout.trim()}`);
     if (result.status !== 1) fail('cannot verify OKF record visibility; use a Git workspace and retry the check');
   }
   return { profile, declared, evidence: evidence[profile] };

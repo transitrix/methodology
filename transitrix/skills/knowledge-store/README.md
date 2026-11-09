@@ -6,13 +6,12 @@ This directory is the **`knowledge-store` skill** within the `transitrix` plugin
 
 ## Source cards and original files
 
-New cards go in `sources/`. Open the card's `source:` reference to locate the original. Uploaded files in the single-repo profile are kept in the ingesting workspace's `_intake/originals/`. Legacy cards remain readable and can be moved with [a redirect at the old path](../../../patterns/knowledge-store.md#move-existing-source-cards).
+New cards go in `sources/`. An uploaded file sits beside its card and is committed with it. For a web page or corporate-storage file, the card holds a link to the original. Open the card's `source:` reference to locate either kind of source. Legacy cards remain readable and can be moved with [a redirect at the old path](../../../patterns/knowledge-store.md#move-existing-source-cards).
 
 ## Intake profile selection
 
 Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw
-files), or `knowledge-store` for OKF curation (committed source-document records,
-private originals). They require separate workspaces. Setup and subsequent intake
+files), or `knowledge-store` for OKF curation (committed source cards and uploaded originals). They require separate workspaces. Setup and subsequent intake
 runs must pass the shared CLI preflight; incompatible or ambiguous existing
 content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
 for selection, installation and retention rules.

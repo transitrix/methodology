@@ -17,6 +17,7 @@ custom pipeline) MAY use a different shape/dedup engine as long as it
 satisfies the same rules.
 """
 
+import hashlib
 import os
 import re
 import sys
@@ -124,8 +125,13 @@ class KnowledgeStoreLinter:
         ):
             if not directory.exists():
                 continue
-            for path in sorted(directory.rglob("*.md")):
-                if path.name in ("index.md", "log.md"):
+            paths = sorted(directory.rglob("*.md"))
+            originals = set()
+            if directory == self.source_dir:
+                # Read each card before its longer-named Markdown original.
+                paths.sort(key=lambda path: len(path.name))
+            for path in paths:
+                if path in originals or path.name in ("index.md", "log.md"):
                     continue
                 rel = str(path.relative_to(self.root)).replace("\\", "/")
                 text = path.read_text(encoding="utf-8")
@@ -144,9 +150,17 @@ class KnowledgeStoreLinter:
                         message=f"Frontmatter is not valid YAML: {e}",
                     ))
                     continue
-                self.objects.append(KnowledgeObject(
-                    path=path, rel_path=rel, frontmatter=fm, body=m.group(2), zone=zone,
-                ))
+                if not isinstance(fm, dict):
+                    self.findings.append(Finding(
+                        rel, "KS-001", "error", "Frontmatter must be a YAML mapping.",
+                    ))
+                    continue
+                obj = KnowledgeObject(path=path, rel_path=rel, frontmatter=fm, body=m.group(2), zone=zone)
+                self.objects.append(obj)
+                if directory == self.source_dir and fm.get("type") == "source-document":
+                    original = self._uploaded_original(obj)
+                    if original is not None:
+                        originals.add(original)
 
     @staticmethod
     def _is_source_redirect(obj: KnowledgeObject) -> bool:
@@ -179,6 +193,42 @@ class KnowledgeStoreLinter:
                 continue
             self.source_records[obj.rel_path] = self.source_records[target]
 
+    def _uploaded_original(self, obj: KnowledgeObject) -> Optional[Path]:
+        source = obj.frontmatter.get("source")
+        if not isinstance(source, str) or not obj.rel_path.startswith(SOURCE_PREFIX):
+            return None
+        source = source.strip().lstrip("/")
+        prefix = obj.rel_path[:-len(".md")] + ".original"
+        if re.fullmatch(re.escape(prefix) + r"(?:\.[^./\\]+)*", source):
+            return self.root / source
+        return None
+
+    def _check_uploaded_original(self, obj: KnowledgeObject):
+        original = self._uploaded_original(obj)
+        if original is None:
+            return
+        if original.is_symlink() or not original.is_file():
+            self.findings.append(Finding(
+                obj.rel_path, "KS-007", "error", f"Uploaded original is missing or is not a regular file: `{obj.frontmatter['source']}`.",
+            ))
+            return
+        digest = hashlib.sha256()
+        try:
+            with original.open("rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+        except OSError as error:
+            self.findings.append(Finding(
+                obj.rel_path, "KS-007", "error", f"Cannot read uploaded original: {error}.",
+            ))
+            return
+        actual = digest.hexdigest()
+        expected = str(obj.frontmatter.get("source_hash", "")).lower()
+        if expected not in (actual, f"sha256:{actual}"):
+            self.findings.append(Finding(
+                obj.rel_path, "KS-004", "error", "The source_hash must match the SHA-256 of the uploaded original.",
+            ))
+
     # --- structural (Gate 1, Gate 4, item 5) ----------------------------
 
     def _check_structural(self):
@@ -202,6 +252,8 @@ class KnowledgeStoreLinter:
                         obj.rel_path, "KS-004", "error",
                         "Missing `source:` — required for source records (Gate 4).",
                     ))
+                if fm.get("type") == "source-document":
+                    self._check_uploaded_original(obj)
 
             if obj.zone in ("knowledge", "draft"):
                 confidence = fm.get("confidence")
@@ -246,7 +298,10 @@ class KnowledgeStoreLinter:
             source = self._norm_source_path(obj.frontmatter.get("source") or "")
             if obj.zone in ("knowledge", "draft") and source.startswith((SOURCE_PREFIX, LEGACY_SOURCE_PREFIX)):
                 source_links.append(source)
-            for target in sorted({self._norm_source_path(link) for link in source_links}):
+            targets = {self._norm_source_path(link) for link in source_links}
+            if obj.zone == "intake" and self._uploaded_original(obj) is not None:
+                targets.discard(source)  # The upload is verified separately.
+            for target in sorted(targets):
                 if target not in self.source_records:
                     self.findings.append(Finding(
                         obj.rel_path, "KS-007", "error",
