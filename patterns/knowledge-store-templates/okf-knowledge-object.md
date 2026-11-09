@@ -3,7 +3,7 @@ type: insight | finding | concept | question
 title: ""
 description: ""
 resource: ""
-source: /intake/processed/source-document-name.md
+source: /sources/source-document-name.md
 created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
 mapping: confirms | extends | proposes | conflicts   # optional — Gate 2 classification when admitting
@@ -21,7 +21,7 @@ _Full description of the knowledge object._
 
 # Citations
 
-- [Source document title](/intake/processed/source-document-name.md)
+- [Source document title](/sources/source-document-name.md)
 
 # Examples
 

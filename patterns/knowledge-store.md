@@ -15,10 +15,10 @@ Transitrix includes an optional knowledge store component for organisations that
 
 Choose one intake profile per repository/workspace before setup:
 
-| Profile | Consumer | `_intake/processed/` ownership and retention |
+| Profile | Consumer | Source record and original locations |
 |---|---|---|
 | `ingest` | Ordinary ingest and reg-intel, together | Completed raw source files, private/gitignored |
-| `knowledge-store` | OKF curation | Committed OKF `source-document` records; raw originals stay in gitignored `_intake/originals/` |
+| `knowledge-store` | OKF curation | Committed OKF `source-document` records in `sources/`. Uploaded originals stay in gitignored `_intake/originals/`. |
 
 These profiles are **not supported together in one workspace**. Use separate
 workspaces if both are needed. This is a deployment boundary, not a migration or
@@ -43,10 +43,10 @@ manifest field, coverage profile or permission grant. Re-run the check before
 subsequent intake writes; the marker does not override conflicting evidence.
 
 Detection checks the marker, profile-specific directories, the regulatory watch
-list, and processed content (OKF source-document frontmatter versus raw files).
+list, `sources/` records, and legacy processed content (OKF records or redirects versus raw files).
 Mixed evidence, unknown intake entries, symlinks or unreadable evidence stop setup
 for adopter inspection. The OKF check also uses Git's effective ignore rules,
-including nested/global rules and tracked files, to refuse hidden source records.
+including nested/global rules and tracked files, to refuse hidden source cards and redirects.
 It requires an existing Git workspace; if absent, request authorised Git setup
 before retrying. New or empty intake directories and shared `inbox/` alone do not
 choose a profile. Explicit selection is required. No tool silently renames paths,
@@ -93,7 +93,7 @@ Project repositories retain field evidence such as meeting notes, interview tran
 
 The `knowledge/` directory holds curated findings and other knowledge objects in OKF Markdown, with source citations and timestamps. Each object captures a distinct finding or concept. A citation can point directly to field evidence or to a `source-document` record that identifies it.
 
-In the single-repo Knowledge Store profile, the full uploaded file is retained in `_intake/originals/`. Its `_intake/processed/` record contains a summary and a reference to the original. Full document text belongs with the source evidence or the retained original.
+A card in `sources/` contains a summary and a `source:` path or URI. To locate the original, follow that reference. In the single-repo Knowledge Store profile, an uploaded file is retained in `_intake/originals/` on the ingesting workspace. A card may instead cite a document already held at a shared location.
 
 OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extensions):
 
@@ -130,7 +130,7 @@ Quality gates are the rules the methodology places at the boundaries between lay
 
 ### Gate 1 — Quarantine on arrival
 
-Every document admitted to the knowledge store enters as a `source-document` record in `_intake/processed/` (or its equivalent in a multi-repo deployment). No content is cited, answered from, or promoted until it has passed through the refinement layer.
+Every document admitted to the knowledge store enters as a `source-document` record in `sources/` (or its equivalent in a multi-repo deployment). No content is cited, answered from, or promoted until it has passed through the refinement layer.
 
 **Rule:** raw material entering the refinement layer MUST be assigned the OKF `type: source-document` status on admission. Agents operating on the knowledge store MUST NOT read from `_intake/` as a source of answers; they read only from `knowledge/` (knowledge objects) and `canon/` (promoted primitives). The quarantine is not optional.
 
@@ -192,7 +192,7 @@ Implementations SHOULD compute dependent counts from the canon graph before emit
 Every object in the knowledge store — source-document records and knowledge objects alike — MUST carry provenance (`source:`) and epistemic confidence (`confidence:`). Missing provenance blocks admission; missing confidence blocks promotion.
 
 **Rules:**
-- `source:` (repo path or URI to the originating document) MUST be set before an object is admitted to `_intake/processed/`.
+- `source:` (repo path or URI to the originating document) MUST be set before a source card is admitted to `sources/`.
 - `confidence:` MUST be set (`observed` / `inferred` / `assumed`) before a knowledge object is promoted to `knowledge/`. Default is forbidden — a curator must make an explicit assessment.
 - `timestamp:` MUST be updated when an object is modified.
 - **Low confidence + high dependents = review flag.** An object with `confidence: assumed` that has 3 or more downstream dependents MUST NOT be promoted without a review note explaining the assumption. Flag it in `_intake/log.md` and hold for sign-off.
@@ -209,7 +209,7 @@ The first-build gates (1–4) catch shape, provenance, and duplicate *candidates
 |---|---|
 | **Mapping vocabulary** | Optional `mapping:` on a knowledge object MUST be one of `confirms` / `extends` / `proposes` / `conflicts` (Gate 2 vocabulary). |
 | **Declared conflicts** | `mapping: conflicts` MUST name the contradicted target in `conflicts_with:` (a `/knowledge/…` path or typed canon id). The object MUST NOT be treated as promoted until a human records the hold in `_intake/log.md`. |
-| **Confidence ordering** | A knowledge object's `confidence:` MUST NOT rank higher than the `source-document` it cites when that source resolves to an `_intake/processed/` record (`assumed` < `inferred` < `observed`). |
+| **Confidence ordering** | A knowledge object's `confidence:` MUST NOT rank higher than the `source-document` it cites when the citation resolves to a source record (`assumed` < `inferred` < `observed`). |
 
 **Out of scope for the open tier:** semantic contradiction detection (natural-language "these two paragraphs disagree"), cross-store reasoning, or canon-graph traversal beyond the explicit `conflicts_with:` pointer. Those belong to the proprietary advanced reasoner in DSM (see boundary below) — the open tier stays useful standalone without it.
 
@@ -232,7 +232,7 @@ Ingestion is **assisted**, not autonomous: a proposer (model or agent) drafts ca
 3. **Review** — curator approves, rejects, or resolves ambiguous items. Agents MUST NOT write to `knowledge/` before explicit approval.
 4. **Dispose** — approved drafts are copied to `knowledge/` with draft-only fields (`review_status`, `ambiguity_note`) removed; the draft file is deleted; the linter runs again; `[admit]` is logged. Ambiguous items held for review are logged as `[ambig]` until resolved.
 
-**Rule:** agents operating on the knowledge store MUST NOT read from `_intake/drafts/` as a source of answers — same quarantine discipline as `_intake/processed/` (Gate 1). Only `knowledge/` and `canon/` are answer surfaces.
+**Rule:** agents operating on the knowledge store MUST NOT read from `_intake/drafts/` as a source of answers — same quarantine discipline as `sources/` (Gate 1). Only `knowledge/` and `canon/` are answer surfaces.
 
 **Rationale:** the proposer is fallible; the verifier is not. Separating draft from promoted zones localises model error to a disposable staging area and keeps promotion behind a human gate.
 
@@ -249,7 +249,7 @@ What a conformant implementation MAY vary:
 
 What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-field requirements, the Gate 5 open-tier consistency rules, and the Gate 6 rule that proposers MUST NOT write directly to `knowledge/`.
 
-**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1–6 over `_intake/processed/`, `_intake/drafts/`, and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), blast-radius tiering with the assumed-confidence review flag (Gate 3–4), scoped consistency checks (Gate 5 open tier), and draft-zone assisted-ingest rules (Gate 6). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same rules. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
+**Reference implementation:** [`tools/knowledge_store_lint.py`](../tools/knowledge_store_lint.py) is a proof-point enforcement of Gates 1–6 over `sources/`, legacy `_intake/processed/`, `_intake/drafts/`, and `knowledge/` — structural validation (required fields, the `confidence` enum), referential integrity (dangling bundle-relative links), duplicate-title detection (Gate 2), blast-radius tiering with the assumed-confidence review flag (Gate 3–4), scoped consistency checks (Gate 5 open tier), and draft-zone assisted-ingest rules (Gate 6). It is one conformant implementation, not the only one; a different tool MAY use a different shape/dedup engine as long as it satisfies the same rules. Run it with `python3 tools/knowledge_store_lint.py <knowledge-store-root>`.
 
 **Validation codes (reference implementation):**
 
@@ -257,11 +257,11 @@ What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-fi
 |---|---|---|---|
 | `KS-001` | error | — | Frontmatter block missing or not valid YAML. |
 | `KS-002` | error | — | Missing required field `type:`. |
-| `KS-003` | error | 1 | `_intake/processed/` record does not carry `type: source-document` (quarantine violation). |
+| `KS-003` | error | 1 | Source card does not carry `type: source-document` (quarantine violation). |
 | `KS-004` | error | 4 | Missing `source:` on an intake record — blocks admission. |
 | `KS-005` | error | 4 | Missing or invalid `confidence:` on a knowledge object — blocks promotion. |
 | `KS-006` | warning | 4 | Missing `timestamp:` on a knowledge object (recommended). |
-| `KS-007` | error | 6 | Dangling bundle-relative link (`/knowledge/…`) in object body. |
+| `KS-007` | error | 6 | Dangling bundle-relative link, unresolved source card citation, or invalid legacy source redirect. |
 | `KS-008` | warning | 2 | Title similarity suggests a possible duplicate — confirm Confirms/Extends, not silent mint. |
 | `KS-009` | info | 3 | Blast-radius tier (Low / Medium / High) from dependent-object count. |
 | `KS-010` | warning | 4 | `confidence: assumed` with 3+ dependents — requires review note in `_intake/log.md`. |
@@ -288,9 +288,10 @@ For early adoption where standing up a separate knowledge repo adds too much ove
 _intake/
   inbox/           ← incoming documents (gitignored — temporary staging)
   originals/       ← source files archived by reference (gitignored)
-  processed/       ← OKF source-document records (type: source-document)
   drafts/          ← proposer output (Gate 6 — not cited; not promoted until curator approves)
   log.md           ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
+
+sources/           ← committed OKF source-document records
 
 knowledge/         ← OKF knowledge objects (type: insight / finding / concept / ...)
   index.md         ← auto-generated bundle index
@@ -303,9 +304,26 @@ canon/             ← Transitrix primitives (unchanged)
 - **OKF track** — extract knowledge object drafts → verify with linter → curator reviews → promote to `knowledge/` → update `index.md`
 - **Canon track** — extract Transitrix primitives → open PR to `canon/` → merge gate
 
-All incoming documents are always archived to `processed/` as OKF source-document records before routing begins. `originals/` is gitignored; the processed record carries `source:` (path or URI) and `source_hash:` (SHA-256) for integrity.
+Record each incoming document as an OKF source card in `sources/` before routing. The card carries `source:` (path or URI) and `source_hash:` (SHA-256) for integrity. Keep the cards in Git.
 
 Migrate to a separate knowledge repo when the single-repo structure becomes congested or when a dedicated curation role is established.
+
+## Move existing source cards
+
+Existing Knowledge Stores can adopt `sources/` for new cards while continuing to read cards in `_intake/processed/`. To move an existing card, keep its filename and any subdirectory. Check that the destination is free and both paths can be committed. Move only `type: source-document` records and leave each original where it is. Preserve the card's provenance, hash, and links to its evidence. If the card contains links relative to its old directory, adjust those links to keep their destinations.
+
+In the same commit, replace the old card with a Markdown redirect. For a card that moved from `_intake/processed/interview.md` to `sources/interview.md`, the old path contains:
+
+```markdown
+---
+type: source-redirect
+redirect_to: /sources/interview.md
+---
+
+[Open the source card](/sources/interview.md)
+```
+
+Knowledge Store resolves an old citation through the redirect. A reader opening the old file in GitHub can follow its link. Existing knowledge records and citations can remain as written. Run the Knowledge Store linter and the intake profile check before committing the move. Keep the redirects for as long as old citations are in use.
 
 ## When to use
 
@@ -327,7 +345,7 @@ Migrate to a separate knowledge repo when the single-repo structure becomes cong
 
 Starter templates for the two core OKF record types live alongside this pattern:
 
-- [`knowledge-store-templates/okf-source-document.md`](knowledge-store-templates/okf-source-document.md) — copy to `_intake/processed/` for each ingested document; covers `type`, `source`, `source_hash`, `confidence`, `tracks`, and routing notes
+- [`knowledge-store-templates/okf-source-document.md`](knowledge-store-templates/okf-source-document.md) — copy to `sources/` for each ingested document; covers `type`, `source`, `source_hash`, `confidence`, `tracks`, and routing notes
 - [`knowledge-store-templates/okf-knowledge-object.md`](knowledge-store-templates/okf-knowledge-object.md) — copy to `knowledge/` for each extracted concept; covers `type`, `description`, `resource`, `confidence`, citations, and examples
 - [`knowledge-store-templates/okf-knowledge-object-draft.md`](knowledge-store-templates/okf-knowledge-object-draft.md) — copy to `_intake/drafts/` during assisted ingest (Gate 6); adds `review_status` and `ambiguity_note`
 
@@ -363,7 +381,7 @@ type: concept
 title: Multi-tenant isolation
 description: A security boundary between customer datasets; enforced at the row level via application logic.
 confidence: inferred
-source: /_intake/processed/2025-03-15-architecture-audit.md
+source: /sources/2025-03-15-architecture-audit.md
 mapping: confirms
 created_at: 2025-03-15
 timestamp: 2025-03-15T10:30:00Z
@@ -386,7 +404,7 @@ type: concept
 title: Multi-tenant isolation (updated 2026)
 description: A security boundary between customer datasets; enforced via a combination of row-level application logic, database-level schema separation, and cryptographic key isolation depending on trust tier.
 confidence: observed
-source: /_intake/processed/2026-09-02-multi-tenancy-security-audit.md
+source: /sources/2026-09-02-multi-tenancy-security-audit.md
 mapping: extends
 created_at: 2026-09-02
 supersedes: /knowledge/multi-tenant-isolation.md

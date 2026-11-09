@@ -69,6 +69,47 @@ def _with_copy(mutator):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def part_source_card_compatibility():
+    print("Source cards and legacy citations")
+    card = "2026-07-01-cfo-interview.md"
+
+    def lower_confidence(root):
+        path = os.path.join(root, "sources", card)
+        with open(path, encoding="utf-8") as handle:
+            content = handle.read().replace("confidence: observed", "confidence: assumed")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(content)
+
+    code, out = _with_copy(lower_confidence)
+    check(code == 0 and out.count("[KS-013]") == 2,
+          f"Both old and new citations must use the moved card's confidence.\n{out}")
+
+    def delete_redirect(root):
+        os.remove(os.path.join(root, "_intake", "processed", card))
+
+    code, out = _with_copy(delete_redirect)
+    check(code != 0 and "[KS-007]" in out and f"/_intake/processed/{card}" in out,
+          f"A missing redirect must not silently resolve to a new path.\n{out}")
+
+    def delete_target(root):
+        os.remove(os.path.join(root, "sources", card))
+
+    code, out = _with_copy(delete_target)
+    check(code != 0 and "[KS-007]" in out and "Source redirect must cite" in out,
+          f"A redirect with a missing target must fail validation.\n{out}")
+
+    def restore_legacy_card(root):
+        shutil.move(os.path.join(root, "sources", card), os.path.join(root, "_intake", "processed", card))
+        path = os.path.join(root, "knowledge", "warehouse-finance-handoff.md")
+        with open(path, encoding="utf-8") as handle:
+            content = handle.read().replace("/sources/", "/_intake/processed/")
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(content)
+
+    code, out = _with_copy(restore_legacy_card)
+    check(code == 0, f"A store with only original legacy cards must still pass.\n{out}")
+
+
 def part_c_gate_violations():
     print("Part C — gate violations (expected failures)")
 
@@ -81,7 +122,7 @@ def part_c_gate_violations():
     check(code != 0 and "KS-001" in out, f"Missing frontmatter should fail KS-001; code={code}\n{out}")
 
     def wrong_intake_type(root):
-        path = os.path.join(root, "_intake", "processed", "2026-07-01-cfo-interview.md")
+        path = os.path.join(root, "sources", "2026-07-01-cfo-interview.md")
         text = open(path, encoding="utf-8").read().replace("type: source-document", "type: insight")
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
@@ -90,7 +131,7 @@ def part_c_gate_violations():
     check(code != 0 and "KS-003" in out, f"Wrong intake type should fail KS-003; code={code}\n{out}")
 
     def missing_source(root):
-        path = os.path.join(root, "_intake", "processed", "2026-07-01-cfo-interview.md")
+        path = os.path.join(root, "sources", "2026-07-01-cfo-interview.md")
         text = open(path, encoding="utf-8").read().replace("source:", "source_removed:")
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
@@ -213,7 +254,7 @@ def part_e_gate5_consistency():
     check(code != 0 and "KS-014" in out, f"conflicts without log should fail KS-014; code={code}\n{out}")
 
     def confidence_ordering(root):
-        intake_path = os.path.join(root, "_intake", "processed", "2026-07-01-cfo-interview.md")
+        intake_path = os.path.join(root, "sources", "2026-07-01-cfo-interview.md")
         intake_text = open(intake_path, encoding="utf-8").read().replace(
             "confidence: observed", "confidence: inferred"
         )
@@ -301,6 +342,7 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     part_a_bundle_integrity()
     part_b_valid_fixture()
+    part_source_card_compatibility()
     part_c_gate_violations()
     part_d_warnings()
     part_e_gate5_consistency()

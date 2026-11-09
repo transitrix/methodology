@@ -15,4 +15,4 @@ Warehouse picks are complete before finance receives the invoice trigger, creati
 
 # Citations
 
-- CFO onboarding interview (`_intake/processed/2026-07-01-cfo-interview.md`)
+- [CFO onboarding interview](/_intake/processed/2026-07-01-cfo-interview.md)

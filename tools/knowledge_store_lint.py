@@ -5,8 +5,8 @@ integrity, and duplicate detection over OKF knowledge objects.
 
 Companion to tools/lint.py (which validates canon/ YAML elements). This
 script validates the knowledge store's refinement layer instead:
-_intake/processed/ (OKF source-document records), _intake/drafts/ (proposer
-drafts), and knowledge/ (OKF knowledge objects), per the Quality gates in
+sources/ (OKF source-document records), legacy _intake/processed/ records,
+_intake/drafts/ (proposer drafts), and knowledge/ (OKF knowledge objects), per the Quality gates in
 patterns/knowledge-store.md.
 
 This is the "proof point" reference implementation for the six quality
@@ -30,6 +30,9 @@ import yaml
 
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.DOTALL)
 BUNDLE_LINK_RE = re.compile(r"\]\((/knowledge/[^)\s]+\.md)\)")
+SOURCE_LINK_RE = re.compile(r"\]\((/(?:sources|_intake/processed|intake/processed)/[^)\s#]+\.md)(?:#[^)\s]+)?\)")
+SOURCE_PREFIX = "sources/"
+LEGACY_SOURCE_PREFIX = "_intake/processed/"
 CONFIDENCE_ENUM = {"observed", "inferred", "assumed"}
 CONFIDENCE_RANK = {"assumed": 0, "inferred": 1, "observed": 2}
 MAPPING_ENUM = {"confirms", "extends", "proposes", "conflicts"}
@@ -61,12 +64,14 @@ class KnowledgeObject:
 class KnowledgeStoreLinter:
     def __init__(self, root: str = "."):
         self.root = Path(root)
+        self.source_dir = self.root / "sources"
         self.intake_dir = self.root / "_intake" / "processed"
         self.drafts_dir = self.root / "_intake" / "drafts"
         self.knowledge_dir = self.root / "knowledge"
         self.log_path = self.root / "_intake" / "log.md"
         self.findings: List[Finding] = []
         self.objects: List[KnowledgeObject] = []
+        self.source_records: Dict[str, KnowledgeObject] = {}
         self.freshness_thresholds = self._load_freshness_thresholds()
 
     def _load_freshness_thresholds(self) -> Dict[str, int]:
@@ -90,10 +95,11 @@ class KnowledgeStoreLinter:
         print()
 
         self._load_objects()
-        if not self.objects:
-            print("No knowledge-store objects found under _intake/processed/, _intake/drafts/, or knowledge/ — nothing to check.")
+        if not self.objects and not self.findings:
+            print("No knowledge-store objects found under sources/, _intake/processed/, _intake/drafts/, or knowledge/ — nothing to check.")
             return True
 
+        self._index_sources()
         self._check_structural()
         self._check_referential_integrity()
         self._check_duplicates()
@@ -111,6 +117,7 @@ class KnowledgeStoreLinter:
 
     def _load_objects(self):
         for zone, directory in (
+            ("intake", self.source_dir),
             ("intake", self.intake_dir),
             ("draft", self.drafts_dir),
             ("knowledge", self.knowledge_dir),
@@ -141,6 +148,37 @@ class KnowledgeStoreLinter:
                     path=path, rel_path=rel, frontmatter=fm, body=m.group(2), zone=zone,
                 ))
 
+    @staticmethod
+    def _is_source_redirect(obj: KnowledgeObject) -> bool:
+        return (
+            obj.rel_path.startswith(LEGACY_SOURCE_PREFIX)
+            and obj.frontmatter.get("type") == "source-redirect"
+        )
+
+    def _index_sources(self):
+        self.source_records = {
+            obj.rel_path: obj for obj in self.objects
+            if obj.zone == "intake" and obj.frontmatter.get("type") == "source-document"
+        }
+        for obj in self.objects:
+            if not self._is_source_redirect(obj):
+                continue
+            # A move preserves the filename and relative subdirectory. Require a
+            # real source record and a visible Markdown link for repository readers.
+            target = SOURCE_PREFIX + obj.rel_path[len(LEGACY_SOURCE_PREFIX):]
+            if (
+                obj.frontmatter.get("redirect_to") != "/" + target
+                or "/" + target not in SOURCE_LINK_RE.findall(obj.body)
+                or target not in self.source_records
+            ):
+                self.findings.append(Finding(
+                    obj.rel_path, "KS-007", "error",
+                    f"Source redirect must cite the existing source card `/{target}` "
+                    "in both `redirect_to:` and a Markdown link.",
+                ))
+                continue
+            self.source_records[obj.rel_path] = self.source_records[target]
+
     # --- structural (Gate 1, Gate 4, item 5) ----------------------------
 
     def _check_structural(self):
@@ -153,16 +191,16 @@ class KnowledgeStoreLinter:
                     "Missing required field `type:`.",
                 ))
 
-            if obj.zone == "intake":
+            if obj.zone == "intake" and not self._is_source_redirect(obj):
                 if fm.get("type") != "source-document":
                     self.findings.append(Finding(
                         obj.rel_path, "KS-003", "error",
-                        f"_intake/processed/ record must carry `type: source-document` (Gate 1 quarantine); found `{fm.get('type')!r}`.",
+                        f"Source record must carry `type: source-document` (Gate 1 quarantine); found `{fm.get('type')!r}`.",
                     ))
                 if not fm.get("source"):
                     self.findings.append(Finding(
                         obj.rel_path, "KS-004", "error",
-                        "Missing `source:` — required before admission to _intake/processed/ (Gate 4).",
+                        "Missing `source:` — required for source records (Gate 4).",
                     ))
 
             if obj.zone in ("knowledge", "draft"):
@@ -202,6 +240,17 @@ class KnowledgeStoreLinter:
                     self.findings.append(Finding(
                         obj.rel_path, "KS-007", "error",
                         f"Dangling link to `{target}` — no such file under knowledge/.",
+                    ))
+
+            source_links = SOURCE_LINK_RE.findall(obj.body)
+            source = self._norm_source_path(obj.frontmatter.get("source") or "")
+            if obj.zone in ("knowledge", "draft") and source.startswith((SOURCE_PREFIX, LEGACY_SOURCE_PREFIX)):
+                source_links.append(source)
+            for target in sorted({self._norm_source_path(link) for link in source_links}):
+                if target not in self.source_records:
+                    self.findings.append(Finding(
+                        obj.rel_path, "KS-007", "error",
+                        f"Dangling source reference `/{target}`.",
                     ))
 
     # --- duplicate detection (item 6b, Gate 2) --------------------------
@@ -291,28 +340,32 @@ class KnowledgeStoreLinter:
 
     def _norm_source_path(self, source: str) -> str:
         s = str(source).strip().replace("\\", "/")
-        if s.startswith("/"):
-            s = s.lstrip("/")
+        s = s.lstrip("/")
+        # Early templates emitted this spelling without the underscore.
+        if s.startswith("intake/processed/"):
+            s = "_" + s
+        if s.startswith((SOURCE_PREFIX, LEGACY_SOURCE_PREFIX)):
+            s = s.split("#", 1)[0]
         return s
-
-    def _intake_by_rel(self) -> Dict[str, KnowledgeObject]:
-        return {o.rel_path: o for o in self.objects if o.zone == "intake"}
 
     def _knowledge_by_rel(self) -> Dict[str, KnowledgeObject]:
         return {o.rel_path: o for o in self.objects if o.zone == "knowledge"}
 
-    def _resolve_intake_source(self, source: Optional[str]) -> Optional[KnowledgeObject]:
+    def _resolve_source_card(self, source: Optional[str]) -> Optional[KnowledgeObject]:
         if not source:
             return None
         norm = self._norm_source_path(source)
-        intake = self._intake_by_rel()
-        if norm in intake:
-            return intake[norm]
-        # Also match when source omits leading path segments.
-        for rel, obj in intake.items():
-            if rel.endswith("/" + norm) or rel == norm:
-                return obj
-        return None
+        if norm in self.source_records:
+            return self.source_records[norm]
+        if norm.startswith((SOURCE_PREFIX, LEGACY_SOURCE_PREFIX)):
+            return None
+        # Older records may omit leading directories. Match only when the
+        # suffix identifies one card, including aliases for that same card.
+        matches = {
+            obj.rel_path: obj for rel, obj in self.source_records.items()
+            if rel.endswith("/" + norm)
+        }
+        return next(iter(matches.values())) if len(matches) == 1 else None
 
     def _conflicts_with_resolves(self, target: str, knowledge: Dict[str, KnowledgeObject]) -> bool:
         if not target:
@@ -372,7 +425,7 @@ class KnowledgeStoreLinter:
                             "_intake/log.md before promotion (Gate 5).",
                         ))
 
-            src = self._resolve_intake_source(fm.get("source"))
+            src = self._resolve_source_card(fm.get("source"))
             if src:
                 obj_conf = fm.get("confidence")
                 src_conf = src.frontmatter.get("confidence")

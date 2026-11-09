@@ -770,6 +770,7 @@
     "transitrix/skills/knowledge-store/tests/fixtures/valid/_intake/processed/2026-07-01-cfo-interview.md",
     "transitrix/skills/knowledge-store/tests/fixtures/valid/knowledge/order-fulfilment-bottleneck.md",
     "transitrix/skills/knowledge-store/tests/fixtures/valid/knowledge/warehouse-finance-handoff.md",
+    "transitrix/skills/knowledge-store/tests/fixtures/valid/sources/2026-07-01-cfo-interview.md",
     "transitrix/skills/knowledge-store/tests/test_knowledge_store_integrity.py",
     "transitrix/skills/onboard/README.md",
     "transitrix/skills/onboard/SKILL.md",

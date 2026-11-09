@@ -33,7 +33,7 @@ type: DRIVER
 id: <TYPE>-TBD     # leave TBD — IDs are assigned during review to avoid conflicts
 name: "<name>"
 description: "<one-sentence>"
-derived_from: [/_intake/processed/<source-document-filename>]
+derived_from: [/sources/<source-document-filename>]
 admitted_to: pending
 extraction_confidence: high | medium | low
 ```

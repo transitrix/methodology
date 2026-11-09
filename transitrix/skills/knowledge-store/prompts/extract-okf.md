@@ -26,7 +26,7 @@ Write each candidate to `_intake/drafts/<slug>.md` (do not write to `knowledge/`
 type: insight | finding | concept | question
 title: "<concise title>"
 description: "<one-sentence summary>"
-source: /_intake/processed/<source-document-filename>
+source: /sources/<source-document-filename>
 created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
 mapping: confirms | extends | proposes | conflicts   # optional
@@ -40,7 +40,7 @@ timestamp: YYYY-MM-DDTHH:MM:SSZ
 <Body: 2–5 sentences expanding the description. Cite the exact passage if helpful.>
 
 Citations:
-- [<Source document title>](/_intake/processed/<source-document-filename>)
+- [<Source document title>](/sources/<source-document-filename>)
 ~~~
 
 ## Confidence assignment
