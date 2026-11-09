@@ -90,12 +90,14 @@ A modelled organisation accumulates three kinds of knowledge with different trus
 | Zone | What it holds | Trust contract |
 |---|---|---|
 | `canon` | Validated truth about the organisation — what it officially asserts about itself (its elements and views). | Internally consistent and unique; the authoritative model. |
-| `field` | Raw, unprocessed material — interviews, surveys, observations, drafts. | Contradictions allowed; provenance is the point. Not authoritative. |
+| `field` | Retained source evidence from interviews, surveys, observations, and drafts. | Admission records provenance. Claims remain attributable to their sources and may contradict one another. |
 | `codex` | External constraints (laws, regulations) and internal authority documents (policies, standards) — *given to* the organisation rather than authored by it. | Faithful to an external or issuing source; not edited to fit the model. |
 
 **Zones are parallel, not stacked.** There is no hierarchy and no numeric ordering between them — `canon/`, `field/`, and `codex/` sit side by side under an organisation, never as `1_canon/`, `2_field/`.
 
 **Data is not migrated between zones.** Each zone has its own admission gate (§6); an artefact admitted to one zone is never moved to another. A Canon record MAY *cite* the Field material that informed it via `derived_from:` (§6) — that citation is the link, not a migration. Re-deriving Canon from Field yields a *new* Canon artefact; the Field artefact stays where it is.
+
+When a project uses the optional [Knowledge Store](../patterns/knowledge-store.md#layers), field evidence stays in `field/` after curation. Curated findings are separate objects in `knowledge/` that cite the evidence, directly or through a source-document record.
 
 **Packages are not a fourth zone.** An optional domain package ([`PACKAGES.md`](PACKAGES.md)) is a top-level folder sitting alongside `canon/`, `field/`, `codex/`, but it carries none of the zone trust contracts above — it is self-contained, removable, and may only reference into a zone, never be referenced from one.
 

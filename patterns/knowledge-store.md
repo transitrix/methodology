@@ -57,7 +57,7 @@ setup instead of reimplementing or skipping it.
 
 ## Problem
 
-Raw source material — interview notes, meeting summaries, research documents — accumulates faster than it can be curated into the canonical model. Authors dump directly into `canon/` and quality degrades, or they leave everything in `field/` and canon never grows. There is no structured hand-off between "collected" and "validated".
+Raw source material — interview notes, meeting summaries, research documents — accumulates faster than it can be curated into the canonical model. Writing directly to `canon/` bypasses review. A structured hand-off lets curators extract findings while preserving the underlying evidence.
 
 ## Solution
 
@@ -87,11 +87,13 @@ Three explicit layers with clear promotion rules: project repos contribute raw m
 
 ### Source layer — project repos
 
-Each project repo contributes raw material: meeting notes, interview transcripts, survey data, draft documents. Material lives under `field/` in each repo. No Transitrix structure is required at this layer — it is an input feed, not a model.
+Project repositories retain field evidence such as meeting notes, interview transcripts, survey data, and draft documents in `field/`. Evidence stays there after curation so readers can revisit the source of a finding. Where `field/` is a Transitrix zone, its artefacts follow the [zone admission rules](../notations/CONTRACT.md#6-admission-record).
 
 ### Refinement layer — Transitrix knowledge store
 
-The Transitrix knowledge store holds curated knowledge objects in OKF format: Markdown files with structured YAML frontmatter, explicit source citations, and timestamps. Curators pull from the source layer, extract signal, and write knowledge objects. Nothing reaches this layer without a citation and a timestamp.
+The `knowledge/` directory holds curated findings and other knowledge objects in OKF Markdown, with source citations and timestamps. Each object captures a distinct finding or concept. A citation can point directly to field evidence or to a `source-document` record that identifies it.
+
+In the single-repo Knowledge Store profile, the full uploaded file is retained in `_intake/originals/`. Its `_intake/processed/` record contains a summary and a reference to the original. Full document text belongs with the source evidence or the retained original.
 
 OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extensions):
 
