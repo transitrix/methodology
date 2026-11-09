@@ -44,7 +44,7 @@ This repository is a **text-native enterprise architecture model** authored in t
 What lives here:
 
 - `canon/` — the **validated model** (the authoritative zone): `elements/` (reusable architecture elements by ArchiMate layer `01_motivation/` … `05_implementation/`). Views live separately at `views/<notation>/`.
-- `field/` — **raw, unprocessed inputs**: interviews, surveys, observations, drafts.
+- `field/` — **retained source evidence** from interviews, surveys, observations, and drafts. Use [Ingest](INGEST.md) for new records.
 - `codex/` — **external constraints** (laws, regulations) and **internal authority documents** (policies, standards).
 - `transitrix.yaml` — the adopter manifest: which methodology version, notations, and zones this repo uses.
 - `.templates/` *(optional)* — starter files the adopter copies when creating new elements / views.
@@ -119,7 +119,7 @@ The canonical layout an adopter inherits when scaffolded by `/transitrix:onboard
 │   ├── bpmn/   dgca/   goals/   capabilities/   processmap/
 │   ├── actions/   blocks/   scenarios/
 │   └── applications/   products/   process-blueprint/
-├── field/                          # raw inputs — interviews, surveys, observations, drafts
+├── field/                          # retained evidence — interviews, surveys, observations, drafts
 │   ├── interviews/   surveys/   observations/   drafts/
 └── codex/                          # external laws/regulations + internal policies/standards
     ├── external/<jurisdiction>/    # ge/  de/  eu/  … (ISO 3166-1 alpha-2, or `eu` / `intl`)
@@ -137,7 +137,7 @@ The agent does **not** change this layout without a deliberate decision recorded
 This repo separates three kinds of knowledge, each with its own trust contract (defined in the canon, `notations/CONTRACT.md` §5):
 
 - **`canon/`** — validated truth the organisation asserts about itself. Internally consistent and unique; the authoritative model. `elements/` lives here; `views/` is a sibling projection directory.
-- **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point; **not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, never a migration.
+- **`field/`** — retained evidence from interviews, surveys, observations, and drafts. [Ingest](INGEST.md) accepts files or notes in chat and checks provenance and team access before publication. Conflicting accounts can coexist. A Canon record may cite the Field artefact via `derived_from:`.
 - **`codex/`** — external constraints (laws, regulations, under `external/<jurisdiction>/`) and internal authority documents (policies, standards, under `internal/`), *given to* the organisation rather than authored by it.
 
 Every artefact carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) — see `notations/CONTRACT.md` §6. The agent does not move artefacts between zones; it admits a new artefact to the correct zone.

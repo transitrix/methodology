@@ -35,6 +35,16 @@ For freshness, a fresh checkout of unchanged content must produce the same evide
 
 Do not turn six measures into a single score without an explicit adopter decision about its meaning. Agree thresholds locally, retain denominators and unknown counts, and use examples of actual decisions to assess whether the model is useful. A trend is a prompt for investigation, not a causal explanation.
 
+## Check source traceability
+
+Include source traceability as a manual drill-down under **Validity** and **Connectedness** when the review includes Field or Knowledge Store. Record the workspace revision, the population checked or the sampling rule, and the number checked, broken, or unknown. An unused profile is not applicable. An unreadable source or a check you could not run is unknown.
+
+1. **Field.** For new `field/` records, inspect the provenance and available intake or review evidence. From a separate checkout, verify that a teammate with the intended access can retrieve the exact evidence. The shared record itself can supply the evidence. Follow any separate original needed for verification to its recorded revision. A local `_intake/` path alone does not demonstrate team access.
+2. **Knowledge Store.** Run `transitrix-intake-profile check <repo-root> --profile knowledge-store` in the selected Knowledge Store workspace and run the [Knowledge Store linter](../tools/knowledge_store_lint.py) on that root. Trace findings through their source cards to the originals. For an upload, verify that the card and its byte-identical original are available in a checkout of the reviewed revision. For a web page or a corporate document, verify the recorded link and revision with the intended access. The linter checks local references and uploaded hashes. Opening an external source requires a separate check.
+3. **Existing citations.** Follow any legacy path through the retained card or its redirect. If a card still points to a private `_intake/originals/` file, check whether the evidence can be retrieved independently of the original submitter. Report any gap in access or availability separately from a broken citation.
+
+Report the drill-down alongside the six indicators. The bounded collector and the data-free `repo-check` summary do not perform this review. Keep detailed source paths and evidence in the adopter's own report.
+
 ## What is needed before an operational report
 
 Identify a collector and its supported rules, supply the required sources and permissions, and test known valid, invalid, stale and missing-evidence cases. Publish the report's scope and collection failures alongside its results. Retain enough input identity to reproduce a calculation without exposing protected content to an unintended audience.

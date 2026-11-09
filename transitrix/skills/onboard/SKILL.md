@@ -81,21 +81,15 @@ After the first change is authored and validated, continue to **Step 6** (sugges
 
 ## Step 2 — Scaffold the repo
 
-**Before any setup write**, choose the intake profile with the adopter using the
-[deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility).
-Use `ingest` for raw documents → field/canon candidates and regulatory watching;
-use `knowledge-store` for OKF curation. For model-only setup, leave intake
-unconfigured and omit all intake ignore rules below. Existing intake evidence
-must be inspected before changing setup; never silently switch profiles.
+Confirm the target and choose its purpose with the adopter before writing the intake layout. If the adopter asked for a new standalone Git repository, initialise Git at that target first. The intake preflight needs Git to verify which files can be committed.
 
-For either intake profile, run
-`transitrix-intake-profile check <repo-root> --profile <chosen-profile>`
-before changing files. Once the target directory is confirmed, run
-`transitrix-intake-profile select` with the same arguments before scaffolding to record the
-selection. Model-only setup runs neither command. Stop if the CLI is unavailable or the check refuses.
-For `knowledge-store`, hand off to `/transitrix:knowledge-store` Step 0 for intake
-setup; do not add the ingest ignore block or scaffold ingest directories. Model
-zones may still be added separately after that profile check succeeds.
+| Purpose | Setup |
+|---|---|
+| Start with an architecture model | Scaffold the model zones and leave intake unconfigured. |
+| Capture Field evidence or use regulatory intake | Select `ingest`. Apply the ingest ignore block below and run `transitrix-ingest scaffold-intake <repo-root>` to create the private intake stages. |
+| Curate findings and source cards | Select `knowledge-store`. Follow [Knowledge Store Step 0](../knowledge-store/SKILL.md#step-0--check-the-mvp-structure) for the dedicated layout, source visibility, and byte-preserving Git attributes. |
+
+For either intake profile, run `transitrix-intake-profile check <repo-root> --profile <chosen-profile>` before writing intake files, then run `transitrix-intake-profile select` with the same arguments. Commit the profile marker with setup and repeat the check after scaffolding. Model-only setup runs neither command. A refused or unavailable preflight stops intake setup. For a repository with existing intake evidence, preserve its profile and apply the [compatibility rules](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility). When a team needs both workflows, use separate workspaces and cite the shared Field evidence from Knowledge Store.
 
 Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen target directory. The shape mirrors the worked example in the [`transitrix/acme-corp`](https://github.com/transitrix/acme-corp) reference repo and is defined for adopters in [`AGENTS.md`](https://github.com/transitrix/acme-corp/blob/main/AGENTS.md) §3.
 
@@ -125,7 +119,7 @@ Scaffold the canonical **zoned** Transitrix adopter shape in the user's chosen t
 │   ├── bpmn/   dgca/   goals/   capabilities/   processmap/
 │   ├── actions/   blocks/   scenarios/
 │   └── applications/   products/   process-blueprint/
-├── field/                          # raw inputs — not authoritative; provenance is the point
+├── field/                          # retained source evidence with provenance
 │   └── interviews/   surveys/   observations/   drafts/
 └── codex/                          # constraints given to the org, faithful to source
     ├── external/                   # laws & regulations, sub-foldered by jurisdiction
@@ -157,7 +151,7 @@ After the directory tree exists, copy the canonical root files from the skill bu
 
 Additionally, write these generated files inline (no template):
 
-- `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill; (3) "Tooling" recommending the two VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview (including `.puml` files — no separate PlantUML extension needed), and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
+- `<repo-root>/README.md` — a minimal org stub. Three sections: (1) one-paragraph intro naming the repo purpose and linking to `github.com/transitrix/methodology`; (2) "Getting started" pointing newcomers at `AGENTS.md` and the `/transitrix:onboard` skill, with one sentence on where to add and find sources for the selected profile; (3) "Tooling" recommending the two VS Code extensions — **Transitrix Studio** (`transitrix.transitrix-studio`, VS Code Marketplace) for live Transitrix notation preview (including `.puml` files — no separate PlantUML extension needed), and **Markdown Preview Mermaid Support** (`bierner.markdown-mermaid`, VS Code Marketplace and Open VSX) for Mermaid diagram preview in Markdown files. Leave `ADOPTER-FILL-ME` placeholders for org name, purpose, and team.
 - **Feedback register — detect old layout, scaffold new layout** (`method/06-team-operations.md` §3.2). Before scaffolding, check whether the repo already has a feedback register:
   - **If `operations/feedback.md` exists (pre-v5.0.0 single-file layout)**: preserve it as-is. Do not modify or migrate it automatically.
   - **If `operations/feedback/feedback.md` exists (v5.0.0+ directory layout)**: use it as-is.
@@ -185,7 +179,7 @@ The agent does **not** run these itself — it shows the command and lets the us
 The adopter manifest's `zones:` field selects which of `canon` / `field` / `codex` the repo maintains. Scaffold all three folders by default unless the user explicitly opts out — empty zones cost nothing and keep the layout consistent.
 
 - **`canon/`** — validated truth the organisation asserts. Authoritative; internally consistent. View notation files live in `views/<notation>/`; reusable elements live in `canon/elements/<NN>_<layer>/`.
-- **`field/`** — raw, unprocessed material (interviews, surveys, observations, drafts). Contradictions allowed; provenance is the point. **Not** authoritative. A Canon record may *cite* a Field artefact via `derived_from:` — a citation, not a migration.
+- **`field/`** — retained evidence from interviews, surveys, observations, and drafts. Add new records through Ingest using a file or notes in chat. The evidence stays available for later curation and may contain conflicting accounts.
 - **`codex/`** — external constraints (laws, regulations) under `codex/external/<jurisdiction>/`, plus internal authority documents (policies, standards) under `codex/internal/`. Faithful to source; not edited to fit the model. See `notations/elements/14-codex.md` and Step 3 below for how to seed a first codex artefact.
 
 Each artefact in any zone carries an **admission record** (`zone`, `admitted_at`, `admitted_by`, `gate_checks`, optional `derived_from`) defined in `notations/CONTRACT.md` §6. These are envelope fields a tool produces, not content the author supplies — see "Admission record and lifecycle" below for how you fill them.
@@ -221,7 +215,7 @@ __pycache__/
 .venv/
 .diagrams/
 
-# _intake/ — the ingest skill's operational workspace (scaffolded later by
+# _intake/ — the ingest skill's operational workspace (created by
 # `transitrix-ingest scaffold-intake`). It is a PER-USER, PRIVATE area: its
 # contents are NOT shared with other modellers, so nothing that participates in
 # the model may live there. Ignore the working files, but commit a .gitkeep in

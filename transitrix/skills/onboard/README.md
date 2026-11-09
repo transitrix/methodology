@@ -19,7 +19,7 @@ files), or `knowledge-store` for OKF curation (committed source cards and
 uploaded originals). They require separate workspaces. Setup and subsequent intake
 runs must pass the shared CLI preflight; incompatible or ambiguous existing
 content is refused without migration. See the [deployment compatibility contract](../../../patterns/knowledge-store.md#deployment-profiles-and-intake-compatibility)
-for selection, installation and retention rules.
+for selection, installation and retention rules. A model-only repository can defer intake. The [scaffold procedure](SKILL.md#step-2--scaffold-the-repo) covers Git initialisation, profile checks and the layout for each choice.
 
 ---
 
