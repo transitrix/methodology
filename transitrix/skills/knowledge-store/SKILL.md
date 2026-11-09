@@ -1,7 +1,7 @@
 ---
 name: Transitrix Knowledge Store
 description: Ingest raw source material into the OKF single-repo MVP knowledge store — assess, archive, route to the OKF track (extract drafts → verify → human review → promote to knowledge/) and/or the Canon track (extract Transitrix primitives → PR to canon/), and log every decision.
-when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", or drops a file into `_intake/inbox/` and wants it processed.
+when_to_use: User says "ingest this document", "add this to the knowledge store", "extract knowledge objects from this", "route this to canon", "locate the original for this knowledge item", or drops a file into `_intake/inbox/` and wants it processed.
 min_version: "6.0.0"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -26,6 +26,10 @@ The linter enforces Gates 1–6 from [patterns/knowledge-store.md §Quality gate
 
 ---
 
+## Locate an original
+
+Start with the knowledge object's `source:` citation or the source card the user names. Follow a legacy redirect if present, then read the card's `source:` path or URI. For an uploaded original, a path under `_intake/originals/` refers to the workspace that retained it. Report the location and whether you can access it from the current workspace. A source-location request is read-only and can skip intake setup.
+
 ## Step 0 — Check the MVP structure
 
 Before any write, select the **knowledge-store** deployment profile using the
@@ -48,16 +52,17 @@ Verify the repo has the expected layout:
 _intake/
   inbox/        ← source files waiting for processing
   originals/    ← raw source files (gitignored)
-  processed/    ← OKF source-document records (committed)
   drafts/       ← proposer output (Gate 6 — not cited; not promoted)
   log.md        ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
+
+sources/        ← OKF source-document records (committed)
 
 knowledge/
   index.md      ← bundle index (auto-maintained)
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-If `_intake/` or `knowledge/` are missing, scaffold them now. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs). Never ignore `_intake/processed/`. Re-run the profile check after setup and before committing; explicitly verify each new source-record path is not ignored before writing it.
+Scaffold any missing `_intake/`, `sources/`, and `knowledge/` directories. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Add gitignore entries for `_intake/inbox/*` and `_intake/originals/*` (drafts MAY be committed for audit or gitignored for ephemeral runs). Keep `sources/` and any existing legacy cards or redirects visible to Git. See [moving existing cards](../../../patterns/knowledge-store.md#move-existing-source-cards). Re-run the profile check after setup and before committing; explicitly verify each new source-record path is not ignored before writing it.
 
 ---
 
@@ -78,14 +83,14 @@ State your assessment to the user before proceeding.
 
 ---
 
-## Step 2 — Archive to processed/
+## Step 2 — Record the source in sources/
 
-Copy the source file reference to `_intake/processed/` as an OKF source-document record using the template at [patterns/knowledge-store-templates/okf-source-document.md](../../../patterns/knowledge-store-templates/okf-source-document.md).
+Record the source file reference in `sources/` as an OKF source-document record using the template at [patterns/knowledge-store-templates/okf-source-document.md](../../../patterns/knowledge-store-templates/okf-source-document.md).
 
 Fill in:
 - `title:` — document filename or stated title
 - `description:` — one-sentence summary from Step 1
-- `source:` — original file path or URI (e.g. `_intake/inbox/filename.md` or a web URL)
+- `source:` — retained original path or URI, such as `_intake/originals/filename.md` for an uploaded file or a stable URI for an existing shared source
 - `source_hash:` — SHA-256 of the source file (`sha256sum` / `Get-FileHash`)
 - `created_at:` — today's date
 - `confidence:` — from Step 1
@@ -94,9 +99,9 @@ Fill in:
 
 Filename convention: `YYYY-MM-DD-<slug>.md` where slug is a 3–5 word kebab-case summary.
 
-For a reissued source, use a fresh processed-record and original-file path even when the date or filename matches an earlier revision. Preserve the earlier record, original, and hash.
+For a reissued source, use a fresh card and original-file path even when the date or filename matches an earlier revision. Preserve the earlier record, original, and hash.
 
-Move the source file from `_intake/inbox/` to `_intake/originals/` (gitignored, kept for traceability).
+Move an uploaded source file from `_intake/inbox/` to the final `_intake/originals/` path (gitignored, kept for traceability). Use that final path in the card.
 
 ---
 
@@ -107,7 +112,7 @@ Append to `_intake/log.md`:
 ```markdown
 ## YYYY-MM-DD
 
-- [route] `<processed-filename>` → tracks: [okf, canon] | confidence: observed | <one-line reason>
+- [route] `<source-card-path>` → tracks: [okf, canon] | confidence: observed | <one-line reason>
 ```
 
 ---
@@ -116,7 +121,7 @@ Append to `_intake/log.md`:
 
 ### 4a — Propose drafts (Gate 6)
 
-Read the source document from `_intake/originals/` (or the processed record). Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects and **write each to `_intake/drafts/<slug>.md`** using the template at [patterns/knowledge-store-templates/okf-knowledge-object-draft.md](../../../patterns/knowledge-store-templates/okf-knowledge-object-draft.md).
+Read the source document at the location recorded in the card. Using the extraction prompt at [prompts/extract-okf.md](prompts/extract-okf.md), extract candidate knowledge objects and **write each to `_intake/drafts/<slug>.md`** using the template at [patterns/knowledge-store-templates/okf-knowledge-object-draft.md](../../../patterns/knowledge-store-templates/okf-knowledge-object-draft.md).
 
 Each draft:
 - has a clear, discrete idea (one concept per file)
@@ -189,7 +194,7 @@ type: DRIVER
 id: <TYPE>-TBD     # review placeholder, never an admitted ID
 name: ""
 description: ""
-derived_from: [<processed-source-document-path>]
+derived_from: [<source-card-path>]
 admitted_to: pending
 extraction_confidence: high | medium | low
 ```
@@ -215,7 +220,7 @@ extraction_confidence: high | medium | low
 Create a branch `knowledge-store/ingest-<YYYY-MM-DD>-<slug>` and commit only the reviewed, validated candidate files for human admission. Open a PR titled `[Knowledge Store] Ingest: <source-document-title>`.
 
 PR body must include:
-- Link to the processed source-document record
+- Link to the source card
 - Table of proposed elements with type, name, and extraction_confidence
 - Note on any relations proposed
 - Instruction: "Review the assigned IDs, resolved references, provenance and validation results; complete admission only when satisfied. Never merge unresolved placeholders or pending proposals as admitted canon."
@@ -225,7 +230,7 @@ PR body must include:
 Once the user reports the PR outcome, append to `_intake/log.md`:
 
 ```markdown
-- [assert] PR #<number> merged | admitted: [<DRIVER-NNN>, <GOAL-NNN>, ...] | source: <processed-filename>
+- [assert] PR #<number> merged | admitted: [<DRIVER-NNN>, <GOAL-NNN>, ...] | source: <source-card-path>
 ```
 
 Or for rejected:

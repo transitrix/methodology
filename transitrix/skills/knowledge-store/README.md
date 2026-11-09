@@ -4,6 +4,10 @@ The **OKF ingestion skill** for a Transitrix knowledge store. Processes raw sour
 
 This directory is the **`knowledge-store` skill** within the `transitrix` plugin. Invoked as `/transitrix:knowledge-store`.
 
+## Source cards and original files
+
+New cards go in `sources/`. Open the card's `source:` reference to locate the original. Uploaded files in the single-repo profile are kept in the ingesting workspace's `_intake/originals/`. Legacy cards remain readable and can be moved with [a redirect at the old path](../../../patterns/knowledge-store.md#move-existing-source-cards).
+
 ## Intake profile selection
 
 Choose `ingest` for the ordinary ingest/reg-intel workflow (private processed raw

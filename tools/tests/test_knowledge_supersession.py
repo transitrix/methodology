@@ -442,7 +442,11 @@ def test_template_defaults():
                            timestamp="2026-09-13T00:00:00Z")
         if zone == "_intake/drafts":
             frontmatter["review_status"] = "ready"
+        check(frontmatter["source"].startswith("/sources/"),
+              f"{name}: new citations must point to sources/")
         with tempfile.TemporaryDirectory(prefix="knowledge-template-") as work:
+            _write(os.path.join(work, frontmatter["source"].lstrip("/")),
+                   "---\ntype: source-document\nsource: original.md\nconfidence: observed\n---\n")
             _write(os.path.join(work, zone, "first.md"),
                    "---\n" + yaml.safe_dump(frontmatter) + "---\nFirst assertion.\n")
             code, out = _run_linter(work)

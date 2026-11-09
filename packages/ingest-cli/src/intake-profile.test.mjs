@@ -69,6 +69,7 @@ test('OKF selection refuses ingest setup and preserves source and original bytes
 
 for (const [path, content, requested] of [
   ['_intake/processed/source.md', okf, 'ingest'],
+  ['sources/source.md', okf, 'ingest'],
   ['knowledge/index.md', '# Knowledge', 'ingest'],
   ['_intake/originals/source.txt', 'original', 'ingest'],
   ['_intake/drafts/draft.md', 'draft', 'ingest'],
@@ -105,10 +106,32 @@ for (const [path, ignore] of [
   ['.git/info/exclude', '_intake/processed/**\n'],
 ]) test(`OKF refuses effective ignore rules in ${path}`, async t => {
   const root = await workspace(t);
+  await put(root, '_intake/processed/source.md', okf);
   await put(root, path, ignore);
   const before = await snapshot(root);
   await assert.rejects(selectIntakeProfile(root, 'knowledge-store'), /profile conflict/);
   assert.deepEqual(await snapshot(root), before);
+});
+
+test('new layout checks source cards without reserving an unused legacy directory', async t => {
+  const root = await workspace(t);
+  await put(root, '.gitignore', '_intake/processed/\n');
+  await checkIntakeProfile(root, 'knowledge-store');
+  await put(root, 'sources/team/source.md', okf);
+  await checkIntakeProfile(root, 'knowledge-store');
+  await put(root, 'sources/team/.gitignore', '*.md\n');
+  await assert.rejects(checkIntakeProfile(root, 'knowledge-store'), /would be ignored/);
+});
+
+test('legacy redirects count as Knowledge Store evidence and remain visible', async t => {
+  const root = await workspace(t);
+  await put(root, 'sources/source.md', okf);
+  await put(root, '_intake/processed/source.md',
+    '---\ntype: source-redirect\nredirect_to: /sources/source.md\n---\n');
+  await checkIntakeProfile(root, 'knowledge-store');
+  await assert.rejects(checkIntakeProfile(root, 'ingest'), /knowledge-store evidence/);
+  await put(root, '.gitignore', '_intake/processed/\n');
+  await assert.rejects(checkIntakeProfile(root, 'knowledge-store'), /would be ignored/);
 });
 
 test('Git negation permits OKF; ignored tracked records are still refused', async t => {

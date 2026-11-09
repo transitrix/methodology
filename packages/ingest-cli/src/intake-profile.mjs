@@ -1,6 +1,6 @@
 // Skill-local deployment compatibility. Read-only checks precede every setup write.
 import { lstat, readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve, relative } from 'node:path';
+import { basename, join, resolve, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const PROFILES = ['ingest', 'knowledge-store'];
@@ -33,6 +33,16 @@ async function files(path) {
   return result;
 }
 
+async function sourceRecordType(path, legacy = false) {
+  const text = path.endsWith('.md') ? await readFile(path, 'utf8') : '';
+  const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text)?.[1] || '';
+  const match = /^(?:type|["']type["']):[ \t]*(["']?)(source-document|source-redirect)\1[ \t]*(?:#.*)?$/m.exec(frontmatter);
+  if (legacy && !match && /source-(?:document|redirect)/.test(frontmatter)) {
+    fail(`ambiguous source record at ${path}`);
+  }
+  return match?.[2] ?? null;
+}
+
 export async function checkIntakeProfile(orgRoot, profile) {
   if (!PROFILES.includes(profile)) throw new Error('Choose --profile ingest or --profile knowledge-store');
   const root = resolve(orgRoot);
@@ -58,12 +68,20 @@ export async function checkIntakeProfile(orgRoot, profile) {
     if (stat && !stat.isDirectory()) fail(`_intake/${name} is not a directory`);
   }
   const processed = await files(join(root, '_intake/processed'));
+  const sourceDir = join(root, 'sources');
+  const sourceDirStat = await inspect(sourceDir);
+  if (profile === 'knowledge-store' && sourceDirStat && !sourceDirStat.isDirectory()) fail('sources is not a directory');
+  const sourceFiles = sourceDirStat?.isDirectory()
+    ? (await files(sourceDir)).filter(path => path.endsWith('.md') && !['index.md', 'log.md'].includes(basename(path)))
+    : [];
+  for (const path of sourceFiles) {
+    if (await sourceRecordType(path) === 'source-document') {
+      evidence['knowledge-store'].push(relative(root, path));
+    }
+  }
   for (const path of processed) {
-    const text = path.endsWith('.md') ? await readFile(path, 'utf8') : '';
-    const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text)?.[1] || '';
-    const okf = /^(?:type|["']type["']):[ \t]*(?:"source-document"|'source-document'|source-document)[ \t]*(?:#.*)?$/m.test(frontmatter);
-    if (!okf && frontmatter.includes('source-document')) fail(`ambiguous source record at ${relative(root, path)}`);
-    evidence[okf ? 'knowledge-store' : 'ingest'].push(relative(root, path));
+    const type = await sourceRecordType(path, true);
+    evidence[type ? 'knowledge-store' : 'ingest'].push(relative(root, path));
   }
   // Unknown workspace entries must be classified by the adopter, never guessed.
   if (intake) {
@@ -85,7 +103,7 @@ export async function checkIntakeProfile(orgRoot, profile) {
 
   if (profile === 'knowledge-store') {
     // Git evaluates nested/global ignores and negations, including tracked files.
-    const paths = ['_intake/processed/profile-check.md', ...processed.map(p => relative(root, p))];
+    const paths = ['sources/profile-check.md', ...[...sourceFiles, ...processed].map(p => relative(root, p))];
     const result = spawnSync('git', ['-C', root, 'check-ignore', '--no-index', '--stdin'], {
       input: paths.join('\n') + '\n', encoding: 'utf8',
     });

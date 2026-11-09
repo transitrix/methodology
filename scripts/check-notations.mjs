@@ -103,7 +103,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, join, relative, resolve, posix } from 'node:path';
+import { dirname, join, relative, resolve, posix, sep } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const REPO_ROOT = join(dirname(__filename), '..');
@@ -375,14 +375,14 @@ export function resolveInstructionLink(abs, target, root = REPO_ROOT) {
     }
     return null; // not an installed guide, even if a same-named source file exists
   }
-  // Knowledge fixtures use site-root /knowledge links. Bind to the fixture's
-  // own root, never the machine root or a different fixture's knowledge tree.
+  // Knowledge fixtures use bundle-root links. Bind them to the fixture's
+  // own root to preserve bundle links across repositories and platforms.
   const fixture = rel.match(/^(transitrix\/skills\/knowledge-store\/tests\/fixtures\/[^/]+)\//);
   if (fixture && target.startsWith('/')) {
     if (target.split('/').includes('..')) return null;
     const fixtureRoot = resolve(root, fixture[1]);
     const resolved = resolve(fixtureRoot, '.' + target);
-    return resolved.startsWith(fixtureRoot + '/') ? resolved : null;
+    return resolved.startsWith(fixtureRoot + sep) ? resolved : null;
   }
   return resolve(dirname(abs), target);
 }
