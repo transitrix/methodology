@@ -73,7 +73,10 @@ export async function checkIntakeProfile(orgRoot, profile) {
   if (profile === 'knowledge-store' && sourceDirStat && !sourceDirStat.isDirectory()) fail('sources is not a directory');
   const sourceFiles = sourceDirStat?.isDirectory() ? await files(sourceDir) : [];
   const sourceMarkdown = sourceFiles.filter(path => path.endsWith('.md') && !['index.md', 'log.md'].includes(basename(path)));
-  const uploadedOriginals = sourceFiles.filter(path => /\.original(?:\.[^.]+)*$/.test(basename(path)));
+  const uploadedOriginals = sourceFiles.filter(path => {
+    const name = basename(path);
+    return name.endsWith('.original') || name.includes('.original.');
+  });
   for (const path of sourceMarkdown) {
     if (await sourceRecordType(path) === 'source-document') {
       evidence['knowledge-store'].push(relative(root, path));
