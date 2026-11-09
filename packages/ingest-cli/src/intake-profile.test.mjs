@@ -123,6 +123,15 @@ test('new layout checks source cards without reserving an unused legacy director
   await assert.rejects(checkIntakeProfile(root, 'knowledge-store'), /would be ignored/);
 });
 
+test('Knowledge Store refuses an ignored uploaded original beside its card', async t => {
+  const root = await workspace(t);
+  await put(root, 'sources/interview.md', okf);
+  await put(root, 'sources/interview.original.pdf', 'original bytes');
+  await checkIntakeProfile(root, 'knowledge-store');
+  await put(root, '.gitignore', '*.pdf\n');
+  await assert.rejects(checkIntakeProfile(root, 'knowledge-store'), /uploaded originals would be ignored/);
+});
+
 test('legacy redirects count as Knowledge Store evidence and remain visible', async t => {
   const root = await workspace(t);
   await put(root, 'sources/source.md', okf);

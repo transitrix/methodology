@@ -2,8 +2,8 @@
 type: source-document
 title: ""
 description: ""
-source: ""
-source_hash: ""
+source: ""      # Bundle-root uploaded-original path or external URI
+source_hash: "" # SHA-256 of uploaded bytes, or external content when available
 created_at: YYYY-MM-DD
 confidence: observed | inferred | assumed
 tags: []

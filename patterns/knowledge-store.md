@@ -18,7 +18,7 @@ Choose one intake profile per repository/workspace before setup:
 | Profile | Consumer | Source record and original locations |
 |---|---|---|
 | `ingest` | Ordinary ingest and reg-intel, together | Completed raw source files, private/gitignored |
-| `knowledge-store` | OKF curation | Committed OKF `source-document` records in `sources/`. Uploaded originals stay in gitignored `_intake/originals/`. |
+| `knowledge-store` | OKF curation | Committed OKF `source-document` records in `sources/`, with uploaded originals beside their cards. External documents are referenced by URI. |
 
 These profiles are **not supported together in one workspace**. Use separate
 workspaces if both are needed. This is a deployment boundary, not a migration or
@@ -46,7 +46,7 @@ Detection checks the marker, profile-specific directories, the regulatory watch
 list, `sources/` records, and legacy processed content (OKF records or redirects versus raw files).
 Mixed evidence, unknown intake entries, symlinks or unreadable evidence stop setup
 for adopter inspection. The OKF check also uses Git's effective ignore rules,
-including nested/global rules and tracked files, to refuse hidden source cards and redirects.
+including nested/global rules and tracked files, to refuse hidden source cards, uploaded originals, and redirects.
 It requires an existing Git workspace; if absent, request authorised Git setup
 before retrying. New or empty intake directories and shared `inbox/` alone do not
 choose a profile. Explicit selection is required. No tool silently renames paths,
@@ -93,7 +93,7 @@ Project repositories retain field evidence such as meeting notes, interview tran
 
 The `knowledge/` directory holds curated findings and other knowledge objects in OKF Markdown, with source citations and timestamps. Each object captures a distinct finding or concept. A citation can point directly to field evidence or to a `source-document` record that identifies it.
 
-A card in `sources/` contains a summary and a `source:` path or URI. To locate the original, follow that reference. In the single-repo Knowledge Store profile, an uploaded file is retained in `_intake/originals/` on the ingesting workspace. A card may instead cite a document already held at a shared location.
+A card in `sources/` contains a summary and a `source:` path or URI. For an uploaded file, commit its original bytes beside the card. For a web page or a document already held in corporate storage, retain the card and link to the original, using a version-specific URI when available. To locate the original, follow the card's reference. Existing cards may still point to `_intake/originals/` in the workspace that retained the file.
 
 OKF frontmatter per knowledge object (Google OKF v0.1 fields + Transitrix extensions):
 
@@ -258,10 +258,10 @@ What it MAY NOT vary: the admission rules, the risk-tier table, the mandatory-fi
 | `KS-001` | error | — | Frontmatter block missing or not valid YAML. |
 | `KS-002` | error | — | Missing required field `type:`. |
 | `KS-003` | error | 1 | Source card does not carry `type: source-document` (quarantine violation). |
-| `KS-004` | error | 4 | Missing `source:` on an intake record — blocks admission. |
+| `KS-004` | error | 4 | Missing `source:` or incorrect SHA-256 for an uploaded original. |
 | `KS-005` | error | 4 | Missing or invalid `confidence:` on a knowledge object — blocks promotion. |
 | `KS-006` | warning | 4 | Missing `timestamp:` on a knowledge object (recommended). |
-| `KS-007` | error | 6 | Dangling bundle-relative link, unresolved source card citation, or invalid legacy source redirect. |
+| `KS-007` | error | 6 | Dangling bundle-relative link, missing uploaded original, unresolved source card citation, or invalid legacy source redirect. |
 | `KS-008` | warning | 2 | Title similarity suggests a possible duplicate — confirm Confirms/Extends, not silent mint. |
 | `KS-009` | info | 3 | Blast-radius tier (Low / Medium / High) from dependent-object count. |
 | `KS-010` | warning | 4 | `confidence: assumed` with 3+ dependents — requires review note in `_intake/log.md`. |
@@ -287,11 +287,13 @@ For early adoption where standing up a separate knowledge repo adds too much ove
 ```
 _intake/
   inbox/           ← incoming documents (gitignored — temporary staging)
-  originals/       ← source files archived by reference (gitignored)
   drafts/          ← proposer output (Gate 6 — not cited; not promoted until curator approves)
   log.md           ← all events: [route] / [admit] / [ambig] / [conflicts] / [assert]
 
-sources/           ← committed OKF source-document records
+sources/
+  interview.md              ← OKF source card
+  interview.original.pdf    ← uploaded original
+  company-policy.md         ← OKF source card with a corporate storage link
 
 knowledge/         ← OKF knowledge objects (type: insight / finding / concept / ...)
   index.md         ← auto-generated bundle index
@@ -304,7 +306,18 @@ canon/             ← Transitrix primitives (unchanged)
 - **OKF track** — extract knowledge object drafts → verify with linter → curator reviews → promote to `knowledge/` → update `index.md`
 - **Canon track** — extract Transitrix primitives → open PR to `canon/` → merge gate
 
-Record each incoming document as an OKF source card in `sources/` before routing. The card carries `source:` (path or URI) and `source_hash:` (SHA-256) for integrity. Keep the cards in Git.
+### Preserve uploaded originals
+
+Record each incoming document as an OKF source card in `sources/` before routing. For an upload, use the same stem for the card and original. For example, `sources/interview.md` cites `/sources/interview.original.pdf` in `source:` and carries the SHA-256 of the original bytes in `source_hash:`. Keep the original's extension. For an extensionless upload, use `interview.original`. Commit the pair together and verify that the file is intended for the repository's readers.
+
+Preserve uploaded bytes through Git checkout. Add these rules to the repository's `.gitattributes` when setting up uploads:
+
+```gitattributes
+sources/**/*.original -text
+sources/**/*.original.* -text
+```
+
+For a web page or an existing corporate file, write only the card with its URI. Record a hash if the exact content used was available to hash. A stable revision or versioned URI identifies the original when the storage system supplies one.
 
 Migrate to a separate knowledge repo when the single-repo structure becomes congested or when a dedicated curation role is established.
 
@@ -323,7 +336,7 @@ redirect_to: /sources/interview.md
 [Open the source card](/sources/interview.md)
 ```
 
-Knowledge Store resolves an old citation through the redirect. A reader opening the old file in GitHub can follow its link. Existing knowledge records and citations can remain as written. Run the Knowledge Store linter and the intake profile check before committing the move. Keep the redirects for as long as old citations are in use.
+Knowledge Store resolves an old citation through the redirect. A reader opening the old file in GitHub can follow its link. Existing knowledge records and citations can remain as written. Run the Knowledge Store linter and the intake profile check before committing the move. Keep the redirects for as long as old citations are in use. A card's existing `source:` may still refer to a legacy local original. If the team chooses to publish that file, retain the card's address and update its `source:` after verifying that the bytes and hash match.
 
 ## When to use
 
