@@ -26,7 +26,8 @@ Invoke as `/transitrix:health-profile`. Follow the [README](README.md) for the e
 5. Report supported results with their scope, revision/input hashes, effective and observation dates, rules, numerator/denominator, unknowns and exclusions. Validity and reference checks are bounded batch checks, not a complete schema pass or graph coverage ratio. Empty denominator is not applicable, never success.
 6. Explain freshness from recorded admission evidence and explicit `confidence_decay` policy. A checkout or synchronization cannot reaffirm content. Missing or invalid date/policy/gate evidence remains unknown. Recorded metadata is not independent proof a review occurred. Never substitute mtime, Git author time or default age bins.
 7. Keep coverage and assertion queue unavailable until their actual sources/collectors exist. Requirement verification coverage is an unsupported traceability drill-down, not adoption success. No inferred SLA, queue drain, reachability or independent-record claim is permitted.
-8. Present findings as informational investigation prompts. Do not turn results into a score, build gate, certification or automatic model mutation. Collection errors are execution failures; health findings do not fail builds. Leave ordinary validation gates intact.
+8. If the scope includes Field or Knowledge Store, perform the [manual source-traceability drill-down](../../../guides/adoption-health-profile.md#check-source-traceability). Use the existing intake preflight and Knowledge Store linter where applicable. Report teammate access and external-source checks separately from machine results.
+9. Present findings as informational investigation prompts. Do not turn results into a score, build gate, certification or automatic model mutation. Collection errors are execution failures; health findings do not fail builds. Leave ordinary validation gates intact.
 
 ## Privacy and limits
 

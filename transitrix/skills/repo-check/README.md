@@ -15,6 +15,8 @@ Operating a Transitrix repo, you periodically want a quick, shareable answer to 
 - It is **not** a writer — it never touches a zone, and re-running is always safe (idempotent).
 - It is **not** a detail view — by design it never names an object. To locate a flagged id, use `check-placement` (names ids — keep local) or the validators directly.
 
+For a review of Field provenance, Knowledge Store citations and access to originals, use the [source-traceability drill-down](../../../guides/adoption-health-profile.md#check-source-traceability).
+
 ## Usage
 
 ```

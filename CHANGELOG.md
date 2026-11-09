@@ -30,6 +30,7 @@ unchanged; resolve the code allocation separately before that review date.
 - Align current methodology pins and ingest PRESETS_VERSION at 8.0.0; preserve historical migration fixtures and preset membership/defaults.
 - Skill bundle 0.2.0 binds the exact CLI 2.13.0 tarball and isolated consumer qualification receipt; requirements-analysis minimum becomes 8.0.0. The exact same CLI archive is retained from packaged UI verification and bound to the Studio release commit. The earlier accepted 2.12.0 evidence remains revision-bound.
 - New capability-field/view restrictions and intake profile preflight require explicit owner review, preserving absent optional fields, originals and unknown content. No automatic store split or semantic conversion.
+- New Field evidence goes through Ingest from a file or notes in chat. Knowledge Store saves new uploads beside their cards in `sources/` and links to web or corporate originals. Existing stores can [move cards while preserving old citations](patterns/knowledge-store.md#move-existing-source-cards). The [onboarding setup](transitrix/skills/onboard/SKILL.md#step-2--scaffold-the-repo) and [adoption health review](guides/adoption-health-profile.md#check-source-traceability) cover the new layout.
 
 ### Fixed
 

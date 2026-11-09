@@ -30,6 +30,8 @@ Findings return exit 0. Invalid invocation, missing dependencies, invalid config
 
 The linter itself and its validation semantics are unchanged. These checks reuse its existing methods; broader validation still belongs to the adopter's normal validation command. Configuration is not evidence that a check ran, and two counts from this collector are not independent observations.
 
+For Field and Knowledge Store, use the [manual source-traceability drill-down](../../../guides/adoption-health-profile.md#check-source-traceability) alongside the collected report. It checks provenance, source links, originals, and independent access within the agreed scope.
+
 ## Population and calculation
 
 Discovery visits `.yaml` and `.yml` files, excluding hidden files/trees, dependencies, symlinks and nested catalogue roots. Skipped trees are named; their contents are not counted. The four file classes are disjoint:

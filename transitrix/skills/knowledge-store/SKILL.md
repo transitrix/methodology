@@ -41,7 +41,7 @@ transitrix-intake-profile check <repo-root> --profile knowledge-store
 transitrix-intake-profile select <repo-root> --profile knowledge-store
 ```
 
-Stop if unavailable or refused; do not scaffold, move sources or change ignore
+For a new standalone repository, run these commands after Git initialisation at the chosen root. Stop if unavailable or refused. Do not scaffold, move sources or change ignore
 rules to bypass a conflict. Ordinary ingest/reg-intel belongs in a separate
 workspace. Commit `_intake/profile.json` with setup. On later runs repeat the
 read-only check before any write, including when the marker already exists.
@@ -61,7 +61,7 @@ knowledge/
   <concept>.md  ← individual OKF knowledge objects
 ```
 
-Scaffold any missing `_intake/`, `sources/`, and `knowledge/` directories. Create `_intake/drafts/` if absent. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Keep `_intake/inbox/*` and any legacy `_intake/originals/*` ignored (drafts MAY be committed for audit or gitignored for ephemeral runs). Keep `sources/` and any existing legacy cards or redirects visible to Git. Apply the [upload attributes](../../../patterns/knowledge-store.md#preserve-uploaded-originals) from the single-repo layout to preserve original bytes. See [moving existing cards](../../../patterns/knowledge-store.md#move-existing-source-cards). Re-run the profile check after setup and before committing; explicitly verify each new card and original path is not ignored before writing it.
+Scaffold any missing `_intake/`, `sources/`, and `knowledge/` directories. Create `_intake/drafts/` if absent. Commit a `sources/.gitkeep` while the directory is empty so a fresh clone has the location ready. Copy the initialisation content from [patterns/knowledge-store.md §Templates](../../../patterns/knowledge-store.md). Keep `_intake/inbox/*` and any legacy `_intake/originals/*` ignored (drafts MAY be committed for audit or gitignored for ephemeral runs). Keep `sources/` and any existing legacy cards or redirects visible to Git. Merge the [upload attributes](../../../patterns/knowledge-store.md#preserve-uploaded-originals) into `.gitattributes` without replacing unrelated rules. Check that `git check-attr text -- sources/example.original.md` reports `unset` before accepting uploads. See [moving existing cards](../../../patterns/knowledge-store.md#move-existing-source-cards). Re-run the profile check after setup and before committing. Verify that Git can track each new card and original path before writing it.
 
 ---
 
