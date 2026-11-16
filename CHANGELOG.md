@@ -10,6 +10,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Changed
 
+- Replace four expiring diagnostic-registry exemptions with checked historical
+  contextual cases and explicit inactive reservations. Existing diagnostic codes,
+  severities and runtime behavior remain unchanged; no proposed rule is enabled.
+
 - New Field evidence goes through Ingest from a file or notes in chat. Knowledge Store saves new uploads beside their cards in `sources/` and links to web or corporate originals. Existing stores can [move cards while preserving old citations](patterns/knowledge-store.md#move-existing-source-cards). The [onboarding setup](transitrix/skills/onboard/SKILL.md#step-2--scaffold-the-repo) and [adoption health review](guides/adoption-health-profile.md#check-source-traceability) cover the new layout.
 
 ## [8.0.0] — 2026-11-08

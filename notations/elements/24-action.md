@@ -224,6 +224,13 @@ for scoped historical mappings and positive/rejecting examples.
 
 ## 7. Evolution
 
+Reserved proposals are inactive. Listing a code here does not implement or enable
+it; activation needs a separate reviewed change and applicable release handling.
+
+| Reserved code | Status | Intended severity | Proposal |
+|---|---|---|---|
+| `ACTION-006` | reserved | warning | Flag `Strategic Initiative` as an alias of `Initiative` once migration tooling is available. |
+
 - **Actions tree view** — a tree rendering of the `parent`-linked Initiative → Programme → Project → Task hierarchy, analogous to the Goals tree ([views/04-goals.md](../views/diagrams/04-goals.md)). Specified in `views/23-actions-tree.md`; Studio implementation tracked separately.
 - **`type` normalisation** — tooling should normalise `Strategic Initiative` → `Initiative` on ingest. A validator `ACTION-006` warning for `Strategic Initiative` (use canonical `Initiative`) may be added once migration tooling is in place.
 - **Milestone** — a zero-duration action (`duration: 0`) marks a milestone within the current model. A dedicated `MILESTONE` TYPE (`05_implementation/milestones/`) is reserved in [ELEMENT_PRIMITIVES.md](../ELEMENT_PRIMITIVES.md) §6.2 for a future first-class milestone element.
