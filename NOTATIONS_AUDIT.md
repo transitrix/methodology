@@ -5,9 +5,11 @@
 every open item against the files on `main`; §2 item 3 resolved, §2 item 2
 partially resolved (see below). **Phase 4 freeze pass (2026-07-04, same
 day):** a separate PR resolved §2 items 1 and 2 in full, plus the `BP-010`
-and stale-notation-count nits in §3/§4. **Only one open item remains**: the
-capability-map display-name nit in §3. Close to archivable — one trivial nit
-away — but not archiving while anything is still open.
+and stale-notation-count nits in §3/§4. **Targeted closure (2026-11-16):**
+the remaining capability-map display-name nit in §3 is resolved. All findings
+recorded in this historical audit are closed. The dated coverage statements
+below remain historical; this closure is not a new full conformance review
+of the current methodology or of every example reference.
 **Scope:** conformance of `notations/examples/**` and the per-notation specs in
 `notations/` to the canonical contract. Excludes `0. archive/`.
 
@@ -52,10 +54,9 @@ doc-lint so it cannot silently rot:
 
 ---
 
-## 2. Open judgement items (a linter cannot decide these)
+## 2. Resolved judgement items
 
-These are unresolved **decisions**, not regressions. Each needs Valerii's
-direction before any file moves.
+These decisions required Valerii's direction. Their resolutions are retained below.
 
 1. ~~**Catalogue-root prefix — `elements/…` vs `canon/elements/…`.**~~ —
    **resolved (Phase 4 freeze pass, 2026-07-04).** `IDS_AND_REFERENCES.md`
@@ -88,10 +89,14 @@ direction before any file moves.
 
 Surfaced but left for Valerii — examples are not edited unilaterally.
 
-- `notations/examples/capability-map/northbay-retail.capability-map.transitrix.yaml`:
-  capability `V1.2.1` (In-store Retail) has `owner_role: Director of Retail
-  Operations` (a display name) where every other node uses a `ROLE-…` ID.
-  One-line inconsistency, not structural drift.
+- ~~NorthBay Retail capability owner uses a display name~~ — **resolved
+  (2026-11-16, with Valerii's approval):**
+  `notations/examples/capability-map/northbay-retail.capability-map.transitrix.yaml`
+  now gives `CAPABILITY-V1.2.1` (In-store Retail) the illustrative reference
+  `ROLE-RETAIL-OPS-1`; a YAML comment preserves “Director of Retail Operations”.
+  The new ID follows the canonical ROLE grammar. This standalone view example
+  does not declare a role catalogue, so this correction does not claim that
+  the role reference resolves against an admitted model.
 
 - ~~`organizations/NEW_ORGANIZATION_TEMPLATE.md` is stale~~ — **resolved**: the
   file described a pre-zone layout superseded by the onboarding Skill's own
