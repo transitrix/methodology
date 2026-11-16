@@ -6,11 +6,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- New Field evidence goes through Ingest from a file or notes in chat. Knowledge Store saves new uploads beside their cards in `sources/` and links to web or corporate originals. Existing stores can [move cards while preserving old citations](patterns/knowledge-store.md#move-existing-source-cards). The [onboarding setup](transitrix/skills/onboard/SKILL.md#step-2--scaffold-the-repo) and [adoption health review](guides/adoption-health-profile.md#check-source-traceability) cover the new layout.
+
 ## [8.0.0] — 2026-11-08
 
 Bump category: **MAJOR**. Closed relation enum expansion and newly restrictive
 adopter tooling require the [7.0 → 8.0 migration](migrations/7.0-to-8.0/).
-This release remains an unpublished draft until separately approved.
+
+The source archive and skill bundle 0.2.0 were published on GitHub on November 8,
+2026, after verification of the public CLI 2.13.0 package. The full ingest Node
+suite passed all 243 tests. Isolated consumer checks passed with the same CLI
+archive used to qualify Studio 3.10.0. User acceptance in an installed environment
+remains open. See the [release notes](https://github.com/transitrix/methodology/releases/tag/v8.0.0)
+for the qualification evidence and verified assets.
 
 Known diagnostic limitation: COMPIMP-010 retains its two historical warning/error
 meanings under the explicitly renewed exemption through 2026-11-16. No renumbering,
@@ -30,7 +42,6 @@ unchanged; resolve the code allocation separately before that review date.
 - Align current methodology pins and ingest PRESETS_VERSION at 8.0.0; preserve historical migration fixtures and preset membership/defaults.
 - Skill bundle 0.2.0 binds the exact CLI 2.13.0 tarball and isolated consumer qualification receipt; requirements-analysis minimum becomes 8.0.0. The exact same CLI archive is retained from packaged UI verification and bound to the Studio release commit. The earlier accepted 2.12.0 evidence remains revision-bound.
 - New capability-field/view restrictions and intake profile preflight require explicit owner review, preserving absent optional fields, originals and unknown content. No automatic store split or semantic conversion.
-- New Field evidence goes through Ingest from a file or notes in chat. Knowledge Store saves new uploads beside their cards in `sources/` and links to web or corporate originals. Existing stores can [move cards while preserving old citations](patterns/knowledge-store.md#move-existing-source-cards). The [onboarding setup](transitrix/skills/onboard/SKILL.md#step-2--scaffold-the-repo) and [adoption health review](guides/adoption-health-profile.md#check-source-traceability) cover the new layout.
 
 ### Fixed
 
