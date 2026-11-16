@@ -60,7 +60,7 @@ capability_map:
               type: domain
               current_maturity: 3
               target_maturity: 4
-              owner_role: Director of Retail Operations
+              owner_role: ROLE-RETAIL-OPS-1  # Director of Retail Operations
             - id: CAPABILITY-V1.2.2
               name: E-commerce
               type: domain
