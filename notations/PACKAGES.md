@@ -151,8 +151,9 @@ Only active, non-example objects eligible under the shared lifecycle contribute 
 ordinary package-derived results. Proposed and rejected records remain inspectable
 but cannot satisfy coverage. References into core resolve against the relevant
 admitted core set, preserving its example and lifecycle restrictions. Package-local
-admission never permits a reverse reference from core or a cross-package dependency
-(§4.1); a core-only consumer does not add package objects to its catalogue.
+admission never permits a reverse reference from core (§4.1); a core-only consumer
+does not add package objects to its catalogue. Cross-package references remain
+governed by §9; opting into the shared envelope does not change that boundary.
 
 For example, an external package's reviewed object with a disjoint ID, a complete
 shared envelope except `zone`, and a valid outgoing core reference can satisfy this
