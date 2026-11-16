@@ -133,6 +133,14 @@ No package citation is reversed into source provenance.
 
 Each zone has an **admission gate**: before an artefact enters a zone it is validated, transformed into the zone's canonical form, and tagged. Admission leaves a record in the artefact's frontmatter, so the gate that admitted it is auditable.
 
+**Scope of the record below.** The mandatory `zone` selector and the standard
+zone gates in this section apply to artefacts admitted to `canon`, `field` or
+`codex`. A domain package is outside these zones (§5). A package explicitly opting
+into the shared envelope reuses the common admission and lifecycle semantics for
+its own reviewed set under [PACKAGES §6.1](PACKAGES.md#61-reusing-the-envelope-outside-core-zones),
+without a `zone` selector on its package-local objects. This does not relax any
+requirement on core-zone artefacts or admit package objects into core.
+
 ```yaml
 zone: canon                 # canon | field | codex — required
 admitted_at: "2026-05-27"   # quoted ISO 8601 date (§4)

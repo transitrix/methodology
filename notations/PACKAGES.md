@@ -1,8 +1,8 @@
 ---
 title: "Domain Packages — optional, removable vocabulary extensions"
-version: "0.3"
+version: "0.4"
 author: "Valerii Korobeinikov"
-last_updated: "2026-09-04"
+last_updated: "2026-11-16"
 status: "draft"
 ---
 
@@ -117,7 +117,57 @@ Each shipped or externally-distributed package ships a spec document (convention
 | **Validator** | What the package's own tooling checks, and where that tooling lives. |
 | **Removal procedure** | The baseline two-step procedure (§4.3) plus any package-specific addition. |
 | **Experimental status and review date** | Whether the package is experimental, and the date its status is next reviewed. **Required, not implied** — a package that says nothing about its status is not thereby stable; silence is not a valid value here. Core specs are never refactored to accommodate a package's experimental surface — an experimental package's rough edges stay contained inside the package. |
-| **Core envelope** | Does this package's own object types carry [`CONTRACT.md`](CONTRACT.md)'s core envelope — the required header (§2), admission record (§6), and lifecycle (§7) — yes or no. **Required, not implied**; silence is invalid here for the same reason it is above. Answering "yes" means **citing** `CONTRACT.md` §2/§6/§7, never restating their field lists — the package's own validator enforces those core rule codes against the package's objects. Answering "no" requires one explicit sentence saying why not (e.g. an interchange-format package whose objects arrive pre-admission and are never themselves admitted). Either way, no parallel core-envelope-shaped rule is invented inside the package. |
+| **Core envelope** | Does this package's own object types carry [`CONTRACT.md`](CONTRACT.md)'s core envelope — the required header (§2), admission record (§6), and lifecycle (§7) — yes or no. **Required, not implied**; silence is invalid here for the same reason it is above. Answering "yes" means **citing** `CONTRACT.md` §2/§6/§7 with the package-local scope in §6.1 below, never restating their field lists — the package's own validator enforces the applicable core rule codes against its objects. Answering "no" requires one explicit sentence saying why not (e.g. an interchange-format package whose objects arrive pre-admission and are never themselves admitted). Either way, no parallel core-envelope-shaped rule is invented inside the package. |
+
+### 6.1 Reusing the envelope outside core zones
+
+For a package answering **yes**, admission means entry into the package's own
+reviewed set, not entry into `canon`, `field` or `codex`. The package folder remains
+outside the zone model (§3). Its objects **MUST NOT carry `zone:`**, including a core
+zone name or a package name used as a new zone. Omitting that selector is required
+in this scope; it does not waive the inherited header, admission-state, reviewer,
+provenance, example or lifecycle requirements. Objects in a core zone still carry
+the complete zone admission record under CONTRACT §6.
+
+The package spec identifies its admission scope, notation/extension pairs and
+disjoint ID grammar, and cites the shared rules rather than defining replacement
+fields. Its `gate_checks` use the existing `uniqueness`, `consistency` and
+`completeness` checks, scoped to its own objects and permitted outgoing references;
+additional named checks may be declared by the package spec. An active object
+requires every applicable gate check to pass. These checks assert validity within
+the package, never membership of or authority over core canon.
+
+The package validator owns the following applicability mapping:
+
+| Shared rules | Package-local application |
+|---|---|
+| `HDR-001`–`HDR-004` (CONTRACT §2) | Apply the package's declared notation/extension pair; do not register its TYPEs or notations in core. |
+| `ADMIT-001`–`ADMIT-008` (CONTRACT §6.1–§6.2) | Preserve the shared state, required metadata, reviewer authority and routing meanings. `active` (including absent ⇒ active) means admitted to the package's reviewed set. `ADMIT-003` retains the shared record requirements except the inapplicable zone selector; no empty or incomplete gate record counts as admission. |
+| `ADMIT-010`–`ADMIT-011` and example exclusion (CONTRACT §6.4) | Validate example records, exclude them from ordinary derived results, and reject a non-example reference into examples. Examples do not become production evidence through a package-local flag. |
+| `LIFECYCLE-001`–`LIFECYCLE-004` (CONTRACT §7) | Preserve dates, lifecycle validity and temporal-reference checks; the package defines no alternative date semantics. |
+| Zone-specific checks, including `ZONE-*`, `ADMIT-009` and `ADMIT-012` | Remain checks of core-zone artefacts; absence of a zone selector on a package-local object does not place it in a zone or suppress checks of referenced core objects. |
+
+Only active, non-example objects eligible under the shared lifecycle contribute to
+ordinary package-derived results. Proposed and rejected records remain inspectable
+but cannot satisfy coverage. References into core resolve against the relevant
+admitted core set, preserving its example and lifecycle restrictions. Package-local
+admission never permits a reverse reference from core (§4.1); a core-only consumer
+does not add package objects to its catalogue. Cross-package references remain
+governed by §9; opting into the shared envelope does not change that boundary.
+
+For example, an external package's reviewed object with a disjoint ID, a complete
+shared envelope except `zone`, and a valid outgoing core reference can satisfy this
+contract. The same object claiming `zone: canon`, lacking its admitter, or using a
+non-passing gate check cannot. Moving it into `canon/` does not admit a new core TYPE.
+A proposed or example object may be structurally valid while contributing nothing
+to an ordinary coverage report. Removing the package still requires only §4.3's
+procedure and leaves the core model valid.
+
+This specifies an obligation for package validators; it does not install generic
+package-envelope support in core tooling. A package must demonstrate its mapping
+and compatibility against a pinned core version before claiming either. Packages
+answering **no** retain their declared separate contract; existing core-zone schemas,
+validators and records are unchanged by this scope clarification.
 
 ---
 
