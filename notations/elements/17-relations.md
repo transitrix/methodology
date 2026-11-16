@@ -330,6 +330,13 @@ Each notation that adopts a first-class relation kind:
 
 ## 7. Evolution
 
+Reserved proposals are inactive. Listing a code here does not implement or enable
+it; activation needs a separate reviewed change and applicable release handling.
+
+| Reserved code | Status | Intended severity | Proposal |
+|---|---|---|---|
+| `REL-COVERAGE-001` | reserved | warning | Flag time-aware relation kinds with no first-class instances as a potential incomplete migration. |
+
 Pending design work (separate Wave 3 PRs):
 
 - Per-notation declarations of time-aware vs timeless relation kinds (one PR per family).

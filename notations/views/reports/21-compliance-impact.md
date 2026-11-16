@@ -300,14 +300,21 @@ Pairs with **Transitrix Studio compliance views / export** (consumer side, track
 | `COMPIMP-004` | error | `view.grouping.rows` is set to a value outside `{obligation, stage, task}`, or `view.grouping.columns` is set to a value outside `{product-stage-task, product-stage, product, process-stage-task, process-stage, process}`. |
 | `COMPIMP-005` | error | `view.status_display.treat_proposed_as` is set to a value outside `{hidden, shown-distinct}`. |
 | `COMPIMP-006` | error | `view.status_display.treat_ai_reviewed_as` is set to a value outside `{shown-distinct, shown-same, hidden}` (CONTRACT §6.2). |
-| `COMPIMP-010` | warning | `view.empty_cells.no_obligation_label` overrides the default but is one of the legacy strings the §5.3 distinction was introduced to retire (e.g. "No direct obligation", "Not applicable" used for the empty case). |
+| `COMPIMP-010` | warning | `empty_cell_label` — `view.empty_cells.no_obligation_label` overrides the default but is one of the legacy strings the §5.3 distinction was introduced to retire (e.g. "No direct obligation", "Not applicable" used for the empty case). |
 | `COMPIMP-007` | warning | Both `view.obligations.include` and `view.obligations.filter` are present (the include wins; the filter is silently ignored). |
 | `COMPIMP-008` | warning | The view selects zero obligations after applying `include` / `filter` — the rendered matrix will have no rows. Usually indicates a typo in a codex reference. |
 | `COMPIMP-009` | warning | `view.grouping.columns` is a `product-*` value (`product-stage-task`, `product-stage`, `product`) but `view.subjects.products` is absent and `view.subjects.processes` is the only entry point. The column labels reference "product" but no products are in scope; consider using `process-stage-task` / `process-stage` / `process` for a process-centric view. |
-| `COMPIMP-010` | error | A renderer has applied a PRODUCT-typed column header to a column derived solely from `view.subjects.processes`, or applied a PROCESS-typed header to a column derived from `view.subjects.products`. Subject type (PRODUCT vs PROCESS) MUST be preserved end-to-end from the config fields through to every rendered column header, as required by the subject type label invariant (§5.2 step 2). |
+| `COMPIMP-010` | error | `subject_type_mismatch` — A renderer has applied a PRODUCT-typed column header to a column derived solely from `view.subjects.processes`, or applied a PROCESS-typed header to a column derived from `view.subjects.products`. Subject type (PRODUCT vs PROCESS) MUST be preserved end-to-end from the config fields through to every rendered column header, as required by the subject type label invariant (§5.2 step 2). |
 | `COMPIMP-011` | error | `view.report_type` is absent. All compliance-impact view files MUST declare their scope type explicitly. |
 | `COMPIMP-012` | error | `report_type: product` but `view.subjects.processes` is present; or `report_type: process` but `view.subjects.products` is present. Remove the cross-type subject entry, or change `report_type` to `combined`. |
 | `COMPIMP-013` | error | `report_type: product` but `view.grouping.columns` uses a `process-*` value; or `report_type: process` but `view.grouping.columns` uses a `product-*` value. Column grouping MUST match the declared report type. |
+
+`COMPIMP-010` is a historical contextual code: `empty_cell_label` remains a
+warning and `subject_type_mismatch` remains an error. The case names above make
+these conditions explicit; they are not new output fields. Existing codes,
+severities and consumer output remain unchanged. The two cases are registered
+in [`vocabulary.yaml`](../../vocabulary.yaml)'s `contextual_rule_codes`, and both
+are checked against this table. A code alone cannot determine its severity.
 
 The shared header rules `HDR-001..004` ([CONTRACT.md](../../CONTRACT.md) §2) apply in addition.
 

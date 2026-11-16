@@ -30,6 +30,8 @@ import {
   parseRuleRowValues,
   parseVocabularyRuleCodes,
   parseVocabularyDeferredRuleCodes,
+  parseVocabularyDiagnosticMetadata,
+  deriveVocabularyRuleCodeFailures,
   parseIdTypeRegistry,
   validateIdToken,
   findIdCandidates,
@@ -510,6 +512,113 @@ deferred:
         no review_by given.
 `;
   assert.throws(() => parseVocabularyDeferredRuleCodes(text), /no review_by date/);
+});
+
+function diagnosticRegistryFixture() {
+  const vocabulary = `
+rule_codes:
+  ACT-001:
+    severity: error
+    spec: notations/action.md
+contextual_rule_codes:
+  RELEASE-004:
+    spec: notations/release.md
+    cases:
+      self_reference: error
+      predecessor_cycle: warning
+reserved_rule_codes:
+  ACTION-006:
+    spec: notations/action.md
+    status: reserved
+    severity: warning
+`;
+  const release = '| `RELEASE-004` | error | `self_reference` — self-reference |\n' +
+    '| `RELEASE-004` | warning | `predecessor_cycle` — longer cycle |';
+  return { vocabulary, specs: new Map([
+    ['notations/action.md', '| `ACT-001` | error | missing field |\n| `ACTION-006` | reserved | warning | future alias advisory |'],
+    ['notations/release.md', release],
+    ['notations/contract.md', release],
+  ]) };
+}
+
+test('VOC4 contextual diagnostics preserve code/severity pairs without time-based exemptions', () => {
+  const { vocabulary, specs } = diagnosticRegistryFixture();
+  assert.deepEqual(deriveVocabularyRuleCodeFailures(vocabulary, specs, '2099-01-01'), []);
+  const { contextual, reserved } = parseVocabularyDiagnosticMetadata(vocabulary);
+  assert.deepEqual(contextual.get('RELEASE-004').cases, { self_reference: 'error', predecessor_cycle: 'warning' });
+  assert.equal(reserved.get('ACTION-006').status, 'reserved');
+});
+
+for (const [label, from, to] of [
+  ['changed severity', '| error | `self_reference`', '| warning | `self_reference`'],
+  ['unknown case', '`self_reference`', '`unknown_case`'],
+  ['unnamed case', '`self_reference`', 'self-reference'],
+  ['combined severity hides a case', '| error | `self_reference`', '| error / warning | `self_reference`'],
+  ['invalid severity', '| error | `self_reference`', '| fatal | `self_reference`'],
+]) {
+  test(`VOC4 rejects ${label} in owning specs and restatements`, () => {
+    for (const path of ['notations/release.md', 'notations/contract.md']) {
+      const { vocabulary, specs } = diagnosticRegistryFixture();
+      specs.set(path, specs.get(path).replace(from, to));
+      assert.ok(deriveVocabularyRuleCodeFailures(vocabulary, specs).some(f => f.message.includes(path)), path);
+    }
+  });
+}
+
+test('VOC4 rejects a missing or duplicated contextual case and a missing owning spec', () => {
+  for (const mutation of ['missing case', 'duplicate case', 'missing spec']) {
+    const { vocabulary, specs } = diagnosticRegistryFixture();
+    if (mutation === 'missing spec') specs.delete('notations/release.md');
+    else if (mutation === 'missing case') specs.set('notations/release.md', specs.get('notations/release.md').split('\n')[0]);
+    else specs.set('notations/release.md', specs.get('notations/release.md') + '\n' + specs.get('notations/release.md').split('\n')[0]);
+    assert.ok(deriveVocabularyRuleCodeFailures(vocabulary, specs).length, mutation);
+  }
+});
+
+test('VOC4 rejects an active reserved rule and missing or mismatched reservation documentation', () => {
+  for (const mutation of ['active', 'missing', 'wrong severity']) {
+    const { vocabulary, specs } = diagnosticRegistryFixture();
+    const text = specs.get('notations/action.md');
+    specs.set('notations/action.md', mutation === 'active' ? text + '\n| `ACTION-006` | warning | enabled |' :
+      mutation === 'missing' ? text.split('\n')[0] : text.replace('| reserved | warning |', '| reserved | error |'));
+    assert.ok(deriveVocabularyRuleCodeFailures(vocabulary, specs).length, mutation);
+  }
+});
+
+test('VOC4 rejects overlap, malformed metadata, duplicate YAML keys and invalid severities', () => {
+  const { vocabulary } = diagnosticRegistryFixture();
+  for (const invalid of [
+    vocabulary.replace('  RELEASE-004:', '  ACT-001:'),
+    vocabulary.replace('  ACTION-006:', '  RELEASE-004:'),
+    vocabulary.replace('    status: reserved', '    status: active'),
+    vocabulary.replace('      predecessor_cycle: warning', '      predecessor_cycle: fatal'),
+    vocabulary.replace('    cases:', '    cases: null'),
+    vocabulary.replace('contextual_rule_codes:', 'contextual_rule_codes: null\nunused:'),
+    vocabulary.replace('      predecessor_cycle: warning', '      self_reference: warning'),
+    vocabulary.replace('    spec: notations/release.md', '    spec: ../outside.md'),
+    vocabulary + '\ndeferred:\n  rule_codes:\n    RELEASE-004:\n      review_by: "2099-01-01"\n',
+  ]) assert.throws(() => parseVocabularyDiagnosticMetadata(invalid));
+});
+
+test('VOC4 still rejects unregistered rules, ordinary severity drift and expired deferrals', () => {
+  const { vocabulary, specs } = diagnosticRegistryFixture();
+  specs.set('notations/other.md', '| `NEW-001` | warning | unregistered |\n| `ACT-001` | warning | wrong severity |');
+  const failures = deriveVocabularyRuleCodeFailures(vocabulary + '\ndeferred:\n  rule_codes:\n    OLD-001:\n      review_by: "2026-11-16"\n', specs, '2026-11-17');
+  assert.ok(failures.some(f => f.message.includes('NEW-001')));
+  assert.ok(failures.some(f => f.message.includes('ACT-001')));
+  assert.ok(failures.some(f => f.message.includes('review_by 2026-11-16 has passed')));
+});
+
+test('repository registry retains historical contextual severities and inactive reserved codes', () => {
+  const text = readFileSync(new URL('../notations/vocabulary.yaml', import.meta.url), 'utf8');
+  const { contextual, reserved } = parseVocabularyDiagnosticMetadata(text);
+  assert.deepEqual(contextual.get('COMPIMP-010').cases, { empty_cell_label: 'warning', subject_type_mismatch: 'error' });
+  assert.deepEqual(contextual.get('RELEASE-004').cases, { self_reference: 'error', predecessor_cycle: 'warning' });
+  for (const code of ['ACTION-006', 'REL-COVERAGE-001']) {
+    assert.equal(reserved.get(code).status, 'reserved');
+    assert.equal(reserved.get(code).severity, 'warning');
+  }
+  assert.equal(parseVocabularyDeferredRuleCodes(text).size, 0);
 });
 
 test('findDocumentSourceFailures — positive: a canonical document source passes clean', () => {
