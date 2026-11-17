@@ -126,3 +126,31 @@ test('accepts actual mixed A4 boxes from controlled fixture bytes', async () => 
     requiredOrientations: ['portrait', 'landscape'] });
   assert.deepEqual(new Set(result.verification.pages.map(p => p.orientation)), new Set(['portrait', 'landscape']));
 });
+
+
+test('refuses serialization hooks and accessors without executing them', async () => {
+  let executed = false;
+  const hooked = { ...binding };
+  Object.defineProperty(hooked, 'toJSON', { value() { executed = true; return null; } });
+  const accessor = {};
+  Object.defineProperty(accessor, 'value', { enumerable: true, get() { executed = true; return 1; } });
+  const bindingAccessor = { ...binding };
+  Object.defineProperty(bindingAccessor, 'owner', { enumerable: true, get() { executed = true; return 'owner'; } });
+  for (const patch of [{ binding: hooked }, { binding: bindingAccessor }, { options: accessor }]) {
+    let called = false;
+    await rejects({ ...input(), ...patch, engine: () => { called = true; return pdf; } }, 'PDF-INPUT');
+    assert.equal(called, false);
+  }
+  assert.equal(executed, false);
+  const options = JSON.parse('{"__proto__":{"synthetic":true},"nested":{"value":1}}');
+  const result = await convertToPdf({ ...input(), options, engine: received => {
+    assert.equal(Object.hasOwn(received.options, '__proto__'), true);
+    assert.equal(Object.getPrototypeOf(received.options), Object.prototype);
+    assert.deepEqual(received.options.nested, { value: 1 }); return pdf;
+  } });
+  assert.deepEqual(result.binding, binding);
+});
+
+test('uses PDF-INPUT for malformed top-level requests', async () => {
+  for (const request of [null, false, [], 42, 'invalid', undefined]) await rejects(request, 'PDF-INPUT');
+});
