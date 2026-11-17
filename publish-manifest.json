@@ -402,6 +402,8 @@
     "notations/examples/risk-scoring/canon/elements/01_motivation/factors/DRIVER-CHECKOUT-1.yaml",
     "notations/examples/risk-scoring/canon/elements/01_motivation/requirements/REQUIREMENT-FAILOVER-1.yaml",
     "notations/examples/risk-scoring/canon/elements/01_motivation/risks/RISK-CHECKOUT-1.yaml",
+    "notations/examples/risk-scoring/canon/elements/01_motivation/risks/RISK-CHECKOUT-2.yaml",
+    "notations/examples/risk-scoring/canon/elements/01_motivation/risks/RISK-CHECKOUT-3.yaml",
     "notations/examples/risk-scoring/canon/elements/02_business/roles/ROLE-CHECKOUT-1.yaml",
     "notations/examples/risk-scoring/transitrix.yaml",
     "notations/examples/scenarios/README.md",

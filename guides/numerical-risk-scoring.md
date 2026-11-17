@@ -1,16 +1,45 @@
 ---
 title: Numerical risk scoring with an extension
 status: active
-last_reviewed: 2026-09-20
+last_reviewed: 2026-11-17
 audience: public
 license: MIT
 ---
 
 # Numerical risk scoring with an extension
 
-For directly authored numeric risk degrees, use the core fields and an adopter-defined `risk_scale` in [RISK §7.26](../notations/ELEMENT_PRIMITIVES.md#726-risk--01_motivationrisks). No calculation is required. The optional worked scoring convention below instead keeps qualitative fields and stores its factors under `extensions.risk_scoring`. This guide demonstrates one optional convention using a [complete synthetic catalogue](../notations/examples/risk-scoring/README.md). It introduces no primitive fields, mandatory formula, or core arithmetic validator.
+For directly authored numeric risk degrees, use the core fields and adopter-defined shared `risk_scale` or per-indicator `risk_scales` in [RISK §7.26](../notations/ELEMENT_PRIMITIVES.md#726-risk--01_motivationrisks). No calculation is required. The optional worked scoring convention below instead keeps qualitative fields and stores its factors under `extensions.risk_scoring`. This guide demonstrates one optional convention using a [complete synthetic catalogue](../notations/examples/risk-scoring/README.md). The scoring convention introduces no additional primitive fields, mandatory formula, or core arithmetic validator.
 
 [RISK](../notations/ELEMENT_PRIMITIVES.md#726-risk--01_motivationrisks) requires `likelihood`, `impact`, `residual`, `owner_role` and nonempty `threatens`. Treatment obligations belong in `treated_by`. The [open extensions contract](../notations/CONTRACT.md#12-extensions--open-attribute-bag) accepts arbitrary nested YAML values, while defined fields retain their normal positions and constraints. The extension shares its host's admission and lifecycle.
+
+## Direct numeric degrees and independent scales
+
+The complete [shared-default example](../notations/examples/risk-scoring/canon/elements/01_motivation/risks/RISK-CHECKOUT-2.yaml)
+uses likelihood 4 and impact 5 on the default 1–5 rating scale, with residual 8 on
+an overriding 1–25 composite scale. The `checkout-ps` version `1.0` scheme below
+binds residual to the supplied **after-treatment** probability rating 2 and severity
+rating 4: `2 * 4 = 8`. Its raw residual 8 cannot be compared with untreated impact 5.
+The formula and `residual_inputs` live in the existing `extensions.risk_scoring`
+convention, not new core formula fields. Core checks the degree's applicable scale,
+not the formula, input bindings or cached arithmetic.
+
+The [independent-scales example](../notations/examples/risk-scoring/canon/elements/01_motivation/risks/RISK-CHECKOUT-3.yaml)
+has no shared default. Its local **`checkout-weighted`, version `1.0`** scheme
+uses a probability fraction on 0–1, severity points on 0–10 and weighted exposure
+on 0–10. All three scales are explicit with distinct IDs; even equal ranges have
+different meanings. Its defined formula is `probability_fraction * severity_points`,
+with no rounding. Supplied after-treatment inputs 0.25 and 4.5 give residual 1.125;
+they are independent conditional assumptions, not derived from the untreated
+likelihood 0.4 and impact 6.5. Finite fractions are valid core degrees. This scheme
+permits explicit zero: 0 times a supplied 4.5 is 0; a missing factor remains
+incomplete. No universal formula or post-treatment inference follows.
+
+For the first scheme, cached 9 beside factors 2 and 4 is locally inconsistent
+even though 9 is within the residual scale. A missing factor prevents local
+calculation while a stored residual still undergoes core bounds checking. Zero is
+outside this scheme's rating/score bounds, unlike the second scheme. These are
+illustrations of scheme-owner arithmetic, not an executable checker or evidence of
+effective treatment. The original qualitative catalogue remains unchanged.
 
 ## Define the scheme before recording scores
 
@@ -55,12 +84,12 @@ Thus the required fields stay `likelihood: high`, `impact: high`, `residual: med
 | Local scheme checks | The adopter's scheme owner defines checks; the risk owner supplies evidence. Check the exact scheme/version, finite estimates, bounds, integer ratings, threshold mappings, identical event/horizon across states, treatment references and evidence. Recompute both scores and reject mismatched caches. | Consistency with the local scheme, not truth of the estimates or treatment effectiveness. |
 | Report derivation | The report author selects an effective RISK version and assessment, resolves the scheme definition, runs local checks and recomputes each displayed score from factors. Include scheme/version, treatment basis and evidence references in the output. | A traceable projection of the selected model inputs. Core does not generate this risk table automatically. |
 
-A local checker should reject `probability_rating: 6`, a fractional rating, a missing factor, an unknown scheme version, a mismatched threshold mapping, or `score: 21` beside factors 4 and 5. Core pass-through of any of those extension values is not a local-check pass. A report should mark a record invalid or unscored when these checks fail, rather than silently repair the admitted record.
+A local checker should reject `probability_rating: 6`, a fractional rating under this integer-only local scheme (core itself permits fractions), a missing factor, an unknown scheme version, a mismatched threshold mapping, or `score: 21` beside factors 4 and 5. Core pass-through of any of those extension values is not a local-check pass. A report should mark a record invalid or unscored when these checks fail, rather than silently repair the admitted record.
 
 Treat stored scores as caches. Recompute on factor, scheme, horizon, evidence or treatment changes; have the accountable owner review and admit the revised assessment. Preserve lifecycle history under the [existing contract](../notations/CONTRACT.md#7-primitive-lifecycle). Reports record the source revision, assessment date and scheme version so later recalculation does not rewrite an earlier issued result.
 
 ## Compatibility and limits
 
-The open bag is sufficient for this bounded example: it retains both assessments and evidence without changing RISK semantics. No new core field or normative scoring rule is proposed. A shared calculation contract or mandatory arithmetic validation is outside numeric authoring.
+The open bag is sufficient for this bounded example: it retains both assessments and evidence without changing RISK semantics. The per-indicator core scale contract controls bounds, not scoring arithmetic. A shared calculation contract or mandatory arithmetic validation is outside numeric authoring.
 
 The guide and catalogue are documentation/source examples. Their fictional admission and evidence records do not certify an operating system. Arithmetic checks, schema checks, implementation support and a published release are separate claims; passing one does not establish the others. See the [example's verification notes](../notations/examples/risk-scoring/README.md#verification) for the concrete evaluation.
