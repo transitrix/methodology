@@ -8,6 +8,7 @@
   },
   "files": [
     "src/",
+    "PDF_RENDERING_ENGINE.md",
     "PROVENANCE.md"
   ],
   "license": "MIT",

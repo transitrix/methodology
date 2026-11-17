@@ -21,24 +21,33 @@ const plain = value => value !== null && typeof value === 'object'
 
 function jsonCopy(value) {
   const active = new Set();
-  function check(item) {
-    if (item === null || typeof item === 'string' || typeof item === 'boolean') return;
-    if (typeof item === 'number' && Number.isFinite(item)) return;
-    if (Array.isArray(item) || plain(item)) {
-      if (active.has(item)) fail('PDF-INPUT', 'Cyclic options or binding');
-      active.add(item);
-      if (Array.isArray(item)) {
-        for (let i = 0; i < item.length; i++) {
-          if (!Object.hasOwn(item, i)) fail('PDF-INPUT', 'Sparse option arrays are unsupported');
-          check(item[i]);
-        }
-      } else Object.values(item).forEach(check);
-      active.delete(item); return;
+  function copy(item) {
+    if (item === null || typeof item === 'string' || typeof item === 'boolean') return item;
+    if (typeof item === 'number' && Number.isFinite(item)) return item;
+    if (!Array.isArray(item) && !plain(item)) {
+      fail('PDF-INPUT', 'Options and binding must contain finite JSON values');
     }
-    fail('PDF-INPUT', 'Options and binding must contain finite JSON values');
+    if (active.has(item)) fail('PDF-INPUT', 'Cyclic options or binding');
+    active.add(item);
+    const array = Array.isArray(item);
+    const result = array ? [] : {};
+    for (const key of Reflect.ownKeys(item)) {
+      if (array && key === 'length') continue;
+      const descriptor = Object.getOwnPropertyDescriptor(item, key);
+      if (typeof key !== 'string' || !descriptor.enumerable || !Object.hasOwn(descriptor, 'value')
+        || (array && !/^(0|[1-9][0-9]*)$/.test(key))) {
+        fail('PDF-INPUT', 'Only enumerable JSON data properties are supported');
+      }
+      Object.defineProperty(result, key, { value: copy(descriptor.value), enumerable: true,
+        writable: true, configurable: true });
+    }
+    if (array && (result.length !== item.length || Object.keys(result).length !== item.length)) {
+      fail('PDF-INPUT', 'Sparse option arrays are unsupported');
+    }
+    active.delete(item);
+    return result;
   }
-  check(value);
-  return JSON.parse(JSON.stringify(value));
+  return copy(value);
 }
 
 const denseArray = value => Array.isArray(value)
@@ -83,13 +92,17 @@ function geometry(report, required) {
  * Both callbacks may be asynchronous. Caller authorizes/binds them beforehand.
  * Returned geometry is verifier evidence, not furniture/figure conformance.
  */
-export async function convertToPdf({ html, css = '', assets = [], fonts = [],
-  options = {}, binding, engine, verifyPdf, requiredOrientations = [] } = {}) {
+export async function convertToPdf(request = {}) {
+  if (!plain(request)) fail('PDF-INPUT', 'Conversion request must be an object');
+  const { html, css = '', assets = [], fonts = [], options = {}, binding,
+    engine, verifyPdf, requiredOrientations = [] } = request;
   if (typeof html !== 'string' || !html.trim() || typeof css !== 'string' || !plain(options)) {
     fail('PDF-INPUT', 'Nonempty HTML, string CSS and object options are required');
   }
-  if (!plain(binding) || !['owner', 'authority', 'name', 'version', 'environment', 'verifier']
-    .every(key => typeof binding[key] === 'string' && binding[key].trim())) {
+  if (!plain(binding)) fail('PDF-INPUT', 'Caller engine binding must be an object');
+  const retainedBinding = jsonCopy(binding);
+  if (!['owner', 'authority', 'name', 'version', 'environment', 'verifier']
+    .every(key => typeof retainedBinding[key] === 'string' && retainedBinding[key].trim())) {
     fail('PDF-INPUT', 'Caller engine owner/authority/name/version/environment/verifier binding is required');
   }
   if (!denseArray(requiredOrientations)
@@ -99,10 +112,9 @@ export async function convertToPdf({ html, css = '', assets = [], fonts = [],
   const required = [...requiredOrientations];
   if (typeof engine !== 'function') fail('PDF-ENGINE-UNAVAILABLE', 'Caller engine callback is unavailable');
   if (typeof verifyPdf !== 'function') fail('PDF-VERIFIER-UNAVAILABLE', 'Caller PDF verifier is unavailable');
-  const retainedBinding = jsonCopy(binding);
   const seen = new Set();
   const input = { html, css, assets: resources(assets, seen), fonts: resources(fonts, seen),
-    options: jsonCopy(options), binding: jsonCopy(binding) };
+    options: jsonCopy(options), binding: jsonCopy(retainedBinding) };
   let output;
   try { output = await engine(input); }
   catch (cause) { fail('PDF-ENGINE-FAILED', 'Caller engine failed', cause); }
