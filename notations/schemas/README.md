@@ -20,3 +20,10 @@ bounds. No external schema library is needed to run the reference linter.
 
 Use the complete synthetic model in `tests/fixtures/capability-management-cycle/`
 for integration checks. See capability-map §16.4 for consumer compatibility.
+
+## Operational diagram colors
+
+`diagram-colors.schema.json` defines the separate operational settings file, not
+additive model fields. See the [presentation contract](../presentation/diagram-colors.md)
+and `tools/diagram_colors.py` for the read-only checker and explicit patch resolver.
+It leaves model validation, admission and released consumer support unchanged.

@@ -15,7 +15,8 @@ Location:  operations/users/<github-username>/settings.md
 Fields:    github_username        — GitHub username; must match the containing folder name
            language               — primary language for prose/display names in agent output
            report_format          — output format for agent-generated reports
-           colour_scheme          — UI colour preference where applicable
+           colour_scheme          — UI light/dark/accessibility mode preference where applicable;
+                                    company diagram colors live only at operations/config/diagrams/colors.yaml
            ingest_focus_layers    — ArchiMate layers the ingest skill prioritises
 
 ADOPTER-FILL-ME — adjust defaults and add organisation-specific fields as needed.

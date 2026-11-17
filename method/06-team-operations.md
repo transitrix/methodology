@@ -185,6 +185,14 @@ A fourth area of `operations/`, distinct in *kind* from the record shapes above:
 
 Like the rest of `operations/`, both areas sit **outside** the zone model and the canonical ID grammar, are **not** walked by the doc-lint (`scripts/check-notations.mjs`), and carry no admission gate. Unlike WI/Feedback they carry no `id:` and no status vocabulary — they are addressed by **path**, and the *internal* shape of each file is owned by the tool that writes it, not by this convention. This convention fixes only **where** such data lives (`config/` vs `state/`) and the contract that `state/` is committed-but-disposable; a tool-specific config/state split conforms to this home rather than inventing its own location.
 
+Company diagram colors have one optional master at
+`operations/config/diagrams/colors.yaml` (relative to the bound organization's
+operations root). The [presentation contract](../notations/presentation/diagram-colors.md)
+defines its schema, legacy fallback, mode precedence, shared Settings controls,
+draft/Save/Cancel behavior and conflict handling. This is operational configuration,
+not model-zone content; use its dedicated read-only settings checker rather than
+the model linter. Per-user `colour_scheme` selects a mode, not a second palette.
+
 ## 4. The linking rule — `relates_to:`
 
 ADR and WI carry an optional `relates_to:` list of **model entity IDs** the artefact concerns — Goals, Capabilities, Activities, Changes, Roles, and so on, drawn from the canonical TYPE registry in [`notations/IDS_AND_REFERENCES.md`](../notations/IDS_AND_REFERENCES.md) §3.
