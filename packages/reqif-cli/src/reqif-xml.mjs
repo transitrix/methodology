@@ -12,6 +12,8 @@
 // spec-relation, for the same reason.
 
 import { escapeXmlAttr, escapeXmlText, parseXml, findChild, findChildren, textAt } from './xml.mjs';
+import { isDeepStrictEqual } from 'node:util';
+import { dump, load } from './yaml.mjs';
 
 const DATATYPE_TAG = { STRING: 'STRING', XHTML: 'XHTML', DATE: 'DATE', INTEGER: 'INTEGER', BOOLEAN: 'BOOLEAN' };
 const METADATA_NS = 'urn:transitrix:reqif:inert-metadata:1';
@@ -34,6 +36,39 @@ function assertJsonValue(value) {
     Object.values(value).forEach(assertJsonValue); return;
   }
   throw new Error('ReqIF inert metadata must contain finite JSON-compatible values');
+}
+
+function assertRepresentableMetadata(data) {
+  assertJsonValue(data);
+  // The package owns a deliberately limited YAML dialect. Refuse values that
+  // would stringify, disappear or fail during a later disk write, before import
+  // creates any output folders. JSON compatibility alone is insufficient.
+  let restored;
+  try { restored = load(dump(data)); }
+  catch { throw new Error('ReqIF inert metadata is not representable in the supported YAML dialect'); }
+  if (!isDeepStrictEqual(restored, data)) {
+    throw new Error('ReqIF inert metadata is not losslessly representable in the supported YAML dialect');
+  }
+}
+
+function parseMetadata(text) {
+  const data = JSON.parse(text);
+  // JSON.parse alone silently chooses the last duplicate key. Check decoded
+  // keys at every object depth, after syntax validation, without interpreting
+  // braces/colons inside escaped strings as structure.
+  const stack = [];
+  for (const match of text.matchAll(/"(?:\\.|[^"\\])*"|[{}\[\]]/g)) {
+    const token = match[0];
+    if (token === '{') stack.push(new Set());
+    else if (token === '[') stack.push(null);
+    else if (token === '}' || token === ']') stack.pop();
+    else if (/^\s*:/.test(text.slice(match.index + token.length))) {
+      const key = JSON.parse(token);
+      if (stack.at(-1).has(key)) throw new Error('Duplicate ReqIF inert metadata JSON key');
+      stack.at(-1).add(key);
+    }
+  }
+  return data;
 }
 
 function namespaces(node, inherited = {}) {
@@ -73,12 +108,12 @@ function readMetadata(root, model) {
       const key = `${kind}:${entry.attrs.REF}`;
       const record = records.get(key);
       if (!record || seen.has(key)) throw new Error(`Unknown or duplicate ReqIF inert metadata target: ${key}`);
-      const data = JSON.parse(entry.text);
+      const data = parseMetadata(entry.text);
       if (!data || Array.isArray(data) || typeof data !== 'object'
         || Object.keys(data).some(field => !METADATA_FIELDS[kind].includes(field))) {
         throw new Error('Unexpected ReqIF inert metadata fields');
       }
-      assertJsonValue(data);
+      assertRepresentableMetadata(data);
       Object.assign(record, data);
       seen.add(key);
     }
@@ -247,7 +282,7 @@ export function modelToReqifXml(model) {
     for (const record of items) {
       const data = metadataFor(record, kind);
       if (!Object.keys(data).length) continue;
-      assertJsonValue(data);
+      assertRepresentableMetadata(data);
       metadata.push({ kind, id: record.id, data });
     }
   }
