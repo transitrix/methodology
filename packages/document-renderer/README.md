@@ -484,12 +484,13 @@ placeholder instead — see [PDF output](#pdf-output)).
 
 ## PDF rendering engine and paged-media CSS
 
-**Status:** Engine spec and running-footer CSS generation implemented
+**Status:** HTML/CSS preparation and caller-supplied conversion adapter implemented; actual engine conformance is separate
 
-The package has two PDF rendering paths:
+The package separates three layers:
 
 1. **Simple path** (`render-pdf.mjs`) — hand-rolled, dependency-free PDF generator for plain Markdown
-2. **Paged-media path** (`render-vivliostyle.mjs`) — CSS generation for Vivliostyle or other CSS Paged Media engines
+2. **Paged-media preparation** (`render-vivliostyle.mjs`) — HTML/CSS generation for a caller-owned renderer
+3. **Callable conversion** (`convert-to-pdf.mjs`) — exported `convertToPdf` invokes the caller's engine and PDF verifier, transports assets/fonts/options, and refuses invalid output or unsupported A4 geometry. No engine dependency is bundled.
 
 ### Paged-media CSS support
 
@@ -512,7 +513,8 @@ const html = wrapHtmlForPrintRendering('<h1>Title</h1><p>Content...</p>', {
   repository_commit: 'a1b2c3d',
 });
 
-// Pass html to Vivliostyle or another CSS Paged Media renderer
+// Pass html to convertToPdf with an authorized caller engine, binding and verifier.
+// See PDF_RENDERING_ENGINE.md for the executable API and failure conventions.
 ```
 
 Supplying `issued_at` selects the issued-document footer behavior; a one-page
@@ -534,8 +536,19 @@ These helpers prepare HTML/CSS; their tests do not establish footer visibility,
 landscape geometry, diagram embedding or reproducibility in a final PDF.
 
 **Specification:** [`PDF_RENDERING_ENGINE.md`](./PDF_RENDERING_ENGINE.md)  
-**Engine reference:** Vivliostyle (option 2), caller-supplied supported (option 3)  
+**Engine ownership:** Caller-supplied; historical Vivliostyle recommendation supplies no installation/admission evidence
 **Feature matrix:** Named pages, landscape pages, break rules, running elements, counters  
-**Integration:** Vivliostyle rendering happens in documents-cli or caller's pipeline (not in this package)
+**Integration:** The owning caller supplies both executable conversion and structural/geometry verification; no documents-cli renderer is inferred
 
-Current state: Engine choice documented, paged-media CSS generation implemented and tested.
+The [callable adapter contract](PDF_RENDERING_ENGINE.md#callable-api) defines
+HTML/CSS, in-memory resource/font bytes, finite JSON options, engine/environment
+binding and typed failures. Its source API identifier and source-file SHA are
+returned separately from caller assertions and actual process observations.
+The checker requires complete sequential A4 page reports and preserves verifier
+refusals; an envelope check alone is not PDF validation.
+
+Run `node packages/document-renderer/tests/test_convert_to_pdf.mjs` from the
+repository root for fixture-engine success/refusal tests. These and the helper
+checks do not establish a real HTML-to-PDF engine, font/figure fidelity, every-page
+furniture or final issued-document acceptance. No new package release or engine
+installation is implied.

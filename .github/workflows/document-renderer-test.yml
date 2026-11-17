@@ -73,3 +73,6 @@ jobs:
 
       - name: Run snapshot caption tests
         run: node packages/document-renderer/tests/test_render_vivliostyle.mjs
+
+      - name: Run caller-supplied PDF adapter and refusal tests
+        run: node packages/document-renderer/tests/test_convert_to_pdf.mjs
