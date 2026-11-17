@@ -214,8 +214,12 @@ This mapping does not insert fields into the ordinary `values` map or change its
 attribute definitions. Packages without the metadata retain their ordinary export
 shape without a tool extension.
 
-Malformed JSON, unknown fields, duplicate or unresolved record targets and
-unsupported mapping versions are refused before writing an imported package.
+Malformed JSON, duplicate JSON keys (including nested/escaped equivalents), unknown
+fields, duplicate or unresolved record targets and unsupported mapping versions
+are refused before writing an imported package. Metadata must also survive the
+package's own YAML writer/reader without alteration. Finite JSON values outside
+that dialect, such as arrays of arrays or an empty-map item in a list, are refused
+before any output folder is created; they are never stringified or partially written.
 Unrelated tool extensions are not interpreted. This is a Transitrix round-trip
 mapping, not a claim that another ReqIF tool preserves it, nor generic vendor XML
 preservation or complete ReqIF schema validation. Release and third-party

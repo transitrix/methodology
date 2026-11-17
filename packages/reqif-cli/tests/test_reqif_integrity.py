@@ -231,7 +231,8 @@ def part_g_inert_metadata_roundtrip():
             return  # Preserve the actual missing-extension/mismatch findings.
         # Known payloads fail before any imported folder is written, rather than
         # dropping metadata, applying it to another record or overwriting identity.
-        for case in ("json", "field", "duplicate", "target", "version"):
+        for case in ("json", "field", "duplicate", "target", "version",
+                     "nested-arrays", "empty-map-item", "duplicate-json-key", "nested-duplicate-key"):
             bad = ET.fromstring(xml)
             box = bad.find(f"TOOL-EXTENSIONS/REQ-IF-TOOL-EXTENSION/{{{ns}}}INERT-METADATA")
             entry = box[0]
@@ -240,6 +241,10 @@ def part_g_inert_metadata_roundtrip():
             elif case == "duplicate": box.append(ET.fromstring(ET.tostring(entry)))
             elif case == "target": entry.set("REF", "so-missing-1")
             elif case == "version": box.set("VERSION", "99")
+            elif case == "nested-arrays": entry.text = '{"revisions":[{"matrix":[[1,2],[3,4]]}]}'
+            elif case == "empty-map-item": entry.text = '{"revisions":[{}]}'
+            elif case == "duplicate-json-key": entry.text = '{"revision":1,"revision":2}'
+            elif case == "nested-duplicate-key": entry.text = '{"revisions":[{"revision":1,"\\u0072evision":2}]}'
             # ET assigns an arbitrary namespace prefix; namespace identity must
             # work independently of that serialization choice.
             xml_path.write_text(ET.tostring(bad, encoding="unicode"), encoding="utf-8")
