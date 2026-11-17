@@ -92,10 +92,13 @@ Labels, icons, shape/dash cues and legends remain; color alone must not carry st
 2. For each exact role or type/channel, selected-variant value overrides `common`.
    Missing dark/high-contrast values do not borrow the light variant. Merge type
    paint by channel; an omitted border does not erase a configured fill/text.
-3. For an ordinary node channel, try the explicitly configured matching type first,
-   then its applicable goal/tree level or layer, then its generic node/text role.
-   A consumer with more than one applicable grouping must declare its fixed binding
-   order, never derive it from rendering order. Ordinary connectors use
+3. For an ordinary node channel, use this shared specificity order: matching type,
+   applicable goal level, applicable tree level, applicable layer, generic node/text
+   role. Select the first explicitly configured candidate in that order; input,
+   view-opening and render order never change precedence. The view determines
+   which candidates are semantically applicable, with at most one distinct binding
+   per specificity/channel. Ambiguous equal-specificity bindings are errors, not
+   permission to choose a dictionary's first entry. Ordinary connectors use
    `connection`/`connection_label`; arrowheads share the connector channel.
 4. Semantic status, maturity, virtual, critical and selection channels have their
    own eligible roles. They must not be replaced by a generic node fill. If their
@@ -107,8 +110,11 @@ Labels, icons, shape/dash cues and legends remain; color alone must not carry st
 
 The read-only [reference settings checker](../../tools/diagram_colors.py) provides
 `load_settings`, `validate`, `resolve_palette` and `resolve_color`. The last accepts
-an ordered consumer binding of role/type-channel candidates and an already
+semantically eligible role/type-channel candidates in any order and an already
 resolved legacy value, returning `(color, source)` (`common`, mode, or `legacy`).
+It enforces the shared specificity order and refuses equal-specificity ambiguity
+or mixing semantic-indicator and ordinary-node channels. A semantic channel's
+missing exact company value falls back to its own legacy value, not generic paint.
 It does not discover repositories, rewrite files, evaluate product states, render,
 or validate contrast. Consumers must bind semantic channels and perform their
 existing accessibility checks against actual resolved foreground/background pairs.
