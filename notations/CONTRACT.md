@@ -485,6 +485,14 @@ The **superseded-state read** on a `VERIFICATION` carrying `verified_on` — the
 
 Core carries a dedicated **`RISK`** element type ([ELEMENT_PRIMITIVES.md](ELEMENT_PRIMITIVES.md) §7.26) — a projected event, distinct from `ASSESSMENT`'s dated finding about the present state of a `DRIVER`. `RISK` has no ArchiMate counterpart: ArchiMate 3.x itself has no risk element (vocabulary rule, 2026-07-30 decision).
 
+Numeric RISK degrees use an optional shared `risk_scale` default and optional
+complete per-indicator `risk_scales` overrides, as specified in §7.26 of that
+primitive specification. Override presence selects the entire scale for that
+indicator; invalid supplied scales fail even when unused. Existing qualitative
+and shared-scale records retain their interpretation. An override-aware consumer
+must implement the contract rather than silently ignore the mapping. Scale
+declarations do not supply a scoring engine or prove treatment effectiveness.
+
 Before `RISK` existed, this section documented the only way core could express risk: the Open Group's *Risk and Security Overlay* (ArchiMate/SABSA), which expresses risk entirely through the motivation layer using primitives that already existed in this core. That mapping is **unchanged and remains valid** — `ASSESSMENT` keeps its present meaning and is not overloaded — for a repository that prefers to express risk this way instead of, or alongside, `RISK`:
 
 | Overlay concept | Core primitive |

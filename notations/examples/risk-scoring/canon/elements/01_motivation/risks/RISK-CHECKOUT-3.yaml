@@ -1,0 +1,61 @@
+# Synthetic teaching example; no operational claim.
+notation: risk
+id: "RISK-CHECKOUT-3"
+name: "Checkout interruption during a dependency outage"
+description: >-
+  A dependency outage may interrupt checkout. The residual estimate assumes
+  the failover obligation is in effect; the evidence and all dates are fictional.
+likelihood: 0.4
+impact: 6.5
+residual: 1.125
+risk_scales:
+  likelihood:
+    id: checkout-probability-v1
+    min: 0
+    max: 1
+    direction: higher
+  impact:
+    id: checkout-severity-0-to-10-v1
+    min: 0
+    max: 10
+    direction: higher
+  residual:
+    id: checkout-weighted-exposure-v1
+    min: 0
+    max: 10
+    direction: higher
+owner_role: "ROLE-CHECKOUT-1"
+threatens: ["DRIVER-CHECKOUT-1"]
+treated_by: ["REQUIREMENT-FAILOVER-1"]
+extensions:
+  risk_scoring:
+    scheme: "checkout-weighted"
+    version: "1.0"
+    definition: "../../../../../../../guides/numerical-risk-scoring.md"
+    formula: "probability_fraction * severity_points"
+    residual_inputs:
+      - "after_treatment.probability_fraction"
+      - "after_treatment.severity_points"
+    assessment_date: "2026-09-20"
+    assessor_role: "ROLE-CHECKOUT-1"
+    horizon: "2026-10-01/2027-09-30"
+    event: "At least one checkout interruption in the horizon"
+    after_treatment:
+      treatment_refs: ["REQUIREMENT-FAILOVER-1"]
+      basis: "synthetic conditional estimate, not verified treatment"
+      probability_fraction: 0.25
+      severity_points: 4.5
+      score: 1.125
+      evidence:
+        reference: "synthetic-conditional-factors"
+        note: "Fictional supplied inputs; no inference from untreated factors."
+example: true
+zone: canon
+admitted_at: "2026-09-20"
+admitted_by: "example-author"
+gate_checks:
+  uniqueness: pass
+  consistency: pass
+  completeness: pass
+valid_from: "2026-09-20"
+valid_to: null

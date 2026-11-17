@@ -1488,6 +1488,8 @@ rule_codes:
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   RISK-002:
+    # Indicator-key overrides replace the shared default; validate even unused scales.
+    # Normative shape, precedence and refusal cases: ELEMENT_PRIMITIVES.md §7.26.
     severity: error
     spec: notations/ELEMENT_PRIMITIVES.md
   RISK-003:
