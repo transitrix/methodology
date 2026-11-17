@@ -25,11 +25,13 @@ Exit: 0 = all pass; 1 = a check failed (message localises the problem).
 """
 
 import os
+import json
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 try:
@@ -173,6 +175,89 @@ def part_f_removal_is_clean():
             check(not PKG_ID_RE.search(text), f"F: {f}: canon file references a reqif package id after removal — dangling reference")
 
 
+def part_g_inert_metadata_roundtrip():
+    """Exercise actual disk export/import, not just two inverse functions."""
+    metadata = {
+        "workflow_state": 'reviewed <&> "quoted"\nРусский\tstate',
+        "revision": 2,
+        "revisions": [{
+            "revision": 0,
+            "values": {"ReqIF.Text": "previous <wording> & details"},
+            "recorded_at": "2026-07-28T21:45:04Z",
+            "foreign": {"flag": False, "missing": None, "tags": ["one", "two"]},
+        }],
+    }
+    with tempfile.TemporaryDirectory(prefix="reqif-inert-") as td:
+        source = Path(td) / "source"
+        shutil.copytree(REQIF_DIR, source)
+        # Use the package's existing YAML writer: the supported source dialect,
+        # not PyYAML's optional block/flow scalar styles.
+        script = f'''
+          import {{ loadPackage, writePackage }} from {json.dumps((Path(PKG_DIR) / 'src/model.mjs').as_uri())};
+          const model = await loadPackage(process.argv[1]);
+          Object.assign(model.specObjects[0], JSON.parse(process.argv[2]));
+          model.specObjects[1].workflow_state = '';
+          model.specObjects[1].revision = 0;
+          model.specObjects[1].revisions = [];
+          model.specRelations[0].recorded_target_revision = 0;
+          await writePackage(process.argv[1], model);
+        '''
+        setup = subprocess.run(["node", "--input-type=module", "-e", script,
+                                str(source), json.dumps(metadata)], capture_output=True, text=True)
+        if not check(setup.returncode == 0, f"G: fixture setup failed: {setup.stderr}"):
+            return
+        xml_path = Path(td) / "out.reqif"
+        exported = run_cli("export", str(source), str(xml_path))
+        if not check(exported.returncode == 0, f"G: export failed: {exported.stderr}"):
+            return
+        xml = xml_path.read_text(encoding="utf-8")
+        tree = ET.fromstring(xml)  # Independent XML syntax/namespace parser.
+        ns = "urn:transitrix:reqif:inert-metadata:1"
+        container = tree.find(f"TOOL-EXTENSIONS/REQ-IF-TOOL-EXTENSION/{{{ns}}}INERT-METADATA")
+        check(container is not None, "G: missing namespaced tool extension")
+        for name, candidate in [("normal", xml), ("alternate-prefix", xml.replace("tx:", "other:").replace("xmlns:tx", "xmlns:other"))]:
+            xml_path.write_text(candidate, encoding="utf-8")
+            dest = Path(td) / name
+            imported = run_cli("import", str(xml_path), str(dest))
+            if not check(imported.returncode == 0, f"G: {name} import failed: {imported.stderr}"):
+                continue
+            for file in source.glob("*/*.yaml"):
+                check(load_yaml(file) == load_yaml(dest / file.relative_to(source)),
+                      f"G: {name} changed {file.relative_to(source)}")
+        r = run_cli("roundtrip", str(source))
+        check(r.returncode == 0 and "PASS" in r.stdout, f"G: metadata roundtrip failed: {r.stderr}")
+
+        if container is None:
+            return  # Preserve the actual missing-extension/mismatch findings.
+        # Known payloads fail before any imported folder is written, rather than
+        # dropping metadata, applying it to another record or overwriting identity.
+        for case in ("json", "field", "duplicate", "target", "version"):
+            bad = ET.fromstring(xml)
+            box = bad.find(f"TOOL-EXTENSIONS/REQ-IF-TOOL-EXTENSION/{{{ns}}}INERT-METADATA")
+            entry = box[0]
+            if case == "json": entry.text = "not-json"
+            elif case == "field": entry.text = '{"id":"so-overwrite-1"}'
+            elif case == "duplicate": box.append(ET.fromstring(ET.tostring(entry)))
+            elif case == "target": entry.set("REF", "so-missing-1")
+            elif case == "version": box.set("VERSION", "99")
+            # ET assigns an arbitrary namespace prefix; namespace identity must
+            # work independently of that serialization choice.
+            xml_path.write_text(ET.tostring(bad, encoding="unicode"), encoding="utf-8")
+            dest = Path(td) / f"bad-{case}"
+            r = run_cli("import", str(xml_path), str(dest))
+            check(r.returncode == 2 and not dest.exists(),
+                  f"G: malformed {case} payload was not refused before write: {r.stdout} {r.stderr}")
+
+
+def part_h_plain_export_has_no_metadata():
+    with tempfile.TemporaryDirectory(prefix="reqif-plain-") as td:
+        output = Path(td) / "plain.reqif"
+        r = run_cli("export", str(REQIF_DIR), str(output))
+        check(r.returncode == 0, f"H: plain export failed: {r.stderr}")
+        check("TOOL-EXTENSIONS" not in output.read_text(encoding="utf-8"),
+              "H: ordinary package gained an unnecessary extension")
+
+
 if not shutil.which("node"):
     print("SKIP: `node` not found on PATH (the CLI is Node).")
     sys.exit(0)
@@ -185,6 +270,8 @@ part_c_spec_relation_first_class()
 part_d_canon_citation_resolves()
 part_e_validator_catches_broken_input()
 part_f_removal_is_clean()
+part_g_inert_metadata_roundtrip()
+part_h_plain_export_has_no_metadata()
 
 if _failures:
     print("FAIL - ReqIF package integrity:")

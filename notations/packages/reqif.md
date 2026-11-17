@@ -174,9 +174,9 @@ The package does **not** carry:
 - A revision-history or audit trail (no `revise` / `history` commands; §6.2 below deleted)
 - Suspect-link detection as a package service (no `suspect` command; §6.3 below deleted)
 
-**Representation for interchange:** when a `spec-object` or `spec-relation` is imported from ReqIF XML carrying foreign workflow state or revision-tracking fields that the standard's own XML schema defines — and equivalently, when a folder is exported that happened to have carried these before this section was written — the round-trip converter (§6, `export`/`import`) **preserves them as inert document attributes:**
+**Representation for interchange:** the round-trip converter (§6, `export`/`import`) preserves the following package fields as inert metadata through the Transitrix tool extension described below. They are not built-in ReqIF XML attributes or a managed lifecycle. Arbitrary vendor-specific history formats are not automatically understood: a foreign adapter must explicitly map them to this representation.
 
-- A `spec-object` MAY carry `workflow_state` (a string value from ReqIF's own state schema — the package imposes no constraint on this value, reads it, and writes it back unchanged). It is not a managed state machine; it is a citation of the source document's own lifecycle model, for fidelity.
+- A `spec-object` MAY carry `workflow_state` (a source-defined string — the package imposes no state vocabulary, reads it, and writes it back unchanged). It is not a managed state machine; it is a citation of the source document's own lifecycle model, for fidelity.
 - A `spec-object` MAY carry `revision` and `revisions` (the revision number and prior-snapshot list exactly as they arrived in the XML). These are not maintained by package tooling (no `revise` command); they are part of the imported payload and round-trip unchanged.
 
 ```yaml
@@ -193,7 +193,33 @@ revisions:
 values: { ... }
 ```
 
-A `spec-relation` MAY carry `recorded_target_revision` for the same reason — a field the ReqIF standard supports, imported and exported unchanged. **No suspect-link computation is performed by the package.**
+A `spec-relation` MAY carry `recorded_target_revision` as inert source metadata,
+imported and exported unchanged. **No suspect-link computation is performed by the package.**
+
+#### Tool-extension mapping
+
+The [OMG ReqIF schema](https://www.omg.org/spec/ReqIF/20110401/reqif.xsd)
+provides `TOOL-EXTENSIONS/REQ-IF-TOOL-EXTENSION` for content in other namespaces.
+The converter uses namespace `urn:transitrix:reqif:inert-metadata:1`, an
+`INERT-METADATA` container with `VERSION="1"`, and one `RECORD` per object/relation
+that has any of these fields. `KIND` identifies `spec-object` or `spec-relation`;
+`REF` identifies its existing package ID. The record's XML-escaped text is a JSON
+object containing only that kind's fields listed above. Namespace identity, rather
+than a particular XML prefix, identifies the mapping.
+
+Nested prior snapshots, source strings, numbers, booleans, nulls and empty
+collections retain their values within the package's supported YAML/finite JSON
+shapes. Missing fields remain absent; present zero/empty values are preserved.
+This mapping does not insert fields into the ordinary `values` map or change its
+attribute definitions. Packages without the metadata retain their ordinary export
+shape without a tool extension.
+
+Malformed JSON, unknown fields, duplicate or unresolved record targets and
+unsupported mapping versions are refused before writing an imported package.
+Unrelated tool extensions are not interpreted. This is a Transitrix round-trip
+mapping, not a claim that another ReqIF tool preserves it, nor generic vendor XML
+preservation or complete ReqIF schema validation. Release and third-party
+interoperability acceptance require their own evidence.
 
 ---
 

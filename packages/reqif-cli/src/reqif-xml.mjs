@@ -14,6 +14,77 @@
 import { escapeXmlAttr, escapeXmlText, parseXml, findChild, findChildren, textAt } from './xml.mjs';
 
 const DATATYPE_TAG = { STRING: 'STRING', XHTML: 'XHTML', DATE: 'DATE', INTEGER: 'INTEGER', BOOLEAN: 'BOOLEAN' };
+const METADATA_NS = 'urn:transitrix:reqif:inert-metadata:1';
+const METADATA_FIELDS = {
+  'spec-object': ['workflow_state', 'revision', 'revisions'],
+  'spec-relation': ['recorded_target_revision'],
+};
+
+// These are passive interchange values, never a package-owned lifecycle.
+function metadataFor(record, kind) {
+  return Object.fromEntries(METADATA_FIELDS[kind]
+    .filter(key => Object.hasOwn(record, key)).map(key => [key, record[key]]));
+}
+
+function assertJsonValue(value) {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return;
+  if (typeof value === 'number' && Number.isFinite(value)) return;
+  if (Array.isArray(value)) { value.forEach(assertJsonValue); return; }
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    Object.values(value).forEach(assertJsonValue); return;
+  }
+  throw new Error('ReqIF inert metadata must contain finite JSON-compatible values');
+}
+
+function namespaces(node, inherited = {}) {
+  const result = { ...inherited };
+  for (const [key, value] of Object.entries(node.attrs)) {
+    if (key === 'xmlns') result[''] = value;
+    else if (key.startsWith('xmlns:')) result[key.slice(6)] = value;
+  }
+  return result;
+}
+
+function namedInNamespace(node, local, ns) {
+  const parts = node.tag.split(':');
+  return parts.at(-1) === local && ns[parts.length === 2 ? parts[0] : ''] === METADATA_NS;
+}
+
+function readMetadata(root, model) {
+  const extensions = findChild(root, 'TOOL-EXTENSIONS');
+  if (!extensions) return;
+  const records = new Map();
+  for (const [kind, items] of [['spec-object', model.specObjects], ['spec-relation', model.specRelations]]) {
+    for (const item of items) records.set(`${kind}:${item.id}`, item);
+  }
+  const seen = new Set();
+  function visit(node, inherited) {
+    const ns = namespaces(node, inherited);
+    if (!namedInNamespace(node, 'INERT-METADATA', ns)) {
+      for (const child of node.children) visit(child, ns);
+      return;
+    }
+    if (node.attrs.VERSION !== '1') throw new Error('Unsupported ReqIF inert metadata version');
+    for (const entry of node.children) {
+      if (!namedInNamespace(entry, 'RECORD', namespaces(entry, ns)) || entry.children.length) {
+        throw new Error('Malformed ReqIF inert metadata record');
+      }
+      const kind = entry.attrs.KIND;
+      const key = `${kind}:${entry.attrs.REF}`;
+      const record = records.get(key);
+      if (!record || seen.has(key)) throw new Error(`Unknown or duplicate ReqIF inert metadata target: ${key}`);
+      const data = JSON.parse(entry.text);
+      if (!data || Array.isArray(data) || typeof data !== 'object'
+        || Object.keys(data).some(field => !METADATA_FIELDS[kind].includes(field))) {
+        throw new Error('Unexpected ReqIF inert metadata fields');
+      }
+      assertJsonValue(data);
+      Object.assign(record, data);
+      seen.add(key);
+    }
+  }
+  visit(extensions, namespaces(root));
+}
 
 function slug(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
@@ -171,6 +242,29 @@ export function modelToReqifXml(model) {
 
   out.push(close(2, 'REQ-IF-CONTENT'));
   out.push(close(1, 'CORE-CONTENT'));
+  const metadata = [];
+  for (const [kind, items] of [['spec-object', model.specObjects], ['spec-relation', model.specRelations]]) {
+    for (const record of items) {
+      const data = metadataFor(record, kind);
+      if (!Object.keys(data).length) continue;
+      assertJsonValue(data);
+      metadata.push({ kind, id: record.id, data });
+    }
+  }
+  // No extension for ordinary packages: their emitted shape stays unchanged.
+  if (metadata.length) {
+    out.push(open(1, 'TOOL-EXTENSIONS'));
+    out.push(open(2, 'REQ-IF-TOOL-EXTENSION'));
+    out.push(open(3, 'tx:INERT-METADATA', { 'xmlns:tx': METADATA_NS, VERSION: '1' }));
+    for (const { kind, id, data } of metadata) {
+      out.push(open(4, 'tx:RECORD', { KIND: kind, REF: id }));
+      out.push(line(5, escapeXmlText(JSON.stringify(data))));
+      out.push(close(4, 'tx:RECORD'));
+    }
+    out.push(close(3, 'tx:INERT-METADATA'));
+    out.push(close(2, 'REQ-IF-TOOL-EXTENSION'));
+    out.push(close(1, 'TOOL-EXTENSIONS'));
+  }
   out.push(close(0, 'REQ-IF'));
 
   return out.join('\n') + '\n';
@@ -268,5 +362,7 @@ export function reqifXmlToModel(xmlText) {
     specHierarchies.push(entry);
   }
 
-  return { specObjectTypes, specObjects, specRelations, specHierarchies };
+  const model = { specObjectTypes, specObjects, specRelations, specHierarchies };
+  readMetadata(root, model);
+  return model;
 }
