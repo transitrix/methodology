@@ -503,7 +503,12 @@ Copied into an adopter's own `.templates/operations/` when it adopts the operati
 | Central ADL harvest config | `templates/operations/adl-harvest.config.template.yaml` |
 | Central ADL index placeholder | `templates/operations/central-adl-index.template.md` |
 | Per-user settings | `templates/operations/settings-template.md` |
+| Optional company diagram colors | `templates/operations/diagram-colors.template.yaml` |
 
+
+Copy the no-op diagram palette only on explicit adoption, to the bound operations
+root at `config/diagrams/colors.yaml`. It is not a model/view template and must not
+overwrite existing color settings. Follow the [palette contract](../../../notations/presentation/diagram-colors.md).
 
 ### Additional BPMN example (reference)
 

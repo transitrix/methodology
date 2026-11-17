@@ -1143,6 +1143,18 @@ Notation-specific snapshot content definitions are added per notation in subsequ
 
 ---
 
+### 14.7 Company diagram colors outside model data
+
+The optional company palette is operational configuration under the bound
+organization's `operations/config/diagrams/colors.yaml`, not a `view_config`
+field or an element/sidecar. Its complete [presentation contract](presentation/diagram-colors.md)
+fixes override/default behavior, existing settings reconciliation, draft versus
+saved output and conflict handling. Missing values retain historical appearance.
+It changes no facts, IDs, relationships, lifecycle or semantic status. Existing
+per-view geometry and explicitly authored notation styles retain their scopes.
+Consumer implementation, release and rendered/export parity require their own
+verification; a source schema alone establishes none of them.
+
 ## 15. Domain vocabulary — Action vs Activity
 
 Two terms in the methodology carry closely related names and must not be conflated.

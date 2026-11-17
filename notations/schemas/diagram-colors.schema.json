@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Company diagram colors (operational settings)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema"
+  ],
+  "properties": {
+    "schema": {
+      "const": "transitrix-diagram-colors/v1"
+    },
+    "common": {
+      "$ref": "#/$defs/palette"
+    },
+    "variants": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "light": {
+          "$ref": "#/$defs/palette"
+        },
+        "dark": {
+          "$ref": "#/$defs/palette"
+        },
+        "high_contrast": {
+          "$ref": "#/$defs/palette"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "paint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "border": {
+          "$ref": "#/$defs/color"
+        },
+        "text": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "canvas": {
+          "$ref": "#/$defs/color"
+        },
+        "surface": {
+          "$ref": "#/$defs/color"
+        },
+        "surface_elevated": {
+          "$ref": "#/$defs/color"
+        },
+        "node_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "node_border": {
+          "$ref": "#/$defs/color"
+        },
+        "text_primary": {
+          "$ref": "#/$defs/color"
+        },
+        "text_secondary": {
+          "$ref": "#/$defs/color"
+        },
+        "text_inverse": {
+          "$ref": "#/$defs/color"
+        },
+        "header_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "header_text": {
+          "$ref": "#/$defs/color"
+        },
+        "connection": {
+          "$ref": "#/$defs/color"
+        },
+        "connection_label": {
+          "$ref": "#/$defs/color"
+        },
+        "divider": {
+          "$ref": "#/$defs/color"
+        },
+        "group_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "group_border": {
+          "$ref": "#/$defs/color"
+        },
+        "group_label": {
+          "$ref": "#/$defs/color"
+        },
+        "selection": {
+          "$ref": "#/$defs/color"
+        },
+        "selection_text": {
+          "$ref": "#/$defs/color"
+        },
+        "focus": {
+          "$ref": "#/$defs/color"
+        },
+        "drop_target": {
+          "$ref": "#/$defs/color"
+        },
+        "virtual_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "virtual_border": {
+          "$ref": "#/$defs/color"
+        },
+        "critical_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "critical_border": {
+          "$ref": "#/$defs/color"
+        },
+        "milestone_fill": {
+          "$ref": "#/$defs/color"
+        },
+        "icon": {
+          "$ref": "#/$defs/color"
+        }
+      },
+      "patternProperties": {
+        "^(goal_level\\.[0-7]|tree_level\\.[0-2]|maturity\\.(0|1|2|3|4|5|unknown|unset)|layer\\.(driver|factor|goal|change|action|motivation|strategy|business|application|technology|physical|implementation)|status\\.(success|warning|error|info|neutral|unknown)\\.(fill|border|text))$": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "types": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(goal|action|capability|element)/[^/\\x00-\\x1f\\x7f]+$": {
+          "$ref": "#/$defs/paint"
+        }
+      }
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "roles": {
+          "$ref": "#/$defs/roles"
+        },
+        "types": {
+          "$ref": "#/$defs/types"
+        }
+      }
+    }
+  }
+}

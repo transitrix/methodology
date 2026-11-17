@@ -1,0 +1,16 @@
+# Optional: copy to <operations-root>/config/diagrams/colors.yaml.
+# No-op template: omitted roles keep existing product/user colors.
+# Use only with a consumer implementing this contract; no version is implied.
+schema: transitrix-diagram-colors/v1
+common:
+  roles: {}
+  types: {}
+variants:
+  light: {}
+  dark: {}
+  high_contrast: {}
+# Example explicit override (replace common.roles above, do not duplicate it):
+# common:
+#   roles:
+#     node_border: "#123456"
+#     connection: "#345678"

@@ -124,7 +124,7 @@ Three further groups live under `templates/` for manual copy — the automated S
 |---|---|---|
 | Element primitives (one per ArchiMate layer) | `templates/elements/{01_motivation,02_business,03_application,04_technology,05_implementation}_template.yaml` | `canon/elements/<NN>_<layer>/<plural-type>/<ID>.yaml` |
 | Relations | `templates/relations/relation_template.yaml` | `canon/relations/<ID>.yaml` |
-| Operations zone (`method/06-team-operations.md` §7) | `templates/operations/{WI-template.md,adl-harvest.config.template.yaml,central-adl-index.template.md,settings-template.md}` (the ADR template lives with the `adr` skill, `../adr/templates/ADR-template.md`) | adopter's own `.templates/operations/` and `operations/` tree |
+| Operations zone (`method/06-team-operations.md` §7) | `templates/operations/{WI-template.md,adl-harvest.config.template.yaml,central-adl-index.template.md,settings-template.md,diagram-colors.template.yaml}` (the ADR template lives with the `adr` skill, `../adr/templates/ADR-template.md`) | adopter's own `.templates/operations/` and `operations/` tree |
 
 Plus one additional worked BPMN example beyond the Step-3 starter: [`templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml`](templates/bpmn/advanced-process-with-lanes.bpmn.transitrix.yaml) (multi-lane, multi-application).
 
@@ -188,3 +188,7 @@ Read the per-finding output. For each finding:
 - **Check C / D failure** — the Skill has a stray row or template that doesn't match the canon; either the catalogue is missing the notation (update the catalogue) or the Skill has a typo (fix the Skill).
 
 The script runs on every PR, so a drift introduced anywhere — Skill side or canon side — surfaces in the PR conversation, not in the Actions tab as a warning.
+
+The optional diagram-color template is a no-op until roles are explicitly set.
+Copy it only on adoption to the bound `operations/config/diagrams/colors.yaml`,
+preserving existing settings. See the [palette contract](../../../notations/presentation/diagram-colors.md).

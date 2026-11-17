@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'tools/lint.py'
+      - 'tools/diagram_colors.py'
+      - 'tools/tests/test_diagram_colors.py'
+      - 'notations/presentation/diagram-colors.md'
+      - 'transitrix/skills/onboard/templates/operations/diagram-colors.template.yaml'
       - 'tools/tests/test_capability_contract.py'
       - 'notations/schemas/**'
       - 'notations/vocabulary.yaml'
@@ -26,3 +30,5 @@ jobs:
       - run: pip install pyyaml
       - name: Check positive, negative and compatibility cases
         run: python -m unittest discover -s tools/tests -p test_capability_contract.py
+      - name: Check operational diagram settings without model admission
+        run: python -m unittest discover -s tools/tests -p test_diagram_colors.py
