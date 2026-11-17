@@ -1188,9 +1188,9 @@ An `ORGANIZATION` is the organisation's own statement of itself — its name, mi
 | `description` | recommended | string | Background, history, or elaboration on the organisation's identity. Background rides in the envelope `description`, not in a per-TYPE field. |
 | `aliases` | no | list | Legal or trading names. Alternate names (aliases) are non-authoritative surface forms; the `name` is the canonical label. |
 
-**Admission requirement.** An `ORGANIZATION` element MUST have at least one of `mission` or `vision` defined — both may be present, one is required (`ORG-002`). At most one valid `ORGANIZATION` may exist in a catalogue at any given date; simultaneous `valid_from` times across multiple `ORGANIZATION` elements is an error (`ORG-001`).
+**Admission requirement.** An `ORGANIZATION` element MUST have at least one of `mission` or `vision` defined — both may be present, one is required (`ORG-002`). At most one valid `ORGANIZATION` may exist in a catalogue at any given date. Overlapping validity windows of distinct statements are an error (`ORG-001`), even when their `valid_from` dates differ. Check the catalogue's stated windows, including past and future periods, rather than only records valid on the validator's execution date.
 
-**Time-varying.** Mission and vision are fixed properties once stated — they do not vary at issue level. An organisation restatement (changing mission or vision) is a new element with its own `valid_from` date and admission record, leaving the prior statement as a historical record. This follows the same time-aware pattern as other canon elements: the prior element's `valid_to` is set when the new element enters (a separate update or viewed via the lifecycle query), creating adjacent validity windows.
+**Time-varying.** Mission and vision are fixed properties once stated — they do not vary at issue level. An organisation restatement (changing mission or vision) is a new element with its own `valid_from` date and admission record, leaving the prior statement as a historical record. This follows the same time-aware pattern as other canon elements: the prior element's `valid_to` is set explicitly when the restatement is recorded. Dates are inclusive under `ORG-001`: with day-granularity dates, the previous statement ends before the new statement starts (for example December 31 followed by January 1). Ending and starting on the same date overlaps on that date. No validator automatically retires or rewrites the prior record.
 
 ```yaml
 # canon/elements/01_motivation/organizations/ORGANIZATION-TRANSITRIX-1.yaml
@@ -1225,6 +1225,25 @@ valid_to: null
 ```
 
 **No view inline shape:** `ORGANIZATION` is standalone-only — it is never authored inline inside a view document.
+
+**Validation examples (normative expectations, not a tooling-support claim).**
+
+| Catalogue input | Required result |
+| --- | --- |
+| One statement with `mission`, `vision`, or both | Intent requirement satisfied |
+| One admitted statement with neither field | `ORG-002` |
+| Statement A starts January 1, statement B starts June 1, neither ends | `ORG-001`, despite different start dates |
+| A ends December 31; B starts January 1 of the next year | Non-overlapping; no `ORG-001` |
+| A ends January 1; B starts that same January 1 | `ORG-001` (shared inclusive boundary day) |
+| Intersecting historical or future statement windows | `ORG-001`, regardless of today's date |
+| One statement in each of two separately bound catalogues | No cross-catalogue uniqueness comparison |
+
+Validation must account for each ORGANIZATION file in repository coverage.
+`NOTATION-SKIP-001` or an unvalidated coverage entry is not execution of these
+rules, even if a command exits successfully. A published contract, a source
+validator, its released package and the version actually selected by a consuming
+CI are distinct evidence. No particular CLI version is certified by this table.
+
 
 ---
 
@@ -1279,7 +1298,7 @@ Element-primitive-specific rules. The shared header (`HDR-001..004`, [CONTRACT.m
 | `METRIC-002` | error | `measures` is empty, or an entry does not resolve to an admitted `GOAL`, `CAPABILITY`, or `PROCESS` in canon. |
 | `METRIC-003` | error | `direction_of_good` is not one of `higher_is_better`, `lower_is_better`, `on_target`. |
 | `METRIC-004` | error | `owner_role` does not resolve to an admitted `ROLE` in canon. |
-| `ORG-001` | error | A catalogue contains more than one valid `ORGANIZATION` element with overlapping validity windows (valid_from ≤ now ≤ valid_to across two or more records). At most one valid `ORGANIZATION` may exist at any given date; multiple simultaneous statementsof the organisation's identity are forbidden. |
+| `ORG-001` | error | A catalogue contains distinct `ORGANIZATION` statements whose inclusive validity windows intersect at any date: `max(valid_from A, valid_from B) <= min(valid_to A, valid_to B)`, with null `valid_to` unbounded. This is independent of the validator's execution date; past/future overlaps count. Separate catalogues are checked independently. |
 | `ORG-002` | error | An `ORGANIZATION` element carries neither a `mission` nor a `vision` field. At least one MUST be present. |
 | `RISK-001` | error | A `RISK` element is missing `id`, `name`, or any required envelope field; or `id` does not match `RISK-[<middle>-]<INTEGER>`; or a required per-TYPE field (`likelihood`, `impact`, `residual`, `owner_role`, `threatens`) is missing (a null required degree is also missing). |
 | `RISK-002` | error | A non-null `likelihood`, `impact`, or `residual` is neither `low`/`medium`/`high` nor a finite number within its applicable override/default scale; a numeric degree lacks an applicable scale; or any supplied scale/override mapping is malformed (§7.26). Missing/null required degrees remain `RISK-001`. |
