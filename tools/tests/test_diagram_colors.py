@@ -1,5 +1,6 @@
 import copy
 import importlib.util
+import itertools
 from pathlib import Path
 import subprocess
 import sys
@@ -55,6 +56,24 @@ class DiagramColorsTest(unittest.TestCase):
         self.palette['common']['roles']['node_fill'] = '#EEEEEE'
         self.assertEqual(colors.resolve_color(self.palette, 'light', [('roles', 'maturity.1')], '#existing'),
                          ('#existing', 'legacy'))
+        with self.assertRaises(colors.SettingsError):
+            colors.resolve_color(self.palette, 'light',
+                                 [('roles', 'maturity.1'), ('roles', 'node_fill')], '#existing')
+
+    def test_specificity_is_independent_of_candidate_order(self):
+        roles = {'goal_level.0': '#111111', 'tree_level.0': '#222222',
+                 'layer.goal': '#333333', 'node_fill': '#444444'}
+        doc = {'schema': colors.VERSION, 'common': {'roles': roles,
+               'types': {'goal/strategic': {'fill': '#555555'}}}}
+        candidates = [('types', 'goal/strategic', 'fill'), ('roles', 'goal_level.0'),
+                      ('roles', 'tree_level.0'), ('roles', 'layer.goal'), ('roles', 'node_fill')]
+        for order in itertools.permutations(candidates):
+            self.assertEqual(colors.resolve_color(doc, 'light', order, '#existing'), ('#555555', 'common'))
+        del doc['common']['types']['goal/strategic']['fill']
+        for order in itertools.permutations(candidates):
+            self.assertEqual(colors.resolve_color(doc, 'light', order, '#existing'), ('#111111', 'common'))
+        with self.assertRaises(colors.SettingsError):
+            colors.resolve_color(doc, 'light', [('roles', 'layer.goal'), ('roles', 'layer.action')], '#existing')
 
     def test_invalid_inputs_and_unknowns_are_refused(self):
         invalid = [None, [], {}, {'schema': 'unknown'}, {'schema': colors.VERSION, 'id': 'MODEL-1'}]

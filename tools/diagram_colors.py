@@ -104,14 +104,41 @@ def resolve_palette(document, variant):
 
 
 def resolve_color(document, variant, candidates, legacy):
-    """First explicitly configured eligible channel wins, otherwise preserve legacy.
+    """Canonical specificity among eligible channels, otherwise preserve legacy.
 
     Candidates are tuples ('roles', role) or ('types', selector, channel).
     The consumer supplies its documented semantic binding, not arbitrary model IDs.
     """
     palette, sources = resolve_palette(document, variant)
+    normalized = set()
     for candidate in candidates:
         candidate = tuple(candidate)
+        if (not all(isinstance(part, str) for part in candidate)
+                or not ((len(candidate) == 2 and candidate[0] == 'roles')
+                        or (len(candidate) == 3 and candidate[0] == 'types'
+                            and candidate[2] in ('fill', 'border', 'text')))):
+            raise SettingsError('invalid consumer channel binding')
+        normalized.add(candidate)
+
+    def semantic(candidate):
+        return candidate[0] == 'roles' and (
+            candidate[1].startswith(('status.', 'maturity.')) or candidate[1] in {
+                'selection', 'selection_text', 'focus', 'drop_target', 'virtual_fill',
+                'virtual_border', 'critical_fill', 'critical_border', 'milestone_fill'})
+
+    if any(semantic(c) for c in normalized) and not all(semantic(c) for c in normalized):
+        raise SettingsError('semantic and ordinary channels must not be mixed')
+
+    def priority(candidate):
+        if candidate[0] == 'types': return 0
+        for rank, prefix in enumerate(('goal_level.', 'tree_level.', 'layer.'), 1):
+            if candidate[1].startswith(prefix): return rank
+        return 4
+
+    priorities = [priority(c) for c in normalized]
+    if len(priorities) != len(set(priorities)):
+        raise SettingsError('ambiguous consumer bindings at equal specificity')
+    for candidate in sorted(normalized, key=priority):
         if candidate in sources:
             value = palette[candidate[0]][candidate[1]]
             if len(candidate) == 3: value = value[candidate[2]]
