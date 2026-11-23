@@ -420,23 +420,25 @@ function buildAst(tokens) {
 // ── Public entry point ──────────────────────────────────────────────────
 
 export function parseRecipe(text, { sourcePath } = {}) {
+  const point = (offset) => {
+    const lines = text.slice(0, offset).split('\n');
+    return { offset, line: lines.length, column: lines.at(-1).length + 1 };
+  };
+  const span = (start, end) => ({ path: sourcePath ?? null, start: point(start), end: point(end) });
+
   const fmMatch = FRONT_MATTER.exec(text);
   if (!fmMatch) {
     return {
       header: { document: undefined, canon: undefined, profile: 'neutral' },
       ast: [],
-      errors: [{ message: 'recipe file must start with a YAML front-matter header (---\\n...\\n---)' }],
+      errors: [{ message: 'recipe file must start with a YAML front-matter header (---\\n...\\n---)',
+        source: span(0, text.length) }],
     };
   }
 
   const [, headerText, body] = fmMatch;
   const { header, errors: headerErrors } = parseHeader(headerText);
   const bodyOffset = text.length - body.length;
-  const point = (offset) => {
-    const lines = text.slice(0, offset).split('\n');
-    return { offset, line: lines.length, column: lines.at(-1).length + 1 };
-  };
-  const span = (start, end) => ({ path: sourcePath ?? null, start: point(start), end: point(end) });
   const locate = (start, end) => span(bodyOffset + start, bodyOffset + end);
   const { tokens, errors: tokenErrors } = tokenize(body, locate);
   const { ast, errors: astErrors } = buildAst(tokens);

@@ -307,6 +307,20 @@ function recipe(body, headerExtra = '') {
   }
 }
 
+{
+  for (const input of ['', 'plain text\nsecond line', '---\ndocument: unfinished']) {
+    const { errors } = parseRecipe(input, { sourcePath: '/tmp/invalid.md' });
+    checkEqual(errors[0].source, {
+      path: '/tmp/invalid.md',
+      start: { offset: 0, line: 1, column: 1 },
+      end: { offset: input.length, line: input.split('\n').length,
+        column: input.split('\n').at(-1).length + 1 },
+    }, 'invalid front matter retains full-file provenance');
+    checkEqual(parseRecipe(input).errors[0].source.path, null,
+      'missing source path is explicitly null');
+  }
+}
+
 if (_failures.length > 0) {
   console.error(`${_failures.length} check(s) failed:\n`);
   for (const f of _failures) console.error(`- ${f}\n`);
