@@ -321,6 +321,23 @@ function recipe(body, headerExtra = '') {
   }
 }
 
+{
+  for (const wrap of [false, true]) {
+    const body = '| Notes {{ REQ-14 }}\n\n| Name | Value |\n| --- | --- |\n| {{ REQ-15 }} | description |';
+    const parsed = parseRecipe(recipe(wrap ? `{{# each REQUIREMENT }}\n${body}\n{{/ each }}` : body));
+    checkEqual(parsed.errors, [], 'pipe prose and validated table parse');
+    const nodes = wrap ? parsed.ast[0].children : parsed.ast;
+    const refs = nodes.filter((node) => node.type === 'inline');
+    checkEqual(refs.map((node) => [node.contentKind, node.countable]),
+      [['body', true], ['table', false]], 'only validated table references are structural');
+    const prose = nodes.find((node) => node.type === 'text' && node.value.includes('| Notes'));
+    check(prose?.contentKind === 'body' && prose.countable, 'pipe-prefixed prose remains countable');
+    check(nodes.filter((node) => node.type === 'text' && /Name|---|description/.test(node.value))
+      .every((node) => node.contentKind === 'table' && !node.countable),
+    'validated outer-pipe table scaffolding remains structural');
+  }
+}
+
 if (_failures.length > 0) {
   console.error(`${_failures.length} check(s) failed:\n`);
   for (const f of _failures) console.error(`- ${f}\n`);

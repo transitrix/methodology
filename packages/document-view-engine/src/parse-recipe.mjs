@@ -462,7 +462,7 @@ export function parseRecipe(text, { sourcePath } = {}) {
       const end = text.indexOf('\n', offset);
       const line = text.slice(start, end < 0 ? text.length : end);
       node.contentKind = /^\s{0,3}#{1,6}\s/.test(line) ? 'heading'
-        : tableLines.has(node.source.start.line - 1) || /^\s*\|/.test(line) ? 'table'
+        : tableLines.has(node.source.start.line - 1) ? 'table'
         : node.type === 'figure' || /^\s*(?:Figure|Table)\s+\d+[:. —]/i.test(line) ? 'caption' : 'body';
       node.countable = node.contentKind === 'body' && ['text', 'inline', 'field-ref'].includes(node.type);
       if (node.children) annotate(node.children);
