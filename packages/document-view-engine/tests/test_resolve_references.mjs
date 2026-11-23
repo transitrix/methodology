@@ -48,6 +48,31 @@ function writeYaml(dir, name, lines) {
 }
 
 async function run() {
+  const active = { admissionState: 'active', validFrom: '2020-01-01', validTo: null };
+  const mixedIndex = new Map([
+    ['REQUIREMENT-DRAFT-1', { ...active, admissionState: 'proposed' }],
+    ['REQUIREMENT-OLD-1', { ...active, validTo: '2021-01-01' }],
+  ]);
+  for (const [a, b, expected, flag] of [
+    ['REQUIREMENT-MISSING-1', 'REQUIREMENT-DRAFT-1', 'unresolved', '⚑U'],
+    ['REQUIREMENT-MISSING-1', 'REQUIREMENT-OLD-1', 'unresolved', '⚑U'],
+    ['REQUIREMENT-DRAFT-1', 'REQUIREMENT-OLD-1', 'not-admitted', '⚑A'],
+  ]) {
+    for (const [from, to] of [[a, b], [b, a]]) {
+      const record = { ...active, relation: true, endpoints: { from, to } };
+      mixedIndex.set('REL-MIXED-1', record);
+      const resolveMixed = () => resolveReference('REL-MIXED-1', mixedIndex, { renderDate: '2026-08-06' });
+      const result = await resolveMixed();
+      checkEqual(result.state, expected, `${from} -> ${to}: endpoint precedence`);
+      checkEqual(result.flag, flag, `${from} -> ${to}: endpoint flag`);
+      record.admissionState = 'rejected';
+      record.validTo = '2021-01-01';
+      checkEqual((await resolveMixed()).state, 'not-admitted', 'record admission precedes validity and endpoints');
+      record.admissionState = 'active';
+      checkEqual((await resolveMixed()).state, 'out-of-validity', 'record validity precedes endpoints');
+    }
+  }
+
   const orgRoot = mkdtempSync(join(tmpdir(), 'resolve-references-'));
   const canonRoot = join(orgRoot, 'canon');
   const git = (args) => execFileSync('git', args, { cwd: orgRoot, encoding: 'utf8', env: {

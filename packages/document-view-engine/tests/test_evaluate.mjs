@@ -208,6 +208,22 @@ async function run() {
   checkEqual((await custom.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', ['custom_ref', 'name'], { renderDate })).content, 'Parent requirement', 'explicitly declared custom reference traverses');
   checkEqual((await custom.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', ['parent', 'name'], { renderDate: '2020-06-01' })).flag, '⚑U', 'custom declaration replaces the default reference set');
 
+  for (const [suffix, admission, end, parent, expected] of [
+    ['DRAFT', 'proposed', '"2021-01-01"', 'REQUIREMENT-GHOST-1', 'not-admitted'],
+    ['OLD', 'active', '"2021-01-01"', 'REQUIREMENT-DRAFT-1', 'out-of-validity'],
+    ['LIVE', 'active', 'null', 'REQUIREMENT-DRAFT-1', 'not-admitted'],
+  ]) {
+    const id = `REQUIREMENT-PRECEDENCE-${suffix}-1`;
+    writeYaml(reqDir, `${id}.yaml`, [
+      `id: ${id}`, `admission_state: ${admission}`, `valid_to: ${end}`,
+      'valid_from: "2020-01-01"', `parent: ${parent}`,
+    ]);
+    const precedence = await createEvaluator(canonRoot);
+    const result = await precedence.evaluateFieldPath(id, ['parent', 'name'], { renderDate });
+    checkEqual(result.state, expected, `${suffix}: traversal checks the current record before the next hop`);
+    checkEqual(result.content, null, `${suffix}: failed traversal has no content`);
+  }
+
   rmSync(orgRoot, { recursive: true, force: true });
 }
 
