@@ -277,6 +277,36 @@ function recipe(body, headerExtra = '') {
   }
 }
 
+{
+  for (const wrap of [false, true]) {
+    const body = 'Name | Value\n--- | :---:\n{{ REQ-14 }} | description\n\nBody {{ REQ-15 }}';
+    const parsed = parseRecipe(recipe(wrap ? `{{# each REQUIREMENT }}\n${body}\n{{/ each }}` : body));
+    checkEqual(parsed.errors, [], 'optional-pipe table parses');
+    const nodes = wrap ? parsed.ast[0].children : parsed.ast;
+    const refs = nodes.filter((node) => node.type === 'inline');
+    checkEqual(refs.map((node) => [node.contentKind, node.countable]),
+      [['table', false], ['body', true]], 'table references are structural, body references count');
+    check(nodes.filter((node) => node.type === 'text' && /Name|---|description/.test(node.value))
+      .every((node) => node.contentKind === 'table' && !node.countable), 'table scaffolding is not countable');
+  }
+}
+
+{
+  const input = recipe('Preceding text\n  {{# each REQUIREMENT }}\n{{# each ACTOR }}');
+  const parsed = parseRecipe(input, { sourcePath: '/tmp/skeleton.md' });
+  const errors = parsed.errors.filter((error) => /unclosed/.test(error.message));
+  checkEqual(errors.length, 2, 'each unmatched opener has a diagnostic');
+  for (const [index, directive] of ['{{# each REQUIREMENT }}', '{{# each ACTOR }}'].entries()) {
+    const offset = input.indexOf(directive);
+    const source = errors[index]?.source;
+    checkEqual(source?.path, '/tmp/skeleton.md', 'unclosed block retains source path');
+    checkEqual(source?.start, { offset, line: 6 + index, column: index === 0 ? 3 : 1 },
+      'unclosed block starts at unmatched opener');
+    checkEqual(source?.end, { offset: offset + directive.length, line: 6 + index,
+      column: (index === 0 ? 3 : 1) + directive.length }, 'unclosed block ends after opener');
+  }
+}
+
 if (_failures.length > 0) {
   console.error(`${_failures.length} check(s) failed:\n`);
   for (const f of _failures) console.error(`- ${f}\n`);

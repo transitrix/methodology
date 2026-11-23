@@ -387,7 +387,7 @@ function buildAst(tokens) {
           children: [],
         };
         top.children.push(node);
-        stack.push({ children: node.children, insideEach: true });
+        stack.push({ children: node.children, insideEach: true, source: token.source });
         break;
       }
       case 'each-close':
@@ -409,7 +409,9 @@ function buildAst(tokens) {
   }
 
   if (stack.length > 1) {
-    errors.push({ message: `${stack.length - 1} unclosed "{{# each }}" block(s) — missing "{{/ each }}"` });
+    for (const entry of stack.slice(1)) {
+      errors.push({ message: 'unclosed "{{# each }}" block — missing "{{/ each }}"', source: entry.source });
+    }
   }
 
   return { ast: root, errors };
@@ -438,6 +440,19 @@ export function parseRecipe(text, { sourcePath } = {}) {
   const locate = (start, end) => span(bodyOffset + start, bodyOffset + end);
   const { tokens, errors: tokenErrors } = tokenize(body, locate);
   const { ast, errors: astErrors } = buildAst(tokens);
+  // A delimiter row establishes a Markdown table even without outer pipes.
+  const lines = text.split('\n');
+  const tableLines = new Set();
+  const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const isRow = (line) => line !== undefined && line.includes('|') && line.trim() !== '';
+  for (let i = 1; i < lines.length; i++) {
+    if (!isRow(lines[i]) || !isRow(lines[i - 1])) continue;
+    const parts = cells(lines[i]);
+    if (parts.length < 2 || !parts.every((cell) => /^\s*:?-{3,}:?\s*$/.test(cell))) continue;
+    tableLines.add(i - 1);
+    tableLines.add(i);
+    for (let j = i + 1; j < lines.length && isRow(lines[j]); j++) tableLines.add(j);
+  }
   const annotate = (nodes) => {
     for (const node of nodes) {
       const offset = node.source.start.offset;
@@ -445,7 +460,7 @@ export function parseRecipe(text, { sourcePath } = {}) {
       const end = text.indexOf('\n', offset);
       const line = text.slice(start, end < 0 ? text.length : end);
       node.contentKind = /^\s{0,3}#{1,6}\s/.test(line) ? 'heading'
-        : /^\s*\|/.test(line) ? 'table'
+        : tableLines.has(node.source.start.line - 1) || /^\s*\|/.test(line) ? 'table'
         : node.type === 'figure' || /^\s*(?:Figure|Table)\s+\d+[:. —]/i.test(line) ? 'caption' : 'body';
       node.countable = node.contentKind === 'body' && ['text', 'inline', 'field-ref'].includes(node.type);
       if (node.children) annotate(node.children);
