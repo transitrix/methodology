@@ -246,6 +246,21 @@ function recipe(body, headerExtra = '') {
   ], 'literal text runs interleave with directives');
 }
 
+{
+  const parsed = parseRecipe(recipe('{{# each REQUIREMENT where name = "two words" order by id }}{{ .name }}{{/ each }}'), { sourcePath: '/tmp/project/docs/test.md' });
+  checkEqual(parsed.errors, [], 'quoted selection literal');
+  checkEqual(parsed.ast[0].where[0].value, 'two words', 'literal remains evaluator-compatible');
+  checkEqual(parsed.canonRoot, '/tmp/project/canon', 'canon resolved against source directory');
+  for (const body of [
+    '{{ REQ-14.a..b }}',
+    '{{# each REQUIREMENT where name = .other }}{{/ each }}',
+    '{{# each REQUIREMENT order by parent.name }}{{/ each }}',
+    '{{ trace from = REQUIREMENT to = REQUIREMENT via = parent garbage }}',
+    '{{ trace from = REQUIREMENT to = REQUIREMENT via = parent via = other }}',
+    '{{# if yes }}{{/ if }}',
+  ]) check(parseRecipe(recipe(body)).errors.length > 0, `reject malformed syntax: ${body}`);
+}
+
 if (_failures.length > 0) {
   console.error(`${_failures.length} check(s) failed:\n`);
   for (const f of _failures) console.error(`- ${f}\n`);

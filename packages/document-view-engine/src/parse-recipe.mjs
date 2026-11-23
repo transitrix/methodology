@@ -12,6 +12,7 @@
 // this module still owns is the construct set the view engine implements (`each`,
 // `trace`, the `.field` row reference) and its own error shape.
 
+import { dirname, resolve } from 'node:path';
 import { isValidId, isValidTypeName } from '../../document-renderer/src/ids.mjs';
 import {
   FRONT_MATTER,
@@ -78,7 +79,7 @@ function tokenize(body) {
 }
 
 function splitFieldPath(raw, errors, context) {
-  const segments = raw.split('.').filter((s) => s !== '');
+  const segments = raw.split('.');
   if (segments.length === 0) {
     errors.push({ message: `${context}: empty field path` });
     return [];
@@ -99,6 +100,10 @@ function classify(rawContent, errors) {
 
   if (trimmed.startsWith('#')) {
     const rest = trimmed.slice(1).trim();
+    if (!/^each(?:\s|$)/.test(rest)) {
+      errors.push({ code: /^instruct(?:\s|$)/.test(rest) ? 'DEFERRED' : 'SYNTAX', message: `unsupported block "${rest}"; only each is implemented` });
+      return { kind: 'error' };
+    }
     return parseEachOpen(rest, errors);
   }
 
@@ -106,6 +111,7 @@ function classify(rawContent, errors) {
     const rest = trimmed.slice(1).trim();
     if (rest !== 'each') {
       errors.push({ message: `unknown closing directive "{{/${rest}}}" — only "{{/ each }}" is defined` });
+      return { kind: 'error' };
     }
     return { kind: 'each-close' };
   }
@@ -136,12 +142,14 @@ function classify(rawContent, errors) {
   let fields = [];
   if (fieldsRaw !== '') {
     fields = splitFieldPath(fieldsRaw, errors, `inline reference "{{ ${trimmed} }}"`);
+  } else if (trimmed.endsWith('.')) {
+    errors.push({ message: 'inline reference: empty field path' });
   }
   return { kind: 'inline', id, fields };
 }
 
 function parseEachOpen(rest, errors) {
-  const tokens = rest.split(/\s+/).filter(Boolean);
+  const tokens = rest.match(/"(?:[^"\\]|\\.)*"|'[^']*'|!=|=|[^\s!=]+/g) ?? [];
   if (tokens[0] !== 'each') {
     errors.push({ message: `"{{# ${rest} }}" does not open with "each"` });
     return { kind: 'each-open', entityType: undefined, where: [], orderBy: null };
@@ -162,10 +170,17 @@ function parseEachOpen(rest, errors) {
     for (;;) {
       const field = tokens[idx++];
       const op = tokens[idx++];
-      const value = tokens[idx++];
+      let value = tokens[idx++];
       if (field === undefined || op === undefined || value === undefined) {
         errors.push({ message: `"{{# each ${entityType} where ... }}": incomplete comparison clause` });
         break;
+      }
+      if (!IDENTIFIER.test(field)) errors.push({ message: `each: invalid field "${field}"; joins are not supported` });
+      if (/^["']/.test(value)) {
+        try { value = value[0] === '"' ? JSON.parse(value) : value.slice(1, -1); }
+        catch { errors.push({ message: 'each: invalid quoted literal' }); }
+      } else if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        errors.push({ message: `each: expected a literal, got "${value}"; field comparisons and arithmetic are not supported` });
       }
       if (op !== '=' && op !== '!=') {
         errors.push({ message: `"{{# each ${entityType} where ... }}": unsupported operator "${op}" — only "=" / "!=" (§2)` });
@@ -192,6 +207,7 @@ function parseEachOpen(rest, errors) {
     errors.push({ message: `"{{# each ${entityType} ... }}": unexpected trailing "${tokens.slice(idx).join(' ')}"` });
   }
 
+  if (orderBy && !IDENTIFIER.test(orderBy)) errors.push({ message: `each: invalid ordering field "${orderBy}"` });
   return { kind: 'each-open', entityType, where, orderBy };
 }
 
@@ -206,6 +222,7 @@ function parseKeyValuePairs(tokens, startIdx, errors, label) {
       // Not a valid k=v triple, stop parsing and report the remainder as unparsed
       break;
     }
+    if (Object.hasOwn(kv, key)) errors.push({ message: `${label}: duplicate attribute "${key}"` });
     kv[key] = value;
     idx += 3;
   }
@@ -251,7 +268,14 @@ function splitPathAndRest(afterKeyword) {
 
 function parseTrace(trimmed, errors) {
   const tokens = trimmed.split(/\s+/).filter(Boolean);
-  const { kv } = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
+  const { kv, consumedIdx } = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
+  if (consumedIdx !== tokens.length) errors.push({ message: 'trace: unparsed trailing syntax' });
+  for (const key of Object.keys(kv)) {
+    if (!['from', 'to', 'via'].includes(key)) errors.push({ message: `trace: unknown attribute "${key}"` });
+  }
+  for (const key of ['from', 'to']) {
+    if (kv[key] && !isValidTypeName(kv[key])) errors.push({ message: `trace: invalid TYPE "${kv[key]}"` });
+  }
   for (const required of ['from', 'to', 'via']) {
     if (!kv[required]) errors.push({ message: `"{{ ${trimmed} }}": missing required "${required}"` });
   }
@@ -369,7 +393,7 @@ function buildAst(tokens) {
 
 // ── Public entry point ──────────────────────────────────────────────────
 
-export function parseRecipe(text) {
+export function parseRecipe(text, { sourcePath } = {}) {
   const fmMatch = FRONT_MATTER.exec(text);
   if (!fmMatch) {
     return {
@@ -384,5 +408,9 @@ export function parseRecipe(text) {
   const { tokens, errors: tokenErrors } = tokenize(body);
   const { ast, errors: astErrors } = buildAst(tokens);
 
-  return { header, ast, errors: [...headerErrors, ...tokenErrors, ...astErrors] };
+  return {
+    header, ast,
+    canonRoot: sourcePath && header.canon ? resolve(dirname(sourcePath), header.canon) : null,
+    errors: [...headerErrors, ...tokenErrors, ...astErrors],
+  };
 }
