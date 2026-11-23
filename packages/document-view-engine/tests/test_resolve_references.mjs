@@ -162,6 +162,27 @@ async function run() {
   const direct = await resolveReference('REQUIREMENT-OK-1', index, { canonRoot, renderDate: '2026-08-06' });
   checkEqual(direct.state, 'ok', 'resolveReference works standalone against a prebuilt index too');
 
+  // Record edits after the target changed must not reset authored anchors.
+  for (const [dir, kind, endpoint] of [
+    ['assertions', 'ASSERTION', 'about'],
+    ['verifications', 'VERIFICATION', 'verifies'],
+    ['validations', 'VALIDATION', 'validates'],
+  ]) {
+    writeYaml(join(canonRoot, dir), `${kind}-ANCHOR-1.yaml`, [
+      `id: ${kind}-ANCHOR-1`, `${endpoint}: REQUIREMENT-CHANGED-1`,
+      'performed_at: "2026-07-01"', 'admitted_at: "2026-07-02"',
+      'valid_from: "2020-01-01"', 'valid_to: null',
+    ]);
+  }
+  writeYaml(relDir, 'REL-SUSPECT-1.yaml', [
+    'id: REL-SUSPECT-1', 'from: CAPABILITY-X-1', 'to: REQUIREMENT-CHANGED-1',
+    'description: unrelated later edit', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+  git(['add', '-A']);
+  git(['commit', '-q', '-m', 'c2: later record edits']);
+  const anchored = await createResolver(canonRoot);
+  for (const id of ['REL-SUSPECT-1', 'ASSERTION-ANCHOR-1', 'VERIFICATION-ANCHOR-1', 'VALIDATION-ANCHOR-1'])
+    checkEqual((await anchored.resolveReference(id, { renderDate: '2026-08-06' })).flag, '⚑S', `${id}: authored anchor survives record edits`);
   rmSync(orgRoot, { recursive: true, force: true });
 }
 
