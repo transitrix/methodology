@@ -1,5 +1,17 @@
 # @transitrix/document-view-engine
 
+## Resolution anchor override
+
+This engine uses `admitted_at` for REL suspicion and `performed_at` for
+ASSERTION, VERIFICATION and VALIDATION, not the record's last edit. The baseline
+is the last Git commit by the end of that UTC day; missing/invalid anchors
+produce no suspicion. This intentionally differs from CONTRACT §16.2; statements
+below describing the old record-commit anchor are superseded by this section.
+REL endpoint precedence is unresolved, not-admitted, out-of-validity, then
+suspect, independent of endpoint order, after checking the record itself.
+`createEvaluator(root, { referenceFields })` declares traversable scalar fields;
+the default covers core reference fields. ID-shaped prose is not traversable.
+
 Parser for **recipe files** — the Markdown-with-transclusion source format the
 document-view engine renders against canon. A recipe carries structure and
 transclusion tags; the engine resolves them and emits a document. No document layout

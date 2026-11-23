@@ -280,6 +280,7 @@ async function indexFile(canonRoot, absPath, index, endpointFields) {
   index.set(id, {
     orgRelPath: toOrgRelPath(canonRoot, absPath),
     admissionState: field(text, 'admission_state') ?? 'active',
+    suspicionDate: field(text, endpointFields?.includes('from') ? 'admitted_at' : 'performed_at'),
     validFrom: dateField(text, 'valid_from'),
     validTo: dateField(text, 'valid_to'),
     endpoints,
@@ -338,7 +339,15 @@ function coversDate(validFrom, validTo, renderDate) {
 
 async function endpointsSuspicious(entry, index, orgRoot, manifests) {
   if (!entry.endpoints) return false;
-  const anchor = lastCommitTouching(orgRoot, entry.orgRelPath);
+  const date = entry.suspicionDate;
+  if (!coversDate(date, null, date)) return false;
+  let anchor;
+  try {
+    anchor = git(['log', '-1', `--before=${date}T23:59:59Z`, '--format=%H'], orgRoot).trim();
+  } catch {
+    return false;
+  }
+  if (!anchor) return false;
   for (const targetId of Object.values(entry.endpoints)) {
     const targetEntry = index.get(canonicalId(targetId, index));
     if (!targetEntry) continue; // unresolved endpoint — a validator's concern (REL-002 etc.), not §3's
@@ -370,11 +379,15 @@ export async function resolveReference(id, index, { canonRoot, renderDate, manif
   // REL selection and trace share endpoint activity checks. Do not recursively
   // traverse links here: graph/subtype validation belongs to the catalogue validator.
   if (entry.relation) {
+    const states = new Set();
     for (const side of ['from', 'to']) {
       const target = index.get(canonicalId(entry.endpoints[side], index));
-      if (!target) return { id, state: 'unresolved', flag: '⚑U' };
-      if (target.admissionState !== 'active') return { id, state: 'not-admitted', flag: '⚑A' };
-      if (!coversDate(target.validFrom, target.validTo, date)) return { id, state: 'out-of-validity', flag: '⚑V' };
+      if (!target) states.add('unresolved');
+      else if (target.admissionState !== 'active') states.add('not-admitted');
+      else if (!coversDate(target.validFrom, target.validTo, date)) states.add('out-of-validity');
+    }
+    for (const [state, flag] of [['unresolved', '⚑U'], ['not-admitted', '⚑A'], ['out-of-validity', '⚑V']]) {
+      if (states.has(state)) return { id, state, flag };
     }
   }
 

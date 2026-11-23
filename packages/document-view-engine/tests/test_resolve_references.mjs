@@ -42,6 +42,7 @@ function checkEqual(actual, expected, msg) {
 // ── Fixture — a small git-backed canon exercising all four states ─────────
 
 function writeYaml(dir, name, lines) {
+  if (name.startsWith('REL-')) lines = [...lines, 'admitted_at: "2026-07-01"'];
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, name), lines.join('\n') + '\n', 'utf8');
 }
@@ -49,7 +50,11 @@ function writeYaml(dir, name, lines) {
 async function run() {
   const orgRoot = mkdtempSync(join(tmpdir(), 'resolve-references-'));
   const canonRoot = join(orgRoot, 'canon');
-  const git = (args) => execFileSync('git', args, { cwd: orgRoot, encoding: 'utf8' });
+  const git = (args) => execFileSync('git', args, { cwd: orgRoot, encoding: 'utf8', env: {
+    ...process.env,
+    GIT_AUTHOR_DATE: args.some((a) => a.startsWith('c2:')) ? '2026-07-02T12:00:00Z' : '2026-07-01T12:00:00Z',
+    GIT_COMMITTER_DATE: args.some((a) => a.startsWith('c2:')) ? '2026-07-02T12:00:00Z' : '2026-07-01T12:00:00Z',
+  } });
   git(['init', '-q']);
   git(['config', 'user.email', 'fixture@example.com']);
   git(['config', 'user.name', 'Fixture']);
