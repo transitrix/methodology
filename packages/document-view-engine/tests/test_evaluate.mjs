@@ -191,6 +191,23 @@ async function run() {
     check(matrix.rows.length > 0 && matrix.cols.length > 0, 'trace: rows/cols still populate even when nothing is covered');
   }
 
+  writeYaml(reqDir, 'REQUIREMENT-TRAVERSAL-1.yaml', [
+    'id: REQUIREMENT-TRAVERSAL-1', 'valid_from: "2020-01-01"', 'valid_to: null',
+    'parent: REQUIREMENT-EXPIRED-1', 'description: REQUIREMENT-PARENT-1',
+    'custom_ref: REQUIREMENT-PARENT-1',
+  ]);
+  const traversal = await createEvaluator(canonRoot);
+  const lookup = (fields, date = renderDate) => traversal.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', fields, { renderDate: date });
+  checkEqual((await lookup(['description'])).content, 'REQUIREMENT-PARENT-1', 'ID-shaped terminal prose remains literal content');
+  checkEqual((await lookup(['description', 'name'])).flag, '⚑U', 'ID-shaped prose is not a declared reference');
+  checkEqual((await lookup(['custom_ref', 'name'])).flag, '⚑U', 'undeclared custom reference is not traversable');
+  checkEqual((await lookup(['parent', 'name'])).flag, '⚑V', 'intermediate endpoint is checked at render date');
+  checkEqual((await lookup(['parent', 'name'], '2021-01-01')).content, 'Retired', 'inclusive endpoint boundary permits terminal field access');
+  checkEqual((await lookup(['parent', 'name'], '2021-01-02')).flag, '⚑V', 'day after endpoint boundary fails traversal');
+  const custom = await createEvaluator(canonRoot, { referenceFields: ['custom_ref'] });
+  checkEqual((await custom.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', ['custom_ref', 'name'], { renderDate })).content, 'Parent requirement', 'explicitly declared custom reference traverses');
+  checkEqual((await custom.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', ['parent', 'name'], { renderDate: '2020-06-01' })).flag, '⚑U', 'custom declaration replaces the default reference set');
+
   rmSync(orgRoot, { recursive: true, force: true });
 }
 
