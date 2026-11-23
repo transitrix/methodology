@@ -9,7 +9,11 @@ import { parseRecipe } from '../src/parse-recipe.mjs';
 
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
-function deepEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+function deepEqual(a, b) {
+  const clean = (value) => JSON.stringify(value, (key, item) =>
+    ['source', 'contentKind', 'countable'].includes(key) ? undefined : item);
+  return clean(a) === clean(b);
+}
 function checkEqual(actual, expected, msg) {
   if (!deepEqual(actual, expected)) {
     _failures.push(`${msg}\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`);
@@ -259,6 +263,18 @@ function recipe(body, headerExtra = '') {
     '{{ trace from = REQUIREMENT to = REQUIREMENT via = parent via = other }}',
     '{{# if yes }}{{/ if }}',
   ]) check(parseRecipe(recipe(body)).errors.length > 0, `reject malformed syntax: ${body}`);
+}
+
+{
+  const input = recipe('# Heading {{ REQ-14 }}');
+  const ref = parseRecipe(input).ast[1];
+  checkEqual(ref.contentKind, 'heading', 'heading reference is structural');
+  checkEqual(ref.source.start.offset, input.indexOf('{{'), 'full-file offset');
+  checkEqual(ref.source.start.line, 5, 'full-file line');
+  checkEqual(ref.source.start.column, 11, 'full-file column');
+  for (const value of ['!foo', 'foo!', '"unfinished']) {
+    check(parseRecipe(recipe(`{{# each REQUIREMENT where name = ${value} }}{{/ each }}`)).errors.length > 0, 'reject lexer gaps');
+  }
 }
 
 if (_failures.length > 0) {

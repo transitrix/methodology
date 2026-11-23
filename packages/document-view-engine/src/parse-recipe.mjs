@@ -46,14 +46,16 @@ function parseHeader(headerText) {
 // Walks the raw body text, splitting it into literal-text runs and `{{ ... }}`
 // directives. `\{{` is the one defined escape (§2) — renders as a literal `{{`.
 
-function tokenize(body) {
+function tokenize(body, locate) {
   const tokens = [];
   const errors = [];
   let buf = '';
   let i = 0;
 
+  let textStart = 0;
   const flushText = () => {
-    if (buf !== '') { tokens.push({ kind: 'text', value: buf }); buf = ''; }
+    if (buf !== '') { tokens.push({ kind: 'text', value: buf, source: locate(textStart, i) }); buf = ''; }
+    textStart = i;
   };
 
   while (i < body.length) {
@@ -67,14 +69,21 @@ function tokenize(body) {
         break;
       }
       const content = body.slice(i + 2, close);
-      tokens.push(classify(content, errors));
+      const before = errors.length;
+      const token = classify(content, errors);
+      token.source = locate(i, close + 2);
+      for (const error of errors.slice(before)) error.source = token.source;
+      tokens.push(token);
       i = close + 2;
+      textStart = i;
       continue;
     }
     buf += body[i];
     i++;
+    if (body[i - 1] === '\n') flushText();
   }
   flushText();
+  for (const error of errors) error.source ??= locate(i, body.length);
   return { tokens, errors };
 }
 
@@ -149,7 +158,16 @@ function classify(rawContent, errors) {
 }
 
 function parseEachOpen(rest, errors) {
-  const tokens = rest.match(/"(?:[^"\\]|\\.)*"|'[^']*'|!=|=|[^\s!=]+/g) ?? [];
+  const tokens = [];
+  const lexer = /\s+|"(?:[^"\\]|\\.)*"|'[^']*'|!=|=|[^\s!="']+/y;
+  while (lexer.lastIndex < rest.length) {
+    const match = lexer.exec(rest);
+    if (!match) {
+      errors.push({ message: 'each: malformed quote or punctuation in selection' });
+      break;
+    }
+    if (!/^\s+$/.test(match[0])) tokens.push(match[0]);
+  }
   if (tokens[0] !== 'each') {
     errors.push({ message: `"{{# ${rest} }}" does not open with "each"` });
     return { kind: 'each-open', entityType: undefined, where: [], orderBy: null };
@@ -332,6 +350,8 @@ function buildAst(tokens) {
 
   for (const token of tokens) {
     const top = stack[stack.length - 1];
+    const before = errors.length;
+    const childCount = top.children.length;
     switch (token.kind) {
       case 'text':
         top.children.push({ type: 'text', value: token.value });
@@ -375,6 +395,8 @@ function buildAst(tokens) {
           errors.push({ message: '"{{/ each }}" with no matching "{{# each }}"' });
         } else {
           stack.pop();
+          const parent = stack.at(-1).children.at(-1);
+          parent.source = { ...parent.source, end: token.source.end };
         }
         break;
       case 'error':
@@ -382,6 +404,8 @@ function buildAst(tokens) {
       default:
         errors.push({ message: `internal: unknown token kind "${token.kind}"` });
     }
+    if (top.children.length > childCount) top.children.at(-1).source = token.source;
+    for (const error of errors.slice(before)) error.source = token.source;
   }
 
   if (stack.length > 1) {
@@ -405,8 +429,31 @@ export function parseRecipe(text, { sourcePath } = {}) {
 
   const [, headerText, body] = fmMatch;
   const { header, errors: headerErrors } = parseHeader(headerText);
-  const { tokens, errors: tokenErrors } = tokenize(body);
+  const bodyOffset = text.length - body.length;
+  const point = (offset) => {
+    const lines = text.slice(0, offset).split('\n');
+    return { offset, line: lines.length, column: lines.at(-1).length + 1 };
+  };
+  const span = (start, end) => ({ path: sourcePath ?? null, start: point(start), end: point(end) });
+  const locate = (start, end) => span(bodyOffset + start, bodyOffset + end);
+  const { tokens, errors: tokenErrors } = tokenize(body, locate);
   const { ast, errors: astErrors } = buildAst(tokens);
+  const annotate = (nodes) => {
+    for (const node of nodes) {
+      const offset = node.source.start.offset;
+      const start = text.lastIndexOf('\n', offset - 1) + 1;
+      const end = text.indexOf('\n', offset);
+      const line = text.slice(start, end < 0 ? text.length : end);
+      node.contentKind = /^\s{0,3}#{1,6}\s/.test(line) ? 'heading'
+        : /^\s*\|/.test(line) ? 'table'
+        : node.type === 'figure' || /^\s*(?:Figure|Table)\s+\d+[:. —]/i.test(line) ? 'caption' : 'body';
+      node.countable = node.contentKind === 'body' && ['text', 'inline', 'field-ref'].includes(node.type);
+      if (node.children) annotate(node.children);
+    }
+  };
+  annotate(ast);
+  for (const error of headerErrors) error.source = span(0, bodyOffset);
+  for (const error of astErrors) error.source ??= locate(0, body.length);
 
   return {
     header, ast,
