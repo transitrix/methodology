@@ -167,6 +167,8 @@ async function renderNode(node, evaluator, ctx, out) {
       if (!ctx.currentRowId) {
         // buildAst() already rejects a field-ref outside `each` — reachable
         // only if a caller hands render() an AST that skipped that check.
+        const result = { id: null, state: 'unresolved', flag: '⚑U', content: null };
+        out.document.push({ ...node, id: null, fields: [...node.fields], result, usage: { type: null, fields: [...node.fields] } });
         out.html.push(renderSpan('unresolved', '', ctx.profile, out.counts));
         fail(out, 'unresolved');
         return;

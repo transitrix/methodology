@@ -126,6 +126,19 @@ async function run() {
     const evaluator = stubEvaluator({});
     const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
     check(clean.failed, 'a field-ref with no current row renders unresolved rather than throwing');
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    for (const result of [review, clean]) {
+      assert.deepEqual(result.document, [{
+        type: 'field-ref', fields: ['x'], id: null,
+        result: { id: null, state: 'unresolved', flag: '⚑U', content: null },
+        usage: { type: null, fields: ['x'] },
+      }]);
+      checkEqual(result.counts.unresolved, 1, 'unbound field retains unresolved count');
+    }
+    check(!review.failed, 'unbound field does not fail review profile');
+    checkEqual(review.html, '<span class="dv-unresolved"><sup class="dv-flag">⚑U</sup></span>', 'unbound field retains review flag');
+    checkEqual(clean.html, '<span class="dv-clean"></span>', 'unbound field retains clean output');
+    check(clean.document[0].fields !== ast[0].fields, 'unbound field provenance copies requested fields');
   }
 
   // figure / figref — numbering, manual/missing borders, forward references
