@@ -113,6 +113,9 @@ async function run() {
       },
     };
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(review.document[0].rowIds.length, 2, 'selection event retains row IDs');
+    checkEqual(review.document[1].id, 'ROW-1', 'current-object event retains binding');
+    checkEqual(review.document[1].result.state, 'ok', 'current-object event retains state');
     checkEqual(review.html, '<span class="dv-ok">ROW-1-name</span>;<span class="dv-ok">ROW-2-name</span>;', 'each renders its children once per selected row, in order');
   }
 
@@ -123,6 +126,19 @@ async function run() {
     const evaluator = stubEvaluator({});
     const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
     check(clean.failed, 'a field-ref with no current row renders unresolved rather than throwing');
+    const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    for (const result of [review, clean]) {
+      assert.deepEqual(result.document, [{
+        type: 'field-ref', fields: ['x'], id: null,
+        result: { id: null, state: 'unresolved', flag: '⚑U', content: null },
+        usage: { type: null, fields: ['x'] },
+      }]);
+      checkEqual(result.counts.unresolved, 1, 'unbound field retains unresolved count');
+    }
+    check(!review.failed, 'unbound field does not fail review profile');
+    checkEqual(review.html, '<span class="dv-unresolved"><sup class="dv-flag">⚑U</sup></span>', 'unbound field retains review flag');
+    checkEqual(clean.html, '<span class="dv-clean"></span>', 'unbound field retains clean output');
+    check(clean.document[0].fields !== ast[0].fields, 'unbound field provenance copies requested fields');
   }
 
   // figure / figref — numbering, manual/missing borders, forward references
@@ -194,6 +210,9 @@ async function run() {
     const ast = [{ type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' }];
 
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(review.document[0].usage.relation, 'verifies', 'trace retains requested relation');
+    checkEqual(review.document[0].usage.pairs.length, 2, 'trace retains every matrix pair');
+    checkEqual(review.document[0].usage.pairs[1].covered, false, 'uncovered pair remains explicit');
     check(review.html.includes('<table class="dv-trace">'), 'trace: renders as a table');
     check(review.html.includes('<th>REQUIREMENT-A-1</th>'), 'trace: every row id is a header cell');
     check(review.html.includes('<th>REQUIREMENT-B-1</th>'), 'trace: an uncovered row still renders, not dropped');
