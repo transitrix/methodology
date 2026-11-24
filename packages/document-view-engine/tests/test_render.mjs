@@ -16,6 +16,25 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('aggregate telemetry excludes private skeleton and error content', async () => {
+  const secret = 'PRIVATE_SENTINEL';
+  const ref = { type: 'inline', id: 'TERM-1', fields: ['description'] };
+  const evaluator = { evaluateFieldPath: async () => ({ state: 'ok', content: 'two words' }) };
+  const ast = [{ type: 'text', value: `# ${secret} ` }, ref, { type: 'text', value: '\nmanual words\n' }, ref];
+  const result = await renderDocument(ast, evaluator);
+  assert.equal(result.telemetry.derivationShare, 0.5);
+  assert.doesNotMatch(JSON.stringify(result.telemetry), /PRIVATE_SENTINEL/);
+  assert.deepEqual(Object.keys(result.telemetry).sort(), ['derivationShare', 'fields', 'illustrations', 'matrixPairs', 'relations', 'states', 'types', 'usage', 'version']);
+  for (const [nodes, share] of [[[], 0], [[ref], 1], [[{ type: 'text', value: secret }], 0]]) assert.equal((await renderDocument(nodes, evaluator)).telemetry.derivationShare, share);
+  const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
+  assert.doesNotMatch(clean.html, /dv-metrics/);
+  assert.deepEqual(clean.telemetry, result.telemetry);
+  const bad = await renderDocument([{ type: 'view', path: new URL(import.meta.url).pathname, as: secret }], {}, { viewAdapter: async () => { throw Error(secret); } });
+  assert.doesNotMatch(JSON.stringify(bad.telemetry), /PRIVATE_SENTINEL|test_render|\.mjs/);
+  assert.equal(bad.telemetry.states.unresolved, 1);
+  assert.equal(bad.telemetry.illustrations.derived, 0);
+});
+
 test('mixed expanded illustrations renumber captions and every reference on insertion', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'numbering-'));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -88,6 +107,7 @@ test('adapter preserves SVG and fit; duplicate expanded anchors fail', async (t)
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
 function checkEqual(actual, expected, msg) {
+  if (typeof actual === 'string') actual = actual.replace(/<p class="dv-metrics">[^<]*<\/p>/g, '');
   if (actual !== expected) {
     _failures.push(`${msg}\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`);
   }

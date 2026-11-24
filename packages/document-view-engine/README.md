@@ -1,5 +1,13 @@
 # @transitrix/document-view-engine
 
+## Metrics and telemetry
+
+Superseding the deferrals below, review HTML prints body derivation share and
+a separate model-illustrations count. Clean HTML prints neither. Share is derived
+words / (derived + manual words), or zero with no words. Unicode letter/number
+runs count; Markdown headings, pipe tables, captions and figure labels do not.
+The additive `telemetry` contains sorted aggregate categories only; unknown values
+become `other`. Never transmit the detailed local `document` or `diagnostics`.
 Model-content illustrations must use `view`, not `figure`. Figure events carry
 manual provenance; view events retain derived SVG/HTML content, number and fit.
 The additive `diagnostics` array reports illustration failures and suspect objects,
