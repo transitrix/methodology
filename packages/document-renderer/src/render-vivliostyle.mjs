@@ -305,8 +305,25 @@ export function formatFigureCaptions(html, snapshots = {}) {
  * @param {object} [metadata.snapshots] - Map of snapshot IDs to snapshot objects
  * @returns {string} Complete HTML document with embedded CSS
  */
-export function wrapHtmlForPrintRendering(content, metadata = {}) {
+export function wrapHtmlForPrintRendering(content, metadata = {}, { profile = 'review' } = {}) {
+  if (!['review', 'clean'].includes(profile)) throw new Error('Invalid render profile');
   const css = generatePagedMediaCss(metadata);
+  const presentation = `
+body { color: black; }
+.dv-clean { color: black; }
+.dv-ok { color: #176329; }
+.dv-suspect { color: #825400; }
+.dv-unresolved { color: #b00020; }
+.dv-flag { display: inline-block; margin-inline: 0.4em; font-weight: bold; border-inline-start: 2px solid currentColor; padding-inline-start: 0.25em; }
+.dv-illus-view { border: 2px solid #176329; }
+.dv-illus-suspect { border: 3px dashed #825400; }
+.dv-illus-manual { border: 2px dotted black; }
+.dv-illus-missing { border: 4px double #b00020; }
+${profile === 'clean' ? `
+body, body * { color: black !important; }
+.dv-flag { display: none !important; }
+figure { border: none !important; }
+` : ''}`;
 
   const safeMeta = {
     issuer: escapeHtml(metadata.issuer || ''),
@@ -324,6 +341,7 @@ export function wrapHtmlForPrintRendering(content, metadata = {}) {
   <title>${safeMeta.document_identity}</title>
   <style>
     ${css}
+    ${presentation}
   </style>
 </head>
 <body>

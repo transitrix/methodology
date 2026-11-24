@@ -16,6 +16,98 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('CLI policy and presentation are independent, including invalid options', async (t) => {
+  const { spawnSync } = await import('node:child_process');
+  const root = await mkdtemp(join(tmpdir(), 'render-cli-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'canon'));
+  const file = join(root, 'recipe.md');
+  const cli = new URL('../src/render.mjs', import.meta.url);
+  const { fileURLToPath } = await import('node:url');
+  const run = (...args) => spawnSync(process.execPath, [fileURLToPath(cli), file, ...args], { encoding: 'utf8' });
+  for (const [body, expected] of [['Manual prose', 0], ['{{ TERM-MISSING-1.name }}', 1], ['{{ figure absent.png as = missing }}\n{{ figref unknown }}', 1]]) {
+    await writeFile(file, `---\ndocument: CLI test\ncanon: canon\nprofile: neutral\n---\n${body}\n`);
+    const results = ['review', 'clean'].map(profile => run('--profile', profile));
+    for (const result of results) {
+      assert.equal(result.status, expected, result.stderr);
+      assert.match(result.stdout, /<!DOCTYPE html>/);
+    }
+    const evidence = results.map(result => JSON.parse(result.stderr));
+    for (const key of ['document', 'counts', 'diagnostics', 'diagnosticFailed']) assert.deepEqual(evidence[0][key], evidence[1][key]);
+    assert.equal(run('--profile', 'clean', '--fail-on', '').status, 0);
+    assert.equal(run('--fail-on', 'suspect').status, 0);
+  }
+  // Exercise suspicion through real history and the subprocess boundary.
+  const git = (date, ...args) => {
+    const result = spawnSync('git', args, { cwd: root, encoding: 'utf8',
+      env: { ...process.env, GIT_AUTHOR_NAME: 'Render test',
+        GIT_AUTHOR_EMAIL: 'render@example.invalid', GIT_COMMITTER_NAME: 'Render test',
+        GIT_COMMITTER_EMAIL: 'render@example.invalid', GIT_AUTHOR_DATE: date,
+        GIT_COMMITTER_DATE: date } });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  const initialDate = '2020-01-01T12:00:00Z';
+  git(initialDate, 'init');
+  const lifecycle = 'zone: canon\nadmission_state: active\nvalid_from: "2020-01-01"\nvalid_to: null\n';
+  await mkdir(join(root, 'canon', 'elements'));
+  await mkdir(join(root, 'canon', 'relations'));
+  for (const id of ['REQUIREMENT-1', 'REQUIREMENT-2']) {
+    await writeFile(join(root, 'canon', 'elements', `${id}.yaml`), `id: ${id}\nname: Original\n${lifecycle}`);
+  }
+  await writeFile(join(root, 'canon', 'relations', 'REL-1.yaml'),
+    `id: REL-1\ntype: relates_to\nfrom: REQUIREMENT-1\nto: REQUIREMENT-2\nadmitted_at: "2020-01-02"\n${lifecycle}`);
+  git(initialDate, 'add', '.');
+  git(initialDate, 'commit', '-m', 'Initial admitted relation and endpoints');
+  await writeFile(join(root, 'canon', 'elements', 'REQUIREMENT-1.yaml'),
+    `id: REQUIREMENT-1\nname: Changed after admission\n${lifecycle}`);
+  git('2020-01-03T12:00:00Z', 'add', '.');
+  git('2020-01-03T12:00:00Z', 'commit', '-m', 'Change relation endpoint');
+  await writeFile(file, '---\ndocument: Suspect CLI test\ncanon: canon\n---\n{{ REL-1 }}\n');
+  for (const [policy, status] of [[[], 0], [['--fail-on', 'suspect'], 1], [['--fail-on', ''], 0]]) {
+    const evidence = [];
+    for (const profile of ['review', 'clean']) {
+      const result = run('--profile', profile, ...policy);
+      assert.equal(result.status, status, result.stderr);
+      const report = JSON.parse(result.stderr);
+      assert.equal(report.counts.suspect, 1);
+      assert.equal(report.document.find(event => event.type === 'inline').result.state, 'suspect');
+      assert.equal(report.diagnosticFailed, status === 1);
+      evidence.push(report);
+    }
+    for (const key of ['document', 'counts', 'diagnostics', 'diagnosticFailed']) {
+      assert.deepEqual(evidence[0][key], evidence[1][key]);
+    }
+  }
+  for (const args of [['--profile', 'bogus'], ['--fail-on', 'ok'], ['--profile'], ['--unknown'], ['--profile', 'clean', '--profile', 'review']]) {
+    const result = run(...args);
+    assert.equal(result.status, 2);
+    assert.equal(result.stdout, '');
+  }
+});
+
+test('all reference states retain evidence in both profiles and every policy', async () => {
+  for (const state of ['suspect', 'unresolved', 'not-admitted', 'out-of-validity']) {
+    const ast = [{ type: 'inline', id: 'TERM-1', fields: ['name'] }, {
+      type: 'each', entityType: 'TERM', where: [], orderBy: null,
+      children: [{ type: 'field-ref', fields: ['name'] }],
+    }, { type: 'trace', from: 'TERM', to: 'TERM', via: 'related' }];
+    const evaluator = {
+      evaluateEach: async () => ['TERM-1'],
+      evaluateFieldPath: async () => ({ state, content: 'value' }),
+      evaluateTrace: async () => ({ rows: ['TERM-1'], cols: ['TERM-1'], covered: new Set() }),
+    };
+    for (const failOn of [undefined, [], ['suspect']]) {
+      const review = await renderDocument(ast, evaluator, { profile: 'review', failOn });
+      const clean = await renderDocument(ast, evaluator, { profile: 'clean', failOn });
+      for (const key of ['document', 'counts', 'diagnostics', 'diagnosticFailed']) assert.deepEqual(review[key], clean[key]);
+      assert.equal(clean.counts[state], 2);
+      assert.equal(clean.diagnosticFailed, (failOn ?? ['unresolved', 'not-admitted', 'out-of-validity']).includes(state));
+      assert.doesNotMatch(clean.html, /dv-flag|⚑/);
+      assert.match(review.html, /dv-flag/);
+    }
+  }
+});
+
 test('mixed expanded illustrations renumber captions and every reference on insertion', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'numbering-'));
   t.after(() => rm(root, { recursive: true, force: true }));
