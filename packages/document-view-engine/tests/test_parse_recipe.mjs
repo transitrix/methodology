@@ -9,7 +9,11 @@ import { parseRecipe } from '../src/parse-recipe.mjs';
 
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
-function deepEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+function deepEqual(a, b) {
+  const clean = (value) => JSON.stringify(value, (key, item) =>
+    ['source', 'contentKind', 'countable'].includes(key) ? undefined : item);
+  return clean(a) === clean(b);
+}
 function checkEqual(actual, expected, msg) {
   if (!deepEqual(actual, expected)) {
     _failures.push(`${msg}\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`);
@@ -244,6 +248,94 @@ function recipe(body, headerExtra = '') {
     { type: 'inline', id: 'REQ-14', fields: [] },
     { type: 'text', value: ' after.' },
   ], 'literal text runs interleave with directives');
+}
+
+{
+  const parsed = parseRecipe(recipe('{{# each REQUIREMENT where name = "two words" order by id }}{{ .name }}{{/ each }}'), { sourcePath: '/tmp/project/docs/test.md' });
+  checkEqual(parsed.errors, [], 'quoted selection literal');
+  checkEqual(parsed.ast[0].where[0].value, 'two words', 'literal remains evaluator-compatible');
+  checkEqual(parsed.canonRoot, '/tmp/project/canon', 'canon resolved against source directory');
+  for (const body of [
+    '{{ REQ-14.a..b }}',
+    '{{# each REQUIREMENT where name = .other }}{{/ each }}',
+    '{{# each REQUIREMENT order by parent.name }}{{/ each }}',
+    '{{ trace from = REQUIREMENT to = REQUIREMENT via = parent garbage }}',
+    '{{ trace from = REQUIREMENT to = REQUIREMENT via = parent via = other }}',
+    '{{# if yes }}{{/ if }}',
+  ]) check(parseRecipe(recipe(body)).errors.length > 0, `reject malformed syntax: ${body}`);
+}
+
+{
+  const input = recipe('# Heading {{ REQ-14 }}');
+  const ref = parseRecipe(input).ast[1];
+  checkEqual(ref.contentKind, 'heading', 'heading reference is structural');
+  checkEqual(ref.source.start.offset, input.indexOf('{{'), 'full-file offset');
+  checkEqual(ref.source.start.line, 5, 'full-file line');
+  checkEqual(ref.source.start.column, 11, 'full-file column');
+  for (const value of ['!foo', 'foo!', '"unfinished']) {
+    check(parseRecipe(recipe(`{{# each REQUIREMENT where name = ${value} }}{{/ each }}`)).errors.length > 0, 'reject lexer gaps');
+  }
+}
+
+{
+  for (const wrap of [false, true]) {
+    const body = 'Name | Value\n--- | :---:\n{{ REQ-14 }} | description\n\nBody {{ REQ-15 }}';
+    const parsed = parseRecipe(recipe(wrap ? `{{# each REQUIREMENT }}\n${body}\n{{/ each }}` : body));
+    checkEqual(parsed.errors, [], 'optional-pipe table parses');
+    const nodes = wrap ? parsed.ast[0].children : parsed.ast;
+    const refs = nodes.filter((node) => node.type === 'inline');
+    checkEqual(refs.map((node) => [node.contentKind, node.countable]),
+      [['table', false], ['body', true]], 'table references are structural, body references count');
+    check(nodes.filter((node) => node.type === 'text' && /Name|---|description/.test(node.value))
+      .every((node) => node.contentKind === 'table' && !node.countable), 'table scaffolding is not countable');
+  }
+}
+
+{
+  const input = recipe('Preceding text\n  {{# each REQUIREMENT }}\n{{# each ACTOR }}');
+  const parsed = parseRecipe(input, { sourcePath: '/tmp/skeleton.md' });
+  const errors = parsed.errors.filter((error) => /unclosed/.test(error.message));
+  checkEqual(errors.length, 2, 'each unmatched opener has a diagnostic');
+  for (const [index, directive] of ['{{# each REQUIREMENT }}', '{{# each ACTOR }}'].entries()) {
+    const offset = input.indexOf(directive);
+    const source = errors[index]?.source;
+    checkEqual(source?.path, '/tmp/skeleton.md', 'unclosed block retains source path');
+    checkEqual(source?.start, { offset, line: 6 + index, column: index === 0 ? 3 : 1 },
+      'unclosed block starts at unmatched opener');
+    checkEqual(source?.end, { offset: offset + directive.length, line: 6 + index,
+      column: (index === 0 ? 3 : 1) + directive.length }, 'unclosed block ends after opener');
+  }
+}
+
+{
+  for (const input of ['', 'plain text\nsecond line', '---\ndocument: unfinished']) {
+    const { errors } = parseRecipe(input, { sourcePath: '/tmp/invalid.md' });
+    checkEqual(errors[0].source, {
+      path: '/tmp/invalid.md',
+      start: { offset: 0, line: 1, column: 1 },
+      end: { offset: input.length, line: input.split('\n').length,
+        column: input.split('\n').at(-1).length + 1 },
+    }, 'invalid front matter retains full-file provenance');
+    checkEqual(parseRecipe(input).errors[0].source.path, null,
+      'missing source path is explicitly null');
+  }
+}
+
+{
+  for (const wrap of [false, true]) {
+    const body = '| Notes {{ REQ-14 }}\n\n| Name | Value |\n| --- | --- |\n| {{ REQ-15 }} | description |';
+    const parsed = parseRecipe(recipe(wrap ? `{{# each REQUIREMENT }}\n${body}\n{{/ each }}` : body));
+    checkEqual(parsed.errors, [], 'pipe prose and validated table parse');
+    const nodes = wrap ? parsed.ast[0].children : parsed.ast;
+    const refs = nodes.filter((node) => node.type === 'inline');
+    checkEqual(refs.map((node) => [node.contentKind, node.countable]),
+      [['body', true], ['table', false]], 'only validated table references are structural');
+    const prose = nodes.find((node) => node.type === 'text' && node.value.includes('| Notes'));
+    check(prose?.contentKind === 'body' && prose.countable, 'pipe-prefixed prose remains countable');
+    check(nodes.filter((node) => node.type === 'text' && /Name|---|description/.test(node.value))
+      .every((node) => node.contentKind === 'table' && !node.countable),
+    'validated outer-pipe table scaffolding remains structural');
+  }
 }
 
 if (_failures.length > 0) {

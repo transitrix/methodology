@@ -12,6 +12,7 @@
 // this module still owns is the construct set the view engine implements (`each`,
 // `trace`, the `.field` row reference) and its own error shape.
 
+import { dirname, resolve } from 'node:path';
 import { isValidId, isValidTypeName } from '../../document-renderer/src/ids.mjs';
 import {
   FRONT_MATTER,
@@ -45,14 +46,16 @@ function parseHeader(headerText) {
 // Walks the raw body text, splitting it into literal-text runs and `{{ ... }}`
 // directives. `\{{` is the one defined escape (§2) — renders as a literal `{{`.
 
-function tokenize(body) {
+function tokenize(body, locate) {
   const tokens = [];
   const errors = [];
   let buf = '';
   let i = 0;
 
+  let textStart = 0;
   const flushText = () => {
-    if (buf !== '') { tokens.push({ kind: 'text', value: buf }); buf = ''; }
+    if (buf !== '') { tokens.push({ kind: 'text', value: buf, source: locate(textStart, i) }); buf = ''; }
+    textStart = i;
   };
 
   while (i < body.length) {
@@ -66,19 +69,26 @@ function tokenize(body) {
         break;
       }
       const content = body.slice(i + 2, close);
-      tokens.push(classify(content, errors));
+      const before = errors.length;
+      const token = classify(content, errors);
+      token.source = locate(i, close + 2);
+      for (const error of errors.slice(before)) error.source = token.source;
+      tokens.push(token);
       i = close + 2;
+      textStart = i;
       continue;
     }
     buf += body[i];
     i++;
+    if (body[i - 1] === '\n') flushText();
   }
   flushText();
+  for (const error of errors) error.source ??= locate(i, body.length);
   return { tokens, errors };
 }
 
 function splitFieldPath(raw, errors, context) {
-  const segments = raw.split('.').filter((s) => s !== '');
+  const segments = raw.split('.');
   if (segments.length === 0) {
     errors.push({ message: `${context}: empty field path` });
     return [];
@@ -99,6 +109,10 @@ function classify(rawContent, errors) {
 
   if (trimmed.startsWith('#')) {
     const rest = trimmed.slice(1).trim();
+    if (!/^each(?:\s|$)/.test(rest)) {
+      errors.push({ code: /^instruct(?:\s|$)/.test(rest) ? 'DEFERRED' : 'SYNTAX', message: `unsupported block "${rest}"; only each is implemented` });
+      return { kind: 'error' };
+    }
     return parseEachOpen(rest, errors);
   }
 
@@ -106,6 +120,7 @@ function classify(rawContent, errors) {
     const rest = trimmed.slice(1).trim();
     if (rest !== 'each') {
       errors.push({ message: `unknown closing directive "{{/${rest}}}" — only "{{/ each }}" is defined` });
+      return { kind: 'error' };
     }
     return { kind: 'each-close' };
   }
@@ -136,12 +151,23 @@ function classify(rawContent, errors) {
   let fields = [];
   if (fieldsRaw !== '') {
     fields = splitFieldPath(fieldsRaw, errors, `inline reference "{{ ${trimmed} }}"`);
+  } else if (trimmed.endsWith('.')) {
+    errors.push({ message: 'inline reference: empty field path' });
   }
   return { kind: 'inline', id, fields };
 }
 
 function parseEachOpen(rest, errors) {
-  const tokens = rest.split(/\s+/).filter(Boolean);
+  const tokens = [];
+  const lexer = /\s+|"(?:[^"\\]|\\.)*"|'[^']*'|!=|=|[^\s!="']+/y;
+  while (lexer.lastIndex < rest.length) {
+    const match = lexer.exec(rest);
+    if (!match) {
+      errors.push({ message: 'each: malformed quote or punctuation in selection' });
+      break;
+    }
+    if (!/^\s+$/.test(match[0])) tokens.push(match[0]);
+  }
   if (tokens[0] !== 'each') {
     errors.push({ message: `"{{# ${rest} }}" does not open with "each"` });
     return { kind: 'each-open', entityType: undefined, where: [], orderBy: null };
@@ -162,10 +188,17 @@ function parseEachOpen(rest, errors) {
     for (;;) {
       const field = tokens[idx++];
       const op = tokens[idx++];
-      const value = tokens[idx++];
+      let value = tokens[idx++];
       if (field === undefined || op === undefined || value === undefined) {
         errors.push({ message: `"{{# each ${entityType} where ... }}": incomplete comparison clause` });
         break;
+      }
+      if (!IDENTIFIER.test(field)) errors.push({ message: `each: invalid field "${field}"; joins are not supported` });
+      if (/^["']/.test(value)) {
+        try { value = value[0] === '"' ? JSON.parse(value) : value.slice(1, -1); }
+        catch { errors.push({ message: 'each: invalid quoted literal' }); }
+      } else if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        errors.push({ message: `each: expected a literal, got "${value}"; field comparisons and arithmetic are not supported` });
       }
       if (op !== '=' && op !== '!=') {
         errors.push({ message: `"{{# each ${entityType} where ... }}": unsupported operator "${op}" — only "=" / "!=" (§2)` });
@@ -192,6 +225,7 @@ function parseEachOpen(rest, errors) {
     errors.push({ message: `"{{# each ${entityType} ... }}": unexpected trailing "${tokens.slice(idx).join(' ')}"` });
   }
 
+  if (orderBy && !IDENTIFIER.test(orderBy)) errors.push({ message: `each: invalid ordering field "${orderBy}"` });
   return { kind: 'each-open', entityType, where, orderBy };
 }
 
@@ -206,6 +240,7 @@ function parseKeyValuePairs(tokens, startIdx, errors, label) {
       // Not a valid k=v triple, stop parsing and report the remainder as unparsed
       break;
     }
+    if (Object.hasOwn(kv, key)) errors.push({ message: `${label}: duplicate attribute "${key}"` });
     kv[key] = value;
     idx += 3;
   }
@@ -251,7 +286,14 @@ function splitPathAndRest(afterKeyword) {
 
 function parseTrace(trimmed, errors) {
   const tokens = trimmed.split(/\s+/).filter(Boolean);
-  const { kv } = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
+  const { kv, consumedIdx } = parseKeyValuePairs(tokens, 1, errors, `"{{ ${trimmed} }}"`);
+  if (consumedIdx !== tokens.length) errors.push({ message: 'trace: unparsed trailing syntax' });
+  for (const key of Object.keys(kv)) {
+    if (!['from', 'to', 'via'].includes(key)) errors.push({ message: `trace: unknown attribute "${key}"` });
+  }
+  for (const key of ['from', 'to']) {
+    if (kv[key] && !isValidTypeName(kv[key])) errors.push({ message: `trace: invalid TYPE "${kv[key]}"` });
+  }
   for (const required of ['from', 'to', 'via']) {
     if (!kv[required]) errors.push({ message: `"{{ ${trimmed} }}": missing required "${required}"` });
   }
@@ -308,6 +350,8 @@ function buildAst(tokens) {
 
   for (const token of tokens) {
     const top = stack[stack.length - 1];
+    const before = errors.length;
+    const childCount = top.children.length;
     switch (token.kind) {
       case 'text':
         top.children.push({ type: 'text', value: token.value });
@@ -343,7 +387,7 @@ function buildAst(tokens) {
           children: [],
         };
         top.children.push(node);
-        stack.push({ children: node.children, insideEach: true });
+        stack.push({ children: node.children, insideEach: true, source: token.source });
         break;
       }
       case 'each-close':
@@ -351,6 +395,8 @@ function buildAst(tokens) {
           errors.push({ message: '"{{/ each }}" with no matching "{{# each }}"' });
         } else {
           stack.pop();
+          const parent = stack.at(-1).children.at(-1);
+          parent.source = { ...parent.source, end: token.source.end };
         }
         break;
       case 'error':
@@ -358,10 +404,14 @@ function buildAst(tokens) {
       default:
         errors.push({ message: `internal: unknown token kind "${token.kind}"` });
     }
+    if (top.children.length > childCount) top.children.at(-1).source = token.source;
+    for (const error of errors.slice(before)) error.source = token.source;
   }
 
   if (stack.length > 1) {
-    errors.push({ message: `${stack.length - 1} unclosed "{{# each }}" block(s) — missing "{{/ each }}"` });
+    for (const entry of stack.slice(1)) {
+      errors.push({ message: 'unclosed "{{# each }}" block — missing "{{/ each }}"', source: entry.source });
+    }
   }
 
   return { ast: root, errors };
@@ -369,20 +419,62 @@ function buildAst(tokens) {
 
 // ── Public entry point ──────────────────────────────────────────────────
 
-export function parseRecipe(text) {
+export function parseRecipe(text, { sourcePath } = {}) {
+  const point = (offset) => {
+    const lines = text.slice(0, offset).split('\n');
+    return { offset, line: lines.length, column: lines.at(-1).length + 1 };
+  };
+  const span = (start, end) => ({ path: sourcePath ?? null, start: point(start), end: point(end) });
+
   const fmMatch = FRONT_MATTER.exec(text);
   if (!fmMatch) {
     return {
       header: { document: undefined, canon: undefined, profile: 'neutral' },
       ast: [],
-      errors: [{ message: 'recipe file must start with a YAML front-matter header (---\\n...\\n---)' }],
+      errors: [{ message: 'recipe file must start with a YAML front-matter header (---\\n...\\n---)',
+        source: span(0, text.length) }],
     };
   }
 
   const [, headerText, body] = fmMatch;
   const { header, errors: headerErrors } = parseHeader(headerText);
-  const { tokens, errors: tokenErrors } = tokenize(body);
+  const bodyOffset = text.length - body.length;
+  const locate = (start, end) => span(bodyOffset + start, bodyOffset + end);
+  const { tokens, errors: tokenErrors } = tokenize(body, locate);
   const { ast, errors: astErrors } = buildAst(tokens);
+  // A delimiter row establishes a Markdown table even without outer pipes.
+  const lines = text.split('\n');
+  const tableLines = new Set();
+  const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const isRow = (line) => line !== undefined && line.includes('|') && line.trim() !== '';
+  for (let i = 1; i < lines.length; i++) {
+    if (!isRow(lines[i]) || !isRow(lines[i - 1])) continue;
+    const parts = cells(lines[i]);
+    if (parts.length < 2 || !parts.every((cell) => /^\s*:?-{3,}:?\s*$/.test(cell))) continue;
+    tableLines.add(i - 1);
+    tableLines.add(i);
+    for (let j = i + 1; j < lines.length && isRow(lines[j]); j++) tableLines.add(j);
+  }
+  const annotate = (nodes) => {
+    for (const node of nodes) {
+      const offset = node.source.start.offset;
+      const start = text.lastIndexOf('\n', offset - 1) + 1;
+      const end = text.indexOf('\n', offset);
+      const line = text.slice(start, end < 0 ? text.length : end);
+      node.contentKind = /^\s{0,3}#{1,6}\s/.test(line) ? 'heading'
+        : tableLines.has(node.source.start.line - 1) ? 'table'
+        : node.type === 'figure' || /^\s*(?:Figure|Table)\s+\d+[:. —]/i.test(line) ? 'caption' : 'body';
+      node.countable = node.contentKind === 'body' && ['text', 'inline', 'field-ref'].includes(node.type);
+      if (node.children) annotate(node.children);
+    }
+  };
+  annotate(ast);
+  for (const error of headerErrors) error.source = span(0, bodyOffset);
+  for (const error of astErrors) error.source ??= locate(0, body.length);
 
-  return { header, ast, errors: [...headerErrors, ...tokenErrors, ...astErrors] };
+  return {
+    header, ast,
+    canonRoot: sourcePath && header.canon ? resolve(dirname(sourcePath), header.canon) : null,
+    errors: [...headerErrors, ...tokenErrors, ...astErrors],
+  };
 }
