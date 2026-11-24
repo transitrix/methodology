@@ -16,6 +16,54 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('mixed expanded illustrations renumber captions and every reference on insertion', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'numbering-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, 'source'), 'live source');
+  const figure = (as) => ({ type: 'figure', path: 'source', as });
+  const ref = (name) => ({ type: 'figref', name });
+  const ast = [ref('last'), ref('first'), { type: 'view', path: 'source', as: 'first' }, {
+    type: 'each', entityType: 'TERM', where: [], orderBy: null,
+    children: [figure(), { type: 'view', path: 'source' }],
+  }, figure('last'), ref('first'), ref('last')];
+  const options = { recipeDir: root, viewAdapter: async () => ({ html: '<svg><text>Live</text></svg>' }) };
+  for (const shift of [0, 1]) {
+    const result = await renderDocument(shift ? [figure('inserted'), ...ast] : ast,
+      { evaluateEach: async () => ['TERM-1', 'TERM-2'] }, options);
+    const numbers = Array.from({ length: 6 + shift }, (_, i) => i + 1);
+    assert.deepEqual(result.document.filter(n => ['figure', 'view'].includes(n.type)).map(n => n.number), numbers);
+    assert.deepEqual([...result.html.matchAll(/<figcaption>Figure (\d+)<\/figcaption>/g)].map(m => +m[1]), numbers);
+    assert.deepEqual([...result.html.matchAll(/<span class="dv-figref">Figure (\d+)<\/span>/g)].map(m => +m[1]), [6 + shift, 1 + shift, 1 + shift, 6 + shift]);
+    assert.deepEqual(result.diagnostics, []);
+  }
+});
+
+test('source and adapter failures preserve causes, flags and clean failOn behavior', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'failures-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, 'invalid'), 'not a view');
+  await mkdir(join(root, 'directory'));
+  const cases = [
+    ['figure', 'absent', undefined, 'missing-file'],
+    ['view', 'absent', undefined, 'missing-file'],
+    ['view', 'directory', undefined, 'unreadable-source'],
+    ['view', 'invalid', undefined, 'view-parse-failed'],
+    ['view', 'invalid', async () => { throw Error('broken'); }, 'view-render-failed'],
+    ['view', 'invalid', async () => ({}), 'view-render-failed'],
+    ['view', 'invalid', async () => ({ html: 42 }), 'view-render-failed'],
+  ];
+  for (const [type, path, viewAdapter, code] of cases) {
+    for (const profile of ['review', 'clean']) {
+      const options = { recipeDir: root, profile, viewAdapter };
+      const result = await renderDocument([{ type, path }], {}, options);
+      assert.deepEqual(result.diagnostics, [{ code, source: path, number: 1, state: 'unresolved' }]);
+      assert.equal(result.failed, profile === 'clean');
+      assert.equal(result.html.includes('⚑U'), profile === 'review');
+      assert.equal((await renderDocument([{ type, path }], {}, { ...options, failOn: [] })).failed, false);
+    }
+  }
+});
+
 test('adapter preserves SVG and fit; duplicate expanded anchors fail', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'adapter-'));
   t.after(() => rm(root, { recursive: true, force: true }));

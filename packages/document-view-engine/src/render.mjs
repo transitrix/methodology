@@ -225,7 +225,7 @@ async function renderNode(node, evaluator, ctx, out) {
             if (viewHtml === null) cause = 'view-render-failed';
           } catch { cause = 'view-render-failed'; }
         }
-        if (!ctx.viewAdapter) {
+        if (!ctx.viewAdapter && text !== null) {
         const parsed = text === null ? { ok: false } : parseBlocksYaml(text);
         if (parsed.ok) {
           viewHtml = renderBlocksSvg(parsed.blocks);
