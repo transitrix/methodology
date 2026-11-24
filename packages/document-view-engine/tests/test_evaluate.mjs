@@ -211,6 +211,20 @@ async function run() {
     'custom_ref: REQUIREMENT-PARENT-1',
   ]);
   const traversal = await createEvaluator(canonRoot);
+  writeYaml(reqDir, 'REQUIREMENT-CROSS-1.yaml', [
+    'id: REQUIREMENT-CROSS-1', 'valid_from: "2020-01-01"', 'valid_to: null',
+    'parent: CAPABILITY-V1',
+  ]);
+  const cross = await createEvaluator(canonRoot);
+  const success = await cross.evaluateFieldPath('REQUIREMENT-CROSS-1', ['parent', 'name'], { renderDate });
+  checkEqual(success.dependencies.length, 2, 'cross-type traversal retains both hops');
+  checkEqual(success.dependencies[1].id, 'CAPABILITY-V1', 'target identity retained');
+  checkEqual(success.dependencies[1].type, 'CAPABILITY', 'target type retained');
+  checkEqual(success.dependencies[1].fields.join('.'), 'name', 'target field usage retained');
+  const broken = await cross.evaluateFieldPath('REQUIREMENT-BROKEN-PARENT-1', ['parent', 'name'], { renderDate });
+  checkEqual(broken.dependencies.length, 2, 'failed traversal retains both hops');
+  checkEqual(broken.dependencies[1].requestedId, 'REQUIREMENT-GHOST-1', 'failed target retained');
+  checkEqual(broken.dependencies[1].state, 'unresolved', 'failed target state retained');
   const lookup = (fields, date = renderDate) => traversal.evaluateFieldPath('REQUIREMENT-TRAVERSAL-1', fields, { renderDate: date });
   checkEqual((await lookup(['description'])).content, 'REQUIREMENT-PARENT-1', 'ID-shaped terminal prose remains literal content');
   checkEqual((await lookup(['description', 'name'])).flag, '⚑U', 'ID-shaped prose is not a declared reference');

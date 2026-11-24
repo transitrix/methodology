@@ -11,6 +11,11 @@ queries remain events. Illustration events retain their source directives.
 entry, renderDate }) => 'text' } })` supplies bare-object formatting after
 resolution succeeds; omitted types retain the ID fallback. Content is escaped.
 
+Reference `result.dependencies` records each attempted resolution hop in order:
+requested and resolved IDs, type, remaining requested fields, state and flag.
+Failed hops remain recorded. Inline and current-object events retain this
+additive provenance independently of HTML and profile.
+
 ## Resolution anchor override
 
 This engine uses `admitted_at` for REL suspicion and `performed_at` for

@@ -101,15 +101,23 @@ export async function createEvaluator(canonRoot, { referenceFields = [
   // it renders the id as a neutral placeholder rather than refusing to
   // render at all.
   async function evaluateFieldPath(id, fields, { renderDate } = {}) {
-    let current = await resolveReference(id, { renderDate });
-    if (current.state !== 'ok') return { id, state: current.state, flag: current.flag, content: null };
+    const dependencies = [];
+    const resolveHop = async (requestedId, remainingFields) => {
+      const result = await resolveReference(requestedId, { renderDate });
+      dependencies.push({ requestedId, id: result.id ?? requestedId,
+        type: typeOfId(result.id ?? requestedId), fields: [...remainingFields],
+        state: result.state, flag: result.flag });
+      return result;
+    };
+    let current = await resolveHop(id, fields);
+    if (current.state !== 'ok') return { id, state: current.state, flag: current.flag, content: null, dependencies };
     if (fields.length === 0) {
       const renderer = Object.hasOwn(wholeObjectRenderers, typeOfId(current.id))
         ? wholeObjectRenderers[typeOfId(current.id)] : null;
       const content = renderer
         ? await renderer({ id: current.id, entry: structuredClone(index.get(current.id)), renderDate })
         : id;
-      return { id: current.id, state: 'ok', flag: null, content };
+      return { id: current.id, state: 'ok', flag: null, content, dependencies };
     }
 
     let entry = index.get(current.id);
@@ -117,16 +125,16 @@ export async function createEvaluator(canonRoot, { referenceFields = [
       const text = await textOf(entry);
       const raw = extractField(text, fields[i]);
       if (!referenceFields.includes(fields[i]) || raw === undefined || typeof raw !== 'string' || !isValidId(raw)) {
-        return { id, state: 'unresolved', flag: '⚑U', content: null };
+        return { id, state: 'unresolved', flag: '⚑U', content: null, dependencies };
       }
-      current = await resolveReference(raw, { renderDate });
-      if (current.state !== 'ok') return { id: raw, state: current.state, flag: current.flag, content: null };
+      current = await resolveHop(raw, fields.slice(i + 1));
+      if (current.state !== 'ok') return { id: raw, state: current.state, flag: current.flag, content: null, dependencies };
       entry = index.get(current.id);
     }
 
     const text = await textOf(entry);
     const raw = extractField(text, fields[fields.length - 1]);
-    return { id: current.id, state: 'ok', flag: null, content: raw === undefined || raw === null ? '' : String(raw) };
+    return { id: current.id, state: 'ok', flag: null, content: raw === undefined || raw === null ? '' : String(raw), dependencies };
   }
 
   // Selects every object of `node.entityType`, applies `where` (AND-only,
