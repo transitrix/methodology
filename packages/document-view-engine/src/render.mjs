@@ -58,7 +58,9 @@ function escapeHtml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function renderSpan(state, content, profile, counts) {
@@ -321,6 +323,10 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
   }
+  if (!Array.isArray(failOn) || Array.from(failOn).some(state => !DEFAULT_FAIL_ON.concat('suspect').includes(state))) {
+    throw new Error('render: failOn must be an array of diagnostic states');
+  }
+  failOn = [...failOn];
   const figureState = { count: 0, numbers: new Map(), diagnostics: [] };
   await collectFigureNumbers(ast, evaluator, { profile, renderDate, recipeDir }, figureState);
 
@@ -334,7 +340,51 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   };
   await renderNodes(ast, evaluator, { profile, renderDate, recipeDir, viewAdapter, figureNumbers: figureState.numbers }, out);
 
-  const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
+  const diagnosticFailed = out.failedStates.some((state) => failOn.includes(state));
+  const failed = profile === 'clean' && diagnosticFailed;
 
-  return { html: out.html.join(''), failed, counts: out.counts, document: out.document, diagnostics: out.diagnostics };
+  return { html: out.html.join(''), failed, diagnosticFailed, counts: out.counts, document: out.document, diagnostics: out.diagnostics };
+}
+
+// stdout is HTML; stderr retains diagnostics independently of presentation.
+export async function renderCli(args) {
+  const { resolve, dirname } = await import('node:path');
+  const { parseRecipe } = await import('./parse-recipe.mjs');
+  const { createEvaluator } = await import('./evaluate.mjs');
+  const { wrapHtmlForPrintRendering } = await import('../../document-renderer/src/render-vivliostyle.mjs');
+  let file;
+  const options = {};
+  const seen = new Set();
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--profile' || arg === '--fail-on') {
+      if (seen.has(arg) || i + 1 === args.length) throw new Error(`Invalid ${arg}`);
+      seen.add(arg);
+      const value = args[++i];
+      if (arg === '--profile') options.profile = value;
+      else options.failOn = value === '' ? [] : value.split(',');
+    } else if (arg.startsWith('-') || file) throw new Error(`Unexpected argument: ${arg}`);
+    else file = arg;
+  }
+  if (!file) throw new Error('Usage: node render.mjs <recipe> [--profile review|clean] [--fail-on states]');
+  if (options.profile !== undefined && !['review', 'clean'].includes(options.profile)) throw new Error('Invalid profile');
+  if (options.failOn?.some(state => !DEFAULT_FAIL_ON.concat('suspect').includes(state))) throw new Error('Invalid fail-on state');
+  const recipeDir = dirname(resolve(file));
+  const { header, ast, errors } = parseRecipe(await readFile(file, 'utf8'));
+  if (errors.length) throw new Error(errors.map(error => error.message).join('; '));
+  if (typeof header.canon !== 'string' || !header.canon) throw new Error('Recipe canon is required');
+  const evaluator = await createEvaluator(resolve(recipeDir, header.canon));
+  const result = await renderDocument(ast, evaluator, { ...options, recipeDir });
+  const { html, ...evidence } = result;
+  return { html: wrapHtmlForPrintRendering(html, header, options), evidence, exitCode: result.diagnosticFailed ? 1 : 0 };
+}
+
+const { pathToFileURL } = await import('node:url');
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    const result = await renderCli(process.argv.slice(2));
+    console.log(result.html);
+    console.error(JSON.stringify(result.evidence));
+    process.exitCode = result.exitCode;
+  } catch (error) { console.error(error.message); process.exitCode = 2; }
 }
