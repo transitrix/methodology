@@ -182,6 +182,11 @@ figure, .figure {
   margin: 1em 0;
 }
 
+.dv-fit-width svg { width: 100%; height: auto; }
+.dv-fit-page svg { max-width: 100%; max-height: 250mm; width: auto; height: auto; }
+.dv-fit-page { break-before: page; break-after: page; }
+.dv-fit-none svg { max-width: none; max-height: none; }
+
 ul, ol {
   margin: 0.9em 0;
   padding-left: 2em;

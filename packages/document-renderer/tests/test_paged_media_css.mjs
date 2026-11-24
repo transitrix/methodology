@@ -14,6 +14,17 @@ function check(condition, message) {
   }
 }
 
+// View fits implement distinct print behavior.
+{
+  const css = generatePagedMediaCss();
+  const rule = selector => css.slice(css.indexOf(`${selector} {`)).split('}')[0];
+  check(rule('.dv-fit-width svg').includes('width: 100%; height: auto;'), 'Width fit scales to available width');
+  check(rule('.dv-fit-page svg').includes('max-width: 100%; max-height: 250mm;'), 'Page fit bounds both dimensions');
+  check(rule('.dv-fit-page svg').includes('width: auto; height: auto;'), 'Page fit preserves aspect ratio');
+  check(rule('.dv-fit-page').includes('break-before: page; break-after: page;'), 'Page fit forces a separate page');
+  check(rule('.dv-fit-none svg').includes('max-width: none; max-height: none;'), 'None fit retains intrinsic dimensions');
+}
+
 // Test 1: CSS includes @page rule
 {
   const css = generatePagedMediaCss();
