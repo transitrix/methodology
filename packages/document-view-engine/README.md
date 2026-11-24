@@ -1,5 +1,10 @@
 # @transitrix/document-view-engine
 
+Model-content illustrations must use `view`, not `figure`. Figure events carry
+manual provenance; view events retain derived SVG/HTML content, number and fit.
+The additive `diagnostics` array reports illustration failures and suspect objects,
+unknown anchors and duplicate/ambiguous anchors, including expanded `each` rows.
+
 ## Structured rendering data
 
 `renderDocument()` additionally returns `document`, an ordered event array before
