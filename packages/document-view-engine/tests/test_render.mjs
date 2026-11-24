@@ -16,6 +16,57 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('CLI policy and presentation are independent, including invalid options', async (t) => {
+  const { spawnSync } = await import('node:child_process');
+  const root = await mkdtemp(join(tmpdir(), 'render-cli-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'canon'));
+  const file = join(root, 'recipe.md');
+  const cli = new URL('../src/render.mjs', import.meta.url);
+  const { fileURLToPath } = await import('node:url');
+  const run = (...args) => spawnSync(process.execPath, [fileURLToPath(cli), file, ...args], { encoding: 'utf8' });
+  for (const [body, expected] of [['Manual prose', 0], ['{{ TERM-MISSING-1.name }}', 1], ['{{ figure absent.png as = missing }}\n{{ figref unknown }}', 1]]) {
+    await writeFile(file, `---\ndocument: CLI test\ncanon: canon\nprofile: neutral\n---\n${body}\n`);
+    const results = ['review', 'clean'].map(profile => run('--profile', profile));
+    for (const result of results) {
+      assert.equal(result.status, expected, result.stderr);
+      assert.match(result.stdout, /<!DOCTYPE html>/);
+    }
+    const evidence = results.map(result => JSON.parse(result.stderr));
+    for (const key of ['document', 'counts', 'diagnostics', 'diagnosticFailed']) assert.deepEqual(evidence[0][key], evidence[1][key]);
+    assert.equal(run('--profile', 'clean', '--fail-on', '').status, 0);
+    assert.equal(run('--fail-on', 'suspect').status, 0);
+  }
+  for (const args of [['--profile', 'bogus'], ['--fail-on', 'ok'], ['--profile'], ['--unknown'], ['--profile', 'clean', '--profile', 'review']]) {
+    const result = run(...args);
+    assert.equal(result.status, 2);
+    assert.equal(result.stdout, '');
+  }
+});
+
+test('all reference states retain evidence in both profiles and every policy', async () => {
+  for (const state of ['suspect', 'unresolved', 'not-admitted', 'out-of-validity']) {
+    const ast = [{ type: 'inline', id: 'TERM-1', fields: ['name'] }, {
+      type: 'each', entityType: 'TERM', where: [], orderBy: null,
+      children: [{ type: 'field-ref', fields: ['name'] }],
+    }, { type: 'trace', from: 'TERM', to: 'TERM', via: 'related' }];
+    const evaluator = {
+      evaluateEach: async () => ['TERM-1'],
+      evaluateFieldPath: async () => ({ state, content: 'value' }),
+      evaluateTrace: async () => ({ rows: ['TERM-1'], cols: ['TERM-1'], covered: new Set() }),
+    };
+    for (const failOn of [undefined, [], ['suspect']]) {
+      const review = await renderDocument(ast, evaluator, { profile: 'review', failOn });
+      const clean = await renderDocument(ast, evaluator, { profile: 'clean', failOn });
+      for (const key of ['document', 'counts', 'diagnostics', 'diagnosticFailed']) assert.deepEqual(review[key], clean[key]);
+      assert.equal(clean.counts[state], 2);
+      assert.equal(clean.diagnosticFailed, (failOn ?? ['unresolved', 'not-admitted', 'out-of-validity']).includes(state));
+      assert.doesNotMatch(clean.html, /dv-flag|⚑/);
+      assert.match(review.html, /dv-flag/);
+    }
+  }
+});
+
 test('mixed expanded illustrations renumber captions and every reference on insertion', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'numbering-'));
   t.after(() => rm(root, { recursive: true, force: true }));
