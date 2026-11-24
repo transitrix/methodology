@@ -113,6 +113,9 @@ async function run() {
       },
     };
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(review.document[0].rowIds.length, 2, 'selection event retains row IDs');
+    checkEqual(review.document[1].id, 'ROW-1', 'current-object event retains binding');
+    checkEqual(review.document[1].result.state, 'ok', 'current-object event retains state');
     checkEqual(review.html, '<span class="dv-ok">ROW-1-name</span>;<span class="dv-ok">ROW-2-name</span>;', 'each renders its children once per selected row, in order');
   }
 
@@ -194,6 +197,9 @@ async function run() {
     const ast = [{ type: 'trace', from: 'REQUIREMENT', to: 'VERIFICATION', via: 'verifies' }];
 
     const review = await renderDocument(ast, evaluator, { profile: 'review' });
+    checkEqual(review.document[0].usage.relation, 'verifies', 'trace retains requested relation');
+    checkEqual(review.document[0].usage.pairs.length, 2, 'trace retains every matrix pair');
+    checkEqual(review.document[0].usage.pairs[1].covered, false, 'uncovered pair remains explicit');
     check(review.html.includes('<table class="dv-trace">'), 'trace: renders as a table');
     check(review.html.includes('<th>REQUIREMENT-A-1</th>'), 'trace: every row id is a header cell');
     check(review.html.includes('<th>REQUIREMENT-B-1</th>'), 'trace: an uncovered row still renders, not dropped');

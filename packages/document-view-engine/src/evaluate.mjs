@@ -74,7 +74,7 @@ export function typeOfId(id) {
 
 export async function createEvaluator(canonRoot, { referenceFields = [
   'parent', 'from', 'to', 'about', 'subject', 'subject_release', 'verifies', 'verified_on', 'validates', 'serves', 'stakeholder', 'of', 'predecessor',
-] } = {}) {
+], wholeObjectRenderers = {} } = {}) {
   const { index, resolveReference, canonicalId } = await createResolver(canonRoot);
   const orgRoot = join(canonRoot, '..');
   const textCache = new Map();
@@ -103,7 +103,14 @@ export async function createEvaluator(canonRoot, { referenceFields = [
   async function evaluateFieldPath(id, fields, { renderDate } = {}) {
     let current = await resolveReference(id, { renderDate });
     if (current.state !== 'ok') return { id, state: current.state, flag: current.flag, content: null };
-    if (fields.length === 0) return { id, state: 'ok', flag: null, content: id };
+    if (fields.length === 0) {
+      const renderer = Object.hasOwn(wholeObjectRenderers, typeOfId(current.id))
+        ? wholeObjectRenderers[typeOfId(current.id)] : null;
+      const content = renderer
+        ? await renderer({ id: current.id, entry: structuredClone(index.get(current.id)), renderDate })
+        : id;
+      return { id: current.id, state: 'ok', flag: null, content };
+    }
 
     let entry = index.get(current.id);
     for (let i = 0; i < fields.length - 1; i++) {

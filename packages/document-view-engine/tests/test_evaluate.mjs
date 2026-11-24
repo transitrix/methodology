@@ -106,6 +106,20 @@ async function run() {
 
   const evaluator = await createEvaluator(canonRoot);
   const renderDate = '2026-08-06';
+  const customRenderer = await createEvaluator(canonRoot, { wholeObjectRenderers: {
+    REQUIREMENT: async ({ id, entry, renderDate: date }) => {
+      checkEqual(id, 'REQUIREMENT-PARENT-1', 'whole renderer receives resolved id');
+      check(Boolean(entry), 'whole renderer receives indexed entry');
+      checkEqual(date, renderDate, 'whole renderer receives date');
+      return '<custom>';
+    },
+  } });
+  checkEqual((await customRenderer.evaluateFieldPath('REQUIREMENT-PARENT-1', [], { renderDate })).content, '<custom>', 'external whole-object content is returned');
+  checkEqual((await customRenderer.evaluateFieldPath('REQUIREMENT-DRAFT-1', [], { renderDate })).state, 'not-admitted', 'whole rendering cannot bypass admission');
+  checkEqual((await evaluator.evaluateEach({ entityType: 'REQUIREMENT', where: [{ field: 'kind', op: '=', value: 'absent' }], orderBy: null }, { renderDate })).length, 0, 'empty selection is preserved');
+  const unrelated = await evaluator.evaluateTrace({ from: 'CAPABILITY', to: 'CAPABILITY', via: 'unrelated' }, { renderDate });
+  checkEqual(unrelated.covered.size, 0, 'other REL kinds do not contribute');
+  checkEqual(unrelated.rows.length, 3, 'zero-link matrix keeps source axis');
 
   // ── Inline field access ──
   {

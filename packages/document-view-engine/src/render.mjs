@@ -146,13 +146,18 @@ async function renderNodes(nodes, evaluator, ctx, out) {
 }
 
 async function renderNode(node, evaluator, ctx, out) {
+  if (['figure', 'view', 'figref'].includes(node.type)) {
+    out.document.push({ ...node, currentRowId: ctx.currentRowId ?? null });
+  }
   switch (node.type) {
     case 'text':
+      out.document.push({ type: 'text', value: node.value });
       out.html.push(escapeHtml(node.value));
       return;
 
     case 'inline': {
       const result = await evaluator.evaluateFieldPath(node.id, node.fields, ctx);
+      out.document.push({ ...node, fields: [...node.fields], result, usage: { type: typeOfId(node.id), fields: [...node.fields] } });
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
       if (result.state !== 'ok') fail(out, result.state);
       return;
@@ -167,6 +172,7 @@ async function renderNode(node, evaluator, ctx, out) {
         return;
       }
       const result = await evaluator.evaluateFieldPath(ctx.currentRowId, node.fields, ctx);
+      out.document.push({ ...node, id: ctx.currentRowId, fields: [...node.fields], result, usage: { type: typeOfId(ctx.currentRowId), fields: [...node.fields] } });
       out.html.push(renderSpan(result.state, result.content, ctx.profile, out.counts));
       if (result.state !== 'ok') fail(out, result.state);
       return;
@@ -174,6 +180,7 @@ async function renderNode(node, evaluator, ctx, out) {
 
     case 'each': {
       const rowIds = await evaluator.evaluateEach(node, ctx);
+      out.document.push({ type: 'each', entityType: node.entityType, where: node.where.map((clause) => ({ ...clause })), orderBy: node.orderBy, rowIds: [...rowIds], currentRowId: ctx.currentRowId ?? null, usage: { type: node.entityType, fields: [...node.where.map((clause) => clause.field), ...(node.orderBy ? [node.orderBy] : [])] } });
       for (const rowId of rowIds) {
         // eslint-disable-next-line no-await-in-loop -- rows render in selection order
         await renderNodes(node.children, evaluator, { ...ctx, currentRowId: rowId }, out);
@@ -183,6 +190,7 @@ async function renderNode(node, evaluator, ctx, out) {
 
     case 'trace': {
       const matrix = await evaluator.evaluateTrace(node, ctx);
+      out.document.push({ ...node, rows: [...matrix.rows], cols: [...matrix.cols], usage: { types: [node.from, node.to], relation: node.via, pairs: matrix.rows.flatMap((from) => matrix.cols.map((to) => ({ from, to, covered: matrix.covered.has(`${from}|${to}`) }))) } });
       out.html.push(renderTraceTable(matrix, ctx.profile));
       return;
     }
@@ -291,6 +299,7 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
 
   const out = {
     html: [],
+    document: [],
     counts: {},
     failedStates: [],
     figureCounter: 0,
@@ -299,5 +308,5 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
 
-  return { html: out.html.join(''), failed, counts: out.counts };
+  return { html: out.html.join(''), failed, counts: out.counts, document: out.document };
 }

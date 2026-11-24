@@ -1,5 +1,16 @@
 # @transitrix/document-view-engine
 
+## Structured rendering data
+
+`renderDocument()` additionally returns `document`, an ordered event array before
+HTML escaping: text, evaluated references (`result` state/flag/content and
+type/field `usage`), selection queries followed by expanded row events, and
+trace axes with relation usage and every covered or uncovered pair. Empty
+queries remain events. Illustration events retain their source directives.
+`createEvaluator(root, { wholeObjectRenderers: { REQUIREMENT: async ({ id,
+entry, renderDate }) => 'text' } })` supplies bare-object formatting after
+resolution succeeds; omitted types retain the ID fallback. Content is escaped.
+
 ## Resolution anchor override
 
 This engine uses `admitted_at` for REL suspicion and `performed_at` for
