@@ -212,9 +212,20 @@ async function renderNode(node, evaluator, ctx, out) {
       const exists = await fileExists(absPath);
       let viewHtml = null;
       let suspect = false;
+      let cause = exists ? 'view-parse-failed' : 'missing-file';
       if (exists) {
         // eslint-disable-next-line no-await-in-loop -- must read this view before the next node, same as figure's existence check
         const text = await readFile(absPath, 'utf8').catch(() => null);
+        if (text === null) cause = 'unreadable-source';
+        if (ctx.viewAdapter && text !== null) {
+          try {
+            const result = await ctx.viewAdapter({ source: absPath, text, node: { ...node }, evaluator, renderDate: ctx.renderDate });
+            viewHtml = typeof result?.html === 'string' ? result.html : null;
+            suspect = result?.suspect === true;
+            if (viewHtml === null) cause = 'view-render-failed';
+          } catch { cause = 'view-render-failed'; }
+        }
+        if (!ctx.viewAdapter) {
         const parsed = text === null ? { ok: false } : parseBlocksYaml(text);
         if (parsed.ok) {
           viewHtml = renderBlocksSvg(parsed.blocks);
@@ -229,8 +240,9 @@ async function renderNode(node, evaluator, ctx, out) {
           const glossary = parseGlossaryYaml(text);
           if (glossary.ok) {
             try { viewHtml = renderGlossaryHtml(await evaluator.evaluateGlossary(ctx), glossary); }
-            catch { viewHtml = null; }
+            catch { viewHtml = null; cause = 'view-render-failed'; }
           }
+        }
         }
       }
       const failedToRender = !exists || viewHtml === null;
@@ -238,7 +250,7 @@ async function renderNode(node, evaluator, ctx, out) {
         number, provenance: 'derived', content: viewHtml, fit: node.fit ?? 'width',
         state: failedToRender ? 'unresolved' : suspect ? 'suspect' : 'ok',
       });
-      if (failedToRender || suspect) out.diagnostics.push({ code: failedToRender ? (exists ? 'view-parse-or-render-failed' : 'missing-file') : 'suspect-objects', source: node.path, number, state: failedToRender ? 'unresolved' : 'suspect' });
+      if (failedToRender || suspect) out.diagnostics.push({ code: failedToRender ? cause : 'suspect-objects', source: node.path, number, state: failedToRender ? 'unresolved' : 'suspect' });
       if (failedToRender) fail(out, 'unresolved');
       else if (suspect) fail(out, 'suspect');
       if (ctx.profile === 'clean') {
@@ -305,7 +317,7 @@ async function renderNode(node, evaluator, ctx, out) {
 //            anywhere in the render
 //   counts — { [state]: number } — how many spans landed in each §3 state,
 //            across the whole render
-export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, recipeDir } = {}) {
+export async function renderDocument(ast, evaluator, { profile = 'review', renderDate, failOn = DEFAULT_FAIL_ON, recipeDir, viewAdapter } = {}) {
   if (profile !== 'review' && profile !== 'clean') {
     throw new Error(`render: profile must be "review" or "clean", got "${profile}"`);
   }
@@ -320,7 +332,7 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
     failedStates: figureState.diagnostics.map(() => 'unresolved'),
     figureCounter: 0,
   };
-  await renderNodes(ast, evaluator, { profile, renderDate, recipeDir, figureNumbers: figureState.numbers }, out);
+  await renderNodes(ast, evaluator, { profile, renderDate, recipeDir, viewAdapter, figureNumbers: figureState.numbers }, out);
 
   const failed = profile === 'clean' && out.failedStates.some((state) => failOn.includes(state));
 

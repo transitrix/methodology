@@ -16,6 +16,27 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('adapter preserves SVG and fit; duplicate expanded anchors fail', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'adapter-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, 'source'), 'live source');
+  const svg = '<svg><text>Live label</text></svg>';
+  for (const fit of [undefined, 'page', 'none']) {
+    let calls = 0;
+    const viewAdapter = async ({ text }) => { assert.equal(text, 'live source'); calls++; return { html: svg, suspect: true }; };
+    const result = await renderDocument([{ type: 'view', path: 'source', fit }], {}, { recipeDir: root, viewAdapter });
+    assert.equal(calls, 1);
+    assert.ok(result.html.includes(svg));
+    assert.ok(result.html.includes(`dv-fit-${fit ?? 'width'}`));
+    assert.equal(result.diagnostics[0].code, 'suspect-objects');
+  }
+  const ast = [{ type: 'figref', name: 'absent' }, { type: 'each', entityType: 'TERM', where: [], children: [{ type: 'figure', path: 'source', as: 'dup' }] }, { type: 'figref', name: 'dup' }];
+  const result = await renderDocument(ast, { evaluateEach: async () => ['TERM-1', 'TERM-2'] }, { recipeDir: root, profile: 'clean' });
+  assert.equal(result.failed, true);
+  assert.deepEqual(result.diagnostics.map(d => d.code), ['duplicate-anchor', 'unknown-anchor', 'ambiguous-anchor']);
+  assert.equal(result.document.find(d => d.type === 'figure').provenance, 'manual');
+});
+
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
 function checkEqual(actual, expected, msg) {
