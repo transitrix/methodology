@@ -74,10 +74,18 @@ function summarize(events, failures) {
   for (const s of failures) if (Object.hasOwn(states, s)) states[s]++;
   let derived = 0, manual = 0;
   const text = line => line.map(p => p.text).join('');
+  const underline = s => /^\s*(?:=+|-+)\s*$/.test(s);
+  const tableRule = s => s.includes('|') && /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?\s*$/.test(s);
   for (let i = 0; i < lines.length; i++) {
-    if (/^\s*#{1,6}(?:\s|$)/.test(text(lines[i])) || text(lines[i]).includes('|') || /^\s*[=-]+\s*$/.test(text(lines[i]))
-      || (i + 1 < lines.length && /^\s*[=-]+\s*$/.test(text(lines[i + 1])))) continue;
-    for (const p of lines[i]) { const n = (p.text.match(/[\p{L}\p{N}]+/gu) ?? []).length; if (p.derived) derived += n; else manual += n; }
+    const source = text(lines[i]);
+    if (/^\s*#{1,6}(?:\s|$)/.test(source) || underline(source) || tableRule(source)
+      || (i + 1 < lines.length && underline(text(lines[i + 1])))) continue;
+    // Tokenize the assembled line; event boundaries must not create words.
+    const provenance = lines[i].flatMap(p => Array(p.text.length).fill(p.derived));
+    for (const match of source.matchAll(/[\p{L}\p{N}]+/gu)) {
+      if (provenance.slice(match.index, match.index + match[0].length).some(Boolean)) derived++;
+      else manual++;
+    }
   }
   const payload = { version: 1, usage, states, illustrations, derivationShare: derived + manual ? derived / (derived + manual) : 0 };
   for (const key of Object.keys(maps)) payload[key] = Object.fromEntries([...maps[key]].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));

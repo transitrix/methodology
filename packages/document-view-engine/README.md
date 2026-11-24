@@ -5,7 +5,10 @@
 Superseding the deferrals below, review HTML prints body derivation share and
 a separate model-illustrations count. Clean HTML prints neither. Share is derived
 words / (derived + manual words), or zero with no words. Unicode letter/number
-runs count; Markdown headings, pipe tables, captions and figure labels do not.
+runs count across adjacent events; a mixed-origin word counts once as derived
+if any letter/number is derived. Markdown headings (including split headings),
+table separator rows, captions and figure labels do not count. Populated table
+cells and ordinary prose containing pipes do count.
 The additive `telemetry` contains sorted aggregate categories only; unknown values
 become `other`. Never transmit the detailed local `document` or `diagnostics`.
 Model-content illustrations must use `view`, not `figure`. Figure events carry
