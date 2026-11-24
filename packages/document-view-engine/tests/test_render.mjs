@@ -16,6 +16,27 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('failed reference placeholders are not derived body words', async () => {
+  const sentinel = 'PRIVATE_ERROR_WORD_SENTINEL';
+  const ref = id => ({ type: 'inline', id, fields: ['description'] });
+  const evaluator = {
+    evaluateFieldPath: async id => id === 'TERM-1'
+      ? { state: 'ok', content: 'model word' }
+      : { state: 'unresolved', content: sentinel },
+  };
+  const result = await renderDocument([
+    { type: 'text', value: 'manual words ' }, ref('TERM-1'),
+    { type: 'text', value: ' ' }, ref('TERM-2'),
+  ], evaluator);
+  assert.equal(result.telemetry.derivationShare, 0.5);
+  assert.equal(result.telemetry.usage.references, 2);
+  assert.equal(result.telemetry.states.unresolved, 1);
+  assert.doesNotMatch(JSON.stringify(result.telemetry), /PRIVATE_ERROR_WORD_SENTINEL/);
+  const empty = await renderDocument([ref('TERM-2')], evaluator);
+  assert.equal(empty.telemetry.derivationShare, 0);
+  assert.match(result.html, /Derivation share: 50.0%/);
+});
+
 test('body words survive pipes and event segmentation', async () => {
   const text = value => ({ type: 'text', value });
   const ref = { type: 'inline', id: 'TERM-1', fields: ['description'] };

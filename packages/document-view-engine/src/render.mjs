@@ -62,7 +62,10 @@ function summarize(events, failures) {
       usage.references++; bump('types', category(e.usage.type));
       for (const f of e.usage.fields) bump('fields', category(f));
       if (e.result.state === 'ok') states.ok++;
-      append(e.result.content, true);
+      // Failed resolution content can be diagnostic prose, not model words.
+      if (e.result.state === 'ok' || e.result.state === 'suspect') {
+        append(e.result.content, true);
+      }
     }
     if (e.type === 'each') { usage.selections++; bump('types', category(e.entityType)); for (const f of e.usage.fields) bump('fields', category(f)); }
     if (e.type === 'trace') {

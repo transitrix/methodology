@@ -9,6 +9,9 @@ runs count across adjacent events; a mixed-origin word counts once as derived
 if any letter/number is derived. Markdown headings (including split headings),
 table separator rows, captions and figure labels do not count. Populated table
 cells and ordinary prose containing pipes do count.
+Only resolved (`ok` or `suspect`) reference content contributes derived words;
+failed-reference placeholders contribute no words, but their attempted usage
+and failure states remain in telemetry.
 The additive `telemetry` contains sorted aggregate categories only; unknown values
 become `other`. Never transmit the detailed local `document` or `diagnostics`.
 Model-content illustrations must use `view`, not `figure`. Figure events carry
