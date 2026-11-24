@@ -42,14 +42,44 @@ function checkEqual(actual, expected, msg) {
 // ── Fixture — a small git-backed canon exercising all four states ─────────
 
 function writeYaml(dir, name, lines) {
+  if (name.startsWith('REL-')) lines = [...lines, 'admitted_at: "2026-07-01"'];
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, name), lines.join('\n') + '\n', 'utf8');
 }
 
 async function run() {
+  const active = { admissionState: 'active', validFrom: '2020-01-01', validTo: null };
+  const mixedIndex = new Map([
+    ['REQUIREMENT-DRAFT-1', { ...active, admissionState: 'proposed' }],
+    ['REQUIREMENT-OLD-1', { ...active, validTo: '2021-01-01' }],
+  ]);
+  for (const [a, b, expected, flag] of [
+    ['REQUIREMENT-MISSING-1', 'REQUIREMENT-DRAFT-1', 'unresolved', '⚑U'],
+    ['REQUIREMENT-MISSING-1', 'REQUIREMENT-OLD-1', 'unresolved', '⚑U'],
+    ['REQUIREMENT-DRAFT-1', 'REQUIREMENT-OLD-1', 'not-admitted', '⚑A'],
+  ]) {
+    for (const [from, to] of [[a, b], [b, a]]) {
+      const record = { ...active, relation: true, endpoints: { from, to } };
+      mixedIndex.set('REL-MIXED-1', record);
+      const resolveMixed = () => resolveReference('REL-MIXED-1', mixedIndex, { renderDate: '2026-08-06' });
+      const result = await resolveMixed();
+      checkEqual(result.state, expected, `${from} -> ${to}: endpoint precedence`);
+      checkEqual(result.flag, flag, `${from} -> ${to}: endpoint flag`);
+      record.admissionState = 'rejected';
+      record.validTo = '2021-01-01';
+      checkEqual((await resolveMixed()).state, 'not-admitted', 'record admission precedes validity and endpoints');
+      record.admissionState = 'active';
+      checkEqual((await resolveMixed()).state, 'out-of-validity', 'record validity precedes endpoints');
+    }
+  }
+
   const orgRoot = mkdtempSync(join(tmpdir(), 'resolve-references-'));
   const canonRoot = join(orgRoot, 'canon');
-  const git = (args) => execFileSync('git', args, { cwd: orgRoot, encoding: 'utf8' });
+  const git = (args) => execFileSync('git', args, { cwd: orgRoot, encoding: 'utf8', env: {
+    ...process.env,
+    GIT_AUTHOR_DATE: args.some((a) => a.startsWith('c2:')) ? '2026-07-02T12:00:00Z' : '2026-07-01T12:00:00Z',
+    GIT_COMMITTER_DATE: args.some((a) => a.startsWith('c2:')) ? '2026-07-02T12:00:00Z' : '2026-07-01T12:00:00Z',
+  } });
   git(['init', '-q']);
   git(['config', 'user.email', 'fixture@example.com']);
   git(['config', 'user.name', 'Fixture']);
@@ -157,6 +187,27 @@ async function run() {
   const direct = await resolveReference('REQUIREMENT-OK-1', index, { canonRoot, renderDate: '2026-08-06' });
   checkEqual(direct.state, 'ok', 'resolveReference works standalone against a prebuilt index too');
 
+  // Record edits after the target changed must not reset authored anchors.
+  for (const [dir, kind, endpoint] of [
+    ['assertions', 'ASSERTION', 'about'],
+    ['verifications', 'VERIFICATION', 'verifies'],
+    ['validations', 'VALIDATION', 'validates'],
+  ]) {
+    writeYaml(join(canonRoot, dir), `${kind}-ANCHOR-1.yaml`, [
+      `id: ${kind}-ANCHOR-1`, `${endpoint}: REQUIREMENT-CHANGED-1`,
+      'performed_at: "2026-07-01"', 'admitted_at: "2026-07-02"',
+      'valid_from: "2020-01-01"', 'valid_to: null',
+    ]);
+  }
+  writeYaml(relDir, 'REL-SUSPECT-1.yaml', [
+    'id: REL-SUSPECT-1', 'from: CAPABILITY-X-1', 'to: REQUIREMENT-CHANGED-1',
+    'description: unrelated later edit', 'valid_from: "2020-01-01"', 'valid_to: null',
+  ]);
+  git(['add', '-A']);
+  git(['commit', '-q', '-m', 'c2: later record edits']);
+  const anchored = await createResolver(canonRoot);
+  for (const id of ['REL-SUSPECT-1', 'ASSERTION-ANCHOR-1', 'VERIFICATION-ANCHOR-1', 'VALIDATION-ANCHOR-1'])
+    checkEqual((await anchored.resolveReference(id, { renderDate: '2026-08-06' })).flag, '⚑S', `${id}: authored anchor survives record edits`);
   rmSync(orgRoot, { recursive: true, force: true });
 }
 

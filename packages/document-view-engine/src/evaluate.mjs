@@ -72,7 +72,9 @@ export function typeOfId(id) {
 
 // ── Evaluator ────────────────────────────────────────────────────────────
 
-export async function createEvaluator(canonRoot) {
+export async function createEvaluator(canonRoot, { referenceFields = [
+  'parent', 'from', 'to', 'about', 'subject', 'subject_release', 'verifies', 'verified_on', 'validates', 'serves', 'stakeholder', 'of', 'predecessor',
+] } = {}) {
   const { index, resolveReference, canonicalId } = await createResolver(canonRoot);
   const orgRoot = join(canonRoot, '..');
   const textCache = new Map();
@@ -107,7 +109,7 @@ export async function createEvaluator(canonRoot) {
     for (let i = 0; i < fields.length - 1; i++) {
       const text = await textOf(entry);
       const raw = extractField(text, fields[i]);
-      if (raw === undefined || typeof raw !== 'string' || !isValidId(raw)) {
+      if (!referenceFields.includes(fields[i]) || raw === undefined || typeof raw !== 'string' || !isValidId(raw)) {
         return { id, state: 'unresolved', flag: '⚑U', content: null };
       }
       current = await resolveReference(raw, { renderDate });
