@@ -46,6 +46,55 @@ import { typeOfId } from './evaluate.mjs';
 
 const DEFAULT_FAIL_ON = ['unresolved', 'not-admitted', 'out-of-validity'];
 
+function summarize(events, failures) {
+  const allowed = new Set('TERM REQUIREMENT ACTOR REL ASSERTION VERIFICATION VALIDATION APPLICATION PRODUCT CAPABILITY GOAL NEED BUSINESS_OBJECT id name title text description parent type level kind from to about verifies validates reports_to depends_on uses hosts realizes'.split(' '));
+  const category = s => allowed.has(s) ? s : 'other';
+  const maps = { types: new Map(), fields: new Map(), relations: new Map(), matrixPairs: new Map() };
+  const bump = (map, key, n = 1) => maps[map].set(key, (maps[map].get(key) ?? 0) + n);
+  const usage = { references: 0, selections: 0, matrices: 0 };
+  const states = Object.fromEntries(['ok', 'suspect', 'unresolved', 'not-admitted', 'out-of-validity'].map(s => [s, 0]));
+  const illustrations = { derived: 0, total: 0 };
+  const lines = [[]];
+  const append = (value, derived) => String(value ?? '').split('\n').forEach((text, i) => { if (i) lines.push([]); lines.at(-1).push({ text, derived }); });
+  for (const e of events) {
+    if (e.type === 'text') append(e.value, false);
+    if (e.type === 'inline' || e.type === 'field-ref') {
+      usage.references++; bump('types', category(e.usage.type));
+      for (const f of e.usage.fields) bump('fields', category(f));
+      if (e.result.state === 'ok') states.ok++;
+      // Failed resolution content can be diagnostic prose, not model words.
+      if (e.result.state === 'ok' || e.result.state === 'suspect') {
+        append(e.result.content, true);
+      }
+    }
+    if (e.type === 'each') { usage.selections++; bump('types', category(e.entityType)); for (const f of e.usage.fields) bump('fields', category(f)); }
+    if (e.type === 'trace') {
+      usage.matrices++; bump('types', category(e.from)); bump('types', category(e.to));
+      bump('relations', category(e.via)); bump('matrixPairs', `${category(e.from)}:${category(e.to)}`, e.usage.pairs.length);
+    }
+    if (e.type === 'view' || e.type === 'figure') { illustrations.total++; if (e.type === 'view' && e.state !== 'unresolved') illustrations.derived++; }
+  }
+  for (const s of failures) if (Object.hasOwn(states, s)) states[s]++;
+  let derived = 0, manual = 0;
+  const text = line => line.map(p => p.text).join('');
+  const underline = s => /^\s*(?:=+|-+)\s*$/.test(s);
+  const tableRule = s => s.includes('|') && /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?\s*$/.test(s);
+  for (let i = 0; i < lines.length; i++) {
+    const source = text(lines[i]);
+    if (/^\s*#{1,6}(?:\s|$)/.test(source) || underline(source) || tableRule(source)
+      || (i + 1 < lines.length && underline(text(lines[i + 1])))) continue;
+    // Tokenize the assembled line; event boundaries must not create words.
+    const provenance = lines[i].flatMap(p => Array(p.text.length).fill(p.derived));
+    for (const match of source.matchAll(/[\p{L}\p{N}]+/gu)) {
+      if (provenance.slice(match.index, match.index + match[0].length).some(Boolean)) derived++;
+      else manual++;
+    }
+  }
+  const payload = { version: 1, usage, states, illustrations, derivationShare: derived + manual ? derived / (derived + manual) : 0 };
+  for (const key of Object.keys(maps)) payload[key] = Object.fromEntries([...maps[key]].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  return payload;
+}
+
 const STATE_INFO = {
   ok: { color: 'ok', flag: null },
   suspect: { color: 'suspect', flag: '⚑S' },
@@ -343,7 +392,12 @@ export async function renderDocument(ast, evaluator, { profile = 'review', rende
   const diagnosticFailed = out.failedStates.some((state) => failOn.includes(state));
   const failed = profile === 'clean' && diagnosticFailed;
 
-  return { html: out.html.join(''), failed, diagnosticFailed, counts: out.counts, document: out.document, diagnostics: out.diagnostics };
+  const telemetry = summarize(out.document, out.failedStates);
+  if (profile === 'review') {
+    out.html.push(`<p class="dv-metrics">Derivation share: ${(telemetry.derivationShare * 100).toFixed(1)}%</p>`);
+    out.html.push(`<p class="dv-metrics">illustrations — ${telemetry.illustrations.derived} of ${telemetry.illustrations.total} rendered from the model</p>`);
+  }
+  return { html: out.html.join(''), failed, diagnosticFailed, counts: out.counts, document: out.document, diagnostics: out.diagnostics, telemetry };
 }
 
 // stdout is HTML; stderr retains diagnostics independently of presentation.

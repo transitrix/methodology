@@ -16,6 +16,90 @@ import { renderDocument } from '../src/render.mjs';
 import { parseRecipe } from '../src/parse-recipe.mjs';
 import { createEvaluator } from '../src/evaluate.mjs';
 
+test('failed reference placeholders are not derived body words', async () => {
+  const sentinel = 'PRIVATE_ERROR_WORD_SENTINEL';
+  const ref = id => ({ type: 'inline', id, fields: ['description'] });
+  const evaluator = {
+    evaluateFieldPath: async id => id === 'TERM-1'
+      ? { state: 'ok', content: 'model word' }
+      : { state: 'unresolved', content: sentinel },
+  };
+  const result = await renderDocument([
+    { type: 'text', value: 'manual words ' }, ref('TERM-1'),
+    { type: 'text', value: ' ' }, ref('TERM-2'),
+  ], evaluator);
+  assert.equal(result.telemetry.derivationShare, 0.5);
+  assert.equal(result.telemetry.usage.references, 2);
+  assert.equal(result.telemetry.states.unresolved, 1);
+  assert.doesNotMatch(JSON.stringify(result.telemetry), /PRIVATE_ERROR_WORD_SENTINEL/);
+  const empty = await renderDocument([ref('TERM-2')], evaluator);
+  assert.equal(empty.telemetry.derivationShare, 0);
+  assert.match(result.html, /Derivation share: 50.0%/);
+});
+
+test('body words survive pipes and event segmentation', async () => {
+  const text = value => ({ type: 'text', value });
+  const ref = { type: 'inline', id: 'TERM-1', fields: ['description'] };
+  const evaluator = { evaluateFieldPath: async () => ({ state: 'ok', content: 'word' }) };
+  for (const ast of [
+    [text('manual | '), ref],
+    [text('| manual | '), ref, text(' |\n| --- | --- |')],
+    [text('pre'), ref, text('suffix manual')],
+  ]) assert.equal((await renderDocument(ast, evaluator)).telemetry.derivationShare, 0.5);
+});
+
+test('telemetry has closed nested shapes and is invariant under skeleton edits', async () => {
+  const secret = 'PRIVATE_LAYOUT_SENTINEL';
+  const text = value => ({ type: 'text', value });
+  const ref = { type: 'inline', id: 'UNKNOWN-1', fields: [secret] };
+  const evaluator = { evaluateFieldPath: async () => ({ state: 'unresolved', content: secret }) };
+  const section = title => [text(`# ${title}\n${secret} body\n`), ref, text('\n')];
+  const first = await renderDocument([...section(secret), ...section('Title')], evaluator);
+  const second = await renderDocument([...section('Changed'), ...section(secret)], evaluator);
+  assert.deepEqual(first.telemetry, second.telemetry);
+  const p = first.telemetry;
+  assert.deepEqual(p.types, { other: 2 });
+  assert.deepEqual(p.fields, { other: 2 });
+  assert.deepEqual(Object.keys(p).sort(), ['derivationShare', 'fields', 'illustrations', 'matrixPairs', 'relations', 'states', 'types', 'usage', 'version']);
+  assert.deepEqual(Object.keys(p.usage).sort(), ['matrices', 'references', 'selections']);
+  assert.deepEqual(Object.keys(p.states).sort(), ['not-admitted', 'ok', 'out-of-validity', 'suspect', 'unresolved']);
+  assert.deepEqual(Object.keys(p.illustrations).sort(), ['derived', 'total']);
+  for (const map of [p.types, p.fields, p.relations, p.matrixPairs, p.usage, p.states, p.illustrations]) {
+    for (const value of Object.values(map)) assert.ok(Number.isInteger(value) && value >= 0);
+  }
+  assert.doesNotMatch(JSON.stringify(p), /PRIVATE_LAYOUT_SENTINEL|UNKNOWN-1|Title|Changed/);
+});
+
+test('expanded illustration metrics exclude captions and failed views', async () => {
+  const secret = 'PRIVATE_CAPTION_SENTINEL';
+  const source = new URL(import.meta.url).pathname;
+  const children = [{ type: 'view', path: source }, { type: 'figure', path: source, caption: secret }, { type: 'view', path: `${source}.missing` }];
+  const result = await renderDocument([{ type: 'each', entityType: 'TERM', where: [], children }], { evaluateEach: async () => ['TERM-1', 'TERM-2'] }, { viewAdapter: async () => ({ html: '<svg/>' }) });
+  assert.deepEqual(result.telemetry.illustrations, { derived: 2, total: 6 });
+  assert.equal(result.telemetry.derivationShare, 0);
+  assert.match(result.html, /illustrations — 2 of 6 rendered from the model/);
+  assert.doesNotMatch(JSON.stringify(result.telemetry), /PRIVATE_CAPTION_SENTINEL|test_render|missing|TERM-1/);
+});
+
+test('aggregate telemetry excludes private skeleton and error content', async () => {
+  const secret = 'PRIVATE_SENTINEL';
+  const ref = { type: 'inline', id: 'TERM-1', fields: ['description'] };
+  const evaluator = { evaluateFieldPath: async () => ({ state: 'ok', content: 'two words' }) };
+  const ast = [{ type: 'text', value: `# ${secret} ` }, ref, { type: 'text', value: '\nmanual words\n' }, ref];
+  const result = await renderDocument(ast, evaluator);
+  assert.equal(result.telemetry.derivationShare, 0.5);
+  assert.doesNotMatch(JSON.stringify(result.telemetry), /PRIVATE_SENTINEL/);
+  assert.deepEqual(Object.keys(result.telemetry).sort(), ['derivationShare', 'fields', 'illustrations', 'matrixPairs', 'relations', 'states', 'types', 'usage', 'version']);
+  for (const [nodes, share] of [[[], 0], [[ref], 1], [[{ type: 'text', value: secret }], 0]]) assert.equal((await renderDocument(nodes, evaluator)).telemetry.derivationShare, share);
+  const clean = await renderDocument(ast, evaluator, { profile: 'clean' });
+  assert.doesNotMatch(clean.html, /dv-metrics/);
+  assert.deepEqual(clean.telemetry, result.telemetry);
+  const bad = await renderDocument([{ type: 'view', path: new URL(import.meta.url).pathname, as: secret }], {}, { viewAdapter: async () => { throw Error(secret); } });
+  assert.doesNotMatch(JSON.stringify(bad.telemetry), /PRIVATE_SENTINEL|test_render|\.mjs/);
+  assert.equal(bad.telemetry.states.unresolved, 1);
+  assert.equal(bad.telemetry.illustrations.derived, 0);
+});
+
 test('CLI policy and presentation are independent, including invalid options', async (t) => {
   const { spawnSync } = await import('node:child_process');
   const root = await mkdtemp(join(tmpdir(), 'render-cli-'));
@@ -180,6 +264,7 @@ test('adapter preserves SVG and fit; duplicate expanded anchors fail', async (t)
 const _failures = [];
 function check(cond, msg) { if (!cond) _failures.push(msg); return cond; }
 function checkEqual(actual, expected, msg) {
+  if (typeof actual === 'string') actual = actual.replace(/<p class="dv-metrics">[^<]*<\/p>/g, '');
   if (actual !== expected) {
     _failures.push(`${msg}\n  expected: ${JSON.stringify(expected)}\n  actual:   ${JSON.stringify(actual)}`);
   }
