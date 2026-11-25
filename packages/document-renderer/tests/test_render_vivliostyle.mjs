@@ -14,6 +14,22 @@ function check(condition, message) {
   }
 }
 
+// Presentation is selected by the caller, never by document metadata.
+{
+  const review = wrapHtmlForPrintRendering('<p>Manual</p>', { profile: 'clean' });
+  const clean = wrapHtmlForPrintRendering('<p>Manual</p>', { profile: 'review' }, { profile: 'clean' });
+  check(review.includes('.dv-ok { color: #176329; }'), 'Review styles derived content green');
+  check(review.includes('.dv-suspect { color: #825400; }'), 'Review styles suspect content amber');
+  check(review.includes('border-inline-start: 2px solid currentColor'), 'Flags have a margin mark');
+  for (const border of ['2px solid #176329', '3px dashed #825400', '2px dotted black', '4px double #b00020']) {
+    check(review.includes(border), `Illustration border: ${border}`);
+  }
+  check(!review.includes('display: none !important'), 'Metadata cannot suppress review flags');
+  check(clean.includes('color: black !important'), 'Clean overrides all content colours');
+  check(clean.includes('.dv-flag { display: none !important; }'), 'Clean hides margin flags');
+  check(clean.includes('figure { border: none !important; }'), 'Clean hides diagnostic borders');
+}
+
 // Test 1: formatFigureCaptions processes figures with snapshot IDs
 {
   const html = `

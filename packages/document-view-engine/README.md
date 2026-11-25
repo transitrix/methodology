@@ -1,5 +1,22 @@
 # @transitrix/document-view-engine
 
+## HTML command
+
+```sh
+node packages/document-view-engine/src/render.mjs recipe.md --profile review
+node packages/document-view-engine/src/render.mjs recipe.md --profile clean --fail-on suspect,unresolved
+node packages/document-view-engine/src/render.mjs recipe.md --fail-on ''
+```
+
+Profile defaults to review and is independent of recipe metadata. HTML goes to
+stdout; structured evidence goes to stderr. Exit status is 0 for policy success,
+1 for a diagnostic policy failure in **either** profile, and 2 for invalid options
+or input errors. Default policy rejects unresolved, not-admitted and out-of-validity;
+suspect warns. Empty policy explicitly disables diagnostic failure, not evaluation.
+The API adds `diagnosticFailed`, independent of presentation; historical `failed`
+remains clean-only for compatibility. Counts and document events remain available
+in both profiles; trace coverage gaps do not participate in failure policy.
+
 ## Metrics and telemetry
 
 Superseding the deferrals below, review HTML prints body derivation share and
